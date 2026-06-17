@@ -464,6 +464,7 @@ export default function Home() {
       detailGame = { g, kind };
       detailReturn = mode;
       mode = "detail";
+      if (kind === "today" && g.game_pk) location.hash = "game:" + g.game_pk;
       syncHeader();
       renderDetail();
     }
@@ -623,6 +624,12 @@ export default function Home() {
       await ensureHistDates();
       const h = location.hash;
       if (h === "#performance") { renderDateStrip(); selectPerf(); }
+      else if (h.indexOf("#game:") === 0) {
+        const pk = decodeURIComponent(h.slice(6));
+        renderDateStrip(); await load();
+        const idx = todayGames.findIndex((g: any) => String(g.game_pk) === pk);
+        if (idx >= 0) openDetail("today", idx);
+      }
       else if (h.indexOf("#history:") === 0) { const d = decodeURIComponent(h.slice(9)); if (histDates.includes(d)) { selectHistory(d); } else { selectToday(); } }
       else if (h === "#history") { if (histDates.length) selectHistory(histDates[histDates.length - 1]); else selectToday(); }
       else { renderDateStrip(); load(); }
