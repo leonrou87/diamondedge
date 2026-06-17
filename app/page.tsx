@@ -133,7 +133,7 @@ export default function Home() {
 
     function renderRecord(s: any) {
       const el = $("record"); if (!s) { el.innerHTML = ""; return; }
-      const acc = (v: any) => (v == null ? "—" : Math.round(v * 100) + "%");
+      const acc = (v: any) => (v == null ? "—" : Math.round(v <= 1 ? v * 100 : v) + "%");
       el.innerHTML = `<div><div class="k">Live</div><div class="v live">${s.live || 0}</div></div><div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">O/U</div><div class="v g">${acc((s.ou || {}).accuracy)}</div></div><div><div class="k">Winner</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div>`;
     }
     function renderDateCtl(label?: string) {
