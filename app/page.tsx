@@ -63,7 +63,8 @@ export default function Home() {
       const wp = g.home_win_prob != null ? Math.round((win === "AWAY" ? 1 - g.home_win_prob : g.home_win_prob) * 100) : null;
       const ouRes = g.is_final && g.ou_result ? `<span class="res ${resCls(g.ou_result)}">${g.ou_result}</span>` : "";
       const wRes = g.is_final && g.winner_result ? `<span class="res ${resCls(g.winner_result)}">${g.winner_result}</span>` : "";
-      return `<div class="rcontent"><span class="badge ${ouCls}">${ou} ${g.line != null ? g.line : ""}<span class="tier tier-${ouT}">${ouT}</span></span>${ouRes}${edge != null ? `<span class="edge ${eCls}">${edge > 0 ? "+" : ""}${num(edge)} edge</span>` : ""}<div class="vsep"></div>${winAb ? `<span class="badge pick">${winAb} ML${wp != null ? ` · ${wp}%` : ""}</span>` : ""}${wRes}</div>`;
+      const cpct = g.ou_confidence_pct != null ? `<span class="confpct" title="model confidence in this O/U pick">${g.ou_confidence_pct}%</span>` : "";
+      return `<div class="rcontent"><span class="badge ${ouCls}">${ou} ${g.line != null ? g.line : ""}<span class="tier tier-${ouT}">${ouT}</span></span>${cpct}${ouRes}${edge != null ? `<span class="edge ${eCls}">${edge > 0 ? "+" : ""}${num(edge)} edge</span>` : ""}<div class="vsep"></div>${winAb ? `<span class="badge pick">${winAb} ML${wp != null ? ` · ${wp}%` : ""}</span>` : ""}${wRes}</div>`;
     }
     function todayCard(g: any, i: number) {
       g._hr = g.home_score; g._ar = g.away_score; g._hh = g.home_hits; g._ah = g.away_hits; g._he = g.home_errors; g._ae = g.away_errors; g._final = g.is_final;
@@ -72,7 +73,12 @@ export default function Home() {
       const pill = g.is_live ? `<span class="statuspill live"><span class="pulse"></span>${g.inning_half || ""} ${g.current_inning || ""}</span>` : `<span class="statuspill ${scls}">${slabel}</span>`;
       const ph = num(g.predicted_home_runs), pa = num(g.predicted_away_runs);
       const wpHome = g.home_win_prob != null ? Math.round(g.home_win_prob * 100) : null;
-      return `<div class="card" style="animation-delay:${i * 40}ms"><div class="cardtop">${pill}<div class="venue">${g.venue || ""}</div></div>
+      const engine = g.model_engine === "mid-game" ? "mid" : "pre";
+      const engChip = `<span class="enginechip ${engine}">${engine === "mid" ? "◆ MID-GAME MODEL" : "○ PRE-GAME MODEL"}</span>`;
+      const pmatch = (g.away_pitcher || g.home_pitcher)
+        ? `<div class="pmatch"><span class="pml">SP</span><b>${g.away_pitcher || "TBD"}</b><span class="pvs">vs</span><b>${g.home_pitcher || "TBD"}</b></div>` : "";
+      return `<div class="card" style="animation-delay:${i * 40}ms"><div class="cardtop">${pill}${engChip}<div class="venue">${g.venue || ""}</div></div>
+        ${pmatch}
         ${boxScore(g, g.linescore_innings || [], g.evolving_predictions, "today")}
         <div class="rows">
           <div class="r3 vegas"><div class="rlab">Vegas</div><div class="rcontent">
