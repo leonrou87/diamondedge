@@ -12,12 +12,13 @@ export default function Home() {
     root.innerHTML = `
       <header><div class="hbar">
         <div class="brand"><div class="diamond"></div><div><h1>Diamond<b>Edge</b></h1><div class="tag">MLB Mid-Game Model</div></div></div>
-        <div class="modetoggle"><button id="m-today" class="on">Today</button><button id="m-history">History</button><button id="m-perf">Performance</button></div>
-        <div class="datectl" id="datectl"></div><div class="hspacer"></div><div class="recordchip" id="record"></div>
+        <div class="datestrip-wrap"><div class="datestrip" id="datestrip"></div></div>
+        <button class="perfpill" id="m-perf">Performance</button>
+        <div class="recordchip" id="record"></div>
       </div></header>
       <main>
         <div class="subbar"><h2 id="slatehead">Today's Slate</h2><div class="rule"></div>
-          <div class="legend"><span><i class="dot" style="background:var(--green)"></i>High</span><span><i class="dot" style="background:var(--blue)"></i>Med</span><span><i class="dot" style="background:var(--amber)"></i>Low</span></div></div>
+          <div class="legend" id="legendbox"><span><i class="dot" style="background:var(--green)"></i>High</span><span><i class="dot" style="background:var(--blue)"></i>Med</span><span><i class="dot" style="background:var(--amber)"></i>Low</span></div></div>
         <div class="grid" id="grid"><div class="state"><div class="spinner"></div><div class="ds">Loading</div></div></div>
         <div class="refnote" id="refnote"></div>
       </main>`;
@@ -30,7 +31,7 @@ export default function Home() {
     const resCls = (r: any) => (({ WIN: "win", LOSS: "loss", PUSH: "push" } as any)[(r || "").toUpperCase()] || "");
     const $ = (id: string) => document.getElementById(id) as any;
 
-    let mode = "today", histDates: any[] = [], histDate: any = null;
+    let mode = "today", histDates: any[] = [], histDate: any = null, detailGame: any = null, detailReturn = "today", stripReady = false;
 
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
@@ -136,46 +137,57 @@ export default function Home() {
       const acc = (v: any) => (v == null ? "—" : Math.round(v <= 1 ? v * 100 : v) + "%");
       el.innerHTML = `<div><div class="k">Live</div><div class="v live">${s.live || 0}</div></div><div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">O/U</div><div class="v g">${acc((s.ou || {}).accuracy)}</div></div><div><div class="k">Winner</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div>`;
     }
-    function renderDateCtl(label?: string) {
-      const el = $("datectl");
-      if (mode === "perf") {
-        el.innerHTML = `<div class="dlabel"><span>Out-of-Sample</span><small>2025–2026</small></div>`;
-      } else if (mode === "today") {
-        el.innerHTML = `<div class="dlabel"><span>${label || "Live"}</span><small>SNAPSHOT</small></div>`;
-      } else {
-        const opts = histDates.map((d) => `<option value="${d}" ${d === histDate ? "selected" : ""}>${d}</option>`).join("");
-        el.innerHTML = `<button id="h-prev">‹</button><select id="h-sel">${opts}</select><button id="h-next">›</button>`;
-        $("h-prev").onclick = () => stepHist(-1);
-        $("h-next").onclick = () => stepHist(1);
-        $("h-sel").onchange = (e: any) => { histDate = e.target.value; loadHistory(); };
-      }
+    function chipLabel(d: string) {
+      const dt = new Date(d + "T12:00:00");
+      const dow = dt.toLocaleDateString("en-US", { weekday: "short" });
+      const md = dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return `<span class="cl-dow">${dow}</span><span class="cl-md">${md}</span>`;
     }
-    function stepHist(dir: number) { const i = histDates.indexOf(histDate), j = i + dir; if (j >= 0 && j < histDates.length) { histDate = histDates[j]; loadHistory(); } }
+    function renderDateStrip() {
+      const el = $("datestrip");
+      if (!el) return;
+      const hChips = histDates.map((d) =>
+        `<button class="datechip${mode === "history" && d === histDate ? " on" : ""}" data-date="${d}">${chipLabel(d)}</button>`
+      ).join("");
+      el.innerHTML = `${hChips}<button class="datechip today${mode === "today" ? " on" : ""}" data-today="1"><span class="cl-dow">●</span><span class="cl-md">TODAY</span></button>`;
+      el.querySelectorAll(".datechip").forEach((c: any) => {
+        c.onclick = () => {
+          if (c.dataset.today) { selectToday(); }
+          else { histDate = c.dataset.date; selectHistory(c.dataset.date); }
+        };
+      });
+      // keep TODAY chip in view by default
+      if (mode === "today") { const t = el.querySelector(".datechip.today"); if (t) t.scrollIntoView({ inline: "end", block: "nearest" }); }
+      else { const on = el.querySelector(".datechip.on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" }); }
+    }
+    async function ensureHistDates() {
+      if (stripReady) return;
+      try { const hd = await snap("history_dates"); histDates = ((hd && hd.dates) || []).slice().sort(); } catch (e) { histDates = []; }
+      stripReady = true;
+    }
 
+    let todayGames: any[] = [], histGames: any[] = [];
     async function load() {
       const grid = $("grid");
       $("slatehead").textContent = "Today's Slate";
+      $("legendbox").style.display = "";
       try {
         const d = await snap("today");
         const games = (d && d.games) || []; renderRecord(d && d.summary);
-        renderDateCtl(d && d.date ? new Date(d.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Live");
-        if (!games.length) grid.innerHTML = `<div class="state"><div class="ds">No games</div></div>`;
-        else { games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final); grid.innerHTML = games.map(todayCard).join(""); }
+        if (!games.length) { todayGames = []; grid.innerHTML = `<div class="state"><div class="ds">No games</div></div>`; }
+        else { games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final); todayGames = games; grid.innerHTML = games.map(todayCard).join(""); wireCardClicks("today"); }
         $("refnote").innerHTML = `DiamondEdge mid-game simulation model · data via Supabase`;
       } catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load snapshot.</div></div>`; }
     }
-    async function loadHistoryInit() {
-      const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading history</div></div>`;
-      $("slatehead").textContent = "Game History"; $("record").innerHTML = "";
-      try { const hd = await snap("history_dates"); histDates = (hd && hd.dates) || []; histDate = histDate && histDates.includes(histDate) ? histDate : histDates[0]; await loadHistory(); }
-      catch (e) { grid.innerHTML = `<div class="state"><div class="ds">No history</div></div>`; }
-    }
     async function loadHistory() {
-      const grid = $("grid"); renderDateCtl();
+      const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading ${histDate}</div></div>`;
+      $("slatehead").textContent = "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      renderDateStrip();
       try {
         const d = await snap("history:" + histDate);
-        const games = (d && d.games) || [];
+        const games = (d && d.games) || []; histGames = games;
         grid.innerHTML = games.length ? games.map(historyCard).join("") : `<div class="state"><div class="ds">No games this date</div></div>`;
+        if (games.length) wireCardClicks("history");
         $("refnote").innerHTML = `${games.length} games · ${histDate} · model's mid-game prediction trajectory`;
       } catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Error loading ${histDate}</div></div>`; }
     }
@@ -254,10 +266,14 @@ export default function Home() {
       return `<div class="panel"><div class="phead"><div class="pt">${title}</div>${legend || ""}</div><div class="pdesc">${subtitle}</div><div class="pbody">${body}</div></div>`;
     }
 
+    let perfTab = "midgame";
+    let ouSet = "2026"; // ou_betting set toggle
+    let perfOuIdx = 0;
+
     function renderPerf(a: any) {
       const grid = $("grid");
       if (!a) { grid.innerHTML = `<div class="state"><div class="ds">No analytics</div><div>Analytics snapshot not published yet.</div></div>`; return; }
-      const pv = a.pregame_vs_vegas, pp = a.performance_pack, ml = a.midgame_live;
+      const pv = a.pregame_vs_vegas, pp = a.performance_pack, ml = a.midgame_live, ouB = a.ou_betting;
       const test = pp && pp.test_2026, val = pp && pp.val_2025;
       let html = `<div class="perfwrap">`;
 
@@ -272,7 +288,25 @@ export default function Home() {
       kpis += `</div>`;
       html += kpis;
 
-      // 1. Pregame vs Vegas MAE time-series (by season)
+      // sub-tabs
+      html += `<div class="perftabs"><button class="ptab${perfTab === "pregame" ? " on" : ""}" data-ptab="pregame">Pre-Game</button><button class="ptab${perfTab === "midgame" ? " on" : ""}" data-ptab="midgame">Mid-Game</button></div>`;
+
+      html += `<div class="perftabbody">`;
+      if (perfTab === "pregame") html += renderPregameTab(pv, ouB);
+      else html += renderMidgameTab(test, ml);
+      html += `</div>`;
+
+      html += `</div>`;
+      grid.innerHTML = html;
+      grid.querySelectorAll(".ptab").forEach((t: any) => { t.onclick = () => { perfTab = t.dataset.ptab; renderPerf(a); }; });
+      if (perfTab === "pregame") wireOuSlider(ouB);
+      $("refnote").innerHTML = `Analytics snapshot${a.generated_at ? " · generated " + new Date(a.generated_at).toLocaleString() : ""} · all metrics out-of-sample, leakage-audited`;
+    }
+
+    // ---- PRE-GAME tab ----
+    function renderPregameTab(pv: any, ouB: any) {
+      let html = "";
+      // Pregame vs Vegas MAE time-series (by season)
       if (pv && pv.season_series) {
         const ss = pv.season_series, xs = ss.season.map((s: any) => String(s));
         const mk = (arr: any[]) => arr.map((y: any) => ({ y }));
@@ -284,8 +318,68 @@ export default function Home() {
         const leg = `<div class="plegend"><span><i style="background:#c8102e"></i>Our pregame</span><span><i style="background:#16a34a"></i>Vegas line</span><span><i style="background:#9aa3af"></i>Naive avg</span></div>`;
         html += panel("Pregame Total MAE vs the Market", "Lower is better. Across every season our leakage-safe pregame model tracks but never beats the Vegas line — confirming the pregame O/U market is efficient. The edge lives mid-game.", body, leg);
       }
+      // O/U betting slider panel
+      html += renderOuPanel(ouB);
+      if (!html) html = `<div class="state"><div class="ds">No pregame data</div></div>`;
+      return html;
+    }
 
-      // 2. Reliability / calibration curve (win prob, mid-game model)
+    function ouRows(ouB: any) {
+      const set = ouB && ouB[ouSet];
+      return (set && set.by_confidence) ? set.by_confidence : [];
+    }
+    function renderOuPanel(ouB: any) {
+      if (!ouB || !ouB.thresholds) return "";
+      const rows = ouRows(ouB);
+      if (!rows.length) return "";
+      const be = ouB.breakeven_winpct_flat_110 != null ? ouB.breakeven_winpct_flat_110 : 0.5238;
+      const idx = Math.min(perfOuIdx, rows.length - 1);
+      const setN = (ouB[ouSet] && ouB[ouSet].n_games) || 0;
+      const banner = `<div class="oubanner">⚠ Pregame O/U market is efficient — there is no betting edge. Win% hovers near the ${(be * 100).toFixed(2)}% break-even, ROI is negative, and raising the confidence threshold does <b>not</b> improve results. Shown for honesty, not as a betting system.</div>`;
+      const toggle = `<div class="ouset"><span class="ousetlbl">Sample</span><button class="osbtn${ouSet === "2026" ? " on" : ""}" data-oset="2026">2026</button><button class="osbtn${ouSet === "all_2020_2026" ? " on" : ""}" data-oset="all_2020_2026">2020–2026</button></div>`;
+      const slider = `<div class="ousliderwrap">
+        <div class="ousliderhead"><span>Confidence threshold</span><span class="ousliderval" id="ou-thr">${(ouB.thresholds[idx] * 100).toFixed(0)}%</span></div>
+        <input type="range" id="ou-range" min="0" max="${rows.length - 1}" step="1" value="${idx}" class="ourange">
+        <div class="ourangeticks"><span>${(ouB.thresholds[0] * 100).toFixed(0)}%</span><span>${(ouB.thresholds[rows.length - 1] * 100).toFixed(0)}%</span></div>
+      </div>`;
+      const readout = `<div class="oureadout" id="ou-readout">${ouReadoutHTML(rows[idx], be)}</div>`;
+      const body = `${banner}${toggle}${slider}${readout}`;
+      return panel("Pregame O/U Betting — Confidence Sweep", `Flat −110 staking on every pregame O/U pick at or above each confidence threshold. Break-even win rate is ${(be * 100).toFixed(2)}%. Drag the slider; ${setN ? setN.toLocaleString() + " games in this sample" : "no games"}.`, body);
+    }
+    function ouReadoutHTML(r: any, be: number) {
+      if (!r) return `<div class="nochart">No data at this threshold</div>`;
+      const wp = r.win_pct, beat = wp != null && wp >= be;
+      const roi = r.roi_flat_110, pnl = r.pnl_flat_110;
+      const wpCls = beat ? "g" : "r";
+      const roiCls = roi != null && roi >= 0 ? "g" : "r";
+      const pnlCls = pnl != null && pnl >= 0 ? "g" : "r";
+      const bar = wp != null ? `<div class="oubar"><div class="oube" style="left:${(be * 100).toFixed(1)}%"></div><i style="width:${Math.min(100, wp * 100).toFixed(1)}%" class="${wpCls}"></i><span class="oubelbl" style="left:${(be * 100).toFixed(1)}%">break-even ${(be * 100).toFixed(2)}%</span></div>` : "";
+      return `<div class="kpistrip">
+          ${statTile("Min Confidence", fmtPct(r.min_confidence, 0), "threshold", "")}
+          ${statTile("Decided Bets", String(r.n_decided || 0), `mean conf ${fmtPct(r.mean_confidence, 0)}`, "")}
+          ${statTile("Record", `${r.wins || 0}-${r.losses || 0}-${r.ties_push || 0}`, "W-L-push", "")}
+          ${statTile("Win %", fmtPct(wp), beat ? "above break-even" : "below break-even", wpCls)}
+          ${statTile("ROI @ -110", fmtPct(roi, 1), "per bet", roiCls)}
+          ${statTile("Cumulative $", fmtSign(pnl, 0), "flat $100 units, -110", pnlCls)}
+        </div>${bar}`;
+    }
+    function wireOuSlider(ouB: any) {
+      const rng = $("ou-range"); if (!rng) return;
+      const be = ouB.breakeven_winpct_flat_110 != null ? ouB.breakeven_winpct_flat_110 : 0.5238;
+      const rows = ouRows(ouB);
+      rng.oninput = () => {
+        perfOuIdx = +rng.value;
+        const r = rows[perfOuIdx];
+        $("ou-thr").textContent = (ouB.thresholds[perfOuIdx] * 100).toFixed(0) + "%";
+        $("ou-readout").innerHTML = ouReadoutHTML(r, be);
+      };
+      document.querySelectorAll(".osbtn").forEach((b: any) => { b.onclick = () => { if (ouSet === b.dataset.oset) return; ouSet = b.dataset.oset; perfOuIdx = Math.min(perfOuIdx, ouRows(ouB).length - 1); renderPerf(_lastAnalytics); }; });
+    }
+
+    // ---- MID-GAME tab ----
+    function renderMidgameTab(test: any, ml: any) {
+      let html = "";
+      // Reliability / calibration curve (win prob, mid-game model)
       if (test && test.reliability_winprob) {
         const body = `<div class="reliwrap">${reliabilitySVG(test.reliability_winprob, "pred_prob", "empirical_rate")}
           <div class="relicap">${statTile("Brier Score", num(test.brier, 3), "lower = sharper", "")}${statTile("ECE", num(test.ece, 3), "mean calib. gap", "")}<div class="relinote">Points hug the diagonal — predicted win probabilities match how often those teams actually win. Dot size ∝ sample count.</div></div></div>`;
@@ -339,33 +433,200 @@ export default function Home() {
         html += `<div class="livehead"><span class="statuspill live"><span class="pulse"></span>LIVE HARNESS</span><span class="livenote">${(rl.settled_note || "").replace(/'/g, "")}</span></div>` + live + byInn;
       }
 
-      html += `</div>`;
-      grid.innerHTML = html;
-      $("refnote").innerHTML = `Analytics snapshot${a.generated_at ? " · generated " + new Date(a.generated_at).toLocaleString() : ""} · all metrics out-of-sample, leakage-audited`;
+      if (!html) html = `<div class="state"><div class="ds">No mid-game data</div></div>`;
+      return html;
     }
 
+    let _lastAnalytics: any = null;
     async function loadPerf() {
       const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading analytics</div></div>`;
       $("slatehead").textContent = "Model Performance"; $("record").innerHTML = "";
-      try { const a = await snap("analytics"); renderPerf(a); }
+      try { const a = await snap("analytics"); _lastAnalytics = a; renderPerf(a); }
       catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load analytics snapshot.</div></div>`; }
     }
 
-    function setMode(m: string) {
-      if (m === mode) return; mode = m;
-      $("m-today").classList.toggle("on", m === "today"); $("m-history").classList.toggle("on", m === "history"); $("m-perf").classList.toggle("on", m === "perf");
-      renderDateCtl();
-      if (m === "history") { location.hash = "history"; loadHistoryInit(); }
-      else if (m === "perf") { location.hash = "performance"; loadPerf(); }
-      else { location.hash = ""; load(); }
+    function syncHeader() {
+      $("m-perf").classList.toggle("on", mode === "perf");
+      renderDateStrip();
     }
-    $("m-today").onclick = () => setMode("today");
-    $("m-history").onclick = () => setMode("history");
-    $("m-perf").onclick = () => setMode("perf");
 
-    if (location.hash === "#history") setMode("history");
-    else if (location.hash === "#performance") setMode("perf");
-    else load();
+    // ---------- GAME DETAIL VIEW ----------
+    function wireCardClicks(kind: string) {
+      const grid = $("grid");
+      grid.querySelectorAll(".card").forEach((c: any, i: number) => {
+        c.classList.add("clickable");
+        c.onclick = () => openDetail(kind, i);
+      });
+    }
+    function openDetail(kind: string, i: number) {
+      const arr = kind === "today" ? todayGames : histGames;
+      const g = arr[i]; if (!g) return;
+      detailGame = { g, kind };
+      detailReturn = mode;
+      mode = "detail";
+      syncHeader();
+      renderDetail();
+    }
+    function backFromDetail() {
+      mode = detailReturn || "today"; detailGame = null;
+      syncHeader();
+      $("legendbox").style.display = mode === "today" ? "" : "none";
+      if (mode === "history") loadHistory();
+      else if (mode === "perf") loadPerf();
+      else load();
+    }
+    function renderDetail() {
+      const grid = $("grid");
+      $("record").innerHTML = "";
+      $("legendbox").style.display = "none";
+      const { g, kind } = detailGame;
+      const isHist = kind === "history";
+      // normalize box-score side data
+      let inns: any[] = [], evo: any[] = [], sideKey = "today", actualTotal: any = null;
+      if (isHist) {
+        const ls = g.actual_linescore || {}; inns = ls.innings || [];
+        g._hr = ls.final_home; g._ar = ls.final_away; g._hh = ls.home_hits; g._ah = ls.away_hits; g._he = ls.home_errors; g._ae = ls.away_errors; g._final = true;
+        evo = (g.predictions_by_inning || []).slice().sort((a: any, b: any) => a.after_inning - b.after_inning);
+        sideKey = "hist";
+        actualTotal = ls.final_total != null ? ls.final_total : (g._hr || 0) + (g._ar || 0);
+      } else {
+        g._hr = g.home_score; g._ar = g.away_score; g._hh = g.home_hits; g._ah = g.away_hits; g._he = g.home_errors; g._ae = g.away_errors; g._final = g.is_final;
+        inns = g.linescore_innings || []; evo = g.evolving_predictions || []; sideKey = "today";
+        if (g.is_final) actualTotal = (g._hr || 0) + (g._ar || 0);
+      }
+      $("slatehead").textContent = isHist ? "Game Detail" : "Game Detail";
+
+      // status / scores
+      const scls = !isHist && g.is_live ? "live" : g._final ? "final" : "upcoming";
+      const slabel = !isHist && g.is_live ? `${g.inning_half || ""} ${g.current_inning || ""}` : g._final ? "FINAL" : (g.start_time || "SCHEDULED");
+      const pill = !isHist && g.is_live
+        ? `<span class="statuspill live"><span class="pulse"></span>${slabel}</span>`
+        : `<span class="statuspill ${scls}">${slabel}${isHist && g.date ? " · " + g.date : ""}</span>`;
+      const showScore = isHist || g.is_live || g.is_final;
+
+      // pitcher matchup (today only — history has no pitcher fields)
+      const pmatch = (!isHist && (g.away_pitcher || g.home_pitcher))
+        ? `<div class="dt-pmatch"><span class="pml">SP</span><b>${g.away_pitcher || "TBD"}${g.away_pitcher_era != null && g.away_pitcher_era !== "" ? ` (${num(g.away_pitcher_era, 2)})` : ""}</b><span class="pvs">vs</span><b>${g.home_pitcher || "TBD"}${g.home_pitcher_era != null && g.home_pitcher_era !== "" ? ` (${num(g.home_pitcher_era, 2)})` : ""}</b></div>` : "";
+
+      const matchHead = `<div class="dt-head">
+        <div class="dt-side away${showScore && (g._ar > g._hr) ? " w" : ""}"><img src="${logo(g.away_abbr)}" onerror="this.style.visibility='hidden'"><div class="dt-tn"><span class="dt-ab">${g.away_abbr || ""}</span><span class="dt-full">${g.away_team || ""}</span></div></div>
+        <div class="dt-center">${pill}${showScore ? `<div class="dt-score">${g._ar ?? 0}<span class="dash">–</span>${g._hr ?? 0}</div>` : `<div class="dt-at">@</div>`}<div class="dt-venue">${g.venue || ""}</div></div>
+        <div class="dt-side home${showScore && (g._hr > g._ar) ? " w" : ""}"><div class="dt-tn rt"><span class="dt-ab">${g.home_abbr || ""}</span><span class="dt-full">${g.home_team || ""}</span></div><img src="${logo(g.home_abbr)}" onerror="this.style.visibility='hidden'"></div>
+      </div>${pmatch}`;
+
+      // model prediction breakdown (today only has full pred fields)
+      let modelBlock = "";
+      if (!isHist) {
+        const engine = g.model_engine === "mid-game" ? "mid" : "pre";
+        const engChip = `<span class="enginechip ${engine}">${engine === "mid" ? "◆ MID-GAME MODEL" : "○ PRE-GAME MODEL"}</span>`;
+        const ph = num(g.predicted_home_runs), pa = num(g.predicted_away_runs);
+        const wpHome = g.home_win_prob != null ? Math.round(g.home_win_prob * 100) : null;
+        const ou = (g.ou_call || "—").toUpperCase(), ouT = tier(g.ou_confidence);
+        const ouCls = ou === "OVER" ? "over" : ou === "UNDER" ? "under" : "push";
+        const edge = g.model_edge, eCls = edge > 0.25 ? "pos" : edge < -0.25 ? "neg" : "flat";
+        modelBlock = `<div class="dt-card"><div class="dt-ct"><span>Model Prediction</span>${engChip}</div>
+          <div class="dt-modelgrid">
+            <div class="dt-pred"><div class="sk">Predicted Score</div><div class="score-pred">${pa}<small> ${g.away_abbr}</small> – ${ph}<small> ${g.home_abbr}</small></div></div>
+            <div class="dt-pred"><div class="sk">Projected Total</div><div class="dt-bignum">${num(g.model_prediction)}</div></div>
+            ${wpHome != null ? `<div class="dt-pred"><div class="sk">${g.home_abbr} Win Prob</div><div class="dt-wpwrap"><span class="dt-bignum sm">${wpHome}%</span><div class="pbar"><i style="width:${wpHome}%"></i></div></div></div>` : ""}
+          </div>
+          <div class="dt-callrow">
+            <span class="badge ${ouCls}">${ou} ${g.line != null ? g.line : ""}<span class="tier tier-${ouT}">${ouT}</span></span>
+            ${g.ou_confidence_pct != null ? `<span class="confpct">${g.ou_confidence_pct}% conf</span>` : ""}
+            ${edge != null ? `<span class="edge ${eCls}">${edge > 0 ? "+" : ""}${num(edge)} edge vs line</span>` : ""}
+            ${g.is_final && g.ou_result ? `<span class="res ${resCls(g.ou_result)}">${g.ou_result}</span>` : ""}
+          </div></div>`;
+      } else {
+        const pre = evo[0], last = evo[evo.length - 1] || pre;
+        modelBlock = `<div class="dt-card"><div class="dt-ct"><span>Model Read</span><span class="enginechip mid">◆ MID-GAME MODEL</span></div>
+          <div class="dt-modelgrid">
+            <div class="dt-pred"><div class="sk">Pregame Total</div><div class="dt-bignum sm">${pre ? num(pre.pred_total) : "—"}</div></div>
+            <div class="dt-pred"><div class="sk">Final Model Total</div><div class="dt-bignum sm">${last ? num(last.pred_total) : "—"}</div></div>
+            <div class="dt-pred"><div class="sk">Actual Total</div><div class="dt-bignum sm" style="color:var(--red)">${actualTotal != null ? actualTotal : "—"}</div></div>
+          </div></div>`;
+      }
+
+      // odds block (today only)
+      let oddsBlock = "";
+      if (!isHist) {
+        oddsBlock = `<div class="dt-card"><div class="dt-ct"><span>Vegas Line &amp; Odds</span><span class="dt-book">${g.bookmaker || ""}</span></div>
+          <div class="dt-oddsgrid">
+            <div class="dt-odd"><div class="sk">O/U Line</div><div class="ov">${g.line != null ? g.line : "—"}</div></div>
+            <div class="dt-odd"><div class="sk">Over</div><div class="ov">${fmtOdds(g.over_odds)}</div></div>
+            <div class="dt-odd"><div class="sk">Under</div><div class="ov">${fmtOdds(g.under_odds)}</div></div>
+            <div class="dt-odd"><div class="sk">${g.away_abbr} ML</div><div class="ov">${fmtOdds(g.away_ml)}</div></div>
+            <div class="dt-odd"><div class="sk">${g.home_abbr} ML</div><div class="ov">${fmtOdds(g.home_ml)}</div></div>
+          </div></div>`;
+      }
+
+      // trajectory
+      let trajBlock = "";
+      if (evo.length && actualTotal != null) {
+        const pre = evo[0], last = evo[evo.length - 1];
+        const conv = Math.abs(last.pred_total - actualTotal);
+        const convCls = conv < 1 ? "good" : conv < 2.5 ? "mid" : "bad";
+        const convTxt = conv < 1 ? "NAILED IT" : conv < 2.5 ? "CLOSE" : "MISSED";
+        trajBlock = `<div class="dt-card"><div class="dt-ct"><span>Prediction Trajectory</span><span class="conv ${convCls}">${convTxt}</span></div>
+          <div class="traj" style="border:0;padding:4px 0 0">${trajSVG(evo, actualTotal)}
+          <div class="trajfoot"><span><i style="border-color:#0c2340"></i>Model pred total</span><span><i style="border-color:#c8102e;border-top-style:dashed"></i>Final actual</span><span style="margin-left:auto;color:var(--ink2)">x-axis = innings completed · pregame ${pre ? num(pre.pred_total) : "—"} → final ${actualTotal}</span></div></div></div>`;
+      } else if (evo.length) {
+        trajBlock = `<div class="dt-card"><div class="dt-ct"><span>Live Prediction Trajectory</span></div>
+          <div class="traj" style="border:0;padding:4px 0 0"><div class="dt-evolist">${evo.map((e: any) => `<div class="dt-ev"><span class="ei">${e.after_inning ? "In " + e.after_inning : "Pre"}</span><span class="et">${num(e.pred_total)}</span>${e.confidence != null ? `<span class="ec">${Math.round((e.confidence <= 1 ? e.confidence * 100 : e.confidence))}%</span>` : ""}</div>`).join("")}</div></div></div>`;
+      }
+
+      // insight block
+      let insightBits: string[] = [];
+      if (!isHist) {
+        const engineTxt = g.model_engine === "mid-game" ? "the mid-game simulation engine (which updates as the game unfolds)" : "the pregame engine";
+        insightBits.push(`This pick comes from <b>${engineTxt}</b>.`);
+        if (g.ou_call) {
+          const ed = g.model_edge;
+          if (ed != null && Math.abs(ed) >= 0.25) insightBits.push(`The model projects <b>${num(g.model_prediction)}</b> total runs vs the line of <b>${g.line}</b> — a <b>${num(Math.abs(ed))}-run ${ed > 0 ? "over" : "under"}</b> edge, hence the <b>${(g.ou_call || "").toUpperCase()}</b> lean${g.ou_confidence_pct != null ? ` at ${g.ou_confidence_pct}% confidence` : ""}.`);
+          else insightBits.push(`The model sits within a fraction of a run of the line — no meaningful O/U edge here.`);
+        }
+        if (g.model_engine !== "mid-game") insightBits.push(`Reminder: the pregame O/U market is efficient — our edge only shows up <b>once a game is live</b>, where the mid-game engine reprojects the remaining total.`);
+      } else {
+        insightBits.push(`This is a 2024 historical game shown to illustrate how the <b>mid-game model</b> re-projects the final total inning by inning. Compare the model line against the dashed actual-total line above.`);
+      }
+      const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">${insightBits.map((b) => `<p>${b}</p>`).join("")}</div></div>`;
+
+      grid.innerHTML = `<div class="detailwrap">
+        <button class="backbtn" id="dt-back">‹ Back to slate</button>
+        ${matchHead}
+        <div class="dt-card"><div class="dt-ct"><span>Box Score</span></div>${boxScore(g, inns, evo, sideKey)}</div>
+        <div class="dt-cols">${modelBlock}${oddsBlock}</div>
+        ${trajBlock}
+        ${insight}
+      </div>`;
+      $("dt-back").onclick = backFromDetail;
+      $("refnote").innerHTML = `${g.away_abbr} @ ${g.home_abbr}${g.venue ? " · " + g.venue : ""}`;
+    }
+
+    // ---------- NAVIGATION ----------
+    async function selectToday() {
+      mode = "today"; location.hash = ""; syncHeader();
+      $("legendbox").style.display = "";
+      await load();
+    }
+    async function selectHistory(d: string) {
+      histDate = d; mode = "history"; location.hash = "history:" + d; syncHeader();
+      await loadHistory();
+    }
+    function selectPerf() {
+      mode = "perf"; location.hash = "performance"; syncHeader();
+      $("legendbox").style.display = "none";
+      loadPerf();
+    }
+    $("m-perf").onclick = () => { if (mode !== "perf") selectPerf(); };
+
+    (async function init() {
+      await ensureHistDates();
+      const h = location.hash;
+      if (h === "#performance") { renderDateStrip(); selectPerf(); }
+      else if (h.indexOf("#history:") === 0) { const d = decodeURIComponent(h.slice(9)); if (histDates.includes(d)) { selectHistory(d); } else { selectToday(); } }
+      else if (h === "#history") { if (histDates.length) selectHistory(histDates[histDates.length - 1]); else selectToday(); }
+      else { renderDateStrip(); load(); }
+    })();
   }, []);
 
   return <div id="app-root" />;
