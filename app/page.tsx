@@ -266,7 +266,7 @@ export default function Home() {
       return `<div class="panel"><div class="phead"><div class="pt">${title}</div>${legend || ""}</div><div class="pdesc">${subtitle}</div><div class="pbody">${body}</div></div>`;
     }
 
-    let perfTab = "midgame";
+    let perfTab = "pregame";
     let ouSet = "2026"; // ou_betting set toggle
     let perfOuIdx = 0;
 
