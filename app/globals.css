@@ -201,6 +201,20 @@ svg.rc{width:300px;max-width:100%;height:auto}
 .perftabbody{display:flex;flex-direction:column;gap:18px}
 .oubanner{background:var(--amberbg);border:1px solid #f2d9ad;color:#8a5a08;border-radius:12px;padding:12px 15px;font-size:12.5px;line-height:1.5;margin-bottom:14px}
 .oubanner b{color:#6b4406}
+.sthead{font-size:13px;line-height:1.5;color:var(--ink2);margin-bottom:14px}
+.sthead b{color:var(--navy)}
+.strow{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:12px;margin-bottom:9px}
+.strow .stk{font-family:'Oswald';font-weight:600;font-size:12px;color:var(--ink);text-transform:uppercase;letter-spacing:.03em}
+.strow .stk small{color:var(--ink2);font-weight:400;font-family:'IBM Plex Sans'}
+.stbars{display:flex;flex-direction:column;gap:4px}
+.stbar{position:relative;height:16px;background:var(--line2);border-radius:4px;overflow:hidden}
+.stbar i{position:absolute;inset:0 auto 0 0;border-radius:4px}
+.stbar i.our{background:var(--navy)} .stbar i.veg{background:var(--green)}
+.stbar span{position:absolute;right:6px;top:0;line-height:16px;font-family:'IBM Plex Mono';font-size:10px;font-weight:600;color:var(--ink2)}
+.stparks{margin:14px 0 6px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.stparks .stparklbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:600;width:100%}
+.parkchip{font-size:11px;background:var(--slatebg);border-radius:6px;padding:3px 9px;color:var(--ink)}
+.parkchip b{font-family:'IBM Plex Mono'} .parkchip b.g{color:var(--green)} .parkchip b.r{color:var(--red)}
 .ouset{display:flex;align-items:center;gap:7px;margin-bottom:14px}
 .ouset .ousetlbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600}
 .osbtn{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.05em;border:1px solid var(--line);background:#fff;color:var(--ink2);padding:5px 13px;border-radius:7px;cursor:pointer;transition:.15s}

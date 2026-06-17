@@ -292,7 +292,7 @@ export default function Home() {
       html += `<div class="perftabs"><button class="ptab${perfTab === "pregame" ? " on" : ""}" data-ptab="pregame">Pre-Game</button><button class="ptab${perfTab === "midgame" ? " on" : ""}" data-ptab="midgame">Mid-Game</button></div>`;
 
       html += `<div class="perftabbody">`;
-      if (perfTab === "pregame") html += renderPregameTab(pv, ouB);
+      if (perfTab === "pregame") html += renderPregameTab(pv, ouB, a.model_strengths);
       else html += renderMidgameTab(test, ml);
       html += `</div>`;
 
@@ -304,7 +304,30 @@ export default function Home() {
     }
 
     // ---- PRE-GAME tab ----
-    function renderPregameTab(pv: any, ouB: any) {
+    function renderStrengthsPanel(ms: any) {
+      if (!ms || !ms.by_line_bucket) return "";
+      const lb = ms.by_line_bucket;
+      const order = ["<7.5", "7.5-8.5", "8.5-9.5", ">=9.5"].filter((k) => lb[k]);
+      if (!order.length) return "";
+      const maxv = Math.max(...order.map((k) => Math.max(lb[k].our_mae, lb[k].vegas_mae)));
+      const rows = order.map((k) => {
+        const s = lb[k];
+        const ow = ((s.our_mae / maxv) * 100).toFixed(0), vw = ((s.vegas_mae / maxv) * 100).toFixed(0);
+        return `<div class="strow"><div class="stk">O/U ${k} <small>(${s.n})</small></div><div class="stbars">
+          <div class="stbar"><i class="our" style="width:${ow}%"></i><span>${s.our_mae}</span></div>
+          <div class="stbar"><i class="veg" style="width:${vw}%"></i><span>${s.vegas_mae}</span></div></div></div>`;
+      }).join("");
+      const b = order.map((k) => ({ k, ...lb[k] }));
+      const best = b.reduce((a: any, c: any) => (c.our_mae < a.our_mae ? c : a));
+      const worst = b.reduce((a: any, c: any) => (c.our_mae > a.our_mae ? c : a));
+      const parks = (ms.parks_sharpest || []).slice(0, 5).map((p: any) =>
+        `<span class="parkchip">${p.venue} <b class="${p.edge_vs_vegas >= 0 ? "g" : "r"}">${p.edge_vs_vegas >= 0 ? "+" : ""}${p.edge_vs_vegas}</b></span>`).join("");
+      const headline = `<div class="sthead">Model is <b>sharpest on low-total games</b> (${best.k}: MAE ${best.our_mae}) and weakest on high-scoring slugfests (${worst.k}: ${worst.our_mae}) — where the market degrades too.</div>`;
+      const legend = `<div class="plegend"><span><i style="background:#0c2340"></i>Our model</span><span><i style="background:#16a34a"></i>Vegas line</span></div>`;
+      const parkblock = parks ? `<div class="stparks"><div class="stparklbl">Parks where we're closest to Vegas (MAE edge)</div>${parks}</div>` : "";
+      return panel("Where We're Sharp — MAE by Game Type", "Our independent (line-free) model's accuracy by Vegas total bucket, 2026 out-of-sample. Trained 2015-2024, validated 2025, tested 2026. We're most accurate on low totals; high-total games are chaos for everyone.", `${headline}${rows}${parkblock}${legend}`);
+    }
+    function renderPregameTab(pv: any, ouB: any, ms?: any) {
       let html = "";
       // Pregame vs Vegas MAE time-series (by season)
       if (pv && pv.season_series) {
@@ -318,6 +341,8 @@ export default function Home() {
         const leg = `<div class="plegend"><span><i style="background:#c8102e"></i>Our pregame</span><span><i style="background:#16a34a"></i>Vegas line</span><span><i style="background:#9aa3af"></i>Naive avg</span></div>`;
         html += panel("Pregame Total MAE vs the Market", "Lower is better. Across every season our leakage-safe pregame model tracks but never beats the Vegas line — confirming the pregame O/U market is efficient. The edge lives mid-game.", body, leg);
       }
+      // Where we're sharp (segmented)
+      html += renderStrengthsPanel(ms);
       // O/U betting slider panel
       html += renderOuPanel(ouB);
       if (!html) html = `<div class="state"><div class="ds">No pregame data</div></div>`;
