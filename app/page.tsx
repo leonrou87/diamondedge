@@ -293,7 +293,7 @@ export default function Home() {
 
       html += `<div class="perftabbody">`;
       if (perfTab === "pregame") html += renderPregameTab(pv, ouB, a.model_strengths);
-      else html += renderMidgameTab(test, ml);
+      else html += renderMidgameTab(test, ml, a.live_edge_policy);
       html += `</div>`;
 
       html += `</div>`;
@@ -402,8 +402,40 @@ export default function Home() {
     }
 
     // ---- MID-GAME tab ----
-    function renderMidgameTab(test: any, ml: any) {
+    function renderLiveEdgePanel(lep: any) {
+      if (!lep || !lep.overall_every_bet || !lep.policy_grid) return "";
+      const ov = lep.overall_every_bet;
+      if (!ov.n_bets) return "";
+      const be = 0.524;
+      const pct = (x: number) => (x == null ? "—" : (x >= 0 ? "+" : "") + (x * 100).toFixed(1) + "%");
+      // selectivity story: overall (every bet) vs the best credible gated cell
+      const best = lep.best_credible_cell;
+      const kpi = `<div class="kpistrip">
+        ${statTile("Every Bet", fmtPct(ov.win_pct), `${ov.n_bets}b · ${ov.n_games}g · ROI ${pct(ov.roi)}`, ov.roi > 0 ? "g" : "r")}
+        ${best ? statTile("Selective", fmtPct(best.win_pct), `${best.key.replace("|", " · ")} · ROI ${pct(best.roi)}`, "g") : ""}
+        ${best && best.roi_positive_prob != null ? statTile("P(profit)", Math.round(best.roi_positive_prob * 100) + "%", "game-bootstrap", "") : ""}
+        ${best ? statTile("Sample", `${best.n_games}g`, "settled games", best.n_games >= 40 ? "g" : "r") : ""}
+      </div>`;
+      // grid rows: win% bars per cell, breakeven marker
+      const cells = Object.entries(lep.policy_grid)
+        .map(([k, v]: any) => ({ k, ...v }))
+        .filter((c: any) => c.n_games >= 12)
+        .sort((a: any, b: any) => b.win_pct - a.win_pct)
+        .slice(0, 8);
+      const rows = cells.map((c: any) => {
+        const w = Math.min(100, (c.win_pct / 0.8) * 100).toFixed(0);
+        const bx = ((be / 0.8) * 100).toFixed(0);
+        const good = c.win_pct >= be;
+        return `<div class="lerow"><div class="lek">${c.k.replace("|", " · edge≥").replace("inn_", "inn ").replace("_", "-").replace("all", "any inning")}<small>${c.n_bets}b/${c.n_games}g</small></div>
+          <div class="lebarwrap"><div class="lebar"><i class="${good ? "g" : "r"}" style="width:${w}%"></i><span class="bemark" style="left:${bx}%"></span></div><span class="lewin">${fmtPct(c.win_pct)}</span><span class="leroi ${c.roi > 0 ? "g" : "r"}">${pct(c.roi)}</span></div></div>`;
+      }).join("");
+      const headline = `<div class="sthead">Betting <b>every</b> mid-game decision is break-even (${fmtPct(ov.win_pct)}, ROI ${pct(ov.roi)}). The edge only appears when we bet <b>selectively</b> — when the model strongly disagrees with the live line${best ? `, the ${best.key.replace("|", " ").replace("edge>=", "edge ≥")} cell hits ${fmtPct(best.win_pct)}` : ""}. <b>Directional only</b> — ${ov.n_games} settled games, the ROI confidence interval still includes zero.</div>`;
+      const legend = `<div class="plegend"><span><i style="background:#16a34a"></i>Beats break-even</span><span><i style="background:#c8102e"></i>Below</span><span style="margin-left:auto;color:var(--ink2)">dashed = 52.4% break-even (−110)</span></div>`;
+      return panel("Live Betting Edge — Selectivity Is Everything", "Real in-play odds vs our mid-game projection, settled against actual finals. Honest inference: real over/under vig, game-level bootstrap, line-consistent timing (no look-ahead). Small sample — treat as directional until the game count triples.", `${kpi}${headline}<div class="legrid">${rows}</div>${legend}`);
+    }
+    function renderMidgameTab(test: any, ml: any, lep?: any) {
       let html = "";
+      html += renderLiveEdgePanel(lep);
       // Reliability / calibration curve (win prob, mid-game model)
       if (test && test.reliability_winprob) {
         const body = `<div class="reliwrap">${reliabilitySVG(test.reliability_winprob, "pred_prob", "empirical_rate")}

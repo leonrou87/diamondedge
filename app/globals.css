@@ -215,6 +215,20 @@ svg.rc{width:300px;max-width:100%;height:auto}
 .stparks .stparklbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:600;width:100%}
 .parkchip{font-size:11px;background:var(--slatebg);border-radius:6px;padding:3px 9px;color:var(--ink)}
 .parkchip b{font-family:'IBM Plex Mono'} .parkchip b.g{color:var(--green)} .parkchip b.r{color:var(--red)}
+/* ---- Live betting edge panel ---- */
+.legrid{margin:6px 0 10px}
+.lerow{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:12px;margin-bottom:7px}
+.lek{font-family:'Oswald';font-weight:600;font-size:11.5px;color:var(--ink);text-transform:uppercase;letter-spacing:.02em;line-height:1.25}
+.lek small{display:block;font-family:'IBM Plex Mono';font-weight:400;font-size:9.5px;color:var(--ink2);text-transform:none;letter-spacing:0}
+.lebarwrap{display:grid;grid-template-columns:1fr 46px 56px;align-items:center;gap:8px}
+.lebar{position:relative;height:13px;background:#eef1f5;border-radius:7px;overflow:hidden}
+.lebar i{display:block;height:100%;border-radius:7px}
+.lebar i.g{background:linear-gradient(90deg,#16a34a,#22c55e)}
+.lebar i.r{background:linear-gradient(90deg,#c8102e,#e0455f)}
+.lebar .bemark{position:absolute;top:-2px;bottom:-2px;width:0;border-left:2px dashed #64748b}
+.lewin{font-family:'Oswald';font-weight:700;font-size:13px;color:var(--ink);text-align:right}
+.leroi{font-family:'IBM Plex Mono';font-size:11px;text-align:right}
+.leroi.g{color:var(--green)} .leroi.r{color:var(--red)}
 /* ---- Statcast "Everything That Happened" detail ---- */
 .sc-card{position:relative}
 .sc-card .dt-ct span:first-child{color:var(--navy)}
