@@ -490,6 +490,7 @@ export default function Home() {
       detailReturn = mode;
       mode = "detail";
       if (kind === "today" && g.game_pk) location.hash = "game:" + g.game_pk;
+      else if (kind === "history" && g.game_id) location.hash = "hgame:" + histDate + ":" + g.game_id;
       syncHeader();
       renderDetail();
     }
@@ -702,6 +703,13 @@ export default function Home() {
         renderDateStrip(); await load();
         const idx = todayGames.findIndex((g: any) => String(g.game_pk) === pk);
         if (idx >= 0) openDetail("today", idx);
+      }
+      else if (h.indexOf("#hgame:") === 0) {
+        const rest = h.slice(7); const ci = rest.lastIndexOf(":");
+        const d = decodeURIComponent(rest.slice(0, ci)), pk = decodeURIComponent(rest.slice(ci + 1));
+        renderDateStrip();
+        if (histDates.includes(d)) { histDate = d; mode = "history"; await loadHistory(); const idx = histGames.findIndex((g: any) => String(g.game_id) === pk); if (idx >= 0) openDetail("history", idx); }
+        else selectToday();
       }
       else if (h.indexOf("#history:") === 0) { const d = decodeURIComponent(h.slice(9)); if (histDates.includes(d)) { selectHistory(d); } else { selectToday(); } }
       else if (h === "#history") { if (histDates.length) selectHistory(histDates[histDates.length - 1]); else selectToday(); }
