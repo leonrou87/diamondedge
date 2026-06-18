@@ -345,8 +345,31 @@ export default function Home() {
       html += renderStrengthsPanel(ms);
       // O/U betting slider panel
       html += renderOuPanel(ouB);
+      // Run-line (spread) findings panel
+      html += renderRunlinePanel(_lastAnalytics && _lastAnalytics.runline);
       if (!html) html = `<div class="state"><div class="ds">No pregame data</div></div>`;
       return html;
+    }
+    function renderRunlinePanel(rl: any) {
+      if (!rl || !rl.honest_roi_band) return "";
+      const b = rl.honest_roi_band;
+      const pct = (x: number) => (x == null ? "—" : (x >= 0 ? "+" : "") + (x * 100).toFixed(1) + "%");
+      const ci = (a: any) => (a && a.length === 2 ? `[${pct(a[0])}, ${pct(a[1])}]` : "—");
+      const sp = rl.selective_policy && rl.selective_policy.test_sample_2026;
+      const banner = `<div class="oubanner">⚠ Pregame run-line (−1.5) market is efficient — <b>no proven edge</b>. The model ties the market on cover accuracy (58.4% vs 58.7%) and is marginally worse on calibration. Every betting cell fails the positive-lower-bound bar after adversarial verification. Shown for honesty, not as a betting system.</div>`;
+      const rows = [
+        { k: "Every game", d: b.overall_every_game },
+        { k: "Favorite −1.5 (edge>0)", d: b.fav_minus_1_5_cell },
+        { k: "Underdog +1.5 (edge<0)", d: b.dog_plus_1_5_cell },
+      ].filter((r) => r.d).map((r) => {
+        const roi = r.d.roi != null ? r.d.roi : r.d.roi_real_odds;
+        const cc = r.d.ci95 || r.d.ci95_real_odds;
+        const good = roi > 0 && cc && cc[0] > 0;
+        return `<div class="rlrow"><div class="rlk">${r.k}</div><div class="rlroi ${roi > 0 ? "g" : "r"}">${pct(roi)}</div><div class="rlci">${ci(cc)}</div><div class="rlv ${good ? "g" : "r"}">${(r.d.verdict || "").replace("indistinguishable from zero", "≈ zero")}</div></div>`;
+      }).join("");
+      const trap = sp ? `<div class="rltrap"><b>Why the favorite cell isn't real:</b> it shows ${pct(sp.roi_real_odds)} at real odds but <b>flips to ${pct(b.fav_minus_1_5_cell && b.fav_minus_1_5_cell.roi_flat_110)} at flat −110</b> — the "profit" is a +money payout artifact (47.5% win loses at fair odds), it's the best of 13 cells (Bonferroni p≈0.61), and it's concentration-fragile (n=99).</div>` : "";
+      const table = `<div class="rltbl"><div class="rlhd"><span>Segment</span><span>ROI</span><span>95% CI</span><span>Verdict</span></div>${rows}</div>`;
+      return panel("Pregame Run Line (Spread) — Deep Findings", "Can a pregame model beat the −1.5 run line? Full build → train (cover classifier + margin model) → real-vig backtest → adversarial verification. 5,239 games, tested 2026 out-of-sample. Honest answer below.", `${banner}${table}${trap}`);
     }
 
     function ouRows(ouB: any) {

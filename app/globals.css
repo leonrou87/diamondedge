@@ -229,6 +229,19 @@ svg.rc{width:300px;max-width:100%;height:auto}
 .lewin{font-family:'Oswald';font-weight:700;font-size:13px;color:var(--ink);text-align:right}
 .leroi{font-family:'IBM Plex Mono';font-size:11px;text-align:right}
 .leroi.g{color:var(--green)} .leroi.r{color:var(--red)}
+/* ---- Run-line findings panel ---- */
+.rltbl{margin:4px 0 10px}
+.rlhd,.rlrow{display:grid;grid-template-columns:1.6fr .8fr 1.2fr 1.4fr;align-items:center;gap:10px;padding:7px 4px}
+.rlhd{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600;border-bottom:1px solid var(--line)}
+.rlrow{border-bottom:1px solid var(--line);font-size:12.5px}
+.rlk{font-family:'Oswald';font-weight:600;color:var(--ink);text-transform:uppercase;letter-spacing:.02em;font-size:12px}
+.rlroi{font-family:'Oswald';font-weight:700;font-size:15px}
+.rlroi.g{color:var(--green)} .rlroi.r{color:var(--red)}
+.rlci{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2)}
+.rlv{font-size:11px;font-weight:600}
+.rlv.g{color:var(--green)} .rlv.r{color:var(--ink2)}
+.rltrap{margin-top:10px;font-size:12px;line-height:1.5;color:var(--ink);background:#fff4f4;border:1px solid #f3d0d0;border-radius:9px;padding:11px 13px}
+.rltrap b{color:var(--red)}
 /* ---- Statcast "Everything That Happened" detail ---- */
 .sc-card{position:relative}
 .sc-card .dt-ct span:first-child{color:var(--navy)}
