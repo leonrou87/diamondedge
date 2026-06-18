@@ -215,6 +215,44 @@ svg.rc{width:300px;max-width:100%;height:auto}
 .stparks .stparklbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:600;width:100%}
 .parkchip{font-size:11px;background:var(--slatebg);border-radius:6px;padding:3px 9px;color:var(--ink)}
 .parkchip b{font-family:'IBM Plex Mono'} .parkchip b.g{color:var(--green)} .parkchip b.r{color:var(--red)}
+/* ---- Statcast "Everything That Happened" detail ---- */
+.sc-card{position:relative}
+.sc-card .dt-ct span:first-child{color:var(--navy)}
+.sc-leaders{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 16px}
+.sc-lead{background:linear-gradient(160deg,#0c2340,#163a63);border-radius:10px;padding:11px 13px;color:#fff}
+.sc-lead .sk{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#9fb4d4;font-weight:600;margin-bottom:3px}
+.sc-bignum{font-family:'Oswald';font-weight:700;font-size:26px;line-height:1;color:#fff}
+.sc-bignum small{font-size:11px;font-weight:500;color:#9fb4d4;margin-left:2px}
+.sc-sub{font-size:11px;color:#c7d6ea;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-sec{margin-top:16px}
+.sc-h{font-family:'Oswald';font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);margin-bottom:9px;display:flex;align-items:center;gap:10px}
+.sc-leg{font-family:'IBM Plex Sans';font-weight:400;font-size:10px;color:var(--ink2);letter-spacing:0;text-transform:none;display:flex;align-items:center;gap:5px}
+.sc-leg i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-left:6px}
+.sc-pitchers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sc-pitcher{background:var(--slatebg);border-radius:10px;padding:12px 13px;border:1px solid var(--line)}
+.sc-pname{font-family:'Oswald';font-weight:600;font-size:15px;color:var(--ink)}
+.sc-pteam{font-size:10px;color:var(--ink2);font-weight:500;margin-left:5px}
+.sc-pline{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);margin:3px 0 9px}
+.sc-arrow{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px;margin-bottom:5px}
+.sc-pt{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:var(--navy)}
+.sc-arbar{height:7px;background:#e3e8ef;border-radius:4px;overflow:hidden}
+.sc-arbar i{display:block;height:100%;background:linear-gradient(90deg,var(--navy),#3a6ea5);border-radius:4px}
+.sc-arv{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink2);white-space:nowrap}
+.sc-homer{font-size:13px;color:var(--ink);padding:6px 0;border-bottom:1px dashed var(--line)}
+.sc-homer:last-child{border-bottom:0}
+.sc-homer b{font-family:'Oswald';font-weight:600}
+.sc-hrt{color:var(--red);font-weight:600;font-size:11px}
+.sc-hrp{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink2)}
+.sc-hh{display:grid;grid-template-columns:54px 1fr auto;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--line)}
+.sc-hh:last-child{border-bottom:0}
+.sc-ev{font-family:'Oswald';font-weight:700;font-size:17px;color:var(--red)}
+.sc-hhb{font-weight:600;font-size:13px;color:var(--ink)}
+.sc-hhr{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink2);text-transform:capitalize;text-align:right}
+.sc-hitters{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
+.sc-hit{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:4px 0;border-bottom:1px solid var(--line)}
+.sc-hn{font-size:13px;color:var(--ink)}.sc-hn small{color:var(--ink2);font-size:10px}
+.sc-hs{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink2);white-space:nowrap}
+@media(max-width:640px){.sc-leaders{grid-template-columns:repeat(2,1fr)}.sc-pitchers,.sc-hitters{grid-template-columns:1fr}}
 .ouset{display:flex;align-items:center;gap:7px;margin-bottom:14px}
 .ouset .ousetlbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600}
 .osbtn{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.05em;border:1px solid var(--line);background:#fff;color:var(--ink2);padding:5px 13px;border-radius:7px;cursor:pointer;transition:.15s}

@@ -501,6 +501,51 @@ export default function Home() {
       else if (mode === "perf") loadPerf();
       else load();
     }
+    function runTimelineSVG(tl: any[]) {
+      const W = 560, H = 96, pad = 10, padB = 16;
+      const n = tl.length, maxr = Math.max(1, ...tl.map((t: any) => Math.max(t.home, t.away)));
+      const X = (i: number) => pad + (i / Math.max(n - 1, 1)) * (W - 2 * pad);
+      const Y = (v: number) => H - padB - (v / maxr) * (H - pad - padB);
+      const line = (key: string, col: string) => {
+        const pts = tl.map((t: any, i: number) => `${X(i).toFixed(1)},${Y(t[key]).toFixed(1)}`);
+        return `<polyline points="${pts.join(" ")}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>` +
+          tl.map((t: any, i: number) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(t[key]).toFixed(1)}" r="2" fill="${col}"/>`).join("");
+      };
+      const xl = tl.map((t: any, i: number) => `<text x="${X(i).toFixed(1)}" y="${H - 4}" font-size="8" fill="#9aa3af" text-anchor="middle" font-family="IBM Plex Mono">${t.inning}</text>`).join("");
+      return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:96px;display:block">${line("away", "#c8102e")}${line("home", "#0c2340")}${xl}</svg>`;
+    }
+    function renderStatcast(sc: any, awayAb: string, homeAb: string) {
+      if (!sc) return "";
+      const L = sc.leaders || {};
+      const tile = (k: string, v: string, sub: string) => `<div class="sc-lead"><div class="sk">${k}</div><div class="sc-bignum">${v}</div><div class="sc-sub">${sub}</div></div>`;
+      const leaders = `<div class="sc-leaders">
+        ${L.fastest_pitch ? tile("Fastest Pitch", `${num(L.fastest_pitch.velo, 1)}<small>mph</small>`, `${L.fastest_pitch.pitcher}${L.fastest_pitch.pitch ? " · " + L.fastest_pitch.pitch : ""}`) : ""}
+        ${L.hardest_hit ? tile("Hardest Hit", `${num(L.hardest_hit.ev, 1)}<small>mph</small>`, L.hardest_hit.batter) : ""}
+        ${L.most_k_pitcher ? tile("Most K", `${L.most_k_pitcher.k}<small>K</small>`, L.most_k_pitcher.name) : ""}
+        ${tile("Total Pitches", String(sc.n_pitches || 0), "thrown")}
+      </div>`;
+      const pitchers = (sc.pitchers || []).slice(0, 4).map((p: any) => {
+        const ars = (p.arsenal || []).map((a: any) => `<div class="sc-arrow"><span class="sc-pt">${a.pitch}</span><div class="sc-arbar"><i style="width:${a.pct}%"></i></div><span class="sc-arv">${a.velo ? a.velo + " · " : ""}${a.pct}%${a.whiff ? ` · ${a.whiff}%w` : ""}</span></div>`).join("");
+        return `<div class="sc-pitcher"><div class="sc-pname">${p.name} <span class="sc-pteam">${p.team || ""}</span></div>
+          <div class="sc-pline">${p.k} K · ${p.bb} BB · ${p.h} H · ${p.hr} HR · ${p.pitches} P${p.max_velo ? ` · ${p.max_velo} max` : ""}</div>
+          <div class="sc-arsenal">${ars}</div></div>`;
+      }).join("");
+      const hitters = (sc.batters || []).filter((b: any) => b.h > 0 || b.hr > 0).slice(0, 8).map((b: any) =>
+        `<div class="sc-hit"><span class="sc-hn">${b.name} <small>${b.team}</small></span><span class="sc-hs">${b.h}-for-${b.pa}${b.hr ? ` · <b>${b.hr} HR</b>` : ""}${b.k ? ` · ${b.k}K` : ""}${b.max_ev ? ` · ${b.max_ev} EV` : ""}</span></div>`).join("");
+      const hardest = (sc.hardest_hit || []).map((h: any) =>
+        `<div class="sc-hh"><span class="sc-ev">${num(h.ev, 1)}</span><span class="sc-hhb">${h.batter}</span><span class="sc-hhr">${(h.result || "").replace(/_/g, " ")}${h.la != null ? ` · ${h.la}°` : ""} · In ${h.inning}</span></div>`).join("");
+      const homers = (sc.homers || []).map((h: any) =>
+        `<div class="sc-homer"><b>${h.batter}</b> <span class="sc-hrt">${h.team}</span> — In ${h.inning}${h.ev ? ` · ${num(h.ev, 1)} EV` : ""}${h.off ? ` off ${h.off}` : ""}${h.pitch ? ` <span class="sc-hrp">${h.pitch}</span>` : ""}</div>`).join("");
+      const tl = sc.run_timeline || [];
+      const tlBlock = tl.length ? `<div class="sc-sec"><div class="sc-h">Run Timeline <span class="sc-leg"><i style="background:#c8102e"></i>${awayAb} <i style="background:#0c2340"></i>${homeAb}</span></div>${runTimelineSVG(tl)}</div>` : "";
+      return `<div class="dt-card sc-card"><div class="dt-ct"><span>⚾ Statcast — Everything That Happened</span></div>
+        ${leaders}${tlBlock}
+        ${pitchers ? `<div class="sc-sec"><div class="sc-h">Pitching &amp; Arsenals</div><div class="sc-pitchers">${pitchers}</div></div>` : ""}
+        ${homers ? `<div class="sc-sec"><div class="sc-h">Home Runs</div>${homers}</div>` : ""}
+        ${hardest ? `<div class="sc-sec"><div class="sc-h">Hardest-Hit Balls</div>${hardest}</div>` : ""}
+        ${hitters ? `<div class="sc-sec"><div class="sc-h">Top Hitters</div><div class="sc-hitters">${hitters}</div></div>` : ""}
+      </div>`;
+    }
     function renderDetail() {
       const grid = $("grid");
       $("record").innerHTML = "";
@@ -616,12 +661,15 @@ export default function Home() {
       }
       const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">${insightBits.map((b) => `<p>${b}</p>`).join("")}</div></div>`;
 
+      const statcastBlock = g.statcast ? renderStatcast(g.statcast, g.away_abbr || "", g.home_abbr || "") : "";
+
       grid.innerHTML = `<div class="detailwrap">
         <button class="backbtn" id="dt-back">‹ Back to slate</button>
         ${matchHead}
         <div class="dt-card"><div class="dt-ct"><span>Box Score</span></div>${boxScore(g, inns, evo, sideKey)}</div>
         <div class="dt-cols">${modelBlock}${oddsBlock}</div>
         ${trajBlock}
+        ${statcastBlock}
         ${insight}
       </div>`;
       $("dt-back").onclick = backFromDetail;
