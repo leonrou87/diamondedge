@@ -729,7 +729,7 @@ export default function Home() {
     (async function init() {
       await ensureHistDates();
       const h = location.hash;
-      if (h === "#performance") { renderDateStrip(); selectPerf(); }
+      if (h === "#performance" || h.indexOf("#performance:") === 0) { if (h.indexOf(":") > 0) perfTab = h.split(":")[1]; renderDateStrip(); selectPerf(); }
       else if (h.indexOf("#game:") === 0) {
         const pk = decodeURIComponent(h.slice(6));
         renderDateStrip(); await load();
