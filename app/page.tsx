@@ -266,6 +266,40 @@ export default function Home() {
       return `<div class="panel"><div class="phead"><div class="pt">${title}</div>${legend || ""}</div><div class="pdesc">${subtitle}</div><div class="pbody">${body}</div></div>`;
     }
 
+    // ---- Model-vs-market cells (shared by pitcher-K + batter-hits panels) ----
+    // The serve JSON carries a REAL de-vigged consensus book line per matched
+    // player (book_line, book_over_prob, book_over_price, book_n_books) plus the
+    // model's P(over that exact line) and a model_vs_line lean tag. We render the
+    // book line + price, and a small OVER/UNDER/≈ chip coloured by direction with
+    // the probability gap in percentage points. Markets are efficient, so the gap
+    // is framed as "where our projection sits vs the consensus", never an edge.
+    function bookLineCell(p: any, fallbackFair?: any) {
+      const bl = p.book_line;
+      if (bl == null) {
+        const fb = fallbackFair != null ? `<span class="mvlsub">fair ${fallbackFair}</span>` : `<span class="mvlsub">no line</span>`;
+        return `<div class="mvline"><span class="mvlnum none">—</span>${fb}</div>`;
+      }
+      const price = p.book_over_price != null ? fmtOdds(p.book_over_price) : "";
+      const nb = p.book_n_books != null ? `${p.book_n_books} book${p.book_n_books === 1 ? "" : "s"}` : "";
+      const sub = [price, nb].filter(Boolean).join(" · ");
+      return `<div class="mvline"><span class="mvlnum">${Number(bl).toFixed(1)}</span>${sub ? `<span class="mvlsub">${sub}</span>` : ""}</div>`;
+    }
+    function leanCell(p: any) {
+      const mvl = p.model_vs_line;
+      if (!mvl || mvl.lean == null) return `<div class="mvlean"><span class="mvchip na">—</span></div>`;
+      const lean = mvl.lean; // 'OVER' | 'UNDER' | '~='
+      const cls = lean === "OVER" ? "over" : lean === "UNDER" ? "under" : "flat";
+      const label = lean === "OVER" ? "OVER" : lean === "UNDER" ? "UNDER" : "≈ Line";
+      const lp = mvl.lean_prob;
+      let delta = "";
+      if (lp != null) {
+        const pp = Math.round(Number(lp) * 100);
+        const dcls = pp > 0 ? "over" : pp < 0 ? "under" : "";
+        delta = `<span class="mvdelta ${dcls}">${pp > 0 ? "+" : ""}${pp} pp</span>`;
+      }
+      return `<div class="mvlean"><span class="mvchip ${cls}">${label}</span>${delta}</div>`;
+    }
+
     let perfTab = "pregame";
     let ouSet = "2026"; // ou_betting set toggle
     let perfOuIdx = 0;
@@ -384,25 +418,30 @@ export default function Home() {
         ${statTile("Starters Today", String(rows.length), `${meta.n_games || 0} games`, "")}
       </div>`;
 
+      // matched book lines float to the top so the "model vs market" comparison
+      // (the headline feature) is visible first; then by projected K.
+      rows.sort((a: any, b: any) => {
+        const am = a.book_line != null ? 1 : 0, bm = b.book_line != null ? 1 : 0;
+        if (am !== bm) return bm - am;
+        return (b.projected_K || 0) - (a.projected_K || 0);
+      });
+
       const tile = (p: any) => {
         const proj = p.projected_K;
-        const po = (p.p_over && p.p_over[lineKey] != null) ? p.p_over[lineKey] : (p.p_over_negbinom && p.p_over_negbinom[lineKey]);
-        const lean = po == null ? "" : po >= 0.5 ? "over" : "under";
-        const pct = po == null ? "—" : fmtPct(po, 0);
-        const fair = p.fair_line != null ? p.fair_line : "—";
         const oppRaw = (p.opp_team || "").split(" ").slice(-1)[0] || p.opp_team || "";
         const at = p.is_home ? "vs" : "@";
         return `<div class="pkrow">
           <div class="pkp"><span class="pkname">${p.pitcher_name}</span><span class="pkmatch">${at} ${oppRaw}</span></div>
           <div class="pkproj"><span class="pkbig">${num(proj, 2)}</span><span class="pksub">K</span></div>
-          <div class="pkfair">${fair}</div>
-          <div class="pkpov ${lean}">${pct}</div>
+          ${bookLineCell(p, p.fair_line)}
+          ${leanCell(p)}
         </div>`;
       };
-      const head = `<div class="pkrow pkhd"><div class="pkp">Starter</div><div class="pkproj">Proj K</div><div class="pkfair">Fair Line</div><div class="pkpov">P(o ${COMMON})</div></div>`;
+      const head = `<div class="pkrow pkhd"><div class="pkp">Starter</div><div class="pkproj">Our Proj K</div><div class="mvline">Book Line</div><div class="mvlean">Model Lean</div></div>`;
       const list = `<div class="pktbl">${head}${rows.map(tile).join("")}</div>`;
-      const foot = `<div class="roinote">"Fair Line" = the line our model considers a coin-flip (round(E[K]) − 0.5). "P(o ${COMMON})" = our calibrated probability the pitcher records more than ${COMMON} strikeouts. ${m.count_mae != null ? `Model beats the season-average naive baseline (MAE ${num(mae, 3)} vs ${num(naive, 3)}) and is well-calibrated (ECE ${num(ece, 3)}).` : ""} Lineups + matchup K% are leakage-safe (strictly prior data). ${meta.n_flagged_skipped ? `${meta.n_flagged_skipped} starter(s) hidden for insufficient history.` : ""}</div>`;
-      const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>Lean over</span><span><i style="background:var(--red)"></i>Lean under</span></div>`;
+      const nMatched = rows.filter((p: any) => p.book_line != null).length;
+      const foot = `<div class="roinote">"Our Proj K" = our model's expected strikeouts (E[K]). "Book Line" = the real de-vigged consensus line across US books (median line + over price; reject |odds|&lt;100). "Model Lean" compares our P(over that exact line) to the book's implied probability — OVER/UNDER when the gap exceeds 3 pp, else ≈ Line. ${nMatched ? `Live lines matched for ${nMatched} of today's starters; rest show our fair line.` : "No book lines posted yet for today's starters — showing our fair line."} ${m.count_mae != null ? `Model beats the season-average naive baseline (MAE ${num(mae, 3)} vs ${num(naive, 3)}) and is well-calibrated (ECE ${num(ece, 3)}).` : ""} <b>The market is efficient — this is a model-vs-market comparison, not a betting edge.</b> ${meta.n_flagged_skipped ? `${meta.n_flagged_skipped} starter(s) hidden for insufficient history.` : ""}</div>`;
+      const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>Model over</span><span><i style="background:var(--red)"></i>Model under</span><span><i style="background:var(--slate)"></i>≈ Line</span></div>`;
       return panel("Pitcher Strikeout Projections — Today", `Our gradient-boosted negative-binomial model's projected strikeouts for today's probable starters, sorted by projected K. A genuinely sharp, calibrated forecast — shown honestly as a projection vs the line, not a betting recommendation.${meta.slate_date ? ` Slate ${meta.slate_date}.` : ""}`, `${banner}${kpi}${list}${foot}`, legend);
     }
 
@@ -418,10 +457,17 @@ export default function Home() {
       // usable batters, sorted by P(2+ hits) (most notable first)
       const p2 = (p: any) => (p.p_over && p.p_over["1.5"] != null) ? p.p_over["1.5"] : p["p_hits_over_1.5"];
       const p1 = (p: any) => (p.p_over && p.p_over["0.5"] != null) ? p.p_over["0.5"] : p["p_hits_over_0.5"];
-      const rows = bh.projections
-        .filter((p: any) => p.usable !== false)
+      // sort matched book lines first (the model-vs-market comparison is the
+      // headline feature), then by P(2+ hits), BEFORE trimming to TOP_N so live
+      // lines surface into the visible rows.
+      const usableBat = bh.projections.filter((p: any) => p.usable !== false);
+      const rows = usableBat
         .slice()
-        .sort((a: any, b: any) => (p2(b) || 0) - (p2(a) || 0))
+        .sort((a: any, b: any) => {
+          const am = a.book_line != null ? 1 : 0, bm = b.book_line != null ? 1 : 0;
+          if (am !== bm) return bm - am;
+          return (p2(b) || 0) - (p2(a) || 0);
+        })
         .slice(0, TOP_N);
       if (!rows.length) return "";
 
@@ -443,22 +489,22 @@ export default function Home() {
 
       const tile = (p: any) => {
         const projH = p.projected_hits;
-        const pa = p1(p), pb = p2(p);
         const oppRaw = (p.opp_starter_name || "").split(" ").slice(-1)[0] || "TBD";
         const at = p.is_home_bat ? "vs" : "@";
         const team = (p.bat_team || "").split(" ").slice(-1)[0] || p.bat_team || "";
         return `<div class="bhrow">
           <div class="bhp"><span class="bhname">${p.batter_name}</span><span class="bhmatch">${team} ${at} ${oppRaw}</span></div>
           <div class="bhproj"><span class="bhbig">${num(projH, 2)}</span><span class="bhsub">H</span></div>
-          <div class="bhpov ${pa != null && pa >= 0.5 ? "over" : ""}">${pa == null ? "—" : fmtPct(pa, 0)}</div>
-          <div class="bhpov ${pb != null && pb >= 0.5 ? "over" : ""}">${pb == null ? "—" : fmtPct(pb, 0)}</div>
+          ${bookLineCell(p)}
+          ${leanCell(p)}
         </div>`;
       };
-      const head = `<div class="bhrow bhhd"><div class="bhp">Batter</div><div class="bhproj">Proj H</div><div class="bhpov">P(1+)</div><div class="bhpov">P(2+)</div></div>`;
+      const head = `<div class="bhrow bhhd"><div class="bhp">Batter</div><div class="bhproj">Our Proj H</div><div class="mvline">Book Line</div><div class="mvlean">Model Lean</div></div>`;
       const list = `<div class="bhtbl">${head}${rows.map(tile).join("")}</div>`;
+      const nMatched = rows.filter((p: any) => p.book_line != null).length;
       const cmae = m.count_mae_model, cnaive = m.count_mae_naive_prior;
-      const foot = `<div class="roinote">"Proj H" = our model's expected hits (Poisson count head). "P(1+)"/"P(2+)" = our calibrated probabilities of clearing the 0.5 / 1.5 hit lines. ${b05 != null ? `Both per-line classifiers beat the naive league-rate baseline on Brier score${cmae != null && cnaive != null ? ` and the count head beats the prior-mean baseline (MAE ${num(cmae, 3)} vs ${num(cnaive, 3)})` : ""}, and are well-calibrated (ECE ${num(ece, 3)}).` : ""} Lineups + matchup splits are leakage-safe (strictly prior data). Showing top ${rows.length} of ${(bh.projections.filter((p: any) => p.usable !== false)).length} batters by P(2+).${meta.n_flagged_skipped ? ` ${meta.n_flagged_skipped} batter(s) hidden for insufficient history.` : ""}</div>`;
-      const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>≥ 50% over</span></div>`;
+      const foot = `<div class="roinote">"Our Proj H" = our model's expected hits (Poisson count head). "Book Line" = the real de-vigged consensus line across US books (median line + over price; reject |odds|&lt;100) — usually 0.5, sometimes 1.5. "Model Lean" compares our P(over that exact line) to the book's implied probability — OVER/UNDER when the gap exceeds 3 pp, else ≈ Line. ${nMatched ? `Live lines matched for ${nMatched} of these batters.` : "No book lines posted yet for these batters."} ${b05 != null ? `Both per-line classifiers beat the naive league-rate baseline on Brier score${cmae != null && cnaive != null ? ` and the count head beats the prior-mean baseline (MAE ${num(cmae, 3)} vs ${num(cnaive, 3)})` : ""}, and are well-calibrated (ECE ${num(ece, 3)}).` : ""} <b>The market is efficient — this is a model-vs-market comparison, not a betting edge.</b> Showing top ${rows.length} of ${(bh.projections.filter((p: any) => p.usable !== false)).length} batters.${meta.n_flagged_skipped ? ` ${meta.n_flagged_skipped} batter(s) hidden for insufficient history.` : ""}</div>`;
+      const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>Model over</span><span><i style="background:var(--red)"></i>Model under</span><span><i style="background:var(--slate)"></i>≈ Line</span></div>`;
       return panel("Batter Hits Projections — Today", `Our gradient-boosted model's projected hits for today's likely starting batters, sorted by P(2+ hits). A calibrated, leakage-audited forecast — shown honestly as a projection vs the line, not a betting recommendation. Single-game hits are variance-dominated, so projections are intentionally modest.${meta.slate_date ? ` Slate ${meta.slate_date}.` : ""}`, `${banner}${kpi}${list}${foot}`, legend);
     }
     function renderRunlinePanel(rl: any) {
