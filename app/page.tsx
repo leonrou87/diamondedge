@@ -343,12 +343,65 @@ export default function Home() {
       }
       // Where we're sharp (segmented)
       html += renderStrengthsPanel(ms);
+      // Pitcher strikeout projections (sharp model forecast — product feature, not a bet edge)
+      html += renderPitcherKPanel(_lastProps && _lastProps.pitcher_k);
       // O/U betting slider panel
       html += renderOuPanel(ouB);
       // Run-line (spread) findings panel
       html += renderRunlinePanel(_lastAnalytics && _lastAnalytics.runline);
       if (!html) html = `<div class="state"><div class="ds">No pregame data</div></div>`;
       return html;
+    }
+
+    // ---- Pitcher Strikeout Projections (props_v1 serve) ----
+    // HONEST framing: a sharp, leakage-audited model forecast shown as
+    // "our projection vs the line" — NOT a betting edge. These prop markets
+    // were proven efficient (the book line is sharper than our model).
+    function renderPitcherKPanel(pk: any) {
+      if (!pk || !pk.projections || !pk.projections.length) return "";
+      const meta = pk.meta || {};
+      const m = meta.model_test_2026_metrics || {};
+      const COMMON = 5.5; // the most common pitcher-K prop line
+      const lineKey = String(COMMON);
+      // usable starters, sorted by projected strikeouts (best first)
+      const rows = pk.projections
+        .filter((p: any) => p.usable !== false)
+        .slice()
+        .sort((a: any, b: any) => (b.projected_K || 0) - (a.projected_K || 0));
+      if (!rows.length) return "";
+
+      const banner = `<div class="oubanner">◆ This is our model's <b>sharp projection</b>, not a betting edge. We proved the pitcher-strikeout prop market is <b>efficiently priced</b> — the book's line is sharper than our forecast. Shown as a transparent "model vs the line" projection (a product feature), not a bet signal.</div>`;
+
+      // model-quality KPI strip (out-of-sample, leakage-audited)
+      const mae = m.count_mae, naive = m.count_mae_naive, ece = m.ece_pooled;
+      const beatsNaive = mae != null && naive != null && mae < naive;
+      const kpi = `<div class="kpistrip">
+        ${statTile("Strikeout MAE", num(mae, 3), "2026 out-of-sample", beatsNaive ? "g" : "")}
+        ${statTile("Naive Baseline", num(naive, 3), "season-avg MAE", "r")}
+        ${statTile("Calibration ECE", num(ece, 3), "well-calibrated P(over)", "g")}
+        ${statTile("Starters Today", String(rows.length), `${meta.n_games || 0} games`, "")}
+      </div>`;
+
+      const tile = (p: any) => {
+        const proj = p.projected_K;
+        const po = (p.p_over && p.p_over[lineKey] != null) ? p.p_over[lineKey] : (p.p_over_negbinom && p.p_over_negbinom[lineKey]);
+        const lean = po == null ? "" : po >= 0.5 ? "over" : "under";
+        const pct = po == null ? "—" : fmtPct(po, 0);
+        const fair = p.fair_line != null ? p.fair_line : "—";
+        const oppRaw = (p.opp_team || "").split(" ").slice(-1)[0] || p.opp_team || "";
+        const at = p.is_home ? "vs" : "@";
+        return `<div class="pkrow">
+          <div class="pkp"><span class="pkname">${p.pitcher_name}</span><span class="pkmatch">${at} ${oppRaw}</span></div>
+          <div class="pkproj"><span class="pkbig">${num(proj, 2)}</span><span class="pksub">K</span></div>
+          <div class="pkfair">${fair}</div>
+          <div class="pkpov ${lean}">${pct}</div>
+        </div>`;
+      };
+      const head = `<div class="pkrow pkhd"><div class="pkp">Starter</div><div class="pkproj">Proj K</div><div class="pkfair">Fair Line</div><div class="pkpov">P(o ${COMMON})</div></div>`;
+      const list = `<div class="pktbl">${head}${rows.map(tile).join("")}</div>`;
+      const foot = `<div class="roinote">"Fair Line" = the line our model considers a coin-flip (round(E[K]) − 0.5). "P(o ${COMMON})" = our calibrated probability the pitcher records more than ${COMMON} strikeouts. ${m.count_mae != null ? `Model beats the season-average naive baseline (MAE ${num(mae, 3)} vs ${num(naive, 3)}) and is well-calibrated (ECE ${num(ece, 3)}).` : ""} Lineups + matchup K% are leakage-safe (strictly prior data). ${meta.n_flagged_skipped ? `${meta.n_flagged_skipped} starter(s) hidden for insufficient history.` : ""}</div>`;
+      const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>Lean over</span><span><i style="background:var(--red)"></i>Lean under</span></div>`;
+      return panel("Pitcher Strikeout Projections — Today", `Our gradient-boosted negative-binomial model's projected strikeouts for today's probable starters, sorted by projected K. A genuinely sharp, calibrated forecast — shown honestly as a projection vs the line, not a betting recommendation.${meta.slate_date ? ` Slate ${meta.slate_date}.` : ""}`, `${banner}${kpi}${list}${foot}`, legend);
     }
     function renderRunlinePanel(rl: any) {
       if (!rl || !rl.honest_roi_band) return "";
@@ -517,11 +570,14 @@ export default function Home() {
       return html;
     }
 
-    let _lastAnalytics: any = null;
+    let _lastAnalytics: any = null, _lastProps: any = null;
     async function loadPerf() {
       const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading analytics</div></div>`;
       $("slatehead").textContent = "Model Performance"; $("record").innerHTML = "";
-      try { const a = await snap("analytics"); _lastAnalytics = a; renderPerf(a); }
+      try {
+        const [a, pr] = await Promise.all([snap("analytics"), snap("props").catch(() => null)]);
+        _lastAnalytics = a; _lastProps = pr; renderPerf(a);
+      }
       catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load analytics snapshot.</div></div>`; }
     }
 

@@ -242,6 +242,22 @@ svg.rc{width:300px;max-width:100%;height:auto}
 .rlv.g{color:var(--green)} .rlv.r{color:var(--ink2)}
 .rltrap{margin-top:10px;font-size:12px;line-height:1.5;color:var(--ink);background:#fff4f4;border:1px solid #f3d0d0;border-radius:9px;padding:11px 13px}
 .rltrap b{color:var(--red)}
+
+/* Pitcher Strikeout Projections table */
+.pktbl{margin:4px 0 6px;display:grid;gap:0}
+.pkrow{display:grid;grid-template-columns:2.2fr 1fr .9fr 1fr;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
+.pkrow:last-child{border-bottom:0}
+.pkhd{border-bottom:1px solid var(--line);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600;padding:7px 4px}
+.pkhd .pkproj,.pkhd .pkfair,.pkhd .pkpov{text-align:center}
+.pkp{display:flex;flex-direction:column;gap:1px;min-width:0}
+.pkname{font-family:'Oswald';font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pkmatch{font-size:10px;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em}
+.pkproj{text-align:center;display:flex;align-items:baseline;justify-content:center;gap:3px}
+.pkbig{font-family:'Oswald';font-weight:700;font-size:18px;color:var(--navy)}
+.pksub{font-size:9px;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
+.pkfair{text-align:center;font-family:'IBM Plex Mono';font-weight:600;font-size:13px;color:var(--ink2)}
+.pkpov{text-align:center;font-family:'IBM Plex Mono';font-weight:600;font-size:13px;color:var(--ink2)}
+.pkpov.over{color:var(--green)} .pkpov.under{color:var(--red)}
 /* ---- Statcast "Everything That Happened" detail ---- */
 .sc-card{position:relative}
 .sc-card .dt-ct span:first-child{color:var(--navy)}
