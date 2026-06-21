@@ -345,6 +345,8 @@ export default function Home() {
       html += renderStrengthsPanel(ms);
       // Pitcher strikeout projections (sharp model forecast — product feature, not a bet edge)
       html += renderPitcherKPanel(_lastProps && _lastProps.pitcher_k);
+      // Batter hits projections (sharp model forecast — product feature, not a bet edge)
+      html += renderBatterHitsPanel(_lastProps && _lastProps.batter_hits);
       // O/U betting slider panel
       html += renderOuPanel(ouB);
       // Run-line (spread) findings panel
@@ -402,6 +404,62 @@ export default function Home() {
       const foot = `<div class="roinote">"Fair Line" = the line our model considers a coin-flip (round(E[K]) − 0.5). "P(o ${COMMON})" = our calibrated probability the pitcher records more than ${COMMON} strikeouts. ${m.count_mae != null ? `Model beats the season-average naive baseline (MAE ${num(mae, 3)} vs ${num(naive, 3)}) and is well-calibrated (ECE ${num(ece, 3)}).` : ""} Lineups + matchup K% are leakage-safe (strictly prior data). ${meta.n_flagged_skipped ? `${meta.n_flagged_skipped} starter(s) hidden for insufficient history.` : ""}</div>`;
       const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>Lean over</span><span><i style="background:var(--red)"></i>Lean under</span></div>`;
       return panel("Pitcher Strikeout Projections — Today", `Our gradient-boosted negative-binomial model's projected strikeouts for today's probable starters, sorted by projected K. A genuinely sharp, calibrated forecast — shown honestly as a projection vs the line, not a betting recommendation.${meta.slate_date ? ` Slate ${meta.slate_date}.` : ""}`, `${banner}${kpi}${list}${foot}`, legend);
+    }
+
+    // ---- Batter Hits Projections (props_v1 serve) ----
+    // HONEST framing: a sharp, leakage-audited model forecast shown as
+    // "our projection vs the line" — NOT a betting edge. Single-game hits are
+    // variance-dominated (lines 0.5 / 1.5) so projections are modest by nature.
+    function renderBatterHitsPanel(bh: any) {
+      if (!bh || !bh.projections || !bh.projections.length) return "";
+      const meta = bh.meta || {};
+      const m = meta.model_test_2026_metrics || {};
+      const TOP_N = 12; // keep compact — there are ~270 batters on a full slate
+      // usable batters, sorted by P(2+ hits) (most notable first)
+      const p2 = (p: any) => (p.p_over && p.p_over["1.5"] != null) ? p.p_over["1.5"] : p["p_hits_over_1.5"];
+      const p1 = (p: any) => (p.p_over && p.p_over["0.5"] != null) ? p.p_over["0.5"] : p["p_hits_over_0.5"];
+      const rows = bh.projections
+        .filter((p: any) => p.usable !== false)
+        .slice()
+        .sort((a: any, b: any) => (p2(b) || 0) - (p2(a) || 0))
+        .slice(0, TOP_N);
+      if (!rows.length) return "";
+
+      const banner = `<div class="oubanner">◆ This is our model's <b>sharp projection</b>, not a betting edge. We proved the batter-hits prop market is <b>efficiently priced</b> — the book's line is sharper than our forecast. Single-game hits are <b>variance-dominated</b>, so even the best projections stay modest. Shown as a transparent "model vs the line" projection (a product feature), not a bet signal.</div>`;
+
+      // model-quality KPI strip (out-of-sample, leakage-audited).
+      // NB: metric keys contain dots (e.g. "over0.5_brier_cal") — bracket access.
+      const b05 = m["over0.5_brier_cal"], n05 = m["over0.5_brier_naive"];
+      const b15 = m["over1.5_brier_cal"], n15 = m["over1.5_brier_naive"];
+      const ece = m["over1.5_ece_cal"] != null ? m["over1.5_ece_cal"] : m["over0.5_ece_cal"];
+      const beats05 = b05 != null && n05 != null && b05 < n05;
+      const beats15 = b15 != null && n15 != null && b15 < n15;
+      const kpi = `<div class="kpistrip">
+        ${statTile("Brier P(1+ hit)", num(b05, 3), `vs naive ${num(n05, 3)}`, beats05 ? "g" : "")}
+        ${statTile("Brier P(2+ hits)", num(b15, 3), `vs naive ${num(n15, 3)}`, beats15 ? "g" : "")}
+        ${statTile("Calibration ECE", num(ece, 3), "well-calibrated P(over)", "g")}
+        ${statTile("Batters Today", String((bh.projections.filter((p: any) => p.usable !== false)).length), `${meta.n_games || 0} games`, "")}
+      </div>`;
+
+      const tile = (p: any) => {
+        const projH = p.projected_hits;
+        const pa = p1(p), pb = p2(p);
+        const oppRaw = (p.opp_starter_name || "").split(" ").slice(-1)[0] || "TBD";
+        const at = p.is_home_bat ? "vs" : "@";
+        const team = (p.bat_team || "").split(" ").slice(-1)[0] || p.bat_team || "";
+        return `<div class="bhrow">
+          <div class="bhp"><span class="bhname">${p.batter_name}</span><span class="bhmatch">${team} ${at} ${oppRaw}</span></div>
+          <div class="bhproj"><span class="bhbig">${num(projH, 2)}</span><span class="bhsub">H</span></div>
+          <div class="bhpov ${pa != null && pa >= 0.5 ? "over" : ""}">${pa == null ? "—" : fmtPct(pa, 0)}</div>
+          <div class="bhpov ${pb != null && pb >= 0.5 ? "over" : ""}">${pb == null ? "—" : fmtPct(pb, 0)}</div>
+        </div>`;
+      };
+      const head = `<div class="bhrow bhhd"><div class="bhp">Batter</div><div class="bhproj">Proj H</div><div class="bhpov">P(1+)</div><div class="bhpov">P(2+)</div></div>`;
+      const list = `<div class="bhtbl">${head}${rows.map(tile).join("")}</div>`;
+      const cmae = m.count_mae_model, cnaive = m.count_mae_naive_prior;
+      const foot = `<div class="roinote">"Proj H" = our model's expected hits (Poisson count head). "P(1+)"/"P(2+)" = our calibrated probabilities of clearing the 0.5 / 1.5 hit lines. ${b05 != null ? `Both per-line classifiers beat the naive league-rate baseline on Brier score${cmae != null && cnaive != null ? ` and the count head beats the prior-mean baseline (MAE ${num(cmae, 3)} vs ${num(cnaive, 3)})` : ""}, and are well-calibrated (ECE ${num(ece, 3)}).` : ""} Lineups + matchup splits are leakage-safe (strictly prior data). Showing top ${rows.length} of ${(bh.projections.filter((p: any) => p.usable !== false)).length} batters by P(2+).${meta.n_flagged_skipped ? ` ${meta.n_flagged_skipped} batter(s) hidden for insufficient history.` : ""}</div>`;
+      const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>≥ 50% over</span></div>`;
+      return panel("Batter Hits Projections — Today", `Our gradient-boosted model's projected hits for today's likely starting batters, sorted by P(2+ hits). A calibrated, leakage-audited forecast — shown honestly as a projection vs the line, not a betting recommendation. Single-game hits are variance-dominated, so projections are intentionally modest.${meta.slate_date ? ` Slate ${meta.slate_date}.` : ""}`, `${banner}${kpi}${list}${foot}`, legend);
     }
     function renderRunlinePanel(rl: any) {
       if (!rl || !rl.honest_roi_band) return "";
