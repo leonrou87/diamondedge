@@ -270,7 +270,7 @@ export default function Home() {
       const chips = `<div class="cardchips">
         ${modelTypeBadge(g)}
         <span class="cchip score"><span class="ck">Pred</span><b>${pa}</b>–<b>${ph}</b></span>
-        ${g.spread_cover_prob != null ? `<span class="cchip"><span class="ck">RL Cover</span><b>${Math.round(g.spread_cover_prob * 100)}%</b></span>` : ""}
+        ${g.spread_cover_prob != null ? (() => { const sc = (g.spread_call || "").toUpperCase(); const ab = sc === "AWAY" ? g.away_abbr : g.home_abbr; const cp = sc === "AWAY" ? 1 - g.spread_cover_prob : g.spread_cover_prob; return `<span class="cchip"><span class="ck">RL ${ab}</span><b>${Math.round(cp * 100)}%</b></span>`; })() : ""}
         ${edge != null ? `<span class="cchip"><span class="ck">Edge</span><b style="color:${edge > 0.25 ? "var(--green)" : edge < -0.25 ? "var(--red)" : "var(--slate)"}">${edge > 0 ? "+" : ""}${num(edge)}</b></span>` : ""}
         ${ctier ? `<span class="cchip ${ctier === "HIGH" ? "tier-good" : ""}"><span class="ck">Conf</span><b>${ctier}</b></span>` : ""}
         <span class="cchip" style="margin-left:auto"><span class="ck">Book</span>${g.bookmaker || "—"}</span>
@@ -1108,14 +1108,19 @@ export default function Home() {
         const probOver = live && mg.prob_over != null ? mg.prob_over : g.model_prob_over;
         const homeWP = live && mg.p_home_win != null ? mg.p_home_win : g.home_win_prob;
         const iv = live ? mg.prediction_interval_80 : null;
-        const coverP = live && mg.spread_cover_prob != null ? mg.spread_cover_prob : g.spread_cover_prob;
+        const coverPhome = live && mg.spread_cover_prob != null ? mg.spread_cover_prob : g.spread_cover_prob;
+        // spread_cover_prob is the HOME team's run-line cover prob; for a ±1.5 line the
+        // away side covers iff home does not, so show the model's PICK side's cover.
+        const _sc = (g.spread_call || "").toUpperCase();
+        const coverPickAbbr = _sc === "AWAY" ? g.away_abbr : g.home_abbr;
+        const coverP = coverPhome == null ? null : (_sc === "AWAY" ? 1 - coverPhome : coverPhome);
         const ctier = live && mg.confidence_tier ? mg.confidence_tier : (g.ou_confidence || null);
         const creason = live && mg.confidence_reason ? mg.confidence_reason : null;
 
         const gaugeCol = `<div class="dt-viz"><div class="dt-vizk">Win Probability</div><div class="dt-gauge">${winProbGauge(homeWP, g.away_abbr, g.home_abbr)}</div></div>`;
         const povCol = `<div class="dt-viz"><div class="dt-vizk">Total — P(Over ${g.line != null ? g.line : "—"})</div><div class="dt-povgauge">${povGauge(probOver, g.line)}</div></div>`;
         const dials = `<div class="dt-viz"><div class="dt-vizk">Run-Line &amp; Margin</div><div class="dt-dialrow">
-          ${coverP != null ? `<div class="dt-dial"><div class="dk">${(g.spread_call || g.winner_call || "Fav")} −${g.spread_line != null ? g.spread_line : 1.5} Cover</div>${coverDial(coverP)}</div>` : ""}
+          ${coverP != null ? `<div class="dt-dial"><div class="dk">${coverPickAbbr} Run Line Cover</div>${coverDial(coverP)}</div>` : ""}
           <div class="dt-dial"><div class="dk">Expected Margin</div><div class="dv">${fmtSign(live && mg.predicted_final_home != null ? mg.predicted_final_home - mg.predicted_final_away : g.expected_margin)}</div><div style="margin-top:6px">${marginBar(live && mg.predicted_final_home != null ? mg.predicted_final_home - mg.predicted_final_away : g.expected_margin, g.away_abbr, g.home_abbr)}</div></div>
         </div></div>`;
 
