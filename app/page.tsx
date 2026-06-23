@@ -13,6 +13,7 @@ export default function Home() {
       <header><div class="hbar">
         <div class="brand"><div class="diamond"></div><div><h1>Diamond<b>Edge</b></h1><div class="tag" id="brandtag">MLB Mid-Game Model</div></div></div>
         <div class="sportsel" id="sportsel">
+          <button class="sportbtn home" data-sport="home"><span class="livedot"></span>LIVE</button>
           <button class="sportbtn" data-sport="mlb">MLB</button>
           <button class="sportbtn" data-sport="nba">NBA</button>
           <button class="sportbtn" data-sport="soccer">SOCCER</button>
@@ -902,6 +903,171 @@ export default function Home() {
         <p>The 2026 FIFA World Cup is <b>live now</b>. From each match's current state — <b>goals scored + the live minute</b> — an independent-Poisson / Skellam model projects the <b>final total goals</b>, an 80% goals interval, the projected score, and calibrated <b>3-way Win / Draw / Loss</b> probabilities. Pre-match team strength (each side's expected goals) comes from the match odds; in-game it applies an empirically calibrated game-state adjustment (a leading team scores less late, a trailing team pushes).</p>
         <p class="nbhonest"><b>Honest framing:</b> ${note || "Calibrated World Cup forecasts, not a betting edge. Soccer is low-scoring and near-Poisson; the halftime over/under market was shown efficient — the value is a sharp, well-calibrated live forecast (projected-total MAE 0.86 goals vs a naive 1.16; W/D/L 3-class Brier 0.42, ECE 0.017), not a wager."}${cal ? "" : ""}</p>
       </div>`;
+    }
+    // ============================================================
+    // CROSS-SPORT "LIVE NOW" HOME — the platform's natural landing. Fetches all
+    // five sport keys (today/nba/soccer/nhl/nfl) in parallel and aggregates the
+    // LIVE games into one unified grid, then UPCOMING-today, then a PLATFORM strip
+    // of all five sports with live/record counts as quick links into each sport.
+    // Each cross-sport card carries a SPORT BADGE + matchup/score/status + the
+    // headline prediction, and deep-links into that sport's existing detail route.
+    // Additive: the five per-sport tabs are untouched.
+    // ============================================================
+    const SPORT_META: any = {
+      mlb:    { key: "today",  sport: "mlb",    badge: "MLB", color: "#0c2340", logo: mlbLogo },
+      nba:    { key: "nba",    sport: "nba",    badge: "NBA", color: "#c8102e", logo: nbaLogo },
+      soccer: { key: "soccer", sport: "soccer", badge: "⚽",  color: "#16a34a", logo: soccerCrest },
+      nhl:    { key: "nhl",    sport: "nhl",    badge: "NHL", color: "#1d4ed8", logo: nhlLogo },
+      nfl:    { key: "nfl",    sport: "nfl",    badge: "NFL", color: "#7c3aed", logo: nflLogo },
+    };
+    const HOME_ORDER = ["mlb", "nba", "soccer", "nhl", "nfl"];
+    let homeSnaps: any = {}; // sport -> snapshot payload (cached for click-through)
+
+    // status line for a live cross-sport game, sport-aware (inning / minute / Q / P).
+    function homeStatus(m: any, g: any) {
+      if (m.sport === "mlb") return `${g.inning_half || ""} ${g.current_inning || ""}${g.outs != null ? ` · ${g.outs} out` : ""}`.trim();
+      if (m.sport === "soccer") return g.minute_label || g.display_clock || (g.minute != null ? g.minute + "'" : "LIVE");
+      return g.q_label || "LIVE"; // NBA/NHL/NFL live carry q_label
+    }
+    // current score for a cross-sport game (soccer uses current_*_score).
+    function homeScore(m: any, g: any) {
+      const a = g.current_away_score != null ? g.current_away_score : (g.away_score != null ? g.away_score : (g.final_away != null ? g.final_away : 0));
+      const h = g.current_home_score != null ? g.current_home_score : (g.home_score != null ? g.home_score : (g.final_home != null ? g.final_home : 0));
+      return { a, h };
+    }
+    // compact headline-prediction block per sport (projected total + win/wdl/score).
+    function homePrediction(m: any, g: any) {
+      if (m.sport === "soccer") {
+        const pred = g.model_prediction != null ? g.model_prediction : g.projected_total_goals;
+        const ps = g.projected_score || {};
+        const proj = g.projected_score_str || (ps.home != null ? `${ps.home}-${ps.away}` : null);
+        return `<div class="hn-pred">
+          <div class="hn-tot"><span class="hn-k">Proj goals</span><b>${num(pred)}</b>${proj ? `<span class="hn-score">${g.home_abbr} ${proj} ${g.away_abbr}</span>` : ""}</div>
+          ${wdlBar(g.wdl, g.away_abbr, g.home_abbr)}
+        </div>`;
+      }
+      // MLB live prefers the base-out midgame total/prob; others use model_prediction.
+      const mg = g.midgame_prediction;
+      const pred = (m.sport === "mlb" && g.is_live && mg && mg.predicted_total != null) ? mg.predicted_total : g.model_prediction;
+      const homeWP = (m.sport === "mlb" && g.is_live && mg && mg.p_home_win != null) ? mg.p_home_win : g.home_win_prob;
+      const lineTxt = g.line != null ? `<span class="hn-vs">vs line <b>${g.line}</b></span>` : "";
+      return `<div class="hn-pred">
+        <div class="hn-tot"><span class="hn-k">Proj total</span><b>${num(pred)}</b>${lineTxt}</div>
+        ${winProbBar(homeWP, g.away_abbr, g.home_abbr)}
+      </div>`;
+    }
+    // one compact unified cross-sport card.
+    function homeCard(m: any, g: any, i: number, upcoming = false) {
+      const sc = homeScore(m, g);
+      const live = !!g.is_live;
+      const pill = live
+        ? `<span class="statuspill live"><span class="pulse"></span>${homeStatus(m, g)}</span>`
+        : `<span class="statuspill upcoming">${homeUpcomingTime(m, g)}</span>`;
+      const badge = `<span class="hsbadge" style="--sc:${m.color}">${m.badge}</span>`;
+      const teamRow = (ab: string, name: string, score: any, lead: boolean) =>
+        `<div class="hc-team${lead ? " lead" : ""}"><img src="${m.logo(ab)}" onerror="this.style.visibility='hidden'"><span class="hc-ab">${ab || ""}</span><span class="hc-tn">${name || ""}</span><span class="hc-sc">${upcoming ? "" : score}</span></div>`;
+      const aLead = !upcoming && sc.a > sc.h, hLead = !upcoming && sc.h > sc.a;
+      return `<div class="hcard ${live ? "live" : "upc"}" data-sport="${m.sport}" data-pk="${g.game_pk != null ? g.game_pk : (g.game_id != null ? g.game_id : "")}" style="animation-delay:${i * 35}ms">
+        <div class="hc-top">${badge}${pill}<span class="hc-venue">${g.venue || ""}</span></div>
+        <div class="hc-teams">${teamRow(g.away_abbr, g.away_team, sc.a, aLead)}${teamRow(g.home_abbr, g.home_team, sc.h, hLead)}</div>
+        ${homePrediction(m, g)}
+        <div class="hc-go">View ${m.badge.length > 3 ? "soccer" : m.badge} model <span class="arr">›</span></div>
+      </div>`;
+    }
+    function homeUpcomingTime(m: any, g: any) {
+      const t = g.start_time || g.kickoff || g.game_datetime;
+      if (m.sport === "mlb" && g.start_time && !/[TZ]/.test(g.start_time)) return g.start_time; // already a local time string
+      if (t) { try { return new Date(t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); } catch (e) {} }
+      return "SCHEDULED";
+    }
+    async function loadHome() {
+      const grid = $("grid");
+      $("slatehead").textContent = "Live Now";
+      $("legendbox").style.display = "none";
+      $("record").innerHTML = "";
+      grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading live games across 5 sports</div></div>`;
+      // fetch all five sport keys in parallel
+      const results = await Promise.all(HOME_ORDER.map((s) => snap(SPORT_META[s].key).catch(() => null)));
+      const snapsBySport: any = {};
+      HOME_ORDER.forEach((s, i) => (snapsBySport[s] = results[i]));
+      homeSnaps = snapsBySport;
+
+      // aggregate live + upcoming across sports
+      const liveItems: any[] = [], upcItems: any[] = [];
+      const counts: any = {};
+      HOME_ORDER.forEach((s) => {
+        const m = SPORT_META[s], pay = snapsBySport[s] || {};
+        const games = (pay.games || []);
+        const sum = pay.summary || pay.record || {};
+        const live = games.filter((g: any) => g.is_live);
+        const upc = games.filter((g: any) => !g.is_live && !g.is_final);
+        live.forEach((g: any) => liveItems.push({ m, g }));
+        upc.forEach((g: any) => upcItems.push({ m, g }));
+        counts[s] = { live: live.length, upcoming: upc.length, final: games.filter((g: any) => g.is_final).length, total: games.length, sum };
+      });
+      // soccer first when live (it's the marquee live non-MLB), else sport order
+      const so = (x: any) => HOME_ORDER.indexOf(x.m.sport);
+      liveItems.sort((a, b) => so(a) - so(b));
+      upcItems.sort((a, b) => so(a) - so(b));
+
+      let gi = 0;
+      const liveSec = liveItems.length
+        ? `<div class="spinesec live"><span class="ssdot"></span><span class="sslab">Live Now</span><span class="ssn">${liveItems.length} game${liveItems.length === 1 ? "" : "s"} live across the platform · models updating</span><span class="ssrule"></span></div>
+           <div class="hgrid">${liveItems.map((it) => homeCard(it.m, it.g, gi++, false)).join("")}</div>`
+        : `<div class="spinesec live"><span class="ssdot"></span><span class="sslab">Live Now</span><span class="ssn">no games live right now</span><span class="ssrule"></span></div>
+           <div class="homeempty">No live games at the moment. Upcoming games are below, and every sport's full slate is one tab away.</div>`;
+
+      const upcSec = upcItems.length
+        ? `<div class="spinesec upcoming"><span class="ssdot"></span><span class="sslab">Upcoming Today</span><span class="ssn">${upcItems.length} scheduled across sports · pre-game projections</span><span class="ssrule"></span></div>
+           <div class="hgrid">${upcItems.slice(0, 12).map((it) => homeCard(it.m, it.g, gi++, true)).join("")}</div>`
+        : "";
+
+      // PLATFORM strip — all five sports, live/record counts, quick links
+      const acc = (v: any) => (v == null ? null : Math.round(v <= 1 ? v * 100 : v) + "%");
+      const platCard = (s: string) => {
+        const m = SPORT_META[s], c = counts[s] || {}, sum = c.sum || {};
+        let stat = "", statk = "";
+        if (s === "mlb") { statk = "Today"; stat = `${c.total || 0} games`; }
+        else if (s === "soccer") { statk = "W/D/L acc"; stat = acc((sum.wdl || {}).accuracy) || `${c.total || 0} games`; }
+        else if (s === "nba" || s === "nfl") { statk = "Winner acc"; stat = acc((sum.winner || {}).accuracy) || `${c.total || 0} games`; }
+        else if (s === "nhl") { statk = "Winner acc"; stat = acc((sum.winner || {}).accuracy) || `${c.total || 0} games`; }
+        const liveBadge = c.live ? `<span class="pl-live"><span class="lp"></span>${c.live} LIVE</span>` : (c.final ? `<span class="pl-demo">${c.final} demo</span>` : "");
+        return `<button class="platcard" data-sport="${s}" style="--sc:${m.color}">
+          <div class="pl-top"><span class="pl-badge">${m.badge}</span>${liveBadge}</div>
+          <div class="pl-stat"><span class="pl-statk">${statk}</span><b>${stat}</b></div>
+          <div class="pl-go">Open ${m.badge.length > 3 ? "Soccer" : m.badge} <span class="arr">›</span></div>
+        </button>`;
+      };
+      const platSec = `<div class="spinesec platform"><span class="ssdot"></span><span class="sslab">The Platform</span><span class="ssn">five calibrated live-prediction models · jump into any sport</span><span class="ssrule"></span></div>
+        <div class="platstrip">${HOME_ORDER.map(platCard).join("")}</div>`;
+
+      const framing = `<div class="homeframe"><i></i>Calibrated predictions across 5 sports — MLB · NBA · World Cup soccer · NHL · NFL. Every projection matches the efficient market line and beats a naive baseline. This is a forecasting product, <b>not a betting edge</b>.</div>`;
+
+      grid.innerHTML = framing + liveSec + upcSec + platSec;
+
+      // wire cross-sport card click-through → that sport's detail
+      grid.querySelectorAll(".hcard").forEach((c: any) => {
+        c.onclick = () => homeOpenGame(c.dataset.sport, c.dataset.pk);
+      });
+      grid.querySelectorAll(".platcard").forEach((c: any) => {
+        c.onclick = () => setSport(c.dataset.sport);
+      });
+      $("refnote").innerHTML = `Cross-sport live aggregation · MLB + NBA + World Cup soccer + NHL + NFL · data via Supabase`;
+    }
+    // deep-link a cross-sport card into THAT sport's existing detail route:
+    // switch sport, load its slate, then open the matching game by pk/id.
+    async function homeOpenGame(s: string, pk: string) {
+      if (!s) return;
+      sport = s;
+      stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
+      if (mode === "perf") mode = "today";
+      mode = "today";
+      await ensureHistDates();
+      syncHeader();
+      await load();
+      // find the game in the freshly-loaded slate and open its detail
+      const idx = todayGames.findIndex((g: any) => String(g.game_pk) === String(pk) || String(g.game_id) === String(pk));
+      if (idx >= 0) openDetail("today", idx);
     }
     async function load() {
       const grid = $("grid");
@@ -2098,9 +2264,23 @@ export default function Home() {
     }
     $("m-perf").onclick = () => { if (mode !== "perf") selectPerf(); };
 
+    // HOME — cross-sport "Live Now" landing. Not a per-sport slate; its own #home
+    // hash. The active sport is left as-is underneath so returning to a tab works.
+    function selectHome() {
+      mode = "home";
+      location.hash = "home";
+      $("m-perf").classList.remove("on");
+      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl" ? "none" : "";
+      document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === "home"));
+      const bt = $("brandtag"); if (bt) bt.textContent = "5-Sport Live Platform";
+      $("datestrip").innerHTML = "";
+      loadHome();
+    }
     // SPORT SELECTOR — switch data source + rendering, reset to the slate view.
     async function setSport(s: string) {
-      if (s === sport) return;
+      if (s === "home") { selectHome(); return; }
+      if (s === sport && mode !== "home") return;
+      if (mode === "home") mode = "today";
       sport = s;
       stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
       // a sport with no analytics view (NBA, soccer, NHL) falls back to the slate
@@ -2118,6 +2298,9 @@ export default function Home() {
     (async function init() {
       // peel the optional sport prefix off the hash ("#nba/…" → sport=nba, rest="#…")
       let raw = location.hash;
+      // HOME is the platform's default landing: empty hash OR explicit #home →
+      // the cross-sport "Live Now" view. (Deep links like #nba / #game: are honored.)
+      if (raw === "" || raw === "#" || raw === "#home") { syncHeader(); selectHome(); return; }
       if (raw === "#nba" || raw.indexOf("#nba/") === 0) {
         sport = "nba";
         raw = raw === "#nba" ? "#" : "#" + raw.slice(5);

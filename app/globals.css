@@ -655,3 +655,64 @@ body{
 
 /* soccer trajectory block height (matches NBA dual-axis sparkline) */
 .traj.nbatraj svg{height:96px}
+
+/* ============================================================
+   CROSS-SPORT "LIVE NOW" HOME — the platform landing. The LIVE selector
+   button (left of MLB), the aggregated unified cards, the platform strip.
+   ============================================================ */
+.sportsel .sportbtn.home{display:inline-flex;align-items:center;gap:6px;color:var(--red)}
+.sportsel .sportbtn.home .livedot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.sportsel .sportbtn.home.on{background:linear-gradient(135deg,#c8102e,#8f0b20);color:#fff;box-shadow:0 2px 8px rgba(200,16,46,.35)}
+.sportsel .sportbtn.home.on .livedot{background:#fff}
+
+/* full-width home sections inside the #grid grid */
+.homeframe,.homeempty,.hgrid,.platstrip{grid-column:1/-1}
+.homeframe{display:flex;align-items:flex-start;gap:11px;background:linear-gradient(135deg,#0c2340,#16365e);color:#dfe6f0;border-radius:14px;padding:13px 18px;font-size:13px;line-height:1.5;margin-bottom:4px}
+.homeframe i{flex-shrink:0;width:9px;height:9px;border-radius:50%;background:var(--green);margin-top:5px;box-shadow:0 0 0 4px rgba(22,163,74,.2)}
+.homeframe b{color:#fff}
+.homeempty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:22px;color:var(--ink2);font-size:13px;text-align:center}
+
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:2px}
+.hcard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;opacity:0;transform:translateY(10px);animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards;transition:box-shadow .2s,transform .2s,border-color .2s}
+.hcard:hover{box-shadow:var(--shadow-hi);transform:translateY(-2px);border-color:#d4dae2}
+.hcard.live{border-color:#f3cdd4}
+.hc-top{display:flex;align-items:center;gap:8px;padding:8px 13px;border-bottom:1px solid var(--line2);background:linear-gradient(180deg,#fbfcfd,#f7f9fb)}
+.hsbadge{font-family:'Oswald';font-weight:700;font-size:12px;letter-spacing:.06em;color:#fff;background:var(--sc,#0c2340);padding:3px 9px;border-radius:7px;line-height:1;min-width:34px;text-align:center}
+.hc-top .statuspill{font-size:10px;padding:2px 8px}
+.hc-venue{font-size:10px;color:var(--ink2);margin-left:auto;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-teams{padding:9px 13px 4px}
+.hc-team{display:flex;align-items:center;gap:9px;padding:3px 0}
+.hc-team img{width:24px;height:24px;object-fit:contain;flex-shrink:0}
+.hc-team .hc-ab{font-family:'Oswald';font-weight:700;font-size:15px;width:42px}
+.hc-team .hc-tn{font-size:12px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.hc-team .hc-sc{font-family:'Oswald';font-weight:700;font-size:18px;margin-left:auto;min-width:22px;text-align:right;color:var(--ink2)}
+.hc-team.lead .hc-ab,.hc-team.lead .hc-sc{color:var(--navy)}
+.hn-pred{padding:7px 13px 4px;border-top:1px solid var(--line2);margin-top:4px;display:flex;flex-direction:column;gap:7px}
+.hn-tot{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.hn-tot .hn-k{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+.hn-tot b{font-family:'Oswald';font-weight:700;font-size:18px;color:var(--navy)}
+.hn-tot .hn-vs{font-size:11px;color:var(--ink2)} .hn-tot .hn-vs b{font-size:13px;color:var(--ink)}
+.hn-tot .hn-score{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);margin-left:auto}
+.hn-pred .wpbar,.hn-pred .wdlbar{margin-top:0}
+.hn-pred .wpbar .wpt,.hn-pred .wdlbar .wdlt{font-size:11px;width:30px}
+.hn-pred .wdlcap{display:none}
+.hc-go{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding:7px 13px 9px;font-family:'Oswald';font-weight:600;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.hcard:hover .hc-go{color:var(--red)}
+.hc-go .arr{font-size:14px;transition:transform .2s} .hcard:hover .hc-go .arr{transform:translateX(3px)}
+
+/* platform strip — five sport quick-link cards */
+.platstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:2px}
+.platcard{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s,transform .2s,border-color .2s;border-top:3px solid var(--sc,#0c2340)}
+.platcard:hover{box-shadow:var(--shadow-hi);transform:translateY(-2px)}
+.pl-top{display:flex;align-items:center;justify-content:space-between}
+.pl-badge{font-family:'Oswald';font-weight:700;font-size:18px;letter-spacing:.05em;color:var(--sc,#0c2340)}
+.pl-live{display:inline-flex;align-items:center;gap:5px;font-family:'Oswald';font-weight:700;font-size:10px;letter-spacing:.08em;color:var(--red);background:var(--redsoft);padding:3px 8px;border-radius:20px}
+.pl-live .lp{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.pl-demo{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink2);background:var(--slatebg);padding:3px 8px;border-radius:20px}
+.pl-stat{display:flex;flex-direction:column;gap:1px}
+.pl-stat .pl-statk{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+.pl-stat b{font-family:'Oswald';font-weight:700;font-size:20px;color:var(--ink)}
+.pl-go{font-family:'Oswald';font-weight:600;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);display:flex;align-items:center;gap:4px}
+.platcard:hover .pl-go{color:var(--sc,#0c2340)}
+.pl-go .arr{font-size:14px;transition:transform .2s} .platcard:hover .pl-go .arr{transform:translateX(3px)}
+.spinesec.platform .sslab{color:var(--navy)} .spinesec.platform .ssdot{background:var(--navy)}
