@@ -16,6 +16,7 @@ export default function Home() {
           <button class="sportbtn" data-sport="mlb">MLB</button>
           <button class="sportbtn" data-sport="nba">NBA</button>
           <button class="sportbtn" data-sport="soccer">SOCCER</button>
+          <button class="sportbtn" data-sport="nhl">NHL</button>
         </div>
         <div class="datestrip-wrap"><div class="datestrip" id="datestrip"></div></div>
         <button class="perfpill" id="m-perf">Performance</button>
@@ -31,15 +32,18 @@ export default function Home() {
     const TEAM_ID: any = { ARI: 109, ATL: 144, BAL: 110, BOS: 111, CHC: 112, CWS: 145, CHW: 145, CIN: 113, CLE: 114, COL: 115, DET: 116, HOU: 117, KC: 118, KCR: 118, LAA: 108, LAD: 119, MIA: 146, MIL: 158, MIN: 142, NYM: 121, NYY: 147, OAK: 133, ATH: 133, PHI: 143, PIT: 134, SD: 135, SDP: 135, SF: 137, SFG: 137, SEA: 136, STL: 138, TB: 139, TBR: 139, TEX: 140, TOR: 141, WSH: 120, WSN: 120 };
     // NBA team abbr → ESPN logo slug (CDN serves these as .png by abbreviation)
     const NBA_SLUG: any = { ATL: "atl", BOS: "bos", BKN: "bkn", BRK: "bkn", CHA: "cha", CHI: "chi", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GSW: "gs", GS: "gs", HOU: "hou", IND: "ind", LAC: "lac", LAL: "lal", MEM: "mem", MIA: "mia", MIL: "mil", MIN: "min", NOP: "no", NO: "no", NYK: "ny", NY: "ny", OKC: "okc", ORL: "orl", PHI: "phi", PHX: "phx", PHO: "phx", POR: "por", SAC: "sac", SAS: "sa", SA: "sa", TOR: "tor", UTA: "utah", UTAH: "utah", WAS: "wsh", WSH: "wsh" };
+    // NHL team abbr → ESPN logo slug (CDN serves these as .png by abbreviation)
+    const NHL_SLUG: any = { ANA: "ana", ARI: "ari", BOS: "bos", BUF: "buf", CGY: "cgy", CAR: "car", CHI: "chi", COL: "col", CBJ: "cbj", DAL: "dal", DET: "det", EDM: "edm", FLA: "fla", LA: "la", LAK: "la", MIN: "min", MTL: "mtl", NSH: "nsh", NJ: "nj", NJD: "nj", NYI: "nyi", NYR: "nyr", OTT: "ott", PHI: "phi", PIT: "pit", SJ: "sj", SJS: "sj", SEA: "sea", STL: "stl", TB: "tb", TBL: "tb", TOR: "tor", UTA: "utah", UTAH: "utah", VAN: "van", VGK: "vgk", WSH: "wsh", WPG: "wpg" };
     const mlbLogo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
+    const nhlLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nhl/500/${NHL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     // World Cup national-team crests aren't in the serve payload (only abbrs), and
     // there is no stable abbr→logo slug, so soccer renders a clean text-crest chip
     // (the 3-letter country code in a navy badge) instead of an <img>. This keeps
     // the box score + detail header free of broken-image flashes.
     const soccerCrest = (ab: any) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' rx='8' fill='#0c2340'/><text x='20' y='25' font-family='Oswald,sans-serif' font-weight='700' font-size='13' fill='#fff' text-anchor='middle'>${(ab || "").slice(0, 3)}</text></svg>`)}`;
     // sport-aware logo resolver (set per active sport via SP()).
-    const logo = (ab: any) => (sport === "soccer" ? soccerCrest(ab) : sport === "nba" ? nbaLogo(ab) : mlbLogo(ab));
+    const logo = (ab: any) => (sport === "soccer" ? soccerCrest(ab) : sport === "nba" ? nbaLogo(ab) : sport === "nhl" ? nhlLogo(ab) : mlbLogo(ab));
     const fmtOdds = (o: any) => (o == null || o === "" ? "—" : Number(o) > 0 ? "+" + o : "" + o);
     const num = (v: any, d = 1) => (v == null ? "—" : Number(v).toFixed(d));
     const tier = (t: any) => (t || "WATCH").toUpperCase();
@@ -57,7 +61,7 @@ export default function Home() {
     // per-sport differences are vocabulary (QUARTERS not innings, POINTS
     // not runs, no pitchers) and the data source. MLB path is unchanged.
     // ============================================================
-    let sport = "mlb"; // "mlb" | "nba" | "soccer"
+    let sport = "mlb"; // "mlb" | "nba" | "soccer" | "nhl"
     const SPORTS: any = {
       mlb: {
         key: "mlb", label: "MLB", brandtag: "MLB Mid-Game Model",
@@ -83,15 +87,37 @@ export default function Home() {
         liveLabel: "Live Now", liveSub: "Poisson model updating by the minute",
         refnote: "DiamondEdge World Cup model · projects final goals + 3-way W/D/L from the live minute · data via Supabase",
       },
+      nhl: {
+        key: "nhl", label: "NHL", brandtag: "NHL Period Model",
+        unit: "goals", unitAbbr: "G", period: "period", periodAbbr: "P", periodLabel: "periods",
+        slateKey: "nhl", histKey: (d: string) => "nhl:" + d, histDatesKey: "nhl_dates",
+        noPitchers: true, xaxis: "periods completed",
+        liveLabel: "Live Now", liveSub: "period model updating",
+        refnote: "DiamondEdge NHL period model · projects from each intermission · data via Supabase",
+      },
     };
     const SP = () => SPORTS[sport];
-    // period label for a 1-based index, NBA-aware (Q1..Q4 then OT, OT2…)
+    // sport-aware label helpers for the shared period-model card/detail (NBA + NHL).
+    // NBA grades/projects at end-Q3; NHL at end-P2 (second intermission). The
+    // payload carries both *_q3 and *_p2 result keys (identical values), so the
+    // card/detail reads "_q3" generically and we only swap the wording here.
+    const lastBoundaryLabel = () => (sport === "nhl" ? "end P2" : "end Q3"); // headline source
+    const modelChipLabel = () => (sport === "nhl" ? "◆ PERIOD MODEL" : "◆ QUARTER MODEL");
+    const periodModelType = () => (sport === "nhl" ? "nhl_period_model" : "nba_quarter_model");
+    const periodSpanLabel = () => (sport === "nhl" ? "P1–P3" : "Q1–Q4"); // box card chip
+    const trajTitle = () => (sport === "nhl" ? "Period-by-Period Read" : "Quarter-by-Quarter Read");
+    const firstBoundaryLabel = () => (sport === "nhl" ? "P1" : "Q1");
+    // convergence thresholds (goals for NHL/low-scoring, points for NBA)
+    const convGood = () => (sport === "nba" ? 4 : 1);
+    const convMid = () => (sport === "nba" ? 8 : 2.5);
+    // period label for a 1-based index, sport-aware:
+    //   NBA → Q1..Q4 then OT, OT2…   NHL → P1..P3 then OT, OT2…   else raw index.
     const periodTick = (n: any) => {
       if (n == null || n === "" || n === "pre") return "pre";
       const i = Number(n);
-      if (sport !== "nba") return String(n);
-      if (i <= 4) return "Q" + i;
-      return i === 5 ? "OT" : "OT" + (i - 4);
+      if (sport === "nba") return i <= 4 ? "Q" + i : i === 5 ? "OT" : "OT" + (i - 4);
+      if (sport === "nhl") return i <= 3 ? "P" + i : i === 4 ? "OT" : "OT" + (i - 3);
+      return String(n);
     };
 
     async function snap(k: string) {
@@ -102,29 +128,34 @@ export default function Home() {
 
     function boxScore(g: any, innings: any[], evo: any[], sideKey: string) {
       const isNBA = sport === "nba";
-      // NBA box: one cell per quarter (4, or more with OT), a single Total column.
-      // MLB box: 9 inning cells (or more) + R / H / E summary columns.
-      const n = isNBA ? Math.max(4, innings.length) : Math.max(9, innings.length);
-      // for NBA there is one summary column (T); for MLB three (R H E)
-      const summaryCols = isNBA ? 1 : 3;
+      // COMPACT box (NBA quarters / NHL periods): one cell per period + a single
+      // total column. MLB box: 9 inning cells (or more) + R / H / E summary columns.
+      const compact = sport === "nba" || sport === "nhl";
+      const minCells = sport === "nhl" ? 3 : 4; // NHL = 3 periods, NBA = 4 quarters
+      const n = compact ? Math.max(minCells, innings.length) : Math.max(9, innings.length);
+      // compact has one summary column (T); MLB three (R H E)
+      const summaryCols = compact ? 1 : 3;
       const evoBy: any = {}; (evo || []).forEach((e: any) => (evoBy[e.after_inning] = e));
       function teamRow(side: string) {
         const isHome = side === "home", ab = isHome ? g.home_abbr : g.away_abbr;
-        const name = isNBA ? null : (isHome ? g.home_pitcher : g.away_pitcher);
+        const name = compact ? null : (isHome ? g.home_pitcher : g.away_pitcher);
         const R = isHome ? g._hr : g._ar, H = isHome ? g._hh : g._ah, E = isHome ? g._he : g._ae;
         const win = g._final && (isHome ? g._hr > g._ar : g._ar > g._hr);
         let cells = "";
         for (let i = 1; i <= n; i++) { const row = innings.find((x: any) => x.inning === i); let v: any = null; if (row) v = sideKey === "today" ? row[side] : row[side + "_r"]; cells += v == null ? `<div class="inn empty">·</div>` : `<div class="inn">${v}</div>`; }
-        const summary = isNBA
+        const summary = compact
           ? `<div class="rhe-c r">${R ?? 0}</div>`
           : `<div class="rhe-c r">${R ?? 0}</div><div class="rhe-c dim">${H ?? 0}</div><div class="rhe-c dim">${E ?? 0}</div>`;
         return `<div class="bxrow ${win ? "win" : ""}"><div class="team"><img src="${logo(ab)}" onerror="this.style.visibility='hidden'"><div class="tt"><span class="ab">${ab}</span>${name ? `<span class="pn">${name}</span>` : ""}</div></div>${cells}${summary}</div>`;
       }
-      let inh = ""; for (let i = 1; i <= n; i++) inh += `<div class="inh">${isNBA ? periodTick(i).replace("Q", "") : i}</div>`;
+      // compact period headers: NHL P1..P3 then OT; NBA bare quarter index; MLB inning #.
+      const headTick = (i: number) => (sport === "nhl" ? periodTick(i) : isNBA ? periodTick(i).replace("Q", "") : i);
+      let inh = ""; for (let i = 1; i <= n; i++) inh += `<div class="inh">${headTick(i)}</div>`;
       let evC = ""; for (let i = 1; i <= n; i++) { const e = evoBy[i]; evC += e ? `<div class="ev">${num(e.pred_total)}</div>` : `<div class="ev empty">·</div>`; }
       const last = evo && evo.length ? evo[evo.length - 1] : null;
-      const summaryHead = isNBA ? `<div class="rhe">T</div>` : `<div class="rhe">R</div><div class="rhe">H</div><div class="rhe">E</div>`;
-      return `<div class="box ${isNBA ? "nbabox" : ""}" style="--ncols:${n};--nsum:${summaryCols}"><div class="bxrow bxhead"><div class="teamh">Matchup</div>${inh}${summaryHead}</div>${teamRow("away")}${teamRow("home")}<div class="evorow"><div class="lbl"><span class="dot" style="width:6px;height:6px;background:var(--navy)"></span>Model</div>${evC}<div class="evtot" style="grid-column:span ${summaryCols}">${last ? num(last.pred_total) : "—"}</div></div></div>`;
+      // compact total header: NHL = G (goals), NBA = T (points); MLB = R H E.
+      const summaryHead = compact ? `<div class="rhe">${sport === "nhl" ? "G" : "T"}</div>` : `<div class="rhe">R</div><div class="rhe">H</div><div class="rhe">E</div>`;
+      return `<div class="box ${compact ? "nbabox" : ""}" style="--ncols:${n};--nsum:${summaryCols}"><div class="bxrow bxhead"><div class="teamh">Matchup</div>${inh}${summaryHead}</div>${teamRow("away")}${teamRow("home")}<div class="evorow"><div class="lbl"><span class="dot" style="width:6px;height:6px;background:var(--navy)"></span>Model</div>${evC}<div class="evtot" style="grid-column:span ${summaryCols}">${last ? num(last.pred_total) : "—"}</div></div></div>`;
     }
 
     function pickRow(g: any) {
@@ -465,7 +496,7 @@ export default function Home() {
       const area = `M${pts[0]} L${pts.join(" L")} L${X(preds.length - 1).toFixed(1)},${(H - padB).toFixed(1)} L${X(0).toFixed(1)},${(H - padB).toFixed(1)} Z`;
       const aY = Y(actual).toFixed(1);
       // convergence thresholds scale with the sport's unit (runs vs points)
-      const tGood = sport === "nba" ? 4 : 1, tMid = sport === "nba" ? 8 : 2.5;
+      const tGood = convGood(), tMid = convMid();
       const lastP = preds[preds.length - 1], conv = Math.abs(lastP.pred_total - actual);
       const endColor = conv < tGood ? "#16a34a" : conv < tMid ? "#d97706" : "#c8102e";
       const dots = preds.map((p, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(p.pred_total).toFixed(1)}" r="${i === preds.length - 1 ? 3.5 : 2}" fill="${i === preds.length - 1 ? endColor : "#16365e"}"/>`).join("");
@@ -516,7 +547,7 @@ export default function Home() {
       const area = `M${pts[0]} L${pts.join(" L")} L${X(preds.length - 1).toFixed(1)},${(H - padB).toFixed(1)} L${X(0).toFixed(1)},${(H - padB).toFixed(1)} Z`;
       const aY = Y(actual).toFixed(1);
       const last = preds[preds.length - 1], conv = Math.abs(ys[ys.length - 1] - actual);
-      const endColor = conv < 4 ? "#16a34a" : conv < 8 ? "#d97706" : "#c8102e";
+      const endColor = conv < convGood() ? "#16a34a" : conv < convMid() ? "#d97706" : "#c8102e";
       const totDots = preds.map((p: any, i: number) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(ys[i]).toFixed(1)}" r="${i === preds.length - 1 ? 3.5 : 2.2}" fill="${i === preds.length - 1 ? endColor : "#0c2340"}"/>`).join("");
       const wpDots = preds.map((p: any, i: number) => { const wp = p.home_win_prob != null ? p.home_win_prob : p.p_home_win; return `<circle cx="${X(i).toFixed(1)}" cy="${YW(Number(wp)).toFixed(1)}" r="2.2" fill="#d97706"/>`; }).join("");
       const xlab = preds.map((p: any, i: number) => `<text x="${X(i).toFixed(1)}" y="${H - 3}" font-size="8" fill="#9aa3af" text-anchor="middle" font-family="IBM Plex Mono">${p.q_label || periodTick(p.after_inning)}</text>`).join("");
@@ -549,7 +580,7 @@ export default function Home() {
       const winAb = (g.winner_call || "").toUpperCase() === "AWAY" ? g.away_abbr : g.home_abbr;
       const headline = `<div class="headline">
         <div class="hl-col left">
-          <div class="hl-k"><span>Projected Total</span><span class="src">end Q3</span></div>
+          <div class="hl-k"><span>Projected Total</span><span class="src">${lastBoundaryLabel()}</span></div>
           <div class="hl-totline"><span class="hl-pred">${num(predTotal)}</span>${line != null ? `<span class="hl-vs">vs line <b>${line}</b></span>` : ""}</div>
           <div class="hl-leanrow"><span class="cchip"><span class="ck">Pick</span><b>${winAb}</b> win</span>${probOver != null ? povGaugeChip(probOver, line) : ""}</div>
           ${iv ? intervalBar(iv.total_lo, iv.total_hi, predTotal, line) : ""}
@@ -562,11 +593,11 @@ export default function Home() {
       </div>`;
 
       const chips = `<div class="cardchips">
-        <span class="mtbadge mid" title="model_type: ${g.model_type || "nba_quarter_model"}">◆ QUARTER MODEL</span>
+        <span class="mtbadge mid" title="model_type: ${g.model_type || periodModelType()}">${modelChipLabel()}</span>
         <span class="cchip score"><span class="ck">Pred</span><b>${pa}</b>–<b>${ph}</b></span>
         ${g.expected_margin != null ? `<span class="cchip"><span class="ck">Margin</span><b>${num(Math.abs(g.expected_margin))}</b> ${g.expected_margin >= 0 ? g.home_abbr : g.away_abbr}</span>` : ""}
         ${iv ? `<span class="cchip"><span class="ck">80% Int</span><b>${num(iv.total_lo)}–${num(iv.total_hi)}</b></span>` : ""}
-        <span class="cchip" style="margin-left:auto"><span class="ck">Period</span>Q1–Q4</span>
+        <span class="cchip" style="margin-left:auto"><span class="ck">Period</span>${periodSpanLabel()}</span>
       </div>`;
 
       // "how it did" result row — winner ✓/✗ + projected vs actual total
@@ -574,7 +605,7 @@ export default function Home() {
       const wCorrect = res.winner_correct;
       const errQ3 = res.total_error_q3, projQ3 = res.projected_total_q3 != null ? res.projected_total_q3 : predTotal;
       const wCls = wCorrect === true ? "hit" : wCorrect === false ? "miss" : "";
-      const tCls = errQ3 == null ? "" : errQ3 < 4 ? "hit" : errQ3 < 8 ? "push" : "miss";
+      const tCls = errQ3 == null ? "" : errQ3 < convGood() ? "hit" : errQ3 < convMid() ? "push" : "miss";
       resultRow = `<div class="cardresult">
         <span class="cr-k">How it did</span>
         ${wCls ? `<span class="cr-grade ${wCls}">${wCls === "hit" ? "✓" : "✗"} Winner</span>` : ""}
@@ -583,8 +614,8 @@ export default function Home() {
       </div>`;
 
       // signature trajectory mini-sparkline right on the card
-      const trajBlock = (preds.length && actual != null) ? `<div class="traj nbatraj"><div class="trajhead"><div class="t">Quarter-by-Quarter Read</div>
-          <div class="cap">Q1 <b>${preds[0] ? num(preds[0].projected_final_total != null ? preds[0].projected_final_total : preds[0].pred_total) : "—"}</b> → end-Q3 <b>${num(projQ3)}</b> → actual <span class="a">${actual}</span></div></div>
+      const trajBlock = (preds.length && actual != null) ? `<div class="traj nbatraj"><div class="trajhead"><div class="t">${trajTitle()}</div>
+          <div class="cap">${firstBoundaryLabel()} <b>${preds[0] ? num(preds[0].projected_final_total != null ? preds[0].projected_final_total : preds[0].pred_total) : "—"}</b> → ${lastBoundaryLabel()} <b>${num(projQ3)}</b> → actual <span class="a">${actual}</span></div></div>
           ${nbaTrajSVG(preds, actual, g.away_abbr, g.home_abbr)}
           <div class="trajfoot"><span><i style="border-color:#0c2340"></i>Proj total</span><span><i style="border-color:#d97706;border-top-style:dashed"></i>${g.home_abbr} win%</span><span><i style="border-color:#c8102e;border-top-style:dashed"></i>Final</span><span style="margin-left:auto;color:var(--ink2)">x = ${SP().xaxis}</span></div>
         </div>` : "";
@@ -706,6 +737,12 @@ export default function Home() {
         el.innerHTML = `<div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">Winner Acc</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div><div><div class="k">Q3 Total MAE</div><div class="v">${s.total_mae_q3 != null ? num(s.total_mae_q3, 1) : "—"}</div></div>`;
         return;
       }
+      // NHL record (final / winner accuracy / end-P2 goal MAE)
+      if (sport === "nhl") {
+        const mae = s.total_mae_p2 != null ? s.total_mae_p2 : s.total_mae_q3;
+        el.innerHTML = `<div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">Winner Acc</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div><div><div class="k">P2 Goal MAE</div><div class="v">${mae != null ? num(mae, 2) : "—"}</div></div>`;
+        return;
+      }
       el.innerHTML = `<div><div class="k">Live</div><div class="v live">${s.live || 0}</div></div><div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">O/U</div><div class="v g">${acc((s.ou || {}).accuracy)}</div></div><div><div class="k">Winner</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div>`;
     }
     function chipLabel(d: string) {
@@ -734,11 +771,11 @@ export default function Home() {
     async function ensureHistDates() {
       if (stripReady) return;
       try {
-        if (sport === "nba") {
-          // NBA dated history snapshot key is nba:<date>. In the demo there is a
-          // single dated snapshot; probe the documented key, fall back to today.
+        if (sport === "nba" || sport === "nhl") {
+          // NBA/NHL dated history snapshot key is <sport>:<date>. In the demo there
+          // is a single dated snapshot; probe the documented key, fall back to today.
           const probe = "2026-06-23";
-          const hd = await snap("nba_dates");
+          const hd = await snap(SP().histDatesKey);
           histDates = (hd && hd.dates && hd.dates.length) ? hd.dates.slice().sort() : [probe];
         } else {
           const hd = await snap("history_dates"); histDates = ((hd && hd.dates) || []).slice().sort();
@@ -764,7 +801,7 @@ export default function Home() {
       const sections: any[] = [];
       const want = (k: string) => todayFilter === "all" || todayFilter === k;
       let gi = 0;
-      const cardFn = sport === "soccer" ? soccerCard : sport === "nba" ? nbaCard : todayCard;
+      const cardFn = sport === "soccer" ? soccerCard : (sport === "nba" || sport === "nhl") ? nbaCard : todayCard;
       const sec = (k: string, label: string, sub: string, arr: any[]) => {
         if (!arr.length || !want(k)) return;
         sections.push(`<div class="spinesec ${k}" style="animation-delay:${gi * 25}ms"><span class="ssdot"></span><span class="sslab">${label}</span><span class="ssn">${arr.length} game${arr.length === 1 ? "" : "s"} · ${sub}</span><span class="ssrule"></span></div>`);
@@ -772,7 +809,7 @@ export default function Home() {
       };
       sec("live", SP().liveLabel, SP().liveSub, live);
       sec("upcoming", "Upcoming", sport === "soccer" ? "pre-match projections" : "pregame projections", upc);
-      sec("past", sport === "nba" || sport === "soccer" ? "Final — How the Model Did" : "Final — How We Did", sport === "nba" || sport === "soccer" ? "projected vs actual" : "predicted vs actual", past);
+      sec("past", sport === "nba" || sport === "soccer" || sport === "nhl" ? "Final — How the Model Did" : "Final — How We Did", sport === "nba" || sport === "soccer" || sport === "nhl" ? "projected vs actual" : "predicted vs actual", past);
       grid.innerHTML = sections.join("") || `<div class="state"><div class="ds">Nothing in this filter</div></div>`;
       // map rendered cards back to todayGames indices for click → detail
       const ordered = [
@@ -810,6 +847,18 @@ export default function Home() {
         <p class="nbhonest">${note || "Calibrated NBA forecasts, not a betting edge. The NBA halftime O/U market was proven efficient — the value here is sharp, well-calibrated projections that beat a naive double-the-pace baseline (test MAE 13.4 / 11.3 / 7.9 points by end of Q1 / Q2 / Q3)."}</p>
       </div>`;
     }
+    // NHL honest-framing banner shown above the demo slate (offseason mode).
+    // Mirrors nbaHonestNote with NHL-native wording (PERIODS, GOALS, intermissions).
+    function nhlHonestNote(d: any) {
+      const off = d && d.is_offseason;
+      const season = (d && d.season) || "2024-25";
+      const note = (d && (d.note || d.honest_framing)) || "";
+      return `<div class="nbabanner">
+        <div class="nbh"><span class="nbpill">${off ? "OFFSEASON DEMO" : "LIVE"}</span><b>NHL Period Model${off ? ` · ${season} replay` : ""}</b></div>
+        <p>${off ? `The NHL season is in the offseason, so this is a working <b>demo</b> over recent ${season} games (the full Stanley Cup Playoffs + Cup Final plus a regular-season sample). Each card shows the model's <b>by-period projection trajectory</b> — from each intermission (end-P1, end-P2) versus the actual final — so you can watch it track the game. Serving goes <b>live automatically</b> when the season drops the puck.` : `Live ${season} slate — the model re-projects the final total and win probability at every intermission.`}</p>
+        <p class="nbhonest">${note || "Calibrated NHL forecasts, not a betting edge. The NHL intermission over/under market is efficient — the model essentially MATCHES the line's accuracy (projected-total MAE 1.30 overall vs 1.33) while clearly beating a naive double/triple-the-pace baseline (2.02; a 43% MAE reduction at end-P1, 23% at end-P2). Win-prob is very well calibrated (ECE 0.017, 72.9% accuracy vs a 56.4% home-win base rate)."}</p>
+      </div>`;
+    }
     // Soccer honest-framing banner — calibrated WC forecasts, low-scoring sport,
     // halftime O/U market already shown efficient (prediction quality, not a bet).
     function soccerHonestNote(d: any) {
@@ -824,7 +873,7 @@ export default function Home() {
     async function load() {
       const grid = $("grid");
       const sp = SP();
-      $("slatehead").textContent = sport === "nba" ? "NBA Slate" : sport === "soccer" ? "World Cup Slate" : "Today's Slate";
+      $("slatehead").textContent = sport === "nba" ? "NBA Slate" : sport === "soccer" ? "World Cup Slate" : sport === "nhl" ? "NHL Slate" : "Today's Slate";
       $("legendbox").style.display = "";
       try {
         const d = await snap(sp.slateKey);
@@ -833,8 +882,8 @@ export default function Home() {
         games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final);
         todayGames = games;
         renderTodayFilters();
-        // NBA / soccer: prepend the honest-framing banner above the slate
-        const banner = sport === "nba" ? nbaHonestNote(d) : sport === "soccer" ? soccerHonestNote(d) : "";
+        // NBA / soccer / NHL: prepend the honest-framing banner above the slate
+        const banner = sport === "nba" ? nbaHonestNote(d) : sport === "soccer" ? soccerHonestNote(d) : sport === "nhl" ? nhlHonestNote(d) : "";
         renderTodaySpine();
         if (banner) grid.innerHTML = banner + grid.innerHTML, wireSpineClicks();
         $("refnote").innerHTML = sp.refnote;
@@ -856,16 +905,18 @@ export default function Home() {
     }
     async function loadHistory() {
       const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading ${histDate}</div></div>`;
-      $("slatehead").textContent = sport === "nba" ? "NBA History" : sport === "soccer" ? "World Cup History" : "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      $("slatehead").textContent = sport === "nba" ? "NBA History" : sport === "soccer" ? "World Cup History" : sport === "nhl" ? "NHL History" : "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
       renderDateStrip();
       try {
         const d = await snap(SP().histKey(histDate));
         const games = (d && d.games) || []; histGames = games;
-        const cardFn = sport === "soccer" ? soccerCard : sport === "nba" ? nbaCard : historyCard;
+        const cardFn = sport === "soccer" ? soccerCard : (sport === "nba" || sport === "nhl") ? nbaCard : historyCard;
         grid.innerHTML = games.length ? games.map(cardFn).join("") : `<div class="state"><div class="ds">No games this date</div></div>`;
         if (games.length) wireCardClicks("history");
         $("refnote").innerHTML = sport === "nba"
           ? `${games.length} games · ${histDate} · model's by-quarter projection trajectory`
+          : sport === "nhl"
+          ? `${games.length} games · ${histDate} · model's by-period projection trajectory`
           : sport === "soccer"
           ? `${games.length} matches · ${histDate} · projected goals + W/D/L vs the actual result`
           : `${games.length} games · ${histDate} · model's mid-game prediction trajectory`;
@@ -1397,8 +1448,8 @@ export default function Home() {
       // reflect active sport: brand tag + selector highlight + Performance availability
       const bt = $("brandtag"); if (bt) bt.textContent = SP().brandtag;
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === sport));
-      // Performance analytics is MLB-only for now — hide the pill on NBA + soccer
-      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" ? "none" : "";
+      // Performance analytics is MLB-only for now — hide the pill on NBA / soccer / NHL
+      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" || sport === "nhl" ? "none" : "";
       renderDateStrip();
     }
 
@@ -1514,12 +1565,12 @@ export default function Home() {
       const margin = g.expected_margin;
 
       // VIZ BLOCK — reused micro-viz: win-prob arc + P(over) dial + margin bar
-      const gaugeCol = `<div class="dt-viz"><div class="dt-vizk">Win Probability (end Q3)</div><div class="dt-gauge">${winProbGauge(homeWP, g.away_abbr, g.home_abbr)}</div></div>`;
+      const gaugeCol = `<div class="dt-viz"><div class="dt-vizk">Win Probability (${lastBoundaryLabel()})</div><div class="dt-gauge">${winProbGauge(homeWP, g.away_abbr, g.home_abbr)}</div></div>`;
       const povCol = probOver != null ? `<div class="dt-viz"><div class="dt-vizk">Total — P(Over ${line != null ? line : "—"})</div><div class="dt-povgauge">${povGauge(probOver, line)}</div></div>` : "";
       const dials = `<div class="dt-viz"><div class="dt-vizk">Expected Margin</div><div class="dt-dialrow">
         <div class="dt-dial"><div class="dk">Projected Margin</div><div class="dv">${fmtSign(margin)}</div><div style="margin-top:6px">${marginBar(margin, g.away_abbr, g.home_abbr)}</div></div>
       </div></div>`;
-      const vizBlock = `<div class="dt-card"><div class="dt-ct"><span>Prediction Visuals</span><span class="mtbadge mid">◆ QUARTER MODEL</span></div>
+      const vizBlock = `<div class="dt-card"><div class="dt-ct"><span>Prediction Visuals</span><span class="mtbadge mid">${modelChipLabel()}</span></div>
           <div class="dt-vizrow">${gaugeCol}${povCol}</div>
           <div style="margin-top:14px">${dials}</div>
         </div>`;
@@ -1536,9 +1587,9 @@ export default function Home() {
             <div class="tdot" style="left:${P(pt).toFixed(1)}%"></div>
             <span class="tlab" style="left:${P(pt).toFixed(1)}%">${num(pt)}</span></div></div>`;
         };
-        ivCol = `<div class="dt-card"><div class="dt-ct"><span>80% Prediction Interval</span><span class="enginechip mid">◆ QUARTER MODEL</span></div>
+        ivCol = `<div class="dt-card"><div class="dt-ct"><span>80% Prediction Interval</span><span class="enginechip mid">${modelChipLabel()}</span></div>
           <div class="dt-ivwrap">
-            <div class="dt-vizk">Total points — model interval${line != null ? " vs the line" : ""}</div>
+            <div class="dt-vizk">Total ${SP().unit} — model interval${line != null ? " vs the line" : ""}</div>
             ${intervalBar(iv.total_lo, iv.total_hi, predTotal, line, "dt-ivbar")}
             <div class="dt-ivlegend"><span><i style="background:rgba(12,35,64,.3)"></i>80% interval</span><span><i style="background:var(--navy)"></i>point prediction ${num(predTotal)}</span>${line != null ? `<span><i style="background:var(--red)"></i>line ${line}</span>` : ""}</div>
             <div style="margin-top:14px">${teamRow(iv.away_lo, iv.away_hi, g.predicted_away_points != null ? g.predicted_away_points : g.predicted_away_runs, g.away_abbr)}${teamRow(iv.home_lo, iv.home_hi, g.predicted_home_points != null ? g.predicted_home_points : g.predicted_home_runs, g.home_abbr)}</div>
@@ -1548,7 +1599,7 @@ export default function Home() {
       // MODEL block — projected final score + total + win prob
       const wpHome = homeWP != null ? Math.round(Number(homeWP) * 100) : null;
       const winAb = (g.winner_call || "").toUpperCase() === "AWAY" ? g.away_abbr : g.home_abbr;
-      const modelBlock = `<div class="dt-card"><div class="dt-ct"><span>Model Prediction</span><span class="enginechip mid">◆ QUARTER MODEL</span></div>
+      const modelBlock = `<div class="dt-card"><div class="dt-ct"><span>Model Prediction</span><span class="enginechip mid">${modelChipLabel()}</span></div>
         <div class="dt-modelgrid">
           <div class="dt-pred"><div class="sk">Projected Final</div><div class="score-pred">${pa}<small> ${g.away_abbr}</small> – ${ph}<small> ${g.home_abbr}</small></div></div>
           <div class="dt-pred"><div class="sk">Projected Total</div><div class="dt-bignum">${num(predTotal)}</div></div>
@@ -1563,44 +1614,46 @@ export default function Home() {
       // RESULT block — how the model did
       const wCorrect = res.winner_correct, errQ3 = res.total_error_q3, projQ3 = res.projected_total_q3 != null ? res.projected_total_q3 : predTotal;
       const wCls = wCorrect === true ? "hit" : wCorrect === false ? "miss" : "";
-      const tCls = errQ3 == null ? "" : errQ3 < 4 ? "hit" : errQ3 < 8 ? "push" : "miss";
+      const tCls = errQ3 == null ? "" : errQ3 < convGood() ? "hit" : errQ3 < convMid() ? "push" : "miss";
       const resultBlock = `<div class="dt-card"><div class="dt-ct"><span>How the Model Did</span></div>
         <div class="cardresult" style="border-top:0;padding-top:0">
           ${wCls ? `<span class="cr-grade ${wCls}">${wCls === "hit" ? "✓" : "✗"} Winner ${winAb}</span>` : ""}
           ${tCls ? `<span class="cr-grade ${tCls}">${tCls === "hit" ? "✓" : tCls === "miss" ? "✗" : "≈"} Total ${errQ3 != null ? "±" + num(errQ3) : ""}</span>` : ""}
-          <span class="cr-pva">end-Q3 proj <b>${num(projQ3)}</b> → actual <span class="a">${actualTotal != null ? actualTotal : "—"}</span></span>
+          <span class="cr-pva">${lastBoundaryLabel()} proj <b>${num(projQ3)}</b> → actual <span class="a">${actualTotal != null ? actualTotal : "—"}</span></span>
         </div></div>`;
 
       // SIGNATURE TRAJECTORY — projected total + win-prob by quarter vs final
       let trajBlock = "";
       if (preds.length && actualTotal != null) {
         const conv = Math.abs((preds[preds.length - 1].projected_final_total != null ? preds[preds.length - 1].projected_final_total : preds[preds.length - 1].pred_total) - actualTotal);
-        const convCls = conv < 4 ? "good" : conv < 8 ? "mid" : "bad";
-        const convTxt = conv < 4 ? "NAILED IT" : conv < 8 ? "CLOSE" : "MISSED";
+        const convCls = conv < convGood() ? "good" : conv < convMid() ? "mid" : "bad";
+        const convTxt = conv < convGood() ? "NAILED IT" : conv < convMid() ? "CLOSE" : "MISSED";
         // per-quarter readout rows
         const rows = preds.map((p: any) => {
           const pt = p.projected_final_total != null ? p.projected_final_total : p.pred_total;
           const wp = p.home_win_prob != null ? p.home_win_prob : p.p_home_win;
           return `<div class="nbq-row"><span class="nbq-q">${p.q_label || periodTick(p.after_inning)}</span><span class="nbq-cur">cur ${p.cur_away ?? "—"}–${p.cur_home ?? "—"}</span><span class="nbq-pt">${num(pt)}</span><span class="nbq-wp">${g.home_abbr} ${wp != null ? Math.round(Number(wp) * 100) + "%" : "—"}</span></div>`;
         }).join("");
-        trajBlock = `<div class="dt-card"><div class="dt-ct"><span>By-Quarter Trajectory</span><span class="conv ${convCls}">${convTxt}</span></div>
+        trajBlock = `<div class="dt-card"><div class="dt-ct"><span>${sport === "nhl" ? "By-Period Trajectory" : "By-Quarter Trajectory"}</span><span class="conv ${convCls}">${convTxt}</span></div>
           <div class="traj nbatraj" style="border:0;padding:4px 0 0">${nbaTrajSVG(preds, actualTotal, g.away_abbr, g.home_abbr)}
           <div class="trajfoot"><span><i style="border-color:#0c2340"></i>Proj total</span><span><i style="border-color:#d97706;border-top-style:dashed"></i>${g.home_abbr} win%</span><span><i style="border-color:#c8102e;border-top-style:dashed"></i>Final ${actualTotal}</span><span style="margin-left:auto;color:var(--ink2)">x = ${SP().xaxis}</span></div>
           <div class="nbq-tbl"><div class="nbq-row nbq-hd"><span>After</span><span>Score</span><span>Proj Total</span><span>Win Prob</span></div>${rows}</div>
           </div></div>`;
       }
 
-      // INSIGHT block — honest NBA framing
+      // INSIGHT block — honest framing, sport-aware (NBA quarters / NHL periods)
+      const isNHL = sport === "nhl";
+      const unitWord = SP().unit; // "points" (NBA) | "goals" (NHL)
       const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">
-        <p>From the <b>end of each quarter</b>, the NBA quarter model re-projects the final total, a calibrated win probability, and an 80% interval. Watch the trajectory above tighten toward the dashed actual-total line as the game progresses.</p>
-        <p>The model projects <b>${num(predTotal)}</b> total points and gives <b>${winAb}</b> a <b>${wpHome != null ? wpHome + (winAb === g.home_abbr ? "" : "→" + (100 - wpHome)) : ""}%</b> edge to win. At end of Q3 it was within <b>${errQ3 != null ? "±" + num(errQ3) : "—"}</b> points of the final.</p>
-        <p class="nbhonest"><b>Honest framing:</b> these are calibrated <b>predictions, not a betting edge</b>. The NBA halftime O/U market was proven efficient — the value is a sharp forecast that beats a naive double-the-pace baseline, not a way to beat the line.</p>
+        <p>From the <b>${isNHL ? "end of each period (intermission)" : "end of each quarter"}</b>, the ${isNHL ? "NHL period" : "NBA quarter"} model re-projects the final total, a calibrated win probability, and an 80% interval. Watch the trajectory above tighten toward the dashed actual-total line as the game progresses.${isNHL ? " It learns score effects too — a trailing team pulls its goalie late, so empty-net goals can extend a lead." : ""}</p>
+        <p>The model projects <b>${num(predTotal)}</b> total ${unitWord} and gives <b>${winAb}</b> a <b>${wpHome != null ? wpHome + (winAb === g.home_abbr ? "" : "→" + (100 - wpHome)) : ""}%</b> edge to win. At ${lastBoundaryLabel()} it was within <b>${errQ3 != null ? "±" + num(errQ3) : "—"}</b> ${unitWord} of the final.</p>
+        <p class="nbhonest"><b>Honest framing:</b> these are calibrated <b>predictions, not a betting edge</b>. ${isNHL ? "The NHL intermission over/under market is efficient — the model essentially MATCHES the line's accuracy (projected-total MAE 1.30 vs 1.33) while clearly beating a naive double/triple-the-pace baseline (2.02), not a way to beat the line." : "The NBA halftime O/U market was proven efficient — the value is a sharp forecast that beats a naive double-the-pace baseline, not a way to beat the line."}</p>
       </div></div>`;
 
       grid.innerHTML = `<div class="detailwrap">
         <button class="backbtn" id="dt-back">‹ Back to slate</button>
         ${matchHead}
-        <div class="dt-card"><div class="dt-ct"><span>Quarter Linescore</span></div>${boxScore(g, inns, preds, "today")}</div>
+        <div class="dt-card"><div class="dt-ct"><span>${sport === "nhl" ? "Period Linescore" : "Quarter Linescore"}</span></div>${boxScore(g, inns, preds, "today")}</div>
         <div class="dt-cols">${modelBlock}${resultBlock}</div>
         ${vizBlock}
         ${ivCol}
@@ -1756,7 +1809,7 @@ export default function Home() {
 
     function renderDetail() {
       if (sport === "soccer") return renderSoccerDetail();
-      if (sport === "nba") return renderNbaDetail();
+      if (sport === "nba" || sport === "nhl") return renderNbaDetail();
       const grid = $("grid");
       $("record").innerHTML = "";
       $("legendbox").style.display = "none";
@@ -1977,8 +2030,8 @@ export default function Home() {
 
     // ---------- NAVIGATION ----------
     // hash carries the active sport as a prefix so a reload restores it:
-    //   MLB → "#…" (unchanged), NBA → "#nba/…", SOCCER → "#soccer/…"
-    const hp = () => (sport === "nba" ? "nba" : sport === "soccer" ? "soccer" : ""); // hash prefix segment
+    //   MLB → "#…" (unchanged), NBA → "#nba/…", SOCCER → "#soccer/…", NHL → "#nhl/…"
+    const hp = () => (sport === "nba" ? "nba" : sport === "soccer" ? "soccer" : sport === "nhl" ? "nhl" : ""); // hash prefix segment
     const setHash = (rest: string) => {
       const p = hp();
       location.hash = p ? (rest ? p + "/" + rest : p) : rest;
@@ -1993,7 +2046,7 @@ export default function Home() {
       await loadHistory();
     }
     function selectPerf() {
-      if (sport === "nba" || sport === "soccer") return; // analytics is MLB-only for now
+      if (sport === "nba" || sport === "soccer" || sport === "nhl") return; // analytics is MLB-only for now
       mode = "perf"; setHash("performance"); syncHeader();
       $("legendbox").style.display = "none";
       loadPerf();
@@ -2005,8 +2058,8 @@ export default function Home() {
       if (s === sport) return;
       sport = s;
       stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
-      // a sport with no analytics view (NBA, soccer) falls back to the slate
-      if (mode === "perf" && (sport === "nba" || sport === "soccer")) mode = "today";
+      // a sport with no analytics view (NBA, soccer, NHL) falls back to the slate
+      if (mode === "perf" && (sport === "nba" || sport === "soccer" || sport === "nhl")) mode = "today";
       await ensureHistDates();
       syncHeader();
       if (mode === "history" && histDates.length) selectHistory(histDates[histDates.length - 1]);
@@ -2026,6 +2079,9 @@ export default function Home() {
       } else if (raw === "#soccer" || raw.indexOf("#soccer/") === 0) {
         sport = "soccer";
         raw = raw === "#soccer" ? "#" : "#" + raw.slice(8);
+      } else if (raw === "#nhl" || raw.indexOf("#nhl/") === 0) {
+        sport = "nhl";
+        raw = raw === "#nhl" ? "#" : "#" + raw.slice(5);
       }
       await ensureHistDates();
       syncHeader();
