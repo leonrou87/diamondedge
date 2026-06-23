@@ -15,6 +15,7 @@ export default function Home() {
         <div class="sportsel" id="sportsel">
           <button class="sportbtn" data-sport="mlb">MLB</button>
           <button class="sportbtn" data-sport="nba">NBA</button>
+          <button class="sportbtn" data-sport="soccer">SOCCER</button>
         </div>
         <div class="datestrip-wrap"><div class="datestrip" id="datestrip"></div></div>
         <button class="perfpill" id="m-perf">Performance</button>
@@ -32,8 +33,13 @@ export default function Home() {
     const NBA_SLUG: any = { ATL: "atl", BOS: "bos", BKN: "bkn", BRK: "bkn", CHA: "cha", CHI: "chi", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GSW: "gs", GS: "gs", HOU: "hou", IND: "ind", LAC: "lac", LAL: "lal", MEM: "mem", MIA: "mia", MIL: "mil", MIN: "min", NOP: "no", NO: "no", NYK: "ny", NY: "ny", OKC: "okc", ORL: "orl", PHI: "phi", PHX: "phx", PHO: "phx", POR: "por", SAC: "sac", SAS: "sa", SA: "sa", TOR: "tor", UTA: "utah", UTAH: "utah", WAS: "wsh", WSH: "wsh" };
     const mlbLogo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
-    // sport-aware logo resolver (set per active sport via SP())
-    const logo = (ab: any) => (sport === "nba" ? nbaLogo(ab) : mlbLogo(ab));
+    // World Cup national-team crests aren't in the serve payload (only abbrs), and
+    // there is no stable abbr→logo slug, so soccer renders a clean text-crest chip
+    // (the 3-letter country code in a navy badge) instead of an <img>. This keeps
+    // the box score + detail header free of broken-image flashes.
+    const soccerCrest = (ab: any) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' rx='8' fill='#0c2340'/><text x='20' y='25' font-family='Oswald,sans-serif' font-weight='700' font-size='13' fill='#fff' text-anchor='middle'>${(ab || "").slice(0, 3)}</text></svg>`)}`;
+    // sport-aware logo resolver (set per active sport via SP()).
+    const logo = (ab: any) => (sport === "soccer" ? soccerCrest(ab) : sport === "nba" ? nbaLogo(ab) : mlbLogo(ab));
     const fmtOdds = (o: any) => (o == null || o === "" ? "—" : Number(o) > 0 ? "+" + o : "" + o);
     const num = (v: any, d = 1) => (v == null ? "—" : Number(v).toFixed(d));
     const tier = (t: any) => (t || "WATCH").toUpperCase();
@@ -51,7 +57,7 @@ export default function Home() {
     // per-sport differences are vocabulary (QUARTERS not innings, POINTS
     // not runs, no pitchers) and the data source. MLB path is unchanged.
     // ============================================================
-    let sport = "mlb"; // "mlb" | "nba"
+    let sport = "mlb"; // "mlb" | "nba" | "soccer"
     const SPORTS: any = {
       mlb: {
         key: "mlb", label: "MLB", brandtag: "MLB Mid-Game Model",
@@ -68,6 +74,14 @@ export default function Home() {
         noPitchers: true, xaxis: "quarters completed",
         liveLabel: "Live Now", liveSub: "quarter model updating",
         refnote: "DiamondEdge NBA quarter model · projects from any quarter boundary · data via Supabase",
+      },
+      soccer: {
+        key: "soccer", label: "SOCCER", brandtag: "World Cup Model",
+        unit: "goals", unitAbbr: "G", period: "half", periodAbbr: "H", periodLabel: "halves",
+        slateKey: "soccer", histKey: (d: string) => "soccer:" + d, histDatesKey: "soccer_dates",
+        noPitchers: true, xaxis: "match minute",
+        liveLabel: "Live Now", liveSub: "Poisson model updating by the minute",
+        refnote: "DiamondEdge World Cup model · projects final goals + 3-way W/D/L from the live minute · data via Supabase",
       },
     };
     const SP = () => SPORTS[sport];
@@ -185,6 +199,80 @@ export default function Home() {
         <div class="wpsplit"><div class="aw" style="width:${ap}%"></div><div class="hm" style="width:${hp}%"></div>
           ${ap >= 14 ? `<span class="pct a">${ap}%</span>` : ""}${hp >= 14 ? `<span class="pct h">${hp}%</span>` : ""}</div>
         <span class="wpt h">${homeAb}</span></div>`;
+    }
+
+    // SOCCER — 3-way Win / Draw / Loss split bar: home win (navy) | draw (slate) |
+    // away win (red). The single most important soccer-native readout. Each segment
+    // is sized to its probability and labelled with the % when it has room.
+    function wdlBar(wdl: any, awayAb: string, homeAb: string) {
+      if (!wdl) return "";
+      const hw = Math.max(0, Number(wdl.home_win) || 0);
+      const dw = Math.max(0, Number(wdl.draw) || 0);
+      const aw = Math.max(0, Number(wdl.away_win) || 0);
+      const s = hw + dw + aw || 1;
+      const hp = Math.round((hw / s) * 100), dp = Math.round((dw / s) * 100);
+      const ap = Math.max(0, 100 - hp - dp);
+      return `<div class="wdlbar"><span class="wdlt h">${homeAb}</span>
+        <div class="wdlsplit"><div class="hm" style="width:${hp}%">${hp >= 12 ? `<span>${hp}%</span>` : ""}</div><div class="dr" style="width:${dp}%">${dp >= 12 ? `<span>${dp}%</span>` : ""}</div><div class="aw" style="width:${ap}%">${ap >= 12 ? `<span>${ap}%</span>` : ""}</div></div>
+        <span class="wdlt a">${awayAb}</span></div>
+        <div class="wdlcap"><span class="h">${homeAb} win ${hp}%</span><span class="d">Draw ${dp}%</span><span class="a">${awayAb} win ${ap}%</span></div>`;
+    }
+
+    // big 3-way W/D/L arc for the soccer deep view — a half-donut split into
+    // home-win / draw / away-win sweeps with the most likely outcome called out.
+    function wdlArc(wdl: any, awayAb: string, homeAb: string) {
+      if (!wdl) return "";
+      const hw = Math.max(0, Number(wdl.home_win) || 0), dw = Math.max(0, Number(wdl.draw) || 0), aw = Math.max(0, Number(wdl.away_win) || 0);
+      const s = hw + dw + aw || 1;
+      const fr = [hw / s, dw / s, aw / s];
+      const cols = ["#0c2340", "#64748b", "#c8102e"];
+      const W = 240, H = 140, cx = W / 2, cy = 120, r = 92, sw = 18;
+      // sweep from π (left) to 0 (right)
+      let acc = 0; let paths = "";
+      for (let i = 0; i < 3; i++) {
+        const a0 = Math.PI * (1 - acc), a1 = Math.PI * (1 - (acc + fr[i]));
+        acc += fr[i];
+        if (fr[i] <= 0.0001) continue;
+        const x0 = cx + r * Math.cos(a0), y0 = cy - r * Math.sin(a0);
+        const x1 = cx + r * Math.cos(a1), y1 = cy - r * Math.sin(a1);
+        const large = fr[i] > 0.5 ? 1 : 0;
+        paths += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${cols[i]}" stroke-width="${sw}" stroke-linecap="butt"/>`;
+      }
+      const order = [{ p: fr[0], l: homeAb + " WIN", c: cols[0] }, { p: fr[1], l: "DRAW", c: cols[1] }, { p: fr[2], l: awayAb + " WIN", c: cols[2] }];
+      const top = order.reduce((a, b) => (b.p > a.p ? b : a));
+      return `<svg viewBox="0 0 ${W} ${H}">
+        <path d="M${(cx - r)} ${cy} A${r} ${r} 0 0 1 ${(cx + r)} ${cy}" fill="none" stroke="#eef1f5" stroke-width="${sw}"/>
+        ${paths}
+        <text x="${cx}" y="${cy - 30}" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="34" fill="${top.c}">${Math.round(top.p * 100)}%</text>
+        <text x="${cx}" y="${cy - 11}" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="13" letter-spacing="1.2" fill="${top.c}">${top.l}</text>
+      </svg>`;
+    }
+
+    // SOCCER trajectory — projected final TOTAL goals (navy) + home-win prob (amber,
+    // right axis) by match minute, with the live/actual total drawn as a dashed line.
+    function soccerTrajSVG(preds: any[], actual: any) {
+      const W = 300, H = 96, pad = 26, padR = 30, padT = 10, padB = 16;
+      const ys = preds.map((p: any) => p.projected_final_total != null ? p.projected_final_total : p.pred_total);
+      const hasActual = actual != null;
+      const allV = ys.concat(hasActual ? [actual] : []);
+      let lo = Math.min(...allV) - 0.8, hi = Math.max(...allV) + 0.8; if (hi - lo < 2) hi = lo + 2; if (lo < 0) lo = 0;
+      const X = (i: number) => pad + (i / Math.max(preds.length - 1, 1)) * (W - pad - padR);
+      const Y = (v: number) => padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB);
+      const YW = (p: number) => padT + (1 - p) * (H - padT - padB);
+      const pts = preds.map((p: any, i: number) => `${X(i).toFixed(1)},${Y(ys[i]).toFixed(1)}`);
+      const hwp = (p: any) => { const w = p.wdl ? p.wdl.home_win : p.p_home_win; return Number(w != null ? w : 0); };
+      const wpPts = preds.map((p: any, i: number) => `${X(i).toFixed(1)},${YW(hwp(p)).toFixed(1)}`);
+      const area = `M${pts[0]} L${pts.join(" L")} L${X(preds.length - 1).toFixed(1)},${(H - padB).toFixed(1)} L${X(0).toFixed(1)},${(H - padB).toFixed(1)} Z`;
+      const endColor = "#16a34a";
+      const totDots = preds.map((p: any, i: number) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(ys[i]).toFixed(1)}" r="${i === preds.length - 1 ? 3.5 : 2.2}" fill="${i === preds.length - 1 ? endColor : "#0c2340"}"/>`).join("");
+      const wpDots = preds.map((p: any, i: number) => `<circle cx="${X(i).toFixed(1)}" cy="${YW(hwp(p)).toFixed(1)}" r="2.2" fill="#d97706"/>`).join("");
+      const xlab = preds.map((p: any, i: number) => (preds.length <= 7 || i % 2 === 0 ? `<text x="${X(i).toFixed(1)}" y="${H - 3}" font-size="8" fill="#9aa3af" text-anchor="middle" font-family="IBM Plex Mono">${p.minute_label || (p.minute != null ? p.minute + "'" : "")}</text>` : "")).join("");
+      const wpTicks = [0, 0.5, 1].map((t) => `<text x="${(W - padR + 4).toFixed(1)}" y="${(YW(t) + 3).toFixed(1)}" font-size="7" fill="#d9a25a" font-family="IBM Plex Mono">${Math.round(t * 100)}</text>`).join("");
+      const aLine = hasActual ? `<line x1="${pad}" x2="${W - padR}" y1="${Y(actual).toFixed(1)}" y2="${Y(actual).toFixed(1)}" stroke="#c8102e" stroke-width="1.5" stroke-dasharray="4 3"/><text x="${W - padR + 3}" y="${(Y(actual) + 3).toFixed(1)}" font-size="9" fill="#c8102e" font-family="IBM Plex Mono">${actual}</text>` : "";
+      return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="sg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#0c2340" stop-opacity=".15"/><stop offset="1" stop-color="#0c2340" stop-opacity="0"/></linearGradient></defs>
+        <path d="${area}" fill="url(#sg)"/>${aLine}
+        <polyline points="${wpPts.join(" ")}" fill="none" stroke="#d97706" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="3 2"/>${wpDots}
+        <polyline points="${pts.join(" ")}" fill="none" stroke="#0c2340" stroke-width="2" stroke-linejoin="round"/>${totDots}${xlab}${wpTicks}</svg>`;
     }
 
     // P(over) gauge — semicircular dial 0..100% coloured by lean vs 50%.
@@ -510,9 +598,109 @@ export default function Home() {
         ${trajBlock}</div>`;
     }
 
+    // ============================================================
+    // SOCCER CARDS + BOX — World Cup vocabulary: GOALS (not runs/points), the live
+    // MATCH MINUTE (not inning/quarter), a 3-WAY W/D/L bar (not a 2-way win prob),
+    // projected final SCORE + projected TOTAL goals + an 80% goals interval. Live
+    // games light the live spine/pill and show the minute; upcoming show the
+    // pre-match projection; finals show a ✓/✗ "how it did" vs the actual result.
+    // The serve payload mirrors the MLB/NBA game shape, so intervalBar / the spine /
+    // the detail scaffolding are all reused; only the readouts are soccer-native.
+    // ============================================================
+
+    // half-based linescore (H1 | H2 | total goals) — a soccer-native mini box that
+    // doesn't disturb the MLB/NBA boxScore() used elsewhere.
+    function soccerBox(g: any) {
+      const inns = g.linescore_halves || g.linescore_innings || [];
+      const goalsBy = (side: string, half: number) => { const row = inns.find((x: any) => (x.half || x.inning) === half); return row ? row[side] : null; };
+      const live = g.is_live, fin = g.is_final;
+      const showTotals = live || fin;
+      const hr = g.current_home_score != null ? g.current_home_score : (g._hr || 0);
+      const ar = g.current_away_score != null ? g.current_away_score : (g._ar || 0);
+      const teamRow = (side: string) => {
+        const isHome = side === "home", ab = isHome ? g.home_abbr : g.away_abbr;
+        const tot = isHome ? hr : ar;
+        const win = fin && (isHome ? hr > ar : ar > hr);
+        let cells = "";
+        for (let h = 1; h <= 2; h++) { const v = showTotals ? goalsBy(side, h) : null; cells += v == null ? `<div class="inn empty">·</div>` : `<div class="inn">${v}</div>`; }
+        const totCell = showTotals ? `<div class="rhe-c r">${tot}</div>` : `<div class="rhe-c r">·</div>`;
+        return `<div class="bxrow ${win ? "win" : ""}"><div class="team"><img src="${logo(ab)}" onerror="this.style.visibility='hidden'"><div class="tt"><span class="ab">${ab}</span><span class="pn">${isHome ? g.home_team : g.away_team}</span></div></div>${cells}${totCell}</div>`;
+      };
+      return `<div class="box nbabox soccerbox" style="--ncols:2;--nsum:1"><div class="bxrow bxhead"><div class="teamh">Match</div><div class="inh">H1</div><div class="inh">H2</div><div class="rhe">G</div></div>${teamRow("away")}${teamRow("home")}</div>`;
+    }
+
+    // soccer slate card — live / upcoming / final, all in the parallel game shape.
+    function soccerCard(g: any, i: number) {
+      g._hr = g.current_home_score; g._ar = g.current_away_score; g._final = g.is_final;
+      const scls = g.is_live ? "live" : g.is_final ? "final" : "upcoming";
+      const minute = g.minute_label || g.display_clock || (g.minute != null ? g.minute + "'" : "");
+      const pill = g.is_live
+        ? `<span class="statuspill live"><span class="pulse"></span>${minute || "LIVE"}</span>`
+        : g.is_final ? `<span class="statuspill final">FULL-TIME</span>`
+        : `<span class="statuspill upcoming">${g.start_time ? new Date(g.start_time).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "SCHEDULED"}</span>`;
+
+      const predTotal = g.model_prediction != null ? g.model_prediction : g.projected_total_goals;
+      const iv = g.prediction_interval_80 || g.interval_80_goals;
+      const ps = g.projected_score || {};
+      const projStr = g.projected_score_str || (ps.home != null ? `${ps.home}-${ps.away}` : "—");
+      const wdl = g.wdl;
+      const res = g.result || {};
+      const actual = g.is_final ? (res.actual_total != null ? res.actual_total : g.final_total) : null;
+
+      // headline: projected TOTAL goals + 80% interval (left) | 3-way W/D/L (right)
+      const ivBlock = iv ? intervalBar(iv.total_lo, iv.total_hi, predTotal, null) : "";
+      const headline = `<div class="headline">
+        <div class="hl-col left">
+          <div class="hl-k"><span>Projected Goals</span><span class="src">${g.is_live ? "live" : g.is_final ? "75' read" : "pre-match"}</span></div>
+          <div class="hl-totline"><span class="hl-pred">${num(predTotal)}</span><span class="hl-vs">proj score <b>${projStr}</b></span></div>
+          <div class="hl-leanrow"><span class="cchip"><span class="ck">Score</span><b>${g.home_abbr} ${ps.home != null ? ps.home : "—"}</b> – <b>${ps.away != null ? ps.away : "—"} ${g.away_abbr}</b></span>${iv ? `<span class="cchip"><span class="ck">80% Int</span><b>${num(iv.total_lo, 0)}–${num(iv.total_hi, 0)}</b></span>` : ""}</div>
+          ${ivBlock}
+        </div>
+        <div class="hl-col">
+          <div class="hl-k"><span>Win / Draw / Loss</span></div>
+          ${wdlBar(wdl, g.away_abbr, g.home_abbr)}
+        </div>
+      </div>`;
+
+      const chips = `<div class="cardchips">
+        <span class="mtbadge mid" title="model_type: ${g.model_type || "soccer_poisson_live"}">◆ POISSON MODEL</span>
+        <span class="cchip score"><span class="ck">Proj</span><b>${projStr}</b></span>
+        ${g.expected_margin != null ? `<span class="cchip"><span class="ck">Supremacy</span><b>${num(Math.abs(g.expected_margin))}</b> ${g.expected_margin >= 0 ? g.home_abbr : g.away_abbr}</span>` : ""}
+        ${g.prior && g.prior.source ? `<span class="cchip"><span class="ck">Prior</span>${g.prior.source === "espn_open_odds" ? "open odds" : g.prior.source === "odds_api" ? "match odds" : g.prior.source}</span>` : ""}
+        <span class="cchip" style="margin-left:auto"><span class="ck">Comp</span>World Cup</span>
+      </div>`;
+
+      // final games: "how it did" — W/D/L ✓/✗ + projected vs actual total
+      let resultRow = "";
+      if (g.is_final) {
+        const wOk = res.wdl_correct;
+        const wCls = wOk === true ? "hit" : wOk === false ? "miss" : "";
+        const err = res.total_error;
+        const tCls = err == null ? "" : err < 1 ? "hit" : err < 2 ? "push" : "miss";
+        resultRow = `<div class="cardresult">
+          <span class="cr-k">How it did</span>
+          ${wCls ? `<span class="cr-grade ${wCls}">${wCls === "hit" ? "✓" : "✗"} W/D/L</span>` : ""}
+          ${tCls ? `<span class="cr-grade ${tCls}">${tCls === "hit" ? "✓" : tCls === "miss" ? "✗" : "≈"} Goals ${err != null ? "±" + num(err) : ""}</span>` : ""}
+          <span class="cr-pva">75' proj <b>${num(res.projected_total_live != null ? res.projected_total_live : predTotal)}</b> → actual <span class="a">${actual != null ? actual : "—"} (${res.actual_score_str || ""})</span></span>
+        </div>`;
+      }
+
+      return `<div class="card ${scls}" style="animation-delay:${i * 40}ms"><div class="cardtop">${pill}<div class="venue">${g.venue || ""}</div></div>
+        ${soccerBox(g)}
+        ${headline}
+        ${chips}
+        ${resultRow}</div>`;
+    }
+
     function renderRecord(s: any) {
       const el = $("record"); if (!s) { el.innerHTML = ""; return; }
       const acc = (v: any) => (v == null ? "—" : Math.round(v <= 1 ? v * 100 : v) + "%");
+      // soccer record (live/final/upcoming + W/D/L accuracy + goal MAE)
+      if (sport === "soccer") {
+        const wdl = s.wdl || {};
+        el.innerHTML = `<div><div class="k">Live</div><div class="v live">${s.live || 0}</div></div><div><div class="k">Upcoming</div><div class="v">${s.upcoming || 0}</div></div><div><div class="k">Final</div><div class="v">${s.final || 0}</div></div>${wdl.n ? `<div><div class="k">W/D/L</div><div class="v g">${acc(wdl.accuracy)}</div></div>` : ""}${s.total_mae != null ? `<div><div class="k">Goal MAE</div><div class="v">${num(s.total_mae, 2)}</div></div>` : ""}`;
+        return;
+      }
       // NBA record (live/final/winner/total_mae_q3) vs MLB record (live/final/ou/winner)
       if (sport === "nba") {
         el.innerHTML = `<div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">Winner Acc</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div><div><div class="k">Q3 Total MAE</div><div class="v">${s.total_mae_q3 != null ? num(s.total_mae_q3, 1) : "—"}</div></div>`;
@@ -576,15 +764,15 @@ export default function Home() {
       const sections: any[] = [];
       const want = (k: string) => todayFilter === "all" || todayFilter === k;
       let gi = 0;
-      const cardFn = sport === "nba" ? nbaCard : todayCard;
+      const cardFn = sport === "soccer" ? soccerCard : sport === "nba" ? nbaCard : todayCard;
       const sec = (k: string, label: string, sub: string, arr: any[]) => {
         if (!arr.length || !want(k)) return;
         sections.push(`<div class="spinesec ${k}" style="animation-delay:${gi * 25}ms"><span class="ssdot"></span><span class="sslab">${label}</span><span class="ssn">${arr.length} game${arr.length === 1 ? "" : "s"} · ${sub}</span><span class="ssrule"></span></div>`);
         arr.forEach((g) => { sections.push(cardFn(g, gi)); gi++; });
       };
       sec("live", SP().liveLabel, SP().liveSub, live);
-      sec("upcoming", "Upcoming", sport === "nba" ? "pregame projections" : "pregame projections", upc);
-      sec("past", sport === "nba" ? "Final — How the Model Did" : "Final — How We Did", sport === "nba" ? "projected vs actual" : "predicted vs actual", past);
+      sec("upcoming", "Upcoming", sport === "soccer" ? "pre-match projections" : "pregame projections", upc);
+      sec("past", sport === "nba" || sport === "soccer" ? "Final — How the Model Did" : "Final — How We Did", sport === "nba" || sport === "soccer" ? "projected vs actual" : "predicted vs actual", past);
       grid.innerHTML = sections.join("") || `<div class="state"><div class="ds">Nothing in this filter</div></div>`;
       // map rendered cards back to todayGames indices for click → detail
       const ordered = [
@@ -622,10 +810,21 @@ export default function Home() {
         <p class="nbhonest">${note || "Calibrated NBA forecasts, not a betting edge. The NBA halftime O/U market was proven efficient — the value here is sharp, well-calibrated projections that beat a naive double-the-pace baseline (test MAE 13.4 / 11.3 / 7.9 points by end of Q1 / Q2 / Q3)."}</p>
       </div>`;
     }
+    // Soccer honest-framing banner — calibrated WC forecasts, low-scoring sport,
+    // halftime O/U market already shown efficient (prediction quality, not a bet).
+    function soccerHonestNote(d: any) {
+      const note = (d && (d.note || d.honest_framing)) || "";
+      const cal = (d && d.calibration) || "";
+      return `<div class="nbabanner soccerbanner">
+        <div class="nbh"><span class="nbpill live">⚽ WORLD CUP</span><b>World Cup Live Model · 2026 FIFA WC</b></div>
+        <p>The 2026 FIFA World Cup is <b>live now</b>. From each match's current state — <b>goals scored + the live minute</b> — an independent-Poisson / Skellam model projects the <b>final total goals</b>, an 80% goals interval, the projected score, and calibrated <b>3-way Win / Draw / Loss</b> probabilities. Pre-match team strength (each side's expected goals) comes from the match odds; in-game it applies an empirically calibrated game-state adjustment (a leading team scores less late, a trailing team pushes).</p>
+        <p class="nbhonest"><b>Honest framing:</b> ${note || "Calibrated World Cup forecasts, not a betting edge. Soccer is low-scoring and near-Poisson; the halftime over/under market was shown efficient — the value is a sharp, well-calibrated live forecast (projected-total MAE 0.86 goals vs a naive 1.16; W/D/L 3-class Brier 0.42, ECE 0.017), not a wager."}${cal ? "" : ""}</p>
+      </div>`;
+    }
     async function load() {
       const grid = $("grid");
       const sp = SP();
-      $("slatehead").textContent = sport === "nba" ? "NBA Slate" : "Today's Slate";
+      $("slatehead").textContent = sport === "nba" ? "NBA Slate" : sport === "soccer" ? "World Cup Slate" : "Today's Slate";
       $("legendbox").style.display = "";
       try {
         const d = await snap(sp.slateKey);
@@ -634,8 +833,8 @@ export default function Home() {
         games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final);
         todayGames = games;
         renderTodayFilters();
-        // NBA: prepend the honest-framing / demo banner above the slate
-        const banner = sport === "nba" ? nbaHonestNote(d) : "";
+        // NBA / soccer: prepend the honest-framing banner above the slate
+        const banner = sport === "nba" ? nbaHonestNote(d) : sport === "soccer" ? soccerHonestNote(d) : "";
         renderTodaySpine();
         if (banner) grid.innerHTML = banner + grid.innerHTML, wireSpineClicks();
         $("refnote").innerHTML = sp.refnote;
@@ -657,16 +856,18 @@ export default function Home() {
     }
     async function loadHistory() {
       const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading ${histDate}</div></div>`;
-      $("slatehead").textContent = sport === "nba" ? "NBA History" : "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      $("slatehead").textContent = sport === "nba" ? "NBA History" : sport === "soccer" ? "World Cup History" : "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
       renderDateStrip();
       try {
         const d = await snap(SP().histKey(histDate));
         const games = (d && d.games) || []; histGames = games;
-        const cardFn = sport === "nba" ? nbaCard : historyCard;
+        const cardFn = sport === "soccer" ? soccerCard : sport === "nba" ? nbaCard : historyCard;
         grid.innerHTML = games.length ? games.map(cardFn).join("") : `<div class="state"><div class="ds">No games this date</div></div>`;
         if (games.length) wireCardClicks("history");
         $("refnote").innerHTML = sport === "nba"
           ? `${games.length} games · ${histDate} · model's by-quarter projection trajectory`
+          : sport === "soccer"
+          ? `${games.length} matches · ${histDate} · projected goals + W/D/L vs the actual result`
           : `${games.length} games · ${histDate} · model's mid-game prediction trajectory`;
       } catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Error loading ${histDate}</div></div>`; }
     }
@@ -1196,8 +1397,8 @@ export default function Home() {
       // reflect active sport: brand tag + selector highlight + Performance availability
       const bt = $("brandtag"); if (bt) bt.textContent = SP().brandtag;
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === sport));
-      // Performance analytics is MLB-only for now — hide the pill on NBA
-      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" ? "none" : "";
+      // Performance analytics is MLB-only for now — hide the pill on NBA + soccer
+      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" ? "none" : "";
       renderDateStrip();
     }
 
@@ -1410,7 +1611,151 @@ export default function Home() {
       $("refnote").innerHTML = `${g.away_abbr} @ ${g.home_abbr}${g.venue ? " · " + g.venue : ""}`;
     }
 
+    // ============================================================
+    // SOCCER DEEP VIEW — the 3-way W/D/L arc + a per-outcome readout, the projected
+    // goals + 80% interval distribution, the projected score, and (for live/final)
+    // the by-MINUTE trajectory of projected total + home-win prob. Reuses the
+    // detail card scaffolding (dt-card / dt-head / intervalBar) with goals/minute/
+    // 3-way vocabulary. No odds book, no pitchers.
+    // ============================================================
+    function renderSoccerDetail() {
+      const grid = $("grid");
+      $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      const { g } = detailGame;
+      $("slatehead").textContent = "Match Detail";
+      const res = g.result || {};
+      const hr = g.current_home_score != null ? g.current_home_score : (g._hr || 0);
+      const ar = g.current_away_score != null ? g.current_away_score : (g._ar || 0);
+      const showScore = g.is_live || g.is_final;
+      const wdl = g.wdl;
+      const predTotal = g.model_prediction != null ? g.model_prediction : g.projected_total_goals;
+      const iv = g.prediction_interval_80 || g.interval_80_goals;
+      const ps = g.projected_score || {};
+      const projStr = g.projected_score_str || (ps.home != null ? `${ps.home}-${ps.away}` : "—");
+      const minute = g.minute_label || g.display_clock || (g.minute != null ? g.minute + "'" : "");
+      const preds = (g.trajectory || g.evolving_predictions || []).slice();
+      const actualTotal = g.is_final ? (res.actual_total != null ? res.actual_total : g.final_total) : null;
+      const liveTotal = (g.is_live && (hr + ar) != null) ? hr + ar : null;
+
+      const pill = g.is_live
+        ? `<span class="statuspill live"><span class="pulse"></span>${minute || "LIVE"}</span>`
+        : g.is_final ? `<span class="statuspill final">FULL-TIME${g.date ? " · " + g.date : ""}</span>`
+        : `<span class="statuspill upcoming">${g.start_time ? new Date(g.start_time).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) : "SCHEDULED"}</span>`;
+
+      const winHome = showScore && hr > ar, winAway = showScore && ar > hr;
+      const matchHead = `<div class="dt-head">
+        <div class="dt-side away${winAway ? " w" : ""}"><img src="${logo(g.away_abbr)}" onerror="this.style.visibility='hidden'"><div class="dt-tn"><span class="dt-ab">${g.away_abbr || ""}</span><span class="dt-full">${g.away_team || ""}</span></div></div>
+        <div class="dt-center">${pill}${showScore ? `<div class="dt-score">${ar}<span class="dash">–</span>${hr}</div>` : `<div class="dt-at">@</div>`}<div class="dt-venue">${g.venue || ""}${g.competition ? " · " + g.competition : ""}</div></div>
+        <div class="dt-side home${winHome ? " w" : ""}"><div class="dt-tn rt"><span class="dt-ab">${g.home_abbr || ""}</span><span class="dt-full">${g.home_team || ""}</span></div><img src="${logo(g.home_abbr)}" onerror="this.style.visibility='hidden'"></div>
+      </div>`;
+
+      // MODEL block — projected final score + total goals + most-likely outcome
+      const order = wdl ? [{ p: wdl.home_win, l: g.home_abbr + " win" }, { p: wdl.draw, l: "Draw" }, { p: wdl.away_win, l: g.away_abbr + " win" }] : [];
+      const top = order.length ? order.reduce((a: any, b: any) => (Number(b.p) > Number(a.p) ? b : a)) : null;
+      const modelBlock = `<div class="dt-card"><div class="dt-ct"><span>Model Prediction</span><span class="enginechip mid">◆ POISSON MODEL</span></div>
+        <div class="dt-modelgrid">
+          <div class="dt-pred"><div class="sk">Projected Final</div><div class="score-pred">${g.home_abbr} ${ps.home != null ? ps.home : "—"}<span style="color:var(--ink2)"> – </span>${ps.away != null ? ps.away : "—"} ${g.away_abbr}</div></div>
+          <div class="dt-pred"><div class="sk">Projected Total Goals</div><div class="dt-bignum">${num(predTotal)}</div></div>
+          ${iv ? `<div class="dt-pred"><div class="sk">80% Goals Interval</div><div class="dt-bignum sm">${num(iv.total_lo, 0)} – ${num(iv.total_hi, 0)}</div></div>` : ""}
+        </div>
+        <div class="dt-callrow">
+          ${top ? `<span class="badge pick">${top.l.toUpperCase()} ${Math.round(Number(top.p) * 100)}%</span>` : ""}
+          ${g.expected_margin != null ? `<span class="edge ${g.expected_margin > 0 ? "pos" : "neg"}">${fmtSign(g.expected_margin)} supremacy</span>` : ""}
+          ${g.prior && g.prior.source ? `<span class="cchip"><span class="ck">Prior</span>${g.prior.source === "espn_open_odds" ? "ESPN open odds" : g.prior.source === "odds_api" ? "match odds" : g.prior.source}</span>` : ""}
+        </div></div>`;
+
+      // VIZ block — the signature 3-way W/D/L arc + per-outcome readout
+      const wdlReadout = wdl ? `<div class="wdl-read">
+        <div class="wdl-r h"><span class="wk">${g.home_abbr} Win</span><span class="wv">${Math.round(Number(wdl.home_win) * 100)}%</span></div>
+        <div class="wdl-r d"><span class="wk">Draw</span><span class="wv">${Math.round(Number(wdl.draw) * 100)}%</span></div>
+        <div class="wdl-r a"><span class="wk">${g.away_abbr} Win</span><span class="wv">${Math.round(Number(wdl.away_win) * 100)}%</span></div>
+      </div>` : "";
+      const vizBlock = `<div class="dt-card"><div class="dt-ct"><span>Win / Draw / Loss</span><span class="enginechip mid">◆ 3-WAY</span></div>
+        <div class="dt-wdlwrap"><div class="dt-wdlarc">${wdlArc(wdl, g.away_abbr, g.home_abbr)}</div>${wdlReadout}</div>
+        <div style="margin-top:6px">${wdlBar(wdl, g.away_abbr, g.home_abbr)}</div></div>`;
+
+      // 80% goals interval distribution (lo .. pred .. hi) + per-team expected goals
+      let ivCol = "";
+      if (iv) {
+        const teamRow = (lo: any, hi: any, pt: any, ab: string) => {
+          const vals = [lo, hi, pt].filter((v) => v != null).map(Number);
+          let amin = 0, amax = Math.max(...vals) + 1.2;
+          const sp = amax - amin || 1; const P = (v: number) => ((v - amin) / sp) * 100;
+          return `<div class="dt-teamiv"><span class="tl">${ab}</span><div class="tbar">
+            <div class="tspan" style="left:${P(lo).toFixed(1)}%;width:${(P(hi) - P(lo)).toFixed(1)}%"></div>
+            <div class="tdot" style="left:${P(pt).toFixed(1)}%"></div>
+            <span class="tlab" style="left:${P(pt).toFixed(1)}%">${num(pt)}</span></div></div>`;
+        };
+        const pgHome = g.predicted_home_goals != null ? g.predicted_home_goals : g.predicted_home_runs;
+        const pgAway = g.predicted_away_goals != null ? g.predicted_away_goals : g.predicted_away_runs;
+        ivCol = `<div class="dt-card"><div class="dt-ct"><span>80% Goals Interval</span><span class="enginechip mid">◆ POISSON</span></div>
+          <div class="dt-ivwrap">
+            <div class="dt-vizk">Total goals — model interval + point projection</div>
+            ${intervalBar(iv.total_lo, iv.total_hi, predTotal, liveTotal, "dt-ivbar")}
+            <div class="dt-ivlegend"><span><i style="background:rgba(12,35,64,.3)"></i>80% interval</span><span><i style="background:var(--navy)"></i>projected total ${num(predTotal)}</span>${liveTotal != null ? `<span><i style="background:var(--red)"></i>goals so far ${liveTotal}</span>` : ""}</div>
+            <div class="dt-vizk" style="margin-top:14px">Expected goals per side</div>
+            <div style="margin-top:8px">${teamRow(0, Math.max(2, Math.ceil(pgHome) + 1), pgHome, g.home_abbr)}${teamRow(0, Math.max(2, Math.ceil(pgAway) + 1), pgAway, g.away_abbr)}</div>
+          </div></div>`;
+      }
+
+      // RESULT block (finals only)
+      let resultBlock = "";
+      if (g.is_final) {
+        const wOk = res.wdl_correct, wCls = wOk === true ? "hit" : wOk === false ? "miss" : "";
+        const err = res.total_error, tCls = err == null ? "" : err < 1 ? "hit" : err < 2 ? "push" : "miss";
+        resultBlock = `<div class="dt-card"><div class="dt-ct"><span>How the Model Did</span></div>
+          <div class="cardresult" style="border-top:0;padding-top:0">
+            ${wCls ? `<span class="cr-grade ${wCls}">${wCls === "hit" ? "✓" : "✗"} W/D/L (${res.model_favored})</span>` : ""}
+            ${tCls ? `<span class="cr-grade ${tCls}">${tCls === "hit" ? "✓" : tCls === "miss" ? "✗" : "≈"} Goals ${err != null ? "±" + num(err) : ""}</span>` : ""}
+            <span class="cr-pva">${res.read_at_minute ? res.read_at_minute + "' " : ""}proj <b>${num(res.projected_total_live != null ? res.projected_total_live : predTotal)}</b> → actual <span class="a">${actualTotal != null ? actualTotal : "—"} (${res.actual_score_str || ""})</span></span>
+          </div></div>`;
+      }
+
+      // by-MINUTE trajectory (live + finals with goal-minute detail)
+      let trajBlock = "";
+      if (preds.length && (liveTotal != null || actualTotal != null)) {
+        const refTotal = actualTotal != null ? actualTotal : liveTotal;
+        const last = preds[preds.length - 1];
+        const lastTot = last.projected_final_total != null ? last.projected_final_total : last.pred_total;
+        const conv = refTotal != null ? Math.abs(lastTot - refTotal) : null;
+        const convCls = conv == null ? "mid" : conv < 1 ? "good" : conv < 2 ? "mid" : "bad";
+        const convTxt = conv == null ? "LIVE" : conv < 1 ? "NAILED IT" : conv < 2 ? "CLOSE" : "MISSED";
+        const rows = preds.map((p: any) => {
+          const pt = p.projected_final_total != null ? p.projected_final_total : p.pred_total;
+          const w = p.wdl || {};
+          return `<div class="nbq-row"><span class="nbq-q">${p.minute_label || (p.minute != null ? p.minute + "'" : "")}</span><span class="nbq-cur">${p.cur_home ?? "—"}–${p.cur_away ?? "—"}</span><span class="nbq-pt">${num(pt)}</span><span class="nbq-wp">${g.home_abbr} ${w.home_win != null ? Math.round(w.home_win * 100) : "—"}% · D ${w.draw != null ? Math.round(w.draw * 100) : "—"}%</span></div>`;
+        }).join("");
+        trajBlock = `<div class="dt-card"><div class="dt-ct"><span>By-Minute Trajectory</span><span class="conv ${convCls}">${convTxt}</span></div>
+          <div class="traj nbatraj" style="border:0;padding:4px 0 0">${soccerTrajSVG(preds, actualTotal != null ? actualTotal : null)}
+          <div class="trajfoot"><span><i style="border-color:#0c2340"></i>Proj goals</span><span><i style="border-color:#d97706;border-top-style:dashed"></i>${g.home_abbr} win%</span>${actualTotal != null ? `<span><i style="border-color:#c8102e;border-top-style:dashed"></i>Final ${actualTotal}</span>` : ""}<span style="margin-left:auto;color:var(--ink2)">x = ${SP().xaxis}</span></div>
+          <div class="nbq-tbl"><div class="nbq-row nbq-hd"><span>Minute</span><span>Score</span><span>Proj Goals</span><span>W / D</span></div>${rows}</div>
+          </div></div>`;
+      }
+
+      // INSIGHT block — honest soccer framing
+      const stateTxt = g.is_live ? `live at <b>${minute}</b>` : g.is_final ? "a leakage-safe 75' read" : "the pre-match projection";
+      const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">
+        <p>This is ${stateTxt}. From the current state the Poisson / Skellam model projects <b>${num(predTotal)}</b> total goals (80% interval ${iv ? num(iv.total_lo, 0) + "–" + num(iv.total_hi, 0) : "—"}), a projected score of <b>${projStr}</b>, and a 3-way ${top ? `most-likely outcome of <b>${top.l}</b> at <b>${Math.round(Number(top.p) * 100)}%</b>` : "W/D/L split"}.</p>
+        <p>Pre-match team strength (each side's expected goals, λ) is read from the match odds${g.prior && g.prior.detail && g.prior.detail.totals_line != null ? ` (totals line ${g.prior.detail.totals_line})` : ""}. In-game, remaining goals follow a Poisson rate scaled by the minutes left and an empirically calibrated game-state adjustment — a leading team scores less late, a trailing team pushes.</p>
+        <p class="nbhonest"><b>Honest framing:</b> calibrated World Cup <b>predictions, not a betting edge</b>. Soccer is low-scoring and near-Poisson, and the halftime over/under market was shown efficient — the value is a sharp, well-calibrated forecast (projected-total MAE 0.86 goals, W/D/L 3-class Brier 0.42, ECE 0.017), not a wager.</p>
+      </div></div>`;
+
+      grid.innerHTML = `<div class="detailwrap">
+        <button class="backbtn" id="dt-back">‹ Back to slate</button>
+        ${matchHead}
+        <div class="dt-card"><div class="dt-ct"><span>Half Linescore</span></div>${soccerBox(g)}</div>
+        <div class="dt-cols">${modelBlock}${resultBlock || ivCol}</div>
+        ${vizBlock}
+        ${resultBlock ? ivCol : ""}
+        ${trajBlock}
+        ${insight}
+      </div>`;
+      $("dt-back").onclick = backFromDetail;
+      $("refnote").innerHTML = `${g.away_abbr} vs ${g.home_abbr}${g.venue ? " · " + g.venue : ""} · World Cup model`;
+    }
+
     function renderDetail() {
+      if (sport === "soccer") return renderSoccerDetail();
       if (sport === "nba") return renderNbaDetail();
       const grid = $("grid");
       $("record").innerHTML = "";
@@ -1632,8 +1977,8 @@ export default function Home() {
 
     // ---------- NAVIGATION ----------
     // hash carries the active sport as a prefix so a reload restores it:
-    //   MLB → "#…" (unchanged), NBA → "#nba" / "#nba/game:<id>" / "#nba/history:<d>"
-    const hp = () => (sport === "nba" ? "nba" : ""); // hash prefix segment
+    //   MLB → "#…" (unchanged), NBA → "#nba/…", SOCCER → "#soccer/…"
+    const hp = () => (sport === "nba" ? "nba" : sport === "soccer" ? "soccer" : ""); // hash prefix segment
     const setHash = (rest: string) => {
       const p = hp();
       location.hash = p ? (rest ? p + "/" + rest : p) : rest;
@@ -1648,7 +1993,7 @@ export default function Home() {
       await loadHistory();
     }
     function selectPerf() {
-      if (sport === "nba") return; // analytics is MLB-only for now
+      if (sport === "nba" || sport === "soccer") return; // analytics is MLB-only for now
       mode = "perf"; setHash("performance"); syncHeader();
       $("legendbox").style.display = "none";
       loadPerf();
@@ -1660,8 +2005,8 @@ export default function Home() {
       if (s === sport) return;
       sport = s;
       stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
-      // a sport with no analytics view falls back to the slate
-      if (mode === "perf" && sport === "nba") mode = "today";
+      // a sport with no analytics view (NBA, soccer) falls back to the slate
+      if (mode === "perf" && (sport === "nba" || sport === "soccer")) mode = "today";
       await ensureHistDates();
       syncHeader();
       if (mode === "history" && histDates.length) selectHistory(histDates[histDates.length - 1]);
@@ -1678,6 +2023,9 @@ export default function Home() {
       if (raw === "#nba" || raw.indexOf("#nba/") === 0) {
         sport = "nba";
         raw = raw === "#nba" ? "#" : "#" + raw.slice(5);
+      } else if (raw === "#soccer" || raw.indexOf("#soccer/") === 0) {
+        sport = "soccer";
+        raw = raw === "#soccer" ? "#" : "#" + raw.slice(8);
       }
       await ensureHistDates();
       syncHeader();

@@ -606,3 +606,52 @@ body{
 .nbq-row .nbq-pt{font-family:'Oswald';font-weight:600;font-size:14px;color:var(--navy)}
 .nbq-row .nbq-wp{font-family:'IBM Plex Mono';font-size:11px;color:var(--amber);font-weight:600}
 @media(max-width:760px){.sportsel{order:2}}
+
+/* ============================================================
+   SOCCER — World Cup model. Goals / minute / 3-way W/D/L vocabulary.
+   Reuses the card / headline / detail scaffolding; these rules add the
+   soccer-native bits: the SOCCER selector accent (green), the 3-way
+   Win/Draw/Loss split bar + caption, the deep-view arc readout, and the
+   half-based linescore tweaks. MLB + NBA are untouched.
+   ============================================================ */
+.sportsel .sportbtn[data-sport="soccer"].on{color:var(--green)}
+
+/* half-based linescore: tighten the 2 half columns + single goals total */
+.box.soccerbox .bxrow{grid-template-columns:1fr 34px 34px 38px}
+.box.soccerbox .rhe-c.r{color:var(--green)}
+.box.soccerbox .bxrow.win .rhe-c.r{color:var(--green)}
+
+/* 3-way Win / Draw / Loss split bar (home navy | draw slate | away red) */
+.wdlbar{display:flex;align-items:center;gap:8px}
+.wdlbar .wdlt{font-family:'Oswald';font-weight:700;font-size:12px;width:34px}
+.wdlbar .wdlt.h{text-align:right;color:var(--navy)} .wdlbar .wdlt.a{color:var(--red)}
+.wdlsplit{flex:1;position:relative;height:16px;border-radius:7px;overflow:hidden;background:var(--line2);display:flex}
+.wdlsplit>div{height:100%;display:flex;align-items:center;justify-content:center;min-width:0;transition:width .3s}
+.wdlsplit .hm{background:linear-gradient(90deg,#16365e,#0c2340)}
+.wdlsplit .dr{background:linear-gradient(90deg,#8b95a3,#64748b)}
+.wdlsplit .aw{background:linear-gradient(90deg,#e0455f,#c8102e)}
+.wdlsplit span{font-family:'IBM Plex Mono';font-size:9px;font-weight:600;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.3)}
+.wdlcap{display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-family:'IBM Plex Mono';font-size:9.5px;font-weight:600}
+.wdlcap .h{color:var(--navy)} .wdlcap .d{color:var(--slate)} .wdlcap .a{color:var(--red)}
+
+/* deep-view 3-way arc + per-outcome readout */
+.dt-wdlwrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+.dt-wdlarc{display:flex;justify-content:center}
+.dt-wdlarc svg{width:100%;max-width:260px;height:auto}
+.wdl-read{display:flex;flex-direction:column;gap:8px}
+.wdl-read .wdl-r{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:9px;background:var(--slatebg)}
+.wdl-read .wdl-r .wk{font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+.wdl-read .wdl-r .wv{font-family:'Oswald';font-weight:700;font-size:20px}
+.wdl-read .wdl-r.h{background:rgba(12,35,64,.07)} .wdl-read .wdl-r.h .wk,.wdl-read .wdl-r.h .wv{color:var(--navy)}
+.wdl-read .wdl-r.d .wk,.wdl-read .wdl-r.d .wv{color:var(--slate)}
+.wdl-read .wdl-r.a{background:var(--redsoft)} .wdl-read .wdl-r.a .wk,.wdl-read .wdl-r.a .wv{color:var(--red)}
+@media(max-width:640px){.dt-wdlwrap{grid-template-columns:1fr}}
+
+/* soccer honest-framing banner accent (green left-rule, WC green pill) */
+.nbabanner.soccerbanner{background:linear-gradient(135deg,#0c2340,#16365e)}
+.nbabanner.soccerbanner .nbpill.live{background:var(--green)}
+.nbabanner.soccerbanner .nbhonest{border-left-color:var(--green)}
+.nbabanner.soccerbanner .nbhonest b{color:#c8f5d6}
+
+/* soccer trajectory block height (matches NBA dual-axis sparkline) */
+.traj.nbatraj svg{height:96px}
