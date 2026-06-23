@@ -80,7 +80,7 @@ export default function Home() {
       nba: {
         key: "nba", label: "NBA", brandtag: "NBA Quarter Model",
         unit: "points", unitAbbr: "P", period: "quarter", periodAbbr: "Q", periodLabel: "quarters",
-        slateKey: "nba", histKey: (d: string) => "nba:" + d, histDatesKey: "nba_dates",
+        slateKey: "nba", histKey: (d: string) => "nba:" + d, histDatesKey: "nba_dates", analyticsKey: "nba_analytics",
         noPitchers: true, xaxis: "quarters completed",
         liveLabel: "Live Now", liveSub: "quarter model updating",
         refnote: "DiamondEdge NBA quarter model · projects from any quarter boundary · data via Supabase",
@@ -96,7 +96,7 @@ export default function Home() {
       nhl: {
         key: "nhl", label: "NHL", brandtag: "NHL Period Model",
         unit: "goals", unitAbbr: "G", period: "period", periodAbbr: "P", periodLabel: "periods",
-        slateKey: "nhl", histKey: (d: string) => "nhl:" + d, histDatesKey: "nhl_dates",
+        slateKey: "nhl", histKey: (d: string) => "nhl:" + d, histDatesKey: "nhl_dates", analyticsKey: "nhl_analytics",
         noPitchers: true, xaxis: "periods completed",
         liveLabel: "Live Now", liveSub: "period model updating",
         refnote: "DiamondEdge NHL period model · projects from each intermission · data via Supabase",
@@ -104,13 +104,16 @@ export default function Home() {
       nfl: {
         key: "nfl", label: "NFL", brandtag: "NFL Quarter Model",
         unit: "points", unitAbbr: "P", period: "quarter", periodAbbr: "Q", periodLabel: "quarters",
-        slateKey: "nfl", histKey: (d: string) => "nfl:" + d, histDatesKey: "nfl_dates",
+        slateKey: "nfl", histKey: (d: string) => "nfl:" + d, histDatesKey: "nfl_dates", analyticsKey: "nfl_analytics",
         noPitchers: true, xaxis: "quarters completed",
         liveLabel: "Live Now", liveSub: "quarter model updating",
         refnote: "DiamondEdge NFL quarter model · projects from each quarter boundary · data via Supabase",
       },
     };
     const SP = () => SPORTS[sport];
+    // Performance view availability: MLB (rich) + NBA/NHL/NFL (per-sport
+    // calibration/MAE view, fed by '<sport>_analytics'). Soccer: not yet.
+    const hasPerf = () => sport === "mlb" || !!SPORTS[sport]?.analyticsKey;
     // sport-aware label helpers for the shared period-model card/detail (NBA + NHL).
     // NBA grades/projects at end-Q3; NHL at end-P2 (second intermission). The
     // payload carries both *_q3 and *_p2 result keys (identical values), so the
@@ -1290,6 +1293,135 @@ export default function Home() {
       $("refnote").innerHTML = `Analytics snapshot${a.generated_at ? " · generated " + new Date(a.generated_at).toLocaleString() : ""} · all metrics out-of-sample, leakage-audited`;
     }
 
+    // ============================================================
+    // PER-SPORT PERFORMANCE — NBA / NHL / NFL analytics view.
+    // Mirrors the MLB Performance tab but driven by each sport's
+    // test_report.json (packaged into the '<sport>_analytics' Supabase
+    // key by multisport/push_sport_analytics.py). REUSES the exact MLB
+    // renderers: reliabilitySVG for the win-prob calibration curve,
+    // barChart for projected-total MAE by period (model vs naive vs
+    // line), plus an accuracy-by-period line via lineChart. Sport-aware
+    // labels (quarters/periods, points/goals). Honest narrative: the
+    // model is calibrated and beats naive while matching the efficient
+    // line — prediction quality, NOT a betting edge.
+    // ============================================================
+    function renderSportPerf(a: any) {
+      const grid = $("grid");
+      if (!a || !a.by_period) {
+        grid.innerHTML = `<div class="state"><div class="ds">No analytics</div><div>Performance snapshot not published yet for ${SP().label}.</div></div>`;
+        return;
+      }
+      const meta = a.meta || {}, ov = a.overall || {};
+      const periods = a.by_period || [], rel = a.reliability || [];
+      const unit = meta.unit || SP().unit;          // "points" | "goals"
+      const pAbbr = meta.period_abbr || SP().periodAbbr; // "Q" | "P"
+      const periodWord = meta.period || SP().period;     // "quarter" | "period"
+      const sportName = SP().label;
+
+      let html = `<div class="perfwrap">`;
+
+      // ── KPI strip ──
+      let kpis = `<div class="kpistrip">`;
+      kpis += statTile(`Proj-Total MAE`, num(ov.proj_total_MAE, 2), `${unit}, out-of-sample`, "g");
+      if (ov.naive_total_MAE != null) kpis += statTile("Naive Baseline", num(ov.naive_total_MAE, 2), `${unit}, double-the-pace`, "r");
+      if (ov.line_total_MAE != null) kpis += statTile("Market Line MAE", num(ov.line_total_MAE, 2), "efficient — we match it", "");
+      kpis += statTile("Win-Prob ECE", num(ov.winprob_ECE, 3), "calibration error", "g");
+      kpis += statTile("Winner Accuracy", fmtPct(ov["win_acc_at_0.5"]), `${meta.n_test_states || ""} states · Brier ${num(ov.winprob_brier, 3)}`, "g");
+      kpis += `</div>`;
+      html += kpis;
+
+      // ── honest framing box (sport-specific narrative) ──
+      html += `<div class="honestbox">
+        <div class="hbh"><i></i>The Honest Framing — Prediction Quality, Not a Betting Edge</div>
+        <p>${a.note || a.honest_framing || ""}</p>
+        <div class="hbtag">calibrated · beats the naive pace projection · matches the efficient market line · not a bet signal</div>
+      </div>`;
+
+      // ── Panel 1: win-prob reliability curve (reuses reliabilitySVG) ──
+      const relBody = `<div class="reliwrap">${reliabilitySVG(rel, "pred_prob", "empirical_rate")}
+        <div class="relilegend"><div><span class="rl-dot"></span>Model decile (size ∝ sample n)</div><div><span class="rl-diag"></span>Perfect calibration</div></div></div>`;
+      html += panel(
+        "Win-Probability Calibration",
+        `Each dot is a decile of predicted home-win probability plotted against the observed home-win rate (test season ${meta.test_season || ""}). Points hugging the dashed diagonal mean the probabilities are honest — when the model says 70%, home wins ~70% of the time. Overall ECE ${num(ov.winprob_ECE, 3)}, Brier ${num(ov.winprob_brier, 3)}.`,
+        relBody);
+
+      // ── Panel 2: projected-total MAE by period — model vs naive vs line ──
+      // grouped bars: for each boundary emit model / naive / line side-by-side.
+      const maeBars: any[] = [];
+      periods.forEach((p: any) => {
+        const lab = p.period_label || `${pAbbr}${p.period}`;
+        if (p.proj_total_MAE != null) maeBars.push({ label: "model", sub: lab, value: p.proj_total_MAE, color: "#c8102e" });
+        if (p.naive_total_MAE != null) maeBars.push({ label: "naive", sub: lab, value: p.naive_total_MAE, color: "#9aa3af" });
+        if (p.line_total_MAE != null) maeBars.push({ label: "line", sub: lab, value: p.line_total_MAE, color: "#16a34a" });
+      });
+      const maeLeg = `<div class="plegend"><span><i style="background:#c8102e"></i>Our model</span><span><i style="background:#9aa3af"></i>Naive pace</span><span><i style="background:#16a34a"></i>Market line</span></div>`;
+      const maeBody = maeBars.length
+        ? barChart(maeBars, { W: 560, H: 230, ydec: 1 })
+        : `<div class="nochart">No data</div>`;
+      html += panel(
+        `Projected-Total MAE by ${periodWord[0].toUpperCase() + periodWord.slice(1)}`,
+        `Mean absolute error of the projected final total (${unit}) from each ${periodWord} boundary. Lower is better. The model (red) beats the naive double-the-pace baseline (grey) at every boundary and converges toward — and matches — the efficient market line (green) where one is posted. This is the core "calibrated and sharp, but no edge" result.`,
+        maeBody, maeLeg);
+
+      // ── Panel 3: win-prob accuracy by period (reuses lineChart) ──
+      const xs = periods.map((p: any) => p.boundary_label || (`end ${pAbbr}${p.period}`));
+      const accSeries = [{
+        name: "Winner accuracy", color: "#0c2340", showDots: true,
+        values: periods.map((p: any) => ({ y: p["win_acc_at_0.5"] })),
+      }];
+      const baseRate = ov.home_win_base_rate;
+      if (baseRate != null) accSeries.push({
+        name: "Home base rate", color: "#9aa3af", showDots: false, dash: "4 3",
+        values: periods.map(() => ({ y: baseRate })),
+      } as any);
+      const accBody = lineChart(accSeries, xs, { W: 560, H: 200, pct: true, ydec: 0, lo: 0.5, hi: 1.0 });
+      const accLeg = baseRate != null
+        ? `<div class="plegend"><span><i style="background:#0c2340"></i>Winner accuracy</span><span><i style="background:#9aa3af"></i>Home base rate ${fmtPct(baseRate, 0)}</span></div>`
+        : `<div class="plegend"><span><i style="background:#0c2340"></i>Winner accuracy at p=0.5</span></div>`;
+      html += panel(
+        `Win-Call Accuracy by ${periodWord[0].toUpperCase() + periodWord.slice(1)}`,
+        `Share of games where the model's favorite (P(home win) ≷ 0.5) matched the actual winner, by ${periodWord} boundary. Accuracy climbs as the game unfolds and information accrues${baseRate != null ? `, well above the ${fmtPct(baseRate, 0)} home-win base rate` : ""}.`,
+        accBody, accLeg);
+
+      // ── Panel 4: per-period detail table ──
+      const rows = periods.map((p: any) => {
+        const lab = p.boundary_label || `end ${pAbbr}${p.period}`;
+        return `<tr>
+          <td class="spk">${lab}</td>
+          <td>${p.n ?? "—"}</td>
+          <td class="g">${num(p.proj_total_MAE, 2)}</td>
+          <td class="r">${num(p.naive_total_MAE, 2)}</td>
+          <td>${p.line_total_MAE != null ? num(p.line_total_MAE, 2) : "—"}</td>
+          <td>${num(p.margin_MAE, 2)}</td>
+          <td>${num(p.winprob_brier, 3)}</td>
+          <td class="g">${fmtPct(p["win_acc_at_0.5"], 1)}</td>
+        </tr>`;
+      }).join("");
+      const tbl = `<div class="sptblwrap"><table class="sptbl">
+        <thead><tr><th>Boundary</th><th>n</th><th>Total MAE</th><th>Naive</th><th>Line</th><th>Margin MAE</th><th>Brier</th><th>Win acc</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+      html += panel(
+        "By-Boundary Detail",
+        `Every metric at each ${periodWord} boundary on the held-out test season. Total/Naive/Line are projected-total MAE in ${unit}; Brier and Win acc measure win-probability quality.`,
+        tbl);
+
+      html += `</div>`;
+      grid.innerHTML = html;
+      $("refnote").innerHTML = `${sportName} performance · test season ${meta.test_season || ""} · ${meta.n_test_states || ""} held-out states${a.generated_at ? " · generated " + new Date(a.generated_at).toLocaleString() : ""} · out-of-sample, leakage-audited`;
+    }
+
+    let _lastSportAnalytics: any = null;
+    async function loadSportPerf() {
+      const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading ${SP().label} performance</div></div>`;
+      $("slatehead").textContent = `${SP().label} Model Performance`; $("record").innerHTML = "";
+      try {
+        const a = await snap(SP().analyticsKey);
+        _lastSportAnalytics = a; renderSportPerf(a);
+      } catch (e) {
+        grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load ${SP().label} performance snapshot.</div></div>`;
+      }
+    }
+
     // ---- PRE-GAME tab ----
     function renderStrengthsPanel(ms: any) {
       if (!ms || !ms.by_line_bucket) return "";
@@ -1647,8 +1779,9 @@ export default function Home() {
       // reflect active sport: brand tag + selector highlight + Performance availability
       const bt = $("brandtag"); if (bt) bt.textContent = SP().brandtag;
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === sport));
-      // Performance analytics is MLB-only for now — hide the pill on NBA / soccer / NHL
-      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl" ? "none" : "";
+      // Performance analytics: MLB (rich pregame/midgame tabs) + NBA/NHL/NFL
+      // (per-sport calibration/MAE-by-period view). Soccer has no analytics yet.
+      const perf = $("m-perf"); if (perf) perf.style.display = hasPerf() ? "" : "none";
       renderDateStrip();
     }
 
@@ -1682,7 +1815,7 @@ export default function Home() {
       syncHeader();
       $("legendbox").style.display = mode === "today" ? "" : "none";
       if (mode === "history") loadHistory();
-      else if (mode === "perf") loadPerf();
+      else if (mode === "perf") { if (sport === "mlb") loadPerf(); else loadSportPerf(); }
       else load();
     }
     function runTimelineSVG(tl: any[]) {
@@ -2257,10 +2390,12 @@ export default function Home() {
       await loadHistory();
     }
     function selectPerf() {
-      if (sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl") return; // analytics is MLB-only for now
+      if (!hasPerf()) return; // no analytics for this sport (soccer) yet
       mode = "perf"; setHash("performance"); syncHeader();
       $("legendbox").style.display = "none";
-      loadPerf();
+      // MLB → rich pregame/midgame tabs; NBA/NHL/NFL → per-sport calibration view.
+      if (sport === "mlb") loadPerf();
+      else loadSportPerf();
     }
     $("m-perf").onclick = () => { if (mode !== "perf") selectPerf(); };
 
@@ -2270,7 +2405,7 @@ export default function Home() {
       mode = "home";
       location.hash = "home";
       $("m-perf").classList.remove("on");
-      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl" ? "none" : "";
+      const perf = $("m-perf"); if (perf) perf.style.display = hasPerf() ? "" : "none";
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === "home"));
       const bt = $("brandtag"); if (bt) bt.textContent = "5-Sport Live Platform";
       $("datestrip").innerHTML = "";
@@ -2283,8 +2418,8 @@ export default function Home() {
       if (mode === "home") mode = "today";
       sport = s;
       stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
-      // a sport with no analytics view (NBA, soccer, NHL) falls back to the slate
-      if (mode === "perf" && (sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl")) mode = "today";
+      // a sport with no analytics view (soccer) falls back to the slate
+      if (mode === "perf" && !hasPerf()) mode = "today";
       await ensureHistDates();
       syncHeader();
       if (mode === "history" && histDates.length) selectHistory(histDates[histDates.length - 1]);
