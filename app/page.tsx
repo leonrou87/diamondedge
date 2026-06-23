@@ -17,6 +17,7 @@ export default function Home() {
           <button class="sportbtn" data-sport="nba">NBA</button>
           <button class="sportbtn" data-sport="soccer">SOCCER</button>
           <button class="sportbtn" data-sport="nhl">NHL</button>
+          <button class="sportbtn" data-sport="nfl">NFL</button>
         </div>
         <div class="datestrip-wrap"><div class="datestrip" id="datestrip"></div></div>
         <button class="perfpill" id="m-perf">Performance</button>
@@ -34,16 +35,20 @@ export default function Home() {
     const NBA_SLUG: any = { ATL: "atl", BOS: "bos", BKN: "bkn", BRK: "bkn", CHA: "cha", CHI: "chi", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GSW: "gs", GS: "gs", HOU: "hou", IND: "ind", LAC: "lac", LAL: "lal", MEM: "mem", MIA: "mia", MIL: "mil", MIN: "min", NOP: "no", NO: "no", NYK: "ny", NY: "ny", OKC: "okc", ORL: "orl", PHI: "phi", PHX: "phx", PHO: "phx", POR: "por", SAC: "sac", SAS: "sa", SA: "sa", TOR: "tor", UTA: "utah", UTAH: "utah", WAS: "wsh", WSH: "wsh" };
     // NHL team abbr → ESPN logo slug (CDN serves these as .png by abbreviation)
     const NHL_SLUG: any = { ANA: "ana", ARI: "ari", BOS: "bos", BUF: "buf", CGY: "cgy", CAR: "car", CHI: "chi", COL: "col", CBJ: "cbj", DAL: "dal", DET: "det", EDM: "edm", FLA: "fla", LA: "la", LAK: "la", MIN: "min", MTL: "mtl", NSH: "nsh", NJ: "nj", NJD: "nj", NYI: "nyi", NYR: "nyr", OTT: "ott", PHI: "phi", PIT: "pit", SJ: "sj", SJS: "sj", SEA: "sea", STL: "stl", TB: "tb", TBL: "tb", TOR: "tor", UTA: "utah", UTAH: "utah", VAN: "van", VGK: "vgk", WSH: "wsh", WPG: "wpg" };
+    // NFL team abbr → ESPN logo slug (CDN serves these as .png by abbreviation).
+    // Includes historical/relocated abbrs present in the dataset (OAK→LV, SD→LAC, STL→LAR).
+    const NFL_SLUG: any = { ARI: "ari", ATL: "atl", BAL: "bal", BUF: "buf", CAR: "car", CHI: "chi", CIN: "cin", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GB: "gb", HOU: "hou", IND: "ind", JAX: "jax", KC: "kc", LAC: "lac", LAR: "lar", LV: "lv", MIA: "mia", MIN: "min", NE: "ne", NO: "no", NYG: "nyg", NYJ: "nyj", PHI: "phi", PIT: "pit", SEA: "sea", SF: "sf", TB: "tb", TEN: "ten", WSH: "wsh", OAK: "lv", SD: "lac", STL: "lar" };
     const mlbLogo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nhlLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nhl/500/${NHL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
+    const nflLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nfl/500/${NFL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     // World Cup national-team crests aren't in the serve payload (only abbrs), and
     // there is no stable abbr→logo slug, so soccer renders a clean text-crest chip
     // (the 3-letter country code in a navy badge) instead of an <img>. This keeps
     // the box score + detail header free of broken-image flashes.
     const soccerCrest = (ab: any) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' rx='8' fill='#0c2340'/><text x='20' y='25' font-family='Oswald,sans-serif' font-weight='700' font-size='13' fill='#fff' text-anchor='middle'>${(ab || "").slice(0, 3)}</text></svg>`)}`;
     // sport-aware logo resolver (set per active sport via SP()).
-    const logo = (ab: any) => (sport === "soccer" ? soccerCrest(ab) : sport === "nba" ? nbaLogo(ab) : sport === "nhl" ? nhlLogo(ab) : mlbLogo(ab));
+    const logo = (ab: any) => (sport === "soccer" ? soccerCrest(ab) : sport === "nba" ? nbaLogo(ab) : sport === "nhl" ? nhlLogo(ab) : sport === "nfl" ? nflLogo(ab) : mlbLogo(ab));
     const fmtOdds = (o: any) => (o == null || o === "" ? "—" : Number(o) > 0 ? "+" + o : "" + o);
     const num = (v: any, d = 1) => (v == null ? "—" : Number(v).toFixed(d));
     const tier = (t: any) => (t || "WATCH").toUpperCase();
@@ -61,7 +66,7 @@ export default function Home() {
     // per-sport differences are vocabulary (QUARTERS not innings, POINTS
     // not runs, no pitchers) and the data source. MLB path is unchanged.
     // ============================================================
-    let sport = "mlb"; // "mlb" | "nba" | "soccer" | "nhl"
+    let sport = "mlb"; // "mlb" | "nba" | "soccer" | "nhl" | "nfl"
     const SPORTS: any = {
       mlb: {
         key: "mlb", label: "MLB", brandtag: "MLB Mid-Game Model",
@@ -95,27 +100,36 @@ export default function Home() {
         liveLabel: "Live Now", liveSub: "period model updating",
         refnote: "DiamondEdge NHL period model · projects from each intermission · data via Supabase",
       },
+      nfl: {
+        key: "nfl", label: "NFL", brandtag: "NFL Quarter Model",
+        unit: "points", unitAbbr: "P", period: "quarter", periodAbbr: "Q", periodLabel: "quarters",
+        slateKey: "nfl", histKey: (d: string) => "nfl:" + d, histDatesKey: "nfl_dates",
+        noPitchers: true, xaxis: "quarters completed",
+        liveLabel: "Live Now", liveSub: "quarter model updating",
+        refnote: "DiamondEdge NFL quarter model · projects from each quarter boundary · data via Supabase",
+      },
     };
     const SP = () => SPORTS[sport];
     // sport-aware label helpers for the shared period-model card/detail (NBA + NHL).
     // NBA grades/projects at end-Q3; NHL at end-P2 (second intermission). The
     // payload carries both *_q3 and *_p2 result keys (identical values), so the
     // card/detail reads "_q3" generically and we only swap the wording here.
-    const lastBoundaryLabel = () => (sport === "nhl" ? "end P2" : "end Q3"); // headline source
-    const modelChipLabel = () => (sport === "nhl" ? "◆ PERIOD MODEL" : "◆ QUARTER MODEL");
-    const periodModelType = () => (sport === "nhl" ? "nhl_period_model" : "nba_quarter_model");
-    const periodSpanLabel = () => (sport === "nhl" ? "P1–P3" : "Q1–Q4"); // box card chip
+    const lastBoundaryLabel = () => (sport === "nhl" ? "end P2" : "end Q3"); // headline source (NBA/NFL → end Q3)
+    const modelChipLabel = () => (sport === "nhl" ? "◆ PERIOD MODEL" : "◆ QUARTER MODEL"); // NBA/NFL → quarter
+    const periodModelType = () => (sport === "nhl" ? "nhl_period_model" : sport === "nfl" ? "nfl_quarter_model" : "nba_quarter_model");
+    const periodSpanLabel = () => (sport === "nhl" ? "P1–P3" : "Q1–Q4"); // box card chip (NBA/NFL → Q1–Q4)
     const trajTitle = () => (sport === "nhl" ? "Period-by-Period Read" : "Quarter-by-Quarter Read");
     const firstBoundaryLabel = () => (sport === "nhl" ? "P1" : "Q1");
-    // convergence thresholds (goals for NHL/low-scoring, points for NBA)
-    const convGood = () => (sport === "nba" ? 4 : 1);
-    const convMid = () => (sport === "nba" ? 8 : 2.5);
+    // convergence thresholds: goals for NHL (low-scoring), points for NBA, points for
+    // NFL (chunky scoring — TD 6-7, FG 3 — so the bands are wider than NBA's).
+    const convGood = () => (sport === "nfl" ? 6 : sport === "nba" ? 4 : 1);
+    const convMid = () => (sport === "nfl" ? 12 : sport === "nba" ? 8 : 2.5);
     // period label for a 1-based index, sport-aware:
-    //   NBA → Q1..Q4 then OT, OT2…   NHL → P1..P3 then OT, OT2…   else raw index.
+    //   NBA/NFL → Q1..Q4 then OT, OT2…   NHL → P1..P3 then OT, OT2…   else raw index.
     const periodTick = (n: any) => {
       if (n == null || n === "" || n === "pre") return "pre";
       const i = Number(n);
-      if (sport === "nba") return i <= 4 ? "Q" + i : i === 5 ? "OT" : "OT" + (i - 4);
+      if (sport === "nba" || sport === "nfl") return i <= 4 ? "Q" + i : i === 5 ? "OT" : "OT" + (i - 4);
       if (sport === "nhl") return i <= 3 ? "P" + i : i === 4 ? "OT" : "OT" + (i - 3);
       return String(n);
     };
@@ -127,11 +141,13 @@ export default function Home() {
     }
 
     function boxScore(g: any, innings: any[], evo: any[], sideKey: string) {
-      const isNBA = sport === "nba";
-      // COMPACT box (NBA quarters / NHL periods): one cell per period + a single
+      // NBA + NFL share the quarter box (bare Q index headers, "T" summary). NHL uses
+      // periods (P1–P3 headers, "G" summary). Treat NFL like NBA here.
+      const isNBA = sport === "nba" || sport === "nfl";
+      // COMPACT box (NBA/NFL quarters / NHL periods): one cell per period + a single
       // total column. MLB box: 9 inning cells (or more) + R / H / E summary columns.
-      const compact = sport === "nba" || sport === "nhl";
-      const minCells = sport === "nhl" ? 3 : 4; // NHL = 3 periods, NBA = 4 quarters
+      const compact = sport === "nba" || sport === "nhl" || sport === "nfl";
+      const minCells = sport === "nhl" ? 3 : 4; // NHL = 3 periods, NBA/NFL = 4 quarters
       const n = compact ? Math.max(minCells, innings.length) : Math.max(9, innings.length);
       // compact has one summary column (T); MLB three (R H E)
       const summaryCols = compact ? 1 : 3;
@@ -743,6 +759,11 @@ export default function Home() {
         el.innerHTML = `<div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">Winner Acc</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div><div><div class="k">P2 Goal MAE</div><div class="v">${mae != null ? num(mae, 2) : "—"}</div></div>`;
         return;
       }
+      // NFL record (final / winner accuracy / end-Q3 points MAE)
+      if (sport === "nfl") {
+        el.innerHTML = `<div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">Winner Acc</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div><div><div class="k">Q3 Total MAE</div><div class="v">${s.total_mae_q3 != null ? num(s.total_mae_q3, 1) : "—"}</div></div>`;
+        return;
+      }
       el.innerHTML = `<div><div class="k">Live</div><div class="v live">${s.live || 0}</div></div><div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">O/U</div><div class="v g">${acc((s.ou || {}).accuracy)}</div></div><div><div class="k">Winner</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div>`;
     }
     function chipLabel(d: string) {
@@ -771,8 +792,8 @@ export default function Home() {
     async function ensureHistDates() {
       if (stripReady) return;
       try {
-        if (sport === "nba" || sport === "nhl") {
-          // NBA/NHL dated history snapshot key is <sport>:<date>. In the demo there
+        if (sport === "nba" || sport === "nhl" || sport === "nfl") {
+          // NBA/NHL/NFL dated history snapshot key is <sport>:<date>. In the demo there
           // is a single dated snapshot; probe the documented key, fall back to today.
           const probe = "2026-06-23";
           const hd = await snap(SP().histDatesKey);
@@ -801,7 +822,7 @@ export default function Home() {
       const sections: any[] = [];
       const want = (k: string) => todayFilter === "all" || todayFilter === k;
       let gi = 0;
-      const cardFn = sport === "soccer" ? soccerCard : (sport === "nba" || sport === "nhl") ? nbaCard : todayCard;
+      const cardFn = sport === "soccer" ? soccerCard : (sport === "nba" || sport === "nhl" || sport === "nfl") ? nbaCard : todayCard;
       const sec = (k: string, label: string, sub: string, arr: any[]) => {
         if (!arr.length || !want(k)) return;
         sections.push(`<div class="spinesec ${k}" style="animation-delay:${gi * 25}ms"><span class="ssdot"></span><span class="sslab">${label}</span><span class="ssn">${arr.length} game${arr.length === 1 ? "" : "s"} · ${sub}</span><span class="ssrule"></span></div>`);
@@ -809,7 +830,7 @@ export default function Home() {
       };
       sec("live", SP().liveLabel, SP().liveSub, live);
       sec("upcoming", "Upcoming", sport === "soccer" ? "pre-match projections" : "pregame projections", upc);
-      sec("past", sport === "nba" || sport === "soccer" || sport === "nhl" ? "Final — How the Model Did" : "Final — How We Did", sport === "nba" || sport === "soccer" || sport === "nhl" ? "projected vs actual" : "predicted vs actual", past);
+      sec("past", sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl" ? "Final — How the Model Did" : "Final — How We Did", sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl" ? "projected vs actual" : "predicted vs actual", past);
       grid.innerHTML = sections.join("") || `<div class="state"><div class="ds">Nothing in this filter</div></div>`;
       // map rendered cards back to todayGames indices for click → detail
       const ordered = [
@@ -859,6 +880,18 @@ export default function Home() {
         <p class="nbhonest">${note || "Calibrated NHL forecasts, not a betting edge. The NHL intermission over/under market is efficient — the model essentially MATCHES the line's accuracy (projected-total MAE 1.30 overall vs 1.33) while clearly beating a naive double/triple-the-pace baseline (2.02; a 43% MAE reduction at end-P1, 23% at end-P2). Win-prob is very well calibrated (ECE 0.017, 72.9% accuracy vs a 56.4% home-win base rate)."}</p>
       </div>`;
     }
+    // NFL honest-framing banner shown above the demo slate (offseason mode).
+    // Mirrors nbaHonestNote with NFL-native wording (QUARTERS, POINTS, game-script).
+    function nflHonestNote(d: any) {
+      const off = d && d.is_offseason;
+      const season = (d && d.season) || "2024-25";
+      const note = (d && (d.note || d.honest_framing)) || "";
+      return `<div class="nbabanner">
+        <div class="nbh"><span class="nbpill">${off ? "OFFSEASON DEMO" : "LIVE"}</span><b>NFL Quarter Model${off ? ` · ${season} replay` : ""}</b></div>
+        <p>${off ? `The NFL season is in the offseason, so this is a working <b>demo</b> over recent ${season} games (the full NFL Playoffs + Super Bowl LIX plus a regular-season sample). Each card shows the model's <b>by-quarter projection trajectory</b> — from the end of each quarter (Q1, halftime, end-Q3) versus the actual final — so you can watch it track the game. Serving goes <b>live automatically</b> when the season kicks off.` : `Live ${season} slate — the model re-projects the final total and win probability at every quarter boundary.`}</p>
+        <p class="nbhonest">${note || "Calibrated NFL forecasts, not a betting edge. The NFL halftime over/under market is efficient — the model essentially MATCHES the line's accuracy at halftime (projected-total MAE 7.65 pts vs 7.46) while clearly beating a naive double/quadruple-the-pace baseline (11.88 overall; a 48% MAE reduction at end-Q1, 27% at halftime, 13% at end-Q3). The NFL is the most game-script-driven sport — a leader runs the clock, slowing 2nd-half scoring — and the model's one-score switch + leader-pace features capture that bend. Win-prob is well calibrated (ECE 0.044, accuracy 65%→77%→82% by end-Q1/Q2/Q3 vs a 54.7% home-win base rate)."}</p>
+      </div>`;
+    }
     // Soccer honest-framing banner — calibrated WC forecasts, low-scoring sport,
     // halftime O/U market already shown efficient (prediction quality, not a bet).
     function soccerHonestNote(d: any) {
@@ -873,7 +906,7 @@ export default function Home() {
     async function load() {
       const grid = $("grid");
       const sp = SP();
-      $("slatehead").textContent = sport === "nba" ? "NBA Slate" : sport === "soccer" ? "World Cup Slate" : sport === "nhl" ? "NHL Slate" : "Today's Slate";
+      $("slatehead").textContent = sport === "nba" ? "NBA Slate" : sport === "soccer" ? "World Cup Slate" : sport === "nhl" ? "NHL Slate" : sport === "nfl" ? "NFL Slate" : "Today's Slate";
       $("legendbox").style.display = "";
       try {
         const d = await snap(sp.slateKey);
@@ -882,8 +915,8 @@ export default function Home() {
         games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final);
         todayGames = games;
         renderTodayFilters();
-        // NBA / soccer / NHL: prepend the honest-framing banner above the slate
-        const banner = sport === "nba" ? nbaHonestNote(d) : sport === "soccer" ? soccerHonestNote(d) : sport === "nhl" ? nhlHonestNote(d) : "";
+        // NBA / soccer / NHL / NFL: prepend the honest-framing banner above the slate
+        const banner = sport === "nba" ? nbaHonestNote(d) : sport === "soccer" ? soccerHonestNote(d) : sport === "nhl" ? nhlHonestNote(d) : sport === "nfl" ? nflHonestNote(d) : "";
         renderTodaySpine();
         if (banner) grid.innerHTML = banner + grid.innerHTML, wireSpineClicks();
         $("refnote").innerHTML = sp.refnote;
@@ -905,15 +938,15 @@ export default function Home() {
     }
     async function loadHistory() {
       const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading ${histDate}</div></div>`;
-      $("slatehead").textContent = sport === "nba" ? "NBA History" : sport === "soccer" ? "World Cup History" : sport === "nhl" ? "NHL History" : "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      $("slatehead").textContent = sport === "nba" ? "NBA History" : sport === "soccer" ? "World Cup History" : sport === "nhl" ? "NHL History" : sport === "nfl" ? "NFL History" : "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
       renderDateStrip();
       try {
         const d = await snap(SP().histKey(histDate));
         const games = (d && d.games) || []; histGames = games;
-        const cardFn = sport === "soccer" ? soccerCard : (sport === "nba" || sport === "nhl") ? nbaCard : historyCard;
+        const cardFn = sport === "soccer" ? soccerCard : (sport === "nba" || sport === "nhl" || sport === "nfl") ? nbaCard : historyCard;
         grid.innerHTML = games.length ? games.map(cardFn).join("") : `<div class="state"><div class="ds">No games this date</div></div>`;
         if (games.length) wireCardClicks("history");
-        $("refnote").innerHTML = sport === "nba"
+        $("refnote").innerHTML = sport === "nba" || sport === "nfl"
           ? `${games.length} games · ${histDate} · model's by-quarter projection trajectory`
           : sport === "nhl"
           ? `${games.length} games · ${histDate} · model's by-period projection trajectory`
@@ -1449,7 +1482,7 @@ export default function Home() {
       const bt = $("brandtag"); if (bt) bt.textContent = SP().brandtag;
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === sport));
       // Performance analytics is MLB-only for now — hide the pill on NBA / soccer / NHL
-      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" || sport === "nhl" ? "none" : "";
+      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl" ? "none" : "";
       renderDateStrip();
     }
 
@@ -1641,13 +1674,25 @@ export default function Home() {
           </div></div>`;
       }
 
-      // INSIGHT block — honest framing, sport-aware (NBA quarters / NHL periods)
+      // INSIGHT block — honest framing, sport-aware (NBA / NHL periods / NFL quarters)
       const isNHL = sport === "nhl";
-      const unitWord = SP().unit; // "points" (NBA) | "goals" (NHL)
+      const isNFL = sport === "nfl";
+      const unitWord = SP().unit; // "points" (NBA/NFL) | "goals" (NHL)
+      const modelName = isNHL ? "NHL period" : isNFL ? "NFL quarter" : "NBA quarter";
+      const scoreEffect = isNHL
+        ? " It learns score effects too — a trailing team pulls its goalie late, so empty-net goals can extend a lead."
+        : isNFL
+        ? " It learns game script too — a leader runs the clock late, slowing 2nd-half scoring (the one-score switch + leader-pace features)."
+        : "";
+      const honest = isNHL
+        ? "The NHL intermission over/under market is efficient — the model essentially MATCHES the line's accuracy (projected-total MAE 1.30 vs 1.33) while clearly beating a naive double/triple-the-pace baseline (2.02), not a way to beat the line."
+        : isNFL
+        ? "The NFL halftime over/under market is efficient — the model essentially MATCHES the line at halftime (projected-total MAE 7.65 pts vs 7.46) while clearly beating a naive double/quadruple-the-pace baseline (11.88 overall), not a way to beat the line."
+        : "The NBA halftime O/U market was proven efficient — the value is a sharp forecast that beats a naive double-the-pace baseline, not a way to beat the line.";
       const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">
-        <p>From the <b>${isNHL ? "end of each period (intermission)" : "end of each quarter"}</b>, the ${isNHL ? "NHL period" : "NBA quarter"} model re-projects the final total, a calibrated win probability, and an 80% interval. Watch the trajectory above tighten toward the dashed actual-total line as the game progresses.${isNHL ? " It learns score effects too — a trailing team pulls its goalie late, so empty-net goals can extend a lead." : ""}</p>
+        <p>From the <b>${isNHL ? "end of each period (intermission)" : "end of each quarter"}</b>, the ${modelName} model re-projects the final total, a calibrated win probability, and an 80% interval. Watch the trajectory above tighten toward the dashed actual-total line as the game progresses.${scoreEffect}</p>
         <p>The model projects <b>${num(predTotal)}</b> total ${unitWord} and gives <b>${winAb}</b> a <b>${wpHome != null ? wpHome + (winAb === g.home_abbr ? "" : "→" + (100 - wpHome)) : ""}%</b> edge to win. At ${lastBoundaryLabel()} it was within <b>${errQ3 != null ? "±" + num(errQ3) : "—"}</b> ${unitWord} of the final.</p>
-        <p class="nbhonest"><b>Honest framing:</b> these are calibrated <b>predictions, not a betting edge</b>. ${isNHL ? "The NHL intermission over/under market is efficient — the model essentially MATCHES the line's accuracy (projected-total MAE 1.30 vs 1.33) while clearly beating a naive double/triple-the-pace baseline (2.02), not a way to beat the line." : "The NBA halftime O/U market was proven efficient — the value is a sharp forecast that beats a naive double-the-pace baseline, not a way to beat the line."}</p>
+        <p class="nbhonest"><b>Honest framing:</b> these are calibrated <b>predictions, not a betting edge</b>. ${honest}</p>
       </div></div>`;
 
       grid.innerHTML = `<div class="detailwrap">
@@ -1809,7 +1854,7 @@ export default function Home() {
 
     function renderDetail() {
       if (sport === "soccer") return renderSoccerDetail();
-      if (sport === "nba" || sport === "nhl") return renderNbaDetail();
+      if (sport === "nba" || sport === "nhl" || sport === "nfl") return renderNbaDetail();
       const grid = $("grid");
       $("record").innerHTML = "";
       $("legendbox").style.display = "none";
@@ -2031,7 +2076,7 @@ export default function Home() {
     // ---------- NAVIGATION ----------
     // hash carries the active sport as a prefix so a reload restores it:
     //   MLB → "#…" (unchanged), NBA → "#nba/…", SOCCER → "#soccer/…", NHL → "#nhl/…"
-    const hp = () => (sport === "nba" ? "nba" : sport === "soccer" ? "soccer" : sport === "nhl" ? "nhl" : ""); // hash prefix segment
+    const hp = () => (sport === "nba" ? "nba" : sport === "soccer" ? "soccer" : sport === "nhl" ? "nhl" : sport === "nfl" ? "nfl" : ""); // hash prefix segment
     const setHash = (rest: string) => {
       const p = hp();
       location.hash = p ? (rest ? p + "/" + rest : p) : rest;
@@ -2046,7 +2091,7 @@ export default function Home() {
       await loadHistory();
     }
     function selectPerf() {
-      if (sport === "nba" || sport === "soccer" || sport === "nhl") return; // analytics is MLB-only for now
+      if (sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl") return; // analytics is MLB-only for now
       mode = "perf"; setHash("performance"); syncHeader();
       $("legendbox").style.display = "none";
       loadPerf();
@@ -2059,7 +2104,7 @@ export default function Home() {
       sport = s;
       stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
       // a sport with no analytics view (NBA, soccer, NHL) falls back to the slate
-      if (mode === "perf" && (sport === "nba" || sport === "soccer" || sport === "nhl")) mode = "today";
+      if (mode === "perf" && (sport === "nba" || sport === "soccer" || sport === "nhl" || sport === "nfl")) mode = "today";
       await ensureHistDates();
       syncHeader();
       if (mode === "history" && histDates.length) selectHistory(histDates[histDates.length - 1]);
@@ -2082,6 +2127,9 @@ export default function Home() {
       } else if (raw === "#nhl" || raw.indexOf("#nhl/") === 0) {
         sport = "nhl";
         raw = raw === "#nhl" ? "#" : "#" + raw.slice(5);
+      } else if (raw === "#nfl" || raw.indexOf("#nfl/") === 0) {
+        sport = "nfl";
+        raw = raw === "#nfl" ? "#" : "#" + raw.slice(5);
       }
       await ensureHistDates();
       syncHeader();
