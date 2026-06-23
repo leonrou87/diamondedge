@@ -31,7 +31,7 @@ export default function Home() {
     const resCls = (r: any) => (({ WIN: "win", LOSS: "loss", PUSH: "push" } as any)[(r || "").toUpperCase()] || "");
     const $ = (id: string) => document.getElementById(id) as any;
 
-    let mode = "today", histDates: any[] = [], histDate: any = null, detailGame: any = null, detailReturn = "today", stripReady = false;
+    let mode = "today", histDates: any[] = [], histDate: any = null, detailGame: any = null, detailReturn = "today", stripReady = false, todayFilter = "all";
 
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
@@ -67,32 +67,246 @@ export default function Home() {
       const cpct = g.ou_confidence_pct != null ? `<span class="confpct" title="model confidence in this O/U pick">${g.ou_confidence_pct}%</span>` : "";
       return `<div class="rcontent"><span class="badge ${ouCls}">${ou} ${g.line != null ? g.line : ""}<span class="tier tier-${ouT}">${ouT}</span></span>${cpct}${ouRes}${edge != null ? `<span class="edge ${eCls}">${edge > 0 ? "+" : ""}${num(edge)} edge</span>` : ""}<div class="vsep"></div>${winAb ? `<span class="badge pick">${winAb} ML${wp != null ? ` · ${wp}%` : ""}</span>` : ""}${wRes}</div>`;
     }
+    // ============================================================
+    // MICRO-VISUALIZATIONS — numbers rendered as inline SVG/HTML.
+    // The signature of the terminal upgrade: every prediction is visual.
+    // ============================================================
+
+    // model_type → labelled badge (live_baseout / live_mid / live_empirical / pregame)
+    function modelTypeBadge(g: any) {
+      const mt = (g.model_type || "").toLowerCase();
+      const engineMid = g.model_engine === "mid-game" || g.is_live;
+      let cls = "pregame", label = "PRE-GAME";
+      if (mt.indexOf("baseout") >= 0) { cls = "baseout"; label = "◆ BASE-OUT"; }
+      else if (mt.indexOf("empirical") >= 0) { cls = "empirical"; label = "◆ EMPIRICAL"; }
+      else if (mt.indexOf("mid") >= 0 || (engineMid && mt.indexOf("live") >= 0)) { cls = "mid"; label = "◆ LIVE MID"; }
+      else if (mt.indexOf("live") >= 0) { cls = "baseout"; label = "◆ LIVE"; }
+      else label = "○ PRE-GAME";
+      return `<span class="mtbadge ${cls}" title="model_type: ${g.model_type || "pregame"}">${label}</span>`;
+    }
+
+    // diverging edge bar: model_prediction vs line, over=green right / under=red left.
+    // edge magnitude clamped to ±3 runs over a half-track each side.
+    function edgeBar(edge: any) {
+      if (edge == null) return "";
+      const mag = Math.min(Math.abs(edge), 3) / 3 * 50; // % of full width on one side
+      const over = edge > 0;
+      const fill = over
+        ? `<i class="over" style="width:${mag.toFixed(1)}%"></i>`
+        : `<i class="under" style="width:${mag.toFixed(1)}%"></i>`;
+      return `<div class="edgebar"><span class="mid"></span>${edge !== 0 ? fill : ""}</div>
+        <div class="edgebar-cap"><span>under</span><span>line</span><span>over</span></div>`;
+    }
+
+    // 80% interval distribution bar: lo .. (line) .. pred .. hi on a shared scale.
+    function intervalBar(lo: any, hi: any, pred: any, line: any, cls = "ivbar") {
+      if (lo == null || hi == null) return "";
+      // pad the axis so line/pred outside [lo,hi] still render
+      const vals = [lo, hi, pred, line].filter((v) => v != null).map(Number);
+      let amin = Math.min(...vals), amax = Math.max(...vals);
+      const padv = Math.max(0.6, (amax - amin) * 0.12); amin -= padv; amax += padv;
+      const sp = amax - amin || 1;
+      const P = (v: number) => ((v - amin) / sp) * 100;
+      const spanL = P(lo), spanR = P(hi);
+      const predP = pred != null ? P(Number(pred)) : null;
+      const lineP = line != null ? P(Number(line)) : null;
+      return `<div class="${cls}">
+        <div class="track"></div>
+        <div class="span" style="left:${spanL.toFixed(1)}%;width:${(spanR - spanL).toFixed(1)}%"></div>
+        ${lineP != null ? `<div class="line" style="left:${lineP.toFixed(1)}%"></div><span class="tk ll" style="left:${lineP.toFixed(1)}%">${num(line)}</span>` : ""}
+        ${predP != null ? `<div class="pred" style="left:${predP.toFixed(1)}%"></div><span class="tk pl" style="left:${predP.toFixed(1)}%">${num(pred)}</span>` : ""}
+        <span class="tk lo">${num(lo)}</span><span class="tk hi">${num(hi)}</span>
+      </div>`;
+    }
+
+    // win-prob split bar: away (red) | home (navy), labelled with abbrs+pct.
+    function winProbBar(homeProb: any, awayAb: string, homeAb: string) {
+      if (homeProb == null) return "";
+      const h = Math.max(0, Math.min(1, Number(homeProb)));
+      const hp = Math.round(h * 100), ap = 100 - hp;
+      return `<div class="wpbar"><span class="wpt a">${awayAb}</span>
+        <div class="wpsplit"><div class="aw" style="width:${ap}%"></div><div class="hm" style="width:${hp}%"></div>
+          ${ap >= 14 ? `<span class="pct a">${ap}%</span>` : ""}${hp >= 14 ? `<span class="pct h">${hp}%</span>` : ""}</div>
+        <span class="wpt h">${homeAb}</span></div>`;
+    }
+
+    // P(over) gauge — semicircular dial 0..100% coloured by lean vs 50%.
+    function povGauge(prob: any, line: any) {
+      if (prob == null) return "";
+      const p = Math.max(0, Math.min(1, Number(prob)));
+      const W = 200, H = 116, cx = W / 2, cy = 104, r = 84;
+      const a = Math.PI * (1 - p); // p=0 → left(π), p=1 → right(0)
+      const ex = cx + r * Math.cos(a), ey = cy - r * Math.sin(a);
+      const col = p >= 0.58 ? "#16a34a" : p <= 0.42 ? "#c8102e" : "#64748b";
+      const lean = p >= 0.58 ? "OVER" : p <= 0.42 ? "UNDER" : "≈ LINE";
+      // track arc + value arc
+      const arc = (frac: number, color: string, w: number) => {
+        const aa = Math.PI * (1 - frac);
+        const x = cx + r * Math.cos(aa), y = cy - r * Math.sin(aa);
+        const large = frac > 0.5 ? 0 : 0;
+        return `<path d="M${(cx - r).toFixed(1)} ${cy} A${r} ${r} 0 ${large} 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round"/>`;
+      };
+      const ticks = [0, 0.5, 1].map((t) => {
+        const aa = Math.PI * (1 - t);
+        const x1 = cx + (r + 4) * Math.cos(aa), y1 = cy - (r + 4) * Math.sin(aa);
+        const x2 = cx + (r + 11) * Math.cos(aa), y2 = cy - (r + 11) * Math.sin(aa);
+        return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#cdd3da" stroke-width="1.5"/>`;
+      }).join("");
+      return `<svg viewBox="0 0 ${W} ${H}">
+        ${arc(1, "#eef1f5", 13)}${arc(p, col, 13)}${ticks}
+        <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="6" fill="#fff" stroke="${col}" stroke-width="3"/>
+        <text x="${cx}" y="${cy - 24}" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="30" fill="${col}">${Math.round(p * 100)}%</text>
+        <text x="${cx}" y="${cy - 8}" text-anchor="middle" font-family="Oswald" font-weight="600" font-size="11" letter-spacing="1.5" fill="#5a6573">P(OVER ${line != null ? line : "—"})</text>
+        <text x="${cx - r}" y="${cy + 13}" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#9aa3af">0</text>
+        <text x="${cx + r}" y="${cy + 13}" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#9aa3af">100</text>
+        <text x="${cx}" y="${cy + 9}" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="11" letter-spacing="1" fill="${col}">${lean}</text>
+      </svg>`;
+    }
+
+    // big win-probability semicircular gauge for the deep view (home favoured).
+    function winProbGauge(homeProb: any, awayAb: string, homeAb: string) {
+      if (homeProb == null) return "";
+      const h = Math.max(0, Math.min(1, Number(homeProb)));
+      const W = 220, H = 142, cx = W / 2, cy = 116, r = 88;
+      const favHome = h >= 0.5;
+      const favProb = favHome ? h : 1 - h, favAb = favHome ? homeAb : awayAb;
+      const col = favHome ? "#0c2340" : "#c8102e";
+      const arc = (frac: number, color: string, w: number) => {
+        const aa = Math.PI * (1 - frac);
+        const x = cx + r * Math.cos(aa), y = cy - r * Math.sin(aa);
+        return `<path d="M${(cx - r).toFixed(1)} ${cy} A${r} ${r} 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="${color}" stroke-width="15" stroke-linecap="round"/>`;
+      };
+      // away fills from left, home fills from right — split at h
+      const aa = Math.PI * (1 - (1 - h));
+      const hx = cx + r * Math.cos(Math.PI * (1 - h)), hy = cy - r * Math.sin(Math.PI * (1 - h));
+      const homeArc = `<path d="M${hx.toFixed(1)} ${hy.toFixed(1)} A${r} ${r} 0 0 1 ${(cx + r).toFixed(1)} ${cy}" fill="none" stroke="#0c2340" stroke-width="15" stroke-linecap="round"/>`;
+      const awayArc = `<path d="M${(cx - r).toFixed(1)} ${cy} A${r} ${r} 0 0 1 ${hx.toFixed(1)} ${hy.toFixed(1)}" fill="none" stroke="#c8102e" stroke-width="15" stroke-linecap="round"/>`;
+      return `<svg viewBox="0 0 ${W} ${H}">
+        ${arc(1, "#eef1f5", 15)}${awayArc}${homeArc}
+        <text x="${cx}" y="${cy - 30}" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="38" fill="${col}">${Math.round(favProb * 100)}%</text>
+        <text x="${cx}" y="${cy - 11}" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="15" letter-spacing="1.5" fill="${col}">${favAb} WIN</text>
+        <text x="${(cx - r - 2).toFixed(1)}" y="${cy + 22}" text-anchor="start" font-family="Oswald" font-weight="600" font-size="11" fill="#c8102e">${awayAb} ${Math.round((1 - h) * 100)}%</text>
+        <text x="${(cx + r + 2).toFixed(1)}" y="${cy + 22}" text-anchor="end" font-family="Oswald" font-weight="600" font-size="11" fill="#0c2340">${homeAb} ${Math.round(h * 100)}%</text>
+      </svg>`;
+    }
+
+    // small radial cover-prob dial 0..1 (run-line / spread cover).
+    function coverDial(prob: any) {
+      if (prob == null) return "";
+      const p = Math.max(0, Math.min(1, Number(prob)));
+      const W = 120, H = 120, cx = 60, cy = 60, r = 46, C = 2 * Math.PI * r;
+      const col = p >= 0.55 ? "#16a34a" : p <= 0.45 ? "#c8102e" : "#64748b";
+      const off = C * (1 - p);
+      return `<svg viewBox="0 0 ${W} ${H}">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#eef1f5" stroke-width="11"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${col}" stroke-width="11" stroke-linecap="round"
+          stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${cx} ${cy})"/>
+        <text x="${cx}" y="${cy + 2}" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="24" fill="${col}">${Math.round(p * 100)}<tspan font-size="13">%</tspan></text>
+        <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#9aa3af">COVER</text>
+      </svg>`;
+    }
+
+    // expected-margin diverging mini bar (away favoured negative / home positive)
+    function marginBar(margin: any, awayAb: string, homeAb: string) {
+      if (margin == null) return "";
+      const m = Number(margin), mag = Math.min(Math.abs(m), 6) / 6 * 50;
+      const home = m > 0; // expected_margin: home - away
+      const fill = home
+        ? `<i class="over" style="width:${mag.toFixed(1)}%"></i>`
+        : `<i class="under" style="width:${mag.toFixed(1)}%"></i>`;
+      return `<div class="edgebar"><span class="mid"></span>${m !== 0 ? fill : ""}</div>
+        <div class="edgebar-cap"><span>${awayAb} +${num(Math.abs(m))}</span><span>even</span><span>${homeAb} +${num(Math.abs(m))}</span></div>`;
+    }
+
+    // ============================================================
+
+    // Rich, scannable card: matchup + pitchers + status + headline prediction
+    // (predicted total vs line + lean + diverging edge bar) + 80% interval bar
+    // + win-prob split bar + chips (predicted score, run-line cover, confidence,
+    // P(over)). Live games surface the base-out midgame_prediction; finals add a
+    // result-grading row (predicted vs actual + ✓/✗).
     function todayCard(g: any, i: number) {
       g._hr = g.home_score; g._ar = g.away_score; g._hh = g.home_hits; g._ah = g.away_hits; g._he = g.home_errors; g._ae = g.away_errors; g._final = g.is_final;
+      const mg = g.midgame_prediction;
       const scls = g.is_live ? "live" : g.is_final ? "final" : "upcoming";
-      const slabel = g.is_live ? "LIVE" : g.is_final ? "FINAL" : g.start_time || "SCHEDULED";
-      const pill = g.is_live ? `<span class="statuspill live"><span class="pulse"></span>${g.inning_half || ""} ${g.current_inning || ""}</span>` : `<span class="statuspill ${scls}">${slabel}</span>`;
+      const pill = g.is_live
+        ? `<span class="statuspill live"><span class="pulse"></span>${g.inning_half || ""} ${g.current_inning || ""}${g.outs != null ? ` · ${g.outs} out` : ""}</span>`
+        : g.is_final ? `<span class="statuspill final">FINAL</span>`
+        : `<span class="statuspill upcoming">${g.start_time || "SCHEDULED"}</span>`;
       const ph = num(g.predicted_home_runs), pa = num(g.predicted_away_runs);
-      const wpHome = g.home_win_prob != null ? Math.round(g.home_win_prob * 100) : null;
-      const engine = g.model_engine === "mid-game" ? "mid" : "pre";
-      const engChip = `<span class="enginechip ${engine}">${engine === "mid" ? "◆ MID-GAME MODEL" : "○ PRE-GAME MODEL"}</span>`;
+
+      // headline prediction values — prefer live base-out total/prob when live
+      const predTotal = g.is_live && mg && mg.predicted_total != null ? mg.predicted_total : g.model_prediction;
+      const probOver = g.is_live && mg && mg.prob_over != null ? mg.prob_over : g.model_prob_over;
+      const homeWP = g.is_live && mg && mg.p_home_win != null ? mg.p_home_win : g.home_win_prob;
+      const line = g.line;
+      const edge = g.model_edge;
+      const ou = (g.ou_call || "—").toUpperCase();
+      const ouCls = ou === "OVER" ? "over" : ou === "UNDER" ? "under" : "push";
+      const ouT = tier(g.ou_confidence);
+
       const pmatch = (g.away_pitcher || g.home_pitcher)
-        ? `<div class="pmatch"><span class="pml">SP</span><b>${g.away_pitcher || "TBD"}</b><span class="pvs">vs</span><b>${g.home_pitcher || "TBD"}</b></div>` : "";
-      return `<div class="card" style="animation-delay:${i * 40}ms"><div class="cardtop">${pill}${engChip}<div class="venue">${g.venue || ""}</div></div>
+        ? `<div class="pmatch"><span class="pml">SP</span><b>${g.away_pitcher || "TBD"}${g.away_pitcher_era != null && g.away_pitcher_era !== "" ? ` (${num(g.away_pitcher_era, 2)})` : ""}</b><span class="pvs">vs</span><b>${g.home_pitcher || "TBD"}${g.home_pitcher_era != null && g.home_pitcher_era !== "" ? ` (${num(g.home_pitcher_era, 2)})` : ""}</b></div>` : "";
+
+      // headline strip: TOTAL vs LINE + lean + edge bar (left) | win-prob (right)
+      const iv = (g.is_live && mg && mg.prediction_interval_80) ? mg.prediction_interval_80 : null;
+      const ivBlock = iv ? intervalBar(iv.total_lo, iv.total_hi, predTotal, line) : edgeBar(edge);
+      const headline = `<div class="headline">
+        <div class="hl-col left">
+          <div class="hl-k"><span>Projected Total</span><span class="src">${g.is_live ? "live" : "pregame"}</span></div>
+          <div class="hl-totline"><span class="hl-pred">${num(predTotal)}</span><span class="hl-vs">vs line <b>${line != null ? line : "—"}</b></span></div>
+          <div class="hl-leanrow"><span class="badge ${ouCls}" style="font-size:11px;padding:3px 9px">${ou}<span class="tier tier-${ouT}">${ouT}</span></span>${g.ou_confidence_pct != null ? `<span class="confpct" style="font-size:11px">${g.ou_confidence_pct}%</span>` : ""}</div>
+          ${ivBlock}
+        </div>
+        <div class="hl-col">
+          <div class="hl-k"><span>Win Probability</span>${povGaugeChip(probOver, line)}</div>
+          ${winProbBar(homeWP, g.away_abbr, g.home_abbr)}
+          ${g.is_live && mg && mg.winner ? `<div class="hl-leanrow"><span class="cchip"><span class="ck">Lean</span><b>${mg.winner}</b> ${mg.winner_probability != null ? Math.round(mg.winner_probability * 100) + "%" : ""}</span></div>` : `<div class="hl-leanrow"><span class="cchip"><span class="ck">Pred</span><b>${pa}</b> ${g.away_abbr} – <b>${ph}</b> ${g.home_abbr}</span></div>`}
+        </div>
+      </div>`;
+
+      // chips row: predicted score / run-line cover / confidence tier / model edge
+      const ctier = g.is_live && mg && mg.confidence_tier ? mg.confidence_tier : null;
+      const chips = `<div class="cardchips">
+        ${modelTypeBadge(g)}
+        <span class="cchip score"><span class="ck">Pred</span><b>${pa}</b>–<b>${ph}</b></span>
+        ${g.spread_cover_prob != null ? `<span class="cchip"><span class="ck">RL Cover</span><b>${Math.round(g.spread_cover_prob * 100)}%</b></span>` : ""}
+        ${edge != null ? `<span class="cchip"><span class="ck">Edge</span><b style="color:${edge > 0.25 ? "var(--green)" : edge < -0.25 ? "var(--red)" : "var(--slate)"}">${edge > 0 ? "+" : ""}${num(edge)}</b></span>` : ""}
+        ${ctier ? `<span class="cchip ${ctier === "HIGH" ? "tier-good" : ""}"><span class="ck">Conf</span><b>${ctier}</b></span>` : ""}
+        <span class="cchip" style="margin-left:auto"><span class="ck">Book</span>${g.bookmaker || "—"}</span>
+      </div>`;
+
+      // final games: result grading row (predicted vs actual + ✓/✗)
+      let resultRow = "";
+      if (g.is_final) {
+        const at = g.actual_total != null ? g.actual_total : (g._hr || 0) + (g._ar || 0);
+        const ouG = (g.ou_result || "").toLowerCase();
+        const ouCls2 = ouG === "correct" ? "hit" : ouG === "push" ? "push" : ouG === "wrong" ? "miss" : "";
+        const wG = (g.winner_result || "").toLowerCase();
+        const wCls = wG === "correct" ? "hit" : wG === "push" ? "push" : wG === "wrong" ? "miss" : "";
+        resultRow = `<div class="cardresult">
+          <span class="cr-k">Result</span>
+          ${ouG ? `<span class="cr-grade ${ouCls2}">${ouCls2 === "hit" ? "✓" : ouCls2 === "miss" ? "✗" : "="} O/U</span>` : ""}
+          ${wG ? `<span class="cr-grade ${wCls}">${wCls === "hit" ? "✓" : wCls === "miss" ? "✗" : "="} ML</span>` : ""}
+          <span class="cr-pva">pred <b>${num(g.model_prediction)}</b> → actual <span class="a">${at}</span></span>
+        </div>`;
+      }
+
+      return `<div class="card ${scls}" style="animation-delay:${i * 40}ms"><div class="cardtop">${pill}<div class="venue">${g.venue || ""}</div></div>
         ${pmatch}
         ${boxScore(g, g.linescore_innings || [], g.evolving_predictions, "today")}
-        <div class="rows">
-          <div class="r3 vegas"><div class="rlab">Vegas</div><div class="rcontent">
-            <div class="stat"><span class="sk">O / U Line</span><span class="sv">${g.line != null ? g.line : "—"} <small style="color:var(--ink2)">(${fmtOdds(g.over_odds)}/${fmtOdds(g.under_odds)})</small></span></div><div class="vsep"></div>
-            <div class="stat"><span class="sk">${g.away_abbr} ML</span><span class="sv">${fmtOdds(g.away_ml)}</span></div>
-            <div class="stat"><span class="sk">${g.home_abbr} ML</span><span class="sv">${fmtOdds(g.home_ml)}</span></div>
-            <div class="stat" style="margin-left:auto"><span class="sk">Book</span><span class="sv" style="font-size:11px;text-transform:capitalize">${g.bookmaker || "—"}</span></div></div></div>
-          <div class="r3 pick"><div class="rlab">Our Pick</div>${pickRow(g)}</div>
-          <div class="r3 model"><div class="rlab">Pred Score</div><div class="rcontent">
-            <span class="score-pred">${pa}<small> ${g.away_abbr}</small> &nbsp;–&nbsp; ${ph}<small> ${g.home_abbr}</small></span><div class="vsep"></div>
-            <div class="stat"><span class="sk">Total</span><span class="sv big">${num(g.model_prediction)}</span></div>
-            ${wpHome != null ? `<div class="winprob"><span class="stat"><span class="sk">Win Prob</span><span class="sv">${g.home_abbr} ${wpHome}%</span></span><div class="pbar"><i style="width:${wpHome}%"></i></div></div>` : ""}</div></div>
-        </div></div>`;
+        ${headline}
+        ${chips}
+        ${resultRow}</div>`;
+    }
+
+    // tiny inline P(over) chip used in the card headline (compact gauge)
+    function povGaugeChip(prob: any, line: any) {
+      if (prob == null) return "";
+      const p = Math.max(0, Math.min(1, Number(prob)));
+      const col = p >= 0.58 ? "var(--green)" : p <= 0.42 ? "var(--red)" : "var(--slate)";
+      const lean = p >= 0.58 ? "OVER" : p <= 0.42 ? "UNDER" : "≈";
+      return `<span class="src" style="color:${col};font-family:'IBM Plex Mono'" title="P(over ${line != null ? line : ""})">${Math.round(p * 100)}% ${lean}</span>`;
     }
 
     function trajSVG(preds: any[], actual: number) {
@@ -166,7 +380,57 @@ export default function Home() {
       stripReady = true;
     }
 
-    let todayGames: any[] = [], histGames: any[] = [];
+    let todayGames: any[] = [];
+    let histGames: any[] = [];
+
+    // PILLAR 1 — PAST / LIVE / UPCOMING SPINE.
+    // One clear top-level structure across every game state: LIVE first (base-out
+    // model updating), then UPCOMING (pregame projections), then PAST finals (with
+    // how the prediction did). Status filter chips live in the subbar.
+    function gameState(g: any) { return g.is_live ? "live" : g.is_final ? "past" : "upcoming"; }
+    function renderTodaySpine() {
+      const grid = $("grid");
+      if (!todayGames.length) { grid.innerHTML = `<div class="state"><div class="ds">No games</div></div>`; return; }
+      const live = todayGames.filter((g) => g.is_live);
+      const upc = todayGames.filter((g) => !g.is_live && !g.is_final);
+      const past = todayGames.filter((g) => g.is_final);
+      const sections: any[] = [];
+      const want = (k: string) => todayFilter === "all" || todayFilter === k;
+      let gi = 0;
+      const sec = (k: string, label: string, sub: string, arr: any[]) => {
+        if (!arr.length || !want(k)) return;
+        sections.push(`<div class="spinesec ${k}" style="animation-delay:${gi * 25}ms"><span class="ssdot"></span><span class="sslab">${label}</span><span class="ssn">${arr.length} game${arr.length === 1 ? "" : "s"} · ${sub}</span><span class="ssrule"></span></div>`);
+        arr.forEach((g) => { sections.push(todayCard(g, gi)); gi++; });
+      };
+      sec("live", "Live Now", "base-out model updating", live);
+      sec("upcoming", "Upcoming", "pregame projections", upc);
+      sec("past", "Final — How We Did", "predicted vs actual", past);
+      grid.innerHTML = sections.join("") || `<div class="state"><div class="ds">Nothing in this filter</div></div>`;
+      // map rendered cards back to todayGames indices for click → detail
+      const ordered = [
+        ...(want("live") ? live : []),
+        ...(want("upcoming") ? upc : []),
+        ...(want("past") ? past : []),
+      ];
+      grid.querySelectorAll(".card").forEach((c: any, i: number) => {
+        c.classList.add("clickable");
+        const g = ordered[i];
+        const realIdx = todayGames.indexOf(g);
+        c.onclick = () => openDetail("today", realIdx);
+      });
+    }
+    function renderTodayFilters() {
+      const box = $("legendbox"); if (!box) return;
+      const live = todayGames.filter((g) => g.is_live).length;
+      const upc = todayGames.filter((g) => !g.is_live && !g.is_final).length;
+      const past = todayGames.filter((g) => g.is_final).length;
+      const chip = (k: string, label: string, n: number, live2 = false) =>
+        `<button class="sfchip${todayFilter === k ? " on" : ""}" data-tf="${k}">${live2 ? `<span class="lp"></span>` : ""}${label}<span class="ct">${n}</span></button>`;
+      box.innerHTML = `<div class="spinefilters">${chip("all", "All", todayGames.length)}${chip("live", "Live", live, true)}${chip("upcoming", "Upcoming", upc)}${chip("past", "Final", past)}</div>`;
+      box.querySelectorAll(".sfchip").forEach((c: any) => {
+        c.onclick = () => { todayFilter = c.dataset.tf; renderTodayFilters(); renderTodaySpine(); };
+      });
+    }
     async function load() {
       const grid = $("grid");
       $("slatehead").textContent = "Today's Slate";
@@ -174,9 +438,12 @@ export default function Home() {
       try {
         const d = await snap("today");
         const games = (d && d.games) || []; renderRecord(d && d.summary);
-        if (!games.length) { todayGames = []; grid.innerHTML = `<div class="state"><div class="ds">No games</div></div>`; }
-        else { games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final); todayGames = games; grid.innerHTML = games.map(todayCard).join(""); wireCardClicks("today"); }
-        $("refnote").innerHTML = `DiamondEdge mid-game simulation model · data via Supabase`;
+        // sort within: live, upcoming, past — but spine groups them anyway
+        games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final);
+        todayGames = games;
+        renderTodayFilters();
+        renderTodaySpine();
+        $("refnote").innerHTML = `DiamondEdge base-out mid-game model · MAE 1.94 · data via Supabase`;
       } catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load snapshot.</div></div>`; }
     }
     async function loadHistory() {
@@ -300,6 +567,29 @@ export default function Home() {
       return `<div class="mvlean"><span class="mvchip ${cls}">${label}</span>${delta}</div>`;
     }
 
+    // PILLAR 4 — honest framing (visible, not hidden) + how-the-model-works.
+    // The reachable MLB markets are efficient; we do NOT beat the line. This is a
+    // calibrated PREDICTION product, framed as projection — never a betting edge.
+    function renderHonestBox() {
+      return `<div class="honestbox">
+        <div class="hbh"><i></i>The Honest Framing — Prediction Quality, Not a Betting Edge</div>
+        <p>We tested 30+ approaches against the reachable MLB markets. The verdict is unambiguous: the <b>pregame over/under, money-line, run-line, and player-prop markets are efficient</b>. We do not beat the closing line, and we never claim to.</p>
+        <p>What you see here is something different and honest — the <b>most calibrated MLB prediction product the data allows</b>. Every "lean", "edge" or "P(over)" on this site is a <b>model-vs-line projection</b>, shown so you can see exactly where our forecast sits relative to the market. It is a transparency feature, not a bet signal.</p>
+        <p>Where the model is genuinely sharp is <b>mid-game</b>: once a game is live, the base-out any-state engine re-projects the remaining total, win probability, and an 80% interval from the current game state. That live read is calibrated (low ECE) and accurate (remaining-total MAE <b>1.94</b>) — but the live market reprices just as fast, so even here we frame it as a forecast.</p>
+        <div class="hbtag">markets are efficient · we don't beat the line · this is the sharpest calibrated forecast the data allows</div>
+      </div>`;
+    }
+    function renderModelExplainer() {
+      const steps = [
+        { n: "01", h: "Rich Features", b: "Prior-season team batting (leakage-safe S−1), point-in-time pitcher form, park factors, and the live box score feed a single feature vector." },
+        { n: "02", h: "Current Game State", b: "The base-out <b>any-state</b> model conditions on exactly where the game stands — inning, half, outs, and runners on 1B/2B/3B — so the read reflects the real situation, not an average." },
+        { n: "03", h: "Project the Remainder", b: "It estimates <b>remaining runs</b> for each team, adds them to runs already scored, and produces a predicted final total, per-team scores, and an <b>80% prediction interval</b>." },
+        { n: "04", h: "Calibrated Outputs", b: "From that distribution we read <b>P(over the line)</b>, <b>win probability</b>, and <b>run-line cover</b> — all calibrated out-of-sample (low ECE), shown vs the market as a projection." },
+      ].map((s) => `<div class="exstep" data-n="${s.n}"><div class="exh">${s.h}</div><div class="exb">${s.b}</div></div>`).join("");
+      const flow = `<div class="exflow"><span class="ef">Rich features</span><span class="ea">+</span><span class="ef">Game state</span><span class="ea">→</span><span class="ef out">Total</span><span class="ef out">P(over)</span><span class="ef out">Interval</span><span class="ef out">Win prob</span><span class="ef out">Run-line</span></div>`;
+      return panel("How the Live Base-Out Model Works", "The signature engine behind every live card. A single any-state model maps rich features plus the current base-out situation into a full predictive distribution over the rest of the game — total, per-team scores, P(over), win probability, run-line cover, and an 80% interval. Trained 2015–2024, validated 2025, tested 2026 out-of-sample. Remaining-total MAE 1.94.", `<div class="explainer">${steps}</div>${flow}`);
+    }
+
     let perfTab = "pregame";
     let ouSet = "2026"; // ou_betting set toggle
     let perfOuIdx = 0;
@@ -363,6 +653,8 @@ export default function Home() {
     }
     function renderPregameTab(pv: any, ouB: any, ms?: any) {
       let html = "";
+      // honest framing up top — efficient markets, no betting edge
+      html += renderHonestBox();
       // Pregame vs Vegas MAE time-series (by season)
       if (pv && pv.season_series) {
         const ss = pv.season_series, xs = ss.season.map((s: any) => String(s));
@@ -615,6 +907,8 @@ export default function Home() {
     }
     function renderMidgameTab(test: any, ml: any, lep?: any) {
       let html = "";
+      // how the live base-out model works — the signature explainer, up top
+      html += renderModelExplainer();
       html += renderLiveEdgePanel(lep);
       // Reliability / calibration curve (win prob, mid-game model)
       if (test && test.reliability_winprob) {
@@ -802,26 +1096,88 @@ export default function Home() {
       </div>${pmatch}`;
 
       // model prediction breakdown (today only has full pred fields)
+      // PILLAR 3 — deep micro-viz block. Surfaces EVERY prediction visually:
+      // big win-prob arc, P(over) gauge, 80% interval distribution (lo..line..
+      // pred..hi), per-team interval, run-line cover dial, expected-margin bar,
+      // confidence tier + reason, model_type/engine.
+      let vizBlock = "";
+      if (!isHist) {
+        const mg = g.midgame_prediction;
+        const live = !!(g.is_live && mg);
+        const predTotal = live && mg.predicted_total != null ? mg.predicted_total : g.model_prediction;
+        const probOver = live && mg.prob_over != null ? mg.prob_over : g.model_prob_over;
+        const homeWP = live && mg.p_home_win != null ? mg.p_home_win : g.home_win_prob;
+        const iv = live ? mg.prediction_interval_80 : null;
+        const coverP = live && mg.spread_cover_prob != null ? mg.spread_cover_prob : g.spread_cover_prob;
+        const ctier = live && mg.confidence_tier ? mg.confidence_tier : (g.ou_confidence || null);
+        const creason = live && mg.confidence_reason ? mg.confidence_reason : null;
+
+        const gaugeCol = `<div class="dt-viz"><div class="dt-vizk">Win Probability</div><div class="dt-gauge">${winProbGauge(homeWP, g.away_abbr, g.home_abbr)}</div></div>`;
+        const povCol = `<div class="dt-viz"><div class="dt-vizk">Total — P(Over ${g.line != null ? g.line : "—"})</div><div class="dt-povgauge">${povGauge(probOver, g.line)}</div></div>`;
+        const dials = `<div class="dt-viz"><div class="dt-vizk">Run-Line &amp; Margin</div><div class="dt-dialrow">
+          ${coverP != null ? `<div class="dt-dial"><div class="dk">${(g.spread_call || g.winner_call || "Fav")} −${g.spread_line != null ? g.spread_line : 1.5} Cover</div>${coverDial(coverP)}</div>` : ""}
+          <div class="dt-dial"><div class="dk">Expected Margin</div><div class="dv">${fmtSign(live && mg.predicted_final_home != null ? mg.predicted_final_home - mg.predicted_final_away : g.expected_margin)}</div><div style="margin-top:6px">${marginBar(live && mg.predicted_final_home != null ? mg.predicted_final_home - mg.predicted_final_away : g.expected_margin, g.away_abbr, g.home_abbr)}</div></div>
+        </div></div>`;
+
+        // 80% interval distribution (lo..line..pred..hi) + per-team intervals
+        let ivCol = "";
+        if (iv) {
+          const teamRow = (lo: any, hi: any, pt: any, ab: string) => {
+            const vals = [lo, hi, pt].filter((v) => v != null).map(Number);
+            let amin = Math.min(0, ...vals), amax = Math.max(...vals) + 0.6;
+            const sp = amax - amin || 1; const P = (v: number) => ((v - amin) / sp) * 100;
+            return `<div class="dt-teamiv"><span class="tl">${ab}</span><div class="tbar">
+              <div class="tspan" style="left:${P(lo).toFixed(1)}%;width:${(P(hi) - P(lo)).toFixed(1)}%"></div>
+              <div class="tdot" style="left:${P(pt).toFixed(1)}%"></div>
+              <span class="tlab" style="left:${P(pt).toFixed(1)}%">${num(pt)}</span></div></div>`;
+          };
+          ivCol = `<div class="dt-card"><div class="dt-ct"><span>80% Prediction Interval</span><span class="enginechip mid">◆ BASE-OUT</span></div>
+            <div class="dt-ivwrap">
+              <div class="dt-vizk">Total runs — model interval vs the Vegas line</div>
+              ${intervalBar(iv.total_lo, iv.total_hi, predTotal, g.line, "dt-ivbar")}
+              <div class="dt-ivlegend"><span><i style="background:rgba(12,35,64,.3)"></i>80% interval</span><span><i style="background:var(--navy)"></i>point prediction ${num(predTotal)}</span><span><i style="background:var(--red)"></i>Vegas line ${g.line != null ? g.line : "—"}</span></div>
+              <div style="margin-top:14px">${teamRow(iv.away_lo, iv.away_hi, mg.predicted_final_away, g.away_abbr)}${teamRow(iv.home_lo, iv.home_hi, mg.predicted_final_home, g.home_abbr)}</div>
+            </div></div>`;
+        }
+
+        const confBlock = creason ? `<div class="confreason"><div class="ct">Confidence: ${ctier || "—"}</div>${creason}</div>` : "";
+        vizBlock = `<div class="dt-card"><div class="dt-ct"><span>Prediction Visuals</span>${modelTypeBadge(g)}</div>
+            <div class="dt-vizrow">${gaugeCol}${povCol}</div>
+            <div style="margin-top:14px">${dials}</div>
+            ${confBlock ? `<div style="margin-top:14px">${confBlock}</div>` : ""}
+          </div>${ivCol}`;
+      }
+
       let modelBlock = "";
       if (!isHist) {
-        const engine = g.model_engine === "mid-game" ? "mid" : "pre";
+        // live games: prefer the base-out mid-game projection so the Model
+        // Prediction block agrees with the headline / viz / interval (which all
+        // use midgame_prediction). Falls back to the pregame fields otherwise.
+        const mgM = g.midgame_prediction;
+        const liveM = !!(g.is_live && mgM);
+        const engine = (g.model_engine === "mid-game" || liveM) ? "mid" : "pre";
         const engChip = `<span class="enginechip ${engine}">${engine === "mid" ? "◆ MID-GAME MODEL" : "○ PRE-GAME MODEL"}</span>`;
-        const ph = num(g.predicted_home_runs), pa = num(g.predicted_away_runs);
-        const wpHome = g.home_win_prob != null ? Math.round(g.home_win_prob * 100) : null;
+        const pa = liveM && mgM.predicted_final_away != null ? num(mgM.predicted_final_away) : num(g.predicted_away_runs);
+        const ph = liveM && mgM.predicted_final_home != null ? num(mgM.predicted_final_home) : num(g.predicted_home_runs);
+        const projTotal = liveM && mgM.predicted_total != null ? mgM.predicted_total : g.model_prediction;
+        const homeWPm = liveM && mgM.p_home_win != null ? mgM.p_home_win : g.home_win_prob;
+        const wpHome = homeWPm != null ? Math.round(Number(homeWPm) * 100) : null;
         const ou = (g.ou_call || "—").toUpperCase(), ouT = tier(g.ou_confidence);
         const ouCls = ou === "OVER" ? "over" : ou === "UNDER" ? "under" : "push";
-        const edge = g.model_edge, eCls = edge > 0.25 ? "pos" : edge < -0.25 ? "neg" : "flat";
+        // edge: live = mid-game projected total vs line; else stored model_edge
+        const edge = (liveM && projTotal != null && g.line != null) ? Number(projTotal) - Number(g.line) : g.model_edge;
+        const eCls = edge > 0.25 ? "pos" : edge < -0.25 ? "neg" : "flat";
         modelBlock = `<div class="dt-card"><div class="dt-ct"><span>Model Prediction</span>${engChip}</div>
           <div class="dt-modelgrid">
-            <div class="dt-pred"><div class="sk">Predicted Score</div><div class="score-pred">${pa}<small> ${g.away_abbr}</small> – ${ph}<small> ${g.home_abbr}</small></div></div>
-            <div class="dt-pred"><div class="sk">Projected Total</div><div class="dt-bignum">${num(g.model_prediction)}</div></div>
+            <div class="dt-pred"><div class="sk">${liveM ? "Projected Final" : "Predicted Score"}</div><div class="score-pred">${pa}<small> ${g.away_abbr}</small> – ${ph}<small> ${g.home_abbr}</small></div></div>
+            <div class="dt-pred"><div class="sk">Projected Total</div><div class="dt-bignum">${num(projTotal)}</div></div>
             ${wpHome != null ? `<div class="dt-pred"><div class="sk">${g.home_abbr} Win Prob</div><div class="dt-wpwrap"><span class="dt-bignum sm">${wpHome}%</span><div class="pbar"><i style="width:${wpHome}%"></i></div></div></div>` : ""}
           </div>
           <div class="dt-callrow">
             <span class="badge ${ouCls}">${ou} ${g.line != null ? g.line : ""}<span class="tier tier-${ouT}">${ouT}</span></span>
             ${g.ou_confidence_pct != null ? `<span class="confpct">${g.ou_confidence_pct}% conf</span>` : ""}
             ${edge != null ? `<span class="edge ${eCls}">${edge > 0 ? "+" : ""}${num(edge)} edge vs line</span>` : ""}
-            ${g.is_final && g.ou_result ? `<span class="res ${resCls(g.ou_result)}">${g.ou_result}</span>` : ""}
+            ${g.is_final && g.ou_result ? `<span class="res ${resCls(g.ou_result)}">${(g.ou_result || "").toUpperCase()}</span>` : ""}
           </div></div>`;
       } else {
         const pre = evo[0], last = evo[evo.length - 1] || pre;
@@ -833,17 +1189,35 @@ export default function Home() {
           </div></div>`;
       }
 
-      // odds block (today only)
+      // odds block (today only) — line, odds, spread, line-movement, per-book list
       let oddsBlock = "";
       if (!isHist) {
-        oddsBlock = `<div class="dt-card"><div class="dt-ct"><span>Vegas Line &amp; Odds</span><span class="dt-book">${g.bookmaker || ""}</span></div>
+        // line movement (opening → current)
+        let moveRow = "";
+        if (g.opening_total != null && g.line != null && g.opening_total !== g.line) {
+          const dir = g.line > g.opening_total ? "▲" : "▼";
+          const dcol = g.line > g.opening_total ? "var(--green)" : "var(--red)";
+          moveRow = `<div class="dt-callrow" style="border-top:0;padding-top:8px"><span class="cr-k">Line move</span><span style="font-family:'IBM Plex Mono';font-size:13px">${g.opening_total} → <b style="color:${dcol}">${g.line} ${dir}</b></span></div>`;
+        } else if (g.line_movement) {
+          moveRow = `<div class="dt-callrow" style="border-top:0;padding-top:8px"><span class="cr-k">Line move</span><span style="font-family:'IBM Plex Mono';font-size:12px">${g.line_movement}</span></div>`;
+        }
+        // per-book odds list, when present
+        let booksTbl = "";
+        const books = Array.isArray(g.odds) ? g.odds : null;
+        if (books && books.length) {
+          const rows = books.slice(0, 8).map((b: any) =>
+            `<div class="dt-bookrow"><span class="bname">${b.book || b.bookmaker || b.key || "—"}</span><span class="bnum">${b.total != null ? b.total : (b.line != null ? b.line : "—")}</span><span>${fmtOdds(b.over_odds != null ? b.over_odds : b.over)}</span><span>${fmtOdds(b.under_odds != null ? b.under_odds : b.under)}</span><span class="bnum">${b.home_ml != null ? fmtOdds(b.home_ml) : "—"}</span></div>`).join("");
+          booksTbl = `<div class="dt-books" style="margin-top:12px"><div class="dt-bookrow bh"><span>Book</span><span>Total</span><span>Over</span><span>Under</span><span>Home ML</span></div>${rows}</div>`;
+        }
+        oddsBlock = `<div class="dt-card"><div class="dt-ct"><span>Market — Line, Odds &amp; Movement</span><span class="dt-book">${g.bookmaker || ""}</span></div>
           <div class="dt-oddsgrid">
             <div class="dt-odd"><div class="sk">O/U Line</div><div class="ov">${g.line != null ? g.line : "—"}</div></div>
             <div class="dt-odd"><div class="sk">Over</div><div class="ov">${fmtOdds(g.over_odds)}</div></div>
             <div class="dt-odd"><div class="sk">Under</div><div class="ov">${fmtOdds(g.under_odds)}</div></div>
+            <div class="dt-odd"><div class="sk">Run Line</div><div class="ov">±${g.spread_line != null ? g.spread_line : "1.5"}</div></div>
             <div class="dt-odd"><div class="sk">${g.away_abbr} ML</div><div class="ov">${fmtOdds(g.away_ml)}</div></div>
             <div class="dt-odd"><div class="sk">${g.home_abbr} ML</div><div class="ov">${fmtOdds(g.home_ml)}</div></div>
-          </div></div>`;
+          </div>${moveRow}${booksTbl}</div>`;
       }
 
       // trajectory
@@ -858,20 +1232,23 @@ export default function Home() {
           <div class="trajfoot"><span><i style="border-color:#0c2340"></i>Model pred total</span><span><i style="border-color:#c8102e;border-top-style:dashed"></i>Final actual</span><span style="margin-left:auto;color:var(--ink2)">x-axis = innings completed · pregame ${pre ? num(pre.pred_total) : "—"} → final ${actualTotal}</span></div></div></div>`;
       } else if (evo.length) {
         trajBlock = `<div class="dt-card"><div class="dt-ct"><span>Live Prediction Trajectory</span></div>
-          <div class="traj" style="border:0;padding:4px 0 0"><div class="dt-evolist">${evo.map((e: any) => `<div class="dt-ev"><span class="ei">${e.after_inning ? "In " + e.after_inning : "Pre"}</span><span class="et">${num(e.pred_total)}</span>${e.confidence != null ? `<span class="ec">${Math.round((e.confidence <= 1 ? e.confidence * 100 : e.confidence))}%</span>` : ""}</div>`).join("")}</div></div></div>`;
+          <div class="traj" style="border:0;padding:4px 0 0"><div class="dt-evolist">${evo.map((e: any) => { const cf = e.confidence; let cl = ""; if (cf != null && cf !== "") { cl = typeof cf === "number" || (!isNaN(Number(cf)) && String(cf).trim() !== "") ? Math.round(Number(cf) <= 1 ? Number(cf) * 100 : Number(cf)) + "%" : String(cf).toUpperCase(); } return `<div class="dt-ev"><span class="ei">${e.after_inning ? "In " + e.after_inning : "Pre"}</span><span class="et">${num(e.pred_total)}</span>${cl ? `<span class="ec">${cl}</span>` : ""}</div>`; }).join("")}</div></div></div>`;
       }
 
       // insight block
       let insightBits: string[] = [];
       if (!isHist) {
-        const engineTxt = g.model_engine === "mid-game" ? "the mid-game simulation engine (which updates as the game unfolds)" : "the pregame engine";
+        const mgI = g.midgame_prediction;
+        const liveI = !!(g.is_live && mgI);
+        const engineTxt = (g.model_engine === "mid-game" || liveI) ? "the mid-game simulation engine (which updates as the game unfolds)" : "the pregame engine";
         insightBits.push(`This pick comes from <b>${engineTxt}</b>.`);
         if (g.ou_call) {
-          const ed = g.model_edge;
-          if (ed != null && Math.abs(ed) >= 0.25) insightBits.push(`The model projects <b>${num(g.model_prediction)}</b> total runs vs the line of <b>${g.line}</b> — a <b>${num(Math.abs(ed))}-run ${ed > 0 ? "over" : "under"}</b> edge, hence the <b>${(g.ou_call || "").toUpperCase()}</b> lean${g.ou_confidence_pct != null ? ` at ${g.ou_confidence_pct}% confidence` : ""}.`);
+          const projI = liveI && mgI.predicted_total != null ? Number(mgI.predicted_total) : g.model_prediction;
+          const ed = (liveI && projI != null && g.line != null) ? projI - Number(g.line) : g.model_edge;
+          if (ed != null && Math.abs(ed) >= 0.25) insightBits.push(`The model projects <b>${num(projI)}</b> total runs vs the line of <b>${g.line}</b> — a <b>${num(Math.abs(ed))}-run ${ed > 0 ? "over" : "under"}</b> edge, hence the <b>${(g.ou_call || "").toUpperCase()}</b> lean${g.ou_confidence_pct != null ? ` at ${g.ou_confidence_pct}% confidence` : ""}.`);
           else insightBits.push(`The model sits within a fraction of a run of the line — no meaningful O/U edge here.`);
         }
-        if (g.model_engine !== "mid-game") insightBits.push(`Reminder: the pregame O/U market is efficient — our edge only shows up <b>once a game is live</b>, where the mid-game engine reprojects the remaining total.`);
+        if (g.model_engine !== "mid-game" && !liveI) insightBits.push(`Reminder: the pregame O/U market is efficient — our edge only shows up <b>once a game is live</b>, where the mid-game engine reprojects the remaining total.`);
       } else {
         insightBits.push(`This is a 2024 historical game shown to illustrate how the <b>mid-game model</b> re-projects the final total inning by inning. Compare the model line against the dashed actual-total line above.`);
       }
@@ -884,6 +1261,7 @@ export default function Home() {
         ${matchHead}
         <div class="dt-card"><div class="dt-ct"><span>Box Score</span></div>${boxScore(g, inns, evo, sideKey)}</div>
         <div class="dt-cols">${modelBlock}${oddsBlock}</div>
+        ${vizBlock}
         ${trajBlock}
         ${statcastBlock}
         ${insight}
