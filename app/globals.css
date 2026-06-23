@@ -171,6 +171,21 @@ svg.rc{width:300px;max-width:100%;height:auto}
 .relicap .ptile{box-shadow:none}
 .relinote{font-size:12px;color:var(--ink2);line-height:1.5}
 
+/* per-sport (NBA/NHL/NFL) Performance view extras */
+.relilegend{display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--ink2);min-width:180px;flex:1}
+.relilegend div{display:flex;align-items:center;gap:9px;line-height:1.4}
+.relilegend .rl-dot{width:12px;height:12px;border-radius:50%;background:rgba(12,35,64,.7);flex:none}
+.relilegend .rl-diag{width:18px;height:0;border-top:2px dashed #cdd3da;flex:none}
+.sptblwrap{overflow-x:auto}
+.sptbl{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono';font-size:11.5px}
+.sptbl th{text-align:right;color:var(--ink2);text-transform:uppercase;font-size:9.5px;letter-spacing:.07em;font-weight:600;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.sptbl th:first-child{text-align:left}
+.sptbl td{text-align:right;padding:6px 10px;white-space:nowrap}
+.sptbl td.spk{text-align:left;font-weight:600;color:var(--ink)}
+.sptbl td.g{color:var(--green);font-weight:600}
+.sptbl td.r{color:var(--ink2)}
+.sptbl tbody tr:nth-child(even){background:var(--line2)}
+
 .abswrap{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
 .abswrap svg{flex:1;min-width:300px}
 .abstbl{font-family:'IBM Plex Mono';font-size:11.5px;min-width:260px;flex:1}
