@@ -11,7 +11,11 @@ export default function Home() {
 
     root.innerHTML = `
       <header><div class="hbar">
-        <div class="brand"><div class="diamond"></div><div><h1>Diamond<b>Edge</b></h1><div class="tag">MLB Mid-Game Model</div></div></div>
+        <div class="brand"><div class="diamond"></div><div><h1>Diamond<b>Edge</b></h1><div class="tag" id="brandtag">MLB Mid-Game Model</div></div></div>
+        <div class="sportsel" id="sportsel">
+          <button class="sportbtn" data-sport="mlb">MLB</button>
+          <button class="sportbtn" data-sport="nba">NBA</button>
+        </div>
         <div class="datestrip-wrap"><div class="datestrip" id="datestrip"></div></div>
         <button class="perfpill" id="m-perf">Performance</button>
         <div class="recordchip" id="record"></div>
@@ -24,7 +28,12 @@ export default function Home() {
       </main>`;
 
     const TEAM_ID: any = { ARI: 109, ATL: 144, BAL: 110, BOS: 111, CHC: 112, CWS: 145, CHW: 145, CIN: 113, CLE: 114, COL: 115, DET: 116, HOU: 117, KC: 118, KCR: 118, LAA: 108, LAD: 119, MIA: 146, MIL: 158, MIN: 142, NYM: 121, NYY: 147, OAK: 133, ATH: 133, PHI: 143, PIT: 134, SD: 135, SDP: 135, SF: 137, SFG: 137, SEA: 136, STL: 138, TB: 139, TBR: 139, TEX: 140, TOR: 141, WSH: 120, WSN: 120 };
-    const logo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
+    // NBA team abbr → ESPN logo slug (CDN serves these as .png by abbreviation)
+    const NBA_SLUG: any = { ATL: "atl", BOS: "bos", BKN: "bkn", BRK: "bkn", CHA: "cha", CHI: "chi", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GSW: "gs", GS: "gs", HOU: "hou", IND: "ind", LAC: "lac", LAL: "lal", MEM: "mem", MIA: "mia", MIL: "mil", MIN: "min", NOP: "no", NO: "no", NYK: "ny", NY: "ny", OKC: "okc", ORL: "orl", PHI: "phi", PHX: "phx", PHO: "phx", POR: "por", SAC: "sac", SAS: "sa", SA: "sa", TOR: "tor", UTA: "utah", UTAH: "utah", WAS: "wsh", WSH: "wsh" };
+    const mlbLogo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
+    const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
+    // sport-aware logo resolver (set per active sport via SP())
+    const logo = (ab: any) => (sport === "nba" ? nbaLogo(ab) : mlbLogo(ab));
     const fmtOdds = (o: any) => (o == null || o === "" ? "—" : Number(o) > 0 ? "+" + o : "" + o);
     const num = (v: any, d = 1) => (v == null ? "—" : Number(v).toFixed(d));
     const tier = (t: any) => (t || "WATCH").toUpperCase();
@@ -33,6 +42,44 @@ export default function Home() {
 
     let mode = "today", histDates: any[] = [], histDate: any = null, detailGame: any = null, detailReturn = "today", stripReady = false, todayFilter = "all";
 
+    // ============================================================
+    // MULTI-SPORT — DiamondEdge now serves MLB and NBA from the same
+    // template-string UI. Both serve payloads share the SAME game shape
+    // (projected total, win-prob, 80% interval, per-period trajectory,
+    // result grading) so every micro-viz component below is reused as-is.
+    // SP() returns the active sport's labels + Supabase keys; the only
+    // per-sport differences are vocabulary (QUARTERS not innings, POINTS
+    // not runs, no pitchers) and the data source. MLB path is unchanged.
+    // ============================================================
+    let sport = "mlb"; // "mlb" | "nba"
+    const SPORTS: any = {
+      mlb: {
+        key: "mlb", label: "MLB", brandtag: "MLB Mid-Game Model",
+        unit: "runs", unitAbbr: "R", period: "inning", periodAbbr: "In", periodLabel: "innings",
+        slateKey: "today", histKey: (d: string) => "history:" + d, histDatesKey: "history_dates",
+        noPitchers: false, xaxis: "innings completed",
+        liveLabel: "Live Now", liveSub: "base-out model updating",
+        refnote: "DiamondEdge base-out mid-game model · MAE 1.94 · data via Supabase",
+      },
+      nba: {
+        key: "nba", label: "NBA", brandtag: "NBA Quarter Model",
+        unit: "points", unitAbbr: "P", period: "quarter", periodAbbr: "Q", periodLabel: "quarters",
+        slateKey: "nba", histKey: (d: string) => "nba:" + d, histDatesKey: "nba_dates",
+        noPitchers: true, xaxis: "quarters completed",
+        liveLabel: "Live Now", liveSub: "quarter model updating",
+        refnote: "DiamondEdge NBA quarter model · projects from any quarter boundary · data via Supabase",
+      },
+    };
+    const SP = () => SPORTS[sport];
+    // period label for a 1-based index, NBA-aware (Q1..Q4 then OT, OT2…)
+    const periodTick = (n: any) => {
+      if (n == null || n === "" || n === "pre") return "pre";
+      const i = Number(n);
+      if (sport !== "nba") return String(n);
+      if (i <= 4) return "Q" + i;
+      return i === 5 ? "OT" : "OT" + (i - 4);
+    };
+
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
       const rows = await r.json();
@@ -40,20 +87,30 @@ export default function Home() {
     }
 
     function boxScore(g: any, innings: any[], evo: any[], sideKey: string) {
-      const n = Math.max(9, innings.length);
+      const isNBA = sport === "nba";
+      // NBA box: one cell per quarter (4, or more with OT), a single Total column.
+      // MLB box: 9 inning cells (or more) + R / H / E summary columns.
+      const n = isNBA ? Math.max(4, innings.length) : Math.max(9, innings.length);
+      // for NBA there is one summary column (T); for MLB three (R H E)
+      const summaryCols = isNBA ? 1 : 3;
       const evoBy: any = {}; (evo || []).forEach((e: any) => (evoBy[e.after_inning] = e));
       function teamRow(side: string) {
-        const isHome = side === "home", ab = isHome ? g.home_abbr : g.away_abbr, name = isHome ? g.home_pitcher : g.away_pitcher;
+        const isHome = side === "home", ab = isHome ? g.home_abbr : g.away_abbr;
+        const name = isNBA ? null : (isHome ? g.home_pitcher : g.away_pitcher);
         const R = isHome ? g._hr : g._ar, H = isHome ? g._hh : g._ah, E = isHome ? g._he : g._ae;
         const win = g._final && (isHome ? g._hr > g._ar : g._ar > g._hr);
         let cells = "";
         for (let i = 1; i <= n; i++) { const row = innings.find((x: any) => x.inning === i); let v: any = null; if (row) v = sideKey === "today" ? row[side] : row[side + "_r"]; cells += v == null ? `<div class="inn empty">·</div>` : `<div class="inn">${v}</div>`; }
-        return `<div class="bxrow ${win ? "win" : ""}"><div class="team"><img src="${logo(ab)}" onerror="this.style.visibility='hidden'"><div class="tt"><span class="ab">${ab}</span>${name ? `<span class="pn">${name}</span>` : ""}</div></div>${cells}<div class="rhe-c r">${R ?? 0}</div><div class="rhe-c dim">${H ?? 0}</div><div class="rhe-c dim">${E ?? 0}</div></div>`;
+        const summary = isNBA
+          ? `<div class="rhe-c r">${R ?? 0}</div>`
+          : `<div class="rhe-c r">${R ?? 0}</div><div class="rhe-c dim">${H ?? 0}</div><div class="rhe-c dim">${E ?? 0}</div>`;
+        return `<div class="bxrow ${win ? "win" : ""}"><div class="team"><img src="${logo(ab)}" onerror="this.style.visibility='hidden'"><div class="tt"><span class="ab">${ab}</span>${name ? `<span class="pn">${name}</span>` : ""}</div></div>${cells}${summary}</div>`;
       }
-      let inh = ""; for (let i = 1; i <= n; i++) inh += `<div class="inh">${i}</div>`;
+      let inh = ""; for (let i = 1; i <= n; i++) inh += `<div class="inh">${isNBA ? periodTick(i).replace("Q", "") : i}</div>`;
       let evC = ""; for (let i = 1; i <= n; i++) { const e = evoBy[i]; evC += e ? `<div class="ev">${num(e.pred_total)}</div>` : `<div class="ev empty">·</div>`; }
       const last = evo && evo.length ? evo[evo.length - 1] : null;
-      return `<div class="box" style="--ncols:${n}"><div class="bxrow bxhead"><div class="teamh">Matchup</div>${inh}<div class="rhe">R</div><div class="rhe">H</div><div class="rhe">E</div></div>${teamRow("away")}${teamRow("home")}<div class="evorow"><div class="lbl"><span class="dot" style="width:6px;height:6px;background:var(--navy)"></span>Model</div>${evC}<div class="evtot" style="grid-column:span 3">${last ? num(last.pred_total) : "—"}</div></div></div>`;
+      const summaryHead = isNBA ? `<div class="rhe">T</div>` : `<div class="rhe">R</div><div class="rhe">H</div><div class="rhe">E</div>`;
+      return `<div class="box ${isNBA ? "nbabox" : ""}" style="--ncols:${n};--nsum:${summaryCols}"><div class="bxrow bxhead"><div class="teamh">Matchup</div>${inh}${summaryHead}</div>${teamRow("away")}${teamRow("home")}<div class="evorow"><div class="lbl"><span class="dot" style="width:6px;height:6px;background:var(--navy)"></span>Model</div>${evC}<div class="evtot" style="grid-column:span ${summaryCols}">${last ? num(last.pred_total) : "—"}</div></div></div>`;
     }
 
     function pickRow(g: any) {
@@ -319,10 +376,12 @@ export default function Home() {
       const pts = preds.map((p, i) => `${X(i).toFixed(1)},${Y(p.pred_total).toFixed(1)}`);
       const area = `M${pts[0]} L${pts.join(" L")} L${X(preds.length - 1).toFixed(1)},${(H - padB).toFixed(1)} L${X(0).toFixed(1)},${(H - padB).toFixed(1)} Z`;
       const aY = Y(actual).toFixed(1);
+      // convergence thresholds scale with the sport's unit (runs vs points)
+      const tGood = sport === "nba" ? 4 : 1, tMid = sport === "nba" ? 8 : 2.5;
       const lastP = preds[preds.length - 1], conv = Math.abs(lastP.pred_total - actual);
-      const endColor = conv < 1 ? "#16a34a" : conv < 2.5 ? "#d97706" : "#c8102e";
+      const endColor = conv < tGood ? "#16a34a" : conv < tMid ? "#d97706" : "#c8102e";
       const dots = preds.map((p, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(p.pred_total).toFixed(1)}" r="${i === preds.length - 1 ? 3.5 : 2}" fill="${i === preds.length - 1 ? endColor : "#16365e"}"/>`).join("");
-      const xlab = preds.map((p, i) => (i % 2 === 0 ? `<text x="${X(i).toFixed(1)}" y="${H - 3}" font-size="8" fill="#9aa3af" text-anchor="middle" font-family="IBM Plex Mono">${p.after_inning || "pre"}</text>` : "")).join("");
+      const xlab = preds.map((p, i) => (i % 2 === 0 ? `<text x="${X(i).toFixed(1)}" y="${H - 3}" font-size="8" fill="#9aa3af" text-anchor="middle" font-family="IBM Plex Mono">${p.q_label || periodTick(p.after_inning)}</text>` : "")).join("");
       return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#16365e" stop-opacity=".16"/><stop offset="1" stop-color="#16365e" stop-opacity="0"/></linearGradient></defs>
         <path d="${area}" fill="url(#g)"/><line x1="${pad}" x2="${W - padR}" y1="${aY}" y2="${aY}" stroke="#c8102e" stroke-width="1.5" stroke-dasharray="4 3"/>
         <text x="${W - padR + 3}" y="${parseFloat(aY) + 3}" font-size="9" fill="#c8102e" font-family="IBM Plex Mono">${actual}</text>
@@ -346,9 +405,119 @@ export default function Home() {
         </div></div>`;
     }
 
+    // ============================================================
+    // NBA CARDS + TRAJECTORY — reuse the spine + rich-card structure with
+    // NBA vocabulary (QUARTERS, POINTS, no pitchers). The serve payload mirrors
+    // the MLB game shape, so boxScore / winProbBar / intervalBar / trajSVG are
+    // reused verbatim; only the labels and the result-grading source differ.
+    // ============================================================
+
+    // Signature NBA "watch the model track the game" sparkline:
+    // projected final TOTAL (navy) + home win-prob (amber, right axis) after
+    // each quarter, with the actual final total drawn as the dashed red line.
+    function nbaTrajSVG(preds: any[], actual: number, awayAb: string, homeAb: string) {
+      const W = 300, H = 96, pad = 26, padR = 30, padT = 10, padB = 16;
+      const ys = preds.map((p: any) => p.projected_final_total != null ? p.projected_final_total : p.pred_total);
+      const allV = ys.concat([actual]);
+      let lo = Math.min(...allV) - 3, hi = Math.max(...allV) + 3; if (hi - lo < 8) hi = lo + 8;
+      const X = (i: number) => pad + (i / Math.max(preds.length - 1, 1)) * (W - pad - padR);
+      const Y = (v: number) => padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB);
+      const YW = (p: number) => padT + (1 - p) * (H - padT - padB); // win-prob 0..1 on its own axis
+      const pts = preds.map((p: any, i: number) => `${X(i).toFixed(1)},${Y(ys[i]).toFixed(1)}`);
+      const wpPts = preds.map((p: any, i: number) => { const wp = p.home_win_prob != null ? p.home_win_prob : p.p_home_win; return `${X(i).toFixed(1)},${YW(Number(wp)).toFixed(1)}`; });
+      const area = `M${pts[0]} L${pts.join(" L")} L${X(preds.length - 1).toFixed(1)},${(H - padB).toFixed(1)} L${X(0).toFixed(1)},${(H - padB).toFixed(1)} Z`;
+      const aY = Y(actual).toFixed(1);
+      const last = preds[preds.length - 1], conv = Math.abs(ys[ys.length - 1] - actual);
+      const endColor = conv < 4 ? "#16a34a" : conv < 8 ? "#d97706" : "#c8102e";
+      const totDots = preds.map((p: any, i: number) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(ys[i]).toFixed(1)}" r="${i === preds.length - 1 ? 3.5 : 2.2}" fill="${i === preds.length - 1 ? endColor : "#0c2340"}"/>`).join("");
+      const wpDots = preds.map((p: any, i: number) => { const wp = p.home_win_prob != null ? p.home_win_prob : p.p_home_win; return `<circle cx="${X(i).toFixed(1)}" cy="${YW(Number(wp)).toFixed(1)}" r="2.2" fill="#d97706"/>`; }).join("");
+      const xlab = preds.map((p: any, i: number) => `<text x="${X(i).toFixed(1)}" y="${H - 3}" font-size="8" fill="#9aa3af" text-anchor="middle" font-family="IBM Plex Mono">${p.q_label || periodTick(p.after_inning)}</text>`).join("");
+      // win-prob axis ticks (right edge)
+      const wpTicks = [0, 0.5, 1].map((t) => `<text x="${(W - padR + 4).toFixed(1)}" y="${(YW(t) + 3).toFixed(1)}" font-size="7" fill="#d9a25a" font-family="IBM Plex Mono">${Math.round(t * 100)}</text>`).join("");
+      return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="ng" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#0c2340" stop-opacity=".15"/><stop offset="1" stop-color="#0c2340" stop-opacity="0"/></linearGradient></defs>
+        <path d="${area}" fill="url(#ng)"/>
+        <line x1="${pad}" x2="${W - padR}" y1="${aY}" y2="${aY}" stroke="#c8102e" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="${W - padR + 3}" y="${parseFloat(aY) + 3}" font-size="9" fill="#c8102e" font-family="IBM Plex Mono">${actual}</text>
+        <polyline points="${wpPts.join(" ")}" fill="none" stroke="#d97706" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="3 2"/>${wpDots}
+        <polyline points="${pts.join(" ")}" fill="none" stroke="#0c2340" stroke-width="2" stroke-linejoin="round"/>${totDots}${xlab}${wpTicks}</svg>`;
+    }
+
+    // NBA slate card — final demo games. Headline: projected final total + win-prob
+    // bar + predicted score + ✓/✗ "how it did" vs the actual final.
+    function nbaCard(g: any, i: number) {
+      g._hr = g.final_home != null ? g.final_home : g._hr; g._ar = g.final_away != null ? g.final_away : g._ar; g._final = true;
+      const res = g.result || {};
+      const pill = g.is_live
+        ? `<span class="statuspill live"><span class="pulse"></span>${g.q_label || "LIVE"}</span>`
+        : `<span class="statuspill final">FINAL${g.overtime ? " / OT" : ""}</span>`;
+      const ph = num(g.predicted_home_points != null ? g.predicted_home_points : g.predicted_home_runs);
+      const pa = num(g.predicted_away_points != null ? g.predicted_away_points : g.predicted_away_runs);
+      const predTotal = g.model_prediction, line = g.line, homeWP = g.home_win_prob, probOver = g.p_over;
+      const actual = res.actual_total != null ? res.actual_total : g.final_total;
+      const preds = (g.trajectory || g.predictions_by_quarter || []).slice().sort((a: any, b: any) => a.after_inning - b.after_inning);
+
+      // headline: projected total + win-prob + predicted score + interval bar
+      const iv = g.prediction_interval_80;
+      const winAb = (g.winner_call || "").toUpperCase() === "AWAY" ? g.away_abbr : g.home_abbr;
+      const headline = `<div class="headline">
+        <div class="hl-col left">
+          <div class="hl-k"><span>Projected Total</span><span class="src">end Q3</span></div>
+          <div class="hl-totline"><span class="hl-pred">${num(predTotal)}</span>${line != null ? `<span class="hl-vs">vs line <b>${line}</b></span>` : ""}</div>
+          <div class="hl-leanrow"><span class="cchip"><span class="ck">Pick</span><b>${winAb}</b> win</span>${probOver != null ? povGaugeChip(probOver, line) : ""}</div>
+          ${iv ? intervalBar(iv.total_lo, iv.total_hi, predTotal, line) : ""}
+        </div>
+        <div class="hl-col">
+          <div class="hl-k"><span>Win Probability</span></div>
+          ${winProbBar(homeWP, g.away_abbr, g.home_abbr)}
+          <div class="hl-leanrow"><span class="cchip"><span class="ck">Pred</span><b>${pa}</b> ${g.away_abbr} – <b>${ph}</b> ${g.home_abbr}</span></div>
+        </div>
+      </div>`;
+
+      const chips = `<div class="cardchips">
+        <span class="mtbadge mid" title="model_type: ${g.model_type || "nba_quarter_model"}">◆ QUARTER MODEL</span>
+        <span class="cchip score"><span class="ck">Pred</span><b>${pa}</b>–<b>${ph}</b></span>
+        ${g.expected_margin != null ? `<span class="cchip"><span class="ck">Margin</span><b>${num(Math.abs(g.expected_margin))}</b> ${g.expected_margin >= 0 ? g.home_abbr : g.away_abbr}</span>` : ""}
+        ${iv ? `<span class="cchip"><span class="ck">80% Int</span><b>${num(iv.total_lo)}–${num(iv.total_hi)}</b></span>` : ""}
+        <span class="cchip" style="margin-left:auto"><span class="ck">Period</span>Q1–Q4</span>
+      </div>`;
+
+      // "how it did" result row — winner ✓/✗ + projected vs actual total
+      let resultRow = "";
+      const wCorrect = res.winner_correct;
+      const errQ3 = res.total_error_q3, projQ3 = res.projected_total_q3 != null ? res.projected_total_q3 : predTotal;
+      const wCls = wCorrect === true ? "hit" : wCorrect === false ? "miss" : "";
+      const tCls = errQ3 == null ? "" : errQ3 < 4 ? "hit" : errQ3 < 8 ? "push" : "miss";
+      resultRow = `<div class="cardresult">
+        <span class="cr-k">How it did</span>
+        ${wCls ? `<span class="cr-grade ${wCls}">${wCls === "hit" ? "✓" : "✗"} Winner</span>` : ""}
+        ${tCls ? `<span class="cr-grade ${tCls}">${tCls === "hit" ? "✓" : tCls === "miss" ? "✗" : "≈"} Total ${errQ3 != null ? "±" + num(errQ3) : ""}</span>` : ""}
+        <span class="cr-pva">proj <b>${num(projQ3)}</b> → actual <span class="a">${actual != null ? actual : "—"}</span></span>
+      </div>`;
+
+      // signature trajectory mini-sparkline right on the card
+      const trajBlock = (preds.length && actual != null) ? `<div class="traj nbatraj"><div class="trajhead"><div class="t">Quarter-by-Quarter Read</div>
+          <div class="cap">Q1 <b>${preds[0] ? num(preds[0].projected_final_total != null ? preds[0].projected_final_total : preds[0].pred_total) : "—"}</b> → end-Q3 <b>${num(projQ3)}</b> → actual <span class="a">${actual}</span></div></div>
+          ${nbaTrajSVG(preds, actual, g.away_abbr, g.home_abbr)}
+          <div class="trajfoot"><span><i style="border-color:#0c2340"></i>Proj total</span><span><i style="border-color:#d97706;border-top-style:dashed"></i>${g.home_abbr} win%</span><span><i style="border-color:#c8102e;border-top-style:dashed"></i>Final</span><span style="margin-left:auto;color:var(--ink2)">x = ${SP().xaxis}</span></div>
+        </div>` : "";
+
+      const scls = g.is_live ? "live" : "final";
+      return `<div class="card ${scls}" style="animation-delay:${i * 40}ms"><div class="cardtop">${pill}<div class="venue">${g.venue || ""}</div></div>
+        ${boxScore(g, g.linescore_innings || g.linescore_quarters || [], preds, "today")}
+        ${headline}
+        ${chips}
+        ${resultRow}
+        ${trajBlock}</div>`;
+    }
+
     function renderRecord(s: any) {
       const el = $("record"); if (!s) { el.innerHTML = ""; return; }
       const acc = (v: any) => (v == null ? "—" : Math.round(v <= 1 ? v * 100 : v) + "%");
+      // NBA record (live/final/winner/total_mae_q3) vs MLB record (live/final/ou/winner)
+      if (sport === "nba") {
+        el.innerHTML = `<div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">Winner Acc</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div><div><div class="k">Q3 Total MAE</div><div class="v">${s.total_mae_q3 != null ? num(s.total_mae_q3, 1) : "—"}</div></div>`;
+        return;
+      }
       el.innerHTML = `<div><div class="k">Live</div><div class="v live">${s.live || 0}</div></div><div><div class="k">Final</div><div class="v">${s.final || 0}</div></div><div><div class="k">O/U</div><div class="v g">${acc((s.ou || {}).accuracy)}</div></div><div><div class="k">Winner</div><div class="v g">${acc((s.winner || {}).accuracy)}</div></div>`;
     }
     function chipLabel(d: string) {
@@ -376,7 +545,17 @@ export default function Home() {
     }
     async function ensureHistDates() {
       if (stripReady) return;
-      try { const hd = await snap("history_dates"); histDates = ((hd && hd.dates) || []).slice().sort(); } catch (e) { histDates = []; }
+      try {
+        if (sport === "nba") {
+          // NBA dated history snapshot key is nba:<date>. In the demo there is a
+          // single dated snapshot; probe the documented key, fall back to today.
+          const probe = "2026-06-23";
+          const hd = await snap("nba_dates");
+          histDates = (hd && hd.dates && hd.dates.length) ? hd.dates.slice().sort() : [probe];
+        } else {
+          const hd = await snap("history_dates"); histDates = ((hd && hd.dates) || []).slice().sort();
+        }
+      } catch (e) { histDates = []; }
       stripReady = true;
     }
 
@@ -397,14 +576,15 @@ export default function Home() {
       const sections: any[] = [];
       const want = (k: string) => todayFilter === "all" || todayFilter === k;
       let gi = 0;
+      const cardFn = sport === "nba" ? nbaCard : todayCard;
       const sec = (k: string, label: string, sub: string, arr: any[]) => {
         if (!arr.length || !want(k)) return;
         sections.push(`<div class="spinesec ${k}" style="animation-delay:${gi * 25}ms"><span class="ssdot"></span><span class="sslab">${label}</span><span class="ssn">${arr.length} game${arr.length === 1 ? "" : "s"} · ${sub}</span><span class="ssrule"></span></div>`);
-        arr.forEach((g) => { sections.push(todayCard(g, gi)); gi++; });
+        arr.forEach((g) => { sections.push(cardFn(g, gi)); gi++; });
       };
-      sec("live", "Live Now", "base-out model updating", live);
-      sec("upcoming", "Upcoming", "pregame projections", upc);
-      sec("past", "Final — How We Did", "predicted vs actual", past);
+      sec("live", SP().liveLabel, SP().liveSub, live);
+      sec("upcoming", "Upcoming", sport === "nba" ? "pregame projections" : "pregame projections", upc);
+      sec("past", sport === "nba" ? "Final — How the Model Did" : "Final — How We Did", sport === "nba" ? "projected vs actual" : "predicted vs actual", past);
       grid.innerHTML = sections.join("") || `<div class="state"><div class="ds">Nothing in this filter</div></div>`;
       // map rendered cards back to todayGames indices for click → detail
       const ordered = [
@@ -431,31 +611,63 @@ export default function Home() {
         c.onclick = () => { todayFilter = c.dataset.tf; renderTodayFilters(); renderTodaySpine(); };
       });
     }
+    // NBA honest-framing banner shown above the demo slate (offseason mode).
+    function nbaHonestNote(d: any) {
+      const off = d && d.is_offseason;
+      const season = (d && d.season) || "2024-25";
+      const note = (d && (d.note || d.honest_framing)) || "";
+      return `<div class="nbabanner">
+        <div class="nbh"><span class="nbpill">${off ? "OFFSEASON DEMO" : "LIVE"}</span><b>NBA Quarter Model${off ? ` · ${season} replay` : ""}</b></div>
+        <p>${off ? `The NBA season is in the offseason, so this is a working <b>demo</b> over recent ${season} games (full playoffs + Finals plus a regular-season sample). Each card shows the model's <b>by-quarter projection trajectory</b> versus the actual final — watch it track the game. Serving goes <b>live automatically</b> when the season tips off.` : `Live ${season} slate — the model re-projects the final total and win probability at every quarter boundary.`}</p>
+        <p class="nbhonest">${note || "Calibrated NBA forecasts, not a betting edge. The NBA halftime O/U market was proven efficient — the value here is sharp, well-calibrated projections that beat a naive double-the-pace baseline (test MAE 13.4 / 11.3 / 7.9 points by end of Q1 / Q2 / Q3)."}</p>
+      </div>`;
+    }
     async function load() {
       const grid = $("grid");
-      $("slatehead").textContent = "Today's Slate";
+      const sp = SP();
+      $("slatehead").textContent = sport === "nba" ? "NBA Slate" : "Today's Slate";
       $("legendbox").style.display = "";
       try {
-        const d = await snap("today");
-        const games = (d && d.games) || []; renderRecord(d && d.summary);
+        const d = await snap(sp.slateKey);
+        const games = (d && d.games) || []; renderRecord(d && (d.summary || d.record));
         // sort within: live, upcoming, past — but spine groups them anyway
         games.sort((a: any, b: any) => b.is_live - a.is_live || a.is_final - b.is_final);
         todayGames = games;
         renderTodayFilters();
+        // NBA: prepend the honest-framing / demo banner above the slate
+        const banner = sport === "nba" ? nbaHonestNote(d) : "";
         renderTodaySpine();
-        $("refnote").innerHTML = `DiamondEdge base-out mid-game model · MAE 1.94 · data via Supabase`;
+        if (banner) grid.innerHTML = banner + grid.innerHTML, wireSpineClicks();
+        $("refnote").innerHTML = sp.refnote;
       } catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load snapshot.</div></div>`; }
+    }
+    // re-bind card → detail clicks after we mutate grid.innerHTML (NBA banner)
+    function wireSpineClicks() {
+      const grid = $("grid");
+      const live = todayGames.filter((g) => g.is_live);
+      const upc = todayGames.filter((g) => !g.is_live && !g.is_final);
+      const past = todayGames.filter((g) => g.is_final);
+      const want = (k: string) => todayFilter === "all" || todayFilter === k;
+      const ordered = [...(want("live") ? live : []), ...(want("upcoming") ? upc : []), ...(want("past") ? past : [])];
+      grid.querySelectorAll(".card").forEach((c: any, i: number) => {
+        c.classList.add("clickable");
+        const g = ordered[i]; const realIdx = todayGames.indexOf(g);
+        c.onclick = () => openDetail("today", realIdx);
+      });
     }
     async function loadHistory() {
       const grid = $("grid"); grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading ${histDate}</div></div>`;
-      $("slatehead").textContent = "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      $("slatehead").textContent = sport === "nba" ? "NBA History" : "Game History"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
       renderDateStrip();
       try {
-        const d = await snap("history:" + histDate);
+        const d = await snap(SP().histKey(histDate));
         const games = (d && d.games) || []; histGames = games;
-        grid.innerHTML = games.length ? games.map(historyCard).join("") : `<div class="state"><div class="ds">No games this date</div></div>`;
+        const cardFn = sport === "nba" ? nbaCard : historyCard;
+        grid.innerHTML = games.length ? games.map(cardFn).join("") : `<div class="state"><div class="ds">No games this date</div></div>`;
         if (games.length) wireCardClicks("history");
-        $("refnote").innerHTML = `${games.length} games · ${histDate} · model's mid-game prediction trajectory`;
+        $("refnote").innerHTML = sport === "nba"
+          ? `${games.length} games · ${histDate} · model's by-quarter projection trajectory`
+          : `${games.length} games · ${histDate} · model's mid-game prediction trajectory`;
       } catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Error loading ${histDate}</div></div>`; }
     }
 
@@ -981,6 +1193,11 @@ export default function Home() {
 
     function syncHeader() {
       $("m-perf").classList.toggle("on", mode === "perf");
+      // reflect active sport: brand tag + selector highlight + Performance availability
+      const bt = $("brandtag"); if (bt) bt.textContent = SP().brandtag;
+      document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === sport));
+      // Performance analytics is MLB-only for now — hide the pill on NBA
+      const perf = $("m-perf"); if (perf) perf.style.display = sport === "nba" ? "none" : "";
       renderDateStrip();
     }
 
@@ -998,13 +1215,19 @@ export default function Home() {
       detailGame = { g, kind };
       detailReturn = mode;
       mode = "detail";
-      if (kind === "today" && g.game_pk) location.hash = "game:" + g.game_pk;
-      else if (kind === "history" && g.game_id) location.hash = "hgame:" + histDate + ":" + g.game_id;
+      const p = hp();
+      if (kind === "today" && g.game_pk) location.hash = (p ? p + "/" : "") + "game:" + g.game_pk;
+      else if (kind === "history" && g.game_id) location.hash = (p ? p + "/" : "") + "hgame:" + histDate + ":" + g.game_id;
       syncHeader();
       renderDetail();
     }
     function backFromDetail() {
       mode = detailReturn || "today"; detailGame = null;
+      // restore the slate-level hash (drop the game:/hgame: segment), sport-aware
+      const p = hp();
+      location.hash = mode === "history" && histDate ? (p ? p + "/" : "") + "history:" + histDate
+        : mode === "perf" ? (p ? p + "/" : "") + "performance"
+        : (p || "");
       syncHeader();
       $("legendbox").style.display = mode === "today" ? "" : "none";
       if (mode === "history") loadHistory();
@@ -1056,7 +1279,139 @@ export default function Home() {
         ${hitters ? `<div class="sc-sec"><div class="sc-h">Top Hitters</div><div class="sc-hitters">${hitters}</div></div>` : ""}
       </div>`;
     }
+    // ============================================================
+    // NBA DEEP VIEW — reuses renderDetail's viz block (win-prob arc,
+    // P(over) dial, 80% interval distribution, expected-margin bar) PLUS the
+    // signature by-quarter TRAJECTORY (projected total + win-prob after each
+    // quarter vs the actual final) and a quarter linescore table. No pitchers,
+    // no odds book — POINTS + QUARTERS vocabulary throughout.
+    // ============================================================
+    function renderNbaDetail() {
+      const grid = $("grid");
+      $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      const { g } = detailGame;
+      const res = g.result || {};
+      g._hr = g.final_home != null ? g.final_home : g._hr; g._ar = g.final_away != null ? g.final_away : g._ar; g._final = true;
+      const inns = g.linescore_innings || g.linescore_quarters || [];
+      const preds = (g.trajectory || g.predictions_by_quarter || []).slice().sort((a: any, b: any) => a.after_inning - b.after_inning);
+      const actualTotal = res.actual_total != null ? res.actual_total : g.final_total;
+      $("slatehead").textContent = "Game Detail";
+
+      const winHome = g._hr > g._ar;
+      const pill = `<span class="statuspill final">FINAL${g.overtime ? " / OT" : ""}${g.date ? " · " + g.date : ""}</span>`;
+      const matchHead = `<div class="dt-head">
+        <div class="dt-side away${!winHome ? " w" : ""}"><img src="${logo(g.away_abbr)}" onerror="this.style.visibility='hidden'"><div class="dt-tn"><span class="dt-ab">${g.away_abbr || ""}</span><span class="dt-full">${g.away_team || ""}</span></div></div>
+        <div class="dt-center">${pill}<div class="dt-score">${g._ar ?? 0}<span class="dash">–</span>${g._hr ?? 0}</div><div class="dt-venue">${g.venue || ""}</div></div>
+        <div class="dt-side home${winHome ? " w" : ""}"><div class="dt-tn rt"><span class="dt-ab">${g.home_abbr || ""}</span><span class="dt-full">${g.home_team || ""}</span></div><img src="${logo(g.home_abbr)}" onerror="this.style.visibility='hidden'"></div>
+      </div>`;
+
+      // headline values
+      const predTotal = g.model_prediction, homeWP = g.home_win_prob, probOver = g.p_over, line = g.line;
+      const ph = num(g.predicted_home_points != null ? g.predicted_home_points : g.predicted_home_runs);
+      const pa = num(g.predicted_away_points != null ? g.predicted_away_points : g.predicted_away_runs);
+      const iv = g.prediction_interval_80;
+      const margin = g.expected_margin;
+
+      // VIZ BLOCK — reused micro-viz: win-prob arc + P(over) dial + margin bar
+      const gaugeCol = `<div class="dt-viz"><div class="dt-vizk">Win Probability (end Q3)</div><div class="dt-gauge">${winProbGauge(homeWP, g.away_abbr, g.home_abbr)}</div></div>`;
+      const povCol = probOver != null ? `<div class="dt-viz"><div class="dt-vizk">Total — P(Over ${line != null ? line : "—"})</div><div class="dt-povgauge">${povGauge(probOver, line)}</div></div>` : "";
+      const dials = `<div class="dt-viz"><div class="dt-vizk">Expected Margin</div><div class="dt-dialrow">
+        <div class="dt-dial"><div class="dk">Projected Margin</div><div class="dv">${fmtSign(margin)}</div><div style="margin-top:6px">${marginBar(margin, g.away_abbr, g.home_abbr)}</div></div>
+      </div></div>`;
+      const vizBlock = `<div class="dt-card"><div class="dt-ct"><span>Prediction Visuals</span><span class="mtbadge mid">◆ QUARTER MODEL</span></div>
+          <div class="dt-vizrow">${gaugeCol}${povCol}</div>
+          <div style="margin-top:14px">${dials}</div>
+        </div>`;
+
+      // 80% interval distribution (lo..line..pred..hi) + per-team intervals
+      let ivCol = "";
+      if (iv) {
+        const teamRow = (lo: any, hi: any, pt: any, ab: string) => {
+          const vals = [lo, hi, pt].filter((v) => v != null).map(Number);
+          let amin = Math.min(...vals) - 4, amax = Math.max(...vals) + 4;
+          const sp = amax - amin || 1; const P = (v: number) => ((v - amin) / sp) * 100;
+          return `<div class="dt-teamiv"><span class="tl">${ab}</span><div class="tbar">
+            <div class="tspan" style="left:${P(lo).toFixed(1)}%;width:${(P(hi) - P(lo)).toFixed(1)}%"></div>
+            <div class="tdot" style="left:${P(pt).toFixed(1)}%"></div>
+            <span class="tlab" style="left:${P(pt).toFixed(1)}%">${num(pt)}</span></div></div>`;
+        };
+        ivCol = `<div class="dt-card"><div class="dt-ct"><span>80% Prediction Interval</span><span class="enginechip mid">◆ QUARTER MODEL</span></div>
+          <div class="dt-ivwrap">
+            <div class="dt-vizk">Total points — model interval${line != null ? " vs the line" : ""}</div>
+            ${intervalBar(iv.total_lo, iv.total_hi, predTotal, line, "dt-ivbar")}
+            <div class="dt-ivlegend"><span><i style="background:rgba(12,35,64,.3)"></i>80% interval</span><span><i style="background:var(--navy)"></i>point prediction ${num(predTotal)}</span>${line != null ? `<span><i style="background:var(--red)"></i>line ${line}</span>` : ""}</div>
+            <div style="margin-top:14px">${teamRow(iv.away_lo, iv.away_hi, g.predicted_away_points != null ? g.predicted_away_points : g.predicted_away_runs, g.away_abbr)}${teamRow(iv.home_lo, iv.home_hi, g.predicted_home_points != null ? g.predicted_home_points : g.predicted_home_runs, g.home_abbr)}</div>
+          </div></div>`;
+      }
+
+      // MODEL block — projected final score + total + win prob
+      const wpHome = homeWP != null ? Math.round(Number(homeWP) * 100) : null;
+      const winAb = (g.winner_call || "").toUpperCase() === "AWAY" ? g.away_abbr : g.home_abbr;
+      const modelBlock = `<div class="dt-card"><div class="dt-ct"><span>Model Prediction</span><span class="enginechip mid">◆ QUARTER MODEL</span></div>
+        <div class="dt-modelgrid">
+          <div class="dt-pred"><div class="sk">Projected Final</div><div class="score-pred">${pa}<small> ${g.away_abbr}</small> – ${ph}<small> ${g.home_abbr}</small></div></div>
+          <div class="dt-pred"><div class="sk">Projected Total</div><div class="dt-bignum">${num(predTotal)}</div></div>
+          ${wpHome != null ? `<div class="dt-pred"><div class="sk">${g.home_abbr} Win Prob</div><div class="dt-wpwrap"><span class="dt-bignum sm">${wpHome}%</span><div class="pbar"><i style="width:${wpHome}%"></i></div></div></div>` : ""}
+        </div>
+        <div class="dt-callrow">
+          <span class="badge pick">${winAb} WIN</span>
+          ${probOver != null ? povGaugeChip(probOver, line) : ""}
+          ${margin != null ? `<span class="edge ${margin > 0 ? "pos" : "neg"}">${fmtSign(margin)} margin</span>` : ""}
+        </div></div>`;
+
+      // RESULT block — how the model did
+      const wCorrect = res.winner_correct, errQ3 = res.total_error_q3, projQ3 = res.projected_total_q3 != null ? res.projected_total_q3 : predTotal;
+      const wCls = wCorrect === true ? "hit" : wCorrect === false ? "miss" : "";
+      const tCls = errQ3 == null ? "" : errQ3 < 4 ? "hit" : errQ3 < 8 ? "push" : "miss";
+      const resultBlock = `<div class="dt-card"><div class="dt-ct"><span>How the Model Did</span></div>
+        <div class="cardresult" style="border-top:0;padding-top:0">
+          ${wCls ? `<span class="cr-grade ${wCls}">${wCls === "hit" ? "✓" : "✗"} Winner ${winAb}</span>` : ""}
+          ${tCls ? `<span class="cr-grade ${tCls}">${tCls === "hit" ? "✓" : tCls === "miss" ? "✗" : "≈"} Total ${errQ3 != null ? "±" + num(errQ3) : ""}</span>` : ""}
+          <span class="cr-pva">end-Q3 proj <b>${num(projQ3)}</b> → actual <span class="a">${actualTotal != null ? actualTotal : "—"}</span></span>
+        </div></div>`;
+
+      // SIGNATURE TRAJECTORY — projected total + win-prob by quarter vs final
+      let trajBlock = "";
+      if (preds.length && actualTotal != null) {
+        const conv = Math.abs((preds[preds.length - 1].projected_final_total != null ? preds[preds.length - 1].projected_final_total : preds[preds.length - 1].pred_total) - actualTotal);
+        const convCls = conv < 4 ? "good" : conv < 8 ? "mid" : "bad";
+        const convTxt = conv < 4 ? "NAILED IT" : conv < 8 ? "CLOSE" : "MISSED";
+        // per-quarter readout rows
+        const rows = preds.map((p: any) => {
+          const pt = p.projected_final_total != null ? p.projected_final_total : p.pred_total;
+          const wp = p.home_win_prob != null ? p.home_win_prob : p.p_home_win;
+          return `<div class="nbq-row"><span class="nbq-q">${p.q_label || periodTick(p.after_inning)}</span><span class="nbq-cur">cur ${p.cur_away ?? "—"}–${p.cur_home ?? "—"}</span><span class="nbq-pt">${num(pt)}</span><span class="nbq-wp">${g.home_abbr} ${wp != null ? Math.round(Number(wp) * 100) + "%" : "—"}</span></div>`;
+        }).join("");
+        trajBlock = `<div class="dt-card"><div class="dt-ct"><span>By-Quarter Trajectory</span><span class="conv ${convCls}">${convTxt}</span></div>
+          <div class="traj nbatraj" style="border:0;padding:4px 0 0">${nbaTrajSVG(preds, actualTotal, g.away_abbr, g.home_abbr)}
+          <div class="trajfoot"><span><i style="border-color:#0c2340"></i>Proj total</span><span><i style="border-color:#d97706;border-top-style:dashed"></i>${g.home_abbr} win%</span><span><i style="border-color:#c8102e;border-top-style:dashed"></i>Final ${actualTotal}</span><span style="margin-left:auto;color:var(--ink2)">x = ${SP().xaxis}</span></div>
+          <div class="nbq-tbl"><div class="nbq-row nbq-hd"><span>After</span><span>Score</span><span>Proj Total</span><span>Win Prob</span></div>${rows}</div>
+          </div></div>`;
+      }
+
+      // INSIGHT block — honest NBA framing
+      const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">
+        <p>From the <b>end of each quarter</b>, the NBA quarter model re-projects the final total, a calibrated win probability, and an 80% interval. Watch the trajectory above tighten toward the dashed actual-total line as the game progresses.</p>
+        <p>The model projects <b>${num(predTotal)}</b> total points and gives <b>${winAb}</b> a <b>${wpHome != null ? wpHome + (winAb === g.home_abbr ? "" : "→" + (100 - wpHome)) : ""}%</b> edge to win. At end of Q3 it was within <b>${errQ3 != null ? "±" + num(errQ3) : "—"}</b> points of the final.</p>
+        <p class="nbhonest"><b>Honest framing:</b> these are calibrated <b>predictions, not a betting edge</b>. The NBA halftime O/U market was proven efficient — the value is a sharp forecast that beats a naive double-the-pace baseline, not a way to beat the line.</p>
+      </div></div>`;
+
+      grid.innerHTML = `<div class="detailwrap">
+        <button class="backbtn" id="dt-back">‹ Back to slate</button>
+        ${matchHead}
+        <div class="dt-card"><div class="dt-ct"><span>Quarter Linescore</span></div>${boxScore(g, inns, preds, "today")}</div>
+        <div class="dt-cols">${modelBlock}${resultBlock}</div>
+        ${vizBlock}
+        ${ivCol}
+        ${trajBlock}
+        ${insight}
+      </div>`;
+      $("dt-back").onclick = backFromDetail;
+      $("refnote").innerHTML = `${g.away_abbr} @ ${g.home_abbr}${g.venue ? " · " + g.venue : ""}`;
+    }
+
     function renderDetail() {
+      if (sport === "nba") return renderNbaDetail();
       const grid = $("grid");
       $("record").innerHTML = "";
       $("legendbox").style.display = "none";
@@ -1276,25 +1631,57 @@ export default function Home() {
     }
 
     // ---------- NAVIGATION ----------
+    // hash carries the active sport as a prefix so a reload restores it:
+    //   MLB → "#…" (unchanged), NBA → "#nba" / "#nba/game:<id>" / "#nba/history:<d>"
+    const hp = () => (sport === "nba" ? "nba" : ""); // hash prefix segment
+    const setHash = (rest: string) => {
+      const p = hp();
+      location.hash = p ? (rest ? p + "/" + rest : p) : rest;
+    };
     async function selectToday() {
-      mode = "today"; location.hash = ""; syncHeader();
+      mode = "today"; setHash(""); syncHeader();
       $("legendbox").style.display = "";
       await load();
     }
     async function selectHistory(d: string) {
-      histDate = d; mode = "history"; location.hash = "history:" + d; syncHeader();
+      histDate = d; mode = "history"; setHash("history:" + d); syncHeader();
       await loadHistory();
     }
     function selectPerf() {
-      mode = "perf"; location.hash = "performance"; syncHeader();
+      if (sport === "nba") return; // analytics is MLB-only for now
+      mode = "perf"; setHash("performance"); syncHeader();
       $("legendbox").style.display = "none";
       loadPerf();
     }
     $("m-perf").onclick = () => { if (mode !== "perf") selectPerf(); };
 
-    (async function init() {
+    // SPORT SELECTOR — switch data source + rendering, reset to the slate view.
+    async function setSport(s: string) {
+      if (s === sport) return;
+      sport = s;
+      stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
+      // a sport with no analytics view falls back to the slate
+      if (mode === "perf" && sport === "nba") mode = "today";
       await ensureHistDates();
-      const h = location.hash;
+      syncHeader();
+      if (mode === "history" && histDates.length) selectHistory(histDates[histDates.length - 1]);
+      else if (mode === "perf") selectPerf();
+      else selectToday();
+    }
+    document.querySelectorAll(".sportbtn").forEach((b: any) => {
+      b.onclick = () => setSport(b.dataset.sport);
+    });
+
+    (async function init() {
+      // peel the optional sport prefix off the hash ("#nba/…" → sport=nba, rest="#…")
+      let raw = location.hash;
+      if (raw === "#nba" || raw.indexOf("#nba/") === 0) {
+        sport = "nba";
+        raw = raw === "#nba" ? "#" : "#" + raw.slice(5);
+      }
+      await ensureHistDates();
+      syncHeader();
+      const h = raw;
       if (h === "#performance" || h.indexOf("#performance:") === 0) { if (h.indexOf(":") > 0) perfTab = h.split(":")[1]; renderDateStrip(); selectPerf(); }
       else if (h.indexOf("#game:") === 0) {
         const pk = decodeURIComponent(h.slice(6));

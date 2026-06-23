@@ -26,6 +26,12 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdro
 .modetoggle{display:flex;background:var(--slatebg);border-radius:9px;padding:3px;gap:2px}
 .modetoggle button{font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:0;background:transparent;color:var(--ink2);padding:6px 16px;border-radius:7px;cursor:pointer;transition:.15s}
 .modetoggle button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(16,21,29,.12)}
+/* SPORT SELECTOR — MLB | NBA toggle in the header */
+.sportsel{display:flex;background:var(--slatebg);border-radius:9px;padding:3px;gap:2px;flex-shrink:0}
+.sportsel .sportbtn{font-family:'Oswald';font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;border:0;background:transparent;color:var(--ink2);padding:6px 15px;border-radius:7px;cursor:pointer;transition:.15s}
+.sportsel .sportbtn:hover{color:var(--navy)}
+.sportsel .sportbtn.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(16,21,29,.12)}
+.sportsel .sportbtn[data-sport="nba"].on{color:var(--red)}
 .hspacer{flex:1}
 .datectl{display:flex;align-items:center;gap:8px}
 .datectl button{font-family:'Oswald';font-weight:500;background:#fff;border:1px solid var(--line);width:34px;height:34px;border-radius:8px;cursor:pointer;color:var(--ink2);font-size:17px;display:grid;place-items:center;transition:.15s}
@@ -67,6 +73,9 @@ main{max-width:1340px;margin:0 auto;padding:24px 26px 60px}
 
 .box{padding:6px 15px 12px}
 .bxrow{display:grid;grid-template-columns:1fr repeat(var(--ncols,9),21px) 30px 26px 26px;align-items:center;height:37px}
+/* NBA box: quarter cells are wider (point values are 2 digits) + one Total col */
+.box.nbabox .bxrow{grid-template-columns:1fr repeat(var(--ncols,4),28px) 34px}
+.box.nbabox .evorow{grid-template-columns:1fr repeat(var(--ncols,4),28px) 34px}
 .bxhead{height:23px;border-bottom:1px solid var(--line2)}
 .bxhead .inh{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink2);text-align:center}
 .bxhead .rhe{font-family:'Oswald';font-size:11px;font-weight:600;color:var(--ink2);text-align:center}
@@ -569,3 +578,31 @@ body{
 .honestbox .hbtag{display:inline-block;font-family:'IBM Plex Mono';font-size:11px;background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;margin-top:4px}
 
 @media(max-width:640px){.headline{grid-template-columns:1fr}.hl-col.left{border-right:0;border-bottom:1px solid var(--line2)}.headline>.hl-col:nth-child(2){display:none}}
+
+/* ============================================================
+   NBA — honest-framing banner, quarter trajectory readout table.
+   Reuses card / traj / micro-viz styling; only these are NBA-only.
+   ============================================================ */
+.nbabanner{grid-column:1/-1;background:linear-gradient(135deg,#0c2340,#16365e);color:#fff;border-radius:16px;padding:18px 22px;box-shadow:var(--shadow-hi);margin-bottom:2px}
+.nbabanner .nbh{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.nbabanner .nbh b{font-family:'Oswald';font-weight:600;font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+.nbabanner .nbpill{font-family:'Oswald';font-weight:700;font-size:10px;letter-spacing:.13em;background:var(--red);color:#fff;padding:3px 10px;border-radius:20px}
+.nbabanner p{font-size:13px;line-height:1.6;color:rgba(255,255,255,.9);margin-bottom:8px}
+.nbabanner p:last-child{margin-bottom:0}
+.nbabanner b{color:#fff;font-weight:600}
+.nbabanner .nbhonest{font-size:12px;color:rgba(255,255,255,.78);background:rgba(255,255,255,.08);padding:9px 13px;border-radius:9px;border-left:3px solid var(--red)}
+.nbabanner .nbhonest b{color:#ffd9df}
+
+/* NBA card trajectory block (slightly taller for the dual-axis sparkline) */
+.traj.nbatraj svg{height:96px}
+
+/* per-quarter readout table in the deep view */
+.nbq-tbl{margin-top:12px;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+.nbq-row{display:grid;grid-template-columns:54px 1fr 84px 92px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--line2);font-size:12px}
+.nbq-row:last-child{border-bottom:0}
+.nbq-row.nbq-hd{background:#fafbfc;font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+.nbq-row .nbq-q{font-family:'Oswald';font-weight:700;font-size:13px;color:var(--navy)}
+.nbq-row .nbq-cur{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2)}
+.nbq-row .nbq-pt{font-family:'Oswald';font-weight:600;font-size:14px;color:var(--navy)}
+.nbq-row .nbq-wp{font-family:'IBM Plex Mono';font-size:11px;color:var(--amber);font-weight:600}
+@media(max-width:760px){.sportsel{order:2}}
