@@ -1864,6 +1864,141 @@ export default function Home() {
       </div>`;
     }
     // ============================================================
+    // GENERIC GAME CONTENT — brings soccer + NBA (NHL/NFL next) up to MLB's
+    // renderStatcast richness using the ESPN game-summary enrichment attached
+    // server-side as g.detail (leaders / timeline / lineups / form / team_stats)
+    // and g.reasoning (the model's OWN interpretable drivers). Mirrors the .sc-*
+    // data-terminal aesthetic: a KEY PERFORMERS panel, a clean vertical GAME
+    // TIMELINE, a team-comparison bar block, and a "WHY THE MODEL SAYS THIS"
+    // reasoning callout. Pure string-builder, graceful when g.detail is absent.
+    // ============================================================
+    function escapeHtml(s: any) {
+      return String(s == null ? "" : s).replace(/[&<>"]/g, (c: string) => (({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as any)[c]));
+    }
+    // small inline team chip (logo for NBA/NHL/NFL, text-crest for soccer)
+    function teamChip(ab: string) {
+      if (!ab) return "";
+      if (sport === "soccer") return `<span class="gc-crest">${escapeHtml(ab)}</span>`;
+      return `<img class="gc-logo" src="${logo(ab)}" onerror="this.style.display='none'" alt="${escapeHtml(ab)}">`;
+    }
+    function leanCls(lean: any) {
+      const l = (lean || "").toLowerCase();
+      return l === "home" ? "h" : l === "away" ? "a" : l === "over" ? "o" : l === "under" ? "u" : l === "draw" ? "d" : "n";
+    }
+    // KEY PERFORMERS — soccer goals/assists/saves, NBA pts/reb/ast (both carry .line)
+    function gcLeaders(d: any) {
+      const L = (d.leaders || []).slice(0, sport === "soccer" ? 8 : 8);
+      if (!L.length) return "";
+      const rows = L.map((p: any) => {
+        const goal = sport === "soccer" && Number(p.goals) > 0;
+        const accent = goal ? " gc-perf-goal" : "";
+        const sub = sport === "soccer"
+          ? `${p.pos ? escapeHtml(p.pos) : ""}${p.starter === false ? " · SUB" : ""}`
+          : `${p.starter ? "Starter" : "Bench"}${p.fg ? " · " + escapeHtml(p.fg) + " FG" : ""}`;
+        return `<div class="gc-perf${accent}">
+          <div class="gc-perf-id">${teamChip(p.team)}<div class="gc-perf-name"><b>${escapeHtml(p.name)}</b><span>${sub}</span></div></div>
+          <div class="gc-perf-line">${escapeHtml(p.line || "")}</div>
+        </div>`;
+      }).join("");
+      return `<div class="dt-card gc-card"><div class="dt-ct"><span>${sport === "soccer" ? "⚽ Key Performers" : "🏀 Key Performers"}</span><span class="enginechip mid">ESPN BOX</span></div>
+        <div class="gc-perfs">${rows}</div></div>`;
+    }
+    // GAME TIMELINE — soccer goal/card/sub minute timeline; NBA quarter summaries
+    // + biggest scoring RUNS + a lead-change summary row. A clean vertical rail.
+    function gcTimeline(d: any, g: any) {
+      const tl = (d.timeline || []);
+      if (!tl.length) return "";
+      const home = g.home_abbr || (d.home || {}).abbr || "";
+      const ICON: any = { goal: "⚽", own_goal: "⚽", yellow: "▮", red: "▮", "second-yellow": "▮▮", sub: "⇄", quarter: "", run: "▶", summary: "Σ" };
+      const items = tl.map((e: any) => {
+        const k = e.kind || "";
+        const side = (e.team && home && e.team === home) ? "home" : (e.team ? "away" : "mid");
+        let dotCls = "n", icon = ICON[k] || "•", stamp = "", title = "", sub = "";
+        if (sport === "soccer") {
+          stamp = e.minute_label || (e.minute != null ? e.minute + "'" : "");
+          if (k === "goal" || k === "own_goal") { dotCls = "goal"; title = escapeHtml((e.players && e.players[0]) || e.text); sub = k === "own_goal" ? `Own goal · ${escapeHtml(e.team)}` : (e.players && e.players[1] ? `assist ${escapeHtml(e.players[1])} · ${escapeHtml(e.team)}` : `${escapeHtml(e.team)}${/volley|free-?kick|penalty|header/i.test(e.text || "") ? " · " + escapeHtml((e.text || "").split("-").pop().trim()) : ""}`); }
+          else if (k === "yellow") { dotCls = "yellow"; title = escapeHtml((e.players && e.players[0]) || e.text); sub = `Yellow card · ${escapeHtml(e.team)}`; }
+          else if (k === "red" || k === "second-yellow") { dotCls = "red"; title = escapeHtml((e.players && e.players[0]) || e.text); sub = `${k === "red" ? "Red card" : "Second yellow → off"} · ${escapeHtml(e.team)}`; }
+          else if (k === "sub") { dotCls = "sub"; title = `${escapeHtml((e.players && e.players[0]) || "")}${e.players && e.players[1] ? ` <span class="gc-sub-off">for ${escapeHtml(e.players[1])}</span>` : ""}`; sub = `Substitution · ${escapeHtml(e.team)}`; }
+          else { dotCls = "n"; title = escapeHtml(e.text); }
+        } else {
+          // NBA / NHL / NFL
+          if (k === "quarter") { dotCls = "quarter"; stamp = escapeHtml(e.label || ""); title = escapeHtml(e.text || ""); }
+          else if (k === "run") { dotCls = "run"; stamp = escapeHtml(e.label || ""); title = `${escapeHtml(e.team)} ${e.run != null ? e.run + "-0" : ""} run`; sub = e.clock ? `started ${escapeHtml(e.label)} ${escapeHtml(e.clock)}` : ""; }
+          else if (k === "summary") { dotCls = "summary"; stamp = "Σ"; title = escapeHtml(e.text || ""); }
+          else { dotCls = "n"; stamp = escapeHtml(e.label || ""); title = escapeHtml(e.text || ""); }
+        }
+        if (!title) return "";
+        return `<div class="gc-tl-row ${side}"><div class="gc-tl-stamp">${stamp}</div>
+          <div class="gc-tl-dot ${dotCls}"><span>${icon}</span></div>
+          <div class="gc-tl-body"><div class="gc-tl-title">${title}</div>${sub ? `<div class="gc-tl-sub">${sub}</div>` : ""}</div></div>`;
+      }).filter(Boolean).join("");
+      return `<div class="dt-card gc-card"><div class="dt-ct"><span>Game Timeline</span><span class="gc-tl-leg"><i class="home"></i>${escapeHtml(home)}<i class="away"></i>${escapeHtml(g.away_abbr || (d.away || {}).abbr || "")}</span></div>
+        <div class="gc-tl">${items}</div></div>`;
+    }
+    // TEAM COMPARISON — possession/shots (soccer) | FG%/reb/ast (NBA); a paired bar
+    function gcTeamStats(d: any, g: any) {
+      const ts = (d.team_stats || []);
+      if (!ts.length) return "";
+      const home = g.home_abbr || (d.home || {}).abbr || "", away = g.away_abbr || (d.away || {}).abbr || "";
+      const rows = ts.map((s: any) => {
+        const hv = Number(s[home]), av = Number(s[away]);
+        const ok = isFinite(hv) && isFinite(av);
+        const tot = ok ? Math.abs(hv) + Math.abs(av) : 0;
+        const hp = ok && tot > 0 ? (Math.abs(hv) / tot) * 100 : 50;
+        return `<div class="gc-cmp-row">
+          <span class="gc-cmp-v h">${escapeHtml(s[away] != null ? s[away] : "—")}</span>
+          <div class="gc-cmp-mid"><div class="gc-cmp-k">${escapeHtml(s.stat || "")}</div>
+            <div class="gc-cmp-bar"><i class="aw" style="width:${(100 - hp).toFixed(1)}%"></i><i class="hm" style="width:${hp.toFixed(1)}%"></i></div></div>
+          <span class="gc-cmp-v a">${escapeHtml(s[home] != null ? s[home] : "—")}</span>
+        </div>`;
+      }).join("");
+      return `<div class="dt-card gc-card"><div class="dt-ct"><span>Team Comparison</span><span class="gc-tl-leg"><i class="away"></i>${escapeHtml(away)}<i class="home"></i>${escapeHtml(home)}</span></div>
+        <div class="gc-cmp">${rows}</div></div>`;
+    }
+    // LINEUPS (soccer only) — each side's formation + starting XI + subs used
+    function gcLineups(d: any) {
+      const lus = (d.lineups || []);
+      if (!lus.length) return "";
+      const side = (lu: any) => {
+        const xi = (lu.xi || []).map((p: any) => `<div class="gc-xi-p"><span class="gc-xi-pos">${escapeHtml(p.pos || "")}</span><span class="gc-xi-num">${escapeHtml(p.jersey || "")}</span><span class="gc-xi-name">${escapeHtml((p.name || "").trim())}</span></div>`).join("");
+        const subs = (lu.subs_used || []).map((p: any) => `${escapeHtml((p.name || "").trim())}`).join(" · ");
+        return `<div class="gc-side"><div class="gc-side-hd">${teamChip(lu.team)}<b>${escapeHtml(lu.team)}</b><span class="gc-form-tag">${escapeHtml(lu.formation || "")}</span></div>
+          <div class="gc-xi">${xi}</div>${subs ? `<div class="gc-subs"><span class="gc-subs-k">Subs</span>${subs}</div>` : ""}</div>`;
+      };
+      return `<div class="dt-card gc-card"><div class="dt-ct"><span>Lineups &amp; Formations</span><span class="enginechip mid">STARTING XI</span></div>
+        <div class="gc-sides">${lus.map(side).join("")}</div></div>`;
+    }
+    // FORM (soccer only) — each side's recent W/D/L
+    function gcForm(d: any) {
+      const fm = (d.form || []);
+      if (!fm.length) return "";
+      const row = (f: any) => `<div class="gc-form-row"><b>${escapeHtml(f.team)}</b><div class="gc-form-pills">${(f.recent || []).map((r: any) => `<span class="gc-fp ${(r || "").toLowerCase() === "w" ? "w" : (r || "").toLowerCase() === "l" ? "l" : "d"}">${escapeHtml(r)}</span>`).join("")}</div></div>`;
+      return `<div class="gc-formwrap">${fm.map(row).join("")}</div>`;
+    }
+    // WHY THE MODEL SAYS THIS — the model's own interpretable drivers (g.reasoning)
+    function gcReasoning(g: any) {
+      const r = g.reasoning;
+      if (!r || !(r.drivers || []).length) return "";
+      const drivers = r.drivers.map((d: any) => `<div class="gc-drv ${leanCls(d.lean)}">
+        <div class="gc-drv-top"><span class="gc-drv-label">${escapeHtml(d.label)}</span><span class="gc-drv-lean">${escapeHtml((d.lean || "neutral"))}</span></div>
+        <div class="gc-drv-val">${escapeHtml(d.value)}</div>
+        ${d.detail ? `<div class="gc-drv-detail">${escapeHtml(d.detail)}</div>` : ""}</div>`).join("");
+      const mt = (r.model_type || "").replace(/_/g, " ");
+      return `<div class="dt-card gc-card gc-why"><div class="dt-ct"><span>◆ Why The Model Says This</span>${mt ? `<span class="enginechip mid">${escapeHtml(mt)}</span>` : ""}</div>
+        ${r.headline ? `<div class="gc-why-head">${escapeHtml(r.headline)}</div>` : ""}
+        <div class="gc-drvs">${drivers}</div></div>`;
+    }
+    // top-level: assemble the per-game content section (graceful when absent)
+    function renderGameContent(g: any) {
+      const d = g.detail;
+      const why = gcReasoning(g);
+      if (!d) return why; // older games / pre-match: still surface the reasoning callout
+      const lineups = sport === "soccer" ? gcLineups(d) : "";
+      const form = sport === "soccer" ? gcForm(d) : "";
+      return `${why}${gcLeaders(d)}${gcTimeline(d, g)}${gcTeamStats(d, g)}${form ? `<div class="dt-card gc-card"><div class="dt-ct"><span>Recent Form</span></div>${form}</div>` : ""}${lineups}`;
+    }
+    // ============================================================
     // NBA DEEP VIEW — reuses renderDetail's viz block (win-prob arc,
     // P(over) dial, 80% interval distribution, expected-margin bar) PLUS the
     // signature by-quarter TRAJECTORY (projected total + win-prob after each
@@ -2002,6 +2137,7 @@ export default function Home() {
         ${vizBlock}
         ${ivCol}
         ${trajBlock}
+        ${renderGameContent(g)}
         ${insight}
       </div>`;
       $("dt-back").onclick = backFromDetail;
@@ -2145,6 +2281,7 @@ export default function Home() {
         ${vizBlock}
         ${resultBlock ? ivCol : ""}
         ${trajBlock}
+        ${renderGameContent(g)}
         ${insight}
       </div>`;
       $("dt-back").onclick = backFromDetail;
