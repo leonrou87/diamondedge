@@ -1326,9 +1326,35 @@ export default function Home() {
       if (ov.naive_total_MAE != null) kpis += statTile("Naive Baseline", num(ov.naive_total_MAE, 2), `${unit}, double-the-pace`, "r");
       if (ov.line_total_MAE != null) kpis += statTile("Market Line MAE", num(ov.line_total_MAE, 2), "efficient — we match it", "");
       kpis += statTile("Win-Prob ECE", num(ov.winprob_ECE, 3), "calibration error", "g");
+      if (ov.interval80_coverage != null) kpis += statTile("80% Coverage", fmtPct(ov.interval80_coverage, 0), "interval honesty (target 80%)", "g");
       kpis += statTile("Winner Accuracy", fmtPct(ov["win_acc_at_0.5"]), `${meta.n_test_states || ""} states · Brier ${num(ov.winprob_brier, 3)}`, "g");
       kpis += `</div>`;
       html += kpis;
+
+      // ── Model Card: which model actually serves, and the "simple vs complex"
+      // finding from the no-regression gate (multisport/rating_no_regression.py). ──
+      const served = meta.served_model || "gbm";
+      const cmp = a.model_comparison || [];
+      const maxDelta = cmp.length ? Math.max(...cmp.map((c: any) => Math.abs(c.MAE_delta || 0))) : null;
+      const finding = served === "rating"
+        ? `A transparent closed-form <b>rating model</b> — pre-game team ratings + the current score, <b>no machine learning</b> — matches our LightGBM at <b>every ${periodWord}</b> on the held-out ${meta.test_season || ""} season${maxDelta != null ? ` (projected-total MAE differs by at most <b>${num(maxDelta, 3)} ${unit}</b>)` : ""}. So we ship the <b>simpler, more interpretable, more robust</b> model — the extra ML complexity wasn't buying any accuracy. <span class="fkey">Occam's razor, earned by a no-regression gate.</span>`
+        : `${sportName} is the one sport where the LightGBM's <b>game-script features</b> (one-score-game switch, leader-pace) genuinely beat the simple rating baseline${maxDelta != null ? ` (it wins a ${periodWord} by up to <b>${num(maxDelta, 3)} ${unit}</b> MAE)` : ""}, so we <b>keep the LightGBM</b> here. Both still finish neck-and-neck with the efficient market line. <span class="fkey">Complexity kept only where it's measurably earned.</span>`;
+      const cmpBars: any[] = [];
+      cmp.forEach((c: any) => {
+        if (c.rating_MAE != null) cmpBars.push({ label: "rating", sub: c.period_label, value: c.rating_MAE, color: "#16a34a" });
+        if (c.gbm_MAE != null) cmpBars.push({ label: "LGBM", sub: c.period_label, value: c.gbm_MAE, color: "#0c2340" });
+      });
+      const mcTiles = `<div class="kpistrip" style="margin-bottom:12px">
+        ${statTile("Served Model", served === "rating" ? "RATING" : "LIGHTGBM", served === "rating" ? "closed-form · no ML" : "gradient-boosted", served === "rating" ? "g" : "")}
+        ${maxDelta != null ? statTile("Rating vs LightGBM", `±${num(maxDelta, 3)}`, `max MAE gap — ${served === "rating" ? "a statistical tie" : "GBM edges it"}`, "g") : ""}
+        ${ov.line_total_MAE != null ? statTile("vs Market Line", `${num(ov.proj_total_MAE, 2)} / ${num(ov.line_total_MAE, 2)}`, "ours / line — we match it", "") : ""}
+      </div>`;
+      const mcLeg = cmpBars.length ? `<div class="plegend"><span><i style="background:#16a34a"></i>Rating model</span><span><i style="background:#0c2340"></i>LightGBM</span></div>` : "";
+      html += panel(
+        "Model Card — What's Serving, and What We Found",
+        `We A/B-tested a transparent closed-form rating scorer against the LightGBM on a held-out season with a strict no-regression gate (MAE, calibration ECE/Brier, and 80% interval coverage must all hold). The chart shows projected-total MAE for each, by ${periodWord} — near-identical bars mean the simple model is just as accurate.`,
+        `${mcTiles}<div class="findingbox">${finding}</div>${cmpBars.length ? barChart(cmpBars, { W: 560, H: 200, ydec: 1 }) : ""}`,
+        mcLeg);
 
       // ── honest framing box (sport-specific narrative) ──
       html += `<div class="honestbox">
@@ -1351,16 +1377,17 @@ export default function Home() {
       periods.forEach((p: any) => {
         const lab = p.period_label || `${pAbbr}${p.period}`;
         if (p.proj_total_MAE != null) maeBars.push({ label: "model", sub: lab, value: p.proj_total_MAE, color: "#c8102e" });
+        if (p.rating_total_MAE != null) maeBars.push({ label: "rating", sub: lab, value: p.rating_total_MAE, color: "#d97706" });
         if (p.naive_total_MAE != null) maeBars.push({ label: "naive", sub: lab, value: p.naive_total_MAE, color: "#9aa3af" });
         if (p.line_total_MAE != null) maeBars.push({ label: "line", sub: lab, value: p.line_total_MAE, color: "#16a34a" });
       });
-      const maeLeg = `<div class="plegend"><span><i style="background:#c8102e"></i>Our model</span><span><i style="background:#9aa3af"></i>Naive pace</span><span><i style="background:#16a34a"></i>Market line</span></div>`;
+      const maeLeg = `<div class="plegend"><span><i style="background:#c8102e"></i>Our model</span><span><i style="background:#d97706"></i>Simple rating</span><span><i style="background:#9aa3af"></i>Naive pace</span><span><i style="background:#16a34a"></i>Market line</span></div>`;
       const maeBody = maeBars.length
         ? barChart(maeBars, { W: 560, H: 230, ydec: 1 })
         : `<div class="nochart">No data</div>`;
       html += panel(
         `Projected-Total MAE by ${periodWord[0].toUpperCase() + periodWord.slice(1)}`,
-        `Mean absolute error of the projected final total (${unit}) from each ${periodWord} boundary. Lower is better. The model (red) beats the naive double-the-pace baseline (grey) at every boundary and converges toward — and matches — the efficient market line (green) where one is posted. This is the core "calibrated and sharp, but no edge" result.`,
+        `Mean absolute error of the projected final total (${unit}) from each ${periodWord} boundary. Lower is better. The model (red) beats the naive double-the-pace baseline (grey) at every boundary and converges toward — and matches — the efficient market line (green) where one is posted. A simple closed-form rating model (amber) sits right on top of it — the Model Card above explains why we ship the simpler one. This is the core "calibrated and sharp, but no edge" result.`,
         maeBody, maeLeg);
 
       // ── Panel 3: win-prob accuracy by period (reuses lineChart) ──
