@@ -1885,31 +1885,57 @@ export default function Home() {
       const l = (lean || "").toLowerCase();
       return l === "home" ? "h" : l === "away" ? "a" : l === "over" ? "o" : l === "under" ? "u" : l === "draw" ? "d" : "n";
     }
-    // KEY PERFORMERS — soccer goals/assists/saves, NBA pts/reb/ast (both carry .line)
+    // KEY PERFORMERS — soccer goals/assists/saves, NBA pts/reb/ast, NHL G/A/PTS +
+    // goalie saves, NFL passing/rushing/receiving (all carry a pre-formatted .line).
     function gcLeaders(d: any) {
-      const L = (d.leaders || []).slice(0, sport === "soccer" ? 8 : 8);
+      const L = (d.leaders || []).slice(0, 8);
       if (!L.length) return "";
+      // sport-aware accent + sub-line below the player name
       const rows = L.map((p: any) => {
-        const goal = sport === "soccer" && Number(p.goals) > 0;
-        const accent = goal ? " gc-perf-goal" : "";
-        const sub = sport === "soccer"
-          ? `${p.pos ? escapeHtml(p.pos) : ""}${p.starter === false ? " · SUB" : ""}`
-          : `${p.starter ? "Starter" : "Bench"}${p.fg ? " · " + escapeHtml(p.fg) + " FG" : ""}`;
+        let accent = "", sub = "";
+        if (sport === "soccer") {
+          accent = Number(p.goals) > 0 ? " gc-perf-goal" : "";
+          sub = `${p.pos ? escapeHtml(p.pos) : ""}${p.starter === false ? " · SUB" : ""}`;
+        } else if (sport === "nhl") {
+          // goalies flagged by pos G; skaters who scored get the goal accent
+          accent = Number(p.goals) > 0 ? " gc-perf-goal" : "";
+          sub = p.pos === "G" ? "Goalie"
+            : `${p.pos === "F" ? "Forward" : p.pos === "D" ? "Defense" : "Skater"}${p.plus_minus != null ? ` · ${p.plus_minus > 0 ? "+" : ""}${p.plus_minus}` : ""}`;
+        } else if (sport === "nfl") {
+          // category drives the label (Passing/Rushing/Receiving/…)
+          sub = `${p.category ? escapeHtml(p.category) : ""}${p.pos ? " · " + escapeHtml(p.pos) : ""}`;
+        } else {
+          // NBA
+          sub = `${p.starter ? "Starter" : "Bench"}${p.fg ? " · " + escapeHtml(p.fg) + " FG" : ""}`;
+        }
         return `<div class="gc-perf${accent}">
           <div class="gc-perf-id">${teamChip(p.team)}<div class="gc-perf-name"><b>${escapeHtml(p.name)}</b><span>${sub}</span></div></div>
           <div class="gc-perf-line">${escapeHtml(p.line || "")}</div>
         </div>`;
       }).join("");
-      return `<div class="dt-card gc-card"><div class="dt-ct"><span>${sport === "soccer" ? "⚽ Key Performers" : "🏀 Key Performers"}</span><span class="enginechip mid">ESPN BOX</span></div>
+      const hdr = sport === "soccer" ? "⚽ Key Performers"
+        : sport === "nhl" ? "🏒 Key Performers"
+        : sport === "nfl" ? "🏈 Key Performers"
+        : "🏀 Key Performers";
+      return `<div class="dt-card gc-card"><div class="dt-ct"><span>${hdr}</span><span class="enginechip mid">ESPN BOX</span></div>
         <div class="gc-perfs">${rows}</div></div>`;
     }
     // GAME TIMELINE — soccer goal/card/sub minute timeline; NBA quarter summaries
-    // + biggest scoring RUNS + a lead-change summary row. A clean vertical rail.
+    // + biggest scoring RUNS + a lead-change summary row; NHL goals + penalties by
+    // PERIOD (with running score + strength); NFL scoring drives by QUARTER (with
+    // running score progression + biggest-swing spotlight). A clean vertical rail.
     function gcTimeline(d: any, g: any) {
       const tl = (d.timeline || []);
       if (!tl.length) return "";
       const home = g.home_abbr || (d.home || {}).abbr || "";
-      const ICON: any = { goal: "⚽", own_goal: "⚽", yellow: "▮", red: "▮", "second-yellow": "▮▮", sub: "⇄", quarter: "", run: "▶", summary: "Σ" };
+      const away = g.away_abbr || (d.away || {}).abbr || "";
+      const ICON: any = { goal: "⚽", own_goal: "⚽", yellow: "▮", red: "▮", "second-yellow": "▮▮", sub: "⇄", quarter: "", run: "▶", summary: "Σ", penalty: "▰", score: "" };
+      // running score chip (NHL goals / NFL scores carry home_score/away_score)
+      const scoreChip = (e: any) => {
+        const hs = e.home_score, as = e.away_score;
+        if (hs == null || as == null) return "";
+        return `<span class="gc-tl-score">${escapeHtml(away)} ${as}–${hs} ${escapeHtml(home)}</span>`;
+      };
       const items = tl.map((e: any) => {
         const k = e.kind || "";
         const side = (e.team && home && e.team === home) ? "home" : (e.team ? "away" : "mid");
@@ -1921,19 +1947,50 @@ export default function Home() {
           else if (k === "red" || k === "second-yellow") { dotCls = "red"; title = escapeHtml((e.players && e.players[0]) || e.text); sub = `${k === "red" ? "Red card" : "Second yellow → off"} · ${escapeHtml(e.team)}`; }
           else if (k === "sub") { dotCls = "sub"; title = `${escapeHtml((e.players && e.players[0]) || "")}${e.players && e.players[1] ? ` <span class="gc-sub-off">for ${escapeHtml(e.players[1])}</span>` : ""}`; sub = `Substitution · ${escapeHtml(e.team)}`; }
           else { dotCls = "n"; title = escapeHtml(e.text); }
+        } else if (sport === "nhl") {
+          // NHL: goals + penalties by period (period_label + clock stamp)
+          stamp = `${escapeHtml(e.period_label || "")}${e.clock ? " " + escapeHtml(e.clock) : ""}`;
+          if (k === "goal") {
+            dotCls = "goal"; icon = "⚒";
+            const scorer = (e.players && e.players[0]) || "Goal";
+            const assist = (e.players && e.players[1]) ? ` (assist ${escapeHtml(e.players[1])})` : "";
+            title = `${escapeHtml(scorer)} goal${assist}`;
+            const strength = e.strength && !/even/i.test(e.strength) ? ` · ${escapeHtml(e.strength.replace(/-/g, " "))}` : "";
+            sub = `${escapeHtml(e.team)}${strength}`;
+          } else if (k === "penalty") {
+            dotCls = "pen"; icon = "▰";
+            const who = (e.players && e.players[0]) || "Penalty";
+            // pull the infraction word from the text e.g. "Evander Kane Slashing against …"
+            const m = /\b(slashing|tripping|hooking|holding|roughing|interference|cross[- ]?check\w*|high[- ]?stick\w*|boarding|elbowing|delay of game|too many men|fighting|charging|unsportsmanlike|misconduct)\b/i.exec(e.text || "");
+            title = `${escapeHtml(who)} — penalty`;
+            sub = `${m ? m[0][0].toUpperCase() + m[0].slice(1).toLowerCase() : "Penalty"} · ${escapeHtml(e.team)}`;
+          } else { dotCls = "n"; title = escapeHtml(e.text || ""); sub = escapeHtml(e.team || ""); }
+        } else if (sport === "nfl") {
+          // NFL: scoring plays by quarter (period_label + clock; running progression)
+          stamp = `${escapeHtml(e.period_label || "")}${e.clock ? " " + escapeHtml(e.clock) : ""}`;
+          if (k === "score") {
+            dotCls = "goal"; icon = e.points >= 6 ? "✦" : "•";
+            title = escapeHtml(e.text || "Scoring play");
+            const pts = e.points != null ? `+${e.points}` : "";
+            const styp = e.score_type ? escapeHtml(e.score_type) : "Score";
+            sub = `${pts ? pts + " · " : ""}${styp} · ${escapeHtml(e.team)}`;
+          } else { dotCls = "n"; title = escapeHtml(e.text || ""); sub = escapeHtml(e.team || ""); }
         } else {
-          // NBA / NHL / NFL
+          // NBA
           if (k === "quarter") { dotCls = "quarter"; stamp = escapeHtml(e.label || ""); title = escapeHtml(e.text || ""); }
           else if (k === "run") { dotCls = "run"; stamp = escapeHtml(e.label || ""); title = `${escapeHtml(e.team)} ${e.run != null ? e.run + "-0" : ""} run`; sub = e.clock ? `started ${escapeHtml(e.label)} ${escapeHtml(e.clock)}` : ""; }
           else if (k === "summary") { dotCls = "summary"; stamp = "Σ"; title = escapeHtml(e.text || ""); }
           else { dotCls = "n"; stamp = escapeHtml(e.label || ""); title = escapeHtml(e.text || ""); }
         }
         if (!title) return "";
-        return `<div class="gc-tl-row ${side}"><div class="gc-tl-stamp">${stamp}</div>
+        // score progression chip on NHL goals / NFL scores; biggest-swing flag (NFL)
+        const showScore = (sport === "nhl" && k === "goal") || (sport === "nfl" && k === "score");
+        const swing = sport === "nfl" && e.biggest_swing ? ` <span class="gc-tl-big">key swing</span>` : "";
+        return `<div class="gc-tl-row ${side}${swing ? " big" : ""}"><div class="gc-tl-stamp">${stamp}</div>
           <div class="gc-tl-dot ${dotCls}"><span>${icon}</span></div>
-          <div class="gc-tl-body"><div class="gc-tl-title">${title}</div>${sub ? `<div class="gc-tl-sub">${sub}</div>` : ""}</div></div>`;
+          <div class="gc-tl-body"><div class="gc-tl-title">${title}${swing}</div>${sub ? `<div class="gc-tl-sub">${sub}${showScore ? " " + scoreChip(e) : ""}</div>` : (showScore ? `<div class="gc-tl-sub">${scoreChip(e)}</div>` : "")}</div></div>`;
       }).filter(Boolean).join("");
-      return `<div class="dt-card gc-card"><div class="dt-ct"><span>Game Timeline</span><span class="gc-tl-leg"><i class="home"></i>${escapeHtml(home)}<i class="away"></i>${escapeHtml(g.away_abbr || (d.away || {}).abbr || "")}</span></div>
+      return `<div class="dt-card gc-card"><div class="dt-ct"><span>Game Timeline</span><span class="gc-tl-leg"><i class="home"></i>${escapeHtml(home)}<i class="away"></i>${escapeHtml(away)}</span></div>
         <div class="gc-tl">${items}</div></div>`;
     }
     // TEAM COMPARISON — possession/shots (soccer) | FG%/reb/ast (NBA); a paired bar
