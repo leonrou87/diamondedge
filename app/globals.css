@@ -731,3 +731,106 @@ body{
 .platcard:hover .pl-go{color:var(--sc,#0c2340)}
 .pl-go .arr{font-size:14px;transition:transform .2s} .platcard:hover .pl-go .arr{transform:translateX(3px)}
 .spinesec.platform .sslab{color:var(--navy)} .spinesec.platform .ssdot{background:var(--navy)}
+
+/* ============================================================
+   GAME CONTENT (renderGameContent) — soccer + NBA per-game deep content,
+   brought up to MLB renderStatcast richness. KEY PERFORMERS / GAME TIMELINE /
+   TEAM COMPARISON / LINEUPS / FORM + the "Why The Model Says This" reasoning
+   callout. Matches the data-terminal aesthetic (navy/red, Oswald + Plex Mono).
+   ============================================================ */
+.gc-card{margin-top:16px}
+.gc-card .enginechip{font-family:'Oswald';font-weight:700;font-size:9px;letter-spacing:.08em}
+.gc-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0}
+.gc-crest{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;font-family:'Oswald';font-weight:700;font-size:10px;flex-shrink:0}
+
+/* KEY PERFORMERS — two-column stat-line grid */
+.gc-perfs{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.gc-perf{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.gc-perfs .gc-perf:nth-last-child(1),.gc-perfs .gc-perf:nth-last-child(2){border-bottom:0}
+.gc-perf-id{display:flex;align-items:center;gap:9px;min-width:0}
+.gc-perf-name{display:flex;flex-direction:column;min-width:0}
+.gc-perf-name b{font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.gc-perf-name span{font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);font-weight:600;margin-top:1px}
+.gc-perf-line{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:var(--navy);white-space:nowrap;text-align:right}
+.gc-perf-goal .gc-perf-line{color:var(--red)}
+.gc-perf-goal .gc-perf-name b::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--red);margin-left:6px;vertical-align:middle}
+
+/* GAME TIMELINE — vertical rail, home navy / away red dots */
+.gc-tl-leg{font-family:'IBM Plex Sans';font-weight:400;font-size:10px;color:var(--ink2);letter-spacing:0;text-transform:none;display:flex;align-items:center;gap:5px}
+.gc-tl-leg i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-left:6px}
+.gc-tl-leg i.home{background:var(--navy)} .gc-tl-leg i.away{background:var(--red)}
+.gc-tl{position:relative;padding-left:2px}
+.gc-tl::before{content:"";position:absolute;left:69px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.gc-tl-row{display:grid;grid-template-columns:52px 30px 1fr;align-items:flex-start;gap:8px;padding:5px 0;position:relative}
+.gc-tl-stamp{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:var(--ink2);text-align:right;padding-top:4px}
+.gc-tl-dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--slatebg);border:2px solid var(--line);z-index:1;font-size:11px;line-height:1}
+.gc-tl-dot span{transform:translateY(0)}
+.gc-tl-row.home .gc-tl-dot{border-color:var(--navy)} .gc-tl-row.away .gc-tl-dot{border-color:var(--red)}
+.gc-tl-dot.goal{background:var(--navy);color:#fff;border-color:var(--navy)}
+.gc-tl-row.away .gc-tl-dot.goal{background:var(--red);border-color:var(--red)}
+.gc-tl-dot.yellow{background:#fbe26a;border-color:#d9a800;color:#7a5b00}
+.gc-tl-dot.red{background:var(--red);border-color:var(--red);color:#fff}
+.gc-tl-dot.sub{background:#e7f6ec;border-color:var(--green);color:var(--green)}
+.gc-tl-dot.run{background:var(--amberbg);border-color:var(--amber);color:var(--amber);font-size:9px}
+.gc-tl-dot.quarter{background:#fff;border-color:var(--navy);color:var(--navy);font-size:9px;font-family:'Oswald';font-weight:700}
+.gc-tl-dot.summary{background:var(--slatebg);border-color:var(--slate);color:var(--slate);font-size:11px}
+.gc-tl-body{padding-top:3px;min-width:0}
+.gc-tl-title{font-size:13px;color:var(--ink);font-weight:500;line-height:1.3}
+.gc-tl-title .gc-sub-off{color:var(--ink2);font-weight:400;font-size:11px}
+.gc-tl-sub{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink2);margin-top:2px;text-transform:capitalize}
+
+/* TEAM COMPARISON — away | stat + diverging bar | home */
+.gc-cmp{display:flex;flex-direction:column;gap:10px}
+.gc-cmp-row{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:12px}
+.gc-cmp-v{font-family:'Oswald';font-weight:700;font-size:15px;text-align:center}
+.gc-cmp-v.h{color:var(--red)} .gc-cmp-v.a{color:var(--navy)}
+.gc-cmp-mid{display:flex;flex-direction:column;gap:4px}
+.gc-cmp-k{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:700;text-align:center}
+.gc-cmp-bar{display:flex;height:8px;border-radius:5px;overflow:hidden;background:var(--line2)}
+.gc-cmp-bar i{height:100%}
+.gc-cmp-bar i.aw{background:linear-gradient(90deg,#e0455f,#c8102e)}
+.gc-cmp-bar i.hm{background:linear-gradient(90deg,#16365e,#0c2340)}
+
+/* LINEUPS — two side columns, starting XI + subs */
+.gc-sides{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.gc-side-hd{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.gc-side-hd b{font-family:'Oswald';font-weight:700;font-size:14px;color:var(--navy)}
+.gc-form-tag{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:var(--ink2);background:var(--slatebg);padding:2px 7px;border-radius:5px;margin-left:auto}
+.gc-xi{display:flex;flex-direction:column;gap:1px}
+.gc-xi-p{display:grid;grid-template-columns:42px 22px 1fr;align-items:center;gap:7px;padding:3px 0;font-size:12px}
+.gc-xi-pos{font-family:'IBM Plex Mono';font-size:9px;font-weight:600;color:var(--navy);background:var(--slatebg);border-radius:4px;padding:2px 0;text-align:center}
+.gc-xi-num{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);text-align:center}
+.gc-xi-name{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gc-subs{margin-top:9px;padding-top:8px;border-top:1px dashed var(--line);font-size:11px;color:var(--ink2);line-height:1.5}
+.gc-subs-k{font-family:'Oswald';font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin-right:7px}
+
+/* RECENT FORM — W/D/L pills */
+.gc-formwrap{display:flex;flex-direction:column;gap:10px}
+.gc-form-row{display:flex;align-items:center;gap:12px}
+.gc-form-row b{font-family:'Oswald';font-weight:700;font-size:14px;color:var(--navy);width:46px}
+.gc-form-pills{display:flex;gap:5px}
+.gc-fp{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-family:'Oswald';font-weight:700;font-size:11px;color:#fff}
+.gc-fp.w{background:var(--green)} .gc-fp.l{background:var(--red)} .gc-fp.d{background:var(--slate)}
+
+/* WHY THE MODEL SAYS THIS — reasoning callout with driver chips */
+.gc-why{background:linear-gradient(135deg,#0c2340,#16365e);border-color:#16365e}
+.gc-why .dt-ct span:first-child{color:#fff}
+.gc-why .dt-ct .enginechip{background:rgba(255,255,255,.14);color:#cfe0f5}
+.gc-why-head{font-size:14px;line-height:1.45;color:#eaf1fb;font-weight:500;margin-bottom:14px;padding-bottom:13px;border-bottom:1px solid rgba(255,255,255,.12)}
+.gc-drvs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gc-drv{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-left-width:3px;border-radius:10px;padding:11px 13px}
+.gc-drv.h{border-left-color:#5b9bff} .gc-drv.a{border-left-color:#e0455f} .gc-drv.d{border-left-color:#9aa7b8}
+.gc-drv.o{border-left-color:#34d17f} .gc-drv.u{border-left-color:#e0455f} .gc-drv.n{border-left-color:#7e8da0}
+.gc-drv-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.gc-drv-label{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:#9fb4d4;font-weight:700}
+.gc-drv-lean{font-family:'IBM Plex Mono';font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#cfe0f5;background:rgba(255,255,255,.1);padding:2px 6px;border-radius:5px}
+.gc-drv-val{font-family:'Oswald';font-weight:600;font-size:15px;color:#fff;line-height:1.2}
+.gc-drv-detail{font-size:11px;color:#b9c9e0;margin-top:4px;line-height:1.4}
+
+@media(max-width:640px){
+  .gc-perfs{grid-template-columns:1fr}
+  .gc-perfs .gc-perf:nth-last-child(2){border-bottom:1px solid var(--line)}
+  .gc-sides{grid-template-columns:1fr}
+  .gc-drvs{grid-template-columns:1fr}
+  .gc-tl::before{left:65px}
+}
