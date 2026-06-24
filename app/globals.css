@@ -846,3 +846,74 @@ body{
   .gc-drvs{grid-template-columns:1fr}
   .gc-tl::before{left:65px}
 }
+
+/* ============ EDGES — honest picks / watchlist board ============ */
+.picksverdict{margin-bottom:6px}
+.picksverdict .pvcounters{display:flex;gap:26px;margin:14px 0 12px}
+.picksverdict .pvc{display:flex;flex-direction:column}
+.picksverdict .pvcv{font-family:'Oswald';font-weight:700;font-size:34px;line-height:1;color:#fff}
+.picksverdict .pvck{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-top:5px}
+
+/* watchlist cards */
+.edgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.edcard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:15px 16px;display:flex;flex-direction:column;gap:9px}
+.edtop{display:flex;align-items:center;justify-content:space-between}
+.edsport{font-family:'Oswald';font-weight:600;font-size:13px;letter-spacing:.12em;color:var(--navy)}
+.edgrade{font-family:'IBM Plex Mono';font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 8px;border-radius:6px}
+.edgrade.ga{background:var(--greenbg);color:var(--green)}
+.edgrade.gb{background:var(--amberbg);color:var(--amber)}
+.edgrade.gc{background:var(--slatebg);color:var(--slate)}
+.edseg{font-family:'IBM Plex Mono';font-size:13.5px;color:var(--ink);font-weight:600;word-break:break-word}
+.edsides{display:flex;align-items:center;gap:8px}
+.edside{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.06em;padding:3px 9px;border-radius:6px}
+.edside.over{background:var(--greenbg);color:var(--green)}
+.edside.under{background:var(--bluebg);color:var(--blue)}
+.edside.flat{background:var(--slatebg);color:var(--slate)}
+.edmkt{font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em}
+.edroi{background:var(--bg2,#f8fafc);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.edroirow{display:flex;align-items:baseline;justify-content:space-between}
+.edroilab{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.edroival{font-family:'Oswald';font-weight:600;font-size:18px}
+.edroival.pos{color:var(--green)} .edroival.neg{color:var(--red)}
+.edci{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--ink2);margin-top:2px}
+.edfwd{display:block;font-family:'IBM Plex Mono';font-size:10.5px;color:var(--ink2);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.edfwd.none{color:var(--slate);font-style:italic}
+.edmech{font-size:12px;line-height:1.5;color:var(--ink2)}
+.edtag{display:inline-flex;align-items:center;gap:7px;font-family:'Oswald';font-weight:600;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);background:var(--amberbg);padding:5px 10px;border-radius:7px;align-self:flex-start}
+.edtag i{width:7px;height:7px;border-radius:50%;background:var(--amber)}
+
+/* hunting-ground map */
+.hgcap{font-family:'IBM Plex Mono';font-size:11px;color:var(--slate);background:var(--slatebg);padding:3px 9px;border-radius:6px;text-transform:none;letter-spacing:0;font-weight:600}
+.hgintro{font-size:12.5px;line-height:1.55;color:var(--ink2);max-width:820px;margin:0 0 14px}
+.hgintro b{color:var(--navy)}
+.hggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.hgblock{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px}
+.hghead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.hgsport{font-family:'Oswald';font-weight:600;font-size:14px;letter-spacing:.1em;color:var(--navy)}
+.hgmetric{font-size:10px;color:var(--ink2);text-align:right;line-height:1.3;max-width:180px}
+.hgtable{display:flex;flex-direction:column}
+.hgrow{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #f1f3f6}
+.hgrow:last-child{border-bottom:none}
+.hgrow.hghdr{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);padding-bottom:6px}
+.hgrow.hghdr .hgmet,.hgrow.hghdr .hgside{justify-self:end}
+.hgseg{font-family:'IBM Plex Mono';font-size:12px;color:var(--ink);word-break:break-word}
+.hgmet{font-family:'Oswald';font-weight:600;font-size:15px;justify-self:end;min-width:54px;text-align:right}
+.hgmet.over{color:var(--green)} .hgmet.under{color:var(--blue)} .hgmet.flat{color:var(--slate)}
+.hgside{justify-self:end}
+.hgn{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--ink2);justify-self:end;min-width:48px;text-align:right}
+
+/* forward-tracker per-sport table */
+.fttable{display:flex;flex-direction:column;margin-top:4px}
+.ftrow{display:grid;grid-template-columns:1fr repeat(5,minmax(70px,auto));gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid #f1f3f6}
+.ftrow:last-child{border-bottom:none}
+.ftsport{font-family:'Oswald';font-weight:600;font-size:13px;letter-spacing:.08em;color:var(--navy)}
+.ftcell{font-family:'IBM Plex Mono';font-size:12.5px;color:var(--ink);display:flex;flex-direction:column;gap:2px;text-align:right;justify-self:end}
+.ftcell .ftk{font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.ftcell .pos{color:var(--green);font-weight:600} .ftcell .neg{color:var(--slate)}
+
+@media(max-width:640px){
+  .picksverdict .pvcounters{gap:18px}
+  .edgrid,.hggrid{grid-template-columns:1fr}
+  .ftrow{grid-template-columns:1fr 1fr 1fr;gap:8px 12px}
+  .hgmetric{display:none}
+}

@@ -21,6 +21,7 @@ export default function Home() {
           <button class="sportbtn" data-sport="nfl">NFL</button>
         </div>
         <div class="datestrip-wrap"><div class="datestrip" id="datestrip"></div></div>
+        <button class="perfpill" id="m-edges">Edges</button>
         <button class="perfpill" id="m-perf">Performance</button>
         <div class="recordchip" id="record"></div>
       </div></header>
@@ -1801,8 +1802,162 @@ export default function Home() {
       catch (e) { grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load analytics snapshot.</div></div>`; }
     }
 
+    // ============================================================
+    // EDGES — the HONEST picks / watchlist board (cross-sport).
+    // The segment-exploitation thesis came back NULL: 0 of 82 frozen rules
+    // cleared the out-of-sample ship bar; ZERO Grade-A. So this view shows NO
+    // bet-grade picks (none exist). It surfaces (1) a WATCHLIST of the
+    // least-implausible graded leads — each clearly tagged "TRACKING — not a
+    // bet"; (2) the per-sport HUNTING-GROUND map of where the line is least
+    // sharp ("least-sharp ≠ bettable"); and (3) the FORWARD-TRACKER scoreboard
+    // (rules tracked, picks logged, forward-survivors counter = 0). A lead only
+    // ever becomes a bet if it reaches Grade A in the forward tracker.
+    // Data source: the 'picks' Supabase key written by segment_edge/serve_picks.py.
+    // ============================================================
+    const SPLABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "SOCCER" };
+    const fmtRoiPct = (v: any) => (v == null ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
+    const fmtCi = (ci: any) => {
+      if (!ci || ci.length < 2) return "";
+      const lo = ci[0], hi = ci[1];
+      const f = (x: any) => (x == null ? "∞" : (Number(x) >= 0 ? "+" : "") + (Number(x) * 100).toFixed(1) + "%");
+      return `[${f(lo)} … ${f(hi)}]`;
+    };
+    const gradeCls = (g: any) => (({ A: "ga", B: "gb", C: "gc" } as any)[(g || "C").toUpperCase()] || "gc");
+    const sideChip = (side: any, market: any) => {
+      const s = (side || "").toLowerCase();
+      const lab = s === "over" ? "OVER" : s === "under" ? "UNDER" : s === "dog" ? "DOG +" : s === "fav" ? "FAV" : s === "model" ? "MODEL" : (side || "—").toUpperCase();
+      const cls = s === "over" || s === "dog" ? "over" : s === "under" || s === "fav" ? "under" : "flat";
+      const mk = (market || "").toLowerCase();
+      const mlab = mk === "total" ? "total" : mk === "runline" ? "run line" : mk === "spread" ? "spread" : mk;
+      return `<span class="edside ${cls}">${lab}</span><span class="edmkt">${mlab}</span>`;
+    };
+
+    function edgeWatchCard(c: any) {
+      // backfill is the honest replication ROI; fall back to the discovery seed
+      // only when no settled backfill exists (e.g. day_slate has 0 logged picks).
+      const hasBackfill = c.backfill_roi != null;
+      const roi = hasBackfill ? c.backfill_roi : c.discovery_roi;
+      const ci = hasBackfill ? c.backfill_ci : c.discovery_ci;
+      const n = hasBackfill ? c.backfill_n : c.discovery_n;
+      const roiLab = hasBackfill ? "backfill ROI" : "discovery ROI";
+      const fwd = c.forward_roi;
+      const fwdTxt = fwd == null
+        ? `<span class="edfwd none">forward OOS: awaiting settled slates</span>`
+        : `<span class="edfwd">forward OOS ${fmtRoiPct(fwd)} ${fmtCi(c.forward_ci)} · n=${c.forward_n ?? "—"}</span>`;
+      return `<div class="edcard">
+        <div class="edtop">
+          <div class="edsport">${c.sport_label || SPLABEL[c.sport] || c.sport}</div>
+          <span class="edgrade ${gradeCls(c.grade)}">GRADE ${(c.grade || "C").toUpperCase()}</span>
+        </div>
+        <div class="edseg">${c.segment}</div>
+        <div class="edsides">${sideChip(c.side, c.market)}</div>
+        <div class="edroi">
+          <div class="edroirow"><span class="edroilab">${roiLab}</span><span class="edroival ${roi >= 0 ? "pos" : "neg"}">${fmtRoiPct(roi)}</span></div>
+          <div class="edci">${fmtCi(ci)} · n=${n ?? "—"}</div>
+          ${fwdTxt}
+        </div>
+        <div class="edmech">${c.mechanism}</div>
+        <div class="edtag"><i></i>${c.tag || "TRACKING — not a bet"}</div>
+      </div>`;
+    }
+
+    function edgeHuntBlock(b: any) {
+      const rows = (b.conditions || []).map((r: any) => {
+        const v = r.metric_value;
+        const dir = v == null ? "flat" : v > 0 ? "over" : "under";
+        const sign = v == null ? "" : v > 0 ? "+" : "";
+        return `<div class="hgrow">
+          <div class="hgseg">${r.segment}</div>
+          <div class="hgmet ${dir}">${sign}${v == null ? "—" : (Math.abs(v) < 1 ? v.toFixed(3) : v.toFixed(2))}</div>
+          <div class="hgside"><span class="edside ${r.lean === "over" || r.lean === "dog" ? "over" : "under"}">${(r.lean || "").toUpperCase()}</span></div>
+          <div class="hgn">n=${r.n ?? "—"}</div>
+        </div>`;
+      }).join("");
+      return `<div class="hgblock">
+        <div class="hghead"><span class="hgsport">${b.sport_label || SPLABEL[b.sport] || b.sport}</span><span class="hgmetric">${b.metric}</span></div>
+        <div class="hgtable"><div class="hgrow hghdr"><div class="hgseg">condition</div><div class="hgmet">divergence</div><div class="hgside">soft toward</div><div class="hgn"></div></div>${rows}</div>
+      </div>`;
+    }
+
+    function renderPicks(p: any) {
+      const grid = $("grid");
+      if (!p) { grid.innerHTML = `<div class="state"><div class="ds">No picks snapshot</div><div>The 'picks' snapshot has not been published yet.</div></div>`; return; }
+      const betCount = p.bet_grade_count || 0;
+      const survivors = p.forward_survivors || 0;
+      const wl = p.watchlist || [];
+      const hg = p.hunting_ground || [];
+      const tr = p.tracker || {};
+      const ov = tr.overall || {};
+
+      // 1 — honest headline (the null verdict, front and centre)
+      let html = `<div class="picksverdict honestbox">
+        <div class="hbh"><i></i>The Honest Verdict — No Bet-Grade Edges</div>
+        <p style="font-size:14px"><b>${p.headline_verdict}</b></p>
+        <p>${p.verdict_long || ""}</p>
+        <div class="pvcounters">
+          <div class="pvc"><div class="pvcv">${betCount}</div><div class="pvck">bet-grade picks</div></div>
+          <div class="pvc"><div class="pvcv">${survivors}</div><div class="pvck">forward survivors</div></div>
+          <div class="pvc"><div class="pvcv">${p.n_rules ?? ov.rules ?? 0}</div><div class="pvck">rules tracked</div></div>
+        </div>
+        <div class="hbtag">${betCount === 0 ? "0 bets · we don't beat the line · edges appear only after clearing the bar forward" : "bet-grade edges live below"}</div>
+      </div>`;
+
+      // 2 — WATCHLIST board
+      html += `<div class="subbar" style="margin-top:26px"><h2>Watchlist — Tracking, Not Betting</h2><div class="rule"></div>
+        <div class="legend"><span><i class="dot" style="background:var(--amber)"></i>Grade B</span><span><i class="dot" style="background:var(--slate)"></i>Grade C</span></div></div>`;
+      html += wl.length
+        ? `<div class="edgrid">${wl.map(edgeWatchCard).join("")}</div>`
+        : `<div class="state"><div class="ds">Watchlist empty</div></div>`;
+
+      // 3 — HUNTING-GROUND map
+      html += `<div class="subbar" style="margin-top:30px"><h2>Hunting Ground — Where the Line Is Least Sharp</h2><div class="rule"></div>
+        <div class="legend"><span class="hgcap">least-sharp ≠ bettable</span></div></div>`;
+      html += `<div class="hgintro">For each sport, the segment conditions where the line diverged most from the result — the largest signed error or over-rate gap vs the market-implied price. A soft line is necessary but <b>not sufficient</b> for an edge; only the forward tracker turns softness into a bet.</div>`;
+      html += `<div class="hggrid">${hg.map(edgeHuntBlock).join("")}</div>`;
+
+      // 4 — FORWARD-TRACKER panel
+      html += `<div class="subbar" style="margin-top:30px"><h2>Forward Tracker — The Out-of-Sample Scoreboard</h2><div class="rule"></div></div>`;
+      html += `<div class="kpistrip">
+        ${statTile("Rules Tracked", String(ov.rules ?? 0), "frozen, pre-registered")}
+        ${statTile("Picks Logged", Number(ov.logged ?? 0).toLocaleString(), `${Number(ov.settled ?? 0).toLocaleString()} settled`)}
+        ${statTile("Forward Settled", String(ov.settled_forward ?? 0), "post-freeze slates")}
+        ${statTile("Forward Survivors", String(ov.forward_survivors ?? 0), "cleared the ship bar", (ov.forward_survivors ?? 0) > 0 ? "g" : "r")}
+      </div>`;
+      const perRows = (tr.per_sport || []).map((s: any) => `<div class="ftrow">
+        <div class="ftsport">${s.sport_label || SPLABEL[s.sport] || s.sport}</div>
+        <div class="ftcell"><span class="ftk">rules</span>${s.rules}</div>
+        <div class="ftcell"><span class="ftk">freeze</span>${s.freeze_date || "—"}</div>
+        <div class="ftcell"><span class="ftk">logged</span>${Number(s.logged || 0).toLocaleString()}</div>
+        <div class="ftcell"><span class="ftk">fwd-settled</span>${s.settled_forward ?? 0}</div>
+        <div class="ftcell"><span class="ftk">ships</span><span class="${(s.ships_forward ?? 0) > 0 ? "pos" : "neg"}">${s.ships_forward ?? 0}</span></div>
+      </div>`).join("");
+      html += `<div class="panel" style="margin-top:14px"><div class="phead"><div class="pt">Per-Sport Forward Status</div></div>
+        <div class="pdesc">Ship bar: <b>${tr.ship_bar || "forward-OOS ROI CI-lower > 0, net of vig"}</b>. On day 1, forward slates are near-empty by design — power accrues as new games settle after each sport's freeze date. A rule needs n≥${tr.min_n_for_A_grade ?? 30} forward picks and a CI floor above zero to ship.</div>
+        <div class="fttable">${perRows}</div></div>`;
+
+      html += `<div class="refnote">${p.disclaimer || ""} · snapshot generated ${(p.generated_at || "").slice(0, 10)} · data via Supabase key <b>picks</b></div>`;
+
+      grid.innerHTML = html;
+    }
+
+    let _lastPicks: any = null;
+    async function loadPicks() {
+      const grid = $("grid");
+      grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading edges</div></div>`;
+      $("slatehead").textContent = "Edges & Watchlist"; $("record").innerHTML = ""; $("legendbox").style.display = "none";
+      $("datestrip").innerHTML = "";
+      try {
+        const p = await snap("picks");
+        _lastPicks = p; renderPicks(p);
+        $("refnote").innerHTML = "";
+      } catch (e) {
+        grid.innerHTML = `<div class="state"><div class="ds">Connection error</div><div>Could not load the picks snapshot.</div></div>`;
+      }
+    }
+
     function syncHeader() {
       $("m-perf").classList.toggle("on", mode === "perf");
+      const edg = $("m-edges"); if (edg) edg.classList.toggle("on", mode === "picks");
       // reflect active sport: brand tag + selector highlight + Performance availability
       const bt = $("brandtag"); if (bt) bt.textContent = SP().brandtag;
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === sport));
@@ -2620,12 +2775,22 @@ export default function Home() {
     }
     $("m-perf").onclick = () => { if (mode !== "perf") selectPerf(); };
 
+    // EDGES — cross-sport honest picks/watchlist board. Its own #edges hash; the
+    // active sport is left as-is underneath so the sport tabs still return cleanly.
+    function selectPicks() {
+      mode = "picks"; setHash("edges"); syncHeader();
+      $("legendbox").style.display = "none";
+      loadPicks();
+    }
+    $("m-edges").onclick = () => { if (mode !== "picks") selectPicks(); };
+
     // HOME — cross-sport "Live Now" landing. Not a per-sport slate; its own #home
     // hash. The active sport is left as-is underneath so returning to a tab works.
     function selectHome() {
       mode = "home";
       location.hash = "home";
       $("m-perf").classList.remove("on");
+      const edg = $("m-edges"); if (edg) edg.classList.remove("on");
       const perf = $("m-perf"); if (perf) perf.style.display = hasPerf() ? "" : "none";
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === "home"));
       const bt = $("brandtag"); if (bt) bt.textContent = "5-Sport Live Platform";
@@ -2635,8 +2800,10 @@ export default function Home() {
     // SPORT SELECTOR — switch data source + rendering, reset to the slate view.
     async function setSport(s: string) {
       if (s === "home") { selectHome(); return; }
-      if (s === sport && mode !== "home") return;
+      if (s === sport && mode !== "home" && mode !== "picks") return;
       if (mode === "home") mode = "today";
+      // Edges is a cross-sport board; clicking a sport tab leaves it for that slate.
+      if (mode === "picks") mode = "today";
       sport = s;
       stripReady = false; histDates = []; histDate = null; histGames = []; todayGames = []; detailGame = null;
       // a sport with no analytics view (soccer) falls back to the slate
@@ -2673,7 +2840,8 @@ export default function Home() {
       await ensureHistDates();
       syncHeader();
       const h = raw;
-      if (h === "#performance" || h.indexOf("#performance:") === 0) { if (h.indexOf(":") > 0) perfTab = h.split(":")[1]; renderDateStrip(); selectPerf(); }
+      if (h === "#edges") { renderDateStrip(); selectPicks(); }
+      else if (h === "#performance" || h.indexOf("#performance:") === 0) { if (h.indexOf(":") > 0) perfTab = h.split(":")[1]; renderDateStrip(); selectPerf(); }
       else if (h.indexOf("#game:") === 0) {
         const pk = decodeURIComponent(h.slice(6));
         renderDateStrip(); await load();
