@@ -2238,6 +2238,137 @@ export default function Home() {
       return `${why}${gcLeaders(d)}${gcTimeline(d, g)}${gcTeamStats(d, g)}${form ? `<div class="dt-card gc-card"><div class="dt-ct"><span>Recent Form</span></div>${form}</div>` : ""}${lineups}`;
     }
     // ============================================================
+    // RECOMMENDATION JOURNEY — the heart of "what we'd have called and how it
+    // held up". For each decision point (pregame / opening read, then every
+    // boundary) we show the model's lean vs the line and its winner pick, then —
+    // crucially — whether HOLDING THE OPENING PICK stayed correct, and what
+    // actually happened at the final whistle. Honest framing: these are the
+    // model's forecast-vs-line leans shown for accountability; the reachable
+    // markets are efficient, so over a season these calls land near break-even.
+    // Sport-aware, data-driven, and defensive (renders only what the payload has).
+    // ============================================================
+    function _ouLean(projTotal: any, line: any) {
+      if (line == null || projTotal == null) return null;
+      const d = Number(projTotal) - Number(line);
+      return { side: d >= 0 ? "OVER" : "UNDER", edge: d, soft: Math.abs(d) < 0.5 };
+    }
+    function _winPick(g: any, wp: any): any {
+      if (wp == null) return null;
+      return Number(wp) >= 0.5 ? { side: "HOME", ab: g.home_abbr, p: Number(wp) } : { side: "AWAY", ab: g.away_abbr, p: 1 - Number(wp) };
+    }
+    function recommendationJourney(g: any) {
+      const isSoccer = sport === "soccer";
+      const line = g.line;
+      const res = g.result || {};
+      let preds = (g.trajectory || g.predictions_by_quarter || g.predictions_by_inning || g.evolving_predictions || []).slice();
+      preds.sort((a: any, b: any) => ((a.after_inning ?? a.minute ?? 0) - (b.after_inning ?? b.minute ?? 0)));
+      // MLB & soccer FINAL demo games carry no per-state trajectory — synthesize a
+      // single PREGAME point from the model's pre-game projection + the native call
+      // fields, so we still show the pre-game recommendation vs the final.
+      if (!preds.length) {
+        const pp = g.model_prediction != null ? g.model_prediction : g.projected_total_goals;
+        const hasCall = g.winner_call || g.ou_call || g.spread_call || g.wdl;
+        if (pp == null && !hasCall) return "";
+        preds = [{ after_inning: 0, pred_total: pp, projected_final_total: pp, wdl: g.wdl }];
+      }
+
+      const ptOf = (p: any) => (p.projected_final_total != null ? p.projected_final_total : p.pred_total);
+      const wpOf = (p: any) => (p.home_win_prob != null ? p.home_win_prob : p.p_home_win);
+      const wdlPick = (p: any): any => {
+        const w = p.wdl || (p === preds[preds.length - 1] ? g.wdl : null);
+        if (!w) return null;
+        const o = [{ side: "HOME", ab: g.home_abbr, p: w.home_win }, { side: "DRAW", ab: "Draw", p: w.draw }, { side: "AWAY", ab: g.away_abbr, p: w.away_win }];
+        return o.reduce((a, b) => (Number(b.p) > Number(a.p) ? b : a));
+      };
+      const labelOf = (p: any, i: number) => {
+        if (p.after_inning === 0 || p.minute === 0) return sport === "mlb" ? "Pregame" : "Pre-match";
+        return p.q_label || p.minute_label || (p.after_inning != null ? `After ${pAbbrFor()} ${p.after_inning}` : `Read ${i + 1}`);
+      };
+
+      // actuals
+      const isFinal = !!g.is_final;
+      const fh = g.final_home != null ? g.final_home : g._hr;
+      const fa = g.final_away != null ? g.final_away : g._ar;
+      const actualTotal = res.actual_total != null ? res.actual_total : (g.actual_total != null ? g.actual_total : g.final_total);
+      const actualWinner = res.actual_winner || (fh != null && fa != null ? (fh > fa ? "HOME" : fa > fh ? "AWAY" : "DRAW") : null);
+      const actualOver = (line != null && actualTotal != null) ? (Number(actualTotal) > Number(line) ? "OVER" : "UNDER") : null;
+
+      // the OPENING (pregame for MLB/soccer-prior; first boundary otherwise) pick
+      const p0 = preds[0];
+      let openOU = isSoccer ? null : _ouLean(ptOf(p0), line);
+      if (!openOU && g.ou_call && line != null) openOU = { side: String(g.ou_call).toUpperCase(), edge: 0, soft: false };
+      let openWin = isSoccer ? wdlPick(p0) : _winPick(g, wpOf(p0));
+      if (!openWin && g.winner_call) openWin = { side: String(g.winner_call).toUpperCase(), ab: String(g.winner_call).toUpperCase() === "AWAY" ? g.away_abbr : g.home_abbr, p: null };
+      const openLabel = labelOf(p0, 0);
+      const _verdict = (v: any) => v == null ? null : (/correct|^win$|won|hit/i.test(String(v)) ? true : /wrong|miss|los/i.test(String(v)) ? false : null);
+      let ouHeld = (openOU && actualOver) ? (openOU.side === actualOver) : null;
+      if (ouHeld == null) ouHeld = _verdict(g.ou_result);
+      let winHeld = (openWin && actualWinner) ? (openWin.side === actualWinner) : null;
+      if (winHeld == null) winHeld = _verdict(g.winner_result);
+      // MLB run-line (spread) pick — a distinct pre-game bet worth tracking
+      const openSpread = (sport === "mlb" && g.spread_call) ? { side: String(g.spread_call).toUpperCase(), ab: String(g.spread_call).toUpperCase() === "AWAY" ? g.away_abbr : g.home_abbr } : null;
+      const spreadHeld = openSpread ? _verdict(g.spread_result) : null;
+
+      const gradeChip = (ok: any, txt: string) => ok == null
+        ? `<span class="rj-g pend">• ${txt}</span>`
+        : `<span class="rj-g ${ok ? "hit" : "miss"}">${ok ? "✓" : "✗"} ${txt}</span>`;
+
+      // header: the opening recommendation + (if final) the held-to-final verdict
+      const openBadges = [
+        openOU ? `<span class="rj-pill ou ${openOU.side.toLowerCase()}">${openOU.side} ${line}</span>` : "",
+        openWin ? `<span class="rj-pill win">${openWin.side === "DRAW" ? "DRAW" : openWin.ab + " " + (isSoccer ? "" : "ML")}</span>` : "",
+        openSpread ? `<span class="rj-pill spread">${openSpread.ab} RL</span>` : "",
+      ].filter(Boolean).join("");
+      const heldVerdict = isFinal ? `<div class="rj-held">
+        <span class="rj-heldk">Held to final →</span>
+        ${openOU ? gradeChip(ouHeld, `Total ${openOU.side} ${line}`) : ""}
+        ${openWin ? gradeChip(winHeld, `${openWin.side === "DRAW" ? "Draw" : openWin.ab} ${isSoccer ? "result" : "win"}`) : ""}
+        ${openSpread ? gradeChip(spreadHeld, `${openSpread.ab} run-line`) : ""}
+        <span class="rj-actual">actual ${actualTotal != null ? actualTotal : "—"}${line != null && actualOver ? ` (${actualOver})` : ""}${actualWinner ? " · " + (actualWinner === "DRAW" ? "draw" : (actualWinner === "HOME" ? g.home_abbr : g.away_abbr) + " won") : ""}</span>
+      </div>` : `<div class="rj-held"><span class="rj-heldk">${g.is_live ? "Live — pick still open" : "Scheduled — pre-game read"}</span></div>`;
+
+      // per-point rows
+      const rows = preds.map((p: any, i: number) => {
+        const pt = ptOf(p);
+        const ou = isSoccer ? null : _ouLean(pt, line);
+        const win = isSoccer ? wdlPick(p) : _winPick(g, wpOf(p));
+        const wp = wpOf(p);
+        const conf = win ? (isSoccer ? Math.round(Number(win.p) * 100) : Math.round(Math.abs(Number(wp) - 0.5) * 200)) : null;
+        const isLast = i === preds.length - 1;
+        return `<tr class="${i === 0 ? "rj-open" : ""}${isLast ? " rj-last" : ""}">
+          <td class="rj-pt-l">${i === 0 ? `<span class="rj-opentag">${sport === "mlb" || isSoccer ? "OPEN" : "OPEN"}</span>` : ""}${labelOf(p, i)}</td>
+          <td class="rj-num">${num(pt)}</td>
+          <td>${ou ? `<span class="rj-pill sm ou ${ou.side.toLowerCase()}">${ou.side}</span>` : "—"}</td>
+          <td>${win ? `<span class="rj-pill sm win">${win.side === "DRAW" ? "DRAW" : win.ab}</span>` : "—"}</td>
+          <td class="rj-num sub">${conf != null ? conf + "%" : "—"}</td>
+        </tr>`;
+      }).join("");
+
+      const ouHead = isSoccer ? "" : `<th>Total ${line != null ? "vs " + line : ""}</th>`;
+      const finalRow = isFinal ? `<tr class="rj-finalrow">
+        <td class="rj-pt-l"><b>FINAL</b></td>
+        <td class="rj-num"><b>${actualTotal != null ? actualTotal : "—"}</b></td>
+        <td>${actualOver ? `<span class="rj-pill sm ou ${actualOver.toLowerCase()} solid">${actualOver}</span>` : "—"}</td>
+        <td>${actualWinner ? `<span class="rj-pill sm win solid">${actualWinner === "DRAW" ? "DRAW" : (actualWinner === "HOME" ? g.home_abbr : g.away_abbr)}</span>` : "—"}</td>
+        <td class="rj-num sub">—</td>
+      </tr>` : "";
+
+      return `<div class="dt-card rj-card"><div class="dt-ct"><span>The Recommendation — Opening Call &amp; How It Held</span><span class="enginechip mid">FORECAST vs LINE</span></div>
+        <div class="rj-open-banner">
+          <div class="rj-open-l"><span class="rj-open-k">${sport === "mlb" || isSoccer ? "Pre-game recommendation" : "Opening read"} · ${openLabel}</span><div class="rj-open-badges">${openBadges || `<span class="rj-pill">total ${num(ptOf(p0))}</span>`}</div></div>
+          ${heldVerdict}
+        </div>
+        <div class="rj-tblwrap"><table class="rj-tbl">
+          <thead><tr><th>Decision point</th><th>Proj total</th>${ouHead || "<th>Total</th>"}<th>Winner</th><th>Conf</th></tr></thead>
+          <tbody>${rows}${finalRow}</tbody></table></div>
+        <div class="rj-note">Each row is the model's lean <b>at that moment</b> vs the posted line — the "${sport === "mlb" || isSoccer ? "pre-game" : "opening"}" row is the call you'd have locked in and <b>held</b>. Markets are efficient, so these leans land near break-even over a season; this panel is honest <b>accountability</b>, not a claimed edge.</div>
+      </div>`;
+    }
+    function pAbbrFor() {
+      return sport === "nhl" ? "P" : sport === "mlb" ? "Inn" : "Q";
+    }
+
+    // ============================================================
     // NBA DEEP VIEW — reuses renderDetail's viz block (win-prob arc,
     // P(over) dial, 80% interval distribution, expected-margin bar) PLUS the
     // signature by-quarter TRAJECTORY (projected total + win-prob after each
@@ -2371,6 +2502,7 @@ export default function Home() {
       grid.innerHTML = `<div class="detailwrap">
         <button class="backbtn" id="dt-back">‹ Back to slate</button>
         ${matchHead}
+        ${recommendationJourney(g)}
         <div class="dt-card"><div class="dt-ct"><span>${sport === "nhl" ? "Period Linescore" : "Quarter Linescore"}</span></div>${boxScore(g, inns, preds, "today")}</div>
         <div class="dt-cols">${modelBlock}${resultBlock}</div>
         ${vizBlock}
@@ -2515,6 +2647,7 @@ export default function Home() {
       grid.innerHTML = `<div class="detailwrap">
         <button class="backbtn" id="dt-back">‹ Back to slate</button>
         ${matchHead}
+        ${recommendationJourney(g)}
         <div class="dt-card"><div class="dt-ct"><span>Half Linescore</span></div>${soccerBox(g)}</div>
         <div class="dt-cols">${modelBlock}${resultBlock || ivCol}</div>
         ${vizBlock}
@@ -2737,6 +2870,7 @@ export default function Home() {
       grid.innerHTML = `<div class="detailwrap">
         <button class="backbtn" id="dt-back">‹ Back to slate</button>
         ${matchHead}
+        ${recommendationJourney(g)}
         <div class="dt-card"><div class="dt-ct"><span>Box Score</span></div>${boxScore(g, inns, evo, sideKey)}</div>
         <div class="dt-cols">${modelBlock}${oddsBlock}</div>
         ${vizBlock}

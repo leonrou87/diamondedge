@@ -599,6 +599,33 @@ body{
 .findingbox b{font-weight:600;color:var(--navy)}
 .findingbox .fkey{display:block;margin-top:7px;font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);letter-spacing:.01em}
 
+/* ── Recommendation Journey — the pregame/opening pick + how it held ── */
+.rj-card .dt-ct .enginechip{background:#0c2340;color:#fff}
+.rj-open-banner{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0c2340,#16365e);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.rj-open-k{display:block;font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.66);margin-bottom:8px}
+.rj-open-badges{display:flex;gap:8px;flex-wrap:wrap}
+.rj-pill{display:inline-flex;align-items:center;font-family:'Oswald';font-weight:700;font-size:14px;letter-spacing:.04em;padding:5px 12px;border-radius:8px;background:rgba(255,255,255,.14);color:#fff;text-transform:uppercase}
+.rj-pill.ou.over{background:var(--green)} .rj-pill.ou.under{background:var(--red)} .rj-pill.win{background:#2563eb} .rj-pill.spread{background:#7c3aed}
+.rj-pill.sm{font-size:11px;padding:3px 8px;border-radius:6px;background:#eef1f5;color:var(--ink)}
+.rj-pill.sm.ou.over{background:rgba(22,163,74,.14);color:#15803d} .rj-pill.sm.ou.under{background:rgba(200,16,46,.12);color:#b91c1c}
+.rj-pill.sm.win{background:rgba(37,99,235,.12);color:#1e40af}
+.rj-pill.sm.solid.ou.over{background:var(--green);color:#fff} .rj-pill.sm.solid.ou.under{background:var(--red);color:#fff} .rj-pill.sm.win.solid{background:#2563eb;color:#fff}
+.rj-held{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rj-heldk{font-family:'IBM Plex Mono';font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em}
+.rj-g{display:inline-flex;align-items:center;font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.03em;padding:4px 10px;border-radius:7px;text-transform:uppercase}
+.rj-g.hit{background:var(--green);color:#fff} .rj-g.miss{background:var(--red);color:#fff} .rj-g.pend{background:rgba(255,255,255,.16);color:#fff}
+.rj-actual{font-family:'IBM Plex Mono';font-size:11px;color:rgba(255,255,255,.85);margin-left:2px}
+.rj-tblwrap{overflow-x:auto}
+.rj-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.rj-tbl th{font-family:'IBM Plex Mono';font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+.rj-tbl td{padding:8px 10px;border-bottom:1px solid var(--line2)}
+.rj-tbl .rj-num{font-family:'IBM Plex Mono';font-weight:600;color:var(--navy)} .rj-tbl .rj-num.sub{color:var(--ink2);font-weight:500}
+.rj-tbl .rj-pt-l{font-weight:600;color:var(--ink)}
+.rj-tbl tr.rj-open{background:#f6f8fa} .rj-tbl tr.rj-open .rj-pt-l{color:var(--navy)}
+.rj-opentag{display:inline-block;font-family:'Oswald';font-weight:700;font-size:9px;letter-spacing:.08em;background:var(--navy);color:#fff;padding:2px 6px;border-radius:5px;margin-right:7px;vertical-align:middle}
+.rj-tbl tr.rj-finalrow td{border-top:2px solid var(--navy);border-bottom:0;background:#fbfcfd}
+.rj-note{margin-top:11px;font-size:12px;line-height:1.55;color:var(--ink2)} .rj-note b{color:var(--navy);font-weight:600}
+
 @media(max-width:640px){.headline{grid-template-columns:1fr}.hl-col.left{border-right:0;border-bottom:1px solid var(--line2)}.headline>.hl-col:nth-child(2){display:none}}
 
 /* ============================================================
