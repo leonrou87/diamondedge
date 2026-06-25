@@ -1047,7 +1047,18 @@ export default function Home() {
 
       const framing = `<div class="homeframe"><i></i>Calibrated predictions across 5 sports — MLB · NBA · World Cup soccer · NHL · NFL. Every projection matches the efficient market line and beats a naive baseline. This is a forecasting product, <b>not a betting edge</b>.</div>`;
 
-      grid.innerHTML = framing + liveSec + upcSec + platSec;
+      // WHAT WE FOUND — the honest cross-sport results behind the platform
+      const findCard = (title: string, body: string, accent: string) =>
+        `<div class="findcard ${accent}"><div class="fc-h">${title}</div><div class="fc-b">${body}</div></div>`;
+      const findingsSection = `<div class="spinesec"><span class="ssdot"></span><span class="sslab">What We Found</span><span class="ssn">the honest results behind the platform · each sport's Performance tab has the full breakdown</span><span class="ssrule"></span></div>
+        <div class="findgrid">
+          ${findCard("Markets are efficient", "Across all five sports, every reachable over/under and money-line market is efficient. Our models MATCH the line and beat a naive baseline — they don't beat the close, and we never claim to.", "navy")}
+          ${findCard("Simpler often wins", "A transparent closed-form rating model — no machine learning — ties the LightGBM on NBA &amp; NHL, so we ship the simpler, more robust one. NFL is the lone exception: its game-script features earn the heavier model.", "green")}
+          ${findCard("Calibrated &amp; honest", "Win probabilities hug the diagonal (ECE 0.02–0.04) and the 80% intervals actually cover ~80% out-of-sample. Every pick is shown vs the line for accountability — not as a bet signal.", "blue")}
+          ${findCard("You can't beat the close", "On 18,008 real MLB games the CLOSING total is provably sharper than the opening, and even perfect foresight of the line move caps at 57% wins (vs 52.4% break-even). The gold-standard proof there is no edge.", "red")}
+        </div>`;
+
+      grid.innerHTML = framing + liveSec + upcSec + platSec + findingsSection;
 
       // wire cross-sport card click-through → that sport's detail
       grid.querySelectorAll(".hcard").forEach((c: any) => {
@@ -1474,10 +1485,34 @@ export default function Home() {
       const parkblock = parks ? `<div class="stparks"><div class="stparklbl">Parks where we're closest to Vegas (MAE edge)</div>${parks}</div>` : "";
       return panel("Where We're Sharp — MAE by Game Type", "Our independent (line-free) model's accuracy by Vegas total bucket, 2026 out-of-sample. Trained 2015-2024, validated 2025, tested 2026. We're most accurate on low totals; high-total games are chaos for everyone.", `${headline}${rows}${parkblock}${legend}`);
     }
+    // Closing-Line-Value diagnostic — the gold-standard "can you beat the close?"
+    // test on 18,008 real games (models/evaluation/clv_open_close_analysis.py). The
+    // numbers are stable facts, embedded directly.
+    function renderClvPanel() {
+      const c = { maeOpen: 3.490, maeClose: 3.448, gap: 0.042, ci: [0.027, 0.065], moved: 0.535, overClose: 0.498, ceiling: 0.570, breakeven: 0.524, n: 18008 };
+      const tiles = `<div class="kpistrip">
+        ${statTile("Opening Line MAE", c.maeOpen.toFixed(3), "vs the actual total", "")}
+        ${statTile("Closing Line MAE", c.maeClose.toFixed(3), "sharper than opening", "g")}
+        ${statTile("Closing Edge", "+" + c.gap.toFixed(3), `MAE · 95% CI [${c.ci[0]}, ${c.ci[1]}] > 0`, "g")}
+        ${statTile("Perfect-CLV Ceiling", Math.round(c.ceiling * 100) + "%", `vs ${(c.breakeven * 100).toFixed(1)}% break-even`, "r")}
+      </div>`;
+      const bars = barChart([
+        { label: "opening", value: c.maeOpen, color: "#9aa3af" },
+        { label: "closing", value: c.maeClose, color: "#16a34a" },
+      ], { W: 320, H: 180, ydec: 2 });
+      const body = `${tiles}
+        <div class="findingbox">The <b>closing</b> total is <b>significantly sharper</b> than the opening at predicting the final (MAE ${c.maeClose} vs ${c.maeOpen}; gap 95% CI [${c.ci[0]}, ${c.ci[1]}], entirely above zero). The line moves in ${Math.round(c.moved * 100)}% of games and the move is <b>informative</b> — when it rises the game goes over the opening total more than half the time. The over-rate at close sits at ${(c.overClose * 100).toFixed(1)}%, the balanced signature of an efficient line.
+        <span class="fkey">Even a bettor with PERFECT foresight of the line move caps at ${Math.round(c.ceiling * 100)}% wins (vs ${(c.breakeven * 100).toFixed(1)}% break-even) — and that foresight is unreachable. A model must beat the CLOSE (${c.maeClose}), not the open; our line-free model (~3.52) doesn't. This is the gold-standard proof the pregame totals market is efficient.</span></div>
+        <div style="max-width:360px;margin:6px auto 0">${bars}</div>`;
+      return panel("Closing-Line Value — Why You Can't Beat the Close", `The honest, never-before-run edge test on ${c.n.toLocaleString()} real games carrying BOTH an opening and a closing total. Closing-Line Value — does the close move toward your bet? — is the gold-standard edge metric; here it proves the market, not us.`, body);
+    }
+
     function renderPregameTab(pv: any, ouB: any, ms?: any) {
       let html = "";
       // honest framing up top — efficient markets, no betting edge
       html += renderHonestBox();
+      // Closing-line-value — the gold-standard efficiency proof
+      html += renderClvPanel();
       // Pregame vs Vegas MAE time-series (by season)
       if (pv && pv.season_series) {
         const ss = pv.season_series, xs = ss.season.map((s: any) => String(s));
