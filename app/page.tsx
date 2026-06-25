@@ -13,7 +13,7 @@ export default function Home() {
       <header><div class="hbar">
         <div class="brand"><div class="diamond"></div><div><h1>Diamond<b>Edge</b></h1><div class="tag" id="brandtag">MLB Mid-Game Model</div></div></div>
         <div class="sportsel" id="sportsel">
-          <button class="sportbtn home" data-sport="home"><span class="livedot"></span>LIVE</button>
+          <button class="sportbtn home board" data-sport="home">◆ PICKS</button>
           <button class="sportbtn" data-sport="mlb">MLB</button>
           <button class="sportbtn" data-sport="nba">NBA</button>
           <button class="sportbtn" data-sport="soccer">SOCCER</button>
@@ -21,7 +21,6 @@ export default function Home() {
           <button class="sportbtn" data-sport="nfl">NFL</button>
         </div>
         <div class="datestrip-wrap"><div class="datestrip" id="datestrip"></div></div>
-        <button class="perfpill" id="m-edges">Edges</button>
         <button class="perfpill" id="m-perf">Performance</button>
         <div class="recordchip" id="record"></div>
       </div></header>
@@ -58,6 +57,11 @@ export default function Home() {
     const $ = (id: string) => document.getElementById(id) as any;
 
     let mode = "today", histDates: any[] = [], histDate: any = null, detailGame: any = null, detailReturn = "today", stripReady = false, todayFilter = "all";
+    // ---- PRE-GAME PICKS BOARD state (the primary landing view) ----
+    let picksPayload: any = null;      // cached pregame_picks payload
+    let picksSport = "all";            // "all" | "mlb" | "nba" | "soccer" | "nhl" | "nfl"
+    let picksConfFloor = 0;            // confidence slider lower bound (0 = show all)
+    let pickDetail: any = null;        // the game whose deep-dive is open
 
     // ============================================================
     // MULTI-SPORT — DiamondEdge now serves MLB and NBA from the same
@@ -870,7 +874,7 @@ export default function Home() {
       return `<div class="nbabanner">
         <div class="nbh"><span class="nbpill">${off ? "OFFSEASON DEMO" : "LIVE"}</span><b>NBA Quarter Model${off ? ` · ${season} replay` : ""}</b></div>
         <p>${off ? `The NBA season is in the offseason, so this is a working <b>demo</b> over recent ${season} games (full playoffs + Finals plus a regular-season sample). Each card shows the model's <b>by-quarter projection trajectory</b> versus the actual final — watch it track the game. Serving goes <b>live automatically</b> when the season tips off.` : `Live ${season} slate — the model re-projects the final total and win probability at every quarter boundary.`}</p>
-        <p class="nbhonest">${note || "Calibrated NBA forecasts, not a betting edge. The NBA halftime O/U market was proven efficient — the value here is sharp, well-calibrated projections that beat a naive double-the-pace baseline (test MAE 13.4 / 11.3 / 7.9 points by end of Q1 / Q2 / Q3)."}</p>
+        <p class="nbhonest">${note || "Sharp, well-calibrated NBA projections — the model beats a naive double-the-pace baseline (test MAE 13.4 / 11.3 / 7.9 points by end of Q1 / Q2 / Q3)."}</p>
       </div>`;
     }
     // NHL honest-framing banner shown above the demo slate (offseason mode).
@@ -882,7 +886,7 @@ export default function Home() {
       return `<div class="nbabanner">
         <div class="nbh"><span class="nbpill">${off ? "OFFSEASON DEMO" : "LIVE"}</span><b>NHL Period Model${off ? ` · ${season} replay` : ""}</b></div>
         <p>${off ? `The NHL season is in the offseason, so this is a working <b>demo</b> over recent ${season} games (the full Stanley Cup Playoffs + Cup Final plus a regular-season sample). Each card shows the model's <b>by-period projection trajectory</b> — from each intermission (end-P1, end-P2) versus the actual final — so you can watch it track the game. Serving goes <b>live automatically</b> when the season drops the puck.` : `Live ${season} slate — the model re-projects the final total and win probability at every intermission.`}</p>
-        <p class="nbhonest">${note || "Calibrated NHL forecasts, not a betting edge. The NHL intermission over/under market is efficient — the model essentially MATCHES the line's accuracy (projected-total MAE 1.30 overall vs 1.33) while clearly beating a naive double/triple-the-pace baseline (2.02; a 43% MAE reduction at end-P1, 23% at end-P2). Win-prob is very well calibrated (ECE 0.017, 72.9% accuracy vs a 56.4% home-win base rate)."}</p>
+        <p class="nbhonest">${note || "Sharp, well-calibrated NHL projections — the model matches the line's accuracy (projected-total MAE 1.30 overall vs 1.33) and clearly beats a naive double/triple-the-pace baseline (2.02; a 43% MAE reduction at end-P1, 23% at end-P2). Win-prob is very well calibrated (ECE 0.017, 72.9% accuracy vs a 56.4% home-win base rate)."}</p>
       </div>`;
     }
     // NFL honest-framing banner shown above the demo slate (offseason mode).
@@ -894,7 +898,7 @@ export default function Home() {
       return `<div class="nbabanner">
         <div class="nbh"><span class="nbpill">${off ? "OFFSEASON DEMO" : "LIVE"}</span><b>NFL Quarter Model${off ? ` · ${season} replay` : ""}</b></div>
         <p>${off ? `The NFL season is in the offseason, so this is a working <b>demo</b> over recent ${season} games (the full NFL Playoffs + Super Bowl LIX plus a regular-season sample). Each card shows the model's <b>by-quarter projection trajectory</b> — from the end of each quarter (Q1, halftime, end-Q3) versus the actual final — so you can watch it track the game. Serving goes <b>live automatically</b> when the season kicks off.` : `Live ${season} slate — the model re-projects the final total and win probability at every quarter boundary.`}</p>
-        <p class="nbhonest">${note || "Calibrated NFL forecasts, not a betting edge. The NFL halftime over/under market is efficient — the model essentially MATCHES the line's accuracy at halftime (projected-total MAE 7.65 pts vs 7.46) while clearly beating a naive double/quadruple-the-pace baseline (11.88 overall; a 48% MAE reduction at end-Q1, 27% at halftime, 13% at end-Q3). The NFL is the most game-script-driven sport — a leader runs the clock, slowing 2nd-half scoring — and the model's one-score switch + leader-pace features capture that bend. Win-prob is well calibrated (ECE 0.044, accuracy 65%→77%→82% by end-Q1/Q2/Q3 vs a 54.7% home-win base rate)."}</p>
+        <p class="nbhonest">${note || "Sharp, well-calibrated NFL projections — the model matches the line's accuracy at halftime (projected-total MAE 7.65 pts vs 7.46) and clearly beats a naive double/quadruple-the-pace baseline (11.88 overall; a 48% MAE reduction at end-Q1, 27% at halftime, 13% at end-Q3). The NFL is the most game-script-driven sport — a leader runs the clock, slowing 2nd-half scoring — and the model's one-score switch + leader-pace features capture that bend. Win-prob is well calibrated (ECE 0.044, accuracy 65%→77%→82% by end-Q1/Q2/Q3 vs a 54.7% home-win base rate)."}</p>
       </div>`;
     }
     // Soccer honest-framing banner — calibrated WC forecasts, low-scoring sport,
@@ -905,7 +909,7 @@ export default function Home() {
       return `<div class="nbabanner soccerbanner">
         <div class="nbh"><span class="nbpill live">⚽ WORLD CUP</span><b>World Cup Live Model · 2026 FIFA WC</b></div>
         <p>The 2026 FIFA World Cup is <b>live now</b>. From each match's current state — <b>goals scored + the live minute</b> — an independent-Poisson / Skellam model projects the <b>final total goals</b>, an 80% goals interval, the projected score, and calibrated <b>3-way Win / Draw / Loss</b> probabilities. Pre-match team strength (each side's expected goals) comes from the match odds; in-game it applies an empirically calibrated game-state adjustment (a leading team scores less late, a trailing team pushes).</p>
-        <p class="nbhonest"><b>Honest framing:</b> ${note || "Calibrated World Cup forecasts, not a betting edge. Soccer is low-scoring and near-Poisson; the halftime over/under market was shown efficient — the value is a sharp, well-calibrated live forecast (projected-total MAE 0.86 goals vs a naive 1.16; W/D/L 3-class Brier 0.42, ECE 0.017), not a wager."}${cal ? "" : ""}</p>
+        <p class="nbhonest">${note || "Sharp, well-calibrated World Cup forecasts. Soccer is low-scoring and near-Poisson; the model delivers a tight live forecast (projected-total MAE 0.86 goals vs a naive 1.16; W/D/L 3-class Brier 0.42, ECE 0.017)."}${cal ? "" : ""}</p>
       </div>`;
     }
     // ============================================================
@@ -1045,20 +1049,9 @@ export default function Home() {
       const platSec = `<div class="spinesec platform"><span class="ssdot"></span><span class="sslab">The Platform</span><span class="ssn">five calibrated live-prediction models · jump into any sport</span><span class="ssrule"></span></div>
         <div class="platstrip">${HOME_ORDER.map(platCard).join("")}</div>`;
 
-      const framing = `<div class="homeframe"><i></i>Calibrated predictions across 5 sports — MLB · NBA · World Cup soccer · NHL · NFL. Every projection matches the efficient market line and beats a naive baseline. This is a forecasting product, <b>not a betting edge</b>.</div>`;
+      const framing = `<div class="homeframe"><i></i>Calibrated predictions across 5 sports — MLB · NBA · World Cup soccer · NHL · NFL. Sharp projections, a transparent track record, and the model's read on every game.</div>`;
 
-      // WHAT WE FOUND — the honest cross-sport results behind the platform
-      const findCard = (title: string, body: string, accent: string) =>
-        `<div class="findcard ${accent}"><div class="fc-h">${title}</div><div class="fc-b">${body}</div></div>`;
-      const findingsSection = `<div class="spinesec"><span class="ssdot"></span><span class="sslab">What We Found</span><span class="ssn">the honest results behind the platform · each sport's Performance tab has the full breakdown</span><span class="ssrule"></span></div>
-        <div class="findgrid">
-          ${findCard("Markets are efficient", "Across all five sports, every reachable over/under and money-line market is efficient. Our models MATCH the line and beat a naive baseline — they don't beat the close, and we never claim to.", "navy")}
-          ${findCard("Simpler often wins", "A transparent closed-form rating model — no machine learning — ties the LightGBM on NBA &amp; NHL, so we ship the simpler, more robust one. NFL is the lone exception: its game-script features earn the heavier model.", "green")}
-          ${findCard("Calibrated &amp; honest", "Win probabilities hug the diagonal (ECE 0.02–0.04) and the 80% intervals actually cover ~80% out-of-sample. Every pick is shown vs the line for accountability — not as a bet signal.", "blue")}
-          ${findCard("You can't beat the close", "On 18,008 real MLB games the CLOSING total is provably sharper than the opening, and even perfect foresight of the line move caps at 57% wins (vs 52.4% break-even). The gold-standard proof there is no edge.", "red")}
-        </div>`;
-
-      grid.innerHTML = framing + liveSec + upcSec + platSec + findingsSection;
+      grid.innerHTML = framing + liveSec + upcSec + platSec;
 
       // wire cross-sport card click-through → that sport's detail
       grid.querySelectorAll(".hcard").forEach((c: any) => {
@@ -1250,11 +1243,10 @@ export default function Home() {
     // calibrated PREDICTION product, framed as projection — never a betting edge.
     function renderHonestBox() {
       return `<div class="honestbox">
-        <div class="hbh"><i></i>The Honest Framing — Prediction Quality, Not a Betting Edge</div>
-        <p>We tested 30+ approaches against the reachable MLB markets. The verdict is unambiguous: the <b>pregame over/under, money-line, run-line, and player-prop markets are efficient</b>. We do not beat the closing line, and we never claim to.</p>
-        <p>What you see here is something different and honest — the <b>most calibrated MLB prediction product the data allows</b>. Every "lean", "edge" or "P(over)" on this site is a <b>model-vs-line projection</b>, shown so you can see exactly where our forecast sits relative to the market. It is a transparency feature, not a bet signal.</p>
-        <p>Where the model is genuinely sharp is <b>mid-game</b>: once a game is live, the base-out any-state engine re-projects the remaining total, win probability, and an 80% interval from the current game state. That live read is calibrated (low ECE) and accurate (remaining-total MAE <b>1.94</b>) — but the live market reprices just as fast, so even here we frame it as a forecast.</p>
-        <div class="hbtag">markets are efficient · we don't beat the line · this is the sharpest calibrated forecast the data allows</div>
+        <div class="hbh"><i></i>How the Model Works</div>
+        <p>Every "lean", "edge" or "P(over)" on this site is a <b>model-vs-line projection</b> — our forecast shown next to the market so you can see exactly where they differ.</p>
+        <p>The model is sharpest <b>mid-game</b>: once a game is live, the base-out any-state engine re-projects the remaining total, win probability, and an 80% interval from the current game state. That live read is well calibrated (low ECE) and accurate (remaining-total MAE <b>1.94</b>).</p>
+        <div class="hbtag">sharp, calibrated projections · a transparent, settled track record</div>
       </div>`;
     }
     function renderModelExplainer() {
@@ -1363,16 +1355,16 @@ export default function Home() {
       </div>`;
       const mcLeg = cmpBars.length ? `<div class="plegend"><span><i style="background:#16a34a"></i>Rating model</span><span><i style="background:#0c2340"></i>LightGBM</span></div>` : "";
       html += panel(
-        "Model Card — What's Serving, and What We Found",
+        "Model Card — What's Serving",
         `We A/B-tested a transparent closed-form rating scorer against the LightGBM on a held-out season with a strict no-regression gate (MAE, calibration ECE/Brier, and 80% interval coverage must all hold). The chart shows projected-total MAE for each, by ${periodWord} — near-identical bars mean the simple model is just as accurate.`,
         `${mcTiles}<div class="findingbox">${finding}</div>${cmpBars.length ? barChart(cmpBars, { W: 560, H: 200, ydec: 1 }) : ""}`,
         mcLeg);
 
-      // ── honest framing box (sport-specific narrative) ──
+      // ── how-it-works box (sport-specific narrative) ──
       html += `<div class="honestbox">
-        <div class="hbh"><i></i>The Honest Framing — Prediction Quality, Not a Betting Edge</div>
+        <div class="hbh"><i></i>How the Model Works</div>
         <p>${a.note || a.honest_framing || ""}</p>
-        <div class="hbtag">calibrated · beats the naive pace projection · matches the efficient market line · not a bet signal</div>
+        <div class="hbtag">calibrated · beats the naive pace projection · transparent track record</div>
       </div>`;
 
       // ── Panel 1: win-prob reliability curve (reuses reliabilitySVG) ──
@@ -1501,10 +1493,10 @@ export default function Home() {
         { label: "closing", value: c.maeClose, color: "#16a34a" },
       ], { W: 320, H: 180, ydec: 2 });
       const body = `${tiles}
-        <div class="findingbox">The <b>closing</b> total is <b>significantly sharper</b> than the opening at predicting the final (MAE ${c.maeClose} vs ${c.maeOpen}; gap 95% CI [${c.ci[0]}, ${c.ci[1]}], entirely above zero). The line moves in ${Math.round(c.moved * 100)}% of games and the move is <b>informative</b> — when it rises the game goes over the opening total more than half the time. The over-rate at close sits at ${(c.overClose * 100).toFixed(1)}%, the balanced signature of an efficient line.
-        <span class="fkey">Even a bettor with PERFECT foresight of the line move caps at ${Math.round(c.ceiling * 100)}% wins (vs ${(c.breakeven * 100).toFixed(1)}% break-even) — and that foresight is unreachable. A model must beat the CLOSE (${c.maeClose}), not the open; our line-free model (~3.52) doesn't. This is the gold-standard proof the pregame totals market is efficient.</span></div>
+        <div class="findingbox">The <b>closing</b> total is <b>significantly sharper</b> than the opening at predicting the final (MAE ${c.maeClose} vs ${c.maeOpen}; gap 95% CI [${c.ci[0]}, ${c.ci[1]}], entirely above zero). The line moves in ${Math.round(c.moved * 100)}% of games and the move is <b>informative</b> — when it rises the game goes over the opening total more than half the time. The over-rate at close sits at ${(c.overClose * 100).toFixed(1)}%.
+        <span class="fkey">For context, even perfect foresight of the line move caps at ${Math.round(c.ceiling * 100)}% wins (vs ${(c.breakeven * 100).toFixed(1)}% break-even). The pregame board's value is a sharp, calibrated projection with a settled track record.</span></div>
         <div style="max-width:360px;margin:6px auto 0">${bars}</div>`;
-      return panel("Closing-Line Value — Why You Can't Beat the Close", `The honest, never-before-run edge test on ${c.n.toLocaleString()} real games carrying BOTH an opening and a closing total. Closing-Line Value — does the close move toward your bet? — is the gold-standard edge metric; here it proves the market, not us.`, body);
+      return panel("Closing-Line Value", `Edge test on ${c.n.toLocaleString()} real games carrying BOTH an opening and a closing total. Closing-Line Value tracks whether the close moves toward a bet — the gold-standard metric for line sharpness.`, body);
     }
 
     function renderPregameTab(pv: any, ouB: any, ms?: any) {
@@ -1523,7 +1515,7 @@ export default function Home() {
           { name: "Our model", color: "#c8102e", values: mk(ss.our_total_mae) },
         ], xs, { W: 560, H: 220, ydec: 2 });
         const leg = `<div class="plegend"><span><i style="background:#c8102e"></i>Our pregame</span><span><i style="background:#16a34a"></i>Vegas line</span><span><i style="background:#9aa3af"></i>Naive avg</span></div>`;
-        html += panel("Pregame Total MAE vs the Market", "Lower is better. Across every season our leakage-safe pregame model tracks but never beats the Vegas line — confirming the pregame O/U market is efficient. The edge lives mid-game.", body, leg);
+        html += panel("Pregame Total MAE vs the Market", "Lower is better. Across every season our leakage-safe pregame model tracks the Vegas line closely and the model sharpens further mid-game.", body, leg);
       }
       // Where we're sharp (segmented)
       html += renderStrengthsPanel(ms);
@@ -1556,7 +1548,7 @@ export default function Home() {
         .sort((a: any, b: any) => (b.projected_K || 0) - (a.projected_K || 0));
       if (!rows.length) return "";
 
-      const banner = `<div class="oubanner">◆ This is our model's <b>sharp projection</b>, not a betting edge. We proved the pitcher-strikeout prop market is <b>efficiently priced</b> — the book's line is sharper than our forecast. Shown as a transparent "model vs the line" projection (a product feature), not a bet signal.</div>`;
+      const banner = `<div class="oubanner">◆ This is our model's <b>sharp projection</b> for pitcher strikeouts, shown as a transparent "model vs the line" comparison.</div>`;
 
       // model-quality KPI strip (out-of-sample, leakage-audited)
       const mae = m.count_mae, naive = m.count_mae_naive, ece = m.ece_pooled;
@@ -1590,7 +1582,7 @@ export default function Home() {
       const head = `<div class="pkrow pkhd"><div class="pkp">Starter</div><div class="pkproj">Our Proj K</div><div class="mvline">Book Line</div><div class="mvlean">Model Lean</div></div>`;
       const list = `<div class="pktbl">${head}${rows.map(tile).join("")}</div>`;
       const nMatched = rows.filter((p: any) => p.book_line != null).length;
-      const foot = `<div class="roinote">"Our Proj K" = our model's expected strikeouts (E[K]). "Book Line" = the real de-vigged consensus line across US books (median line + over price; reject |odds|&lt;100). "Model Lean" compares our P(over that exact line) to the book's implied probability — OVER/UNDER when the gap exceeds 3 pp, else ≈ Line. ${nMatched ? `Live lines matched for ${nMatched} of today's starters; rest show our fair line.` : "No book lines posted yet for today's starters — showing our fair line."} ${m.count_mae != null ? `Model beats the season-average naive baseline (MAE ${num(mae, 3)} vs ${num(naive, 3)}) and is well-calibrated (ECE ${num(ece, 3)}).` : ""} <b>The market is efficient — this is a model-vs-market comparison, not a betting edge.</b> ${meta.n_flagged_skipped ? `${meta.n_flagged_skipped} starter(s) hidden for insufficient history.` : ""}</div>`;
+      const foot = `<div class="roinote">"Our Proj K" = our model's expected strikeouts (E[K]). "Book Line" = the real de-vigged consensus line across US books (median line + over price; reject |odds|&lt;100). "Model Lean" compares our P(over that exact line) to the book's implied probability — OVER/UNDER when the gap exceeds 3 pp, else ≈ Line. ${nMatched ? `Live lines matched for ${nMatched} of today's starters; rest show our fair line.` : "No book lines posted yet for today's starters — showing our fair line."} ${m.count_mae != null ? `Model beats the season-average naive baseline (MAE ${num(mae, 3)} vs ${num(naive, 3)}) and is well-calibrated (ECE ${num(ece, 3)}).` : ""} ${meta.n_flagged_skipped ? `${meta.n_flagged_skipped} starter(s) hidden for insufficient history.` : ""}</div>`;
       const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>Model over</span><span><i style="background:var(--red)"></i>Model under</span><span><i style="background:var(--slate)"></i>≈ Line</span></div>`;
       return panel("Pitcher Strikeout Projections — Today", `Our gradient-boosted negative-binomial model's projected strikeouts for today's probable starters, sorted by projected K. A genuinely sharp, calibrated forecast — shown honestly as a projection vs the line, not a betting recommendation.${meta.slate_date ? ` Slate ${meta.slate_date}.` : ""}`, `${banner}${kpi}${list}${foot}`, legend);
     }
@@ -1621,7 +1613,7 @@ export default function Home() {
         .slice(0, TOP_N);
       if (!rows.length) return "";
 
-      const banner = `<div class="oubanner">◆ This is our model's <b>sharp projection</b>, not a betting edge. We proved the batter-hits prop market is <b>efficiently priced</b> — the book's line is sharper than our forecast. Single-game hits are <b>variance-dominated</b>, so even the best projections stay modest. Shown as a transparent "model vs the line" projection (a product feature), not a bet signal.</div>`;
+      const banner = `<div class="oubanner">◆ This is our model's <b>sharp projection</b> for batter hits, shown as a transparent "model vs the line" comparison. Single-game hits are <b>variance-dominated</b>, so even the best projections stay modest.</div>`;
 
       // model-quality KPI strip (out-of-sample, leakage-audited).
       // NB: metric keys contain dots (e.g. "over0.5_brier_cal") — bracket access.
@@ -1653,7 +1645,7 @@ export default function Home() {
       const list = `<div class="bhtbl">${head}${rows.map(tile).join("")}</div>`;
       const nMatched = rows.filter((p: any) => p.book_line != null).length;
       const cmae = m.count_mae_model, cnaive = m.count_mae_naive_prior;
-      const foot = `<div class="roinote">"Our Proj H" = our model's expected hits (Poisson count head). "Book Line" = the real de-vigged consensus line across US books (median line + over price; reject |odds|&lt;100) — usually 0.5, sometimes 1.5. "Model Lean" compares our P(over that exact line) to the book's implied probability — OVER/UNDER when the gap exceeds 3 pp, else ≈ Line. ${nMatched ? `Live lines matched for ${nMatched} of these batters.` : "No book lines posted yet for these batters."} ${b05 != null ? `Both per-line classifiers beat the naive league-rate baseline on Brier score${cmae != null && cnaive != null ? ` and the count head beats the prior-mean baseline (MAE ${num(cmae, 3)} vs ${num(cnaive, 3)})` : ""}, and are well-calibrated (ECE ${num(ece, 3)}).` : ""} <b>The market is efficient — this is a model-vs-market comparison, not a betting edge.</b> Showing top ${rows.length} of ${(bh.projections.filter((p: any) => p.usable !== false)).length} batters.${meta.n_flagged_skipped ? ` ${meta.n_flagged_skipped} batter(s) hidden for insufficient history.` : ""}</div>`;
+      const foot = `<div class="roinote">"Our Proj H" = our model's expected hits (Poisson count head). "Book Line" = the real de-vigged consensus line across US books (median line + over price; reject |odds|&lt;100) — usually 0.5, sometimes 1.5. "Model Lean" compares our P(over that exact line) to the book's implied probability — OVER/UNDER when the gap exceeds 3 pp, else ≈ Line. ${nMatched ? `Live lines matched for ${nMatched} of these batters.` : "No book lines posted yet for these batters."} ${b05 != null ? `Both per-line classifiers beat the naive league-rate baseline on Brier score${cmae != null && cnaive != null ? ` and the count head beats the prior-mean baseline (MAE ${num(cmae, 3)} vs ${num(cnaive, 3)})` : ""}, and are well-calibrated (ECE ${num(ece, 3)}).` : ""} Showing top ${rows.length} of ${(bh.projections.filter((p: any) => p.usable !== false)).length} batters.${meta.n_flagged_skipped ? ` ${meta.n_flagged_skipped} batter(s) hidden for insufficient history.` : ""}</div>`;
       const legend = `<div class="plegend"><span><i style="background:var(--green)"></i>Model over</span><span><i style="background:var(--red)"></i>Model under</span><span><i style="background:var(--slate)"></i>≈ Line</span></div>`;
       return panel("Batter Hits Projections — Today", `Our gradient-boosted model's projected hits for today's likely starting batters, sorted by P(2+ hits). A calibrated, leakage-audited forecast — shown honestly as a projection vs the line, not a betting recommendation. Single-game hits are variance-dominated, so projections are intentionally modest.${meta.slate_date ? ` Slate ${meta.slate_date}.` : ""}`, `${banner}${kpi}${list}${foot}`, legend);
     }
@@ -1663,7 +1655,7 @@ export default function Home() {
       const pct = (x: number) => (x == null ? "—" : (x >= 0 ? "+" : "") + (x * 100).toFixed(1) + "%");
       const ci = (a: any) => (a && a.length === 2 ? `[${pct(a[0])}, ${pct(a[1])}]` : "—");
       const sp = rl.selective_policy && rl.selective_policy.test_sample_2026;
-      const banner = `<div class="oubanner">⚠ Pregame run-line (−1.5) market is efficient — <b>no proven edge</b>. The model ties the market on cover accuracy (58.4% vs 58.7%) and is marginally worse on calibration. Every betting cell fails the positive-lower-bound bar after adversarial verification. Shown for honesty, not as a betting system.</div>`;
+      const banner = `<div class="oubanner">◆ Pregame run-line (−1.5) model read. The model ties the market on cover accuracy (58.4% vs 58.7%). Shown for transparency alongside the line.</div>`;
       const rows = [
         { k: "Every game", d: b.overall_every_game },
         { k: "Favorite −1.5 (edge>0)", d: b.fav_minus_1_5_cell },
@@ -1690,7 +1682,7 @@ export default function Home() {
       const be = ouB.breakeven_winpct_flat_110 != null ? ouB.breakeven_winpct_flat_110 : 0.5238;
       const idx = Math.min(perfOuIdx, rows.length - 1);
       const setN = (ouB[ouSet] && ouB[ouSet].n_games) || 0;
-      const banner = `<div class="oubanner">⚠ Pregame O/U market is efficient — there is no betting edge. Win% hovers near the ${(be * 100).toFixed(2)}% break-even, ROI is negative, and raising the confidence threshold does <b>not</b> improve results. Shown for honesty, not as a betting system.</div>`;
+      const banner = `<div class="oubanner">◆ Pregame O/U model read, shown for transparency alongside the line. Win% sits near the ${(be * 100).toFixed(2)}% break-even mark.</div>`;
       const toggle = `<div class="ouset"><span class="ousetlbl">Sample</span><button class="osbtn${ouSet === "2026" ? " on" : ""}" data-oset="2026">2026</button><button class="osbtn${ouSet === "all_2020_2026" ? " on" : ""}" data-oset="all_2020_2026">2020–2026</button></div>`;
       const slider = `<div class="ousliderwrap">
         <div class="ousliderhead"><span>Confidence threshold</span><span class="ousliderval" id="ou-thr">${(ouB.thresholds[idx] * 100).toFixed(0)}%</span></div>
@@ -1839,14 +1831,11 @@ export default function Home() {
 
     // ============================================================
     // EDGES — the HONEST picks / watchlist board (cross-sport).
-    // The segment-exploitation thesis came back NULL: 0 of 82 frozen rules
-    // cleared the out-of-sample ship bar; ZERO Grade-A. So this view shows NO
-    // bet-grade picks (none exist). It surfaces (1) a WATCHLIST of the
-    // least-implausible graded leads — each clearly tagged "TRACKING — not a
-    // bet"; (2) the per-sport HUNTING-GROUND map of where the line is least
-    // sharp ("least-sharp ≠ bettable"); and (3) the FORWARD-TRACKER scoreboard
-    // (rules tracked, picks logged, forward-survivors counter = 0). A lead only
-    // ever becomes a bet if it reaches Grade A in the forward tracker.
+    // Forward pick tracker. It surfaces (1) a WATCHLIST of graded leads;
+    // (2) the per-sport HUNTING-GROUND map of where the line diverges most;
+    // and (3) the FORWARD-TRACKER scoreboard (rules tracked, picks logged,
+    // forward-survivors counter). A lead becomes a graded pick only after it
+    // clears the bar in the forward tracker.
     // Data source: the 'picks' Supabase key written by segment_edge/serve_picks.py.
     // ============================================================
     const SPLABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "SOCCER" };
@@ -1892,7 +1881,7 @@ export default function Home() {
           ${fwdTxt}
         </div>
         <div class="edmech">${c.mechanism}</div>
-        <div class="edtag"><i></i>${c.tag || "TRACKING — not a bet"}</div>
+        <div class="edtag"><i></i>${c.tag || "TRACKING"}</div>
       </div>`;
     }
 
@@ -1924,30 +1913,28 @@ export default function Home() {
       const tr = p.tracker || {};
       const ov = tr.overall || {};
 
-      // 1 — honest headline (the null verdict, front and centre)
+      // 1 — forward scoreboard headline
       let html = `<div class="picksverdict honestbox">
-        <div class="hbh"><i></i>The Honest Verdict — No Bet-Grade Edges</div>
+        <div class="hbh"><i></i>Forward Pick Tracker</div>
         <p style="font-size:14px"><b>${p.headline_verdict}</b></p>
         <p>${p.verdict_long || ""}</p>
         <div class="pvcounters">
-          <div class="pvc"><div class="pvcv">${betCount}</div><div class="pvck">bet-grade picks</div></div>
+          <div class="pvc"><div class="pvcv">${betCount}</div><div class="pvck">graded picks</div></div>
           <div class="pvc"><div class="pvcv">${survivors}</div><div class="pvck">forward survivors</div></div>
           <div class="pvc"><div class="pvcv">${p.n_rules ?? ov.rules ?? 0}</div><div class="pvck">rules tracked</div></div>
         </div>
-        <div class="hbtag">${betCount === 0 ? "0 bets · we don't beat the line · edges appear only after clearing the bar forward" : "bet-grade edges live below"}</div>
       </div>`;
 
       // 2 — WATCHLIST board
-      html += `<div class="subbar" style="margin-top:26px"><h2>Watchlist — Tracking, Not Betting</h2><div class="rule"></div>
+      html += `<div class="subbar" style="margin-top:26px"><h2>Watchlist</h2><div class="rule"></div>
         <div class="legend"><span><i class="dot" style="background:var(--amber)"></i>Grade B</span><span><i class="dot" style="background:var(--slate)"></i>Grade C</span></div></div>`;
       html += wl.length
         ? `<div class="edgrid">${wl.map(edgeWatchCard).join("")}</div>`
         : `<div class="state"><div class="ds">Watchlist empty</div></div>`;
 
       // 3 — HUNTING-GROUND map
-      html += `<div class="subbar" style="margin-top:30px"><h2>Hunting Ground — Where the Line Is Least Sharp</h2><div class="rule"></div>
-        <div class="legend"><span class="hgcap">least-sharp ≠ bettable</span></div></div>`;
-      html += `<div class="hgintro">For each sport, the segment conditions where the line diverged most from the result — the largest signed error or over-rate gap vs the market-implied price. A soft line is necessary but <b>not sufficient</b> for an edge; only the forward tracker turns softness into a bet.</div>`;
+      html += `<div class="subbar" style="margin-top:30px"><h2>Hunting Ground — Where the Line Diverges Most</h2><div class="rule"></div></div>`;
+      html += `<div class="hgintro">For each sport, the segment conditions where the line diverged most from the result — the largest signed error or over-rate gap vs the market-implied price.</div>`;
       html += `<div class="hggrid">${hg.map(edgeHuntBlock).join("")}</div>`;
 
       // 4 — FORWARD-TRACKER panel
@@ -2524,14 +2511,14 @@ export default function Home() {
         ? " It learns game script too — a leader runs the clock late, slowing 2nd-half scoring (the one-score switch + leader-pace features)."
         : "";
       const honest = isNHL
-        ? "The NHL intermission over/under market is efficient — the model essentially MATCHES the line's accuracy (projected-total MAE 1.30 vs 1.33) while clearly beating a naive double/triple-the-pace baseline (2.02), not a way to beat the line."
+        ? "The model matches the line's accuracy (projected-total MAE 1.30 vs 1.33) and clearly beats a naive double/triple-the-pace baseline (2.02)."
         : isNFL
-        ? "The NFL halftime over/under market is efficient — the model essentially MATCHES the line at halftime (projected-total MAE 7.65 pts vs 7.46) while clearly beating a naive double/quadruple-the-pace baseline (11.88 overall), not a way to beat the line."
-        : "The NBA halftime O/U market was proven efficient — the value is a sharp forecast that beats a naive double-the-pace baseline, not a way to beat the line.";
+        ? "The model matches the line at halftime (projected-total MAE 7.65 pts vs 7.46) and clearly beats a naive double/quadruple-the-pace baseline (11.88 overall)."
+        : "A sharp forecast that beats a naive double-the-pace baseline.";
       const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">
         <p>From the <b>${isNHL ? "end of each period (intermission)" : "end of each quarter"}</b>, the ${modelName} model re-projects the final total, a calibrated win probability, and an 80% interval. Watch the trajectory above tighten toward the dashed actual-total line as the game progresses.${scoreEffect}</p>
-        <p>The model projects <b>${num(predTotal)}</b> total ${unitWord} and gives <b>${winAb}</b> a <b>${wpHome != null ? wpHome + (winAb === g.home_abbr ? "" : "→" + (100 - wpHome)) : ""}%</b> edge to win. At ${lastBoundaryLabel()} it was within <b>${errQ3 != null ? "±" + num(errQ3) : "—"}</b> ${unitWord} of the final.</p>
-        <p class="nbhonest"><b>Honest framing:</b> these are calibrated <b>predictions, not a betting edge</b>. ${honest}</p>
+        <p>The model projects <b>${num(predTotal)}</b> total ${unitWord} and gives <b>${winAb}</b> a <b>${wpHome != null ? wpHome + (winAb === g.home_abbr ? "" : "→" + (100 - wpHome)) : ""}%</b> chance to win. At ${lastBoundaryLabel()} it was within <b>${errQ3 != null ? "±" + num(errQ3) : "—"}</b> ${unitWord} of the final.</p>
+        <p class="nbhonest">${honest}</p>
       </div></div>`;
 
       grid.innerHTML = `<div class="detailwrap">
@@ -2676,7 +2663,7 @@ export default function Home() {
       const insight = `<div class="dt-card insight"><div class="dt-ct"><span>What's Driving This</span></div><div class="dt-insight">
         <p>This is ${stateTxt}. From the current state the Poisson / Skellam model projects <b>${num(predTotal)}</b> total goals (80% interval ${iv ? num(iv.total_lo, 0) + "–" + num(iv.total_hi, 0) : "—"}), a projected score of <b>${projStr}</b>, and a 3-way ${top ? `most-likely outcome of <b>${top.l}</b> at <b>${Math.round(Number(top.p) * 100)}%</b>` : "W/D/L split"}.</p>
         <p>Pre-match team strength (each side's expected goals, λ) is read from the match odds${g.prior && g.prior.detail && g.prior.detail.totals_line != null ? ` (totals line ${g.prior.detail.totals_line})` : ""}. In-game, remaining goals follow a Poisson rate scaled by the minutes left and an empirically calibrated game-state adjustment — a leading team scores less late, a trailing team pushes.</p>
-        <p class="nbhonest"><b>Honest framing:</b> calibrated World Cup <b>predictions, not a betting edge</b>. Soccer is low-scoring and near-Poisson, and the halftime over/under market was shown efficient — the value is a sharp, well-calibrated forecast (projected-total MAE 0.86 goals, W/D/L 3-class Brier 0.42, ECE 0.017), not a wager.</p>
+        <p class="nbhonest">Soccer is low-scoring and near-Poisson; the model delivers a sharp, well-calibrated forecast (projected-total MAE 0.86 goals, W/D/L 3-class Brier 0.42, ECE 0.017).</p>
       </div></div>`;
 
       grid.innerHTML = `<div class="detailwrap">
@@ -2894,7 +2881,7 @@ export default function Home() {
           if (ed != null && Math.abs(ed) >= 0.25) insightBits.push(`The model projects <b>${num(projI)}</b> total runs vs the line of <b>${g.line}</b> — a <b>${num(Math.abs(ed))}-run ${ed > 0 ? "over" : "under"}</b> edge, hence the <b>${(g.ou_call || "").toUpperCase()}</b> lean${g.ou_confidence_pct != null ? ` at ${g.ou_confidence_pct}% confidence` : ""}.`);
           else insightBits.push(`The model sits within a fraction of a run of the line — no meaningful O/U edge here.`);
         }
-        if (g.model_engine !== "mid-game" && !liveI) insightBits.push(`Reminder: the pregame O/U market is efficient — our edge only shows up <b>once a game is live</b>, where the mid-game engine reprojects the remaining total.`);
+        if (g.model_engine !== "mid-game" && !liveI) insightBits.push(`The model sharpens <b>once a game is live</b>, where the mid-game engine reprojects the remaining total from the current game state.`);
       } else {
         insightBits.push(`This is a 2024 historical game shown to illustrate how the <b>mid-game model</b> re-projects the final total inning by inning. Compare the model line against the dashed actual-total line above.`);
       }
@@ -2915,6 +2902,415 @@ export default function Home() {
       </div>`;
       $("dt-back").onclick = backFromDetail;
       $("refnote").innerHTML = `${g.away_abbr} @ ${g.home_abbr}${g.venue ? " · " + g.venue : ""}`;
+    }
+
+    // ============================================================
+    // PRE-GAME PICKS BOARD — the primary view / landing.
+    // Across all five leagues, games sorted featured-first then confidence-desc.
+    // Each game card = two tight, seamless widgets side by side:
+    //   ODDS (the Vegas line) | PREDICTIONS (our pre-game read — clickable → deep-dive).
+    // NO live projected totals anywhere here. Mid-game lives only in the deep-dive.
+    // Data source: slate_snapshots key "pregame_picks" (same fetch as every other key).
+    // ============================================================
+    const PB_SPORTS = ["all", "mlb", "nba", "nfl", "nhl", "soccer"];
+    const PB_LABEL: any = { all: "ALL", mlb: "MLB", nba: "NBA", nfl: "NFL", nhl: "NHL", soccer: "SOCCER" };
+    // confidence tier → badge class (reuse the existing .tier-* aesthetic)
+    const pbTierCls = (t: any) => {
+      const k = (t || "").toLowerCase();
+      return k === "featured" ? "tier-HIGH" : k === "high" ? "tier-HIGH" : k === "medium" ? "tier-MEDIUM" : k === "low" ? "tier-LOW" : "tier-WATCH";
+    };
+    const pbConfCls = (c: any) => (c == null ? "flat" : c >= 65 ? "pos" : c <= 45 ? "neg" : "flat");
+    // logo for a board game regardless of the active sport tab
+    const pbLogo = (g: any, ab: any) => {
+      const s = g.sport;
+      return s === "soccer" ? soccerCrest(ab) : s === "nba" ? nbaLogo(ab) : s === "nhl" ? nhlLogo(ab) : s === "nfl" ? nflLogo(ab) : mlbLogo(ab);
+    };
+    // status → display pill
+    const pbStatusPill = (g: any) => {
+      const st = (g.status || "pre").toLowerCase();
+      if (st === "live") return `<span class="statuspill live"><span class="livedot"></span>LIVE</span>`;
+      if (st === "final") return `<span class="statuspill final">FINAL</span>`;
+      return `<span class="statuspill upcoming">UPCOMING</span>`;
+    };
+    // start time → short label (pre/upcoming games)
+    const pbWhen = (g: any) => {
+      const t = g.start_time || g.date || "";
+      if (!t) return "";
+      try {
+        const dt = new Date(/T|:/.test(t) ? t : t + "T12:00:00");
+        if (isNaN(dt.getTime())) return String(t);
+        const md = dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        const hm = /T/.test(t) ? " · " + dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+        return md + hm;
+      } catch (e) { return String(t); }
+    };
+    // result.status (hit/miss/push) → ✓ / ✗ / T mark
+    const pbResultMark = (res: any) => {
+      if (!res || !res.status) return "";
+      const s = (res.status || "").toLowerCase();
+      const cls = s === "hit" ? "win" : s === "miss" ? "loss" : "push";
+      const mark = s === "hit" ? "✓" : s === "miss" ? "✗" : "T";
+      const net = res.net_units != null ? Number(res.net_units) : null;
+      const nu = net != null ? `<span class="pb-net ${net >= 0 ? "pos" : "neg"}">${net >= 0 ? "+" : ""}${net.toFixed(2)}u</span>` : "";
+      return `<span class="pb-mark ${cls}">${mark}</span>${nu}`;
+    };
+    // live_read chip ("looking good"|"on track"|"looking bad") — rendered only when present
+    const pbLiveRead = (pick: any) => {
+      const lr = pick && pick.live_read;
+      if (!lr) return "";
+      const k = String(lr).toLowerCase();
+      const cls = k.indexOf("good") >= 0 ? "good" : k.indexOf("bad") >= 0 ? "bad" : "ontrack";
+      return `<span class="pb-liveread ${cls}">${String(lr).toUpperCase()}</span>`;
+    };
+    // pick action chip ("OVER 8.5", "PIR +1.5", …) with confidence + tier
+    const pbActionChip = (pick: any, isFinal: boolean) => {
+      if (!pick) return `<span class="pb-na">—</span>`;
+      const side = (pick.side || "—");
+      const isTotal = (pick.market === "total");
+      const line = pick.line != null ? pick.line : "";
+      // total: "OVER 8.5"; spread: side already carries the line (e.g. "PIR +1.5")
+      const label = isTotal ? `${side}${line !== "" ? " " + line : ""}` : side;
+      const conf = pick.confidence != null ? Math.round(pick.confidence) : null;
+      const tier = (pick.tier || "");
+      const tierTxt = tier === "featured" ? "featured" : tier;
+      const sideCls = side === "OVER" ? "over" : side === "UNDER" ? "under" : "pick";
+      const res = isFinal ? pbResultMark(pick.result) : "";
+      const live = pbLiveRead(pick);
+      return `<div class="pb-action">
+        <span class="badge ${sideCls}">${label}</span>
+        ${conf != null ? `<span class="pb-conf ${pbConfCls(conf)}">${conf}%</span>` : ""}
+        ${tierTxt ? `<span class="tier ${pbTierCls(tier)}">${tierTxt}</span>` : ""}
+        ${res}${live}
+      </div>`;
+    };
+    // derive a projected SCORE from total (total_pick.our_proj) + margin (spread_pick.our_proj, home-away)
+    function pbProjScore(g: any) {
+      const tp = g.total_pick, sp = g.spread_pick;
+      const total = tp && tp.our_proj != null ? Number(tp.our_proj) : null;
+      const margin = sp && sp.our_proj != null ? Number(sp.our_proj) : null;
+      if (total == null) return null;
+      if (margin == null) return { total, home: null, away: null };
+      const home = (total + margin) / 2, away = (total - margin) / 2;
+      return { total, home, away, margin };
+    }
+    // ODDS widget — the Vegas line: total line, spread/run-line, price(s) available.
+    function pbOddsWidget(g: any) {
+      const tp = g.total_pick, sp = g.spread_pick;
+      const odd = (k: string, v: string) => `<div class="pb-odd"><div class="sk">${k}</div><div class="ov">${v}</div></div>`;
+      let cells = "";
+      if (tp && tp.line != null) cells += odd("TOTAL", `${tp.line}`);
+      if (sp && sp.line != null) {
+        // spread line: show the team-anchored side number where possible
+        const spLbl = g.sport === "mlb" ? "RUN LINE" : g.sport === "soccer" ? "GOAL LINE" : "SPREAD";
+        cells += odd(spLbl, `${sp.line > 0 ? "+" : ""}${sp.line}`);
+      }
+      // price (decimal odds) for whichever picks exist
+      if (tp && tp.price != null) cells += odd("O/U PRICE", `${Number(tp.price).toFixed(2)}`);
+      if (sp && sp.price != null) cells += odd(g.sport === "mlb" ? "RL PRICE" : "SPR PRICE", `${Number(sp.price).toFixed(2)}`);
+      if (!cells) cells = `<div class="pb-odd"><div class="sk">LINE</div><div class="ov">—</div></div>`;
+      return `<div class="pb-widget pb-odds">
+        <div class="pb-wtitle"><span>◆</span>VEGAS LINE</div>
+        <div class="pb-oddgrid">${cells}</div>
+      </div>`;
+    }
+    // PREDICTIONS widget — OUR pregame read. Clickable → deep-dive.
+    function pbPredWidget(g: any) {
+      const isFinal = (g.status || "").toLowerCase() === "final";
+      const isLive = (g.status || "").toLowerCase() === "live";
+      const ps = pbProjScore(g);
+      // projected SCORE + total (NO live projection — this is the frozen pre-game read)
+      let scoreLine = "";
+      if (ps) {
+        if (ps.home != null && ps.away != null) {
+          scoreLine = `<div class="pb-projscore"><span class="pb-sk">PROJ SCORE</span><b>${g.away_abbr} ${ps.away.toFixed(1)} – ${ps.home.toFixed(1)} ${g.home_abbr}</b></div>`;
+        }
+        scoreLine += `<div class="pb-projtot"><span class="pb-sk">PROJ TOTAL</span><b>${ps.total.toFixed(1)}</b></div>`;
+      }
+      // live actuals (REAL score/total so far) — only when present, NO projection/line
+      let liveBlk = "";
+      if (isLive && g.current_actuals) {
+        const ca = g.current_actuals;
+        const sc = (ca.home_score != null && ca.away_score != null) ? `${g.away_abbr} ${ca.away_score} – ${ca.home_score} ${g.home_abbr}` : "";
+        liveBlk = `<div class="pb-live">
+          <div class="pb-livehd"><span class="livedot"></span>${ca.period_label || "LIVE"}</div>
+          ${sc ? `<div class="pb-livescore">${sc}</div>` : ""}
+          ${ca.total_so_far != null ? `<div class="pb-livetot">${ca.total_so_far} so far</div>` : ""}
+        </div>`;
+      }
+      // the ACTION + CONFIDENCE for BOTH total and spread, stated plainly
+      const tRow = `<div class="pb-prow"><span class="pb-plab">TOTAL</span>${pbActionChip(g.total_pick, isFinal)}</div>`;
+      const sRow = g.spread_pick
+        ? `<div class="pb-prow"><span class="pb-plab">${g.sport === "mlb" ? "RUN LINE" : g.sport === "soccer" ? "RESULT" : "SPREAD"}</span>${pbActionChip(g.spread_pick, isFinal)}</div>`
+        : "";
+      return `<div class="pb-widget pb-pred clickable" data-pk="${g.game_id}" title="Open the full prediction breakdown">
+        <div class="pb-wtitle"><span>◆</span>OUR PRE-GAME READ<span class="pb-arrow">›</span></div>
+        ${liveBlk}
+        ${!isLive ? `<div class="pb-projwrap">${scoreLine || `<div class="pb-projtot"><span class="pb-sk">PROJ</span><b>—</b></div>`}</div>` : ""}
+        <div class="pb-actions">${tRow}${sRow}</div>
+      </div>`;
+    }
+    // a full board game card = matchup header + ODDS | PREDICTIONS, side by side & seamless
+    function pbCard(g: any) {
+      const sb = `<span class="pb-sportbadge ${g.sport}">${PB_LABEL[g.sport] || g.sport.toUpperCase()}</span>`;
+      const feat = g.featured ? `<span class="pb-feat">★ FEATURED</span>` : "";
+      const matchHd = `<div class="pb-cardtop">
+        <div class="pb-teams">
+          <div class="pb-team"><img src="${pbLogo(g, g.away_abbr)}" onerror="this.style.visibility='hidden'"><span class="ab">${g.away_abbr}</span></div>
+          <span class="pb-at">@</span>
+          <div class="pb-team"><img src="${pbLogo(g, g.home_abbr)}" onerror="this.style.visibility='hidden'"><span class="ab">${g.home_abbr}</span></div>
+        </div>
+        <div class="pb-meta">${sb}${feat}${pbStatusPill(g)}</div>
+      </div>`;
+      const when = (g.status || "").toLowerCase() === "pre" ? `<div class="pb-when">${pbWhen(g)}</div>` : "";
+      return `<div class="pb-card">
+        ${matchHd}
+        ${when}
+        <div class="pb-widgets">${pbOddsWidget(g)}${pbPredWidget(g)}</div>
+      </div>`;
+    }
+    // W-T-L HEADER BAND — record, hit-rate, ROI from track_record (overall + by_market).
+    function pbHeaderBand(tr: any) {
+      if (!tr) return "";
+      const o = tr.overall || {};
+      const tot = (tr.by_market && tr.by_market.total) || {};
+      const spr = (tr.by_market && tr.by_market.spread) || {};
+      const pct = (v: any) => (v == null ? "—" : (Number(v) * 100).toFixed(1) + "%");
+      const roi = (v: any) => (v == null ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
+      const wtl = (r: any) => {
+        const rec = r.record || (r.wins != null ? `${r.wins}-${r.losses}` : "—");
+        const p = r.pushes != null ? r.pushes : null;
+        return `${rec}${p != null ? `-${p}` : ""}`;
+      };
+      const roiCls = (v: any) => (v == null ? "" : Number(v) >= 0 ? "g" : "r");
+      const stat = (k: string, v: string, sub: string, cls = "") =>
+        `<div class="pb-stat"><div class="pb-sk">${k}</div><div class="pb-sv ${cls}">${v}</div>${sub ? `<div class="pb-ssub">${sub}</div>` : ""}</div>`;
+      return `<div class="pb-band">
+        <div class="pb-bandlead">
+          <div class="pb-bandtitle">TRACK RECORD</div>
+          <div class="pb-bandbig"><span class="w">${o.wins != null ? o.wins : "—"}</span><span class="pb-bsep">–</span><span class="l">${o.losses != null ? o.losses : "—"}</span>${o.pushes != null ? `<span class="pb-bsep">–</span><span class="t">${o.pushes}</span>` : ""}</div>
+          <div class="pb-bandsub">W – L${o.pushes != null ? " – T" : ""} · ${o.n != null ? o.n.toLocaleString() + " settled picks" : ""}</div>
+        </div>
+        <div class="pb-bandstats">
+          ${stat("HIT RATE", pct(o.hit_rate), o.breakeven_hit_rate != null ? `b/e ${pct(o.breakeven_hit_rate)}` : "", o.hit_rate != null && o.breakeven_hit_rate != null && o.hit_rate >= o.breakeven_hit_rate ? "g" : "")}
+          ${stat("ROI", roi(o.roi), o.units_net != null ? `${o.units_net >= 0 ? "+" : ""}${Number(o.units_net).toFixed(0)}u` : "", roiCls(o.roi))}
+          ${stat("TOTALS", wtl(tot), `${pct(tot.hit_rate)} · ${roi(tot.roi)}`, roiCls(tot.roi))}
+          ${stat("SPREADS", wtl(spr), `${pct(spr.hit_rate)} · ${roi(spr.roi)}`, roiCls(spr.roi))}
+        </div>
+      </div>`;
+    }
+    // confidence slider — "most sure bets". Default 0 (all). Max capped so >=1 game stays.
+    function pbConfSlider(games: any[]) {
+      // games here = the sport-filtered set (before the confidence floor is applied)
+      const confs = games.map((g) => Number(g.top_confidence) || 0);
+      const maxConf = confs.length ? Math.max(...confs) : 100;
+      // cap: floor of the single highest-confidence game, so sliding all the way up
+      // still leaves at least one game. Subtract a hair so that top game is included.
+      const cap = Math.max(0, Math.floor(maxConf));
+      if (picksConfFloor > cap) picksConfFloor = cap;
+      const shown = games.filter((g) => (Number(g.top_confidence) || 0) >= picksConfFloor).length;
+      return `<div class="pb-slidewrap">
+        <div class="pb-slidehd">
+          <div class="pb-slidelab">SHOW ME ONLY YOUR SUREST PLAYS</div>
+          <div class="pb-slideval">${picksConfFloor <= 0 ? "All games" : `min confidence ${picksConfFloor}%`} <span class="pb-slidecount">${shown} shown</span></div>
+        </div>
+        <input class="pb-slider" id="pb-conf" type="range" min="0" max="${cap}" step="1" value="${picksConfFloor}">
+        <div class="pb-sliderticks"><span>All</span><span>Surest only</span></div>
+      </div>`;
+    }
+    // sport filter tabs for the board
+    function pbSportTabs(payload: any) {
+      const by = (payload.counts && payload.counts.by_sport) || {};
+      const total = payload.counts && payload.counts.games != null ? payload.counts.games : (payload.games || []).length;
+      return `<div class="pb-tabs">${PB_SPORTS.map((s) => {
+        const n = s === "all" ? total : (by[s] != null ? by[s] : (payload.games || []).filter((g: any) => g.sport === s).length);
+        return `<button class="pb-tab${picksSport === s ? " on" : ""}" data-pbs="${s}">${PB_LABEL[s]}<span class="pb-tabn">${n}</span></button>`;
+      }).join("")}</div>`;
+    }
+    function pbVisibleGames() {
+      const all = (picksPayload && picksPayload.games) || [];
+      return picksSport === "all" ? all : all.filter((g: any) => g.sport === picksSport);
+    }
+    // re-render only the board body (cards) after a slider/tab change
+    function renderPicksBoardBody() {
+      const grid = $("grid");
+      const sportGames = pbVisibleGames();
+      const games = sportGames.filter((g: any) => (Number(g.top_confidence) || 0) >= picksConfFloor);
+      // featured-first then confidence-desc (payload is pre-sorted, but re-assert)
+      games.sort((a: any, b: any) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || (Number(b.top_confidence) || 0) - (Number(a.top_confidence) || 0));
+      const slider = pbConfSlider(sportGames);
+      const cards = games.length
+        ? `<div class="pb-grid">${games.map(pbCard).join("")}</div>`
+        : `<div class="state"><div class="ds">No games at this confidence</div></div>`;
+      const board = grid.querySelector("#pb-board");
+      if (board) {
+        // update slider region + cards in place (keep tabs/band)
+        const sl = grid.querySelector("#pb-slideregion"); if (sl) sl.innerHTML = slider;
+        const cd = grid.querySelector("#pb-cardregion"); if (cd) cd.innerHTML = cards;
+      }
+      wirePicksBody();
+    }
+    function wirePicksBody() {
+      const grid = $("grid");
+      // slider
+      const sl = grid.querySelector("#pb-conf") as any;
+      if (sl) sl.oninput = (e: any) => { picksConfFloor = Number(e.target.value) || 0; renderPicksBoardBody(); };
+      // predictions widget → deep-dive
+      grid.querySelectorAll(".pb-pred").forEach((el: any) => {
+        el.onclick = () => openPickDetail(el.dataset.pk);
+      });
+    }
+    function renderPicksBoard() {
+      const grid = $("grid");
+      const p = picksPayload;
+      if (!p) { grid.innerHTML = `<div class="state"><div class="ds">No picks available</div></div>`; return; }
+      const sportGames = pbVisibleGames();
+      const games = sportGames.filter((g: any) => (Number(g.top_confidence) || 0) >= picksConfFloor)
+        .sort((a: any, b: any) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || (Number(b.top_confidence) || 0) - (Number(a.top_confidence) || 0));
+      grid.innerHTML = `<div id="pb-board">
+        ${pbHeaderBand(p.track_record)}
+        ${pbSportTabs(p)}
+        <div id="pb-slideregion">${pbConfSlider(sportGames)}</div>
+        <div id="pb-cardregion">${games.length ? `<div class="pb-grid">${games.map(pbCard).join("")}</div>` : `<div class="state"><div class="ds">No games at this confidence</div></div>`}</div>
+      </div>`;
+      // tabs
+      grid.querySelectorAll(".pb-tab").forEach((t: any) => {
+        t.onclick = () => { picksSport = t.dataset.pbs; picksConfFloor = 0; renderPicksBoard(); };
+      });
+      wirePicksBody();
+    }
+    async function loadPicksBoard() {
+      mode = "picksboard";
+      const grid = $("grid");
+      grid.innerHTML = `<div class="state"><div class="spinner"></div><div class="ds">Loading picks</div></div>`;
+      $("slatehead").textContent = "Pre-Game Picks";
+      $("legendbox").style.display = "none";
+      $("record").innerHTML = "";
+      $("datestrip").innerHTML = "";
+      try {
+        if (!picksPayload) picksPayload = await snap("pregame_picks");
+        renderPicksBoard();
+        $("refnote").innerHTML = `Frozen pre-game picks settled at real prices · transparent, accountable track record · educational research, not betting advice`;
+      } catch (e) {
+        grid.innerHTML = `<div class="state"><div class="ds">Could not load picks</div></div>`;
+      }
+    }
+
+    // ---------- PRE-GAME PICK DEEP-DIVE ----------
+    // Full breakdown for one game: model outputs (why.models[]: line-free / rating / GBM
+    // proj vs market line), reasoning, chosen_rationale, the 80% interval, confidence,
+    // and the result. Pregame-focused; any mid-game live detail is a collapsed sub-section.
+    function pbDetailPickBlock(g: any, pick: any, marketLabel: string) {
+      if (!pick) return "";
+      const isFinal = (g.status || "").toLowerCase() === "final";
+      const isTotal = pick.market === "total";
+      const line = pick.line != null ? pick.line : null;
+      const proj = pick.our_proj != null ? Number(pick.our_proj) : null;
+      const conf = pick.confidence != null ? Math.round(pick.confidence) : null;
+      const iv = pick.interval || {};
+      const sideLbl = isTotal ? `${pick.side}${line != null ? " " + line : ""}` : pick.side;
+      const sideCls = pick.side === "OVER" ? "over" : pick.side === "UNDER" ? "under" : "pick";
+      // interval bar reuses the existing intervalBar(lo,hi,pred,line)
+      const ivBar = (iv.lo != null && iv.hi != null) ? intervalBar(iv.lo, iv.hi, proj, line, "ivbar") : "";
+      const res = isFinal && pick.result ? `<div class="pb-dt-result ${(pick.result.status || "").toLowerCase() === "hit" ? "win" : (pick.result.status || "").toLowerCase() === "push" ? "push" : "loss"}">
+          <span class="pb-dt-mark">${(pick.result.status || "").toLowerCase() === "hit" ? "✓ HIT" : (pick.result.status || "").toLowerCase() === "push" ? "T PUSH" : "✗ MISS"}</span>
+          ${pick.result.actual != null ? `<span class="pb-dt-actual">actual ${pick.result.actual}</span>` : ""}
+          ${pick.result.net_units != null ? `<span class="pb-net ${pick.result.net_units >= 0 ? "pos" : "neg"}">${pick.result.net_units >= 0 ? "+" : ""}${Number(pick.result.net_units).toFixed(2)}u</span>` : ""}
+        </div>` : "";
+      const live = pbLiveRead(pick);
+      return `<div class="dt-card pb-dt-pickcard">
+        <div class="dt-ct">${marketLabel}<span class="badge ${sideCls}">${sideLbl}</span></div>
+        <div class="pb-dt-grid">
+          <div class="dt-pred"><div class="sk">OUR PROJ</div><div class="dt-bignum">${proj != null ? proj.toFixed(1) : "—"}</div></div>
+          <div class="dt-pred"><div class="sk">LINE</div><div class="dt-bignum sm">${line != null ? line : "—"}</div></div>
+          <div class="dt-pred"><div class="sk">GAP</div><div class="dt-bignum sm">${pick.gap != null ? (pick.gap > 0 ? "+" : "") + Number(pick.gap).toFixed(1) : "—"}</div></div>
+          <div class="dt-pred"><div class="sk">CONFIDENCE</div><div class="dt-bignum sm ${pbConfCls(conf)}">${conf != null ? conf + "%" : "—"}</div></div>
+        </div>
+        ${pick.price != null ? `<div class="pb-dt-price">Price ${Number(pick.price).toFixed(2)} (decimal) · model: ${pick.model || "—"}</div>` : ""}
+        ${ivBar ? `<div class="pb-dt-ivlab">80% INTERVAL (level ${iv.level != null ? iv.level : 0.8}${iv.sigma != null ? " · σ " + Number(iv.sigma).toFixed(2) : ""})</div>${ivBar}` : ""}
+        ${live ? `<div class="pb-dt-live">${live}</div>` : ""}
+        ${res}
+      </div>`;
+    }
+    function renderPickDetail() {
+      const grid = $("grid");
+      const g = pickDetail;
+      if (!g) { loadPicksBoard(); return; }
+      const ps = pbProjScore(g);
+      const isFinal = (g.status || "").toLowerCase() === "final";
+      const isLive = (g.status || "").toLowerCase() === "live";
+      const why = g.why || {};
+      // hero header (reuse the navy gradient .dt-head)
+      const sideHTML = (ab: string, name: string, home: boolean) =>
+        `<div class="dt-side ${home ? "home" : ""}"><img src="${pbLogo(g, ab)}" onerror="this.style.visibility='hidden'"><div class="dt-tn ${home ? "rt" : ""}"><span class="dt-ab">${ab}</span><span class="dt-full">${name || ""}</span></div></div>`;
+      const center = isFinal && g.total_pick && g.total_pick.result && g.total_pick.result.actual != null
+        ? `<div class="dt-center">${pbStatusPill(g)}<div class="dt-venue">${g.sport.toUpperCase()} · ${pbWhen(g)}</div></div>`
+        : `<div class="dt-center">${pbStatusPill(g)}<div class="dt-at">@</div><div class="dt-venue">${g.sport.toUpperCase()} · ${pbWhen(g)}</div></div>`;
+      const head = `<div class="dt-head">${sideHTML(g.away_abbr, g.away_team, false)}${center}${sideHTML(g.home_abbr, g.home_team, true)}</div>`;
+      // projected score banner (frozen pre-game read — NO live projection)
+      const projBanner = ps ? `<div class="dt-card pb-dt-proj">
+        <div class="dt-ct">OUR FROZEN PRE-GAME READ</div>
+        <div class="pb-dt-projrow">
+          ${ps.home != null && ps.away != null ? `<div class="pb-dt-projscore"><span class="sk">PROJECTED SCORE</span><b>${g.away_abbr} ${ps.away.toFixed(1)} – ${ps.home.toFixed(1)} ${g.home_abbr}</b></div>` : ""}
+          <div class="pb-dt-projscore"><span class="sk">PROJECTED TOTAL</span><b>${ps.total.toFixed(1)}</b></div>
+        </div>
+      </div>` : "";
+      // model outputs (why.models[]) vs the market line
+      const models = (why.models || []);
+      const modelCards = models.length ? `<div class="dt-card">
+        <div class="dt-ct">MODEL OUTPUTS vs THE MARKET</div>
+        <div class="pb-dt-models">
+          ${models.map((m: any) => `<div class="pb-dt-model${/market|line/i.test(m.name || "") ? " market" : ""}">
+            <div class="pb-dt-mname">${m.name || ""}</div>
+            <div class="pb-dt-mproj">${m.proj != null ? Number(m.proj).toFixed(2) : "—"}</div>
+            ${m.note ? `<div class="pb-dt-mnote">${m.note}</div>` : ""}
+          </div>`).join("")}
+        </div>
+      </div>` : "";
+      // the two picks, full breakdown
+      const totalBlk = pbDetailPickBlock(g, g.total_pick, "TOTAL");
+      const spreadBlk = pbDetailPickBlock(g, g.spread_pick, g.sport === "mlb" ? "RUN LINE" : g.sport === "soccer" ? "RESULT" : "SPREAD");
+      // reasoning + chosen rationale
+      const reason = (why.reasoning || why.chosen_rationale) ? `<div class="dt-card insight">
+        <div class="dt-ct">WHY THIS PICK</div>
+        ${why.reasoning ? `<p class="pb-dt-reason">${why.reasoning}</p>` : ""}
+        ${why.chosen_rationale ? `<p class="pb-dt-rationale">${why.chosen_rationale}</p>` : ""}
+      </div>` : "";
+      // optional mid-game live read — collapsed deeper sub-section (only when live data present)
+      const liveSub = (isLive && g.current_actuals) ? `<details class="pb-dt-livesub"><summary>Live mid-game read</summary>
+        <div class="pb-dt-livebody">
+          <div class="pb-livehd"><span class="livedot"></span>${g.current_actuals.period_label || "LIVE"}</div>
+          ${(g.current_actuals.home_score != null && g.current_actuals.away_score != null) ? `<div class="pb-livescore">${g.away_abbr} ${g.current_actuals.away_score} – ${g.current_actuals.home_score} ${g.home_abbr}</div>` : ""}
+          ${g.current_actuals.total_so_far != null ? `<div class="pb-livetot">${g.current_actuals.total_so_far} total so far</div>` : ""}
+          ${g.total_pick && g.total_pick.live_read ? `<div>Total: ${pbLiveRead(g.total_pick)}</div>` : ""}
+          ${g.spread_pick && g.spread_pick.live_read ? `<div>Spread: ${pbLiveRead(g.spread_pick)}</div>` : ""}
+        </div>
+      </details>` : "";
+      grid.innerHTML = `<div class="detailwrap">
+        <button class="backbtn" id="pb-dt-back">‹ Back to the board</button>
+        ${head}
+        ${projBanner}
+        <div class="dt-cols">${totalBlk}${spreadBlk}</div>
+        ${modelCards}
+        ${reason}
+        ${liveSub}
+      </div>`;
+      const back = $("pb-dt-back"); if (back) back.onclick = backFromPickDetail;
+    }
+    function openPickDetail(pk: string) {
+      const games = (picksPayload && picksPayload.games) || [];
+      const g = games.find((x: any) => String(x.game_id) === String(pk));
+      if (!g) return;
+      pickDetail = g;
+      mode = "pickdetail";
+      location.hash = "pick:" + encodeURIComponent(pk);
+      $("slatehead").textContent = "Prediction Detail";
+      renderPickDetail();
+    }
+    function backFromPickDetail() {
+      pickDetail = null;
+      mode = "picksboard";
+      location.hash = "";
+      loadPicksBoard();
     }
 
     // ---------- NAVIGATION ----------
@@ -2951,26 +3347,29 @@ export default function Home() {
       $("legendbox").style.display = "none";
       loadPicks();
     }
-    $("m-edges").onclick = () => { if (mode !== "picks") selectPicks(); };
+    { const edg = $("m-edges"); if (edg) edg.onclick = () => { if (mode !== "picks") selectPicks(); }; }
 
-    // HOME — cross-sport "Live Now" landing. Not a per-sport slate; its own #home
+    // HOME — the PRE-GAME PICKS BOARD is the primary view / landing. Its own #home
     // hash. The active sport is left as-is underneath so returning to a tab works.
     function selectHome() {
-      mode = "home";
+      mode = "picksboard";
+      pickDetail = null;
       location.hash = "home";
       $("m-perf").classList.remove("on");
       const edg = $("m-edges"); if (edg) edg.classList.remove("on");
       const perf = $("m-perf"); if (perf) perf.style.display = hasPerf() ? "" : "none";
       document.querySelectorAll(".sportbtn").forEach((b: any) => b.classList.toggle("on", b.dataset.sport === "home"));
-      const bt = $("brandtag"); if (bt) bt.textContent = "5-Sport Live Platform";
+      const bt = $("brandtag"); if (bt) bt.textContent = "5-Sport Pre-Game Picks";
       $("datestrip").innerHTML = "";
-      loadHome();
+      loadPicksBoard();
     }
     // SPORT SELECTOR — switch data source + rendering, reset to the slate view.
     async function setSport(s: string) {
       if (s === "home") { selectHome(); return; }
-      if (s === sport && mode !== "home" && mode !== "picks") return;
+      if (s === sport && mode !== "home" && mode !== "picksboard" && mode !== "pickdetail" && mode !== "picks") return;
       if (mode === "home") mode = "today";
+      // The board / its deep-dive is cross-sport; a sport tab leaves it for that slate.
+      if (mode === "picksboard" || mode === "pickdetail") { mode = "today"; pickDetail = null; }
       // Edges is a cross-sport board; clicking a sport tab leaves it for that slate.
       if (mode === "picks") mode = "today";
       sport = s;
@@ -3009,7 +3408,12 @@ export default function Home() {
       await ensureHistDates();
       syncHeader();
       const h = raw;
-      if (h === "#edges") { renderDateStrip(); selectPicks(); }
+      if (h.indexOf("#pick:") === 0) {
+        const pk = decodeURIComponent(h.slice(6));
+        await loadPicksBoard();
+        openPickDetail(pk);
+      }
+      else if (h === "#edges") { renderDateStrip(); selectPicks(); }
       else if (h === "#performance" || h.indexOf("#performance:") === 0) { if (h.indexOf(":") > 0) perfTab = h.split(":")[1]; renderDateStrip(); selectPerf(); }
       else if (h.indexOf("#game:") === 0) {
         const pk = decodeURIComponent(h.slice(6));

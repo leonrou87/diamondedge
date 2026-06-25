@@ -951,3 +951,135 @@ body{
   .ftrow{grid-template-columns:1fr 1fr 1fr;gap:8px 12px}
   .hgmetric{display:none}
 }
+
+/* ============================================================
+   PRE-GAME PICKS BOARD — the primary view / landing.
+   ============================================================ */
+#pb-board{display:flex;flex-direction:column;gap:18px;grid-column:1/-1}
+.sportsel .sportbtn.board.on{background:var(--navy);color:#fff;box-shadow:0 1px 3px rgba(12,35,64,.25)}
+.sportsel .sportbtn.board{color:var(--navy)}
+
+/* --- W-T-L HEADER BAND --- */
+.pb-band{display:flex;align-items:stretch;gap:0;background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:18px;box-shadow:var(--shadow-hi);overflow:hidden;color:#fff}
+.pb-bandlead{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:20px 26px;min-width:230px;background:rgba(0,0,0,.10)}
+.pb-bandtitle{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.18em;color:rgba(255,255,255,.62)}
+.pb-bandbig{font-family:'Oswald';font-weight:700;font-size:42px;line-height:1;letter-spacing:.01em;display:flex;align-items:baseline;gap:4px}
+.pb-bandbig .w{color:#52e08a} .pb-bandbig .l{color:#ff7a8c} .pb-bandbig .t{color:rgba(255,255,255,.78)}
+.pb-bandbig .pb-bsep{color:rgba(255,255,255,.4);font-weight:400}
+.pb-bandsub{font-size:11.5px;color:rgba(255,255,255,.66);letter-spacing:.02em}
+.pb-bandstats{flex:1;display:grid;grid-template-columns:repeat(4,1fr);align-items:center}
+.pb-stat{display:flex;flex-direction:column;gap:3px;padding:18px 20px;border-left:1px solid rgba(255,255,255,.12);text-align:left}
+.pb-stat .pb-sk{font-family:'Oswald';font-weight:600;font-size:10px;letter-spacing:.13em;color:rgba(255,255,255,.6)}
+.pb-stat .pb-sv{font-family:'Oswald';font-weight:700;font-size:24px;line-height:1;color:#fff}
+.pb-stat .pb-sv.g{color:#52e08a} .pb-stat .pb-sv.r{color:#ff7a8c}
+.pb-stat .pb-ssub{font-family:'IBM Plex Mono';font-size:11px;color:rgba(255,255,255,.6)}
+
+/* --- SPORT FILTER TABS --- */
+.pb-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.pb-tab{display:inline-flex;align-items:center;gap:8px;font-family:'Oswald';font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:#fff;color:var(--ink2);padding:9px 16px;border-radius:10px;cursor:pointer;transition:.15s}
+.pb-tab:hover{border-color:var(--navy);color:var(--navy)}
+.pb-tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.pb-tabn{font-family:'IBM Plex Mono';font-weight:600;font-size:11px;background:var(--slatebg);color:var(--ink2);padding:1px 7px;border-radius:20px}
+.pb-tab.on .pb-tabn{background:rgba(255,255,255,.18);color:#fff}
+
+/* --- CONFIDENCE SLIDER ("most sure bets") --- */
+.pb-slidewrap{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px 20px}
+.pb-slidehd{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:13px;flex-wrap:wrap}
+.pb-slidelab{font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy)}
+.pb-slideval{font-family:'IBM Plex Mono';font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:10px}
+.pb-slidecount{font-family:'Oswald';font-weight:700;font-size:11px;letter-spacing:.06em;background:var(--slatebg);color:var(--navy);padding:2px 9px;border-radius:20px}
+.pb-slider{-webkit-appearance:none;appearance:none;width:100%;height:7px;border-radius:5px;background:linear-gradient(90deg,var(--slate),var(--navy));outline:none;cursor:pointer}
+.pb-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--navy);box-shadow:0 2px 6px rgba(12,35,64,.3);cursor:pointer}
+.pb-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--navy);box-shadow:0 2px 6px rgba(12,35,64,.3);cursor:pointer}
+.pb-sliderticks{display:flex;justify-content:space-between;font-family:'Oswald';font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-top:7px}
+
+/* --- BOARD CARD GRID --- */
+.pb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:18px}
+.pb-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;opacity:0;transform:translateY(10px);animation:rise .45s cubic-bezier(.2,.7,.3,1) forwards;transition:box-shadow .2s,transform .2s,border-color .2s}
+.pb-card:hover{box-shadow:var(--shadow-hi);transform:translateY(-2px);border-color:#d4dae2}
+.pb-cardtop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 15px;border-bottom:1px solid var(--line2);background:linear-gradient(180deg,#fbfcfd,#f7f9fb)}
+.pb-teams{display:flex;align-items:center;gap:9px;min-width:0}
+.pb-team{display:flex;align-items:center;gap:6px}
+.pb-team img{width:24px;height:24px;object-fit:contain}
+.pb-team .ab{font-family:'Oswald';font-weight:700;font-size:16px;letter-spacing:.02em;color:var(--navy)}
+.pb-at{font-family:'Oswald';font-weight:600;font-size:13px;color:var(--ink2)}
+.pb-meta{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.pb-sportbadge{font-family:'Oswald';font-weight:700;font-size:9px;letter-spacing:.1em;padding:3px 7px;border-radius:5px;background:var(--slatebg);color:var(--slate)}
+.pb-sportbadge.mlb{background:var(--navy);color:#fff} .pb-sportbadge.nba{background:var(--redsoft);color:var(--red)} .pb-sportbadge.nfl{background:#efe7fb;color:#7c3aed} .pb-sportbadge.nhl{background:var(--bluebg);color:var(--blue)} .pb-sportbadge.soccer{background:var(--greenbg);color:var(--green)}
+.pb-feat{font-family:'Oswald';font-weight:700;font-size:9px;letter-spacing:.08em;padding:3px 8px;border-radius:5px;background:linear-gradient(135deg,#fcefcf,#f8e3a6);color:#9a6a00}
+.pb-when{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);padding:7px 15px 0}
+
+/* --- TWO SEAMLESS WIDGETS SIDE BY SIDE --- */
+.pb-widgets{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.pb-widget{padding:13px 15px 15px}
+.pb-odds{border-right:1px solid var(--line2);background:#fcfdfe}
+.pb-pred{cursor:pointer;background:linear-gradient(180deg,#fffdfb,#fff);transition:background .15s}
+.pb-pred:hover{background:linear-gradient(180deg,#fff7f1,#fffdfb)}
+.pb-wtitle{display:flex;align-items:center;gap:6px;font-family:'Oswald';font-weight:600;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-bottom:11px}
+.pb-odds .pb-wtitle span{color:var(--slate)} .pb-pred .pb-wtitle span:first-child{color:var(--red)}
+.pb-arrow{margin-left:auto;font-family:'Oswald';font-weight:700;font-size:16px;color:var(--red)}
+.pb-oddgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pb-odd{text-align:center;background:var(--slatebg);border-radius:9px;padding:8px 5px}
+.pb-odd .sk{font-family:'Oswald';font-weight:600;font-size:9px;letter-spacing:.06em;color:var(--ink2);margin-bottom:3px}
+.pb-odd .ov{font-family:'IBM Plex Mono';font-weight:600;font-size:17px;color:var(--navy)}
+.pb-projwrap{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+.pb-projscore,.pb-projtot{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pb-sk{font-family:'Oswald';font-weight:600;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink2)}
+.pb-projscore b{font-family:'Oswald';font-weight:600;font-size:14px;color:var(--navy)}
+.pb-projtot b{font-family:'Oswald';font-weight:700;font-size:21px;line-height:1;color:var(--navy)}
+.pb-actions{display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--line2);padding-top:11px}
+.pb-prow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pb-plab{font-family:'Oswald';font-weight:600;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);width:60px;flex-shrink:0}
+.pb-action{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pb-conf{font-family:'IBM Plex Mono';font-weight:600;font-size:11px;padding:2px 7px;border-radius:6px}
+.pb-conf.pos{background:var(--greenbg);color:var(--green)} .pb-conf.neg{background:var(--redsoft);color:var(--red)} .pb-conf.flat{background:var(--slatebg);color:var(--slate)}
+.pb-na{color:var(--ink2);font-family:'IBM Plex Mono';font-size:12px}
+.pb-mark{font-family:'Oswald';font-weight:700;font-size:14px;line-height:1;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:5px}
+.pb-mark.win{background:var(--greenbg);color:var(--green)} .pb-mark.loss{background:var(--redsoft);color:var(--red)} .pb-mark.push{background:var(--slatebg);color:var(--slate)}
+.pb-net{font-family:'IBM Plex Mono';font-weight:600;font-size:10px;padding:1px 5px;border-radius:4px}
+.pb-net.pos{color:var(--green)} .pb-net.neg{color:var(--red)}
+.pb-liveread{font-family:'Oswald';font-weight:700;font-size:9px;letter-spacing:.06em;padding:2px 7px;border-radius:5px}
+.pb-liveread.good{background:var(--greenbg);color:var(--green)} .pb-liveread.bad{background:var(--redsoft);color:var(--red)} .pb-liveread.ontrack{background:var(--bluebg);color:var(--blue)}
+
+/* --- LIVE actuals block (real score/total so far — NO projection) --- */
+.pb-live{background:var(--redsoft);border-radius:10px;padding:9px 11px;margin-bottom:11px}
+.pb-livehd{display:flex;align-items:center;gap:6px;font-family:'Oswald';font-weight:700;font-size:10px;letter-spacing:.1em;color:var(--red)}
+.pb-livescore{font-family:'Oswald';font-weight:600;font-size:15px;color:var(--navy);margin-top:3px}
+.pb-livetot{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);margin-top:1px}
+.livedot{width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;animation:pulse 1.3s infinite}
+
+/* --- DEEP-DIVE (pick detail) --- */
+.pb-dt-proj .pb-dt-projrow{display:flex;gap:32px;flex-wrap:wrap}
+.pb-dt-projscore{display:flex;flex-direction:column;gap:4px}
+.pb-dt-projscore .sk{font-family:'Oswald';font-weight:600;font-size:10px;letter-spacing:.08em;color:var(--ink2)}
+.pb-dt-projscore b{font-family:'Oswald';font-weight:700;font-size:26px;color:var(--navy);line-height:1}
+.pb-dt-pickcard .dt-ct{justify-content:flex-start;gap:10px}
+.pb-dt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.pb-dt-grid .dt-bignum.pos{color:var(--green)} .pb-dt-grid .dt-bignum.neg{color:var(--red)} .pb-dt-grid .dt-bignum.flat{color:var(--slate)}
+.pb-dt-price{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink2);margin-bottom:10px}
+.pb-dt-ivlab{font-family:'Oswald';font-weight:600;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.pb-dt-live{margin-top:10px}
+.pb-dt-result{display:flex;align-items:center;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line2)}
+.pb-dt-mark{font-family:'Oswald';font-weight:700;font-size:15px;letter-spacing:.05em;padding:4px 12px;border-radius:7px}
+.pb-dt-result.win .pb-dt-mark{background:var(--greenbg);color:var(--green)} .pb-dt-result.loss .pb-dt-mark{background:var(--redsoft);color:var(--red)} .pb-dt-result.push .pb-dt-mark{background:var(--slatebg);color:var(--slate)}
+.pb-dt-actual{font-family:'IBM Plex Mono';font-size:13px;color:var(--ink)}
+.pb-dt-models{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.pb-dt-model{background:var(--slatebg);border-radius:11px;padding:12px 13px}
+.pb-dt-model.market{background:var(--bluebg)}
+.pb-dt-mname{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--navy)}
+.pb-dt-mproj{font-family:'Oswald';font-weight:700;font-size:26px;color:var(--navy);line-height:1.1;margin:4px 0}
+.pb-dt-model.market .pb-dt-mproj{color:var(--blue)}
+.pb-dt-mnote{font-size:11px;color:var(--ink2);line-height:1.4}
+.pb-dt-reason{font-size:14px;color:var(--ink);line-height:1.55;margin:0 0 8px}
+.pb-dt-rationale{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0}
+.pb-dt-livesub{margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:6px 18px}
+.pb-dt-livesub summary{font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);cursor:pointer;padding:10px 0}
+.pb-dt-livebody{padding:0 0 12px;display:flex;flex-direction:column;gap:6px}
+
+@media(max-width:760px){
+  .pb-band{flex-direction:column}
+  .pb-bandstats{grid-template-columns:repeat(2,1fr)}
+  .pb-stat{border-left:none;border-top:1px solid rgba(255,255,255,.12)}
+  .pb-grid{grid-template-columns:1fr}
+  .pb-dt-grid{grid-template-columns:repeat(2,1fr)}
+}
