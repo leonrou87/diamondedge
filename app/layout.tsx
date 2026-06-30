@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DiamondEdge — MLB Mid-Game Model",
+  title: "DiamondEdge — Pre-Game Picks",
   description:
-    "Live MLB mid-game score predictions, betting recommendations, and the model's inning-by-inning read on every game.",
+    "Pre-game model picks across MLB, NBA, NHL, NFL, and Soccer — spreads, moneylines, totals, predicted scores, and a transparent out-of-fold track record.",
 };
 
 export default function RootLayout({
