@@ -13,7 +13,7 @@ export default function Home() {
     const TEAM_ID: any = { ARI: 109, ATL: 144, BAL: 110, BOS: 111, CHC: 112, CWS: 145, CHW: 145, CIN: 113, CLE: 114, COL: 115, DET: 116, HOU: 117, KC: 118, KCR: 118, LAA: 108, LAD: 119, MIA: 146, MIL: 158, MIN: 142, NYM: 121, NYY: 147, OAK: 133, ATH: 133, PHI: 143, PIT: 134, SD: 135, SDP: 135, SF: 137, SFG: 137, SEA: 136, STL: 138, TB: 139, TBR: 139, TEX: 140, TOR: 141, WSH: 120, WSN: 120, BRE: 158, MILW: 158 };
     const NBA_SLUG: any = { ATL: "atl", BOS: "bos", BKN: "bkn", BRK: "bkn", CHA: "cha", CHI: "chi", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GSW: "gs", GS: "gs", HOU: "hou", IND: "ind", LAC: "lac", LAL: "lal", MEM: "mem", MIA: "mia", MIL: "mil", MIN: "min", NOP: "no", NO: "no", NYK: "ny", NY: "ny", OKC: "okc", ORL: "orl", PHI: "phi", PHX: "phx", PHO: "phx", POR: "por", SAC: "sac", SAS: "sa", SA: "sa", TOR: "tor", UTA: "utah", UTAH: "utah", WAS: "wsh", WSH: "wsh" };
     const NHL_SLUG: any = { ANA: "ana", ARI: "ari", BOS: "bos", BUF: "buf", CGY: "cgy", CAR: "car", CHI: "chi", COL: "col", CBJ: "cbj", DAL: "dal", DET: "det", EDM: "edm", FLA: "fla", LA: "la", LAK: "la", MIN: "min", MTL: "mtl", NSH: "nsh", NJ: "nj", NJD: "nj", NYI: "nyi", NYR: "nyr", OTT: "ott", PHI: "phi", PIT: "pit", SJ: "sj", SJS: "sj", SEA: "sea", STL: "stl", TB: "tb", TBL: "tb", TOR: "tor", UTA: "utah", UTAH: "utah", VAN: "van", VGK: "vgk", WSH: "wsh", WPG: "wpg" };
-    const NFL_SLUG: any = { ARI: "ari", ATL: "atl", BAL: "bal", BUF: "buf", CAR: "car", CHI: "chi", CIN: "cin", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GB: "gb", HOU: "hou", IND: "ind", JAX: "jax", KC: "kc", LAC: "lac", LAR: "lar", LV: "lv", MIA: "mia", MIN: "min", NE: "ne", NO: "no", NYG: "nyg", NYJ: "nyj", PHI: "phi", PIT: "pit", SEA: "sea", SF: "sf", TB: "tb", TEN: "ten", WSH: "wsh", OAK: "lv", SD: "lac", STL: "lar" };
+    const NFL_SLUG: any = { ARI: "ari", ATL: "atl", BAL: "bal", BUF: "buf", CAR: "car", CHI: "chi", CIN: "cin", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GB: "gb", GBP: "gb", HOU: "hou", IND: "ind", JAX: "jax", KC: "kc", LAC: "lac", LAR: "lar", LV: "lv", MIA: "mia", MIN: "min", NE: "ne", NO: "no", NYG: "nyg", NYJ: "nyj", PHI: "phi", PIT: "pit", SEA: "sea", SF: "sf", TB: "tb", TEN: "ten", WSH: "wsh", OAK: "lv", SD: "lac", STL: "lar" };
     const mlbLogo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nhlLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nhl/500/${NHL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
@@ -38,6 +38,7 @@ export default function Home() {
     const SPORTS = ["mlb", "nba", "nhl", "nfl", "soccer"];
     const SPORT_LABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
     const SPORT_UNIT: any = { mlb: "runs", nba: "pts", nhl: "goals", nfl: "pts", soccer: "goals" };
+    const fmtRec = (o: any) => o ? `${o.wins || 0}-${o.losses || 0}${o.pushes ? "-" + o.pushes : ""}` : "—";
 
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
@@ -73,8 +74,21 @@ export default function Home() {
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
 
+    // full index range (2020 → 2026) so the date controls span the whole history
+    let minDate = "2020-09-11";
+    let maxDate = todayISO();
+
     // ===================== FETCH =====================
-    async function loadIndex() { if (!indexData) indexData = await snap("pregame_picks_index"); return indexData; }
+    async function loadIndex() {
+      if (!indexData) {
+        indexData = await snap("pregame_picks_index");
+        const ds = (indexData && (indexData.dates || indexData.keyed_dates)) || [];
+        if (ds.length) { minDate = ds[0]; maxDate = ds[ds.length - 1] > todayISO() ? ds[ds.length - 1] : todayISO(); }
+        const dr = indexData && indexData.date_range;
+        if (Array.isArray(dr) && dr.length === 2) { minDate = dr[0]; if (dr[1] > maxDate) maxDate = dr[1]; }
+      }
+      return indexData;
+    }
 
     async function loadDay(dateISO: string) {
       // today -> "pregame_picks"; else "pregame_picks:<date>"
@@ -104,35 +118,118 @@ export default function Home() {
     }
 
     // ===================== TRACK RECORD ACCESS =====================
-    function trackRecord() { return (indexData && (indexData.track_record || indexData.track_record_test)) || {}; }
+    // Always the FULL out-of-fold TEST history (games the model never trained on).
+    function trackRecord() { return (indexData && (indexData.track_record_test || indexData.track_record)) || (payload && (payload.track_record_test || payload.track_record)) || {}; }
+    function forwardRecord() {
+      // real forward picks so far — nested in the live slate payload
+      const f = (payload && payload.track_record_forward) || (indexData && indexData.track_record_forward) || null;
+      if (!f) return null;
+      // forward record may be keyed only by_tier/by_sport; aggregate an overall
+      if (f.overall) return f.overall;
+      const agg = { wins: 0, losses: 0, pushes: 0, n: 0 };
+      const src = f.by_tier || f.by_sport || {};
+      Object.values(src).forEach((o: any) => { agg.wins += o.wins || 0; agg.losses += o.losses || 0; agg.pushes += o.pushes || 0; agg.n += o.n || 0; });
+      return agg.n ? agg : null;
+    }
     function trOverall() { return trackRecord().overall || {}; }
     function trForLeague(lg: string) { const bs = trackRecord().by_sport || {}; return bs[lg] || null; }
+
+    // ===================== EDGE / VALUE FLAGGING =====================
+    // Strongest value plays = the picks where our projection diverges most from the line.
+    // Gap units differ wildly across sport/market, so flag relative to peers in the
+    // current view: the top quintile of |gap| (min 1.0) gets a value badge.
+    function edgeThresholdFor(games: any[]) {
+      const mags = games.flatMap((g: any) =>
+        [g.total_pick, g.spread_pick].map((pk: any) => (pk && pk.gap != null ? Math.abs(Number(pk.gap)) : null)).filter((x: any) => x != null && x >= 1)
+      ).sort((a: number, b: number) => a - b);
+      if (mags.length < 4) return Infinity; // too few to rank meaningfully
+      return mags[Math.floor(mags.length * 0.8)]; // 80th percentile
+    }
+    function gameEdge(g: any) {
+      // best (largest |gap|) divergence on the game, returned with its pick context
+      let best: any = null;
+      [["total", g.total_pick], ["spread", g.spread_pick]].forEach(([mk, pk]: any) => {
+        if (pk && pk.gap != null) { const mag = Math.abs(Number(pk.gap)); if (!best || mag > best.mag) best = { mag, gap: Number(pk.gap), market: mk, pk }; }
+      });
+      return best;
+    }
+    function edgeBadge(g: any, thr: number) {
+      const e = gameEdge(g);
+      if (!e || e.mag < thr || e.mag < 1) return "";
+      const unit = SPORT_UNIT[g.sport] || "";
+      const tip = `Our ${e.market} projection diverges ${e.mag.toFixed(1)} ${unit} from the line — one of the day's biggest disagreements with Vegas.`;
+      return `<span class="edgeflag" title="${esc(tip)}">◆ VALUE +${e.mag.toFixed(1)}</span>`;
+    }
 
     // ===================== W-T-L SUMMARY BAND =====================
     function recordBand(lg: string) {
       const tr = trForLeague(lg) || trOverall();
-      const lgLabel = trForLeague(lg) ? SPORT_LABEL[lg] : "ALL SPORTS";
+      const scoped = !!trForLeague(lg);
+      const lgLabel = scoped ? SPORT_LABEL[lg] : "All Sports";
       const w = tr.wins ?? 0, l = tr.losses ?? 0, p = tr.pushes ?? 0;
       const hr = tr.hit_rate != null ? (tr.hit_rate * 100).toFixed(1) : "—";
       const roi = tr.roi != null ? (tr.roi * 100) : null;
       const units = tr.units_net != null ? tr.units_net : null;
+      const be = tr.breakeven_hit_rate != null ? (tr.breakeven_hit_rate * 100).toFixed(1) : "52.4";
       const n = tr.n ?? (w + l + p);
+      const fwd = forwardRecord();
+      const fwdLine = fwd ? `<span class="rb-fwd">${fmtRec(fwd)} on real picks so far</span>` : "";
       return `
         <div class="recordband">
           <div class="rb-main">
             <div>
-              <div class="rb-lab">${esc(lgLabel)} · Model Track Record</div>
+              <div class="rb-lab">${esc(lgLabel)} · Out-of-Fold Test Record</div>
               <div class="rb-rec"><span class="w">${w}</span><span class="sep">–</span><span class="l">${l}</span>${p ? `<span class="sep" style="font-size:18px">·</span><span style="opacity:.6;font-size:20px">${p}T</span>` : ""}</div>
-              <div class="rb-sub">${n > 0 ? "Real forward picks — frozen pre-game, graded against the real result. No backtest." : "Real forward picks only — the record builds as today's games finish. No backtest, no demo."}</div>
+              <div class="rb-sub">Games the model never trained on${fwdLine ? ` · ${fwdLine}` : ""}</div>
             </div>
           </div>
           <div class="rb-stats">
             <div class="rb-stat"><div class="k">Picks</div><div class="v">${(n || 0).toLocaleString()}</div><div class="sub">graded bets</div></div>
-            <div class="rb-stat"><div class="k">Hit Rate</div><div class="v">${hr}<small>%</small></div><div class="sub">vs ${tr.breakeven_hit_rate != null ? (tr.breakeven_hit_rate * 100).toFixed(1) : "52.4"}% breakeven</div></div>
+            <div class="rb-stat"><div class="k">Hit Rate</div><div class="v">${hr}<small>%</small></div><div class="sub">vs ${be}% breakeven</div></div>
             <div class="rb-stat"><div class="k">ROI</div><div class="v ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1)}<small>%</small></div><div class="sub">per unit staked</div></div>
             <div class="rb-stat"><div class="k">Net Units</div><div class="v ${units == null ? "" : units >= 0 ? "pos" : "neg"}">${units == null ? "—" : (units >= 0 ? "+" : "") + units.toFixed(0)}</div><div class="sub">flat-stake</div></div>
           </div>
         </div>`;
+    }
+
+    // ===================== BEST BETS STRIP =====================
+    function bestBets(games: any[]) {
+      // highest-confidence featured pre-game plays for the selected league/date
+      const scored = games
+        .map((g: any) => {
+          const picks = [["Total", g.total_pick], ["Spread", g.spread_pick], ["Moneyline", g.ml_pick]]
+            .map(([lab, pk]: any) => ({ lab, pk }))
+            .filter((x: any) => x.pk && x.pk.side != null && x.pk.confidence != null);
+          if (!picks.length) return null;
+          picks.sort((a: any, b: any) => (b.pk.confidence || 0) - (a.pk.confidence || 0));
+          const top = picks[0];
+          return { g, lab: top.lab, pk: top.pk, conf: top.pk.confidence || 0, featured: top.pk.tier === "featured" || !!g.featured };
+        })
+        .filter(Boolean) as any[];
+      const featured = scored.filter((x) => x.featured).sort((a, b) => b.conf - a.conf);
+      const pool = (featured.length ? featured : scored.sort((a, b) => b.conf - a.conf)).slice(0, 4);
+      if (!pool.length) return "";
+      const thr = edgeThresholdFor(games);
+      const cards = pool.map((x) => {
+        const g = x.g, pk = x.pk, sp = g.sport;
+        const st = resOf(pk);
+        const ps = g.predicted_score || {};
+        const score = (ps.away != null && ps.home != null) ? `${esc(g.away_abbr)} ${num(ps.away, 0)}–${num(ps.home, 0)} ${esc(g.home_abbr)}` : "";
+        const e = gameEdge(g);
+        const showEdge = e && e.mag >= thr && e.mag >= 1;
+        return `<button class="bb-card ${rCls(st)}" data-gid="${esc(g.game_id)}">
+          <div class="bb-top">
+            <span class="bb-mu">${crestImg(sp, g.away_abbr, "bbl")}${crestImg(sp, g.home_abbr, "bbl")}<span class="bb-teams">${esc(g.away_abbr)} <span class="at">@</span> ${esc(g.home_abbr)}</span></span>
+            <span class="bb-conf"><span class="tierdot ${tdotCls(pk.tier)}"></span>${pk.confidence != null ? pk.confidence.toFixed(0) + "%" : ""}</span>
+          </div>
+          <div class="bb-pick">${esc(x.lab)}: <b>${esc(pk.side)}</b>${rMark(st)}</div>
+          <div class="bb-foot">${score ? `<span class="bb-score">${score}</span>` : ""}${showEdge ? `<span class="edgeflag sm">◆ +${e.mag.toFixed(1)}</span>` : ""}</div>
+        </button>`;
+      }).join("");
+      return `<div class="bestbets">
+        <div class="bb-head"><span class="bb-star">★</span> Best Bets <span class="bb-sub">${SPORT_LABEL[league]} · highest-confidence pre-game plays</span></div>
+        <div class="bb-grid">${cards}</div>
+      </div>`;
     }
 
     // ===================== TABLE ROW =====================
@@ -183,11 +280,11 @@ export default function Home() {
       const homeWin = win === g.home_abbr;
       const hs = num(ps.home, 1), as = num(ps.away, 1);
       const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
-      const mg = ps.margin != null ? sgn(Math.abs(Number(ps.margin)), 1).replace("+", "+") : "";
+      const mg = ps.margin != null ? `+${Math.abs(Number(ps.margin)).toFixed(1)}` : "";
       const homeHtml = `<span class="${homeWin ? "win" : ""}">${esc(g.home_abbr)} ${hs}</span>`;
       const awayHtml = `<span class="${!homeWin ? "win" : ""}">${esc(g.away_abbr)} ${as}</span>`;
       return `<td class="psc grp hide-md">
-        <div class="sl">${awayHtml} <span style="color:var(--ink3)">–</span> ${homeHtml}${mg ? `<span class="mg">${mg.startsWith("+") ? mg : "+" + Math.abs(Number(ps.margin)).toFixed(1)}</span>` : ""}</div>
+        <div class="sl">${awayHtml} <span style="color:var(--ink3)">–</span> ${homeHtml}${mg ? `<span class="mg">${mg}</span>` : ""}</div>
         <div class="tot">proj total ${tot} ${SPORT_UNIT[g.sport] || ""}</div>
       </td>`;
     }
@@ -202,19 +299,21 @@ export default function Home() {
       return t ? `<span class="st">${esc(t)}</span>` : `<span class="st">Scheduled</span>`;
     }
 
-    function tableRow(g: any, idx: number) {
+    function tableRow(g: any, idx: number, thr = Infinity) {
       const sp = g.sport;
       const win = g.predicted_score && g.predicted_score.winner_abbr;
       const awayWin = win && win === g.away_abbr;
       const homeWin = win && win === g.home_abbr;
+      const hasIntel = !!g.pregame_intel;
+      const eb = edgeBadge(g, thr);
       return `<tr data-gid="${esc(g.game_id || idx)}" class="${g.featured ? "featrow" : ""}">
         <td>
           <div class="mu">
             ${g.featured ? `<span class="feat"></span>` : ""}
             <span class="logos">${crestImg(sp, g.away_abbr)}${crestImg(sp, g.home_abbr)}</span>
             <span class="mtxt">
-              <span class="teams"><span class="${awayWin ? "wn" : ""}">${esc(g.away_abbr)}</span><span class="at">@</span><span class="${homeWin ? "wn" : ""}">${esc(g.home_abbr)}</span></span>
-              <span class="meta">${statusMeta(g)}</span>
+              <span class="teams"><span class="${awayWin ? "wn" : ""}">${esc(g.away_abbr)}</span><span class="at">@</span><span class="${homeWin ? "wn" : ""}">${esc(g.home_abbr)}</span>${hasIntel ? `<span class="intelchip" title="Pre-game intel available">intel</span>` : ""}</span>
+              <span class="meta">${statusMeta(g)}${eb}</span>
             </span>
           </div>
         </td>
@@ -251,7 +350,6 @@ export default function Home() {
 
     // ===================== RENDER: PICKS TAB =====================
     function renderPicks() {
-      const present = payload ? leaguesPresent(payload) : new Set<string>();
       // build league tabs (show count badges)
       const tabsHtml = SPORTS.map((lg) => {
         const cnt = payload ? gamesForLeague(payload, lg).length : 0;
@@ -259,8 +357,10 @@ export default function Home() {
       }).join("");
 
       const isToday = curDate === todayISO();
+      const atMin = curDate <= minDate;
       const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 
+      let strip = "";
       let body = "";
       if (rangeMode) {
         body = renderRangeBody();
@@ -270,21 +370,18 @@ export default function Home() {
         if (!payload) {
           body = `<div class="tablewrap"><div class="state"><div class="spinner"></div><div class="big">Loading slate</div><div class="sm">Fetching ${esc(dispDate)}</div></div></div>`;
         } else if (!filtered.length) {
-          const ss = (payload && payload.sports_status && payload.sports_status[league]) || null;
-          if (ss && ss.in_season === false) {
-            body = `<div class="tablewrap"><div class="state offseason"><div class="big">${SPORT_LABEL[league]} — ${esc(ss.label)}</div><div class="sm">No demo games shown. Real pre-game picks resume when the season starts.</div></div></div>`;
-          } else {
-            body = `<div class="tablewrap"><div class="state"><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">${games.length ? "Raise the date or lower the confidence filter." : "Nothing on the board for " + esc(dispDate) + ". Try another date or league."}</div></div></div>`;
-          }
+          body = `<div class="tablewrap"><div class="state"><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">${games.length ? "Lower the confidence filter to see them." : "Nothing on the board for " + esc(dispDate) + ". Try another date or league."}</div></div></div>`;
         } else {
+          const thr = edgeThresholdFor(filtered);
           const dr = dayRecord(filtered);
+          strip = bestBets(filtered);
           body = `
             <div class="tablewrap">
               <table class="ptable">${tableHead()}<tbody>
-                ${filtered.map((g, i) => tableRow(g, i)).join("")}
+                ${filtered.map((g, i) => tableRow(g, i, thr)).join("")}
               </tbody></table>
             </div>
-            <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)}${dr.settled ? ` · settled picks ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""} · DiamondEdge pre-game model</div>`;
+            <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)}${dr.settled ? ` · graded picks ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""} · DiamondEdge pre-game model</div>`;
         }
       }
 
@@ -300,14 +397,15 @@ export default function Home() {
             </div>
             <button class="advbtn ${advOpen ? "on" : ""}" id="adv-btn">Range ▾</button>
             <div class="datectl">
-              <button class="arrow" id="d-prev" title="Previous day">‹</button>
-              <input type="date" id="date-input" value="${curDate}" max="${todayISO()}">
+              <button class="arrow" id="d-prev" title="Previous day" ${atMin ? "disabled" : ""}>‹</button>
+              <input type="date" id="date-input" value="${curDate}" min="${minDate}" max="${maxDate}">
               <button class="arrow" id="d-next" title="Next day" ${isToday ? "disabled" : ""}>›</button>
               <button class="today-btn" id="d-today" ${isToday ? "disabled style='opacity:.4'" : ""}>Today</button>
             </div>
           </div>
         </div>
         ${advOpen ? rangePanel() : ""}
+        <div id="best-strip">${strip}</div>
         <div id="picks-body">${body}</div>`;
 
       bindPicksControls();
@@ -317,12 +415,12 @@ export default function Home() {
       return `
         <div class="rangepanel">
           <span class="rlab">Date Range</span>
-          <input type="date" id="range-from" value="${rangeFrom || curDate}" max="${todayISO()}">
+          <input type="date" id="range-from" value="${rangeFrom || curDate}" min="${minDate}" max="${maxDate}">
           <span class="rlab" style="letter-spacing:0">to</span>
-          <input type="date" id="range-to" value="${rangeTo || curDate}" max="${todayISO()}">
+          <input type="date" id="range-to" value="${rangeTo || curDate}" min="${minDate}" max="${maxDate}">
           <button class="go" id="range-go">Search</button>
           ${rangeMode ? `<button class="advbtn" id="range-clear">Clear</button>` : ""}
-          <span style="font-size:11px;color:var(--ink3)">Scans each day's ${SPORT_LABEL[league]} board.</span>
+          <span style="font-size:11px;color:var(--ink3)">Scans each day's ${SPORT_LABEL[league]} board across the full ${minDate.slice(0, 4)}–${maxDate.slice(0, 4)} history.</span>
         </div>`;
     }
 
@@ -332,16 +430,17 @@ export default function Home() {
       rangeGames.forEach((day: any) => {
         const games = applyConfFilter(gamesForLeague({ games: day.games }, league));
         if (!games.length) return;
+        const thr = edgeThresholdFor(games);
         const dr = dayRecord(games);
         const dd = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
         html += `<tr class="dayhdr"><td colspan="8">${esc(dd)}<span class="rr">${games.length} game${games.length > 1 ? "s" : ""}${dr.settled ? ` · ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""}</span></td></tr>`;
-        html += games.map((g, i) => tableRow(g, i)).join("");
+        html += games.map((g, i) => tableRow(g, i, thr)).join("");
       });
       html += `</tbody></table></div>`;
       // aggregate
       let W = 0, L = 0, T = 0, N = 0;
       rangeGames.forEach((day: any) => { const gs = applyConfFilter(gamesForLeague({ games: day.games }, league)); N += gs.length; const r = dayRecord(gs); W += r.w; L += r.l; T += r.t; });
-      html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L + T ? ` · settled picks ${W}-${L}${T ? "-" + T : ""}` : ""}</div>`;
+      html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L + T ? ` · graded picks ${W}-${L}${T ? "-" + T : ""}` : ""}</div>`;
       return html;
     }
 
@@ -364,11 +463,11 @@ export default function Home() {
         const maxC = games.length ? Math.max(...games.map((g: any) => g.top_confidence || 0)) : 100;
         slider.max = Math.max(1, Math.floor(maxC));
         slider.oninput = () => { confFloor = Number(slider.value) || 0; const v = $("conf-val"); if (v) v.textContent = confFloor === 0 ? "All" : confFloor + "%+"; };
-        slider.onchange = () => { confFloor = Number(slider.value) || 0; if (rangeMode) { $("picks-body").innerHTML = renderRangeBody(); } else { renderPicksBody(); } };
+        slider.onchange = () => { confFloor = Number(slider.value) || 0; if (rangeMode) { $("picks-body").innerHTML = renderRangeBody(); bindRowClicks(); } else { renderPicksBody(); } };
       }
       const advBtn = $("adv-btn"); if (advBtn) advBtn.onclick = () => { advOpen = !advOpen; renderPicks(); };
       const di = $("date-input"); if (di) di.onchange = () => { curDate = di.value; rangeMode = false; loadAndRenderDay(); };
-      const dp = $("d-prev"); if (dp) dp.onclick = () => { curDate = shiftDate(curDate, -1); rangeMode = false; loadAndRenderDay(); };
+      const dp = $("d-prev"); if (dp) dp.onclick = () => { if (curDate <= minDate) return; curDate = shiftDate(curDate, -1); rangeMode = false; loadAndRenderDay(); };
       const dn = $("d-next"); if (dn) dn.onclick = () => { if (curDate >= todayISO()) return; curDate = shiftDate(curDate, 1); rangeMode = false; loadAndRenderDay(); };
       const dt = $("d-today"); if (dt) dt.onclick = () => { curDate = todayISO(); rangeMode = false; loadAndRenderDay(); };
       const rf = $("range-from"); if (rf) rf.onchange = () => (rangeFrom = rf.value);
@@ -376,6 +475,7 @@ export default function Home() {
       const rg = $("range-go"); if (rg) rg.onclick = () => runRange();
       const rc = $("range-clear"); if (rc) rc.onclick = () => { rangeMode = false; renderPicks(); };
       bindRowClicks();
+      bindBestBets();
     }
 
     function renderPicksBody() {
@@ -385,31 +485,37 @@ export default function Home() {
       const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
       let body;
       if (!filtered.length) {
-        const ss = (payload && payload.sports_status && payload.sports_status[league]) || null;
-        if (ss && ss.in_season === false) {
-          body = `<div class="tablewrap"><div class="state offseason"><div class="big">${SPORT_LABEL[league]} — ${esc(ss.label)}</div><div class="sm">No demo games shown. Real pre-game picks resume when the season starts.</div></div></div>`;
-        } else {
-          body = `<div class="tablewrap"><div class="state"><div class="big">No ${SPORT_LABEL[league]} games${isToday ? " today" : ""}</div><div class="sm">${confFloor > 0 ? "Lower the confidence filter, or " : ""}check back at game time or pick another date.</div></div></div>`;
-        }
+        body = `<div class="tablewrap"><div class="state"><div class="big">No ${SPORT_LABEL[league]} games${isToday ? " today" : ""}</div><div class="sm">${confFloor > 0 ? "Lower the confidence filter, or " : ""}pick another date or league.</div></div></div>`;
+        const bs = $("best-strip"); if (bs) bs.innerHTML = "";
       } else {
+        const thr = edgeThresholdFor(filtered);
         const dr = dayRecord(filtered);
-        body = `<div class="tablewrap"><table class="ptable">${tableHead()}<tbody>${filtered.map((g, i) => tableRow(g, i)).join("")}</tbody></table></div>
-          <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)}${dr.settled ? ` · settled picks ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""} · DiamondEdge pre-game model</div>`;
+        body = `<div class="tablewrap"><table class="ptable">${tableHead()}<tbody>${filtered.map((g, i) => tableRow(g, i, thr)).join("")}</tbody></table></div>
+          <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)}${dr.settled ? ` · graded picks ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""} · DiamondEdge pre-game model</div>`;
+        const bs = $("best-strip"); if (bs) { bs.innerHTML = bestBets(filtered); }
       }
       $("picks-body").innerHTML = body;
       bindRowClicks();
+      bindBestBets();
     }
 
     function bindRowClicks() {
       root.querySelectorAll(".ptable tbody tr[data-gid]").forEach((tr: any) => {
         tr.onclick = () => {
           const gid = tr.dataset.gid;
-          let g = null;
-          const pool = rangeMode ? rangeGames.flatMap((d: any) => d.games) : (payload ? payload.games : []);
-          g = (pool || []).find((x: any) => String(x.game_id) === String(gid));
+          const g = findGame(gid);
           if (g) openDetail(g);
         };
       });
+    }
+    function bindBestBets() {
+      root.querySelectorAll(".bb-card").forEach((b: any) => {
+        b.onclick = () => { const g = findGame(b.dataset.gid); if (g) openDetail(g); };
+      });
+    }
+    function findGame(gid: any) {
+      const pool = rangeMode ? rangeGames.flatMap((d: any) => d.games) : (payload ? payload.games : []);
+      return (pool || []).find((x: any) => String(x.game_id) === String(gid));
     }
 
     function shiftDate(iso: string, days: number) {
@@ -420,6 +526,7 @@ export default function Home() {
     async function loadAndRenderDay() {
       confFloor = 0;
       $("picks-body") && ($("picks-body").innerHTML = `<div class="tablewrap"><div class="state"><div class="spinner"></div><div class="big">Loading</div></div></div>`);
+      $("best-strip") && ($("best-strip").innerHTML = "");
       payload = await loadDay(curDate);
       // pick a sensible default league: keep current if present, else first present
       const present = leaguesPresent(payload);
@@ -435,12 +542,13 @@ export default function Home() {
       let a = from, b = to; if (a > b) { const t = a; a = b; b = t; }
       // collect the index dates inside the range to avoid empty fetches
       await loadIndex();
-      const allDates: string[] = (indexData && indexData.dates) || [];
+      const allDates: string[] = (indexData && (indexData.dates || indexData.keyed_dates)) || [];
       const inRange = allDates.filter((d) => d >= a && d <= b);
       // cap at 60 days to keep it fast
       const dates = inRange.slice(-60);
       rangeMode = true;
       $("picks-body") && ($("picks-body").innerHTML = `<div class="tablewrap"><div class="state"><div class="spinner"></div><div class="big">Scanning ${dates.length} day${dates.length === 1 ? "" : "s"}</div><div class="sm">${esc(a)} → ${esc(b)}</div></div></div>`);
+      $("best-strip") && ($("best-strip").innerHTML = "");
       const results = await Promise.all(dates.map(async (d) => ({ date: d, games: ((await snap("pregame_picks:" + d)) || {}).games || [] })));
       rangeGames = results.filter((r) => r.games.length).sort((x, y) => (x.date < y.date ? 1 : -1));
       confFloor = 0;
@@ -455,13 +563,65 @@ export default function Home() {
       return `<div class="dsec"><div class="dsec-h">Models vs. Market</div><div class="dsec-b"><table class="mtab"><thead><tr><th>Source</th><th style="text-align:right">Projection</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
     }
 
+    // ----- PRE-GAME INTEL (the "why this pick" depth) -----
+    function intelSection(g: any) {
+      const pi = g.pregame_intel;
+      if (!pi) return "";
+      const A = g.away_abbr, H = g.home_abbr;
+      const blocks: string[] = [];
+
+      // Starting pitchers (MLB)
+      const pit = pi.pitchers || {};
+      const pa = pit.away || {}, ph = pit.home || {};
+      if (pa.name || ph.name || pa.era != null || ph.era != null) {
+        const pp = (ab: any, p: any) => `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${esc(p.name || "TBD")}</div>${p.era != null ? `<div class="ic-sub">${num(p.era, 2)} ERA</div>` : ""}</div>`;
+        blocks.push(`<div class="ic-card"><div class="ic-h">Starting Pitchers</div><div class="ic-row2">${pp(A, pa)}<div class="ic-vs">vs</div>${pp(H, ph)}</div></div>`);
+      }
+
+      // Venue + park factor
+      const venue = pi.venue || (g.meta && g.meta.venue);
+      if (venue || pi.park_factor != null) {
+        const pf = pi.park_factor;
+        const pfLabel = pf == null ? "" : pf > 1.0 ? "hitter-friendly" : pf < 1.0 ? "pitcher-friendly" : "neutral";
+        blocks.push(`<div class="ic-card"><div class="ic-h">Venue</div><div class="ic-line"><b>${esc(venue || "—")}</b>${pf != null ? ` <span class="ic-pf ${pf > 1 ? "hot" : pf < 1 ? "cold" : ""}">park ${num(pf, 2)} · ${pfLabel}</span>` : ""}</div></div>`);
+      }
+
+      // Recent form (last 10)
+      const form = pi.form || {};
+      const fa = form.away, fh = form.home;
+      if (fa || fh) {
+        const ff = (ab: any, f: any) => f ? `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${esc(f.last10_record || "—")}<span class="ic-tag">L10</span></div>${(f.runs_for_avg != null || f.runs_against_avg != null) ? `<div class="ic-sub">${f.runs_for_avg != null ? num(f.runs_for_avg, 1) : "—"} for · ${f.runs_against_avg != null ? num(f.runs_against_avg, 1) : "—"} against</div>` : ""}</div>` : "";
+        blocks.push(`<div class="ic-card"><div class="ic-h">Recent Form</div><div class="ic-row2">${ff(A, fa)}${ff(H, fh)}</div></div>`);
+      }
+
+      // Rest / days off
+      const rest = pi.rest || {};
+      const ra = rest.away, rh = rest.home;
+      if (ra || rh) {
+        const rr = (ab: any, r: any) => r ? `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${r.days_off != null ? r.days_off + (r.days_off === 1 ? " day" : " days") + " off" : "—"}</div>${r.last_game_date ? `<div class="ic-sub">last ${esc(r.last_game_date)}</div>` : ""}</div>` : "";
+        blocks.push(`<div class="ic-card"><div class="ic-h">Rest</div><div class="ic-row2">${rr(A, ra)}${rr(H, rh)}</div></div>`);
+      }
+
+      // Head to head
+      const h = pi.h2h;
+      if (h && (h.games || h.record)) {
+        const lm = h.last_meeting;
+        const lmTxt = lm ? `last met ${esc(lm.date)} — ${esc(lm.away_team || A)} ${num(lm.away_score, 0)}, ${esc(lm.home_team || H)} ${num(lm.home_score, 0)}` : "";
+        blocks.push(`<div class="ic-card wide"><div class="ic-h">Head to Head</div><div class="ic-line"><b>${esc(h.record || "—")}</b>${h.games ? ` <span class="ic-tag">${h.games} mtgs</span>` : ""}${h.away_wins != null || h.home_wins != null ? ` <span class="ic-sub2">${A} ${h.away_wins ?? 0} · ${H} ${h.home_wins ?? 0}</span>` : ""}</div>${lmTxt ? `<div class="ic-sub3">${lmTxt}</div>` : ""}</div>`);
+      }
+
+      if (!blocks.length) return "";
+      return `<div class="dsec"><div class="dsec-h">Pre-Game Intel</div><div class="dsec-b intel-grid">${blocks.join("")}</div></div>`;
+    }
+
     function detailBet(pk: any, label: string, kind: string, g: any) {
       if (!pk || pk.side == null) return "";
       const st = resOf(pk);
       const tier = pk.tier || "low";
+      const gapTxt = pk.gap != null ? ` · <span class="dgap">edge ${Math.abs(Number(pk.gap)).toFixed(1)} ${SPORT_UNIT[g.sport] || ""}</span>` : "";
       let line = "";
-      if (kind === "spread") line = `line <b>${sgn(pk.line)}</b> · proj margin <b>${pk.our_proj != null ? sgn(pk.our_proj) : "—"}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}`;
-      else if (kind === "total") line = `line <b>${num(pk.line)}</b> · our proj <b>${num(pk.our_proj)}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}`;
+      if (kind === "spread") line = `line <b>${sgn(pk.line)}</b> · proj margin <b>${pk.our_proj != null ? sgn(pk.our_proj) : "—"}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}${gapTxt}`;
+      else if (kind === "total") line = `line <b>${num(pk.line)}</b> · our proj <b>${num(pk.our_proj)}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}${gapTxt}`;
       else line = `price <b>${fmtOdds(pk.price)}</b>${pk.our_winprob != null ? ` · our win prob <b>${(pk.our_winprob * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
       const resTxt = st === "hit" ? `WON ${pk.result.net_units >= 0 ? "+" : ""}${num(pk.result.net_units, 2)}u` : st === "miss" ? `LOST ${num(pk.result.net_units, 2)}u` : st === "push" ? "PUSH" : "";
       return `<div class="dbet">
@@ -507,6 +667,7 @@ export default function Home() {
               </div>
             </div>
             <div class="dsec"><div class="dsec-h">Our Picks</div><div class="dsec-b" style="padding-top:4px;padding-bottom:4px">${bets || `<div style="padding:10px 0;color:var(--ink3);font-size:12px">No graded picks for this game.</div>`}</div></div>
+            ${intelSection(g)}
             ${modelsVsMarket(g)}
             ${reasoning}
           </div>
@@ -521,7 +682,6 @@ export default function Home() {
     function closeDetail() { detail = null; const l = $("drawer-layer"); if (l) l.innerHTML = ""; }
 
     // ===================== ANALYZER TAB =====================
-    function pct(v: any, d = 1) { return v == null ? "—" : (v * 100).toFixed(d) + "%"; }
     function recCell(o: any) { return o ? `${o.wins}-${o.losses}${o.pushes ? "-" + o.pushes : ""}` : "—"; }
 
     function anzTable(title: string, sub: string, obj: any, order: string[], labelMap: any) {
@@ -542,7 +702,7 @@ export default function Home() {
       }).join("");
       return `<div class="anz-card">
         <div class="anz-card-h">${esc(title)}<span class="sub">${esc(sub)}</span></div>
-        <table class="anztab"><thead><tr><th>${esc(title.split(" ")[0])}</th><th>Picks</th><th>W-L</th><th>Hit Rate</th><th>ROI</th><th>Units</th></tr></thead><tbody>${rows}</tbody></table>
+        <table class="anztab"><thead><tr><th>${esc(title.split(" ")[1] || title)}</th><th>Picks</th><th>W-L</th><th>Hit Rate</th><th>ROI</th><th>Units</th></tr></thead><tbody>${rows}</tbody></table>
       </div>`;
     }
 
@@ -562,11 +722,13 @@ export default function Home() {
           <div class="pct">${hr.toFixed(1)}%</div>
         </div>`;
       }).join("");
+      const ft = byTier.featured ? (byTier.featured.hit_rate * 100).toFixed(1) : "—";
+      const lo = byTier.low ? (byTier.low.hit_rate * 100).toFixed(1) : "—";
       return `<div class="anz-card">
         <div class="anz-card-h">Confidence Calibration<span class="sub">hit rate by tier</span></div>
         <div class="calib">${rows}</div>
         <div class="calib-leg"><span><i style="background:linear-gradient(90deg,var(--navy),var(--navy2))"></i>Hit rate</span><span><i style="background:var(--red)"></i>Breakeven (${be.toFixed(1)}%)</span></div>
-        <div class="calib-note">Higher-confidence tiers hit ${cc.does_confidence_track_hitrate === false ? "modestly more" : "more"} often — featured plays land at ${byTier.featured ? (byTier.featured.hit_rate * 100).toFixed(1) : "—"}% vs ${byTier.low ? (byTier.low.hit_rate * 100).toFixed(1) : "—"}% for low-confidence ones. Confidence is a real ranking signal across our graded real picks.</div>
+        <div class="calib-note">Featured plays land at ${ft}% over the full test set vs ${lo}% for low-confidence ones${cc.monotonic_increasing === false ? " (the tier ladder isn't perfectly monotonic, but the top tier clears breakeven)" : ""}.</div>
       </div>`;
     }
 
@@ -575,26 +737,29 @@ export default function Home() {
       const tr = trackRecord();
       const ov = tr.overall || {};
       const wnd = (tr.window && tr.window.by_sport) || {};
-      const nTest = ov.n != null ? ov.n : 0;   // settled REAL picks (grows as games finish)
+      const nTest = ov.n != null ? ov.n : 0;
       const roi = ov.roi != null ? ov.roi * 100 : null;
       const hr = ov.hit_rate != null ? ov.hit_rate * 100 : null;
+      const be = ov.breakeven_hit_rate != null ? (ov.breakeven_hit_rate * 100).toFixed(1) : "52.4";
+      const ci = ov.hit_rate_ci95;
+      const fwd = forwardRecord();
 
-      const bySportTbl = anzTable("By League", "real graded picks", tr.by_sport || {}, ["mlb", "nba", "nhl", "nfl", "soccer"], SPORT_LABEL);
+      const bySportTbl = anzTable("By League", "out-of-fold test", tr.by_sport || {}, ["mlb", "nba", "nhl", "nfl", "soccer"], SPORT_LABEL);
       const byMarketTbl = anzTable("By Market", "spread / moneyline / total", tr.by_market || {}, ["total", "spread", "moneyline"], { total: "Total", spread: "Spread", moneyline: "Moneyline" });
-      const byTierTbl = anzTable("By Confidence Tier", "featured = surest", tr.by_tier || {}, ["featured", "high", "medium", "low"], { featured: "Featured", high: "High", medium: "Medium", low: "Low" });
+      const byTierTbl = anzTable("By Tier", "featured = surest", tr.by_tier || {}, ["featured", "high", "medium", "low"], { featured: "Featured", high: "High", medium: "Medium", low: "Low" });
 
       root.querySelector("#analyzer-view").innerHTML = `
         <div class="anz-hero">
           <div class="ah-lab">DiamondEdge Analyzer</div>
-          <h2>Real Track Record</h2>
-          ${(ov.n || 0) === 0 ? `<div class="ah-building">⏳ Building — no real picks have settled yet. Today's frozen pre-game picks appear here with W/L, hit-rate and ROI as soon as the games finish.</div>` : ""}
-          <div class="ah-sub">Every number below is a REAL forward pick — frozen pre-game on a real game and graded against the real result. No backtest, no demo. The record covers ${esc(indexData ? indexData.n_dates : "")} slate${(indexData && indexData.n_dates === 1) ? "" : "s"} so far and grows as games finish.</div>
+          <h2>Out-of-Fold Test Record</h2>
+          <div class="ah-sub">Every number below is from the out-of-fold test — games the model never trained on, graded against the real result across ${SPORT_LABEL.mlb}, ${SPORT_LABEL.nba}, ${SPORT_LABEL.nhl}, ${SPORT_LABEL.nfl} and ${SPORT_LABEL.soccer}.</div>
           <div class="ah-stats">
             <div class="ah-st"><div class="k">Graded Picks</div><div class="v">${(nTest || 0).toLocaleString()}</div></div>
-            <div class="ah-st"><div class="k">Record</div><div class="v">${ov.wins || 0}-${ov.losses || 0}</div></div>
-            <div class="ah-st"><div class="k">Hit Rate</div><div class="v">${hr != null ? hr.toFixed(1) + "%" : "—"}</div></div>
+            <div class="ah-st"><div class="k">Record</div><div class="v">${ov.wins || 0}-${ov.losses || 0}${ov.pushes ? `<small> · ${ov.pushes}T</small>` : ""}</div></div>
+            <div class="ah-st"><div class="k">Hit Rate</div><div class="v">${hr != null ? hr.toFixed(1) + "%" : "—"}${ci ? `<small> ±${((ci[1] - ci[0]) / 2 * 100).toFixed(1)}</small>` : ""}</div><div class="ah-k2">vs ${be}% breakeven</div></div>
             <div class="ah-st"><div class="k">ROI</div><div class="v ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%"}</div></div>
             <div class="ah-st"><div class="k">Net Units</div><div class="v ${ov.units_net == null ? "" : ov.units_net >= 0 ? "pos" : "neg"}">${ov.units_net == null ? "—" : (ov.units_net >= 0 ? "+" : "") + ov.units_net.toFixed(0)}</div></div>
+            ${fwd ? `<div class="ah-st"><div class="k">Real Picks So Far</div><div class="v">${fmtRec(fwd)}</div></div>` : ""}
           </div>
         </div>
         <div class="anz-grid">
@@ -603,7 +768,7 @@ export default function Home() {
           ${byTierTbl}
           ${calibrationCard()}
         </div>
-        <div class="refnote">Test windows — ${SPORTS.map((s) => wnd[s] ? `${SPORT_LABEL[s]} ${wnd[s].start}→${wnd[s].end}` : "").filter(Boolean).join(" · ")}</div>`;
+        <div class="refnote">Out-of-fold test windows — ${SPORTS.map((s) => wnd[s] ? `${SPORT_LABEL[s]} ${wnd[s].start}→${wnd[s].end}` : "").filter(Boolean).join(" · ")}</div>`;
     }
 
     // ===================== HEADER / SHELL =====================
