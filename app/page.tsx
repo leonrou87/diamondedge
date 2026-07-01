@@ -175,8 +175,14 @@ export default function Home() {
         return { kind: "final", label: "Final", time: "", score: sc };
       }
       if (st === "live") {
-        const sc = actualScore(g);
-        return { kind: "live", label: "Live", time: t, score: sc };
+        // live games carry the real current score in current_actuals (result.actual is
+        // only set once final) — prefer it so in-progress boxes show the score + inning.
+        const ca = g.current_actuals;
+        if (ca && ca.home_score != null && ca.away_score != null) {
+          const home = Number(ca.home_score), away = Number(ca.away_score);
+          return { kind: "live", label: ca.period_label || "Live", time: t, score: { total: home + away, home, away, margin: home - away, split: true } };
+        }
+        return { kind: "live", label: "Live", time: t, score: actualScore(g) };
       }
       return { kind: "pre", label: t ? t : "Scheduled", time: t, score: null };
     }
@@ -378,7 +384,7 @@ export default function Home() {
       const eb = edgeBadge(g, thr);
       const hasIntel = !!(g.pregame_intel && Object.keys(g.pregame_intel).length);
       const stateBadge =
-        gs.kind === "live" ? `<span class="gb-status live"><span class="livedot"></span>LIVE</span>`
+        gs.kind === "live" ? `<span class="gb-status live"><span class="livedot"></span>LIVE${gs.label && gs.label !== "Live" ? " · " + esc(gs.label) : ""}</span>`
         : gs.kind === "final" ? `<span class="gb-status final">FINAL</span>`
         : `<span class="gb-status sched">${esc(gs.label)}</span>`;
 
