@@ -39,6 +39,63 @@ export default function Home() {
     const SPORT_UNIT: any = { mlb: "runs", nba: "pts", nhl: "goals", nfl: "pts", soccer: "goals" };
     const fmtRec = (o: any) => o ? `${o.wins || 0}-${o.losses || 0}${o.pushes ? "-" + o.pushes : ""}` : "—";
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
+    // A full ISO timestamp carries a time component (T + HH:MM). A bare "2025-05-06" does not.
+    const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
+    // The viewer's local timezone abbreviation (e.g. "EDT", "PST") for labelling localized times.
+    const TZ_ABBR = (() => {
+      try {
+        const p = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(new Date());
+        const z = p.find((x) => x.type === "timeZoneName");
+        return z ? z.value : "";
+      } catch { return ""; }
+    })();
+    // Localize a start time for display. Prefer `start_ts` (real ISO-8601 UTC) → viewer's TZ.
+    // Fall back to `start_time` (which for MLB is already a nice "8:15 PM ET" string, for WC an
+    // ISO string, and for old club games a bare date). Returns {time, date, iso} — time is the
+    // clock string to headline; date is a fallback day label; iso flags a raw timestamp.
+    function startInfo(g: any) {
+      const ts = g.start_ts;
+      const raw = g.start_time || "";
+      // 1) Real UTC timestamp → localize to the viewer.
+      if (isTS(ts)) {
+        const d = new Date(ts);
+        if (!isNaN(d.getTime())) {
+          const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+          const date = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          return { time: `${time}${TZ_ABBR ? " " + TZ_ABBR : ""}`, date, iso: true, hasTime: true };
+        }
+      }
+      // 2) start_time is itself an ISO timestamp (WC soccer: "2026-07-01T02:00Z") → localize it too.
+      if (isTS(raw)) {
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) {
+          const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+          const date = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          return { time: `${time}${TZ_ABBR ? " " + TZ_ABBR : ""}`, date, iso: true, hasTime: true };
+        }
+      }
+      // 3) Nicely-formatted clock string already (MLB "8:15 PM ET").
+      if (raw && !isISO(raw)) return { time: raw, date: "", iso: false, hasTime: true };
+      // 4) Only a bare date exists → show the date, no clock.
+      if (isISO(raw)) {
+        const d = new Date(raw + "T12:00:00");
+        const date = isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        return { time: "", date, iso: false, hasTime: false };
+      }
+      return { time: "", date: "", iso: false, hasTime: false };
+    }
+    // The calendar day a game belongs to, in the VIEWER's timezone. Prefer a real timestamp
+    // (start_ts, then an ISO start_time) localized to the viewer; fall back to the raw `date`.
+    // Returns "YYYY-MM-DD" or null. Used to scope the default docket to the viewer's today.
+    function gameLocalDay(g: any) {
+      const tsSrc = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
+      if (tsSrc) {
+        const d = new Date(tsSrc);
+        if (!isNaN(d.getTime())) return d.toLocaleDateString("en-CA"); // en-CA → YYYY-MM-DD in local tz
+      }
+      const raw = String(g.date || "").slice(0, 10);
+      return isISO(raw) ? raw : null;
+    }
 
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
@@ -96,7 +153,22 @@ export default function Home() {
 
     function gamesForLeague(p: any, lg: string) {
       const all = (p && p.games) || [];
-      const inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
+      let inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
+      // DEFAULT (today) VIEW: the `pregame_picks` slate carries a recent-finals tail from prior
+      // days. On the landing view — today, not a range scan — restrict to TODAY's games only:
+      //   • scheduled (pre) and in-progress (live) games are today's active slate by construction;
+      //   • finals are kept only when they finaled today (local day == viewer's today).
+      // This strips the prior-day finals tail while keeping tonight's board intact. The game's day
+      // is `start_ts` localized to the viewer's timezone, falling back to the `date` field. Date
+      // navigation to a specific past date still loads that whole day — this is today-view only.
+      if (!rangeMode && curDate === todayISO()) {
+        const t = todayISO();
+        inLg = inLg.filter((g: any) => {
+          const st = (g.status || "pre").toLowerCase();
+          if (st === "pre" || st === "live") return true;
+          return gameLocalDay(g) === t; // finals: only those that finaled today
+        });
+      }
       // featured first, then highest confidence
       inLg.sort((a: any, b: any) => {
         if (!!b.featured !== !!a.featured) return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
@@ -165,14 +237,14 @@ export default function Home() {
       return { total, home, away, margin, split: true };
     }
 
-    // status + score for a game (returns {label, cls, time, score})
+    // status + score for a game (returns {label, cls, time, score, si})
     function gameState(g: any) {
       const st = (g.status || "pre").toLowerCase();
-      let t = g.start_time || "";
-      if (isISO(t)) t = "";
+      const si = startInfo(g);
+      const t = si.time || si.date || "";
       if (st === "final") {
         const sc = actualScore(g);
-        return { kind: "final", label: "Final", time: "", score: sc };
+        return { kind: "final", label: "Final", time: "", score: sc, si };
       }
       if (st === "live") {
         // live games carry the real current score in current_actuals (result.actual is
@@ -180,11 +252,12 @@ export default function Home() {
         const ca = g.current_actuals;
         if (ca && ca.home_score != null && ca.away_score != null) {
           const home = Number(ca.home_score), away = Number(ca.away_score);
-          return { kind: "live", label: ca.period_label || "Live", time: t, score: { total: home + away, home, away, margin: home - away, split: true } };
+          return { kind: "live", label: ca.period_label || "Live", time: t, score: { total: home + away, home, away, margin: home - away, split: true }, si };
         }
-        return { kind: "live", label: "Live", time: t, score: actualScore(g) };
+        return { kind: "live", label: "Live", time: t, score: actualScore(g), si };
       }
-      return { kind: "pre", label: t ? t : "Scheduled", time: t, score: null };
+      // Pre-game: headline the localized kickoff/start time when we have one.
+      return { kind: "pre", label: t || "Scheduled", time: t, score: null, si };
     }
 
     // ===================== W-T-L SUMMARIES =====================
@@ -239,6 +312,113 @@ export default function Home() {
         </div>`;
     }
 
+    // ===================== BET VISUALS =====================
+    // A compact SVG donut ring keyed to the confidence tier — the % fill matches the number,
+    // the colour matches the tier (featured/high/medium/low). Reads as a heat gauge at a glance.
+    function confRing(pk: any) {
+      if (!pk || pk.confidence == null) return "";
+      const tier = pk.tier || "low";
+      const c = Math.max(0, Math.min(100, Number(pk.confidence)));
+      const R = 13, C = 2 * Math.PI * R;
+      const dash = (c / 100) * C;
+      return `<span class="cring ${tierCls(tier)}" title="${esc(tier)} confidence · ${c.toFixed(0)}%">
+        <svg viewBox="0 0 32 32" width="30" height="30">
+          <circle class="cr-bg" cx="16" cy="16" r="${R}"></circle>
+          <circle class="cr-fg" cx="16" cy="16" r="${R}" stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 16 16)"></circle>
+        </svg>
+        <span class="cr-num">${c.toFixed(0)}</span>
+      </span>`;
+    }
+
+    // EDGE / VALUE — our projection vs the Vegas line. Returns markup showing "proj vs line → +Δ"
+    // coloured by the size of the divergence. `topValue` flags the day's biggest disagreement.
+    function edgeChip(pk: any, kind: string, g: any, topValue = false) {
+      if (!pk || pk.our_proj == null || pk.line == null) return "";
+      const unit = SPORT_UNIT[g.sport] || "";
+      let proj: number, line: number, delta: number;
+      if (kind === "spread") {
+        proj = Number(pk.our_proj); line = Number(pk.line);
+        // gap already encodes how far our margin diverges toward the side we back
+        delta = pk.gap != null ? Number(pk.gap) : proj - line;
+      } else if (kind === "total") {
+        proj = Number(pk.our_proj); line = Number(pk.line);
+        delta = pk.gap != null ? Number(pk.gap) : proj - line;
+      } else return "";
+      const mag = Math.abs(delta);
+      if (isNaN(mag)) return "";
+      const sizeCls = mag >= 1.5 ? "big" : mag >= 0.75 ? "mid" : "sm";
+      const sign = delta > 0 ? "+" : "";
+      const arrow = delta > 0.05 ? "▲" : delta < -0.05 ? "▼" : "•";
+      return `<span class="edgechip ${sizeCls}${topValue ? " topval" : ""}" title="Our projection ${num(proj, 1)} vs Vegas line ${num(line, 1)} ${unit} — a ${mag.toFixed(1)} ${unit} edge.">
+        ${topValue ? `<span class="tv">◆</span>` : ""}<span class="ec-proj">${num(proj, 1)}</span><span class="ec-vs">vs ${num(line, 1)}</span><span class="ec-d ${delta >= 0 ? "pos" : "neg"}">${arrow}${sign}${delta.toFixed(1)}</span>
+      </span>`;
+    }
+
+    // LINE MOVEMENT — open→current with a compact arrow + delta, a sharp-agreement badge when the
+    // market moved toward our pick (green ◆), a caution when it moved against (amber), and the
+    // snapshot count so you can gauge how much the line has been priced. null on non-MLB → "".
+    function lineMove(pk: any) {
+      const lm = pk && pk.line_move;
+      if (!lm || lm.open_line == null || lm.current_line == null) return "";
+      const open = Number(lm.open_line), cur = Number(lm.current_line);
+      const dir = lm.direction || (cur > open ? "up" : cur < open ? "down" : "flat");
+      const mag = lm.magnitude != null ? Number(lm.magnitude) : Math.abs(cur - open);
+      const isAmerican = lm.unit === "american_ml";
+      const fmtL = (v: number) => (isAmerican ? (v > 0 ? "+" + Math.round(v) : "" + Math.round(v)) : num(v, 1));
+      const n = lm.n_snapshots != null ? lm.n_snapshots : null;
+      if (mag === 0 || dir === "flat") {
+        // Flat is still information — the line held all the way through pregame.
+        return `<span class="lmove flat" title="Line held from open through pregame across ${n || 0} snapshots.">
+          <span class="lm-arrow">→</span><span class="lm-val">${fmtL(cur)}</span><span class="lm-tag">held${n ? ` · ${n}` : ""}</span>
+        </span>`;
+      }
+      const toward = lm.moved_toward_pick;
+      const stateCls = toward === true ? "toward" : toward === false ? "against" : "neutral";
+      const arrow = dir === "up" ? "▲" : dir === "down" ? "▼" : "→";
+      const badge = toward === true
+        ? `<span class="lm-sharp toward" title="The market moved toward our side across ${n || 0} snapshots — sharp money agrees.">◆ your way</span>`
+        : toward === false
+        ? `<span class="lm-sharp against" title="The market moved against our side across ${n || 0} snapshots — proceed with caution.">line drifting off</span>`
+        : "";
+      return `<span class="lmove ${stateCls}" title="Line moved ${fmtL(open)} → ${fmtL(cur)} over ${n || 0} snapshots.">
+        <span class="lm-open">${fmtL(open)}</span><span class="lm-arrow">${arrow}</span><span class="lm-cur">${fmtL(cur)}</span>${n ? `<span class="lm-n">·${n}</span>` : ""}${badge}
+      </span>`;
+    }
+
+    // LEAN METER — an innovative compact horizontal scale. The Vegas line is the centre tick; our
+    // projection sits as a marker offset toward the side we lean; the 80% interval renders as a
+    // translucent band. One glance shows which way we lean, how hard, and the uncertainty.
+    function leanMeter(pk: any, kind: string, g: any) {
+      if (!pk) return "";
+      const line = pk.line != null ? Number(pk.line) : null;
+      const proj = pk.our_proj != null ? Number(pk.our_proj) : null;
+      const iv = pk.interval || {};
+      const lo = iv.lo != null ? Number(iv.lo) : null;
+      const hi = iv.hi != null ? Number(iv.hi) : null;
+      if (line == null || proj == null || isNaN(line) || isNaN(proj)) return "";
+      // Scale: centre the line; span = max(interval half-width, |proj-line|) padded so markers stay in view.
+      const spanCand = [Math.abs(proj - line)];
+      if (lo != null && !isNaN(lo)) spanCand.push(Math.abs(lo - line));
+      if (hi != null && !isNaN(hi)) spanCand.push(Math.abs(hi - line));
+      const span = Math.max(0.6, ...spanCand) * 1.25;
+      const pos = (v: number) => Math.max(2, Math.min(98, ((v - line) / (2 * span)) * 100 + 50));
+      const projPct = pos(proj);
+      const bandL = lo != null && !isNaN(lo) ? pos(lo) : null;
+      const bandR = hi != null && !isNaN(hi) ? pos(hi) : null;
+      // Which way do we lean? For totals: over/under. For spread: toward the backed side.
+      const overish = kind === "total" ? /over/i.test(String(pk.side)) : proj > line;
+      const leanCls = overish ? "over" : "under";
+      const band = (bandL != null && bandR != null)
+        ? `<span class="ln-band" style="left:${Math.min(bandL, bandR).toFixed(1)}%;width:${Math.abs(bandR - bandL).toFixed(1)}%"></span>`
+        : "";
+      return `<span class="lean ${leanCls}" title="Our projection ${num(proj, 1)} vs line ${num(line, 1)}${lo != null && hi != null ? ` · 80% interval [${num(lo, 1)}, ${num(hi, 1)}]` : ""}">
+        ${band}
+        <span class="ln-track"></span>
+        <span class="ln-tick" style="left:50%"></span>
+        <span class="ln-proj" style="left:${projPct.toFixed(1)}%"></span>
+      </span>`;
+    }
+
     // ===================== MARKET ROW (Vegas line + our pick overlay) =====================
     // Renders one market line. Vegas number is the anchor; our pick is the overlay shown
     // by colouring the side we back + a directional arrow + the confidence; ✓/✗/T when resolved.
@@ -262,7 +442,7 @@ export default function Home() {
     }
 
     // SPREAD market row
-    function spreadRow(g: any) {
+    function spreadRow(g: any, topKind?: string) {
       const pk = g.spread_pick;
       const has = pk && pk.side != null;
       const st = has ? resOf(pk) : null;
@@ -275,9 +455,10 @@ export default function Home() {
         vegas = `<span class="vln">${esc(g.home_abbr)} ${sgn(homeLine)}</span> <span class="vpx">${fmtOdds(price)}</span>`;
       }
       return marketRow({
-        market: "Spread", vegas, hasPick: has, st,
-        pickHtml: has ? `${pickArrow("spread", pk.side)}<b>${esc(pk.side)}</b>${confTag(pk)}` : `<span class="nopick">no pick</span>`,
-        vig: pk ? pk.vig : null, kind: "spread",
+        market: "Spread", vegas, hasPick: has, st, pk, g, kind: "spread",
+        pickHtml: has ? `${pickArrow("spread", pk.side)}<b>${esc(pk.side)}</b>` : `<span class="nopick">no pick</span>`,
+        insight: has ? `${edgeChip(pk, "spread", g, topKind === "spread")}${lineMove(pk)}${leanMeter(pk, "spread", g)}` : "",
+        vig: pk ? pk.vig : null,
       });
     }
     // home-relative spread line (positive = home getting points)
@@ -294,7 +475,7 @@ export default function Home() {
     }
 
     // TOTAL market row
-    function totalRow(g: any) {
+    function totalRow(g: any, topKind?: string) {
       const pk = g.total_pick;
       const has = pk && pk.side != null;
       const st = has ? resOf(pk) : null;
@@ -305,10 +486,45 @@ export default function Home() {
         vegas = `<span class="vln">${num(pk.line)}</span> <span class="vpx">${fmtOdds(price)}</span>`;
       }
       return marketRow({
-        market: "Total", vegas, hasPick: has, st,
-        pickHtml: has ? `${pickArrow("total", pk.side)}<b>${esc(pk.side)}</b>${confTag(pk)}` : `<span class="nopick">no pick</span>`,
-        vig: pk ? pk.vig : null, kind: "total",
+        market: "Total", vegas, hasPick: has, st, pk, g, kind: "total",
+        pickHtml: has ? `${pickArrow("total", pk.side)}<b>${esc(pk.side)}</b>` : `<span class="nopick">no pick</span>`,
+        insight: has ? `${edgeChip(pk, "total", g, topKind === "total")}${lineMove(pk)}${leanMeter(pk, "total", g)}` : "",
+        vig: pk ? pk.vig : null,
       });
+    }
+
+    // Win-probability edge for the moneyline: our model P vs the market's implied P.
+    function mlEdgeChip(pk: any) {
+      const our = pk.our_winprob != null ? Number(pk.our_winprob) : null;
+      let mkt = pk.market_winprob != null ? Number(pk.market_winprob) : null;
+      if (mkt == null && pk.price != null) {
+        // Derive market-implied prob from the decimal price (vig-inclusive).
+        const d = Number(pk.price);
+        if (d > 1) mkt = 1 / d;
+      }
+      if (our == null) return "";
+      const ourPct = (our * 100);
+      if (mkt == null) return `<span class="edgechip sm"><span class="ec-proj">${ourPct.toFixed(0)}%</span><span class="ec-vs">win</span></span>`;
+      const mktPct = mkt * 100;
+      const d = ourPct - mktPct;
+      const sizeCls = Math.abs(d) >= 6 ? "big" : Math.abs(d) >= 3 ? "mid" : "sm";
+      const arrow = d > 0.5 ? "▲" : d < -0.5 ? "▼" : "•";
+      return `<span class="edgechip ${sizeCls}" title="Our win probability ${ourPct.toFixed(1)}% vs market-implied ${mktPct.toFixed(1)}%.">
+        <span class="ec-proj">${ourPct.toFixed(0)}%</span><span class="ec-vs">vs ${mktPct.toFixed(0)}%</span><span class="ec-d ${d >= 0 ? "pos" : "neg"}">${arrow}${d >= 0 ? "+" : ""}${d.toFixed(0)}</span>
+      </span>`;
+    }
+    // A win-probability lean meter: market-implied P is the centre tick, our P the marker.
+    function wpLean(pk: any) {
+      const our = pk.our_winprob != null ? Number(pk.our_winprob) : null;
+      let mkt = pk.market_winprob != null ? Number(pk.market_winprob) : null;
+      if (mkt == null && pk.price != null) { const d = Number(pk.price); if (d > 1) mkt = 1 / d; }
+      if (our == null || mkt == null) return "";
+      const span = Math.max(0.06, Math.abs(our - mkt)) * 1.4;
+      const pos = (v: number) => Math.max(2, Math.min(98, ((v - mkt!) / (2 * span)) * 100 + 50));
+      const leanCls = our >= mkt ? "over" : "under";
+      return `<span class="lean ${leanCls}" title="Our win prob ${(our * 100).toFixed(1)}% vs market ${(mkt * 100).toFixed(1)}%">
+        <span class="ln-track"></span><span class="ln-tick" style="left:50%"></span><span class="ln-proj" style="left:${pos(our).toFixed(1)}%"></span>
+      </span>`;
     }
 
     // MONEYLINE market row (MLB 2-way / soccer 3-way). Omitted entirely for NBA/NHL/NFL.
@@ -326,9 +542,10 @@ export default function Home() {
         vegas = `<span class="vln">${esc(pk.side)} ${fmtOdds(price)}</span>`;
       }
       return marketRow({
-        market: "Moneyline", vegas, hasPick: has, st,
-        pickHtml: has ? `${pickArrow("ml", pk.side)}<b>${esc(pk.side)}</b>${confTag(pk)}` : `<span class="nopick">no pick</span>`,
-        vig: pk.vig, kind: "ml",
+        market: "Moneyline", vegas, hasPick: has, st, pk, g, kind: "ml",
+        pickHtml: has ? `${pickArrow("ml", pk.side)}<b>${esc(pk.side)}</b>` : `<span class="nopick">no pick</span>`,
+        insight: has ? `${mlEdgeChip(pk)}${lineMove(pk)}${wpLean(pk)}` : "",
+        vig: pk.vig,
       });
     }
 
@@ -336,11 +553,20 @@ export default function Home() {
       const rCls = o.st === "hit" ? "won" : o.st === "miss" ? "lost" : o.st === "push" ? "pushed" : "";
       const sel = o.hasPick ? "picked" : "vegasonly";
       const vigTxt = vigPct(o.vig);
+      const ring = o.hasPick ? confRing(o.pk) : "";
+      const resHtml = resTag(o.st, o.pk) || (o.hasPick ? `<span class="restag open">open</span>` : "");
+      const insight = (o.insight || "").trim();
+      // Each market renders as a two-line unit: a top line (label · vegas · our lean+ring · result),
+      // then — when we have a pick — a full-width insight strip (edge · line-move · lean meter) below.
+      // Keeps every visual breathable and scannable without a cramped 5-column grid.
       return `<div class="mrow ${sel} ${rCls}">
-        <div class="mk-lab">${esc(o.market)}</div>
-        <div class="mk-vegas">${o.vegas}${vigTxt ? `<span class="mk-vig">vig ${vigTxt}</span>` : ""}</div>
-        <div class="mk-pick">${o.pickHtml}</div>
-        <div class="mk-res">${resTag(o.st, null) || (o.hasPick ? `<span class="restag open">open</span>` : "")}</div>
+        <div class="mk-top">
+          <div class="mk-lab">${esc(o.market)}</div>
+          <div class="mk-vegas">${o.vegas}${vigTxt ? `<span class="mk-vig">vig ${vigTxt}</span>` : ""}</div>
+          <div class="mk-pick">${o.pickHtml}${ring}</div>
+          <div class="mk-res">${resHtml}</div>
+        </div>
+        ${insight ? `<div class="mk-insight">${insight}</div>` : ""}
       </div>`;
     }
 
@@ -362,20 +588,68 @@ export default function Home() {
       return `<div class="livescore total-only"><span class="ls-tot">${num(sc.total, 0)} ${SPORT_UNIT[g.sport] || ""}</span></div>`;
     }
 
-    function pitcherLine(g: any) {
+    // The projected final score + win probability, shown as a compact head strip. The projected
+    // winner is bolded; the win-prob renders as a slim confidence bar.
+    function predictedHead(g: any) {
+      const ps = g.predicted_score || {};
+      const hasScore = ps.home != null && ps.away != null;
+      const wp = g.win_prob != null ? Number(g.win_prob) : (g.ml_pick && g.ml_pick.our_winprob != null ? Number(g.ml_pick.our_winprob) : null);
+      if (!hasScore && wp == null) return "";
+      const winner = ps.winner_abbr;
+      const homeWin = winner ? winner === g.home_abbr : (hasScore ? Number(ps.home) >= Number(ps.away) : true);
+      // win_prob is P(home win); express it toward the predicted winner for the bar.
+      const winnerP = wp == null ? null : (homeWin ? wp : 1 - wp);
+      const barPct = winnerP == null ? null : Math.max(50, Math.min(99, winnerP * 100));
+      let scoreHtml = "";
+      if (hasScore) {
+        const aw = num(ps.away, 1), hm = num(ps.home, 1);
+        scoreHtml = `<span class="ph-score"><span class="ph-ab ${!homeWin ? "w" : ""}">${esc(g.away_abbr)}</span><span class="ph-pt ${!homeWin ? "w" : ""}">${aw}</span><span class="ph-dash">–</span><span class="ph-pt ${homeWin ? "w" : ""}">${hm}</span><span class="ph-ab ${homeWin ? "w" : ""}">${esc(g.home_abbr)}</span></span>`;
+      }
+      const wpHtml = winnerP != null
+        ? `<span class="ph-wp"><span class="ph-wp-lab">${esc(winner || (homeWin ? g.home_abbr : g.away_abbr))} win</span><span class="ph-wp-bar"><span class="ph-wp-fill" style="width:${barPct!.toFixed(0)}%"></span></span><span class="ph-wp-num">${(winnerP * 100).toFixed(0)}%</span></span>`
+        : "";
+      if (!scoreHtml && !wpHtml) return "";
+      return `<div class="gb-pred"><span class="ph-lab">Projected</span>${scoreHtml}${wpHtml}</div>`;
+    }
+
+    // Inline pre-game intel chips (all sports): starting pitchers+ERA (MLB), recent form (L10),
+    // rest days, and H2H — surfaced cleanly as small chips. Plus the competition label (WC etc.).
+    function intelChips(g: any) {
       const pi = g.pregame_intel || {};
+      const meta = g.meta || {};
+      const chips: string[] = [];
+      const comp = meta.competition;
+      if (comp) chips.push(`<span class="ichip comp">${esc(comp)}</span>`);
       const pit = pi.pitchers || {};
       const pa = pit.away || {}, ph = pit.home || {};
-      const venue = pi.venue || (g.meta && g.meta.venue);
-      const bits: string[] = [];
       if (pa.name || ph.name) {
-        const fmt = (p: any) => p.name ? `${esc(p.name)}${p.era != null ? ` (${num(p.era, 2)})` : ""}` : "TBD";
-        bits.push(`<span class="dl-pit">⚾ ${fmt(pa)} vs ${fmt(ph)}</span>`);
+        const fmt = (p: any) => p.name ? `${esc(p.name.split(" ").slice(-1)[0])}${p.era != null ? ` ${num(p.era, 2)}` : ""}` : "TBD";
+        chips.push(`<span class="ichip pit" title="Starting pitchers (ERA)">⚾ ${fmt(pa)} · ${fmt(ph)}</span>`);
       }
-      if (venue) bits.push(`<span class="dl-ven">${esc(venue)}</span>`);
-      if (g.sport === "soccer" && g.meta && g.meta.league) bits.push(`<span class="dl-ven">${esc(g.meta.league)}</span>`);
-      if (!bits.length) return "";
-      return `<div class="gb-detail">${bits.join('<span class="dl-sep">·</span>')}</div>`;
+      const form = pi.form || {};
+      const fa = form.away, fh = form.home;
+      if ((fa && fa.last10_record) || (fh && fh.last10_record)) {
+        chips.push(`<span class="ichip form" title="Last-10 record">L10 ${esc((fa && fa.last10_record) || "—")} · ${esc((fh && fh.last10_record) || "—")}</span>`);
+      }
+      const rest = pi.rest || {};
+      const ra = rest.away, rh = rest.home;
+      if ((ra && ra.days_off != null) || (rh && rh.days_off != null)) {
+        chips.push(`<span class="ichip rest" title="Days of rest">🛌 ${ra && ra.days_off != null ? ra.days_off : "—"}·${rh && rh.days_off != null ? rh.days_off : "—"}d</span>`);
+      }
+      const h = pi.h2h;
+      if (h && h.record) chips.push(`<span class="ichip h2h" title="Head-to-head record">H2H ${esc(h.record)}${h.games ? ` (${h.games})` : ""}</span>`);
+      const venue = pi.venue || meta.venue;
+      if (venue) chips.push(`<span class="ichip ven" title="Venue">${esc(venue)}</span>`);
+      const pf = pi.park_factor;
+      if (pf != null && pf !== 1) chips.push(`<span class="ichip pf ${pf > 1 ? "hot" : "cold"}" title="Park factor">park ${num(pf, 2)}</span>`);
+      if (!chips.length) return "";
+      return `<div class="gb-detail">${chips.join("")}</div>`;
+    }
+
+    // Which market carries the game's strongest divergence from Vegas — flagged as top value.
+    function topValueKind(g: any) {
+      const e = gameEdge(g);
+      return e ? e.market : "";
     }
 
     function gameBox(g: any, idx: number, thr = Infinity) {
@@ -383,16 +657,21 @@ export default function Home() {
       const gs = gameState(g);
       const eb = edgeBadge(g, thr);
       const hasIntel = !!(g.pregame_intel && Object.keys(g.pregame_intel).length);
+      // The scheduled start time — always show it on pre-game boxes (localized from start_ts).
+      const kickoff = gs.kind === "pre" && gs.si.hasTime && gs.si.time
+        ? `<span class="gb-status sched"><span class="clockico">◷</span>${esc(gs.si.time)}</span>`
+        : gs.kind === "pre" ? `<span class="gb-status sched">${esc(gs.label)}</span>` : "";
       const stateBadge =
         gs.kind === "live" ? `<span class="gb-status live"><span class="livedot"></span>LIVE${gs.label && gs.label !== "Live" ? " · " + esc(gs.label) : ""}</span>`
         : gs.kind === "final" ? `<span class="gb-status final">FINAL</span>`
-        : `<span class="gb-status sched">${esc(gs.label)}</span>`;
+        : kickoff;
 
       // resolution summary for the box header
       const dr = dayRecord([g]);
       const boxRes = dr.settled ? `<span class="gb-rec ${dr.w > dr.l ? "up" : dr.w < dr.l ? "down" : "even"}">${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}</span>` : "";
 
-      const markets = [spreadRow(g), mlRow(g), totalRow(g)].filter(Boolean).join("");
+      const tv = topValueKind(eb ? g : {}); // only route a top-value badge when this game clears the day's edge bar
+      const markets = [spreadRow(g, tv), mlRow(g), totalRow(g, tv)].filter(Boolean).join("");
 
       return `<div class="gamebox ${g.featured ? "featured" : ""} ${gs.kind}" data-gid="${esc(g.game_id || idx)}">
         <div class="gb-head">
@@ -408,9 +687,10 @@ export default function Home() {
             <div class="gb-statwrap">${stateBadge}${boxRes}</div>
           </div>
         </div>
-        ${pitcherLine(g)}
+        ${predictedHead(g)}
+        ${intelChips(g)}
         <div class="gb-markets">
-          <div class="mrow mhead"><div class="mk-lab">Market</div><div class="mk-vegas">Vegas Line</div><div class="mk-pick">Our Pick</div><div class="mk-res">${gs.kind === "final" ? "Result" : ""}</div></div>
+          <div class="mhead"><span class="mh-lab">Market</span><span class="mh-vegas">Vegas</span><span class="mh-pick">Our Lean · Conf</span><span class="mh-res">${gs.kind === "final" ? "Result" : ""}</span></div>
           ${markets}
         </div>
         ${eb ? `<div class="gb-foot">${eb}<span class="gb-more">tap for full read →</span></div>` : `<div class="gb-foot"><span class="gb-more">tap for full read →</span>${hasIntel ? `<span class="intelchip">intel</span>` : ""}</div>`}
@@ -660,10 +940,17 @@ export default function Home() {
       else if (kind === "total") line = `line <b>${num(pk.line)}</b> · our proj <b>${num(pk.our_proj)}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}${gapTxt}`;
       else line = `price <b>${fmtOdds(pk.price)}</b>${pk.our_winprob != null ? ` · our win prob <b>${(pk.our_winprob * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
       const resTxt = st === "hit" ? `WON ${pk.result.net_units >= 0 ? "+" : ""}${num(pk.result.net_units, 2)}u` : st === "miss" ? `LOST ${num(pk.result.net_units, 2)}u` : st === "push" ? "PUSH" : "";
+      // The same lean/line-move visuals as the docket, expanded for the drawer.
+      const lean = kind === "ml" ? wpLean(pk) : leanMeter(pk, kind, g);
+      const move = lineMove(pk);
+      const viz = (lean || move) ? `<div class="dviz">${lean ? `<div class="dviz-lean">${lean}</div>` : ""}${move ? `<div class="dviz-move">${move}</div>` : ""}</div>` : "";
       return `<div class="dbet">
-        <div class="dmk">${esc(label)}</div>
-        <div class="dmid"><div class="dside">${esc(pk.side)}</div><div class="dline">${line}</div></div>
-        <div class="dright"><div class="dconf">${pk.confidence != null ? pk.confidence.toFixed(0) + "%" : "—"}</div><div class="dtier ${tierCls(tier)}">${esc(tier)}</div>${resTxt ? `<div class="dres ${st}">${resTxt}</div>` : ""}</div>
+        <div class="dbet-top">
+          <div class="dmk">${esc(label)}</div>
+          <div class="dmid"><div class="dside">${esc(pk.side)}</div><div class="dline">${line}</div></div>
+          <div class="dright">${confRing(pk)}<div class="dtier ${tierCls(tier)}">${esc(tier)}</div>${resTxt ? `<div class="dres ${st}">${resTxt}</div>` : ""}</div>
+        </div>
+        ${viz}
       </div>`;
     }
 
@@ -674,7 +961,7 @@ export default function Home() {
       const homeWin = ps.winner_abbr === g.home_abbr;
       const dispDate = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
       const gs = gameState(g);
-      const startTxt = isISO(g.start_time || "") ? "" : g.start_time;
+      const startTxt = gs.si.hasTime ? gs.si.time : gs.si.date;
       const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
 
       // actual score banner (live/final)
