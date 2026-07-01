@@ -33,12 +33,12 @@ export default function Home() {
     const sgn = (v: any, d = 1) => { if (v == null || isNaN(Number(v))) return "—"; const n = Number(v); return (n > 0 ? "+" : "") + n.toFixed(d); };
     const fmtOdds = (o: any) => { if (o == null || o === "") return "—"; const n = Number(o); if (isNaN(n)) return "—"; if (n >= 100 || n <= -100) return n > 0 ? "+" + n : "" + n; const am = n >= 2 ? Math.round((n - 1) * 100) : Math.round(-100 / (n - 1)); return am > 0 ? "+" + am : "" + am; };
     const vigPct = (v: any) => (v == null || isNaN(Number(v)) ? "" : (Number(v) * 100).toFixed(1) + "%");
-    const vigLine = (v: any) => { const p = vigPct(v); return p ? `<span class="vig">vig ${p}</span>` : `<span class="vig">&nbsp;</span>`; };
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
     const SPORTS = ["mlb", "nba", "nhl", "nfl", "soccer"];
     const SPORT_LABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
     const SPORT_UNIT: any = { mlb: "runs", nba: "pts", nhl: "goals", nfl: "pts", soccer: "goals" };
     const fmtRec = (o: any) => o ? `${o.wins || 0}-${o.losses || 0}${o.pushes ? "-" + o.pushes : ""}` : "—";
+    const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
 
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
@@ -54,10 +54,6 @@ export default function Home() {
     }
 
     const resOf = (pk: any) => (pk && pk.result && pk.result.status ? pk.result.status : null); // hit|miss|push|null
-    const rCls = (st: any) => (st === "hit" ? "r-hit" : st === "miss" ? "r-miss" : st === "push" ? "r-push" : "");
-    const rMark = (st: any) => (st === "hit" ? `<span class="rmark hit">✓</span>` : st === "miss" ? `<span class="rmark miss">✗</span>` : st === "push" ? `<span class="rmark push">T</span>` : "");
-
-    // confidence -> tier label/dot
     const tierCls = (t: any) => "tier-" + (t || "low");
     const tdotCls = (t: any) => "tdot-" + (t || "low");
 
@@ -91,11 +87,9 @@ export default function Home() {
     }
 
     async function loadDay(dateISO: string) {
-      // today -> "pregame_picks"; else "pregame_picks:<date>"
       const isToday = dateISO === todayISO();
       const key = isToday ? "pregame_picks" : "pregame_picks:" + dateISO;
       let p = await snap(key);
-      // fall back: if today has no live slate, grab it by date key
       if ((!p || !(p.games || []).length) && isToday) p = await snap("pregame_picks:" + dateISO);
       return p;
     }
@@ -103,7 +97,7 @@ export default function Home() {
     function gamesForLeague(p: any, lg: string) {
       const all = (p && p.games) || [];
       const inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
-      // picks elevated: featured first, then top_confidence desc
+      // featured first, then highest confidence
       inLg.sort((a: any, b: any) => {
         if (!!b.featured !== !!a.featured) return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
         return (b.top_confidence || 0) - (a.top_confidence || 0);
@@ -118,13 +112,10 @@ export default function Home() {
     }
 
     // ===================== TRACK RECORD ACCESS =====================
-    // Always the FULL out-of-fold TEST history (games the model never trained on).
     function trackRecord() { return (indexData && (indexData.track_record_test || indexData.track_record)) || (payload && (payload.track_record_test || payload.track_record)) || {}; }
     function forwardRecord() {
-      // real forward picks so far — nested in the live slate payload
       const f = (payload && payload.track_record_forward) || (indexData && indexData.track_record_forward) || null;
       if (!f) return null;
-      // forward record may be keyed only by_tier/by_sport; aggregate an overall
       if (f.overall) return f.overall;
       const agg = { wins: 0, losses: 0, pushes: 0, n: 0 };
       const src = f.by_tier || f.by_sport || {};
@@ -132,21 +123,16 @@ export default function Home() {
       return agg.n ? agg : null;
     }
     function trOverall() { return trackRecord().overall || {}; }
-    function trForLeague(lg: string) { const bs = trackRecord().by_sport || {}; return bs[lg] || null; }
 
     // ===================== EDGE / VALUE FLAGGING =====================
-    // Strongest value plays = the picks where our projection diverges most from the line.
-    // Gap units differ wildly across sport/market, so flag relative to peers in the
-    // current view: the top quintile of |gap| (min 1.0) gets a value badge.
     function edgeThresholdFor(games: any[]) {
       const mags = games.flatMap((g: any) =>
         [g.total_pick, g.spread_pick].map((pk: any) => (pk && pk.gap != null ? Math.abs(Number(pk.gap)) : null)).filter((x: any) => x != null && x >= 1)
       ).sort((a: number, b: number) => a - b);
-      if (mags.length < 4) return Infinity; // too few to rank meaningfully
-      return mags[Math.floor(mags.length * 0.8)]; // 80th percentile
+      if (mags.length < 4) return Infinity;
+      return mags[Math.floor(mags.length * 0.8)];
     }
     function gameEdge(g: any) {
-      // best (largest |gap|) divergence on the game, returned with its pick context
       let best: any = null;
       [["total", g.total_pick], ["spread", g.spread_pick]].forEach(([mk, pk]: any) => {
         if (pk && pk.gap != null) { const mag = Math.abs(Number(pk.gap)); if (!best || mag > best.mag) best = { mag, gap: Number(pk.gap), market: mk, pk }; }
@@ -161,185 +147,42 @@ export default function Home() {
       return `<span class="edgeflag" title="${esc(tip)}">◆ VALUE +${e.mag.toFixed(1)}</span>`;
     }
 
-    // ===================== W-T-L SUMMARY BAND =====================
-    function recordBand(lg: string) {
-      const tr = trForLeague(lg) || trOverall();
-      const scoped = !!trForLeague(lg);
-      const lgLabel = scoped ? SPORT_LABEL[lg] : "All Sports";
-      const w = tr.wins ?? 0, l = tr.losses ?? 0, p = tr.pushes ?? 0;
-      const hr = tr.hit_rate != null ? (tr.hit_rate * 100).toFixed(1) : "—";
-      const roi = tr.roi != null ? (tr.roi * 100) : null;
-      const units = tr.units_net != null ? tr.units_net : null;
-      const be = tr.breakeven_hit_rate != null ? (tr.breakeven_hit_rate * 100).toFixed(1) : "52.4";
-      const n = tr.n ?? (w + l + p);
-      const fwd = forwardRecord();
-      const fwdLine = fwd ? `<span class="rb-fwd">${fmtRec(fwd)} on real picks so far</span>` : "";
-      return `
-        <div class="recordband">
-          <div class="rb-main">
-            <div>
-              <div class="rb-lab">${esc(lgLabel)} · Out-of-Fold Test Record</div>
-              <div class="rb-rec"><span class="w">${w}</span><span class="sep">–</span><span class="l">${l}</span>${p ? `<span class="sep" style="font-size:18px">·</span><span style="opacity:.6;font-size:20px">${p}T</span>` : ""}</div>
-              <div class="rb-sub">Games the model never trained on${fwdLine ? ` · ${fwdLine}` : ""}</div>
-            </div>
-          </div>
-          <div class="rb-stats">
-            <div class="rb-stat"><div class="k">Picks</div><div class="v">${(n || 0).toLocaleString()}</div><div class="sub">graded bets</div></div>
-            <div class="rb-stat"><div class="k">Hit Rate</div><div class="v">${hr}<small>%</small></div><div class="sub">vs ${be}% breakeven</div></div>
-            <div class="rb-stat"><div class="k">ROI</div><div class="v ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1)}<small>%</small></div><div class="sub">per unit staked</div></div>
-            <div class="rb-stat"><div class="k">Net Units</div><div class="v ${units == null ? "" : units >= 0 ? "pos" : "neg"}">${units == null ? "—" : (units >= 0 ? "+" : "") + units.toFixed(0)}</div><div class="sub">flat-stake</div></div>
-          </div>
-        </div>`;
+    // ===================== SCORE DERIVATION =====================
+    // For live/final games there is no current-score field. Derive from pick results:
+    //   total_pick.result.actual = actual combined total
+    //   spread_pick.result.actual = actual margin (home − away)
+    //   home = (total + margin) / 2 ; away = (total − margin) / 2
+    // When only the total is present (NBA/NHL/soccer have no spread pick), fall back to
+    // the win-model's margin so we can still split the score; otherwise show the total only.
+    function actualScore(g: any) {
+      const tA = g.total_pick && g.total_pick.result ? g.total_pick.result.actual : null;
+      const sA = g.spread_pick && g.spread_pick.result ? g.spread_pick.result.actual : null;
+      const total = (typeof tA === "number") ? tA : null;
+      let margin = (typeof sA === "number") ? sA : null; // home − away
+      if (total == null) return null;
+      if (margin == null) return { total, home: null, away: null, margin: null, split: false };
+      const home = (total + margin) / 2, away = (total - margin) / 2;
+      return { total, home, away, margin, split: true };
     }
 
-    // ===================== BEST BETS STRIP =====================
-    function bestBets(games: any[]) {
-      // highest-confidence featured pre-game plays for the selected league/date
-      const scored = games
-        .map((g: any) => {
-          const picks = [["Total", g.total_pick], ["Spread", g.spread_pick], ["Moneyline", g.ml_pick]]
-            .map(([lab, pk]: any) => ({ lab, pk }))
-            .filter((x: any) => x.pk && x.pk.side != null && x.pk.confidence != null);
-          if (!picks.length) return null;
-          picks.sort((a: any, b: any) => (b.pk.confidence || 0) - (a.pk.confidence || 0));
-          const top = picks[0];
-          return { g, lab: top.lab, pk: top.pk, conf: top.pk.confidence || 0, featured: top.pk.tier === "featured" || !!g.featured };
-        })
-        .filter(Boolean) as any[];
-      const featured = scored.filter((x) => x.featured).sort((a, b) => b.conf - a.conf);
-      const pool = (featured.length ? featured : scored.sort((a, b) => b.conf - a.conf)).slice(0, 4);
-      if (!pool.length) return "";
-      const thr = edgeThresholdFor(games);
-      const cards = pool.map((x) => {
-        const g = x.g, pk = x.pk, sp = g.sport;
-        const st = resOf(pk);
-        const ps = g.predicted_score || {};
-        const score = (ps.away != null && ps.home != null) ? `${esc(g.away_abbr)} ${num(ps.away, 0)}–${num(ps.home, 0)} ${esc(g.home_abbr)}` : "";
-        const e = gameEdge(g);
-        const showEdge = e && e.mag >= thr && e.mag >= 1;
-        return `<button class="bb-card ${rCls(st)}" data-gid="${esc(g.game_id)}">
-          <div class="bb-top">
-            <span class="bb-mu">${crestImg(sp, g.away_abbr, "bbl")}${crestImg(sp, g.home_abbr, "bbl")}<span class="bb-teams">${esc(g.away_abbr)} <span class="at">@</span> ${esc(g.home_abbr)}</span></span>
-            <span class="bb-conf"><span class="tierdot ${tdotCls(pk.tier)}"></span>${pk.confidence != null ? pk.confidence.toFixed(0) + "%" : ""}</span>
-          </div>
-          <div class="bb-pick">${esc(x.lab)}: <b>${esc(pk.side)}</b>${rMark(st)}</div>
-          <div class="bb-foot">${score ? `<span class="bb-score">${score}</span>` : ""}${showEdge ? `<span class="edgeflag sm">◆ +${e.mag.toFixed(1)}</span>` : ""}</div>
-        </button>`;
-      }).join("");
-      return `<div class="bestbets">
-        <div class="bb-head"><span class="bb-star">★</span> Best Bets <span class="bb-sub">${SPORT_LABEL[league]} · highest-confidence pre-game plays</span></div>
-        <div class="bb-grid">${cards}</div>
-      </div>`;
-    }
-
-    // ===================== TABLE ROW =====================
-    function vegasSpread(g: any) {
-      const sp = g.spread_pick;
-      if (!sp || sp.line == null) return `<td class="vg grp ctr dash hide-md">—</td>`;
-      const pr = sp.prices || {};
-      const price = sp.price ?? pr.home ?? pr.away;
-      return `<td class="vg grp ctr hide-md"><span class="ln">${sgn(sp.line)}</span> <span class="px">${fmtOdds(price)}</span>${vigLine(sp.vig)}</td>`;
-    }
-    function vegasML(g: any) {
-      const ml = g.ml_pick;
-      if (!ml) return `<td class="vg ctr dash hide-md">—</td>`;
-      const pr = ml.prices || {};
-      // show the priced side
-      const price = ml.price ?? pr.home ?? pr.away;
-      return `<td class="vg ctr hide-md"><span class="ln">${fmtOdds(price)}</span>${vigLine(ml.vig)}</td>`;
-    }
-    function vegasTotal(g: any) {
-      const tp = g.total_pick;
-      if (!tp || tp.line == null) return `<td class="vg ctr dash hide-sm">—</td>`;
-      const pr = tp.prices || {};
-      const price = tp.price ?? pr.over ?? pr.under;
-      return `<td class="vg ctr hide-sm"><span class="ln">${num(tp.line)}</span> <span class="px">${fmtOdds(price)}</span>${vigLine(tp.vig)}</td>`;
-    }
-
-    function pickCell(pk: any, kind: string, grp = false) {
-      const cls0 = grp ? "pk grp" : "pk";
-      if (!pk || pk.side == null) return `<td class="${cls0} dash">—</td>`;
-      const st = resOf(pk);
-      const tier = pk.tier || "low";
-      // compact interval string
-      let ivl = "";
-      if (kind === "ml" && pk.our_winprob != null) ivl = `wp ${(pk.our_winprob * 100).toFixed(0)}%`;
-      else if (pk.interval && pk.interval.lo != null && pk.interval.hi != null && pk.interval.kind !== "win_prob_band") ivl = `[${num(pk.interval.lo)}–${num(pk.interval.hi)}]`;
-      const conf = pk.confidence != null ? pk.confidence.toFixed(0) + "%" : "";
-      return `<td class="${cls0} ${rCls(st)}">
-        <div class="side">${esc(pk.side)}${rMark(st)}</div>
-        <div class="conf"><span class="tierdot ${tdotCls(tier)}"></span><span class="pct ${tierCls(tier)}">${conf}</span></div>
-        ${ivl ? `<div class="ivl">${ivl}</div>` : ""}
-      </td>`;
-    }
-
-    function predScoreCell(g: any) {
-      const ps = g.predicted_score;
-      if (!ps || ps.winner_abbr == null) return `<td class="psc grp dash hide-md">—</td>`;
-      const win = ps.winner_abbr;
-      const homeWin = win === g.home_abbr;
-      const hs = num(ps.home, 1), as = num(ps.away, 1);
-      const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
-      const mg = ps.margin != null ? `+${Math.abs(Number(ps.margin)).toFixed(1)}` : "";
-      const homeHtml = `<span class="${homeWin ? "win" : ""}">${esc(g.home_abbr)} ${hs}</span>`;
-      const awayHtml = `<span class="${!homeWin ? "win" : ""}">${esc(g.away_abbr)} ${as}</span>`;
-      return `<td class="psc grp hide-md">
-        <div class="sl">${awayHtml} <span style="color:var(--ink3)">–</span> ${homeHtml}${mg ? `<span class="mg">${mg}</span>` : ""}</div>
-        <div class="tot">proj total ${tot} ${SPORT_UNIT[g.sport] || ""}</div>
-      </td>`;
-    }
-
-    function statusMeta(g: any) {
+    // status + score for a game (returns {label, cls, time, score})
+    function gameState(g: any) {
       const st = (g.status || "pre").toLowerCase();
       let t = g.start_time || "";
-      // only show time-ish strings; ISO dates become blank
-      if (/^\d{4}-\d{2}-\d{2}$/.test(t)) t = "";
-      if (st === "live") return `<span class="st live">LIVE</span>`;
-      if (st === "final") return `<span class="st final">FINAL</span>`;
-      return t ? `<span class="st">${esc(t)}</span>` : `<span class="st">Scheduled</span>`;
+      if (isISO(t)) t = "";
+      if (st === "final") {
+        const sc = actualScore(g);
+        return { kind: "final", label: "Final", time: "", score: sc };
+      }
+      if (st === "live") {
+        const sc = actualScore(g);
+        return { kind: "live", label: "Live", time: t, score: sc };
+      }
+      return { kind: "pre", label: t ? t : "Scheduled", time: t, score: null };
     }
 
-    function tableRow(g: any, idx: number, thr = Infinity) {
-      const sp = g.sport;
-      const win = g.predicted_score && g.predicted_score.winner_abbr;
-      const awayWin = win && win === g.away_abbr;
-      const homeWin = win && win === g.home_abbr;
-      const hasIntel = !!g.pregame_intel;
-      const eb = edgeBadge(g, thr);
-      return `<tr data-gid="${esc(g.game_id || idx)}" class="${g.featured ? "featrow" : ""}">
-        <td>
-          <div class="mu">
-            ${g.featured ? `<span class="feat"></span>` : ""}
-            <span class="logos">${crestImg(sp, g.away_abbr)}${crestImg(sp, g.home_abbr)}</span>
-            <span class="mtxt">
-              <span class="teams"><span class="${awayWin ? "wn" : ""}">${esc(g.away_abbr)}</span><span class="at">@</span><span class="${homeWin ? "wn" : ""}">${esc(g.home_abbr)}</span>${hasIntel ? `<span class="intelchip" title="Pre-game intel available">intel</span>` : ""}</span>
-              <span class="meta">${statusMeta(g)}${eb}</span>
-            </span>
-          </div>
-        </td>
-        ${vegasSpread(g)}
-        ${vegasML(g)}
-        ${vegasTotal(g)}
-        ${pickCell(g.spread_pick, "spread", true)}
-        ${pickCell(g.ml_pick, "ml")}
-        ${pickCell(g.total_pick, "total")}
-        ${predScoreCell(g)}
-      </tr>`;
-    }
-
-    function tableHead() {
-      return `<thead><tr>
-        <th>Matchup</th>
-        <th class="ctr grp hide-md">Vegas Spread</th>
-        <th class="ctr hide-md">Vegas ML</th>
-        <th class="ctr hide-sm">Vegas Total</th>
-        <th class="ctr grp">Our Spread</th>
-        <th class="ctr">Our ML</th>
-        <th class="ctr">Our Total</th>
-        <th class="ctr grp hide-md">Predicted Score</th>
-      </tr></thead>`;
-    }
-
+    // ===================== W-T-L SUMMARIES =====================
+    // Day record = aggregate of that day's resolved picks across all 3 markets.
     function dayRecord(games: any[]) {
       let w = 0, l = 0, t = 0;
       games.forEach((g: any) => [g.spread_pick, g.ml_pick, g.total_pick].forEach((pk: any) => {
@@ -348,9 +191,236 @@ export default function Home() {
       return { w, l, t, settled: w + l + t };
     }
 
+    function dayRecordBand(games: any[], dispDate: string) {
+      const dr = dayRecord(games);
+      const pend = dr.w + dr.l; // decisions excluding pushes
+      const hit = pend ? ((dr.w / pend) * 100).toFixed(0) : null;
+      const recCls = dr.settled ? (dr.w > dr.l ? "up" : dr.w < dr.l ? "down" : "even") : "pending";
+      const subtitle = dr.settled
+        ? `${dr.settled} resolved pick${dr.settled > 1 ? "s" : ""} across spread, total${league === "mlb" || league === "soccer" ? " & moneyline" : ""}${hit ? ` · ${hit}% hit` : ""}`
+        : `${games.length} game${games.length > 1 ? "s" : ""} on the board — picks resolve once games go final`;
+      return `
+        <div class="dayband ${recCls}">
+          <div class="db-left">
+            <div class="db-lab">${esc(SPORT_LABEL[league])} · Day Record</div>
+            <div class="db-rec">
+              <span class="w">${dr.w}</span><span class="sep">–</span><span class="l">${dr.l}</span>${dr.t ? `<span class="t-wrap"><span class="dot">·</span><span class="t">${dr.t}T</span></span>` : ""}
+            </div>
+            <div class="db-sub">${esc(subtitle)}</div>
+          </div>
+          <div class="db-right">
+            <div class="db-date">${esc(dispDate)}</div>
+            ${dr.settled ? `<div class="db-mini"><span class="mk hit">${dr.w} won</span><span class="mk miss">${dr.l} lost</span>${dr.t ? `<span class="mk push">${dr.t} push</span>` : ""}</div>` : `<div class="db-mini"><span class="mk pend">awaiting results</span></div>`}
+          </div>
+        </div>`;
+    }
+
+    // Out-of-fold test record strip (the model's full credibility line).
+    function trackStrip() {
+      const tr = trackRecord().overall || {};
+      const w = tr.wins ?? 0, l = tr.losses ?? 0, p = tr.pushes ?? 0;
+      const hr = tr.hit_rate != null ? (tr.hit_rate * 100).toFixed(1) : "—";
+      const n = tr.n ?? (w + l + p);
+      const roi = tr.roi != null ? tr.roi * 100 : null;
+      const fwd = forwardRecord();
+      return `
+        <div class="trackstrip">
+          <span class="ts-k">Model Track Record</span>
+          <span class="ts-rec">${w.toLocaleString()}–${l.toLocaleString()}${p ? ` · ${p}T` : ""}</span>
+          <span class="ts-meta">${hr}% hit · ${(n || 0).toLocaleString()} out-of-fold picks${roi != null ? ` · ${(roi >= 0 ? "+" : "") + roi.toFixed(1)}% ROI` : ""}</span>
+          ${fwd ? `<span class="ts-fwd">${fmtRec(fwd)} real picks so far</span>` : ""}
+          <button class="ts-link" id="open-analyzer">Full Analyzer →</button>
+        </div>`;
+    }
+
+    // ===================== MARKET ROW (Vegas line + our pick overlay) =====================
+    // Renders one market line. Vegas number is the anchor; our pick is the overlay shown
+    // by colouring the side we back + a directional arrow + the confidence; ✓/✗/T when resolved.
+    function pickArrow(kind: string, side: any) {
+      if (kind === "total") {
+        const up = /over/i.test(String(side));
+        return up ? `<span class="arr up">▲</span>` : `<span class="arr down">▼</span>`;
+      }
+      return `<span class="arr take">▸</span>`;
+    }
+    function confTag(pk: any) {
+      if (!pk || pk.confidence == null) return "";
+      const tier = pk.tier || "low";
+      return `<span class="conftag ${tierCls(tier)}"><span class="tierdot ${tdotCls(tier)}"></span>${pk.confidence.toFixed(0)}%</span>`;
+    }
+    function resTag(st: any, pk: any) {
+      if (st === "hit") return `<span class="restag hit">✓ WON${pk && pk.result && pk.result.net_units != null ? ` ${pk.result.net_units >= 0 ? "+" : ""}${num(pk.result.net_units, 2)}u` : ""}</span>`;
+      if (st === "miss") return `<span class="restag miss">✗ LOST${pk && pk.result && pk.result.net_units != null ? ` ${num(pk.result.net_units, 2)}u` : ""}</span>`;
+      if (st === "push") return `<span class="restag push">T PUSH</span>`;
+      return "";
+    }
+
+    // SPREAD market row
+    function spreadRow(g: any) {
+      const pk = g.spread_pick;
+      const has = pk && pk.side != null;
+      const st = has ? resOf(pk) : null;
+      // Vegas: present the home-relative spread line. The pick side string carries team+line.
+      let vegas = "—";
+      if (pk && pk.line != null) {
+        const pr = pk.prices || {};
+        const price = pk.price ?? pr.home ?? pr.away;
+        const homeLine = spreadHomeLine(g, pk);
+        vegas = `<span class="vln">${esc(g.home_abbr)} ${sgn(homeLine)}</span> <span class="vpx">${fmtOdds(price)}</span>`;
+      }
+      return marketRow({
+        market: "Spread", vegas, hasPick: has, st,
+        pickHtml: has ? `${pickArrow("spread", pk.side)}<b>${esc(pk.side)}</b>${confTag(pk)}` : `<span class="nopick">no pick</span>`,
+        vig: pk ? pk.vig : null, kind: "spread",
+      });
+    }
+    // home-relative spread line (positive = home getting points)
+    function spreadHomeLine(g: any, pk: any) {
+      const line = Math.abs(Number(pk.line));
+      const side = String(pk.side || "");
+      // side names the team we back with its line, e.g. "EAG -2.5" or "STL +1.5"
+      const m = side.match(/([+-]?\d+(\.\d+)?)/);
+      const backedLine = m ? Number(m[1]) : line;
+      const backedHome = side.indexOf(g.home_abbr) === 0 || side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0;
+      // If we backed the home team, its line is backedLine; else home line is the inverse of away line.
+      if (backedHome) return backedLine;
+      return -backedLine;
+    }
+
+    // TOTAL market row
+    function totalRow(g: any) {
+      const pk = g.total_pick;
+      const has = pk && pk.side != null;
+      const st = has ? resOf(pk) : null;
+      let vegas = "—";
+      if (pk && pk.line != null) {
+        const pr = pk.prices || {};
+        const price = pk.price ?? pr.over ?? pr.under;
+        vegas = `<span class="vln">${num(pk.line)}</span> <span class="vpx">${fmtOdds(price)}</span>`;
+      }
+      return marketRow({
+        market: "Total", vegas, hasPick: has, st,
+        pickHtml: has ? `${pickArrow("total", pk.side)}<b>${esc(pk.side)}</b>${confTag(pk)}` : `<span class="nopick">no pick</span>`,
+        vig: pk ? pk.vig : null, kind: "total",
+      });
+    }
+
+    // MONEYLINE market row (MLB 2-way / soccer 3-way). Omitted entirely for NBA/NHL/NFL.
+    function mlRow(g: any) {
+      const pk = g.ml_pick;
+      if (!pk) return ""; // no ML market for this sport
+      const has = pk.side != null;
+      const st = has ? resOf(pk) : null;
+      const pr = pk.prices || {};
+      let vegas;
+      if (g.sport === "soccer") {
+        vegas = `<span class="ml3"><span class="m3 ${pk.side === g.home_abbr ? "on" : ""}">${esc(g.home_abbr)} ${fmtOdds(pr.home)}</span><span class="m3 ${/draw/i.test(String(pk.side)) ? "on" : ""}">Draw ${fmtOdds(pr.draw)}</span><span class="m3 ${pk.side === g.away_abbr ? "on" : ""}">${esc(g.away_abbr)} ${fmtOdds(pr.away)}</span></span>`;
+      } else {
+        const price = pk.price ?? pr.home ?? pr.away;
+        vegas = `<span class="vln">${esc(pk.side)} ${fmtOdds(price)}</span>`;
+      }
+      return marketRow({
+        market: "Moneyline", vegas, hasPick: has, st,
+        pickHtml: has ? `${pickArrow("ml", pk.side)}<b>${esc(pk.side)}</b>${confTag(pk)}` : `<span class="nopick">no pick</span>`,
+        vig: pk.vig, kind: "ml",
+      });
+    }
+
+    function marketRow(o: any) {
+      const rCls = o.st === "hit" ? "won" : o.st === "miss" ? "lost" : o.st === "push" ? "pushed" : "";
+      const sel = o.hasPick ? "picked" : "vegasonly";
+      const vigTxt = vigPct(o.vig);
+      return `<div class="mrow ${sel} ${rCls}">
+        <div class="mk-lab">${esc(o.market)}</div>
+        <div class="mk-vegas">${o.vegas}${vigTxt ? `<span class="mk-vig">vig ${vigTxt}</span>` : ""}</div>
+        <div class="mk-pick">${o.pickHtml}</div>
+        <div class="mk-res">${resTag(o.st, null) || (o.hasPick ? `<span class="restag open">open</span>` : "")}</div>
+      </div>`;
+    }
+
+    // ===================== GAME BOX =====================
+    function scoreBlock(g: any, gs: any) {
+      // Live/final score line; pre-game shows nothing here.
+      if (gs.kind === "pre" || !gs.score) return "";
+      const sc = gs.score;
+      if (sc.split && sc.home != null && sc.away != null) {
+        const aw = sc.away, hm = sc.home;
+        const homeWon = hm > aw, awayWon = aw > hm;
+        return `<div class="livescore">
+          <span class="ls-side ${awayWon ? "wn" : ""}"><span class="ls-ab">${esc(g.away_abbr)}</span><span class="ls-pt">${num(aw, 0)}</span></span>
+          <span class="ls-dash">–</span>
+          <span class="ls-side ${homeWon ? "wn" : ""}"><span class="ls-pt">${num(hm, 0)}</span><span class="ls-ab">${esc(g.home_abbr)}</span></span>
+        </div>`;
+      }
+      // only combined total known
+      return `<div class="livescore total-only"><span class="ls-tot">${num(sc.total, 0)} ${SPORT_UNIT[g.sport] || ""}</span></div>`;
+    }
+
+    function pitcherLine(g: any) {
+      const pi = g.pregame_intel || {};
+      const pit = pi.pitchers || {};
+      const pa = pit.away || {}, ph = pit.home || {};
+      const venue = pi.venue || (g.meta && g.meta.venue);
+      const bits: string[] = [];
+      if (pa.name || ph.name) {
+        const fmt = (p: any) => p.name ? `${esc(p.name)}${p.era != null ? ` (${num(p.era, 2)})` : ""}` : "TBD";
+        bits.push(`<span class="dl-pit">⚾ ${fmt(pa)} vs ${fmt(ph)}</span>`);
+      }
+      if (venue) bits.push(`<span class="dl-ven">${esc(venue)}</span>`);
+      if (g.sport === "soccer" && g.meta && g.meta.league) bits.push(`<span class="dl-ven">${esc(g.meta.league)}</span>`);
+      if (!bits.length) return "";
+      return `<div class="gb-detail">${bits.join('<span class="dl-sep">·</span>')}</div>`;
+    }
+
+    function gameBox(g: any, idx: number, thr = Infinity) {
+      const sp = g.sport;
+      const gs = gameState(g);
+      const eb = edgeBadge(g, thr);
+      const hasIntel = !!(g.pregame_intel && Object.keys(g.pregame_intel).length);
+      const stateBadge =
+        gs.kind === "live" ? `<span class="gb-status live"><span class="livedot"></span>LIVE</span>`
+        : gs.kind === "final" ? `<span class="gb-status final">FINAL</span>`
+        : `<span class="gb-status sched">${esc(gs.label)}</span>`;
+
+      // resolution summary for the box header
+      const dr = dayRecord([g]);
+      const boxRes = dr.settled ? `<span class="gb-rec ${dr.w > dr.l ? "up" : dr.w < dr.l ? "down" : "even"}">${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}</span>` : "";
+
+      const markets = [spreadRow(g), mlRow(g), totalRow(g)].filter(Boolean).join("");
+
+      return `<div class="gamebox ${g.featured ? "featured" : ""} ${gs.kind}" data-gid="${esc(g.game_id || idx)}">
+        <div class="gb-head">
+          <div class="gb-mu">
+            <span class="gb-logos">${crestImg(sp, g.away_abbr)}${crestImg(sp, g.home_abbr)}</span>
+            <span class="gb-teams">
+              <span class="gb-line1"><b>${esc(g.away_abbr)}</b><span class="gb-at">@</span><b>${esc(g.home_abbr)}</b>${g.featured ? `<span class="gb-feat">★ Featured</span>` : ""}</span>
+              <span class="gb-names">${esc(g.away_team || g.away_abbr)} at ${esc(g.home_team || g.home_abbr)}</span>
+            </span>
+          </div>
+          <div class="gb-state">
+            ${scoreBlock(g, gs)}
+            <div class="gb-statwrap">${stateBadge}${boxRes}</div>
+          </div>
+        </div>
+        ${pitcherLine(g)}
+        <div class="gb-markets">
+          <div class="mrow mhead"><div class="mk-lab">Market</div><div class="mk-vegas">Vegas Line</div><div class="mk-pick">Our Pick</div><div class="mk-res">${gs.kind === "final" ? "Result" : ""}</div></div>
+          ${markets}
+        </div>
+        ${eb ? `<div class="gb-foot">${eb}<span class="gb-more">tap for full read →</span></div>` : `<div class="gb-foot"><span class="gb-more">tap for full read →</span>${hasIntel ? `<span class="intelchip">intel</span>` : ""}</div>`}
+      </div>`;
+    }
+
     // ===================== RENDER: PICKS TAB =====================
+    function applyConfFilter(games: any[]) {
+      if (!confFloor) return games;
+      const kept = games.filter((g) => (g.top_confidence || 0) >= confFloor);
+      if (kept.length) return kept;
+      const sorted = [...games].sort((a, b) => (b.top_confidence || 0) - (a.top_confidence || 0));
+      return sorted.slice(0, 1);
+    }
+
     function renderPicks() {
-      // build league tabs (show count badges)
       const tabsHtml = SPORTS.map((lg) => {
         const cnt = payload ? gamesForLeague(payload, lg).length : 0;
         return `<button class="leaguetab ${lg === league ? "on" : ""}" data-lg="${lg}">${SPORT_LABEL[lg]}${cnt ? `<span class="cnt">${cnt}</span>` : ""}</button>`;
@@ -360,33 +430,29 @@ export default function Home() {
       const atMin = curDate <= minDate;
       const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 
-      let strip = "";
-      let body = "";
+      let band = "", body = "";
       if (rangeMode) {
+        band = trackStrip();
         body = renderRangeBody();
       } else {
         const games = payload ? gamesForLeague(payload, league) : [];
         const filtered = applyConfFilter(games);
         if (!payload) {
-          body = `<div class="tablewrap"><div class="state"><div class="spinner"></div><div class="big">Loading slate</div><div class="sm">Fetching ${esc(dispDate)}</div></div></div>`;
+          band = trackStrip();
+          body = `<div class="state"><div class="spinner"></div><div class="big">Loading slate</div><div class="sm">Fetching ${esc(dispDate)}</div></div>`;
         } else if (!filtered.length) {
-          body = `<div class="tablewrap"><div class="state"><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">${games.length ? "Lower the confidence filter to see them." : "Nothing on the board for " + esc(dispDate) + ". Try another date or league."}</div></div></div>`;
+          band = dayRecordBand([], dispDate) + trackStrip();
+          body = `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">${games.length ? "Lower the confidence filter to see them." : "Nothing on the board for " + esc(dispDate) + ". Try another date or league."}</div></div>`;
         } else {
           const thr = edgeThresholdFor(filtered);
-          const dr = dayRecord(filtered);
-          strip = bestBets(filtered);
-          body = `
-            <div class="tablewrap">
-              <table class="ptable">${tableHead()}<tbody>
-                ${filtered.map((g, i) => tableRow(g, i, thr)).join("")}
-              </tbody></table>
-            </div>
-            <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)}${dr.settled ? ` · graded picks ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""} · DiamondEdge pre-game model</div>`;
+          band = dayRecordBand(filtered, dispDate) + trackStrip();
+          body = `<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
+            <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)} · DiamondEdge pre-game model</div>`;
         }
       }
 
       root.querySelector("#picks-view").innerHTML = `
-        ${recordBand(league)}
+        <div id="band-area">${band}</div>
         <div class="leaguebar">
           <div class="leaguetabs">${tabsHtml}</div>
           <div class="controls">
@@ -405,7 +471,6 @@ export default function Home() {
           </div>
         </div>
         ${advOpen ? rangePanel() : ""}
-        <div id="best-strip">${strip}</div>
         <div id="picks-body">${body}</div>`;
 
       bindPicksControls();
@@ -425,45 +490,32 @@ export default function Home() {
     }
 
     function renderRangeBody() {
-      if (!rangeGames.length) return `<div class="tablewrap"><div class="state"><div class="big">No ${SPORT_LABEL[league]} games in range</div><div class="sm">Try a wider range or another league.</div></div></div>`;
-      let html = `<div class="tablewrap"><table class="ptable">${tableHead()}<tbody>`;
+      if (!rangeGames.length) return `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games in range</div><div class="sm">Try a wider range or another league.</div></div>`;
+      let html = "";
+      let W = 0, L = 0, T = 0, N = 0;
       rangeGames.forEach((day: any) => {
         const games = applyConfFilter(gamesForLeague({ games: day.games }, league));
         if (!games.length) return;
         const thr = edgeThresholdFor(games);
         const dr = dayRecord(games);
+        W += dr.w; L += dr.l; T += dr.t; N += games.length;
         const dd = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-        html += `<tr class="dayhdr"><td colspan="8">${esc(dd)}<span class="rr">${games.length} game${games.length > 1 ? "s" : ""}${dr.settled ? ` · ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""}</span></td></tr>`;
-        html += games.map((g, i) => tableRow(g, i, thr)).join("");
+        html += `<div class="dayhdr"><span class="dh-date">${esc(dd)}</span><span class="dh-rr">${games.length} game${games.length > 1 ? "s" : ""}${dr.settled ? ` · ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""}</span></div>`;
+        html += `<div class="docket">${games.map((g, i) => gameBox(g, i, thr)).join("")}</div>`;
       });
-      html += `</tbody></table></div>`;
-      // aggregate
-      let W = 0, L = 0, T = 0, N = 0;
-      rangeGames.forEach((day: any) => { const gs = applyConfFilter(gamesForLeague({ games: day.games }, league)); N += gs.length; const r = dayRecord(gs); W += r.w; L += r.l; T += r.t; });
       html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L + T ? ` · graded picks ${W}-${L}${T ? "-" + T : ""}` : ""}</div>`;
       return html;
-    }
-
-    function applyConfFilter(games: any[]) {
-      if (!confFloor) return games;
-      // keep games whose top_confidence >= floor; but always keep ≥1 (the surest play)
-      const kept = games.filter((g) => (g.top_confidence || 0) >= confFloor);
-      if (kept.length) return kept;
-      // floor too high — fall back to the single surest game
-      const sorted = [...games].sort((a, b) => (b.top_confidence || 0) - (a.top_confidence || 0));
-      return sorted.slice(0, 1);
     }
 
     function bindPicksControls() {
       root.querySelectorAll(".leaguetab").forEach((b: any) => (b.onclick = () => { league = b.dataset.lg; confFloor = 0; if (rangeMode) { runRange(); } renderPicks(); }));
       const slider = $("conf-slider");
       if (slider) {
-        // cap the slider so it always leaves ≥1 game: max = highest top_confidence in current league
         const games = rangeMode ? rangeGames.flatMap((d: any) => gamesForLeague({ games: d.games }, league)) : (payload ? gamesForLeague(payload, league) : []);
         const maxC = games.length ? Math.max(...games.map((g: any) => g.top_confidence || 0)) : 100;
         slider.max = Math.max(1, Math.floor(maxC));
         slider.oninput = () => { confFloor = Number(slider.value) || 0; const v = $("conf-val"); if (v) v.textContent = confFloor === 0 ? "All" : confFloor + "%+"; };
-        slider.onchange = () => { confFloor = Number(slider.value) || 0; if (rangeMode) { $("picks-body").innerHTML = renderRangeBody(); bindRowClicks(); } else { renderPicksBody(); } };
+        slider.onchange = () => { confFloor = Number(slider.value) || 0; renderPicksBody(); };
       }
       const advBtn = $("adv-btn"); if (advBtn) advBtn.onclick = () => { advOpen = !advOpen; renderPicks(); };
       const di = $("date-input"); if (di) di.onchange = () => { curDate = di.value; rangeMode = false; loadAndRenderDay(); };
@@ -474,8 +526,8 @@ export default function Home() {
       const rt = $("range-to"); if (rt) rt.onchange = () => (rangeTo = rt.value);
       const rg = $("range-go"); if (rg) rg.onclick = () => runRange();
       const rc = $("range-clear"); if (rc) rc.onclick = () => { rangeMode = false; renderPicks(); };
-      bindRowClicks();
-      bindBestBets();
+      const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer");
+      bindBoxClicks();
     }
 
     function renderPicksBody() {
@@ -485,32 +537,21 @@ export default function Home() {
       const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
       let body;
       if (!filtered.length) {
-        body = `<div class="tablewrap"><div class="state"><div class="big">No ${SPORT_LABEL[league]} games${isToday ? " today" : ""}</div><div class="sm">${confFloor > 0 ? "Lower the confidence filter, or " : ""}pick another date or league.</div></div></div>`;
-        const bs = $("best-strip"); if (bs) bs.innerHTML = "";
+        body = `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games${isToday ? " today" : ""}</div><div class="sm">${confFloor > 0 ? "Lower the confidence filter, or " : ""}pick another date or league.</div></div>`;
+        const ba = $("band-area"); if (ba) ba.innerHTML = dayRecordBand([], dispDate) + trackStrip();
       } else {
         const thr = edgeThresholdFor(filtered);
-        const dr = dayRecord(filtered);
-        body = `<div class="tablewrap"><table class="ptable">${tableHead()}<tbody>${filtered.map((g, i) => tableRow(g, i, thr)).join("")}</tbody></table></div>
-          <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)}${dr.settled ? ` · graded picks ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""} · DiamondEdge pre-game model</div>`;
-        const bs = $("best-strip"); if (bs) { bs.innerHTML = bestBets(filtered); }
+        body = `<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
+          <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)} · DiamondEdge pre-game model</div>`;
+        const ba = $("band-area"); if (ba) { ba.innerHTML = dayRecordBand(filtered, dispDate) + trackStrip(); const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer"); }
       }
       $("picks-body").innerHTML = body;
-      bindRowClicks();
-      bindBestBets();
+      bindBoxClicks();
     }
 
-    function bindRowClicks() {
-      root.querySelectorAll(".ptable tbody tr[data-gid]").forEach((tr: any) => {
-        tr.onclick = () => {
-          const gid = tr.dataset.gid;
-          const g = findGame(gid);
-          if (g) openDetail(g);
-        };
-      });
-    }
-    function bindBestBets() {
-      root.querySelectorAll(".bb-card").forEach((b: any) => {
-        b.onclick = () => { const g = findGame(b.dataset.gid); if (g) openDetail(g); };
+    function bindBoxClicks() {
+      root.querySelectorAll(".gamebox[data-gid]").forEach((bx: any) => {
+        bx.onclick = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
       });
     }
     function findGame(gid: any) {
@@ -525,10 +566,8 @@ export default function Home() {
 
     async function loadAndRenderDay() {
       confFloor = 0;
-      $("picks-body") && ($("picks-body").innerHTML = `<div class="tablewrap"><div class="state"><div class="spinner"></div><div class="big">Loading</div></div></div>`);
-      $("best-strip") && ($("best-strip").innerHTML = "");
+      $("picks-body") && ($("picks-body").innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Loading</div></div>`);
       payload = await loadDay(curDate);
-      // pick a sensible default league: keep current if present, else first present
       const present = leaguesPresent(payload);
       if (!present.has(league) && present.size) league = SPORTS.find((s) => present.has(s)) || league;
       renderPicks();
@@ -540,15 +579,12 @@ export default function Home() {
       rangeFrom = from; rangeTo = to;
       if (!from || !to) return;
       let a = from, b = to; if (a > b) { const t = a; a = b; b = t; }
-      // collect the index dates inside the range to avoid empty fetches
       await loadIndex();
       const allDates: string[] = (indexData && (indexData.dates || indexData.keyed_dates)) || [];
       const inRange = allDates.filter((d) => d >= a && d <= b);
-      // cap at 60 days to keep it fast
-      const dates = inRange.slice(-60);
+      const dates = inRange.slice(-30);
       rangeMode = true;
-      $("picks-body") && ($("picks-body").innerHTML = `<div class="tablewrap"><div class="state"><div class="spinner"></div><div class="big">Scanning ${dates.length} day${dates.length === 1 ? "" : "s"}</div><div class="sm">${esc(a)} → ${esc(b)}</div></div></div>`);
-      $("best-strip") && ($("best-strip").innerHTML = "");
+      $("picks-body") && ($("picks-body").innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Scanning ${dates.length} day${dates.length === 1 ? "" : "s"}</div><div class="sm">${esc(a)} → ${esc(b)}</div></div>`);
       const results = await Promise.all(dates.map(async (d) => ({ date: d, games: ((await snap("pregame_picks:" + d)) || {}).games || [] })));
       rangeGames = results.filter((r) => r.games.length).sort((x, y) => (x.date < y.date ? 1 : -1));
       confFloor = 0;
@@ -563,14 +599,12 @@ export default function Home() {
       return `<div class="dsec"><div class="dsec-h">Models vs. Market</div><div class="dsec-b"><table class="mtab"><thead><tr><th>Source</th><th style="text-align:right">Projection</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
     }
 
-    // ----- PRE-GAME INTEL (the "why this pick" depth) -----
     function intelSection(g: any) {
       const pi = g.pregame_intel;
       if (!pi) return "";
       const A = g.away_abbr, H = g.home_abbr;
       const blocks: string[] = [];
 
-      // Starting pitchers (MLB)
       const pit = pi.pitchers || {};
       const pa = pit.away || {}, ph = pit.home || {};
       if (pa.name || ph.name || pa.era != null || ph.era != null) {
@@ -578,7 +612,6 @@ export default function Home() {
         blocks.push(`<div class="ic-card"><div class="ic-h">Starting Pitchers</div><div class="ic-row2">${pp(A, pa)}<div class="ic-vs">vs</div>${pp(H, ph)}</div></div>`);
       }
 
-      // Venue + park factor
       const venue = pi.venue || (g.meta && g.meta.venue);
       if (venue || pi.park_factor != null) {
         const pf = pi.park_factor;
@@ -586,7 +619,6 @@ export default function Home() {
         blocks.push(`<div class="ic-card"><div class="ic-h">Venue</div><div class="ic-line"><b>${esc(venue || "—")}</b>${pf != null ? ` <span class="ic-pf ${pf > 1 ? "hot" : pf < 1 ? "cold" : ""}">park ${num(pf, 2)} · ${pfLabel}</span>` : ""}</div></div>`);
       }
 
-      // Recent form (last 10)
       const form = pi.form || {};
       const fa = form.away, fh = form.home;
       if (fa || fh) {
@@ -594,7 +626,6 @@ export default function Home() {
         blocks.push(`<div class="ic-card"><div class="ic-h">Recent Form</div><div class="ic-row2">${ff(A, fa)}${ff(H, fh)}</div></div>`);
       }
 
-      // Rest / days off
       const rest = pi.rest || {};
       const ra = rest.away, rh = rest.home;
       if (ra || rh) {
@@ -602,7 +633,6 @@ export default function Home() {
         blocks.push(`<div class="ic-card"><div class="ic-h">Rest</div><div class="ic-row2">${rr(A, ra)}${rr(H, rh)}</div></div>`);
       }
 
-      // Head to head
       const h = pi.h2h;
       if (h && (h.games || h.record)) {
         const lm = h.last_meeting;
@@ -637,12 +667,20 @@ export default function Home() {
       const ps = g.predicted_score || {};
       const homeWin = ps.winner_abbr === g.home_abbr;
       const dispDate = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
-      const st = (g.status || "pre").toLowerCase();
-      const startTxt = /^\d{4}-\d{2}-\d{2}$/.test(g.start_time || "") ? "" : g.start_time;
+      const gs = gameState(g);
+      const startTxt = isISO(g.start_time || "") ? "" : g.start_time;
       const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
 
-      const bets = [detailBet(g.spread_pick, "Spread", "spread", g), detailBet(g.ml_pick, "Moneyline", "ml", g), detailBet(g.total_pick, "Total", "total", g)].filter(Boolean).join("");
+      // actual score banner (live/final)
+      let actualBanner = "";
+      if (gs.score && gs.score.split && gs.score.home != null) {
+        const aw = gs.score.away, hm = gs.score.home;
+        actualBanner = `<div class="dactual ${gs.kind}"><span class="da-lab">${gs.kind === "final" ? "Final" : "Live"}</span><span class="da-sc">${esc(g.away_abbr)} ${num(aw, 0)} – ${num(hm, 0)} ${esc(g.home_abbr)}</span></div>`;
+      } else if (gs.score && gs.score.total != null) {
+        actualBanner = `<div class="dactual ${gs.kind}"><span class="da-lab">${gs.kind === "final" ? "Final" : "Live"}</span><span class="da-sc">${num(gs.score.total, 0)} ${SPORT_UNIT[sp] || ""}</span></div>`;
+      }
 
+      const bets = [detailBet(g.spread_pick, "Spread", "spread", g), detailBet(g.ml_pick, "Moneyline", "ml", g), detailBet(g.total_pick, "Total", "total", g)].filter(Boolean).join("");
       const reasoning = g.why && g.why.reasoning ? `<div class="dsec"><div class="dsec-h">Why This Read</div><div class="dsec-b reasoning">${esc(g.why.reasoning)}${g.why.chosen_rationale ? `<div class="rr2">${esc(g.why.chosen_rationale)}</div>` : ""}</div></div>` : "";
 
       const html = `
@@ -650,11 +688,12 @@ export default function Home() {
         <div class="drawer">
           <div class="drawer-head">
             <button class="close" id="drawer-close">✕</button>
-            <div class="dh-sport">${SPORT_LABEL[sp] || sp}${st === "final" ? " · Final" : st === "live" ? " · Live" : ""}</div>
+            <div class="dh-sport">${SPORT_LABEL[sp] || sp}${gs.kind === "final" ? " · Final" : gs.kind === "live" ? " · Live" : ""}</div>
             <div class="dh-mu">${esc(g.away_abbr)}<span class="at">@</span>${esc(g.home_abbr)}</div>
             <div class="dh-meta">${esc([g.matchup, dispDate, startTxt].filter(Boolean).join(" · "))}</div>
           </div>
           <div class="drawer-body">
+            ${actualBanner}
             <div class="dsec">
               <div class="dsec-h">Predicted Final Score</div>
               <div class="dsec-b">
@@ -791,7 +830,7 @@ export default function Home() {
             <div><h1>Diamond<b>Edge</b></h1><div class="tag">Pre-Game Model · 5 Leagues</div></div>
           </div>
           <div class="toptabs">
-            <button data-tab="picks" class="${tab === "picks" ? "on" : ""}">Picks</button>
+            <button data-tab="picks" class="${tab === "picks" ? "on" : ""}">Docket</button>
             <button data-tab="analyzer" class="${tab === "analyzer" ? "on" : ""}">Analyzer</button>
           </div>
           <div class="hspacer"></div>
@@ -818,11 +857,10 @@ export default function Home() {
     // ===================== INIT =====================
     (async function init() {
       renderShell();
-      $("picks-view").innerHTML = `<div class="tablewrap"><div class="state"><div class="spinner"></div><div class="big">Loading DiamondEdge</div><div class="sm">Fetching today's slate</div></div></div>`;
+      $("picks-view").innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Loading DiamondEdge</div><div class="sm">Fetching today's slate</div></div>`;
       await loadIndex();
       renderHeader();
       payload = await loadDay(curDate);
-      // default league = first present today, prefer MLB
       const present = leaguesPresent(payload);
       if (present.size && !present.has(league)) league = SPORTS.find((s) => present.has(s)) || "mlb";
       renderPicks();
