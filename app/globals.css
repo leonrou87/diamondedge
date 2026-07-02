@@ -202,6 +202,78 @@ main{max-width:1320px;margin:0 auto;padding:20px max(24px,var(--sar)) calc(70px 
 .gb-pred .ph-wp-fill{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--navy2),var(--navy))}
 .gb-pred .ph-wp-num{font-family:var(--mono);font-weight:700;font-size:11px;color:var(--navy)}
 
+/* ============ SUGGESTED PLAY (gated meta_confidence strategy) ============ */
+/* The prominent glass ribbon on a game box: side · price · conf · 3-yr tag.
+   Hit-rate and price always render together (house rule from the research spec). */
+.saplay{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 12px 9px;padding:9px 12px;border-radius:14px;
+  background:linear-gradient(120deg,rgba(12,35,64,.92),rgba(22,54,94,.86));color:#fff;
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 1px 1px rgba(255,255,255,.28) inset,0 8px 22px rgba(12,35,64,.30);position:relative;overflow:hidden}
+.saplay::after{content:"";position:absolute;right:-30px;top:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);pointer-events:none}
+.saplay .sa-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#ffd98a;white-space:nowrap}
+.sa-dia{color:#ffd98a;font-size:10px}
+.saplay .sa-side{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.02em;white-space:nowrap}
+.saplay .sa-px{font-family:var(--mono);font-weight:700;font-size:13px;color:#cfe0f5;cursor:help}
+.saplay .sa-conf{font-family:var(--mono);font-weight:700;font-size:12px;color:#7ee2a0;background:rgba(126,226,160,.14);border-radius:7px;padding:3px 8px}
+.saplay .sa-tag{font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#e6ecf5;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:3px 8px;margin-left:auto;cursor:help;white-space:nowrap}
+.saplay .sa-res{font-family:var(--mono);font-weight:700;font-size:11px;border-radius:7px;padding:3px 8px}
+.saplay .sa-res.won{color:#0a5c28;background:#8ff0b0}
+.saplay .sa-res.lost{color:#fff;background:rgba(200,16,46,.85)}
+.saplay .sa-res.pushed{color:#e6ecf5;background:rgba(255,255,255,.16)}
+.saplay.won{border-color:rgba(126,226,160,.55)}
+.saplay.lost{opacity:.88}
+
+/* The "Suggested Plays" strip at the top of the MLB docket */
+.sastrip{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);padding:13px 18px 11px;margin-bottom:16px;animation:rise .4s var(--spring) forwards}
+.sastrip .sas-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sastrip .sas-k{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy)}
+.sastrip .sas-n{font-family:var(--mono);font-weight:600;font-size:11px;color:var(--ink2);background:var(--pickbg);border-radius:6px;padding:2px 8px}
+.sastrip .sas-rec{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink2);cursor:help}
+.sastrip .sas-price{font-family:var(--mono);font-size:11px;font-weight:600;color:#9a5b00;background:var(--amberbg);border-radius:6px;padding:2px 8px;margin-left:auto}
+.sastrip .sas-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sas-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--pickline);background:var(--glass-hi);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:12px;padding:7px 11px;cursor:pointer;transition:.22s var(--spring);box-shadow:var(--shadow);font-family:var(--mono)}
+.sas-chip:hover{border-color:var(--navy);transform:translateY(-1px);box-shadow:var(--shadow-hi)}
+.sas-chip:active{transform:scale(.96)}
+.sas-chip .sc-mu{font-size:9.5px;font-weight:600;color:var(--ink3);letter-spacing:.02em}
+.sas-chip .sc-side{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--navy);letter-spacing:.02em}
+.sas-chip .sc-px{font-size:10.5px;font-weight:600;color:var(--ink2)}
+.sas-chip .sc-p{font-size:11px;font-weight:700;color:var(--green);background:var(--greenbg);border-radius:5px;padding:2px 6px}
+.sas-chip .sc-res{font-weight:700;font-size:11px;border-radius:5px;padding:2px 6px}
+.sas-chip .sc-res.won{color:var(--hit);background:var(--hitbg)}
+.sas-chip .sc-res.lost{color:var(--miss);background:var(--missbg)}
+.sas-chip .sc-res.pushed{color:var(--push);background:var(--pushbg)}
+.sas-chip.won{border-color:var(--hitline)}
+.sas-chip.lost{border-color:var(--missline);opacity:.85}
+.sastrip .sas-note{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:9px;border-top:1px dashed var(--line2);padding-top:8px}
+
+/* Drawer: full suggested-play context */
+.sa-dsec .dsec-h{color:var(--navy);background:linear-gradient(90deg,var(--pickbg),rgba(248,250,252,.55))}
+.dsa-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(120deg,rgba(12,35,64,.94),rgba(22,54,94,.88));color:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 1px 1px rgba(255,255,255,.25) inset,0 8px 20px rgba(12,35,64,.25)}
+.dsa-top .dsa-side{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:.02em}
+.dsa-top .dsa-nums{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dsa-top .dsa-px{font-family:var(--mono);font-weight:700;font-size:15px;color:#cfe0f5}
+.dsa-top .dsa-p{font-family:var(--mono);font-weight:700;font-size:13px;color:#7ee2a0;background:rgba(126,226,160,.14);border-radius:7px;padding:3px 9px}
+.dsa-top .dsa-res{font-family:var(--mono);font-weight:700;font-size:12px;border-radius:7px;padding:3px 9px}
+.dsa-top .dsa-res.won{color:#0a5c28;background:#8ff0b0}
+.dsa-top .dsa-res.lost{color:#fff;background:rgba(200,16,46,.85)}
+.dsa-top .dsa-res.pushed{color:#e6ecf5;background:rgba(255,255,255,.16)}
+.dsa-probs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.dsa-chip{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--ink2);background:var(--line3);border:1px solid var(--line2);border-radius:6px;padding:3px 8px}
+.dsa-chip.be{color:#9a5b00;background:var(--amberbg);border-color:#f0d49a}
+.dsa-tab{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+.dsa-tab th{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);text-align:right;padding:6px 8px;border-bottom:1px solid var(--line2)}
+.dsa-tab th:first-child{text-align:left}
+.dsa-tab td{padding:7px 8px;border-bottom:1px solid var(--line2);color:var(--ink)}
+.dsa-tab td.num{font-family:var(--mono);font-weight:600;text-align:right}
+.dsa-tab td.num.pos{color:var(--green)} .dsa-tab td.num.neg{color:var(--red)}
+.dsa-tab tr:last-child td{border-bottom:0}
+.dsa-foot{font-family:var(--mono);font-size:10.5px;color:var(--ink3);line-height:1.55;margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
+@media(max-width:640px){
+  .saplay{margin:0 8px 8px;gap:6px;padding:8px 10px}
+  .saplay .sa-side{font-size:14px}
+  .sastrip .sas-price{margin-left:0}
+}
+
 /* inline pre-game intel chips (all sports) */
 .gb-detail{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:0 16px 11px;border-bottom:1px solid var(--line2)}
 .ichip{font-family:var(--mono);font-size:9.5px;line-height:1;color:var(--ink2);background:var(--line3);border:1px solid var(--line2);border-radius:6px;padding:3px 7px;white-space:nowrap}
