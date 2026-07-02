@@ -31,16 +31,16 @@ export default function Home() {
     const esc = (s: any) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => (({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as any)[c]));
     const num = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : Number(v).toFixed(d));
     const sgn = (v: any, d = 1) => { if (v == null || isNaN(Number(v))) return "—"; const n = Number(v); return (n > 0 ? "+" : "") + n.toFixed(d); };
-    const fmtOdds = (o: any) => { if (o == null || o === "") return "—"; const n = Number(o); if (isNaN(n)) return "—"; if (n >= 100 || n <= -100) return n > 0 ? "+" + n : "" + n; const am = n >= 2 ? Math.round((n - 1) * 100) : Math.round(-100 / (n - 1)); return am > 0 ? "+" + am : "" + am; };
-    const vigPct = (v: any) => (v == null || isNaN(Number(v)) ? "" : (Number(v) * 100).toFixed(1) + "%");
+    const fmtOdds = (o: any) => { if (o == null || o === "") return "—"; const n = Number(o); if (isNaN(n)) return "—"; if (n >= 100 || n <= -100) return n > 0 ? "+" + Math.round(n) : "" + Math.round(n); const am = n >= 2 ? Math.round((n - 1) * 100) : Math.round(-100 / (n - 1)); return am > 0 ? "+" + am : "" + am; };
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
     const SPORTS = ["mlb", "nba", "nhl", "nfl", "soccer"];
     const SPORT_LABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
     const SPORT_UNIT: any = { mlb: "runs", nba: "pts", nhl: "goals", nfl: "pts", soccer: "goals" };
     const fmtRec = (o: any) => o ? `${o.wins || 0}-${o.losses || 0}${o.pushes ? "-" + o.pushes : ""}` : "—";
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
-    // A full ISO timestamp carries a time component (T + HH:MM). A bare "2025-05-06" does not.
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
+    const REDUCE = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const FINE_HOVER = typeof matchMedia !== "undefined" && matchMedia("(hover: hover) and (pointer: fine)").matches;
     // The viewer's local timezone abbreviation (e.g. "EDT", "PST") for labelling localized times.
     const TZ_ABBR = (() => {
       try {
@@ -50,13 +50,9 @@ export default function Home() {
       } catch { return ""; }
     })();
     // Localize a start time for display. Prefer `start_ts` (real ISO-8601 UTC) → viewer's TZ.
-    // Fall back to `start_time` (which for MLB is already a nice "8:15 PM ET" string, for WC an
-    // ISO string, and for old club games a bare date). Returns {time, date, iso} — time is the
-    // clock string to headline; date is a fallback day label; iso flags a raw timestamp.
     function startInfo(g: any) {
       const ts = g.start_ts;
       const raw = g.start_time || "";
-      // 1) Real UTC timestamp → localize to the viewer.
       if (isTS(ts)) {
         const d = new Date(ts);
         if (!isNaN(d.getTime())) {
@@ -65,7 +61,6 @@ export default function Home() {
           return { time: `${time}${TZ_ABBR ? " " + TZ_ABBR : ""}`, date, iso: true, hasTime: true };
         }
       }
-      // 2) start_time is itself an ISO timestamp (WC soccer: "2026-07-01T02:00Z") → localize it too.
       if (isTS(raw)) {
         const d = new Date(raw);
         if (!isNaN(d.getTime())) {
@@ -74,9 +69,7 @@ export default function Home() {
           return { time: `${time}${TZ_ABBR ? " " + TZ_ABBR : ""}`, date, iso: true, hasTime: true };
         }
       }
-      // 3) Nicely-formatted clock string already (MLB "8:15 PM ET").
       if (raw && !isISO(raw)) return { time: raw, date: "", iso: false, hasTime: true };
-      // 4) Only a bare date exists → show the date, no clock.
       if (isISO(raw)) {
         const d = new Date(raw + "T12:00:00");
         const date = isNaN(d.getTime()) ? String(raw) : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
@@ -84,14 +77,12 @@ export default function Home() {
       }
       return { time: "", date: "", iso: false, hasTime: false };
     }
-    // The calendar day a game belongs to, in the VIEWER's timezone. Prefer a real timestamp
-    // (start_ts, then an ISO start_time) localized to the viewer; fall back to the raw `date`.
-    // Returns "YYYY-MM-DD" or null. Used to scope the default docket to the viewer's today.
+    // The calendar day a game belongs to, in the VIEWER's timezone.
     function gameLocalDay(g: any) {
       const tsSrc = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
       if (tsSrc) {
         const d = new Date(tsSrc);
-        if (!isNaN(d.getTime())) return d.toLocaleDateString("en-CA"); // en-CA → YYYY-MM-DD in local tz
+        if (!isNaN(d.getTime())) return d.toLocaleDateString("en-CA");
       }
       const raw = String(g.date || "").slice(0, 10);
       return isISO(raw) ? raw : null;
@@ -106,19 +97,16 @@ export default function Home() {
     // crest markup (logo img OR text crest for soccer)
     function crestImg(sp: string, ab: any, cls = "") {
       const url = logoFor(sp, ab);
-      if (url) return `<img class="${cls}" src="${url}" onerror="this.style.visibility='hidden'" alt="">`;
+      if (url) return `<img class="${cls}" src="${url}" onerror="this.style.visibility='hidden'" alt="" loading="lazy">`;
       return `<span class="crest ${cls}">${esc((ab || "").slice(0, 3))}</span>`;
     }
 
     const resOf = (pk: any) => (pk && pk.result && pk.result.status ? pk.result.status : null); // hit|miss|push|null
     const tierCls = (t: any) => "tier-" + (t || "low");
-    const tdotCls = (t: any) => "tdot-" + (t || "low");
 
-    // ===================== SUGGESTED ACTIONS (gated meta_confidence strategy) =====================
-    // A game carries `suggested_action` only on the live MLB slate. status SUGGEST → we surface it
-    // as a first-class "Suggested Play"; status ABSTAIN → silent (abstention shows nothing).
-    // HOUSE RULE (from the research spec): the hit-rate NEVER renders without the price/ROI —
-    // this strategy wins ~60% of the time at short prices; both halves always show together.
+    // ===================== SUGGESTED ACTIONS (fallback source for DE Plays) =====================
+    // A game carries `suggested_action` only on the live MLB slate. status SUGGEST → surfaced;
+    // status ABSTAIN → silent. HOUSE RULE: the hit-rate NEVER renders without the price/ROI.
     const saOf = (g: any) => {
       const sa = g && g.suggested_action;
       return sa && sa.status === "SUGGEST" ? sa : null;
@@ -137,7 +125,6 @@ export default function Home() {
       };
     }
     const saRecStr = (sa: any) => (sa && sa.record_3yr) || "64.1% / 61.7% / 60.2% (2024/2025/2026)";
-    // breakeven at this suggestion's own price (falls back to the honesty block / 3yr avg)
     function saBreakeven(sa: any) {
       const h = sa && sa.honesty;
       if (h && h.breakeven_at_price != null) return Number(h.breakeven_at_price);
@@ -147,12 +134,130 @@ export default function Home() {
       return 1 / (1 + net);
     }
 
+    // ===================== DIAMONDEDGE PLAYS =====================
+    // The signature element: per game, per market (spread / total / moneyline), a TAKE (side +
+    // confidence) or an explicit PASS. Primary source is the new `de_plays` field; when absent,
+    // fall back to `suggested_action` (run-line TAKEs) + PASS for the other markets, so the UI is
+    // correct today and automatically richer when de_plays lands.
+    const MARKETS = ["spread", "total", "moneyline"];
+    const MK_LAB: any = { spread: "Spread", total: "Total", moneyline: "ML" };
+    const MK_FULL: any = { spread: "Spread", total: "Total", moneyline: "Moneyline" };
+
+    function normPlayResult(r: any) {
+      if (!r) return null;
+      let st = r.status || null;
+      if (!st) st = r.push === true ? "push" : r.won === true ? "hit" : r.won === false ? "miss" : null;
+      if (st === "won") st = "hit"; if (st === "lost") st = "miss";
+      if (st !== "hit" && st !== "miss" && st !== "push") return null;
+      const pnl = r.pnl != null ? Number(r.pnl) : (r.net_units != null ? Number(r.net_units) : null);
+      return { status: st, pnl };
+    }
+    // Build the WHY bullet list for a fallback suggested_action play — plain numbers, no hedging.
+    function saWhy(sa: any) {
+      const w: string[] = [];
+      if (sa.model_p_cover != null && sa.market_p_cover != null)
+        w.push(`Model has ${sa.side} covering ${saPct(sa.model_p_cover, 1)} of the time vs the market's implied ${saPct(sa.market_p_cover, 1)} — a ${((sa.model_p_cover - sa.market_p_cover) * 100).toFixed(1)}-pt edge in cover probability.`);
+      const p = sa.p_correct != null ? sa.p_correct : sa.meta_p;
+      if (p != null) w.push(`The gated meta-model puts this play at ${saPct(p, 1)} to cash.`);
+      if (sa.price != null) w.push(`${saAm(sa.price)} needs ${saPct(saBreakeven(sa), 1)} to break even; 3-yr hit ${saRecStr(sa)} at ~−184 avg.`);
+      if (sa.n_books) w.push(`Priced across ${sa.n_books} sportsbook${sa.n_books > 1 ? "s" : ""} (${sa.market_basis === "perbook_earliest_pregame" ? "earliest pregame lines" : "market consensus"}).`);
+      if (sa.reliability != null) w.push(`Line-reliability score ${(Number(sa.reliability) * 100).toFixed(0)}/100 for this matchup.`);
+      return w;
+    }
+    function normPlay(raw: any, mk: string) {
+      if (!raw || typeof raw !== "object") return null;
+      const action = String(raw.action || "").toUpperCase() === "TAKE" ? "TAKE" : "PASS";
+      return {
+        market: mk, action,
+        side: raw.side != null ? String(raw.side) : null,
+        line: raw.line != null ? Number(raw.line) : null,
+        price: raw.price != null ? raw.price : null,
+        p: raw.p_correct != null ? Number(raw.p_correct) : (raw.meta_p != null ? Number(raw.meta_p) : null),
+        tier: raw.confidence_tier || null,
+        why: Array.isArray(raw.why) ? raw.why : [],
+        result: normPlayResult(raw.result),
+        src: "de",
+      };
+    }
+    function gamePlays(g: any) {
+      const out: any = {};
+      const de = g && g.de_plays;
+      if (de && typeof de === "object") {
+        MARKETS.forEach((mk) => { out[mk] = normPlay(de[mk], mk) || { market: mk, action: "PASS", side: null, line: null, price: null, p: null, tier: null, why: [], result: null, src: "de" }; });
+        return out;
+      }
+      MARKETS.forEach((mk) => { out[mk] = { market: mk, action: "PASS", side: null, line: null, price: null, p: null, tier: null, why: [], result: null, src: "fb" }; });
+      const sa = saOf(g);
+      if (sa) {
+        out.spread = {
+          market: "spread", action: "TAKE",
+          side: sa.side != null ? String(sa.side) : null,
+          line: sa.line != null ? Number(sa.line) : null,
+          price: sa.price != null ? sa.price : null,
+          p: sa.p_correct != null ? Number(sa.p_correct) : (sa.meta_p != null ? Number(sa.meta_p) : null),
+          tier: sa.confidence_tier || null,
+          why: saWhy(sa),
+          result: normPlayResult(sa.result),
+          src: "sa", sa,
+        };
+      }
+      return out;
+    }
+    // Live clarity for a TAKE: an OVER that's already passed the line is clinched; an UNDER
+    // that's been passed is gone. Everything else in a live game is simply "in play".
+    function playLiveState(g: any, pl: any) {
+      if ((g.status || "").toLowerCase() !== "live" || pl.action !== "TAKE") return null;
+      if (pl.market === "total" && g.current_actuals && g.current_actuals.total_so_far != null) {
+        const line = pl.line != null ? pl.line : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
+        if (line != null) {
+          const t = Number(g.current_actuals.total_so_far);
+          const over = /over/i.test(String(pl.side));
+          if (t > line) return over ? "clinch-won" : "clinch-lost";
+        }
+      }
+      return "inplay";
+    }
+    const hasTake = (g: any) => { const P = gamePlays(g); return MARKETS.some((m) => P[m].action === "TAKE"); };
+
+    // Day record across DE Plays (TAKEs only, resolved results only).
+    function dayPlaysRecord(games: any[]) {
+      let w = 0, l = 0, t = 0, open = 0, takes = 0;
+      games.forEach((g: any) => {
+        const P = gamePlays(g);
+        MARKETS.forEach((mk) => {
+          const pl = P[mk];
+          if (pl.action !== "TAKE") return;
+          takes++;
+          const r = pl.result;
+          if (!r) { open++; return; }
+          if (r.status === "hit") w++; else if (r.status === "miss") l++; else t++;
+        });
+      });
+      return { w, l, t, open, takes, settled: w + l + t };
+    }
+    // Season-level plays record line — hit-rate and price/ROI always together (house rule).
+    function seasonPlaysLine() {
+      const dr = payload && payload.de_plays_record;
+      if (dr && typeof dr === "object") {
+        const parts: string[] = [];
+        if (dr.wins != null || dr.losses != null) parts.push(`${dr.wins || 0}–${dr.losses || 0}${dr.pushes ? `–${dr.pushes}` : ""}`);
+        const hit = dr.hit_rate != null ? dr.hit_rate : dr.hit;
+        if (hit != null && (dr.roi != null || dr.avg_price != null)) {
+          parts.push(`${saPct(hit, 1)} hit${dr.avg_price != null ? ` @ ${saAm(dr.avg_price)} avg` : ""}${dr.roi != null ? ` · ${(dr.roi >= 0 ? "+" : "") + (dr.roi * 100).toFixed(1)}% ROI` : ""}`);
+        }
+        if (dr.n != null) parts.push(`n=${dr.n}`);
+        if (parts.length) return parts.join(" · ");
+      }
+      const T = saTrack();
+      const fwd = T.fwd && T.fwd.n_settled ? ` · live ${saPct(T.fwd.hit, 1)} (${T.fwd.n_settled})` : "";
+      return `${saPct(T.g26.hit, 1)} hit @ −184 avg · ${(T.g26.roi * 100).toFixed(1)}% ROI · n=${T.g26.n} (’26)${fwd}`;
+    }
+
     // ===================== STATE =====================
-    let tab = "picks";              // "picks" | "analyzer"
+    let tab = "scores";             // "scores" | "analyzer"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
-    let confFloor = 0;              // confidence slider floor
-    let advOpen = false;            // advanced range open
+    let histOpen = false;           // history range panel open
     let rangeFrom = "", rangeTo = "";
     let rangeMode = false;          // showing range results
     let rangeGames: any[] = [];     // {date,games}
@@ -160,7 +265,6 @@ export default function Home() {
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
 
-    // full index range (2020 → 2026) so the date controls span the whole history
     let minDate = "2020-09-11";
     let maxDate = todayISO();
 
@@ -187,25 +291,34 @@ export default function Home() {
     function gamesForLeague(p: any, lg: string) {
       const all = (p && p.games) || [];
       let inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
-      // DEFAULT (today) VIEW: the `pregame_picks` slate carries a recent-finals tail from prior
-      // days. On the landing view — today, not a range scan — restrict to TODAY's games only:
-      //   • scheduled (pre) and in-progress (live) games are today's active slate by construction;
-      //   • finals are kept only when they finaled today (local day == viewer's today).
-      // This strips the prior-day finals tail while keeping tonight's board intact. The game's day
-      // is `start_ts` localized to the viewer's timezone, falling back to the `date` field. Date
-      // navigation to a specific past date still loads that whole day — this is today-view only.
+      // Today view: a real day slate. Pre games from today onward (the WC board includes
+      // tomorrow's fixtures), live games only if plausibly still live (no timestamp, or started
+      // within the last 12h — the payload carries stale "live" zombies from prior days), and
+      // finals only when they finaled today (local day == viewer's today).
       if (!rangeMode && curDate === todayISO()) {
         const t = todayISO();
         inLg = inLg.filter((g: any) => {
           const st = (g.status || "pre").toLowerCase();
-          if (st === "pre" || st === "live") return true;
-          return gameLocalDay(g) === t; // finals: only those that finaled today
+          if (st === "pre") { const d = gameLocalDay(g); return !d || d >= t; }
+          if (st === "live") {
+            const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
+            if (ts) {
+              const age = Date.now() - new Date(ts).getTime();
+              return isNaN(age) || age < 12 * 3600 * 1000;
+            }
+            const d = gameLocalDay(g);
+            return !d || d >= shiftDate(t, -1); // no timestamp: trust the date, allow overnight
+          }
+          return gameLocalDay(g) === t;
         });
       }
-      // featured first, then highest confidence
+      // Sports-app order: LIVE first, then upcoming by start time, then finals.
+      const ord: any = { live: 0, pre: 1, final: 2 };
       inLg.sort((a: any, b: any) => {
-        if (!!b.featured !== !!a.featured) return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
-        return (b.top_confidence || 0) - (a.top_confidence || 0);
+        const d = (ord[(a.status || "pre").toLowerCase()] ?? 1) - (ord[(b.status || "pre").toLowerCase()] ?? 1);
+        if (d) return d;
+        const ta = String(a.start_ts || a.start_time || ""), tb = String(b.start_ts || b.start_time || "");
+        return ta < tb ? -1 : ta > tb ? 1 : 0;
       });
       return inLg;
     }
@@ -227,61 +340,24 @@ export default function Home() {
       Object.values(src).forEach((o: any) => { agg.wins += o.wins || 0; agg.losses += o.losses || 0; agg.pushes += o.pushes || 0; agg.n += o.n || 0; });
       return agg.n ? agg : null;
     }
-    function trOverall() { return trackRecord().overall || {}; }
-
-    // ===================== EDGE / VALUE FLAGGING =====================
-    function edgeThresholdFor(games: any[]) {
-      const mags = games.flatMap((g: any) =>
-        [g.total_pick, g.spread_pick].map((pk: any) => (pk && pk.gap != null ? Math.abs(Number(pk.gap)) : null)).filter((x: any) => x != null && x >= 1)
-      ).sort((a: number, b: number) => a - b);
-      if (mags.length < 4) return Infinity;
-      return mags[Math.floor(mags.length * 0.8)];
-    }
-    function gameEdge(g: any) {
-      let best: any = null;
-      [["total", g.total_pick], ["spread", g.spread_pick]].forEach(([mk, pk]: any) => {
-        if (pk && pk.gap != null) { const mag = Math.abs(Number(pk.gap)); if (!best || mag > best.mag) best = { mag, gap: Number(pk.gap), market: mk, pk }; }
-      });
-      return best;
-    }
-    function edgeBadge(g: any, thr: number) {
-      const e = gameEdge(g);
-      if (!e || e.mag < thr || e.mag < 1) return "";
-      const unit = SPORT_UNIT[g.sport] || "";
-      const tip = `Our ${e.market} projection diverges ${e.mag.toFixed(1)} ${unit} from the line — one of the day's biggest disagreements with Vegas.`;
-      return `<span class="edgeflag" title="${esc(tip)}">◆ VALUE +${e.mag.toFixed(1)}</span>`;
-    }
 
     // ===================== SCORE DERIVATION =====================
-    // For live/final games there is no current-score field. Derive from pick results:
-    //   total_pick.result.actual = actual combined total
-    //   spread_pick.result.actual = actual margin (home − away)
-    //   home = (total + margin) / 2 ; away = (total − margin) / 2
-    // When only the total is present (NBA/NHL/soccer have no spread pick), fall back to
-    // the win-model's margin so we can still split the score; otherwise show the total only.
     function actualScore(g: any) {
       const tA = g.total_pick && g.total_pick.result ? g.total_pick.result.actual : null;
       const sA = g.spread_pick && g.spread_pick.result ? g.spread_pick.result.actual : null;
       const total = (typeof tA === "number") ? tA : null;
-      let margin = (typeof sA === "number") ? sA : null; // home − away
+      const margin = (typeof sA === "number") ? sA : null; // home − away
       if (total == null) return null;
       if (margin == null) return { total, home: null, away: null, margin: null, split: false };
       const home = (total + margin) / 2, away = (total - margin) / 2;
       return { total, home, away, margin, split: true };
     }
-
-    // status + score for a game (returns {label, cls, time, score, si})
     function gameState(g: any) {
       const st = (g.status || "pre").toLowerCase();
       const si = startInfo(g);
       const t = si.time || si.date || "";
-      if (st === "final") {
-        const sc = actualScore(g);
-        return { kind: "final", label: "Final", time: "", score: sc, si };
-      }
+      if (st === "final") return { kind: "final", label: "Final", time: "", score: actualScore(g), si };
       if (st === "live") {
-        // live games carry the real current score in current_actuals (result.actual is
-        // only set once final) — prefer it so in-progress boxes show the score + inning.
         const ca = g.current_actuals;
         if (ca && ca.home_score != null && ca.away_score != null) {
           const home = Number(ca.home_score), away = Number(ca.away_score);
@@ -289,65 +365,74 @@ export default function Home() {
         }
         return { kind: "live", label: "Live", time: t, score: actualScore(g), si };
       }
-      // Pre-game: headline the localized kickoff/start time when we have one.
       return { kind: "pre", label: t || "Scheduled", time: t, score: null, si };
     }
 
-    // ===================== W-T-L SUMMARIES =====================
-    // Day record = aggregate of that day's resolved picks across all 3 markets.
-    function dayRecord(games: any[]) {
-      let w = 0, l = 0, t = 0;
-      games.forEach((g: any) => [g.spread_pick, g.ml_pick, g.total_pick].forEach((pk: any) => {
-        const s = resOf(pk); if (s === "hit") w++; else if (s === "miss") l++; else if (s === "push") t++;
-      }));
-      return { w, l, t, settled: w + l + t };
+    // ===================== MICRO-INTERACTIONS =====================
+    // Animated number counters: elements carry data-count (target), data-dec, data-suf, data-loc.
+    function animateCounters(scope: any) {
+      const els = scope.querySelectorAll("[data-count]");
+      els.forEach((el: any) => {
+        const target = parseFloat(el.dataset.count);
+        if (isNaN(target)) return;
+        const dec = Number(el.dataset.dec || 0);
+        const suf = el.dataset.suf || "";
+        const loc = el.dataset.loc === "1";
+        const fmt = (v: number) => (loc ? Math.round(v).toLocaleString() : v.toFixed(dec)) + suf;
+        if (REDUCE) { el.textContent = fmt(target); return; }
+        const dur = 750, t0 = performance.now();
+        const step = (t: number) => {
+          const k = Math.min(1, (t - t0) / dur);
+          const e = 1 - Math.pow(1 - k, 3);
+          el.textContent = fmt(target * e);
+          if (k < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+    }
+    // Subtle 3D tilt on desktop hover — transforms only, disabled for reduced motion / touch.
+    function bindTilt(scope: any) {
+      if (REDUCE || !FINE_HOVER) return;
+      scope.querySelectorAll(".gamecard").forEach((card: any) => {
+        card.addEventListener("pointermove", (e: any) => {
+          const r = card.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width - 0.5;
+          const y = (e.clientY - r.top) / r.height - 0.5;
+          card.style.transform = `perspective(900px) rotateX(${(-y * 2.2).toFixed(2)}deg) rotateY(${(x * 2.8).toFixed(2)}deg) translateY(-2px)`;
+        });
+        card.addEventListener("pointerleave", () => { card.style.transform = ""; });
+      });
+    }
+    // Pull-to-refresh (touch): pull down from the top of the scores feed to reload the day.
+    let ptrBound = false;
+    function bindPull() {
+      if (ptrBound) return; ptrBound = true;
+      let y0: any = null, pull = 0, on = false;
+      document.addEventListener("touchstart", (e: any) => {
+        if (window.scrollY <= 0 && tab === "scores" && !detail) { y0 = e.touches[0].clientY; on = true; pull = 0; }
+      }, { passive: true });
+      document.addEventListener("touchmove", (e: any) => {
+        if (!on || y0 == null) return;
+        const el = $("ptr"); if (!el) return;
+        const d = e.touches[0].clientY - y0;
+        pull = Math.max(0, Math.min(88, d * 0.42));
+        el.style.height = pull + "px";
+        el.classList.toggle("ready", pull > 58);
+      }, { passive: true });
+      document.addEventListener("touchend", async () => {
+        if (!on) return; on = false;
+        const el = $("ptr");
+        if (pull > 58 && el) {
+          el.classList.add("go");
+          payload = await loadDay(curDate);
+          renderSlate();
+        }
+        if (el) { el.style.height = "0px"; el.classList.remove("ready", "go"); }
+        y0 = null; pull = 0;
+      });
     }
 
-    function dayRecordBand(games: any[], dispDate: string) {
-      const dr = dayRecord(games);
-      const pend = dr.w + dr.l; // decisions excluding pushes
-      const hit = pend ? ((dr.w / pend) * 100).toFixed(0) : null;
-      const recCls = dr.settled ? (dr.w > dr.l ? "up" : dr.w < dr.l ? "down" : "even") : "pending";
-      const subtitle = dr.settled
-        ? `${dr.settled} resolved pick${dr.settled > 1 ? "s" : ""} across spread, total${league === "mlb" || league === "soccer" ? " & moneyline" : ""}${hit ? ` · ${hit}% hit` : ""}`
-        : `${games.length} game${games.length > 1 ? "s" : ""} on the board — picks resolve once games go final`;
-      return `
-        <div class="dayband ${recCls}">
-          <div class="db-left">
-            <div class="db-lab">${esc(SPORT_LABEL[league])} · Day Record</div>
-            <div class="db-rec">
-              <span class="w">${dr.w}</span><span class="sep">–</span><span class="l">${dr.l}</span>${dr.t ? `<span class="t-wrap"><span class="dot">·</span><span class="t">${dr.t}T</span></span>` : ""}
-            </div>
-            <div class="db-sub">${esc(subtitle)}</div>
-          </div>
-          <div class="db-right">
-            <div class="db-date">${esc(dispDate)}</div>
-            ${dr.settled ? `<div class="db-mini"><span class="mk hit">${dr.w} won</span><span class="mk miss">${dr.l} lost</span>${dr.t ? `<span class="mk push">${dr.t} push</span>` : ""}</div>` : `<div class="db-mini"><span class="mk pend">awaiting results</span></div>`}
-          </div>
-        </div>`;
-    }
-
-    // Out-of-fold test record strip (the model's full credibility line).
-    function trackStrip() {
-      const tr = trackRecord().overall || {};
-      const w = tr.wins ?? 0, l = tr.losses ?? 0, p = tr.pushes ?? 0;
-      const hr = tr.hit_rate != null ? (tr.hit_rate * 100).toFixed(1) : "—";
-      const n = tr.n ?? (w + l + p);
-      const roi = tr.roi != null ? tr.roi * 100 : null;
-      const fwd = forwardRecord();
-      return `
-        <div class="trackstrip">
-          <span class="ts-k">Model Track Record</span>
-          <span class="ts-rec">${w.toLocaleString()}–${l.toLocaleString()}${p ? ` · ${p}T` : ""}</span>
-          <span class="ts-meta">${hr}% hit · ${(n || 0).toLocaleString()} out-of-fold picks${roi != null ? ` · ${(roi >= 0 ? "+" : "") + roi.toFixed(1)}% ROI` : ""}</span>
-          ${fwd ? `<span class="ts-fwd">${fmtRec(fwd)} real picks so far</span>` : ""}
-          <button class="ts-link" id="open-analyzer">Full Analyzer →</button>
-        </div>`;
-    }
-
-    // ===================== BET VISUALS =====================
-    // A compact SVG donut ring keyed to the confidence tier — the % fill matches the number,
-    // the colour matches the tier (featured/high/medium/low). Reads as a heat gauge at a glance.
+    // ===================== SHARED VISUALS (sheet) =====================
     function confRing(pk: any) {
       if (!pk || pk.confidence == null) return "";
       const tier = pk.tier || "low";
@@ -362,34 +447,6 @@ export default function Home() {
         <span class="cr-num">${c.toFixed(0)}</span>
       </span>`;
     }
-
-    // EDGE / VALUE — our projection vs the Vegas line. Returns markup showing "proj vs line → +Δ"
-    // coloured by the size of the divergence. `topValue` flags the day's biggest disagreement.
-    function edgeChip(pk: any, kind: string, g: any, topValue = false) {
-      if (!pk || pk.our_proj == null || pk.line == null) return "";
-      const unit = SPORT_UNIT[g.sport] || "";
-      let proj: number, line: number, delta: number;
-      if (kind === "spread") {
-        proj = Number(pk.our_proj); line = Number(pk.line);
-        // gap already encodes how far our margin diverges toward the side we back
-        delta = pk.gap != null ? Number(pk.gap) : proj - line;
-      } else if (kind === "total") {
-        proj = Number(pk.our_proj); line = Number(pk.line);
-        delta = pk.gap != null ? Number(pk.gap) : proj - line;
-      } else return "";
-      const mag = Math.abs(delta);
-      if (isNaN(mag)) return "";
-      const sizeCls = mag >= 1.5 ? "big" : mag >= 0.75 ? "mid" : "sm";
-      const sign = delta > 0 ? "+" : "";
-      const arrow = delta > 0.05 ? "▲" : delta < -0.05 ? "▼" : "•";
-      return `<span class="edgechip ${sizeCls}${topValue ? " topval" : ""}" title="Our projection ${num(proj, 1)} vs Vegas line ${num(line, 1)} ${unit} — a ${mag.toFixed(1)} ${unit} edge.">
-        ${topValue ? `<span class="tv">◆</span>` : ""}<span class="ec-proj">${num(proj, 1)}</span><span class="ec-vs">vs ${num(line, 1)}</span><span class="ec-d ${delta >= 0 ? "pos" : "neg"}">${arrow}${sign}${delta.toFixed(1)}</span>
-      </span>`;
-    }
-
-    // LINE MOVEMENT — open→current with a compact arrow + delta, a sharp-agreement badge when the
-    // market moved toward our pick (green ◆), a caution when it moved against (amber), and the
-    // snapshot count so you can gauge how much the line has been priced. null on non-MLB → "".
     function lineMove(pk: any) {
       const lm = pk && pk.line_move;
       if (!lm || lm.open_line == null || lm.current_line == null) return "";
@@ -400,7 +457,6 @@ export default function Home() {
       const fmtL = (v: number) => (isAmerican ? (v > 0 ? "+" + Math.round(v) : "" + Math.round(v)) : num(v, 1));
       const n = lm.n_snapshots != null ? lm.n_snapshots : null;
       if (mag === 0 || dir === "flat") {
-        // Flat is still information — the line held all the way through pregame.
         return `<span class="lmove flat" title="Line held from open through pregame across ${n || 0} snapshots.">
           <span class="lm-arrow">→</span><span class="lm-val">${fmtL(cur)}</span><span class="lm-tag">held${n ? ` · ${n}` : ""}</span>
         </span>`;
@@ -409,19 +465,15 @@ export default function Home() {
       const stateCls = toward === true ? "toward" : toward === false ? "against" : "neutral";
       const arrow = dir === "up" ? "▲" : dir === "down" ? "▼" : "→";
       const badge = toward === true
-        ? `<span class="lm-sharp toward" title="The market moved toward our side across ${n || 0} snapshots — sharp money agrees.">◆ your way</span>`
+        ? `<span class="lm-sharp toward" title="The market moved toward our side across ${n || 0} snapshots.">◆ your way</span>`
         : toward === false
-        ? `<span class="lm-sharp against" title="The market moved against our side across ${n || 0} snapshots — proceed with caution.">line drifting off</span>`
+        ? `<span class="lm-sharp against" title="The market moved against our side across ${n || 0} snapshots.">drifting off</span>`
         : "";
       return `<span class="lmove ${stateCls}" title="Line moved ${fmtL(open)} → ${fmtL(cur)} over ${n || 0} snapshots.">
         <span class="lm-open">${fmtL(open)}</span><span class="lm-arrow">${arrow}</span><span class="lm-cur">${fmtL(cur)}</span>${n ? `<span class="lm-n">·${n}</span>` : ""}${badge}
       </span>`;
     }
-
-    // LEAN METER — an innovative compact horizontal scale. The Vegas line is the centre tick; our
-    // projection sits as a marker offset toward the side we lean; the 80% interval renders as a
-    // translucent band. One glance shows which way we lean, how hard, and the uncertainty.
-    function leanMeter(pk: any, kind: string, g: any) {
+    function leanMeter(pk: any, kind: string) {
       if (!pk) return "";
       const line = pk.line != null ? Number(pk.line) : null;
       const proj = pk.our_proj != null ? Number(pk.our_proj) : null;
@@ -429,7 +481,6 @@ export default function Home() {
       const lo = iv.lo != null ? Number(iv.lo) : null;
       const hi = iv.hi != null ? Number(iv.hi) : null;
       if (line == null || proj == null || isNaN(line) || isNaN(proj)) return "";
-      // Scale: centre the line; span = max(interval half-width, |proj-line|) padded so markers stay in view.
       const spanCand = [Math.abs(proj - line)];
       if (lo != null && !isNaN(lo)) spanCand.push(Math.abs(lo - line));
       if (hi != null && !isNaN(hi)) spanCand.push(Math.abs(hi - line));
@@ -438,7 +489,6 @@ export default function Home() {
       const projPct = pos(proj);
       const bandL = lo != null && !isNaN(lo) ? pos(lo) : null;
       const bandR = hi != null && !isNaN(hi) ? pos(hi) : null;
-      // Which way do we lean? For totals: over/under. For spread: toward the backed side.
       const overish = kind === "total" ? /over/i.test(String(pk.side)) : proj > line;
       const leanCls = overish ? "over" : "under";
       const band = (bandL != null && bandR != null)
@@ -451,106 +501,10 @@ export default function Home() {
         <span class="ln-proj" style="left:${projPct.toFixed(1)}%"></span>
       </span>`;
     }
-
-    // ===================== MARKET ROW (Vegas line + our pick overlay) =====================
-    // Renders one market line. Vegas number is the anchor; our pick is the overlay shown
-    // by colouring the side we back + a directional arrow + the confidence; ✓/✗/T when resolved.
-    function pickArrow(kind: string, side: any) {
-      if (kind === "total") {
-        const up = /over/i.test(String(side));
-        return up ? `<span class="arr up">▲</span>` : `<span class="arr down">▼</span>`;
-      }
-      return `<span class="arr take">▸</span>`;
-    }
-    function confTag(pk: any) {
-      if (!pk || pk.confidence == null) return "";
-      const tier = pk.tier || "low";
-      return `<span class="conftag ${tierCls(tier)}"><span class="tierdot ${tdotCls(tier)}"></span>${pk.confidence.toFixed(0)}%</span>`;
-    }
-    function resTag(st: any, pk: any) {
-      if (st === "hit") return `<span class="restag hit">✓ WON${pk && pk.result && pk.result.net_units != null ? ` ${pk.result.net_units >= 0 ? "+" : ""}${num(pk.result.net_units, 2)}u` : ""}</span>`;
-      if (st === "miss") return `<span class="restag miss">✗ LOST${pk && pk.result && pk.result.net_units != null ? ` ${num(pk.result.net_units, 2)}u` : ""}</span>`;
-      if (st === "push") return `<span class="restag push">T PUSH</span>`;
-      return "";
-    }
-
-    // SPREAD market row
-    function spreadRow(g: any, topKind?: string) {
-      const pk = g.spread_pick;
-      const has = pk && pk.side != null;
-      const st = has ? resOf(pk) : null;
-      // Vegas: present the home-relative spread line. The pick side string carries team+line.
-      let vegas = "—";
-      if (pk && pk.line != null) {
-        const pr = pk.prices || {};
-        const price = pk.price ?? pr.home ?? pr.away;
-        const homeLine = spreadHomeLine(g, pk);
-        vegas = `<span class="vln">${esc(g.home_abbr)} ${sgn(homeLine)}</span> <span class="vpx">${fmtOdds(price)}</span>`;
-      }
-      return marketRow({
-        market: "Spread", vegas, hasPick: has, st, pk, g, kind: "spread",
-        pickHtml: has ? `${pickArrow("spread", pk.side)}<b>${esc(pk.side)}</b>` : `<span class="nopick">no pick</span>`,
-        insight: has ? `${edgeChip(pk, "spread", g, topKind === "spread")}${lineMove(pk)}${leanMeter(pk, "spread", g)}` : "",
-        vig: pk ? pk.vig : null,
-      });
-    }
-    // home-relative spread line (positive = home getting points)
-    function spreadHomeLine(g: any, pk: any) {
-      const line = Math.abs(Number(pk.line));
-      const side = String(pk.side || "");
-      // side names the team we back with its line, e.g. "EAG -2.5" or "STL +1.5"
-      const m = side.match(/([+-]?\d+(\.\d+)?)/);
-      const backedLine = m ? Number(m[1]) : line;
-      const backedHome = side.indexOf(g.home_abbr) === 0 || side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0;
-      // If we backed the home team, its line is backedLine; else home line is the inverse of away line.
-      if (backedHome) return backedLine;
-      return -backedLine;
-    }
-
-    // TOTAL market row
-    function totalRow(g: any, topKind?: string) {
-      const pk = g.total_pick;
-      const has = pk && pk.side != null;
-      const st = has ? resOf(pk) : null;
-      let vegas = "—";
-      if (pk && pk.line != null) {
-        const pr = pk.prices || {};
-        const price = pk.price ?? pr.over ?? pr.under;
-        vegas = `<span class="vln">${num(pk.line)}</span> <span class="vpx">${fmtOdds(price)}</span>`;
-      }
-      return marketRow({
-        market: "Total", vegas, hasPick: has, st, pk, g, kind: "total",
-        pickHtml: has ? `${pickArrow("total", pk.side)}<b>${esc(pk.side)}</b>` : `<span class="nopick">no pick</span>`,
-        insight: has ? `${edgeChip(pk, "total", g, topKind === "total")}${lineMove(pk)}${leanMeter(pk, "total", g)}` : "",
-        vig: pk ? pk.vig : null,
-      });
-    }
-
-    // Win-probability edge for the moneyline: our model P vs the market's implied P.
-    function mlEdgeChip(pk: any) {
-      const our = pk.our_winprob != null ? Number(pk.our_winprob) : null;
-      let mkt = pk.market_winprob != null ? Number(pk.market_winprob) : null;
-      if (mkt == null && pk.price != null) {
-        // Derive market-implied prob from the decimal price (vig-inclusive).
-        const d = Number(pk.price);
-        if (d > 1) mkt = 1 / d;
-      }
-      if (our == null) return "";
-      const ourPct = (our * 100);
-      if (mkt == null) return `<span class="edgechip sm"><span class="ec-proj">${ourPct.toFixed(0)}%</span><span class="ec-vs">win</span></span>`;
-      const mktPct = mkt * 100;
-      const d = ourPct - mktPct;
-      const sizeCls = Math.abs(d) >= 6 ? "big" : Math.abs(d) >= 3 ? "mid" : "sm";
-      const arrow = d > 0.5 ? "▲" : d < -0.5 ? "▼" : "•";
-      return `<span class="edgechip ${sizeCls}" title="Our win probability ${ourPct.toFixed(1)}% vs market-implied ${mktPct.toFixed(1)}%.">
-        <span class="ec-proj">${ourPct.toFixed(0)}%</span><span class="ec-vs">vs ${mktPct.toFixed(0)}%</span><span class="ec-d ${d >= 0 ? "pos" : "neg"}">${arrow}${d >= 0 ? "+" : ""}${d.toFixed(0)}</span>
-      </span>`;
-    }
-    // A win-probability lean meter: market-implied P is the centre tick, our P the marker.
     function wpLean(pk: any) {
       const our = pk.our_winprob != null ? Number(pk.our_winprob) : null;
       let mkt = pk.market_winprob != null ? Number(pk.market_winprob) : null;
-      if (mkt == null && pk.price != null) { const d = Number(pk.price); if (d > 1) mkt = 1 / d; }
+      if (mkt == null && pk.price != null) { const d = Number(pk.price); if (d > 1 && d < 100) mkt = 1 / d; }
       if (our == null || mkt == null) return "";
       const span = Math.max(0.06, Math.abs(our - mkt)) * 1.4;
       const pos = (v: number) => Math.max(2, Math.min(98, ((v - mkt!) / (2 * span)) * 100 + 50));
@@ -560,371 +514,388 @@ export default function Home() {
       </span>`;
     }
 
-    // MONEYLINE market row (MLB 2-way / soccer 3-way). Omitted entirely for NBA/NHL/NFL.
-    function mlRow(g: any) {
-      const pk = g.ml_pick;
-      if (!pk) return ""; // no ML market for this sport
-      const has = pk.side != null;
-      const st = has ? resOf(pk) : null;
-      const pr = pk.prices || {};
-      let vegas;
-      if (g.sport === "soccer") {
-        vegas = `<span class="ml3"><span class="m3 ${pk.side === g.home_abbr ? "on" : ""}">${esc(g.home_abbr)} ${fmtOdds(pr.home)}</span><span class="m3 ${/draw/i.test(String(pk.side)) ? "on" : ""}">Draw ${fmtOdds(pr.draw)}</span><span class="m3 ${pk.side === g.away_abbr ? "on" : ""}">${esc(g.away_abbr)} ${fmtOdds(pr.away)}</span></span>`;
-      } else {
-        const price = pk.price ?? pr.home ?? pr.away;
-        vegas = `<span class="vln">${esc(pk.side)} ${fmtOdds(price)}</span>`;
+    // ===================== GAME CARD =====================
+    // home-relative spread line (positive = home getting points)
+    function spreadHomeLine(g: any, pk: any) {
+      const line = Math.abs(Number(pk.line));
+      const side = String(pk.side || "");
+      const m = side.match(/([+-]?\d+(\.\d+)?)/);
+      const backedLine = m ? Number(m[1]) : line;
+      const backedHome = side.indexOf(g.home_abbr) === 0 || (side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0);
+      if (backedHome) return backedLine;
+      return -backedLine;
+    }
+    // Compact sportsbook odds row: spread · total · moneyline.
+    function oddsRow(g: any) {
+      const cells: string[] = [];
+      const sp = g.spread_pick;
+      if (sp && sp.line != null) {
+        const pr = sp.prices || {};
+        const hl = spreadHomeLine(g, sp);
+        const px = pr.home ?? sp.price;
+        cells.push(`<div class="oc"><span class="oc-k">Spread</span><span class="oc-v">${esc(g.home_abbr)} ${sgn(hl)}</span><span class="oc-p">${fmtOdds(px)}</span></div>`);
+      } else cells.push(`<div class="oc dim"><span class="oc-k">Spread</span><span class="oc-v">—</span></div>`);
+      const tp = g.total_pick;
+      if (tp && tp.line != null) {
+        const pr = tp.prices || {};
+        const both = pr.over != null || pr.under != null;
+        cells.push(`<div class="oc"><span class="oc-k">Total</span><span class="oc-v">O/U ${num(tp.line)}</span><span class="oc-p">${both ? `o${fmtOdds(pr.over)} · u${fmtOdds(pr.under)}` : fmtOdds(tp.price)}</span></div>`);
+      } else cells.push(`<div class="oc dim"><span class="oc-k">Total</span><span class="oc-v">—</span></div>`);
+      const mp = g.ml_pick;
+      if (mp && (mp.price != null || (mp.prices && (mp.prices.home != null || mp.prices.away != null)))) {
+        const pr = mp.prices || {};
+        if (g.sport === "soccer" && (pr.home != null || pr.draw != null || pr.away != null)) {
+          cells.push(`<div class="oc"><span class="oc-k">1 · X · 2</span><span class="oc-v">${fmtOdds(pr.home)} · ${fmtOdds(pr.draw)} · ${fmtOdds(pr.away)}</span></div>`);
+        } else {
+          cells.push(`<div class="oc"><span class="oc-k">ML</span><span class="oc-v">${esc(mp.side || "")}</span><span class="oc-p">${fmtOdds(mp.price ?? pr.home ?? pr.away)}</span></div>`);
+        }
+      } else cells.push(`<div class="oc dim"><span class="oc-k">ML</span><span class="oc-v">—</span></div>`);
+      return `<div class="gc-odds">${cells.join("")}</div>`;
+    }
+
+    // One DE Play chip (TAKE side+conf / PASS), with result + live states.
+    function playChip(g: any, pl: any) {
+      const mk = pl.market;
+      if (pl.action !== "TAKE") {
+        return `<button class="play pass" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="${MK_FULL[mk]}: pass">
+          <span class="pl-mk">${MK_LAB[mk]}</span><span class="pl-pass">Pass</span>
+        </button>`;
       }
-      return marketRow({
-        market: "Moneyline", vegas, hasPick: has, st, pk, g, kind: "ml",
-        pickHtml: has ? `${pickArrow("ml", pk.side)}<b>${esc(pk.side)}</b>` : `<span class="nopick">no pick</span>`,
-        insight: has ? `${mlEdgeChip(pk)}${lineMove(pk)}${wpLean(pk)}` : "",
-        vig: pk.vig,
-      });
-    }
-
-    function marketRow(o: any) {
-      const rCls = o.st === "hit" ? "won" : o.st === "miss" ? "lost" : o.st === "push" ? "pushed" : "";
-      const sel = o.hasPick ? "picked" : "vegasonly";
-      const vigTxt = vigPct(o.vig);
-      const ring = o.hasPick ? confRing(o.pk) : "";
-      const resHtml = resTag(o.st, o.pk) || (o.hasPick ? `<span class="restag open">open</span>` : "");
-      const insight = (o.insight || "").trim();
-      // Each market renders as a two-line unit: a top line (label · vegas · our lean+ring · result),
-      // then — when we have a pick — a full-width insight strip (edge · line-move · lean meter) below.
-      // Keeps every visual breathable and scannable without a cramped 5-column grid.
-      return `<div class="mrow ${sel} ${rCls}">
-        <div class="mk-top">
-          <div class="mk-lab">${esc(o.market)}</div>
-          <div class="mk-vegas">${o.vegas}${vigTxt ? `<span class="mk-vig">vig ${vigTxt}</span>` : ""}</div>
-          <div class="mk-pick">${o.pickHtml}${ring}</div>
-          <div class="mk-res">${resHtml}</div>
-        </div>
-        ${insight ? `<div class="mk-insight">${insight}</div>` : ""}
-      </div>`;
-    }
-
-    // ===================== GAME BOX =====================
-    function scoreBlock(g: any, gs: any) {
-      // Live/final score line; pre-game shows nothing here.
-      if (gs.kind === "pre" || !gs.score) return "";
-      const sc = gs.score;
-      if (sc.split && sc.home != null && sc.away != null) {
-        const aw = sc.away, hm = sc.home;
-        const homeWon = hm > aw, awayWon = aw > hm;
-        return `<div class="livescore">
-          <span class="ls-side ${awayWon ? "wn" : ""}"><span class="ls-ab">${esc(g.away_abbr)}</span><span class="ls-pt">${num(aw, 0)}</span></span>
-          <span class="ls-dash">–</span>
-          <span class="ls-side ${homeWon ? "wn" : ""}"><span class="ls-pt">${num(hm, 0)}</span><span class="ls-ab">${esc(g.home_abbr)}</span></span>
-        </div>`;
+      const live = playLiveState(g, pl);
+      const r = pl.result;
+      const rCls = r ? (r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed") : (live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : live === "inplay" ? "inplay" : "open");
+      let resHtml = "";
+      if (r) {
+        resHtml = r.status === "hit"
+          ? `<span class="pl-res won"><svg viewBox="0 0 16 16" width="12" height="12"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`
+          : r.status === "miss"
+          ? `<span class="pl-res lost">✗</span>`
+          : `<span class="pl-res pushed">P</span>`;
+      } else if (live === "clinch-won") {
+        resHtml = `<span class="pl-res clinched"><svg viewBox="0 0 16 16" width="11" height="11"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> clinched</span>`;
+      } else if (live === "clinch-lost") {
+        resHtml = `<span class="pl-res lost">✗</span>`;
+      } else if (live === "inplay") {
+        resHtml = `<span class="pl-res inplay"><span class="ip-dot"></span>in play</span>`;
       }
-      // only combined total known
-      return `<div class="livescore total-only"><span class="ls-tot">${num(sc.total, 0)} ${SPORT_UNIT[g.sport] || ""}</span></div>`;
+      const conf = pl.p != null ? `<span class="pl-p">${saPct(pl.p)}</span>` : (pl.tier ? `<span class="pl-p">${esc(pl.tier)}</span>` : "");
+      return `<button class="play take ${rCls}" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="${MK_FULL[mk]} play: ${esc(pl.side || "")}">
+        <span class="pl-mk">${MK_LAB[mk]}</span>
+        <span class="pl-side">${esc(pl.side || "—")}</span>
+        ${pl.price != null ? `<span class="pl-px">${fmtOdds(pl.price)}</span>` : ""}
+        ${conf}
+        ${resHtml}
+      </button>`;
     }
 
-    // The projected final score + win probability, shown as a compact head strip. The projected
-    // winner is bolded; the win-prob renders as a slim confidence bar.
-    function predictedHead(g: any) {
-      const ps = g.predicted_score || {};
-      const hasScore = ps.home != null && ps.away != null;
-      const wp = g.win_prob != null ? Number(g.win_prob) : (g.ml_pick && g.ml_pick.our_winprob != null ? Number(g.ml_pick.our_winprob) : null);
-      if (!hasScore && wp == null) return "";
-      const winner = ps.winner_abbr;
-      const homeWin = winner ? winner === g.home_abbr : (hasScore ? Number(ps.home) >= Number(ps.away) : true);
-      // win_prob is P(home win); express it toward the predicted winner for the bar.
-      const winnerP = wp == null ? null : (homeWin ? wp : 1 - wp);
-      const barPct = winnerP == null ? null : Math.max(50, Math.min(99, winnerP * 100));
-      let scoreHtml = "";
-      if (hasScore) {
-        const aw = num(ps.away, 1), hm = num(ps.home, 1);
-        scoreHtml = `<span class="ph-score"><span class="ph-ab ${!homeWin ? "w" : ""}">${esc(g.away_abbr)}</span><span class="ph-pt ${!homeWin ? "w" : ""}">${aw}</span><span class="ph-dash">–</span><span class="ph-pt ${homeWin ? "w" : ""}">${hm}</span><span class="ph-ab ${homeWin ? "w" : ""}">${esc(g.home_abbr)}</span></span>`;
-      }
-      const wpHtml = winnerP != null
-        ? `<span class="ph-wp"><span class="ph-wp-lab">${esc(winner || (homeWin ? g.home_abbr : g.away_abbr))} win</span><span class="ph-wp-bar"><span class="ph-wp-fill" style="width:${barPct!.toFixed(0)}%"></span></span><span class="ph-wp-num">${(winnerP * 100).toFixed(0)}%</span></span>`
-        : "";
-      if (!scoreHtml && !wpHtml) return "";
-      return `<div class="gb-pred"><span class="ph-lab">Projected</span>${scoreHtml}${wpHtml}</div>`;
-    }
-
-    // Inline pre-game intel chips (all sports): starting pitchers+ERA (MLB), recent form (L10),
-    // rest days, and H2H — surfaced cleanly as small chips. Plus the competition label (WC etc.).
-    function intelChips(g: any) {
+    function teamRow(g: any, which: "away" | "home", gs: any) {
+      const ab = which === "away" ? g.away_abbr : g.home_abbr;
+      const name = which === "away" ? (g.away_team || g.away_abbr) : (g.home_team || g.home_abbr);
       const pi = g.pregame_intel || {};
-      const meta = g.meta || {};
-      const chips: string[] = [];
-      const comp = meta.competition;
-      if (comp) chips.push(`<span class="ichip comp">${esc(comp)}</span>`);
-      const pit = pi.pitchers || {};
-      const pa = pit.away || {}, ph = pit.home || {};
-      if (pa.name || ph.name) {
-        const fmt = (p: any) => p.name ? `${esc(p.name.split(" ").slice(-1)[0])}${p.era != null ? ` ${num(p.era, 2)}` : ""}` : "TBD";
-        chips.push(`<span class="ichip pit" title="Starting pitchers (ERA)">⚾ ${fmt(pa)} · ${fmt(ph)}</span>`);
+      let sub = "";
+      const pit = (pi.pitchers || {})[which] || {};
+      const form = (pi.form || {})[which] || {};
+      if (pit.name) sub = `${esc(pit.name.split(" ").slice(-1)[0])}${pit.era != null ? ` · ${num(pit.era, 2)} ERA` : ""}`;
+      else if (form.last10_record) sub = `L10 ${esc(form.last10_record)}`;
+      const sc = gs.score;
+      let scoreHtml = "";
+      let winner = false;
+      if (gs.kind !== "pre" && sc && sc.split && sc.home != null) {
+        const mine = which === "home" ? sc.home : sc.away;
+        const other = which === "home" ? sc.away : sc.home;
+        winner = gs.kind === "final" && mine > other;
+        scoreHtml = `<span class="gc-score${gs.kind === "live" ? " live" : ""}" data-count="${num(mine, 0)}">${num(mine, 0)}</span>`;
       }
-      const form = pi.form || {};
-      const fa = form.away, fh = form.home;
-      if ((fa && fa.last10_record) || (fh && fh.last10_record)) {
-        chips.push(`<span class="ichip form" title="Last-10 record">L10 ${esc((fa && fa.last10_record) || "—")} · ${esc((fh && fh.last10_record) || "—")}</span>`);
-      }
-      const rest = pi.rest || {};
-      const ra = rest.away, rh = rest.home;
-      if ((ra && ra.days_off != null) || (rh && rh.days_off != null)) {
-        chips.push(`<span class="ichip rest" title="Days of rest">🛌 ${ra && ra.days_off != null ? ra.days_off : "—"}·${rh && rh.days_off != null ? rh.days_off : "—"}d</span>`);
-      }
-      const h = pi.h2h;
-      if (h && h.record) chips.push(`<span class="ichip h2h" title="Head-to-head record">H2H ${esc(h.record)}${h.games ? ` (${h.games})` : ""}</span>`);
-      const venue = pi.venue || meta.venue;
-      if (venue) chips.push(`<span class="ichip ven" title="Venue">${esc(venue)}</span>`);
-      const pf = pi.park_factor;
-      if (pf != null && pf !== 1) chips.push(`<span class="ichip pf ${pf > 1 ? "hot" : "cold"}" title="Park factor">park ${num(pf, 2)}</span>`);
-      if (!chips.length) return "";
-      return `<div class="gb-detail">${chips.join("")}</div>`;
-    }
-
-    // Which market carries the game's strongest divergence from Vegas — flagged as top value.
-    function topValueKind(g: any) {
-      const e = gameEdge(g);
-      return e ? e.market : "";
-    }
-
-    // The prominent glass "SUGGESTED PLAY" ribbon on a game box. Side + confidence + the
-    // 3-yr tag + the price (hit-rate and price always together). Settled plays tint ✓/✗.
-    function saRibbon(g: any) {
-      const sa = saOf(g);
-      if (!sa) return "";
-      const res = sa.result || null;
-      const resCls = res ? (res.push ? "pushed" : res.won ? "won" : "lost") : "";
-      const resTxt = res ? (res.push ? "PUSH" : res.won ? "✓ WON" : "✗ LOST") : "";
-      return `<div class="saplay ${resCls}">
-        <span class="sa-badge"><span class="sa-dia">◆</span>Suggested Play</span>
-        <span class="sa-side">${esc(sa.side)}</span>
-        <span class="sa-px" title="${esc(sa.price_note || "")}">${saAm(sa.price)}</span>
-        <span class="sa-conf" title="Model P(correct) for this suggestion">${saPct(sa.p_correct != null ? sa.p_correct : sa.meta_p)} conf</span>
-        <span class="sa-tag" title="Suggested-play hit rate ${esc(saRecStr(sa))} · avg price ~-184">60% 3-yr</span>
-        ${resTxt ? `<span class="sa-res ${resCls}">${resTxt}</span>` : ""}
+      return `<div class="gc-trow ${winner ? "winner" : ""} ${gs.kind === "final" && !winner && sc && sc.split ? "loser" : ""}">
+        <span class="gc-crest">${crestImg(g.sport, ab)}</span>
+        <span class="gc-ab">${esc(ab)}</span>
+        <span class="gc-nm">${esc(name)}</span>
+        ${sub ? `<span class="gc-sub">${sub}</span>` : ""}
+        ${scoreHtml}
       </div>`;
     }
 
-    // The "Suggested Plays" strip at the top of the MLB docket — today's suggestions in one
-    // glance, with the 3-year record AND the price cost side by side (never one without the other).
-    function suggestedStrip(games: any[]) {
-      if (league !== "mlb") return "";
-      const plays = games.filter((g) => saOf(g));
-      if (!plays.length) return "";
-      const T = saTrack();
-      const chips = plays.map((g) => {
-        const sa = saOf(g);
-        const res = sa.result || null;
-        const resCls = res ? (res.push ? "pushed" : res.won ? "won" : "lost") : "";
-        return `<button class="sas-chip ${resCls}" data-gid="${esc(g.game_id)}">
-          <span class="sc-mu">${esc(g.away_abbr)}@${esc(g.home_abbr)}</span>
-          <span class="sc-side">${esc(sa.side)}</span>
-          <span class="sc-px">${saAm(sa.price)}</span>
-          <span class="sc-p">${saPct(sa.p_correct != null ? sa.p_correct : sa.meta_p)}</span>
-          ${res ? `<span class="sc-res ${resCls}">${res.push ? "P" : res.won ? "✓" : "✗"}</span>` : ""}
+    function gameCard(g: any, idx: number) {
+      const gs = gameState(g);
+      const P = gamePlays(g);
+      const anyTake = MARKETS.some((m) => P[m].action === "TAKE");
+      let stateHtml = "";
+      if (gs.kind === "live") {
+        stateHtml = `<span class="gc-live"><span class="livedot"></span>LIVE</span><span class="gc-period">${esc(gs.label !== "Live" ? gs.label : "")}</span>`;
+      } else if (gs.kind === "final") {
+        stateHtml = `<span class="gc-final">Final</span>${!rangeMode && curDate !== todayISO() ? "" : ""}`;
+      } else {
+        const dayLbl = gameLocalDay(g) && gameLocalDay(g) !== curDate ? `<span class="gc-day">${esc(gs.si.date)}</span>` : "";
+        stateHtml = `<span class="gc-time">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : (gs.si.date || "TBD"))}</span>${dayLbl}`;
+      }
+      const comp = g.meta && g.meta.competition ? `<span class="gc-comp">${esc(g.meta.competition)}</span>` : "";
+      // total-only score (no split available)
+      const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
+        ? `<div class="gc-totonly">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
+      return `<article class="gamecard ${gs.kind}${anyTake ? " has-play" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}">
+        <div class="gc-top">
+          <div class="gc-teams">
+            ${teamRow(g, "away", gs)}
+            ${teamRow(g, "home", gs)}
+          </div>
+          <div class="gc-state">${comp}${stateHtml}</div>
+        </div>
+        ${totOnly}
+        ${oddsRow(g)}
+        <div class="gc-plays">
+          <span class="gp-brand" title="DiamondEdge Play"><span class="gp-dia">◆</span><span class="gp-txt">DE<br>Play</span></span>
+          <div class="gp-chips">${MARKETS.map((mk) => playChip(g, P[mk])).join("")}</div>
+        </div>
+      </article>`;
+    }
+
+    // ===================== PLAYS RECORD BAND (sticky) =====================
+    function playsBand(games: any[]) {
+      const r = dayPlaysRecord(games);
+      const season = seasonPlaysLine();
+      const recCls = r.settled ? (r.w > r.l ? "up" : r.w < r.l ? "down" : "even") : "pending";
+      const today = r.takes
+        ? `<span class="pb-rec"><b class="w" data-count="${r.w}">${r.w}</b><i>–</i><b class="l" data-count="${r.l}">${r.l}</b>${r.t ? `<i>–</i><b class="t">${r.t}</b>` : ""}</span>${r.open ? `<span class="pb-open">${r.open} open</span>` : ""}`
+        : `<span class="pb-none">no plays today</span>`;
+      return `<div class="playsband ${recCls}">
+        <span class="pb-k"><span class="pb-dia">◆</span>DiamondEdge Plays</span>
+        ${today}
+        <span class="pb-season">${esc(season)}</span>
+      </div>`;
+    }
+
+    // Recently-graded plays from the payload's finals tail (prior days) — shown as a compact
+    // results rail on the today view so ✓/✗ results are always visible without polluting the
+    // day slate. Works off de_plays when present, suggested_action otherwise.
+    function recentResultsRail() {
+      if (rangeMode || curDate !== todayISO() || !payload) return "";
+      const t = todayISO();
+      const graded: any[] = [];
+      ((payload.games || []) as any[]).forEach((g: any) => {
+        if ((g.sport || "").toLowerCase() !== league) return;
+        const d = gameLocalDay(g);
+        if (d && d >= t) return; // today's results show on the cards themselves
+        const P = gamePlays(g);
+        MARKETS.forEach((mk) => {
+          const pl = P[mk];
+          if (pl.action === "TAKE" && pl.result) graded.push({ g, pl, d: d || "" });
+        });
+      });
+      if (!graded.length) return "";
+      graded.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0));
+      let w = 0, l = 0, p = 0;
+      graded.forEach((x) => { if (x.pl.result.status === "hit") w++; else if (x.pl.result.status === "miss") l++; else p++; });
+      const chips = graded.slice(0, 12).map(({ g, pl, d }: any) => {
+        const st = pl.result.status;
+        const cls = st === "hit" ? "won" : st === "miss" ? "lost" : "pushed";
+        const mark = st === "hit"
+          ? `<span class="pl-res won"><svg viewBox="0 0 16 16" width="11" height="11"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`
+          : st === "miss" ? `<span class="pl-res lost">✗</span>` : `<span class="pl-res pushed">P</span>`;
+        const day = d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+        return `<button class="rr-chip ${cls}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}">
+          <span class="rr-mu">${esc(g.away_abbr)}@${esc(g.home_abbr)}</span>
+          <span class="rr-side">${esc(pl.side || "")}</span>
+          ${pl.price != null ? `<span class="rr-px">${fmtOdds(pl.price)}</span>` : ""}
+          ${mark}
+          ${day ? `<span class="rr-day">${esc(day)}</span>` : ""}
         </button>`;
       }).join("");
-      const fwd = T.fwd && T.fwd.n_settled ? ` · live ${T.fwd.hit != null ? saPct(T.fwd.hit, 1) : "—"} (${T.fwd.n_settled})` : "";
-      return `<div class="sastrip">
-        <div class="sas-head">
-          <span class="sas-k"><span class="sa-dia">◆</span>Suggested Plays</span>
-          <span class="sas-n">${plays.length} today</span>
-          <span class="sas-rec" title="2024 validation / 2025 test / 2026 one-shot gate — n=${T.g26.n} gated bets">hit ${saPct(T.v24.hit, 1)} / ${saPct(T.t25.hit, 1)} / ${saPct(T.g26.hit, 1)} (’24/’25/’26)${fwd}</span>
-          <span class="sas-price">avg price −184 · needs ${saPct(0.648, 1)} · ROI ${(T.g26.roi * 100).toFixed(1)}% in ’26</span>
-        </div>
-        <div class="sas-list">${chips}</div>
-        <div class="sas-note">wins ~60% of the time · loses ~5–7¢ per $1 at these prices — a hit-rate strategy, not a value play</div>
+      return `<div class="resultsrail">
+        <div class="rr-head"><span class="rr-k"><span class="gp-dia">◆</span>Recent Play Results</span><span class="rr-rec"><b class="w">${w}</b>–<b class="l">${l}</b>${p ? `–<b class="t">${p}</b>` : ""} last ${graded.length} plays</span></div>
+        <div class="rr-list">${chips}</div>
       </div>`;
     }
 
-    function gameBox(g: any, idx: number, thr = Infinity) {
-      const sp = g.sport;
-      const gs = gameState(g);
-      const eb = edgeBadge(g, thr);
-      const hasIntel = !!(g.pregame_intel && Object.keys(g.pregame_intel).length);
-      // The scheduled start time — always show it on pre-game boxes (localized from start_ts).
-      const kickoff = gs.kind === "pre" && gs.si.hasTime && gs.si.time
-        ? `<span class="gb-status sched"><span class="clockico">◷</span>${esc(gs.si.time)}</span>`
-        : gs.kind === "pre" ? `<span class="gb-status sched">${esc(gs.label)}</span>` : "";
-      const stateBadge =
-        gs.kind === "live" ? `<span class="gb-status live"><span class="livedot"></span>LIVE${gs.label && gs.label !== "Live" ? " · " + esc(gs.label) : ""}</span>`
-        : gs.kind === "final" ? `<span class="gb-status final">FINAL</span>`
-        : kickoff;
-
-      // resolution summary for the box header
-      const dr = dayRecord([g]);
-      const boxRes = dr.settled ? `<span class="gb-rec ${dr.w > dr.l ? "up" : dr.w < dr.l ? "down" : "even"}">${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}</span>` : "";
-
-      const tv = topValueKind(eb ? g : {}); // only route a top-value badge when this game clears the day's edge bar
-      const markets = [spreadRow(g, tv), mlRow(g), totalRow(g, tv)].filter(Boolean).join("");
-
-      return `<div class="gamebox ${g.featured ? "featured" : ""} ${gs.kind}" data-gid="${esc(g.game_id || idx)}">
-        <div class="gb-head">
-          <div class="gb-mu">
-            <span class="gb-logos">${crestImg(sp, g.away_abbr)}${crestImg(sp, g.home_abbr)}</span>
-            <span class="gb-teams">
-              <span class="gb-line1"><b>${esc(g.away_abbr)}</b><span class="gb-at">@</span><b>${esc(g.home_abbr)}</b>${g.featured ? `<span class="gb-feat">★ Featured</span>` : ""}</span>
-              <span class="gb-names">${esc(g.away_team || g.away_abbr)} at ${esc(g.home_team || g.home_abbr)}</span>
-            </span>
-          </div>
-          <div class="gb-state">
-            ${scoreBlock(g, gs)}
-            <div class="gb-statwrap">${stateBadge}${boxRes}</div>
-          </div>
-        </div>
-        ${saRibbon(g)}
-        ${predictedHead(g)}
-        ${intelChips(g)}
-        <div class="gb-markets">
-          <div class="mhead"><span class="mh-lab">Market</span><span class="mh-vegas">Vegas</span><span class="mh-pick">Our Lean · Conf</span><span class="mh-res">${gs.kind === "final" ? "Result" : ""}</span></div>
-          ${markets}
-        </div>
-        ${eb ? `<div class="gb-foot">${eb}<span class="gb-more">tap for full read →</span></div>` : `<div class="gb-foot"><span class="gb-more">tap for full read →</span>${hasIntel ? `<span class="intelchip">intel</span>` : ""}</div>`}
-      </div>`;
+    // ===================== SCORES TAB =====================
+    function skeletonSlate(n = 5) {
+      let cards = "";
+      for (let i = 0; i < n; i++) {
+        cards += `<div class="skcard" style="--i:${i}">
+          <div class="sk-row"><span class="sk sk-crest"></span><span class="sk sk-line w60"></span><span class="sk sk-line w14 r"></span></div>
+          <div class="sk-row"><span class="sk sk-crest"></span><span class="sk sk-line w48"></span><span class="sk sk-line w14 r"></span></div>
+          <div class="sk-row mt"><span class="sk sk-line w24"></span><span class="sk sk-line w24"></span><span class="sk sk-line w24"></span></div>
+        </div>`;
+      }
+      return `<div class="slate">${cards}</div>`;
     }
 
-    // ===================== RENDER: PICKS TAB =====================
-    function applyConfFilter(games: any[]) {
-      if (!confFloor) return games;
-      const kept = games.filter((g) => (g.top_confidence || 0) >= confFloor);
-      if (kept.length) return kept;
-      const sorted = [...games].sort((a, b) => (b.top_confidence || 0) - (a.top_confidence || 0));
-      return sorted.slice(0, 1);
+    function dateStripHtml() {
+      const chips: string[] = [];
+      const today = todayISO();
+      let d = shiftDate(today, -13);
+      if (d < minDate) d = minDate;
+      let cur = d;
+      while (cur <= today) {
+        const dt = new Date(cur + "T12:00:00");
+        const isToday = cur === today;
+        const on = cur === curDate && !rangeMode;
+        chips.push(`<button class="dchip ${on ? "on" : ""} ${isToday ? "today" : ""}" data-date="${cur}">
+          <span class="dc-wd">${isToday ? "Today" : dt.toLocaleDateString("en-US", { weekday: "short" })}</span>
+          <span class="dc-d">${dt.getDate()}</span>
+        </button>`);
+        cur = shiftDate(cur, 1);
+      }
+      return chips.join("");
     }
 
-    function renderPicks() {
+    function renderScoresChrome() {
       const tabsHtml = SPORTS.map((lg) => {
         const cnt = payload ? gamesForLeague(payload, lg).length : 0;
-        return `<button class="leaguetab ${lg === league ? "on" : ""}" data-lg="${lg}">${SPORT_LABEL[lg]}${cnt ? `<span class="cnt">${cnt}</span>` : ""}</button>`;
+        return `<button class="sporttab ${lg === league ? "on" : ""}" data-lg="${lg}">${SPORT_LABEL[lg]}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
-
-      const isToday = curDate === todayISO();
-      const atMin = curDate <= minDate;
-      const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-
-      let band = "", body = "";
-      if (rangeMode) {
-        band = trackStrip();
-        body = renderRangeBody();
-      } else {
-        const games = payload ? gamesForLeague(payload, league) : [];
-        const filtered = applyConfFilter(games);
-        if (!payload) {
-          band = trackStrip();
-          body = `<div class="state"><div class="spinner"></div><div class="big">Loading slate</div><div class="sm">Fetching ${esc(dispDate)}</div></div>`;
-        } else if (!filtered.length) {
-          band = dayRecordBand([], dispDate) + trackStrip();
-          body = `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">${games.length ? "Lower the confidence filter to see them." : "Nothing on the board for " + esc(dispDate) + ". Try another date or league."}</div></div>`;
-        } else {
-          const thr = edgeThresholdFor(filtered);
-          band = dayRecordBand(filtered, dispDate) + trackStrip();
-          body = `${suggestedStrip(filtered)}<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
-            <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)} · DiamondEdge pre-game model</div>`;
-        }
-      }
-
-      root.querySelector("#picks-view").innerHTML = `
-        <div id="band-area">${band}</div>
-        <div class="leaguebar">
-          <div class="leaguetabs">${tabsHtml}</div>
-          <div class="controls">
-            <div class="confctl">
-              <span class="cl">Min Conf</span>
-              <input type="range" id="conf-slider" min="0" max="100" step="1" value="${confFloor}">
-              <span class="cv" id="conf-val">${confFloor === 0 ? "All" : confFloor + "%+"}</span>
-            </div>
-            <button class="advbtn ${advOpen ? "on" : ""}" id="adv-btn">Range ▾</button>
-            <div class="datectl">
-              <button class="arrow" id="d-prev" title="Previous day" ${atMin ? "disabled" : ""}>‹</button>
-              <input type="date" id="date-input" value="${curDate}" min="${minDate}" max="${maxDate}">
-              <button class="arrow" id="d-next" title="Next day" ${isToday ? "disabled" : ""}>›</button>
-              <button class="today-btn" id="d-today" ${isToday ? "disabled style='opacity:.4'" : ""}>Today</button>
-            </div>
+      root.querySelector("#scores-view").innerHTML = `
+        <div id="ptr"><div class="ptr-inner"><span class="ptr-sp"></span><span class="ptr-txt">release to refresh</span></div></div>
+        <div class="subhead">
+          <div class="sporttabs" id="sporttabs">${tabsHtml}<span class="tab-ink" id="tab-ink"></span></div>
+          <div id="band-area"></div>
+        </div>
+        <div class="datebar">
+          <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
+          <div class="datetools">
+            <button class="dtool" id="cal-btn" title="Pick a date">📅</button>
+            <input type="date" id="date-input" value="${curDate}" min="${minDate}" max="${maxDate}">
+            <button class="dtool hist ${histOpen || rangeMode ? "on" : ""}" id="hist-btn" title="Scan a date range">History</button>
           </div>
         </div>
-        ${advOpen ? rangePanel() : ""}
-        <div id="picks-body">${body}</div>`;
-
-      bindPicksControls();
+        <div id="hist-area">${histOpen ? histPanel() : ""}</div>
+        <div id="slate-body">${skeletonSlate()}</div>`;
+      bindScoresChrome();
+      requestAnimationFrame(positionInk);
     }
 
-    function rangePanel() {
+    function histPanel() {
       return `
-        <div class="rangepanel">
-          <span class="rlab">Date Range</span>
+        <div class="histpanel">
+          <span class="rlab">History</span>
           <input type="date" id="range-from" value="${rangeFrom || curDate}" min="${minDate}" max="${maxDate}">
-          <span class="rlab" style="letter-spacing:0">to</span>
+          <span class="rlab lite">to</span>
           <input type="date" id="range-to" value="${rangeTo || curDate}" min="${minDate}" max="${maxDate}">
-          <button class="go" id="range-go">Search</button>
-          ${rangeMode ? `<button class="advbtn" id="range-clear">Clear</button>` : ""}
-          <span style="font-size:11px;color:var(--ink3)">Scans each day's ${SPORT_LABEL[league]} board across the full ${minDate.slice(0, 4)}–${maxDate.slice(0, 4)} history.</span>
+          <button class="go" id="range-go">Scan</button>
+          ${rangeMode ? `<button class="clr" id="range-clear">Clear</button>` : ""}
+          <span class="rnote">Scans each day's ${SPORT_LABEL[league]} board across ${minDate.slice(0, 4)}–${maxDate.slice(0, 4)}.</span>
         </div>`;
+    }
+
+    function positionInk() {
+      const tabs = $("sporttabs"), ink = $("tab-ink");
+      if (!tabs || !ink) return;
+      const on = tabs.querySelector(".sporttab.on");
+      if (!on) { ink.style.opacity = "0"; return; }
+      ink.style.opacity = "1";
+      ink.style.width = on.offsetWidth + "px";
+      ink.style.transform = `translateX(${on.offsetLeft}px)`;
+    }
+
+    function renderSlate() {
+      const body = $("slate-body"), band = $("band-area");
+      if (!body) return;
+      if (rangeMode) {
+        if (band) band.innerHTML = "";
+        body.innerHTML = renderRangeBody();
+      } else if (!payload) {
+        if (band) band.innerHTML = "";
+        body.innerHTML = skeletonSlate();
+        return;
+      } else {
+        const games = gamesForLeague(payload, league);
+        const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        if (band) band.innerHTML = playsBand(games);
+        if (!games.length) {
+          body.innerHTML = `<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
+        } else {
+          body.innerHTML = `${recentResultsRail()}<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+            <div class="refnote">${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)} · <button class="refnote-link" id="open-analyzer">DiamondEdge model analyzer →</button></div>`;
+        }
+      }
+      // update tab counts in place
+      SPORTS.forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = payload ? gamesForLeague(payload, lg).length : 0; el.textContent = c || ""; } });
+      const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer");
+      bindCards();
+      animateCounters(body);
+      if (band) animateCounters(band);
+      bindTilt(body);
     }
 
     function renderRangeBody() {
       if (!rangeGames.length) return `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games in range</div><div class="sm">Try a wider range or another league.</div></div>`;
       let html = "";
-      let W = 0, L = 0, T = 0, N = 0;
+      let N = 0, W = 0, L = 0, T = 0;
       rangeGames.forEach((day: any) => {
-        const games = applyConfFilter(gamesForLeague({ games: day.games }, league));
+        const games = gamesForLeague({ games: day.games }, league);
         if (!games.length) return;
-        const thr = edgeThresholdFor(games);
-        const dr = dayRecord(games);
-        W += dr.w; L += dr.l; T += dr.t; N += games.length;
+        const dr = dayPlaysRecord(games);
+        N += games.length; W += dr.w; L += dr.l; T += dr.t;
         const dd = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-        html += `<div class="dayhdr"><span class="dh-date">${esc(dd)}</span><span class="dh-rr">${games.length} game${games.length > 1 ? "s" : ""}${dr.settled ? ` · ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""}</span></div>`;
-        html += `<div class="docket">${games.map((g, i) => gameBox(g, i, thr)).join("")}</div>`;
+        html += `<div class="dayhdr"><span class="dh-date">${esc(dd)}</span><span class="dh-rr">${games.length} game${games.length > 1 ? "s" : ""}${dr.settled ? ` · plays ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""}</span></div>`;
+        html += `<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>`;
       });
-      html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L + T ? ` · graded picks ${W}-${L}${T ? "-" + T : ""}` : ""}</div>`;
+      html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L + T ? ` · plays ${W}-${L}${T ? "-" + T : ""}` : ""}</div>`;
       return html;
     }
 
-    function bindPicksControls() {
-      root.querySelectorAll(".leaguetab").forEach((b: any) => (b.onclick = () => { league = b.dataset.lg; confFloor = 0; if (rangeMode) { runRange(); } renderPicks(); }));
-      const slider = $("conf-slider");
-      if (slider) {
-        const games = rangeMode ? rangeGames.flatMap((d: any) => gamesForLeague({ games: d.games }, league)) : (payload ? gamesForLeague(payload, league) : []);
-        const maxC = games.length ? Math.max(...games.map((g: any) => g.top_confidence || 0)) : 100;
-        slider.max = Math.max(1, Math.floor(maxC));
-        slider.oninput = () => { confFloor = Number(slider.value) || 0; const v = $("conf-val"); if (v) v.textContent = confFloor === 0 ? "All" : confFloor + "%+"; };
-        slider.onchange = () => { confFloor = Number(slider.value) || 0; renderPicksBody(); };
-      }
-      const advBtn = $("adv-btn"); if (advBtn) advBtn.onclick = () => { advOpen = !advOpen; renderPicks(); };
-      const di = $("date-input"); if (di) di.onchange = () => { curDate = di.value; rangeMode = false; loadAndRenderDay(); };
-      const dp = $("d-prev"); if (dp) dp.onclick = () => { if (curDate <= minDate) return; curDate = shiftDate(curDate, -1); rangeMode = false; loadAndRenderDay(); };
-      const dn = $("d-next"); if (dn) dn.onclick = () => { if (curDate >= todayISO()) return; curDate = shiftDate(curDate, 1); rangeMode = false; loadAndRenderDay(); };
-      const dt = $("d-today"); if (dt) dt.onclick = () => { curDate = todayISO(); rangeMode = false; loadAndRenderDay(); };
+    function bindScoresChrome() {
+      root.querySelectorAll(".sporttab").forEach((b: any) => (b.onclick = () => {
+        if (league === b.dataset.lg) return;
+        league = b.dataset.lg;
+        root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
+        positionInk();
+        renderSlate();
+      }));
+      bindStrip();
+      const di = $("date-input");
+      if (di) di.onchange = () => { curDate = di.value; rangeMode = false; selectDate(); };
+      const cal = $("cal-btn");
+      if (cal && di) cal.onclick = () => { try { di.showPicker(); } catch { di.focus(); di.click(); } };
+      const hb = $("hist-btn");
+      if (hb) hb.onclick = () => { histOpen = !histOpen; const ha = $("hist-area"); if (ha) { ha.innerHTML = histOpen ? histPanel() : ""; bindHist(); } hb.classList.toggle("on", histOpen || rangeMode); };
+      bindHist();
+      window.addEventListener("resize", () => { positionInk(); recenterStrip(false); });
+    }
+    function bindHist() {
       const rf = $("range-from"); if (rf) rf.onchange = () => (rangeFrom = rf.value);
       const rt = $("range-to"); if (rt) rt.onchange = () => (rangeTo = rt.value);
       const rg = $("range-go"); if (rg) rg.onclick = () => runRange();
-      const rc = $("range-clear"); if (rc) rc.onclick = () => { rangeMode = false; renderPicks(); };
-      const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer");
-      bindBoxClicks();
+      const rc = $("range-clear"); if (rc) rc.onclick = () => { rangeMode = false; refreshStrip(); renderSlate(); };
     }
-
-    function renderPicksBody() {
-      const games = payload ? gamesForLeague(payload, league) : [];
-      const filtered = applyConfFilter(games);
-      const isToday = curDate === todayISO();
-      const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-      let body;
-      if (!filtered.length) {
-        body = `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games${isToday ? " today" : ""}</div><div class="sm">${confFloor > 0 ? "Lower the confidence filter, or " : ""}pick another date or league.</div></div>`;
-        const ba = $("band-area"); if (ba) ba.innerHTML = dayRecordBand([], dispDate) + trackStrip();
-      } else {
-        const thr = edgeThresholdFor(filtered);
-        body = `${suggestedStrip(filtered)}<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
-          <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)} · DiamondEdge pre-game model</div>`;
-        const ba = $("band-area"); if (ba) { ba.innerHTML = dayRecordBand(filtered, dispDate) + trackStrip(); const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer"); }
+    // Wire the date chips + smooth-slide the active one to centre (direct scrollLeft — no page jump).
+    function recenterStrip(smooth = true) {
+      const strip = $("datestrip");
+      const on = strip && strip.querySelector(".dchip.on");
+      if (!strip || !on || !strip.clientWidth) return;
+      const target = on.offsetLeft - (strip.clientWidth - on.offsetWidth) / 2;
+      strip.scrollTo({ left: Math.max(0, target), behavior: REDUCE || !smooth ? "auto" : "smooth" });
+    }
+    function bindStrip() {
+      const strip = $("datestrip");
+      if (!strip) return;
+      strip.querySelectorAll(".dchip").forEach((c: any) => (c.onclick = () => { curDate = c.dataset.date; rangeMode = false; selectDate(); }));
+      requestAnimationFrame(() => recenterStrip());
+    }
+    function refreshStrip() {
+      const strip = $("datestrip");
+      if (strip) { strip.innerHTML = dateStripHtml(); bindStrip(); }
+      const di = $("date-input"); if (di) di.value = curDate;
+      const hb = $("hist-btn"); if (hb) hb.classList.toggle("on", histOpen || rangeMode);
+    }
+    async function selectDate() {
+      refreshStrip();
+      const body = $("slate-body"); if (body) body.innerHTML = skeletonSlate();
+      payload = await loadDay(curDate);
+      const present = leaguesPresent(payload);
+      if (!present.has(league) && present.size) {
+        league = SPORTS.find((s) => present.has(s)) || league;
+        root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
+        positionInk();
       }
-      $("picks-body").innerHTML = body;
-      bindBoxClicks();
+      renderSlate();
     }
 
-    function bindBoxClicks() {
-      root.querySelectorAll(".gamebox[data-gid]").forEach((bx: any) => {
+    function bindCards() {
+      root.querySelectorAll(".gamecard[data-gid]").forEach((bx: any) => {
         bx.onclick = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
       });
-      root.querySelectorAll(".sas-chip[data-gid]").forEach((ch: any) => {
-        ch.onclick = (e: any) => { e.stopPropagation(); const g = findGame(ch.dataset.gid); if (g) openDetail(g); };
+      root.querySelectorAll(".play[data-gid], .rr-chip[data-gid]").forEach((ch: any) => {
+        ch.onclick = (e: any) => { e.stopPropagation(); const g = findGame(ch.dataset.gid); if (g) openDetail(g, ch.dataset.mk); };
       });
     }
     function findGame(gid: any) {
@@ -935,15 +906,6 @@ export default function Home() {
     function shiftDate(iso: string, days: number) {
       const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + days);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    }
-
-    async function loadAndRenderDay() {
-      confFloor = 0;
-      $("picks-body") && ($("picks-body").innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Loading</div></div>`);
-      payload = await loadDay(curDate);
-      const present = leaguesPresent(payload);
-      if (!present.has(league) && present.size) league = SPORTS.find((s) => present.has(s)) || league;
-      renderPicks();
     }
 
     async function runRange() {
@@ -957,19 +919,20 @@ export default function Home() {
       const inRange = allDates.filter((d) => d >= a && d <= b);
       const dates = inRange.slice(-30);
       rangeMode = true;
-      $("picks-body") && ($("picks-body").innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Scanning ${dates.length} day${dates.length === 1 ? "" : "s"}</div><div class="sm">${esc(a)} → ${esc(b)}</div></div>`);
+      const body = $("slate-body");
+      if (body) body.innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Scanning ${dates.length} day${dates.length === 1 ? "" : "s"}</div><div class="sm">${esc(a)} → ${esc(b)}</div></div>`;
       const results = await Promise.all(dates.map(async (d) => ({ date: d, games: ((await snap("pregame_picks:" + d)) || {}).games || [] })));
       rangeGames = results.filter((r) => r.games.length).sort((x, y) => (x.date < y.date ? 1 : -1));
-      confFloor = 0;
-      renderPicks();
+      refreshStrip();
+      renderSlate();
     }
 
-    // ===================== DETAIL DRAWER =====================
+    // ===================== DEEP-DIVE SHEET =====================
     function modelsVsMarket(g: any) {
       const models = (g.why && g.why.models) || [];
       if (!models.length) return "";
       const rows = models.map((m: any) => `<tr><td class="mname">${esc(m.name)}<div class="mnote">${esc(m.note || "")}</div></td><td class="num">${m.proj != null ? num(m.proj, 2) : "—"}</td></tr>`).join("");
-      return `<div class="dsec"><div class="dsec-h">Models vs. Market</div><div class="dsec-b"><table class="mtab"><thead><tr><th>Source</th><th style="text-align:right">Projection</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+      return `<div class="dsec"><div class="dsec-h">Model vs. Market</div><div class="dsec-b"><table class="mtab"><thead><tr><th>Source</th><th style="text-align:right">Projection</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
     }
 
     function intelSection(g: any) {
@@ -977,44 +940,110 @@ export default function Home() {
       if (!pi) return "";
       const A = g.away_abbr, H = g.home_abbr;
       const blocks: string[] = [];
-
       const pit = pi.pitchers || {};
       const pa = pit.away || {}, ph = pit.home || {};
       if (pa.name || ph.name || pa.era != null || ph.era != null) {
         const pp = (ab: any, p: any) => `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${esc(p.name || "TBD")}</div>${p.era != null ? `<div class="ic-sub">${num(p.era, 2)} ERA</div>` : ""}</div>`;
         blocks.push(`<div class="ic-card"><div class="ic-h">Starting Pitchers</div><div class="ic-row2">${pp(A, pa)}<div class="ic-vs">vs</div>${pp(H, ph)}</div></div>`);
       }
-
       const venue = pi.venue || (g.meta && g.meta.venue);
       if (venue || pi.park_factor != null) {
         const pf = pi.park_factor;
         const pfLabel = pf == null ? "" : pf > 1.0 ? "hitter-friendly" : pf < 1.0 ? "pitcher-friendly" : "neutral";
         blocks.push(`<div class="ic-card"><div class="ic-h">Venue</div><div class="ic-line"><b>${esc(venue || "—")}</b>${pf != null ? ` <span class="ic-pf ${pf > 1 ? "hot" : pf < 1 ? "cold" : ""}">park ${num(pf, 2)} · ${pfLabel}</span>` : ""}</div></div>`);
       }
-
       const form = pi.form || {};
       const fa = form.away, fh = form.home;
       if (fa || fh) {
         const ff = (ab: any, f: any) => f ? `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${esc(f.last10_record || "—")}<span class="ic-tag">L10</span></div>${(f.runs_for_avg != null || f.runs_against_avg != null) ? `<div class="ic-sub">${f.runs_for_avg != null ? num(f.runs_for_avg, 1) : "—"} for · ${f.runs_against_avg != null ? num(f.runs_against_avg, 1) : "—"} against</div>` : ""}</div>` : "";
         blocks.push(`<div class="ic-card"><div class="ic-h">Recent Form</div><div class="ic-row2">${ff(A, fa)}${ff(H, fh)}</div></div>`);
       }
-
       const rest = pi.rest || {};
       const ra = rest.away, rh = rest.home;
       if (ra || rh) {
         const rr = (ab: any, r: any) => r ? `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${r.days_off != null ? r.days_off + (r.days_off === 1 ? " day" : " days") + " off" : "—"}</div>${r.last_game_date ? `<div class="ic-sub">last ${esc(r.last_game_date)}</div>` : ""}</div>` : "";
         blocks.push(`<div class="ic-card"><div class="ic-h">Rest</div><div class="ic-row2">${rr(A, ra)}${rr(H, rh)}</div></div>`);
       }
-
       const h = pi.h2h;
       if (h && (h.games || h.record)) {
         const lm = h.last_meeting;
         const lmTxt = lm ? `last met ${esc(lm.date)} — ${esc(lm.away_team || A)} ${num(lm.away_score, 0)}, ${esc(lm.home_team || H)} ${num(lm.home_score, 0)}` : "";
         blocks.push(`<div class="ic-card wide"><div class="ic-h">Head to Head</div><div class="ic-line"><b>${esc(h.record || "—")}</b>${h.games ? ` <span class="ic-tag">${h.games} mtgs</span>` : ""}${h.away_wins != null || h.home_wins != null ? ` <span class="ic-sub2">${A} ${h.away_wins ?? 0} · ${H} ${h.home_wins ?? 0}</span>` : ""}</div>${lmTxt ? `<div class="ic-sub3">${lmTxt}</div>` : ""}</div>`);
       }
-
       if (!blocks.length) return "";
       return `<div class="dsec"><div class="dsec-h">Pre-Game Intel</div><div class="dsec-b intel-grid">${blocks.join("")}</div></div>`;
+    }
+
+    // One market's DE Play inside the sheet: action, why-bullets, model-vs-market, line move.
+    function sheetPlay(g: any, pl: any, focus: boolean) {
+      const mk = pl.market;
+      const pk = mk === "spread" ? g.spread_pick : mk === "total" ? g.total_pick : g.ml_pick;
+      const live = playLiveState(g, pl);
+      const r = pl.result;
+      const rCls = r ? (r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed") : (live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : "");
+      let head;
+      if (pl.action === "TAKE") {
+        const resTxt = r
+          ? (r.status === "hit" ? `✓ WON${r.pnl != null ? ` ${r.pnl >= 0 ? "+" : ""}${Number(r.pnl).toFixed(2)}u` : ""}` : r.status === "miss" ? `✗ LOST${r.pnl != null ? ` ${Number(r.pnl).toFixed(2)}u` : ""}` : "PUSH")
+          : live === "clinch-won" ? "✓ CLINCHED" : live === "clinch-lost" ? "✗ LINE PASSED" : live === "inplay" ? "IN PLAY" : "";
+        head = `<div class="shp-head take ${rCls}">
+          <span class="shp-mk">${MK_FULL[mk]}</span>
+          <span class="shp-act">TAKE</span>
+          <span class="shp-side">${esc(pl.side || "—")}</span>
+          ${pl.price != null ? `<span class="shp-px">${fmtOdds(pl.price)}</span>` : ""}
+          ${pl.p != null ? `<span class="shp-p">${saPct(pl.p, 1)} conf</span>` : ""}
+          ${pl.tier ? `<span class="shp-tier">${esc(pl.tier)}</span>` : ""}
+          ${resTxt ? `<span class="shp-res ${rCls || "inplay"}">${resTxt}</span>` : ""}
+        </div>`;
+      } else {
+        head = `<div class="shp-head pass">
+          <span class="shp-mk">${MK_FULL[mk]}</span>
+          <span class="shp-act pass">PASS</span>
+          <span class="shp-passnote">no edge cleared the gate in this market</span>
+        </div>`;
+      }
+      const why = pl.why && pl.why.length
+        ? `<ul class="shp-why">${pl.why.map((w: any) => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
+      // model vs market numbers for this market
+      let mvm = "";
+      if (pl.action === "TAKE" && pl.src === "sa" && pl.sa) {
+        const sa = pl.sa;
+        mvm = `<div class="shp-mvm">
+          ${sa.model_p_cover != null ? `<span class="mvm-chip">model ${saPct(sa.model_p_cover, 1)}</span>` : ""}
+          ${sa.market_p_cover != null ? `<span class="mvm-chip">market ${saPct(sa.market_p_cover, 1)}</span>` : ""}
+          <span class="mvm-chip be">needs ${saPct(saBreakeven(sa), 1)} at ${saAm(sa.price)}</span>
+        </div>`;
+      } else if (pk && pk.our_proj != null && pk.line != null) {
+        mvm = `<div class="shp-mvm">
+          <span class="mvm-chip">model ${num(pk.our_proj, 1)}</span>
+          <span class="mvm-chip">line ${num(pk.line, 1)}</span>
+          <span class="mvm-chip ${Number(pk.gap) >= 0 ? "pos" : "neg"}">gap ${sgn(pk.gap, 1)} ${SPORT_UNIT[g.sport] || ""}</span>
+        </div>`;
+      } else if (pk && pk.our_winprob != null) {
+        mvm = `<div class="shp-mvm"><span class="mvm-chip">model win prob ${saPct(pk.our_winprob, 1)}</span>${pk.market_winprob != null ? `<span class="mvm-chip">market ${saPct(pk.market_winprob, 1)}</span>` : ""}</div>`;
+      }
+      const move = pk ? lineMove(pk) : "";
+      const lean = pk ? (mk === "moneyline" ? wpLean(pk) : leanMeter(pk, mk)) : "";
+      const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
+      return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"} ${focus ? "hl" : ""}" id="shp-${mk}">
+        ${head}${why}${mvm}${viz}
+      </div>`;
+    }
+
+    // Plays track-record context table — record and price/ROI side by side, always.
+    function playsTrackTable() {
+      const T = saTrack();
+      const ci = T.g26.hit_ci95;
+      const row = (lab: string, o: any) => o ? `<tr><td>${esc(lab)}</td><td class="num">${(o.n || 0).toLocaleString()}</td><td class="num">${o.hit != null ? saPct(o.hit, 1) : "—"}</td><td class="num ${o.roi != null && o.roi >= 0 ? "pos" : "neg"}">${o.roi != null ? (o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1) + "%" : "—"}</td></tr>` : "";
+      const fwdRow = T.fwd && T.fwd.n_settled ? row("Live (forward)", { n: T.fwd.n_settled, hit: T.fwd.hit, roi: T.fwd.roi }) : "";
+      return `<div class="shp-track">
+        <div class="shp-track-h">Play track record</div>
+        <table class="dsa-tab">
+          <thead><tr><th>Window</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
+          <tbody>${row("2024 validation", T.v24)}${row("2025 test", T.t25)}${row("2026 gate", T.g26)}${fwdRow}</tbody>
+        </table>
+        <div class="dsa-foot">2026 gate: ${saPct(T.g26.hit, 1)}${ci ? ` (CI ${saPct(ci[0], 1)}–${saPct(ci[1], 1)})` : ""} on ${T.g26.n} plays at ~−184 avg · blind dog +1.5 baseline hit ${saPct(T.base.hit, 1)} / ${(T.base.roi * 100).toFixed(1)}% ROI in ’26.</div>
+      </div>`;
     }
 
     function detailBet(pk: any, label: string, kind: string, g: any) {
@@ -1027,70 +1056,16 @@ export default function Home() {
       else if (kind === "total") line = `line <b>${num(pk.line)}</b> · our proj <b>${num(pk.our_proj)}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}${gapTxt}`;
       else line = `price <b>${fmtOdds(pk.price)}</b>${pk.our_winprob != null ? ` · our win prob <b>${(pk.our_winprob * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
       const resTxt = st === "hit" ? `WON ${pk.result.net_units >= 0 ? "+" : ""}${num(pk.result.net_units, 2)}u` : st === "miss" ? `LOST ${num(pk.result.net_units, 2)}u` : st === "push" ? "PUSH" : "";
-      // The same lean/line-move visuals as the docket, expanded for the drawer.
-      const lean = kind === "ml" ? wpLean(pk) : leanMeter(pk, kind, g);
-      const move = lineMove(pk);
-      const viz = (lean || move) ? `<div class="dviz">${lean ? `<div class="dviz-lean">${lean}</div>` : ""}${move ? `<div class="dviz-move">${move}</div>` : ""}</div>` : "";
       return `<div class="dbet">
         <div class="dbet-top">
           <div class="dmk">${esc(label)}</div>
           <div class="dmid"><div class="dside">${esc(pk.side)}</div><div class="dline">${line}</div></div>
           <div class="dright">${confRing(pk)}<div class="dtier ${tierCls(tier)}">${esc(tier)}</div>${resTxt ? `<div class="dres ${st}">${resTxt}</div>` : ""}</div>
         </div>
-        ${viz}
       </div>`;
     }
 
-    // Full suggested-play context for the drawer: the play, the 3-year record and the price →
-    // breakeven, shown plainly side by side. Record and payout are the same size on purpose.
-    function suggestedSection(g: any) {
-      const sa = saOf(g);
-      if (!sa) return "";
-      const T = saTrack();
-      const be = saBreakeven(sa);
-      const res = sa.result || null;
-      const resCls = res ? (res.push ? "pushed" : res.won ? "won" : "lost") : "";
-      const resTxt = res ? (res.push ? "PUSH" : res.won ? `WON ${res.pnl != null && res.pnl >= 0 ? "+" : ""}${res.pnl != null ? Number(res.pnl).toFixed(2) + "u" : ""}` : `LOST ${res.pnl != null ? Number(res.pnl).toFixed(2) + "u" : ""}`) : "";
-      const ci = T.g26.hit_ci95;
-      const row = (lab: string, o: any) => o ? `<tr><td>${esc(lab)}</td><td class="num">${(o.n || 0).toLocaleString()}</td><td class="num">${o.hit != null ? saPct(o.hit, 1) : "—"}</td><td class="num ${o.roi != null && o.roi >= 0 ? "pos" : "neg"}">${o.roi != null ? (o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1) + "%" : "—"}</td></tr>` : "";
-      const fwdRow = T.fwd && T.fwd.n_settled
-        ? row("Live (forward)", { n: T.fwd.n_settled, hit: T.fwd.hit, roi: T.fwd.roi })
-        : "";
-      return `<div class="dsec sa-dsec">
-        <div class="dsec-h">◆ Suggested Play</div>
-        <div class="dsec-b">
-          <div class="dsa-top ${resCls}">
-            <div class="dsa-side">${esc(sa.side)}</div>
-            <div class="dsa-nums">
-              <span class="dsa-px">${saAm(sa.price)}</span>
-              <span class="dsa-p">${saPct(sa.p_correct != null ? sa.p_correct : sa.meta_p, 1)} conf</span>
-              ${resTxt ? `<span class="dsa-res ${resCls}">${resTxt}</span>` : ""}
-            </div>
-          </div>
-          <div class="dsa-probs">
-            ${sa.model_p_cover != null ? `<span class="dsa-chip">model ${saPct(sa.model_p_cover, 1)}</span>` : ""}
-            ${sa.market_p_cover != null ? `<span class="dsa-chip">market ${saPct(sa.market_p_cover, 1)}</span>` : ""}
-            <span class="dsa-chip be">this price needs ${saPct(be, 1)} to break even</span>
-          </div>
-          <table class="dsa-tab">
-            <thead><tr><th>Window</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
-            <tbody>
-              ${row("2024 validation", T.v24)}
-              ${row("2025 test (one shot)", T.t25)}
-              ${row("2026 gate (one shot)", T.g26)}
-              ${fwdRow}
-            </tbody>
-          </table>
-          <div class="dsa-foot">
-            2026 gate: ${saPct(T.g26.hit, 1)}${ci ? ` (CI ${saPct(ci[0], 1)}–${saPct(ci[1], 1)})` : ""} on ${T.g26.n} bets at ~−184 avg
-            — wins ~60% of the time, loses ~${Math.abs(Math.round(T.g26.roi * 100))}¢ per $1 at these prices.
-            Blind dog +1.5 baseline hit ${saPct(T.base.hit, 1)} in ’26.
-          </div>
-        </div>
-      </div>`;
-    }
-
-    function openDetail(g: any) {
+    function openDetail(g: any, focusMk?: string) {
       detail = g;
       const sp = g.sport;
       const ps = g.predicted_score || {};
@@ -1099,31 +1074,49 @@ export default function Home() {
       const gs = gameState(g);
       const startTxt = gs.si.hasTime ? gs.si.time : gs.si.date;
       const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
+      const P = gamePlays(g);
+      const anyTake = MARKETS.some((m) => P[m].action === "TAKE");
 
-      // actual score banner (live/final)
-      let actualBanner = "";
+      // score banner (live/final) with animated counters
+      let scoreBanner = "";
       if (gs.score && gs.score.split && gs.score.home != null) {
-        const aw = gs.score.away, hm = gs.score.home;
-        actualBanner = `<div class="dactual ${gs.kind}"><span class="da-lab">${gs.kind === "final" ? "Final" : "Live"}</span><span class="da-sc">${esc(g.away_abbr)} ${num(aw, 0)} – ${num(hm, 0)} ${esc(g.home_abbr)}</span></div>`;
+        scoreBanner = `<div class="sh-score ${gs.kind}">
+          <span class="shs-side"><span class="shs-ab">${esc(g.away_abbr)}</span><b data-count="${num(gs.score.away, 0)}">${num(gs.score.away, 0)}</b></span>
+          <span class="shs-mid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label)}`}</span>
+          <span class="shs-side"><b data-count="${num(gs.score.home, 0)}">${num(gs.score.home, 0)}</b><span class="shs-ab">${esc(g.home_abbr)}</span></span>
+        </div>`;
       } else if (gs.score && gs.score.total != null) {
-        actualBanner = `<div class="dactual ${gs.kind}"><span class="da-lab">${gs.kind === "final" ? "Final" : "Live"}</span><span class="da-sc">${num(gs.score.total, 0)} ${SPORT_UNIT[sp] || ""}</span></div>`;
+        scoreBanner = `<div class="sh-score ${gs.kind}"><span class="shs-mid">${gs.kind === "final" ? "Final" : "Live"}</span><span class="shs-tot">${num(gs.score.total, 0)} ${SPORT_UNIT[sp] || ""}</span></div>`;
       }
+
+      const plays = `<div class="dsec de-dsec">
+        <div class="dsec-h"><span class="gp-dia">◆</span> DiamondEdge Plays</div>
+        <div class="dsec-b shp-wrap">
+          ${MARKETS.map((mk) => sheetPlay(g, P[mk], focusMk === mk)).join("")}
+          ${anyTake ? playsTrackTable() : `<div class="shp-none">No plays today — the gate passed on all three markets. The model read below is context, not a bet.</div>`}
+        </div>
+      </div>`;
 
       const bets = [detailBet(g.spread_pick, "Spread", "spread", g), detailBet(g.ml_pick, "Moneyline", "ml", g), detailBet(g.total_pick, "Total", "total", g)].filter(Boolean).join("");
       const reasoning = g.why && g.why.reasoning ? `<div class="dsec"><div class="dsec-h">Why This Read</div><div class="dsec-b reasoning">${esc(g.why.reasoning)}${g.why.chosen_rationale ? `<div class="rr2">${esc(g.why.chosen_rationale)}</div>` : ""}</div></div>` : "";
 
       const html = `
-        <div class="drawer-bg" id="drawer-bg"></div>
-        <div class="drawer">
-          <div class="drawer-head">
-            <button class="close" id="drawer-close">✕</button>
-            <div class="dh-sport">${SPORT_LABEL[sp] || sp}${gs.kind === "final" ? " · Final" : gs.kind === "live" ? " · Live" : ""}</div>
-            <div class="dh-mu">${esc(g.away_abbr)}<span class="at">@</span>${esc(g.home_abbr)}</div>
-            <div class="dh-meta">${esc([g.matchup, dispDate, startTxt].filter(Boolean).join(" · "))}</div>
+        <div class="sheet-bg" id="sheet-bg"></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+          <div class="sh-grab" id="sh-grab"><span></span></div>
+          <div class="sh-head">
+            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <div class="sh-sport">${SPORT_LABEL[sp] || sp}${g.meta && g.meta.competition ? ` · ${esc(g.meta.competition)}` : ""}</div>
+            <div class="sh-mu">
+              <span class="sh-tm">${crestImg(sp, g.away_abbr)}<b>${esc(g.away_abbr)}</b></span>
+              <span class="sh-at">@</span>
+              <span class="sh-tm">${crestImg(sp, g.home_abbr)}<b>${esc(g.home_abbr)}</b></span>
+            </div>
+            <div class="sh-meta">${esc([g.matchup, dispDate, startTxt].filter(Boolean).join(" · "))}</div>
           </div>
-          <div class="drawer-body">
-            ${actualBanner}
-            ${suggestedSection(g)}
+          <div class="sh-body">
+            ${scoreBanner}
+            ${plays}
             <div class="dsec">
               <div class="dsec-h">Predicted Final Score</div>
               <div class="dsec-b">
@@ -1135,20 +1128,60 @@ export default function Home() {
                 <div class="dscore-foot">Edge: <b>${esc(ps.winner_abbr || "—")}</b> by <b>${ps.margin != null ? Math.abs(Number(ps.margin)).toFixed(1) : "—"}</b> · projected total <b>${tot} ${SPORT_UNIT[sp] || ""}</b></div>
               </div>
             </div>
-            <div class="dsec"><div class="dsec-h">Our Picks</div><div class="dsec-b" style="padding-top:4px;padding-bottom:4px">${bets || `<div style="padding:10px 0;color:var(--ink3);font-size:12px">No graded picks for this game.</div>`}</div></div>
+            <div class="dsec"><div class="dsec-h">Model Leans (all markets)</div><div class="dsec-b" style="padding-top:4px;padding-bottom:4px">${bets || `<div style="padding:10px 0;color:var(--ink3);font-size:12px">No graded model leans for this game.</div>`}</div></div>
             ${intelSection(g)}
             ${modelsVsMarket(g)}
             ${reasoning}
           </div>
         </div>`;
 
-      let layer = $("drawer-layer");
-      if (!layer) { layer = document.createElement("div"); layer.id = "drawer-layer"; document.body.appendChild(layer); }
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
-      $("drawer-close").onclick = closeDetail;
-      $("drawer-bg").onclick = closeDetail;
+      document.body.classList.add("sheet-open");
+      $("sheet-close").onclick = closeDetail;
+      $("sheet-bg").onclick = closeDetail;
+      bindSheetDrag($("sheet"), $("sh-grab"));
+      const sheetEl = $("sheet");
+      animateCounters(sheetEl);
+      if (focusMk) {
+        const t = $("shp-" + focusMk);
+        if (t) setTimeout(() => t.scrollIntoView({ block: "center", behavior: REDUCE ? "auto" : "smooth" }), 380);
+      }
     }
-    function closeDetail() { detail = null; const l = $("drawer-layer"); if (l) l.innerHTML = ""; }
+    function closeDetail() {
+      detail = null;
+      const l = $("sheet-layer");
+      if (!l || !l.innerHTML) return;
+      const sh = $("sheet"), bg = $("sheet-bg");
+      document.body.classList.remove("sheet-open");
+      if (REDUCE || !sh) { l.innerHTML = ""; return; }
+      sh.classList.add("closing"); if (bg) bg.classList.add("closing");
+      setTimeout(() => { l.innerHTML = ""; }, 300);
+    }
+    function bindSheetDrag(sheet: any, grab: any) {
+      if (!sheet || !grab) return;
+      let y0: any = null, dy = 0;
+      const start = (e: any) => { y0 = (e.touches ? e.touches[0] : e).clientY; dy = 0; sheet.style.transition = "none"; };
+      const move = (e: any) => { if (y0 == null) return; dy = Math.max(0, ((e.touches ? e.touches[0] : e).clientY) - y0); sheet.style.transform = `translateY(${dy}px)`; };
+      const end = () => {
+        if (y0 == null) return;
+        sheet.style.transition = "";
+        if (dy > 110) { sheet.style.transform = ""; closeDetail(); }
+        else sheet.style.transform = "";
+        y0 = null;
+      };
+      grab.addEventListener("touchstart", start, { passive: true });
+      grab.addEventListener("touchmove", move, { passive: true });
+      grab.addEventListener("touchend", end);
+      grab.addEventListener("mousedown", (e: any) => {
+        start(e);
+        const mm = (ev: any) => move(ev);
+        const mu = () => { end(); window.removeEventListener("mousemove", mm); window.removeEventListener("mouseup", mu); };
+        window.addEventListener("mousemove", mm); window.addEventListener("mouseup", mu);
+      });
+    }
+    document.addEventListener("keydown", (e: any) => { if (e.key === "Escape" && detail) closeDetail(); });
 
     // ===================== ANALYZER TAB =====================
     function recCell(o: any) { return o ? `${o.wins}-${o.losses}${o.pushes ? "-" + o.pushes : ""}` : "—"; }
@@ -1217,15 +1250,16 @@ export default function Home() {
       const byMarketTbl = anzTable("By Market", "spread / moneyline / total", tr.by_market || {}, ["total", "spread", "moneyline"], { total: "Total", spread: "Spread", moneyline: "Moneyline" });
       const byTierTbl = anzTable("By Tier", "featured = surest", tr.by_tier || {}, ["featured", "high", "medium", "low"], { featured: "Featured", high: "High", medium: "Medium", low: "Low" });
 
-      root.querySelector("#analyzer-view").innerHTML = `
+      const view = root.querySelector("#analyzer-view");
+      view.innerHTML = `
         <div class="anz-hero">
           <div class="ah-lab">DiamondEdge Analyzer</div>
           <h2>Out-of-Fold Test Record</h2>
-          <div class="ah-sub">Every number below is from the out-of-fold test — games the model never trained on, graded against the real result across ${SPORT_LABEL.mlb}, ${SPORT_LABEL.nba}, ${SPORT_LABEL.nhl}, ${SPORT_LABEL.nfl} and ${SPORT_LABEL.soccer}.</div>
+          <div class="ah-sub">Every number below is from the out-of-fold test — games the model never trained on, graded against the real result across MLB, NBA, NHL, NFL and Soccer.</div>
           <div class="ah-stats">
-            <div class="ah-st"><div class="k">Graded Picks</div><div class="v">${(nTest || 0).toLocaleString()}</div></div>
+            <div class="ah-st"><div class="k">Graded Picks</div><div class="v" data-count="${nTest || 0}" data-loc="1">${(nTest || 0).toLocaleString()}</div></div>
             <div class="ah-st"><div class="k">Record</div><div class="v">${ov.wins || 0}-${ov.losses || 0}${ov.pushes ? `<small> · ${ov.pushes}T</small>` : ""}</div></div>
-            <div class="ah-st"><div class="k">Hit Rate</div><div class="v">${hr != null ? hr.toFixed(1) + "%" : "—"}${ci ? `<small> ±${((ci[1] - ci[0]) / 2 * 100).toFixed(1)}</small>` : ""}</div><div class="ah-k2">vs ${be}% breakeven</div></div>
+            <div class="ah-st"><div class="k">Hit Rate</div><div class="v"><span data-count="${hr != null ? hr.toFixed(1) : ""}" data-dec="1" data-suf="%">${hr != null ? hr.toFixed(1) + "%" : "—"}</span>${ci ? `<small> ±${((ci[1] - ci[0]) / 2 * 100).toFixed(1)}</small>` : ""}</div><div class="ah-k2">vs ${be}% breakeven</div></div>
             <div class="ah-st"><div class="k">ROI</div><div class="v ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%"}</div></div>
             <div class="ah-st"><div class="k">Net Units</div><div class="v ${ov.units_net == null ? "" : ov.units_net >= 0 ? "pos" : "neg"}">${ov.units_net == null ? "—" : (ov.units_net >= 0 ? "+" : "") + ov.units_net.toFixed(0)}</div></div>
             ${fwd ? `<div class="ah-st"><div class="k">Real Picks So Far</div><div class="v">${fmtRec(fwd)}</div></div>` : ""}
@@ -1238,62 +1272,54 @@ export default function Home() {
           ${calibrationCard()}
         </div>
         <div class="refnote">Out-of-fold test windows — ${SPORTS.map((s) => wnd[s] ? `${SPORT_LABEL[s]} ${wnd[s].start}→${wnd[s].end}` : "").filter(Boolean).join(" · ")}</div>`;
+      animateCounters(view);
     }
 
     // ===================== HEADER / SHELL =====================
-    function renderHeader() {
-      const ov = trOverall();
-      const w = ov.wins ?? 0, l = ov.losses ?? 0;
-      const hr = ov.hit_rate != null ? (ov.hit_rate * 100).toFixed(1) : "—";
-      const roi = ov.roi != null ? (ov.roi * 100) : null;
-      root.querySelector("#record-chip").innerHTML = `
-        <div><div class="k">Record</div><div class="v">${w}-${l}</div></div>
-        <div><div class="k">Hit</div><div class="v">${hr}%</div></div>
-        <div><div class="k">ROI</div><div class="v ${roi == null ? "" : roi >= 0 ? "g" : "r"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%"}</div></div>`;
-    }
-
     function renderShell() {
       root.innerHTML = `
         <header><div class="hbar">
           <div class="brand" id="brand">
             <div class="diamond"></div>
-            <div><h1>Diamond<b>Edge</b></h1><div class="tag">Pre-Game Model · 5 Leagues</div></div>
-          </div>
-          <div class="toptabs">
-            <button data-tab="picks" class="${tab === "picks" ? "on" : ""}">Docket</button>
-            <button data-tab="analyzer" class="${tab === "analyzer" ? "on" : ""}">Analyzer</button>
+            <div><h1>Diamond<b>Edge</b></h1><div class="tag">Scores · Lines · Plays</div></div>
           </div>
           <div class="hspacer"></div>
-          <div class="recordchip" id="record-chip"></div>
+          <div class="toptabs">
+            <button data-tab="scores" class="${tab === "scores" ? "on" : ""}">Scores</button>
+            <button data-tab="analyzer" class="${tab === "analyzer" ? "on" : ""}">Analyzer</button>
+          </div>
         </div></header>
         <main>
-          <div id="picks-view" style="display:${tab === "picks" ? "block" : "none"}"></div>
+          <div id="scores-view" style="display:${tab === "scores" ? "block" : "none"}"></div>
           <div id="analyzer-view" style="display:${tab === "analyzer" ? "block" : "none"}"></div>
         </main>`;
       root.querySelectorAll(".toptabs button").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
-      $("brand").onclick = () => switchTab("picks");
-      renderHeader();
+      $("brand").onclick = () => switchTab("scores");
     }
 
     function switchTab(t: string) {
       if (t === tab) return;
       tab = t;
-      $("picks-view").style.display = t === "picks" ? "block" : "none";
+      $("scores-view").style.display = t === "scores" ? "block" : "none";
       $("analyzer-view").style.display = t === "analyzer" ? "block" : "none";
       root.querySelectorAll(".toptabs button").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
       if (t === "analyzer" && !$("analyzer-view").innerHTML.trim()) renderAnalyzer();
+      if (t === "scores") requestAnimationFrame(positionInk);
     }
 
     // ===================== INIT =====================
     (async function init() {
       renderShell();
-      $("picks-view").innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Loading DiamondEdge</div><div class="sm">Fetching today's slate</div></div>`;
+      renderScoresChrome();
+      bindPull();
       await loadIndex();
-      renderHeader();
       payload = await loadDay(curDate);
       const present = leaguesPresent(payload);
       if (present.size && !present.has(league)) league = SPORTS.find((s) => present.has(s)) || "mlb";
-      renderPicks();
+      root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
+      positionInk();
+      renderSlate();
+      requestAnimationFrame(() => { positionInk(); recenterStrip(false); });
     })();
   }, []);
 
