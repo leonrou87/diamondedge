@@ -167,6 +167,9 @@ export default function Home() {
     function normPlay(raw: any, mk: string) {
       if (!raw || typeof raw !== "object") return null;
       const action = String(raw.action || "").toUpperCase() === "TAKE" ? "TAKE" : "PASS";
+      // VALUE tier plays (paper-tracked breakthrough totals policy) carry
+      // tier "value-a"/"value-b" + paper:true — preserved for distinct styling.
+      const vt = raw.tier === "value-a" || raw.tier === "value-b" ? raw.tier : null;
       return {
         market: mk, action,
         side: raw.side != null ? String(raw.side) : null,
@@ -174,6 +177,12 @@ export default function Home() {
         price: raw.price != null ? raw.price : null,
         p: raw.p_correct != null ? Number(raw.p_correct) : (raw.meta_p != null ? Number(raw.meta_p) : null),
         tier: raw.confidence_tier || null,
+        value_tier: vt,
+        paper: raw.paper === true,
+        claimed_ev: raw.claimed_ev != null ? Number(raw.claimed_ev) : null,
+        edge: raw.edge != null ? Number(raw.edge) : null,
+        nlines: raw.mm_tot_nlines != null ? Number(raw.mm_tot_nlines) : null,
+        shop: raw.shop || null,
         why: Array.isArray(raw.why) ? raw.why : [],
         result: normPlayResult(raw.result),
         src: "de",
@@ -579,6 +588,19 @@ export default function Home() {
         resHtml = `<span class="pl-res inplay"><span class="ip-dot"></span>in play</span>`;
       }
       const conf = pl.p != null ? `<span class="pl-p">${saPct(pl.p)}</span>` : (pl.tier ? `<span class="pl-p">${esc(pl.tier)}</span>` : "");
+      // VALUE tier chip: distinct gold (value-a) / emerald (value-b) treatment
+      // + a PAPER microtag while the play is paper-tracked.
+      if (pl.value_tier) {
+        const vCls = pl.value_tier === "value-a" ? "va" : "vb";
+        return `<button class="play take value ${vCls} ${rCls}" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="VALUE ${MK_FULL[mk]} play: ${esc(pl.side || "")}">
+          <span class="pl-vbadge"><span class="pl-vdia">◆</span>VALUE${pl.value_tier === "value-b" ? " B" : ""}</span>
+          <span class="pl-side">${esc(pl.side || "—")}</span>
+          ${pl.price != null ? `<span class="pl-px">${fmtOdds(pl.price)}</span>` : ""}
+          ${conf}
+          ${pl.paper ? `<span class="pl-paper">PAPER</span>` : ""}
+          ${resHtml}
+        </button>`;
+      }
       return `<button class="play take ${rCls}" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="${MK_FULL[mk]} play: ${esc(pl.side || "")}">
         <span class="pl-mk">${MK_LAB[mk]}</span>
         <span class="pl-side">${esc(pl.side || "—")}</span>
@@ -986,8 +1008,12 @@ export default function Home() {
         const resTxt = r
           ? (r.status === "hit" ? `✓ WON${r.pnl != null ? ` ${r.pnl >= 0 ? "+" : ""}${Number(r.pnl).toFixed(2)}u` : ""}` : r.status === "miss" ? `✗ LOST${r.pnl != null ? ` ${Number(r.pnl).toFixed(2)}u` : ""}` : "PUSH")
           : live === "clinch-won" ? "✓ CLINCHED" : live === "clinch-lost" ? "✗ LINE PASSED" : live === "inplay" ? "IN PLAY" : "";
-        head = `<div class="shp-head take ${rCls}">
+        const vBadge = pl.value_tier
+          ? `<span class="shp-vbadge ${pl.value_tier === "value-a" ? "va" : "vb"}"><span class="pl-vdia">◆</span>VALUE ${pl.value_tier === "value-a" ? "A" : "B"}</span>${pl.paper ? `<span class="shp-paper">PAPER</span>` : ""}`
+          : "";
+        head = `<div class="shp-head take ${rCls} ${pl.value_tier ? "is-value" : ""}">
           <span class="shp-mk">${MK_FULL[mk]}</span>
+          ${vBadge}
           <span class="shp-act">TAKE</span>
           <span class="shp-side">${esc(pl.side || "—")}</span>
           ${pl.price != null ? `<span class="shp-px">${fmtOdds(pl.price)}</span>` : ""}
@@ -1025,8 +1051,37 @@ export default function Home() {
       const move = pk ? lineMove(pk) : "";
       const lean = pk ? (mk === "moneyline" ? wpLean(pk) : leanMeter(pk, mk)) : "";
       const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
-      return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"} ${focus ? "hl" : ""}" id="shp-${mk}">
-        ${head}${why}${mvm}${viz}
+      const vrec = pl.value_tier ? valueRecordBlock(pl) : "";
+      return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"} ${pl.value_tier ? "is-value" : ""} ${focus ? "hl" : ""}" id="shp-${mk}">
+        ${head}${why}${mvm}${viz}${vrec}
+      </div>`;
+    }
+
+    // VALUE tier record inside the sheet: frozen validation + June gate + the
+    // growing PAPER forward ledger (hit never shown without price/ROI).
+    function valueRecordBlock(pl: any) {
+      const vr = payload && payload.value_record;
+      if (!vr) return "";
+      const fwd = vr.forward || {};
+      const fRow = (lab: string, o: any) => {
+        if (!o || !o.n_settled) return `<tr><td>${esc(lab)}</td><td class="num">0</td><td class="num">—</td><td class="num">—</td></tr>`;
+        const ci = o.hit_ci95;
+        const hit = o.hit != null ? `${saPct(o.hit, 1)}${ci && ci[0] != null ? ` <span class="vr-ci">[${saPct(ci[0], 0)}–${saPct(ci[1], 0)}]</span>` : ""}` : "—";
+        const roi = o.roi != null ? `<span class="${o.roi >= 0 ? "pos" : "neg"}">${(o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1)}%</span>` : "—";
+        return `<tr><td>${esc(lab)} <span class="vr-rec">${esc(o.record || "")}</span></td><td class="num">${o.n_settled}</td><td class="num">${hit}</td><td class="num">${roi}</td></tr>`;
+      };
+      const shopRow = pl.shop && pl.shop.price_american != null
+        ? `<div class="vr-shop">best shop: ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american} @ ${num(pl.shop.line, 1)}</div>` : "";
+      return `<div class="shp-vrec">
+        <div class="vr-h"><span class="pl-vdia">◆</span> VALUE tier record <span class="vr-papertag">paper-tracked</span></div>
+        <div class="vr-line">${esc(vr.val_record || "")}</div>
+        <div class="vr-line">${esc(vr.gate || "")}</div>
+        <table class="dsa-tab vr-tab">
+          <thead><tr><th>Forward (paper)</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
+          <tbody>${fRow("Tier A", fwd.tier_a)}${fRow("Tier A+B", fwd.tier_ab)}${fRow("Tier A shopped", fwd.tier_a_shopped)}</tbody>
+        </table>
+        ${shopRow}
+        <div class="vr-foot">${esc(vr.claimed_forward || "")}. Real stakes only after the scaling gate (≥3 months, ≥150 tier-A bets, hit ≥ breakeven, ROI ≥ 0).</div>
       </div>`;
     }
 

@@ -488,3 +488,32 @@ main{max-width:720px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + va
   .play.take .pl-side{font-size:12px}
   .gc-state{min-width:64px}
 }
+
+/* ── VALUE tier (paper-tracked breakthrough totals policy) ─────────────── */
+.play.take.value.va{background:linear-gradient(120deg,#3b2d08,#63490d 55%,#3b2d08);border-color:rgba(255,200,80,.65);box-shadow:0 1px 1px rgba(255,255,255,.22) inset,0 6px 18px rgba(180,130,20,.35)}
+.play.take.value.vb{background:linear-gradient(120deg,#07301f,#0d4a30 55%,#07301f);border-color:rgba(60,220,150,.55);box-shadow:0 1px 1px rgba(255,255,255,.2) inset,0 6px 18px rgba(16,120,80,.32)}
+.play.take.value:hover{box-shadow:0 1px 1px rgba(255,255,255,.25) inset,0 8px 24px rgba(150,110,20,.45)}
+.play.take.value.vb:hover{box-shadow:0 1px 1px rgba(255,255,255,.25) inset,0 8px 24px rgba(16,120,80,.45)}
+.pl-vbadge{display:inline-flex;align-items:center;gap:3px;font-family:var(--disp);font-weight:800;font-size:8px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.play.value.va .pl-vbadge{color:#ffd24d}
+.play.value.vb .pl-vbadge{color:#5ff0b0}
+.pl-vdia{font-size:9px;line-height:1}
+.pl-paper{font-family:var(--mono);font-weight:700;font-size:7.5px;letter-spacing:.08em;color:#3d3520;background:#f0e8cf;border:1px solid rgba(0,0,0,.12);border-radius:4px;padding:1.5px 4px}
+.play.value.vb .pl-paper{color:#173527;background:#d9f3e6;border-color:rgba(0,0,0,.1)}
+
+/* sheet: VALUE head badge + record block */
+.shp.is-value{border-color:rgba(200,150,30,.4);background:linear-gradient(180deg,rgba(255,246,222,.75),rgba(255,255,255,.7))}
+.shp-vbadge{display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:800;font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:6px;padding:3px 8px}
+.shp-vbadge.va{color:#7a5405;background:linear-gradient(135deg,#ffe9ad,#ffd24d);border:1px solid rgba(170,120,10,.35)}
+.shp-vbadge.vb{color:#0b4a2e;background:linear-gradient(135deg,#c9f5e0,#5fe0a8);border:1px solid rgba(10,110,60,.3)}
+.shp-paper{font-family:var(--mono);font-weight:700;font-size:8.5px;letter-spacing:.08em;color:#5a4d28;background:#f4edd7;border:1px solid rgba(0,0,0,.1);border-radius:5px;padding:2px 6px}
+.shp-vrec{margin-top:12px;border:1px solid rgba(200,150,30,.35);border-radius:12px;background:linear-gradient(180deg,rgba(255,248,228,.8),rgba(255,255,255,.75));padding:10px 12px}
+.vr-h{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:#7a5405}
+.vr-papertag{font-family:var(--mono);font-weight:700;font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:#5a4d28;background:#f4edd7;border-radius:4px;padding:1.5px 5px;margin-left:auto}
+.vr-line{font-family:var(--mono);font-size:10.5px;color:var(--ink2);margin-top:6px;line-height:1.45}
+.vr-tab{margin-top:6px}
+.vr-rec{font-family:var(--mono);font-weight:700;font-size:10.5px;color:var(--ink2);margin-left:4px}
+.vr-ci{font-size:9.5px;color:var(--ink3);font-weight:600}
+.vr-tab .pos{color:var(--green)} .vr-tab .neg{color:var(--red)}
+.vr-shop{font-family:var(--mono);font-size:10.5px;color:var(--ink2);margin-top:7px}
+.vr-foot{font-size:10.5px;line-height:1.5;color:var(--ink3);margin-top:8px}
