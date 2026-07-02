@@ -114,6 +114,39 @@ export default function Home() {
     const tierCls = (t: any) => "tier-" + (t || "low");
     const tdotCls = (t: any) => "tdot-" + (t || "low");
 
+    // ===================== SUGGESTED ACTIONS (gated meta_confidence strategy) =====================
+    // A game carries `suggested_action` only on the live MLB slate. status SUGGEST → we surface it
+    // as a first-class "Suggested Play"; status ABSTAIN → silent (abstention shows nothing).
+    // HOUSE RULE (from the research spec): the hit-rate NEVER renders without the price/ROI —
+    // this strategy wins ~60% of the time at short prices; both halves always show together.
+    const saOf = (g: any) => {
+      const sa = g && g.suggested_action;
+      return sa && sa.status === "SUGGEST" ? sa : null;
+    };
+    const saPct = (p: any, d = 0) => (p == null || isNaN(Number(p)) ? "—" : (Number(p) * 100).toFixed(d) + "%");
+    const saAm = (p: any) => (p == null || isNaN(Number(p)) ? "—" : (Number(p) > 0 ? "+" + Number(p) : "" + Number(p)));
+    // 3-year record + gate stats, from the served track-record block (literal fallbacks = the frozen artifacts)
+    function saTrack() {
+      const t = (payload && payload.suggested_actions_track_record) || {};
+      return {
+        v24: t.val_2024 || { n: 590, hit: 0.641, roi: -0.013 },
+        t25: t.test_2025 || { n: 605, hit: 0.617, roi: -0.047 },
+        g26: t.gate_2026 || { n: 299, hit: 0.602, hit_ci95: [0.545, 0.656], roi: -0.069 },
+        fwd: t.forward || null,
+        base: t.baseline_blind_dog15_2026 || { hit: 0.582, roi: -0.043 },
+      };
+    }
+    const saRecStr = (sa: any) => (sa && sa.record_3yr) || "64.1% / 61.7% / 60.2% (2024/2025/2026)";
+    // breakeven at this suggestion's own price (falls back to the honesty block / 3yr avg)
+    function saBreakeven(sa: any) {
+      const h = sa && sa.honesty;
+      if (h && h.breakeven_at_price != null) return Number(h.breakeven_at_price);
+      const am = sa && sa.price != null ? Number(sa.price) : null;
+      if (am == null || isNaN(am) || Math.abs(am) < 100) return 0.648;
+      const net = am > 0 ? am / 100 : 100 / Math.abs(am);
+      return 1 / (1 + net);
+    }
+
     // ===================== STATE =====================
     let tab = "picks";              // "picks" | "analyzer"
     let league = "mlb";             // selected league
@@ -652,6 +685,56 @@ export default function Home() {
       return e ? e.market : "";
     }
 
+    // The prominent glass "SUGGESTED PLAY" ribbon on a game box. Side + confidence + the
+    // 3-yr tag + the price (hit-rate and price always together). Settled plays tint ✓/✗.
+    function saRibbon(g: any) {
+      const sa = saOf(g);
+      if (!sa) return "";
+      const res = sa.result || null;
+      const resCls = res ? (res.push ? "pushed" : res.won ? "won" : "lost") : "";
+      const resTxt = res ? (res.push ? "PUSH" : res.won ? "✓ WON" : "✗ LOST") : "";
+      return `<div class="saplay ${resCls}">
+        <span class="sa-badge"><span class="sa-dia">◆</span>Suggested Play</span>
+        <span class="sa-side">${esc(sa.side)}</span>
+        <span class="sa-px" title="${esc(sa.price_note || "")}">${saAm(sa.price)}</span>
+        <span class="sa-conf" title="Model P(correct) for this suggestion">${saPct(sa.p_correct != null ? sa.p_correct : sa.meta_p)} conf</span>
+        <span class="sa-tag" title="Suggested-play hit rate ${esc(saRecStr(sa))} · avg price ~-184">60% 3-yr</span>
+        ${resTxt ? `<span class="sa-res ${resCls}">${resTxt}</span>` : ""}
+      </div>`;
+    }
+
+    // The "Suggested Plays" strip at the top of the MLB docket — today's suggestions in one
+    // glance, with the 3-year record AND the price cost side by side (never one without the other).
+    function suggestedStrip(games: any[]) {
+      if (league !== "mlb") return "";
+      const plays = games.filter((g) => saOf(g));
+      if (!plays.length) return "";
+      const T = saTrack();
+      const chips = plays.map((g) => {
+        const sa = saOf(g);
+        const res = sa.result || null;
+        const resCls = res ? (res.push ? "pushed" : res.won ? "won" : "lost") : "";
+        return `<button class="sas-chip ${resCls}" data-gid="${esc(g.game_id)}">
+          <span class="sc-mu">${esc(g.away_abbr)}@${esc(g.home_abbr)}</span>
+          <span class="sc-side">${esc(sa.side)}</span>
+          <span class="sc-px">${saAm(sa.price)}</span>
+          <span class="sc-p">${saPct(sa.p_correct != null ? sa.p_correct : sa.meta_p)}</span>
+          ${res ? `<span class="sc-res ${resCls}">${res.push ? "P" : res.won ? "✓" : "✗"}</span>` : ""}
+        </button>`;
+      }).join("");
+      const fwd = T.fwd && T.fwd.n_settled ? ` · live ${T.fwd.hit != null ? saPct(T.fwd.hit, 1) : "—"} (${T.fwd.n_settled})` : "";
+      return `<div class="sastrip">
+        <div class="sas-head">
+          <span class="sas-k"><span class="sa-dia">◆</span>Suggested Plays</span>
+          <span class="sas-n">${plays.length} today</span>
+          <span class="sas-rec" title="2024 validation / 2025 test / 2026 one-shot gate — n=${T.g26.n} gated bets">hit ${saPct(T.v24.hit, 1)} / ${saPct(T.t25.hit, 1)} / ${saPct(T.g26.hit, 1)} (’24/’25/’26)${fwd}</span>
+          <span class="sas-price">avg price −184 · needs ${saPct(0.648, 1)} · ROI ${(T.g26.roi * 100).toFixed(1)}% in ’26</span>
+        </div>
+        <div class="sas-list">${chips}</div>
+        <div class="sas-note">wins ~60% of the time · loses ~5–7¢ per $1 at these prices — a hit-rate strategy, not a value play</div>
+      </div>`;
+    }
+
     function gameBox(g: any, idx: number, thr = Infinity) {
       const sp = g.sport;
       const gs = gameState(g);
@@ -687,6 +770,7 @@ export default function Home() {
             <div class="gb-statwrap">${stateBadge}${boxRes}</div>
           </div>
         </div>
+        ${saRibbon(g)}
         ${predictedHead(g)}
         ${intelChips(g)}
         <div class="gb-markets">
@@ -732,7 +816,7 @@ export default function Home() {
         } else {
           const thr = edgeThresholdFor(filtered);
           band = dayRecordBand(filtered, dispDate) + trackStrip();
-          body = `<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
+          body = `${suggestedStrip(filtered)}<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
             <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)} · DiamondEdge pre-game model</div>`;
         }
       }
@@ -827,7 +911,7 @@ export default function Home() {
         const ba = $("band-area"); if (ba) ba.innerHTML = dayRecordBand([], dispDate) + trackStrip();
       } else {
         const thr = edgeThresholdFor(filtered);
-        body = `<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
+        body = `${suggestedStrip(filtered)}<div class="docket">${filtered.map((g, i) => gameBox(g, i, thr)).join("")}</div>
           <div class="refnote">${filtered.length} ${SPORT_LABEL[league]} game${filtered.length > 1 ? "s" : ""} · ${esc(dispDate)} · DiamondEdge pre-game model</div>`;
         const ba = $("band-area"); if (ba) { ba.innerHTML = dayRecordBand(filtered, dispDate) + trackStrip(); const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer"); }
       }
@@ -838,6 +922,9 @@ export default function Home() {
     function bindBoxClicks() {
       root.querySelectorAll(".gamebox[data-gid]").forEach((bx: any) => {
         bx.onclick = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
+      });
+      root.querySelectorAll(".sas-chip[data-gid]").forEach((ch: any) => {
+        ch.onclick = (e: any) => { e.stopPropagation(); const g = findGame(ch.dataset.gid); if (g) openDetail(g); };
       });
     }
     function findGame(gid: any) {
@@ -954,6 +1041,55 @@ export default function Home() {
       </div>`;
     }
 
+    // Full suggested-play context for the drawer: the play, the 3-year record and the price →
+    // breakeven, shown plainly side by side. Record and payout are the same size on purpose.
+    function suggestedSection(g: any) {
+      const sa = saOf(g);
+      if (!sa) return "";
+      const T = saTrack();
+      const be = saBreakeven(sa);
+      const res = sa.result || null;
+      const resCls = res ? (res.push ? "pushed" : res.won ? "won" : "lost") : "";
+      const resTxt = res ? (res.push ? "PUSH" : res.won ? `WON ${res.pnl != null && res.pnl >= 0 ? "+" : ""}${res.pnl != null ? Number(res.pnl).toFixed(2) + "u" : ""}` : `LOST ${res.pnl != null ? Number(res.pnl).toFixed(2) + "u" : ""}`) : "";
+      const ci = T.g26.hit_ci95;
+      const row = (lab: string, o: any) => o ? `<tr><td>${esc(lab)}</td><td class="num">${(o.n || 0).toLocaleString()}</td><td class="num">${o.hit != null ? saPct(o.hit, 1) : "—"}</td><td class="num ${o.roi != null && o.roi >= 0 ? "pos" : "neg"}">${o.roi != null ? (o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1) + "%" : "—"}</td></tr>` : "";
+      const fwdRow = T.fwd && T.fwd.n_settled
+        ? row("Live (forward)", { n: T.fwd.n_settled, hit: T.fwd.hit, roi: T.fwd.roi })
+        : "";
+      return `<div class="dsec sa-dsec">
+        <div class="dsec-h">◆ Suggested Play</div>
+        <div class="dsec-b">
+          <div class="dsa-top ${resCls}">
+            <div class="dsa-side">${esc(sa.side)}</div>
+            <div class="dsa-nums">
+              <span class="dsa-px">${saAm(sa.price)}</span>
+              <span class="dsa-p">${saPct(sa.p_correct != null ? sa.p_correct : sa.meta_p, 1)} conf</span>
+              ${resTxt ? `<span class="dsa-res ${resCls}">${resTxt}</span>` : ""}
+            </div>
+          </div>
+          <div class="dsa-probs">
+            ${sa.model_p_cover != null ? `<span class="dsa-chip">model ${saPct(sa.model_p_cover, 1)}</span>` : ""}
+            ${sa.market_p_cover != null ? `<span class="dsa-chip">market ${saPct(sa.market_p_cover, 1)}</span>` : ""}
+            <span class="dsa-chip be">this price needs ${saPct(be, 1)} to break even</span>
+          </div>
+          <table class="dsa-tab">
+            <thead><tr><th>Window</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
+            <tbody>
+              ${row("2024 validation", T.v24)}
+              ${row("2025 test (one shot)", T.t25)}
+              ${row("2026 gate (one shot)", T.g26)}
+              ${fwdRow}
+            </tbody>
+          </table>
+          <div class="dsa-foot">
+            2026 gate: ${saPct(T.g26.hit, 1)}${ci ? ` (CI ${saPct(ci[0], 1)}–${saPct(ci[1], 1)})` : ""} on ${T.g26.n} bets at ~−184 avg
+            — wins ~60% of the time, loses ~${Math.abs(Math.round(T.g26.roi * 100))}¢ per $1 at these prices.
+            Blind dog +1.5 baseline hit ${saPct(T.base.hit, 1)} in ’26.
+          </div>
+        </div>
+      </div>`;
+    }
+
     function openDetail(g: any) {
       detail = g;
       const sp = g.sport;
@@ -987,6 +1123,7 @@ export default function Home() {
           </div>
           <div class="drawer-body">
             ${actualBanner}
+            ${suggestedSection(g)}
             <div class="dsec">
               <div class="dsec-h">Predicted Final Score</div>
               <div class="dsec-b">
