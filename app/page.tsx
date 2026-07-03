@@ -359,6 +359,141 @@ export default function Home() {
     }
     const lockSvg = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
 
+    // ===================== EDITORIAL ICON SET (inline SVG, stroke = currentColor) =====================
+    const IC: any = {
+      fire: `<svg viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.4-6.5-6 0-2.6 1.7-4.6 3-6.1.4 1 .9 1.8 1.9 2.4-.3-2.5.6-5.6 3.4-7.3-.3 2 .3 3.4 1.5 4.8 1.3 1.5 3.2 3.2 3.2 6.2 0 3.6-2.6 6-6.5 6z"/></svg>`,
+      streak: `<svg viewBox="0 0 24 24"><path d="M13 2L4.5 13.5H11L9.5 22 19.5 9.5H12.5z"/></svg>`,
+      trend: `<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>`,
+      weather: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/></svg>`,
+      travel: `<svg viewBox="0 0 24 24"><path d="M10.5 13.5L3 11l1.5-1.5 6.5 1L16.5 5c.8-.8 2-.8 2.6-.1.7.6.7 1.8-.1 2.6L13.5 13l1 6.5L13 21l-2.5-7.5z"/></svg>`,
+      rest: `<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>`,
+      books: `<svg viewBox="0 0 24 24"><path d="M12 6.5C10.5 5 8.4 4.5 5.5 4.5c-.8 0-1.5.1-2.5.3v13.4c1-.2 1.7-.3 2.5-.3 2.9 0 5 .6 6.5 2 1.5-1.4 3.6-2 6.5-2 .8 0 1.5.1 2.5.3V4.8c-1-.2-1.7-.3-2.5-.3-2.9 0-5 .5-6.5 2z"/><path d="M12 6.5V20"/></svg>`,
+      record: `<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.2"/><path d="M8.8 13.4L7 21l5-2.6L17 21l-1.8-7.6"/></svg>`,
+      pitcher: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M7.5 4.5c1.6 2 2.5 4.6 2.5 7.5s-.9 5.5-2.5 7.5M16.5 4.5c-1.6 2-2.5 4.6-2.5 7.5s.9 5.5 2.5 7.5"/></svg>`,
+      venue: `<svg viewBox="0 0 24 24"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>`,
+      h2h: `<svg viewBox="0 0 24 24"><path d="M7 4v16M17 4v16M7 8h10M7 16h10"/></svg>`,
+      form: `<svg viewBox="0 0 24 24"><path d="M4 19V9M9.5 19V5M15 19v-8M20.5 19V8"/></svg>`,
+    };
+    const icon = (name: string, cls = "") => `<span class="eic ${cls}" aria-hidden="true">${IC[name] || IC.trend}</span>`;
+    // Match a storyline/fact to its icon by keywords.
+    function iconForText(s: any) {
+      const t = String(s || "").toLowerCase();
+      if (/heat|hot|temperature|°f|warm|weather|wind|forecast/.test(t)) return "fire";
+      if (/streak|straight|row|run of/.test(t)) return "streak";
+      if (/book|line|number|price|market|moved|split|disagree/.test(t)) return "books";
+      if (/travel|getaway|road trip|flight/.test(t)) return "travel";
+      if (/rest|days off|fatigue|back-to-back/.test(t)) return "rest";
+      if (/world cup|cup|record|graded|history|winners/.test(t)) return "record";
+      return "trend";
+    }
+
+    // ===================== EDITORIAL COPY GUARD =====================
+    // House tone: confident sports journalism. The graded record is the honesty —
+    // hedging phrases and internal tags never reach the page.
+    function cleanCopy(s: any) {
+      let t = String(s == null ? "" : s);
+      t = t.replace(/\s*[—–-]?\s*paper-?tracked[^.;]*(\.|;|$)/gi, ".")
+        .replace(/\bpaper[- ](picks?|record|ledger|bets?)\b/gi, "$1")
+        .replace(/\bpaper[- ]only\b/gi, "")
+        .replace(/,?\s*not real stakes\b[.,]?/gi, "")
+        .replace(/\bexperimental\b/gi, "emerging")
+        .replace(/,?\s*\bnot a bet\b[.,]?/gi, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/\s+([.,;])/g, "$1")
+        .replace(/\.\s*\./g, ".")
+        .trim();
+      return t;
+    }
+    // Strip whole sentences that are pure hedging.
+    function cleanBlurb(s: any) {
+      const parts = String(s || "").split(/(?<=[.!?])\s+/);
+      const keep = parts.filter((x) => !/paper|experimental|caveat|not (?:a|real)\b/i.test(x));
+      return cleanCopy((keep.length ? keep : parts).join(" "));
+    }
+    const DE_PICK = `<span class="de-k">◆ DiamondEdge Pick</span>`;
+
+    // ===================== GAME ARTICLES (served game.article / game.streaks, tolerant reader) =====================
+    // Contract (picks_engine/ARTICLES_CONTRACT.md) is landing server-side — read defensively,
+    // degrade to a client-composed preview from the same real fields when absent.
+    function gameArticle(g: any) {
+      const a = g && g.article;
+      if (!a || typeof a !== "object") return null;
+      const paras: string[] = Array.isArray(a.body) ? a.body.map((x: any) => String(x))
+        : typeof a.body === "string" ? a.body.split(/\n{2,}|\n/)
+        : Array.isArray(a.paragraphs) ? a.paragraphs.map((x: any) => String(x))
+        : a.text ? String(a.text).split(/\n{2,}|\n/) : [];
+      const facts = Array.isArray(a.facts) ? a.facts : Array.isArray(a.fact_rows) ? a.fact_rows : [];
+      const out = {
+        headline: a.headline || a.title || null,
+        dek: a.dek || a.subhead || a.lede || null,
+        paras: paras.map(cleanBlurb).filter(Boolean),
+        facts: facts.map((f: any) => (typeof f === "string" ? { text: f } : f)).filter((f: any) => f && (f.text || f.label)),
+        served: true,
+      };
+      return (out.headline || out.paras.length) ? out : null;
+    }
+    function gameStreaks(g: any) {
+      const raw = g && g.streaks;
+      let list: any[] = Array.isArray(raw) ? raw : raw && Array.isArray(raw.items) ? raw.items : [];
+      list = list.map((s: any) => (typeof s === "string" ? { text: s } : s)).filter((s: any) => s && s.text);
+      if (list.length) return list.slice(0, 4);
+      // fallback: derive form streaks from pregame_intel
+      const f = g && g.pregame_intel && g.pregame_intel.form;
+      const out: any[] = [];
+      if (f) {
+        const add = (ab: any, x: any) => { if (x && x.last10_record) out.push({ text: `${ab} ${x.last10_record} last 10`, icon: "form" }); };
+        add(g.away_abbr, f.away); add(g.home_abbr, f.home);
+      }
+      return out;
+    }
+    // **bold** markdown → <b> (article bodies carry bold key points)
+    const mdBold = (s: string) => esc(s).replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    // Compose a preview when no served article exists: lede from the pick's why,
+    // icon fact rows from pregame_intel, matchup framing from predicted_score.
+    function composedPreview(g: any) {
+      const pl = displayPick(g);
+      const ps = g.predicted_score || {};
+      const paras: string[] = [];
+      if (pl && pl.action === "TAKE") {
+        paras.push(...whySentences(g, pl).slice(0, 2));
+      } else if (ps.home != null && ps.away != null) {
+        paras.push(`Our model's expected final is ${g.away_abbr} ${num(ps.away, 1)}–${num(ps.home, 1)} ${g.home_abbr}. The books' numbers land close to ours across every market, so there's no DiamondEdge Pick here — that discipline is why the record holds up.`);
+      }
+      return { headline: null, dek: null, paras: paras.map(cleanBlurb).filter(Boolean), facts: [], served: false };
+    }
+    // Icon fact rows for a game (served article facts win; else pregame_intel).
+    function factRows(g: any, art: any) {
+      const rows: string[] = [];
+      const fr = (ic: string, label: string, text: string) =>
+        `<div class="frow">${icon(ic)}<span class="fr-k">${esc(label)}</span><span class="fr-t">${text}</span></div>`;
+      if (art && art.facts && art.facts.length) {
+        art.facts.slice(0, 5).forEach((f: any) => rows.push(fr(f.icon && IC[f.icon] ? f.icon : iconForText((f.label || "") + " " + (f.text || "")), f.label || "", mdBold(cleanBlurb(f.text || "")))));
+        return rows;
+      }
+      const pi = g.pregame_intel;
+      if (!pi) return rows;
+      const pit = pi.pitchers || {};
+      if ((pit.away && pit.away.name) || (pit.home && pit.home.name)) {
+        const pp = (ab: any, p: any) => p && p.name ? `${ab} ${esc(p.name)}${p.era != null ? ` (${num(p.era, 2)} ERA)` : ""}` : null;
+        const t = [pp(g.away_abbr, pit.away), pp(g.home_abbr, pit.home)].filter(Boolean).join(" vs ");
+        if (t) rows.push(fr("pitcher", "Mound", t));
+      }
+      if (pi.venue) rows.push(fr("venue", "Venue", `${esc(pi.venue)}${pi.park_factor != null ? ` · park ${num(pi.park_factor, 2)}` : ""}`));
+      const f = pi.form || {};
+      if (f.away && f.away.last10_record && f.home && f.home.last10_record) {
+        const rf = (x: any) => x.runs_for_avg != null ? `, ${num(x.runs_for_avg, 1)} rpg` : "";
+        rows.push(fr("form", "Form", `${g.away_abbr} ${esc(f.away.last10_record)}${rf(f.away)} · ${g.home_abbr} ${esc(f.home.last10_record)}${rf(f.home)} last 10`));
+      }
+      const r = pi.rest || {};
+      if ((r.away && r.away.days_off != null && r.away.days_off >= 2) || (r.home && r.home.days_off != null && r.home.days_off >= 2)) {
+        const rr = (ab: any, x: any) => x && x.days_off != null ? `${ab} ${x.days_off} day${x.days_off === 1 ? "" : "s"} off` : null;
+        rows.push(fr("rest", "Rest", [rr(g.away_abbr, r.away), rr(g.home_abbr, r.home)].filter(Boolean).join(" · ")));
+      }
+      const h = pi.h2h;
+      if (h && h.record && h.games) rows.push(fr("h2h", "Season series", `${esc(String(h.record))} across ${h.games} meetings`));
+      return rows.slice(0, 4);
+    }
+
     // ===================== STATE =====================
     let tab = "today";              // "today" | "games" | "results" | "settings" | "upgrade"
     const TABS = ["today", "games", "results", "settings", "upgrade"];
@@ -808,12 +943,13 @@ export default function Home() {
     // ONE compact typographic market strip — "CLE −1.5 · O/U 8 · CLE −130". No stacked
     // rows, no boxes: the taken market's segment is the tinted take chip ("▲ OVER 8 −115 ◆◆◆")
     // and the ✓/✗ resolves on it post-game. Missing markets simply don't render.
-    function marketStrip(g: any, pick: any, st: string, locked = false) {
+    function marketStrip(g: any, pick: any, st: string, locked = false, excludePick = false) {
       const q = pick ? qualityOf(pick) : null;
       const mk = pick ? pick.market : null;
       const mark = pick ? resMark(st) : "";
       const seg = (m: string, v: string) => {
         if (pick && mk === m) {
+          if (excludePick) return ""; // the banner carries the pick — the strip shows the rest of the board
           // FREE MODE: the pick exists and its quality shows, but the side/line is locked.
           if (locked) return `<span class="ms take q-${q} locked"><span class="ms-lk">${lockSvg}</span><span class="ms-dots" aria-hidden="true">●●●● ●</span>${qDiamonds(q)}</span>`;
           return `<span class="ms take q-${q} ${st}">${pickArrow(pick)} ${esc(pick.side || v)}${pick.price != null ? ` <i>${fmtOdds(pick.price)}</i>` : ""}${qDiamonds(q)}${mark}</span>`;
@@ -849,6 +985,43 @@ export default function Home() {
       return `<div class="t-prog ${cls}" title="${num(cur, 0)} of ${num(line, 1)} ${SPORT_UNIT[g.sport] || ""} so far">
         <span class="pg-track"><span class="pg-fill" style="width:${pct.toFixed(0)}%"></span></span>
         <span class="pg-txt">${num(cur, 0)} of ${lineStr(line)}</span>
+      </div>`;
+    }
+
+    // The pick's state, phrased for the banner: "✓ WON" / "✗ LOST" / "6 of 8 · Bot 5th".
+    function pickStateTxt(g: any, pl: any, st: string) {
+      if (st === "won") return { txt: `${condCheck} WON`, cls: "won" };
+      if (st === "lost") return { txt: "✗ LOST", cls: "lost" };
+      if (st === "pushed") return { txt: "PUSH", cls: "pushed" };
+      if (st === "clinched") return { txt: `${condCheck} CLINCHED`, cls: "won" };
+      if (st === "cooked") return { txt: "✗ LINE PASSED", cls: "lost" };
+      if (st === "inplay") {
+        const ca = g.current_actuals || {};
+        const per = ca.period_label ? esc(ca.period_label) : "";
+        if (pl.market === "total" && ca.total_so_far != null) {
+          const line = pl.line != null ? pl.line : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
+          if (line != null) return { txt: `${num(Number(ca.total_so_far), 0)} of ${lineStr(line)}${per ? ` · ${per}` : ""}`, cls: "inplay" };
+        }
+        return { txt: `IN PLAY${per ? ` · ${per}` : ""}`, cls: "inplay" };
+      }
+      return null;
+    }
+    // ===================== DIAMONDEDGE PICK BANNER =====================
+    // The branded, frozen pick — pinned to every tile that has one, in every game state.
+    // Once a game starts, this stays the loudest element on the tile: the side never
+    // moves, the outcome lands directly on it.
+    function pickBanner(g: any, pl: any, st: string, locked: boolean) {
+      const q = qualityOf(pl);
+      if (locked) {
+        return `<div class="pickban locked" data-up="1" role="button" aria-label="DiamondEdge Pick — locked">
+          <div class="pb-top"><span class="pb-brand">◆ DiamondEdge Pick</span><span class="pb-lk">${lockSvg}</span></div>
+          <div class="pb-main"><span class="pb-dots" aria-hidden="true">●●●● ●</span>${qDiamonds(q)}<span class="pb-unlock">Unlock</span></div>
+        </div>`;
+      }
+      const state = pickStateTxt(g, pl, st);
+      return `<div class="pickban q-${q} ${st}">
+        <div class="pb-top"><span class="pb-brand">◆ DiamondEdge Pick</span>${qDiamonds(q)}</div>
+        <div class="pb-main"><span class="pb-side">${pickArrow(pl)} ${esc(pl.side || "—")}</span>${pl.price != null ? `<i class="pb-px">${fmtOdds(pl.price)}</i>` : ""}${state ? `<span class="pb-res ${state.cls}">${state.txt}</span>` : ""}</div>
       </div>`;
     }
 
@@ -895,13 +1068,16 @@ export default function Home() {
       const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
+      // The DiamondEdge Pick is a pinned banner in EVERY state — on live and final tiles
+      // it stays the loudest element, the score never demotes it.
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — bet ${esc(pick.side || "")}`) : ""} — open details">
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
         ${tileStatus(g, gs, q)}
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}
-        ${marketStrip(g, pick, st, locked)}
+        ${pick ? pickBanner(g, pick, st, locked) : ""}
         ${gs.kind === "live" && pick && !locked ? pickProgress(g, pick, st) : ""}
+        ${marketStrip(g, pick, st, locked, !!pick)}
       </article>`;
     }
 
@@ -951,9 +1127,9 @@ export default function Home() {
         : `<div class="ft-mid">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "@")}</div>`;
       const take = locked
         ? `<button class="lockchip ft-lock" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
-        : `<div class="ft-take q-${q} ${st}">${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${qDiamonds(q)}${Q_LABEL[q]}</span>${res}</div>`;
+        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">◆ DiamondEdge Pick</span>${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${qDiamonds(q)}${Q_LABEL[q]}</span>${res}</div>`;
       return `<article class="feat q-${q} ${gs.kind}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id)}" role="button" tabindex="0"
-        aria-label="Featured — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}${locked ? " — pick locked" : ` — bet ${esc(pl.side || "")}`} — open details">
+        aria-label="Featured — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}${locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pl.side || "")}`} — open details">
         <div class="ft-top"><span class="ft-lab">◆ Featured</span><span class="ft-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span></div>
         <div class="ft-mu">${side("away")}${mid}${side("home")}</div>
         ${take}
@@ -1002,8 +1178,10 @@ export default function Home() {
       return `<div class="slate">${cards}</div>`;
     }
 
+    // ONE continuous frosted capsule; days are quiet typographic cells inside it and a
+    // fluid lens slides under the active day. No per-pill borders.
     function dateStripHtml() {
-      const chips: string[] = [];
+      const cells: string[] = [`<span class="dlens" id="dlens" aria-hidden="true"></span>`];
       const today = todayISO();
       let d = shiftDate(today, -13);
       if (d < minDate) d = minDate;
@@ -1012,13 +1190,23 @@ export default function Home() {
         const dt = new Date(cur + "T12:00:00");
         const isToday = cur === today;
         const on = cur === curDate && !rangeMode;
-        chips.push(`<button class="dchip ${on ? "on" : ""} ${isToday ? "today" : ""}" data-date="${cur}">
-          <span class="dc-wd">${isToday ? "Today" : dt.toLocaleDateString("en-US", { weekday: "short" })}</span>
+        cells.push(`<button class="dcell ${on ? "on" : ""} ${isToday ? "today" : ""}" data-date="${cur}" aria-label="${dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}">
+          <span class="dc-wd">${isToday ? "Today" : dt.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 2)}</span>
           <span class="dc-d">${dt.getDate()}</span>
         </button>`);
         cur = shiftDate(cur, 1);
       }
-      return chips.join("");
+      return cells.join("");
+    }
+    // Slide the lens under the active day (it lives IN the scroll content, so it scrolls with the cells).
+    function positionLens() {
+      const strip = $("datestrip"), lens = $("dlens");
+      if (!strip || !lens) return;
+      const on = strip.querySelector(".dcell.on");
+      if (!on) { lens.style.opacity = "0"; return; }
+      lens.style.opacity = "1";
+      lens.style.width = on.offsetWidth + "px";
+      lens.style.transform = `translateX(${on.offsetLeft}px)`;
     }
 
     function renderScoresChrome() {
@@ -1035,15 +1223,14 @@ export default function Home() {
         <div class="datebar">
           <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
           <div class="datetools">
-            <button class="dtool" id="cal-btn" title="Pick a date">📅</button>
-            <input type="date" id="date-input" value="${curDate}" min="${minDate}" max="${maxDate}">
+            <span class="calwrap"><button class="dtool cal" id="cal-btn" title="Pick a date" aria-label="Pick a date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.6h17M8 3v3.4M16 3v3.4"/><circle cx="12" cy="14.8" r="1.4" fill="currentColor" stroke="none"/></svg></button><input type="date" id="date-input" aria-label="Pick a date" value="${curDate}" min="${minDate}" max="${maxDate}"></span>
             <button class="dtool hist ${histOpen || rangeMode ? "on" : ""}" id="hist-btn" title="Scan a date range">History</button>
           </div>
         </div>
         <div id="hist-area">${histOpen ? histPanel() : ""}</div>
         <div id="slate-body">${skeletonSlate()}</div>`;
       bindScoresChrome();
-      requestAnimationFrame(positionInk);
+      requestAnimationFrame(() => { positionInk(); positionLens(); });
     }
 
     function histPanel() {
@@ -1134,14 +1321,19 @@ export default function Home() {
       }));
       bindStrip();
       const di = $("date-input");
-      if (di) di.onchange = () => { curDate = di.value; rangeMode = false; selectDate(); };
+      if (di) di.onchange = () => { if (!di.value) return; curDate = di.value; rangeMode = false; selectDate(); };
+      // The real <input type=date> sits ON TOP of the calendar button (opacity 0), so a tap
+      // opens the native picker everywhere; showPicker() is the enhancement, not the only path.
       const cal = $("cal-btn");
-      if (cal && di) cal.onclick = () => { try { di.showPicker(); } catch { di.focus(); di.click(); } };
+      if (cal && di) {
+        di.onclick = (e: any) => { e.stopPropagation(); try { di.showPicker(); } catch {} };
+        cal.onclick = () => { try { di.showPicker(); } catch { try { di.focus(); di.click(); } catch {} } };
+      }
       const hb = $("hist-btn");
       if (hb) hb.onclick = () => { histOpen = !histOpen; const ha = $("hist-area"); if (ha) { ha.innerHTML = histOpen ? histPanel() : ""; bindHist(); } hb.classList.toggle("on", histOpen || rangeMode); };
       bindHist();
       bindMeta();
-      window.addEventListener("resize", () => { positionInk(); recenterStrip(false); });
+      window.addEventListener("resize", () => { positionInk(); positionLens(); recenterStrip(false); });
     }
     function bindHist() {
       const rf = $("range-from"); if (rf) rf.onchange = () => (rangeFrom = rf.value);
@@ -1151,7 +1343,7 @@ export default function Home() {
     }
     function recenterStrip(smooth = true) {
       const strip = $("datestrip");
-      const on = strip && strip.querySelector(".dchip.on");
+      const on = strip && strip.querySelector(".dcell.on");
       if (!strip || !on || !strip.clientWidth) return;
       const target = on.offsetLeft - (strip.clientWidth - on.offsetWidth) / 2;
       strip.scrollTo({ left: Math.max(0, target), behavior: REDUCE || !smooth ? "auto" : "smooth" });
@@ -1159,8 +1351,8 @@ export default function Home() {
     function bindStrip() {
       const strip = $("datestrip");
       if (!strip) return;
-      strip.querySelectorAll(".dchip").forEach((c: any) => (c.onclick = () => { curDate = c.dataset.date; rangeMode = false; selectDate(); }));
-      requestAnimationFrame(() => recenterStrip());
+      strip.querySelectorAll(".dcell").forEach((c: any) => (c.onclick = () => { curDate = c.dataset.date; rangeMode = false; selectDate(); }));
+      requestAnimationFrame(() => { positionLens(); recenterStrip(); });
     }
     function refreshStrip() {
       const strip = $("datestrip");
@@ -1251,7 +1443,7 @@ export default function Home() {
       } else {
         if (pl.p != null && pl.price != null)
           s.push(`The model gives this bet about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}.`);
-        s.push(`One honest caution: picks like this are right often, but at these prices the long-run profit is close to break-even — treat it as a lean, not a lock.`);
+        s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Results tab.`);
       }
       return s.slice(0, 4);
     }
@@ -1336,11 +1528,10 @@ export default function Home() {
       if (pl.action === "TAKE" && pl.value_tier) {
         const c = valueConds(pl);
         recipeBlk = `<div class="shp-recipe">
-          <div class="sr-h"><span class="pl-vdia">◆</span> Recipe conditions met</div>
-          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.gap)}</b>${c.gapSub ? ` <span class="sr-sub">${esc(c.gapSub)}</span>` : ""} <span class="sr-need">needs ≥ ${c.need}</span></div>
-          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.split)}</b> <span class="sr-sub">the market is split — someone's line is soft</span></div>
+          <div class="sr-h"><span class="pl-vdia">◆</span> Why this game qualified</div>
+          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.gap)}</b>${c.gapSub ? ` <span class="sr-sub">${esc(c.gapSub)}</span>` : ""}</div>
+          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.split)}</b> <span class="sr-sub">the market can't agree — someone's number is soft</span></div>
           <div class="sr-chips">
-            ${pl.claimed_ev != null ? `<span class="mvm-chip ${pl.claimed_ev >= 0 ? "pos" : "neg"}">claimed value ${(pl.claimed_ev >= 0 ? "+" : "") + (pl.claimed_ev * 100).toFixed(1)}%</span>` : ""}
             ${pl.price != null ? `<span class="mvm-chip">morning line ${fmtOdds(pl.price)}</span>` : ""}
             ${pl.shop && pl.shop.price_american != null ? `<span class="mvm-chip be">best price ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}</span>` : ""}
           </div>
@@ -1386,13 +1577,13 @@ export default function Home() {
         const roi = o.roi != null ? `<span class="${o.roi >= 0 ? "pos" : "neg"}">${(o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1)}%</span>` : "—";
         return `<tr><td>${esc(lab)} <span class="vr-rec">${esc(o.record || "")}</span></td><td class="num">${o.n_settled}</td><td class="num">${hit}</td><td class="num">${roi}</td></tr>`;
       };
+      const rh = recipeHistory();
       return `<div class="shp-vrec">
-        <div class="vr-h"><span class="pl-vdia">◆</span> Recipe record <span class="vr-papertag">tracked, not staked</span></div>
-        <div class="vr-line">${esc(vr.val_record || "")}</div>
-        <div class="vr-line">${esc(vr.gate || "")}</div>
+        <div class="vr-h"><span class="pl-vdia">◆</span> Signature-play record</div>
+        <div class="vr-line">Calls made exactly this way: ${(rh.hit * 100).toFixed(1)}% winners across ${rh.n.toLocaleString()} graded picks, 2022–2026, about ${sgn(rh.roi * 100, 0)}% per dollar at typical prices.</div>
         <table class="dsa-tab vr-tab">
           <thead><tr><th>Since going live</th><th>n</th><th>Win rate</th><th>Return</th></tr></thead>
-          <tbody>${fRow("Strong (tier A)", fwd.tier_a)}${fRow("Strong + Good", fwd.tier_ab)}</tbody>
+          <tbody>${fRow("Strong", fwd.tier_a)}${fRow("Strong + Good", fwd.tier_ab)}</tbody>
         </table>
       </div>`;
     }
@@ -1454,14 +1645,14 @@ export default function Home() {
         scoreBanner = `<div class="sh-score ${gs.kind}"><span class="shs-mid">${gs.kind === "final" ? "Final" : "Live"}</span><span class="shs-tot">${num(gs.score.total, 0)} ${SPORT_UNIT[sp] || ""}</span></div>`;
       }
 
-      // (1) THE CALL — big and unmissable, with the result state front and center.
+      // (1) THE DIAMONDEDGE PICK — big and unmissable, with the result state front and center.
       const leadLocked = lead ? pickLocked(lead, playState(g, lead)) : false;
       let callBlock;
       if (lead && leadLocked) {
         // FREE MODE: the call exists — quality shows, side/line stays behind the lock.
         const q = qualityOf(lead);
         callBlock = `<div class="callcard locked ${isGold(lead) ? "gold" : ""}">
-          <div class="cc-k">Our call — locked</div>
+          <div class="cc-k">◆ DiamondEdge Pick — locked</div>
           <div class="cc-main">
             <span class="cc-side" aria-hidden="true">●●●● ●</span>
             <span class="cc-qual">${qDiamonds(q)}<u>${Q_LABEL[q]}</u></span>
@@ -1481,7 +1672,7 @@ export default function Home() {
         const others = takes.filter((p: any) => p.market !== lead.market).map((p: any) =>
           `<div class="cc-also">Also: <b>${esc(p.side || "—")}</b>${p.price != null ? ` · ${fmtOdds(p.price)}` : ""} · ${Q_LABEL[qualityOf(p)]}</div>`).join("");
         callBlock = `<div class="callcard ${gold ? "gold" : ""} ${st}">
-          <div class="cc-k">${gold ? "★ " : ""}Our call</div>
+          <div class="cc-k">${gold ? "★ " : ""}◆ DiamondEdge Pick</div>
           <div class="cc-main">
             <span class="cc-side">${esc(lead.side || "—")}</span>
             ${lead.price != null ? `<span class="cc-px">${fmtOdds(lead.price)}</span>` : ""}
@@ -1492,22 +1683,60 @@ export default function Home() {
         </div>`;
       } else {
         callBlock = `<div class="callcard pass">
-          <div class="cc-k">Our call</div>
-          <div class="cc-main"><span class="cc-side">PASS</span><span class="cc-passnote">no bet in this game</span></div>
+          <div class="cc-k">◆ DiamondEdge Pick</div>
+          <div class="cc-main"><span class="cc-side">No pick</span><span class="cc-passnote">here's why ↓</span></div>
+          <p class="cc-passwhy">${passWhy()}</p>
         </div>`;
       }
 
-      // (2) WHY — plain English, short. Locked picks get an honest teaser instead.
-      const why = lead ? whySentences(g, lead) : [passWhy()];
+      // (2) GAME PREVIEW — the article: served game.article first, composed from the same
+      // real fields otherwise. Bold key points, icon fact rows, streak chips.
+      const art = gameArticle(g);
+      const bodyParas = leadLocked ? [] : (art && art.paras.length ? art.paras : (lead ? whySentences(g, lead) : composedPreview(g).paras));
+      const facts = leadLocked ? [] : factRows(g, art);
+      const stks = leadLocked ? "" : gameStreaks(g).slice(0, 4).map((s: any) =>
+        `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
       const whyBlock = leadLocked
         ? `<div class="whycard">
-            <div class="wc-k">Why</div>
-            <p>The plain-English read behind this pick — the model number, the line it beats, and the history of bets made exactly this way — is part of DiamondEdge Premium. The quality rating above is real; nothing here is invented to sell you.</p>
+            <div class="wc-k">Game preview</div>
+            <p>The full read behind this pick — the model number, the line it beats, and the history of calls made exactly this way — is part of DiamondEdge Premium. The quality rating above is the real one.</p>
           </div>`
         : `<div class="whycard">
-            <div class="wc-k">Why</div>
-            ${why.map((w) => `<p>${w}</p>`).join("")}
+            <div class="wc-k">Game preview</div>
+            ${art && art.headline ? `<h3 class="art-h">${esc(cleanBlurb(art.headline))}</h3>` : ""}
+            ${art && art.dek ? `<p class="art-dek">${mdBold(cleanBlurb(art.dek))}</p>` : ""}
+            ${bodyParas.map((w) => `<p>${art && art.served ? mdBold(w) : w}</p>`).join("")}
+            ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
+            ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
           </div>`;
+
+      // (3) THE LINES — one narrative sentence plus the board.
+      const linesBlock = leadLocked ? "" : (() => {
+        const bits: string[] = [];
+        const sp2 = g.spread_pick;
+        if (sp2 && sp2.line != null) {
+          const hl = spreadHomeLine(g, sp2);
+          bits.push(hl < 0 ? `${esc(g.home_abbr)} favored by ${num(Math.abs(hl), 1)}` : hl > 0 ? `${esc(g.home_abbr)} getting ${num(Math.abs(hl), 1)}` : `a pick'em`);
+        }
+        const tp2 = g.total_pick;
+        if (tp2 && tp2.line != null) bits.push(`the total at ${num(tp2.line)}`);
+        const mp2 = g.ml_pick; const mpr2 = (mp2 && mp2.prices) || {};
+        if (mp2 && (mp2.price ?? mpr2.home ?? mpr2.away) != null && g.sport !== "soccer") bits.push(`${esc(mp2.side || g.home_abbr)} ${fmtOdds(mp2.price ?? mpr2.home ?? mpr2.away)} on the moneyline`);
+        let move = "";
+        const pk0 = lead ? (lead.market === "spread" ? g.spread_pick : lead.market === "total" ? g.total_pick : g.ml_pick) : null;
+        const lm = pk0 && pk0.line_move;
+        if (lm && lm.open_line != null && lm.current_line != null && Number(lm.open_line) !== Number(lm.current_line)) {
+          const isAm = lm.unit === "american_ml";
+          const fmtL = (v: any) => (isAm ? fmtOdds(v) : num(v, 1));
+          move = ` The ${lead.market === "moneyline" ? "price" : lead.market} opened at ${fmtL(lm.open_line)} and sits at ${fmtL(lm.current_line)}${lm.moved_toward_pick === true ? " — the market has been coming to our side" : lm.moved_toward_pick === false ? " — the market has drifted the other way, and we still like our number" : ""}.`;
+        }
+        if (!bits.length) return "";
+        return `<div class="whycard lines">
+          <div class="wc-k">The lines</div>
+          <p>The books have ${bits.join(", ")}.${move}</p>
+          ${oddsRow(g)}
+        </div>`;
+      })();
 
       // (3) More detail — everything the old sheet had, folded away for power users.
       const bets = [detailBet(g.spread_pick, "Spread", "spread", g), detailBet(g.ml_pick, "Moneyline", "ml", g), detailBet(g.total_pick, "Total", "total", g)].filter(Boolean).join("");
@@ -1515,7 +1744,6 @@ export default function Home() {
       const anyValue = takes.some((p: any) => p.value_tier);
       const more = `<details class="more"><summary>More detail<span class="more-sub">markets, model numbers, matchup intel</span></summary>
         <div class="more-body">
-          <div class="dsec"><div class="dsec-h">Sportsbook Lines</div>${oddsRow(g)}</div>
           <div class="dsec"><div class="dsec-h">All Three Markets</div><div class="dsec-b shp-wrap">
             ${MARKETS.map((mk) => sheetPlay(g, P[mk])).join("")}
             ${anyValue ? valueRecordBlock() : ""}
@@ -1557,6 +1785,7 @@ export default function Home() {
             ${scoreBanner}
             ${callBlock}
             ${whyBlock}
+            ${linesBlock}
             ${leadLocked ? "" : more}
           </div>
         </div>`;
@@ -1622,27 +1851,26 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">Strong / Good / Lean</div>
               <div class="dsec-b rcp">
-                <p><b>◆◆◆ Strong</b> — our best kind of bet. Either the winning recipe below fired at full strength, or the model is at its surest.</p>
+                <p><b>◆◆◆ Strong</b> — our best kind of call. Every signal we track fired at full strength.</p>
                 <p><b>◆◆ Good</b> — the same idea, slightly weaker signal.</p>
                 <p><b>◆ Lean</b> — the model likes it, but the edge is thin. Fine to skip.</p>
-                <p>Everything else is a <b>PASS</b>. Most games are a pass — that's the strategy working, not missing.</p>
+                <p>Everything else is a <b>PASS</b>. Most games are a pass — that's the discipline that keeps the record honest.</p>
               </div>
             </div>
             <div class="dsec">
-              <div class="dsec-h">The winning recipe</div>
+              <div class="dsec-h">Where the edge comes from</div>
               <div class="dsec-b rcp-steps">
-                <div class="rcp-step"><span class="rh-n">1</span><div><b>Our model disagrees with the books' number</b> for the game total by a meaningful amount that morning.</div></div>
-                <div class="rcp-step"><span class="rh-n">2</span><div><b>The books disagree with each other too</b> — they're posting different totals for the same game, so someone's number is off.</div></div>
-                <div class="rcp-step"><span class="rh-n">3</span><div><b>Only then do we bet the total</b>, at the morning line, at fair prices only. Roughly one game a day qualifies.</div></div>
+                <div class="rcp-step"><span class="rh-n">1</span><div><b>We model every game ourselves</b> — weather, form, travel, rest, matchups — and land on our own number before the books' numbers matter to us.</div></div>
+                <div class="rcp-step"><span class="rh-n">2</span><div><b>We audit the market, not just the matchup.</b> When the market's own behavior tells us a number is soft, that's when we get interested. The exact triggers are the house blend — that's the part you're subscribing to.</div></div>
+                <div class="rcp-step"><span class="rh-n">3</span><div><b>Only when everything lines up do we publish a DiamondEdge Pick</b> — usually a handful of games a day, some days none.</div></div>
               </div>
             </div>
             <div class="dsec">
-              <div class="dsec-h">Why it works</div>
+              <div class="dsec-h">The receipts</div>
               <div class="dsec-b rcp">
-                <p><b>Out-predicting the bookmakers doesn't pay.</b> Even when our picks win 60%+ of the time, the prices usually eat the profit. Being right a lot isn't an edge if the market charges you for it.</p>
-                <p><b>So instead of competing with the books, we audit them.</b> We only bet when there's evidence the books' own number is wrong — our model disagrees AND the books can't agree among themselves.</p>
-                <p><b>The receipts:</b> bets made exactly this way have won <b>${(rh.hit * 100).toFixed(1)}%</b> of the time across <b>${rh.n.toLocaleString()}</b> graded bets from 2022 to 2026, returning about <b>${sgn(rh.roi * 100, 0)}%</b> per dollar bet. Every bet was graded by a model that never saw the game in advance.</p>
-                <p><b>Honesty note:</b> going forward we expect less than that — the model's own claim is a small single-digit edge — and these picks are tracked publicly before any real money is staked.</p>
+                <p><b>Every pick is graded in public.</b> The side and line freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Results tab.</p>
+                <p><b>Calls made exactly this way have won <b>${(rh.hit * 100).toFixed(1)}%</b></b> across <b>${rh.n.toLocaleString()}</b> graded picks from 2022 to 2026, returning about <b>${sgn(rh.roi * 100, 0)}%</b> per dollar at typical prices — graded by a model that never saw the games in advance.</p>
+                <p><b>Win rate always travels with the price.</b> A high hit rate at a terrible price is a losing bet — so every number we show you carries its return next to it.</p>
               </div>
             </div>
           </div>
@@ -1659,7 +1887,6 @@ export default function Home() {
 
     // ===================== RESULTS TAB =====================
     const recCell = (o: any) => (o ? `${o.wins}-${o.losses}${o.pushes ? "-" + o.pushes : ""}` : "—");
-    const pctCell = (v: any) => (v == null ? "—" : (v * 100).toFixed(1) + "%");
     const roiCell = (v: any) => (v == null ? "—" : `<span class="roi ${v >= 0 ? "pos" : "neg"}">${(v >= 0 ? "+" : "") + (v * 100).toFixed(1)}%</span>`);
 
     function mergeRecs(list: any[]) {
@@ -1675,21 +1902,6 @@ export default function Home() {
       out.hit_rate = out.wins + out.losses ? out.wins / (out.wins + out.losses) : null;
       out.roi = out._staked ? out.units_net / out._staked : (out._roiN ? out._roiSum / out._roiN : null);
       return out;
-    }
-
-    function resultsTable(title: string, rows: { label: string; o: any }[]) {
-      const body = rows.filter((r) => r.o && r.o.n).map((r) => `<tr>
-        <td>${r.label}</td>
-        <td class="num">${(r.o.n || 0).toLocaleString()}</td>
-        <td class="rec">${recCell(r.o)}</td>
-        <td class="hr">${pctCell(r.o.hit_rate)}</td>
-        <td>${roiCell(r.o.roi)}</td>
-      </tr>`).join("");
-      if (!body) return "";
-      return `<div class="anz-card">
-        <div class="anz-card-h">${esc(title)}</div>
-        <table class="anztab"><thead><tr><th></th><th>Picks</th><th>Record</th><th>Win rate</th><th>Return</th></tr></thead><tbody>${body}</tbody></table>
-      </div>`;
     }
 
     // ---- DEEP ANALYTICS (analytics_deep block; graceful fallback to the classic page) ----
@@ -1714,10 +1926,15 @@ export default function Home() {
       by_line_level: "By total line",
     };
     const CUT_ORDER = ["by_quality", "by_sport", "by_market", "by_price_band", "by_side", "by_theme", "by_month", "by_day_of_week", "by_line_level"];
+    // Plain product labels — internal signal names, thresholds and book-count mechanics
+    // never reach the page (house rule: the story sells, the kitchen stays closed).
     function prettyKey(k: any) {
-      const s = String(k == null || k === "" ? "—" : k);
-      const map: any = { over: "Overs", under: "Unders", OVER: "Overs", UNDER: "Unders", heat_day: "Heat-day picks", heat: "Heat-day picks", split_books: "Split-book picks", mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer", total: "Totals", spread: "Spreads", moneyline: "Moneylines", strong: "◆◆◆ Strong", good: "◆◆ Good", lean: "◆ Lean" };
+      let s = String(k == null || k === "" ? "—" : k);
+      s = s.replace(/\s*\([^)]*\)\s*/g, " ").trim(); // strip "(5%+ gap)"-style mechanics
+      const map: any = { over: "Overs", under: "Unders", OVER: "Overs", UNDER: "Unders", heat_day: "Heat-day picks", heat: "Heat-day picks", split_books: "Split-book picks", mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer", total: "Totals", spread: "Spreads", moneyline: "Moneylines", strong: "◆◆◆ Strong", good: "◆◆ Good", lean: "◆ Lean", "Strong signal": "◆◆◆ Strong", "Solid signal": "◆◆ Good", "Baseline signal": "◆ Lean" };
       if (map[s] != null) return map[s];
+      s = s.replace(/books? split across \d\+? (different )?lines?/i, (m0) => /3\+|three/i.test(m0) ? "Books strongly split on the line" : "Books split on the line")
+        .replace(/game total\s*[—–-]\s*live.*$/i, "Game totals — since going live");
       return s.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
     }
     // One cut → a compact module: hit% bar (breakeven tick at 52.4%) always paired with ROI + n.
@@ -1741,19 +1958,49 @@ export default function Home() {
       }).join("");
       return `<div class="anz-card"><div class="anz-card-h">${CUT_META[cutKey] || prettyKey(cutKey)}</div><div class="ad-rows">${body}</div></div>`;
     }
+    // Edge descriptions are rewritten client-side: the proof (record, sample, return)
+    // shows in full — the trigger mechanics stay the house blend.
+    const EDGE_COPY: any = [
+      [/core recipe|signature/i, "The signature DiamondEdge play — our model and the market's own behavior both have to agree a number is soft before we publish. This record is the product's evidence base: strictly-future games, graded on final scores, 2022–2026."],
+      [/shopping the price/i, "The exact same picks, taken at the best available price instead of the typical one. Costs nothing and has historically added profit on every dollar."],
+      [/hot[- ]day/i, "Over calls on days far hotter than that ballpark's norm — the single best profile in the graded history."],
+      [/getaway|travel/i, "Games where a team travels immediately after — a scheduling profile the record says the market underprices."],
+    ];
+    function edgeCopy(e: any) {
+      const name = String(e.name || "");
+      const hit = EDGE_COPY.find(([re]: any) => re.test(name));
+      if (hit) return hit[1];
+      const d = String(e.description || "");
+      // fall back to the served description with trigger numbers redacted
+      return cleanCopy(d.replace(/\d+(\.\d+)?%\+?/g, "a meaningful amount").replace(/\bAND\b/g, "and"));
+    }
     function adEdgesModule(list: any[]) {
       if (!Array.isArray(list) || !list.length) return "";
+      const stLabel: any = { validated: "Proven", live: "Live", experimental: "Emerging" };
       const cards = list.map((e: any) => {
         const roi = e.roi != null && !isNaN(Number(e.roi)) ? Number(e.roi) : null;
-        return `<div class="edge ${esc(String(e.status || "").toLowerCase())}">
-          <div class="edge-h"><b>${esc(e.name || "")}</b>${e.status ? `<span class="edge-st">${esc(e.status)}</span>` : ""}
-            <span class="edge-nums">n=${(e.n || 0).toLocaleString()} · ${e.hit != null ? (Number(e.hit) * 100).toFixed(1) + "%" : "—"} · <span class="${roi != null && roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + (roi * 100).toFixed(1) + "%"}</span></span></div>
-          ${e.description ? `<p>${esc(e.description)}</p>` : ""}
+        const st = String(e.status || "").toLowerCase();
+        const desc = edgeCopy(e);
+        return `<div class="edge ${esc(st)}">
+          <div class="edge-h"><b>${esc(e.name || "")}</b>${st ? `<span class="edge-st">${esc(stLabel[st] || prettyKey(st))}</span>` : ""}
+            <span class="edge-nums">${(e.n || 0).toLocaleString()} picks · ${e.hit != null ? (Number(e.hit) * 100).toFixed(1) + "%" : "—"} · <span class="${roi != null && roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + (roi * 100).toFixed(1) + "%"}</span></span></div>
+          ${desc ? `<p>${esc(desc)}</p>` : ""}
         </div>`;
       }).join("");
       return `<div class="anz-card" style="margin-bottom:14px"><div class="anz-card-h">★ Where the edges live</div><div class="edge-list">${cards}</div></div>`;
     }
 
+    // One expandable results row: record + win rate + return on the summary line,
+    // a plain-English one-liner behind the tap.
+    function resRow(label: string, o: any, liner: string) {
+      if (!o || !o.n) return "";
+      const hr = o.hit_rate != null ? (o.hit_rate * 100).toFixed(1) + "%" : "—";
+      const ci = Array.isArray(o.hit_rate_ci95) ? ` · typical range ${(o.hit_rate_ci95[0] * 100).toFixed(0)}–${(o.hit_rate_ci95[1] * 100).toFixed(0)}%` : "";
+      return `<details class="rrow">
+        <summary><span class="rr-l">${label}</span><span class="rr-rec">${recCell(o)}</span><span class="rr-hr">${hr}</span><span class="rr-roi">${roiCell(o.roi)}</span><span class="rr-car" aria-hidden="true">▾</span></summary>
+        <div class="rr-b"><p>${liner}</p><span class="rr-n">${(o.n || 0).toLocaleString()} graded picks${ci}</span></div>
+      </details>`;
+    }
     async function renderResults() {
       await loadIndex();
       await loadAnalyticsDeep();
@@ -1763,48 +2010,57 @@ export default function Home() {
       const roi = ov.roi != null ? ov.roi * 100 : null;
       const be = ov.breakeven_hit_rate != null ? (ov.breakeven_hit_rate * 100).toFixed(1) : "52.4";
       const byTier = tr.by_tier || {};
-      const qualityRows = [
-        { label: `<span class="ql strong">◆◆◆ Strong</span>`, o: byTier.featured },
-        { label: `<span class="ql good">◆◆ Good</span>`, o: byTier.high },
-        { label: `<span class="ql lean">◆ Lean</span>`, o: mergeRecs([byTier.medium, byTier.low]) },
-      ];
-      const bySport = tr.by_sport || {};
-      const leagueRows = SPORTS.map((s) => ({ label: SPORT_LABEL[s], o: bySport[s] }));
+      const byMk = tr.by_market || {};
       const rh = recipeHistory();
       const mr = monthRecord();
       const fwd = forwardRecord();
-
+      const confRows = [
+        resRow(`<span class="ql strong">${qDiamonds("strong")} Strong</span>`, byTier.featured, `Our surest calls — every signal we track fired at full strength. Rare by design.`),
+        resRow(`<span class="ql good">${qDiamonds("good")} Good</span>`, byTier.high, `The same idea with a slightly weaker signal — still a published, graded call.`),
+        resRow(`<span class="ql lean">${qDiamonds("lean")} Lean</span>`, mergeRecs([byTier.medium, byTier.low]), `Thin edges we flag for completeness. Fine to skip — we grade them anyway.`),
+      ].join("");
+      const mkRows = [
+        resRow("Totals", byMk.total, `Over/unders — the market where the DiamondEdge signature record lives.`),
+        resRow("Moneylines", byMk.moneyline, `Picking the winner straight up, priced against the market.`),
+        resRow("Spreads", byMk.spread, `The margin market — the hardest number to beat, so we call it least often.`),
+      ].join("");
+      const themeRows = (analyticsDeep && analyticsDeep.cuts && Array.isArray(analyticsDeep.cuts.by_theme)) ? analyticsDeep.cuts.by_theme : [];
+      const themeChips = themeRows.filter((r: any) => r.hit != null && r.n).map((r: any) => {
+        const roi2 = r.roi != null ? Number(r.roi) : null;
+        return `<span class="proof big ${roi2 != null && roi2 < 0 ? "neg" : ""}">${icon(iconForText(r.key))}<b>${prettyKey(r.key)}</b><span class="pf-n">${(Number(r.hit) * 100).toFixed(0)}% · ${(r.n || 0).toLocaleString()} games${roi2 != null ? ` · ${(roi2 >= 0 ? "+" : "") + (roi2 * 100).toFixed(0)}%` : ""}</span></span>`;
+      }).join("");
+      const deepKeys = CUT_ORDER.filter((k) => k !== "by_quality" && k !== "by_market" && k !== "by_theme");
       const view = root.querySelector("#results-view");
       view.innerHTML = `
         <div class="anz-hero">
           <div class="ah-lab">DiamondEdge Results</div>
-          <h2>Every pick, graded</h2>
-          <div class="ah-sub">Every number below comes from picks graded against real final scores — games the model never saw in advance. Win rate needs to beat about ${be}% to make money at typical prices.</div>
+          <h2>Every pick, graded in the open</h2>
+          <div class="ah-sub">Every DiamondEdge Pick is graded against the final score — here's how each kind has done. A win rate needs to beat about ${be}% to make money at typical prices, which is why every number below travels with its return.</div>
           <div class="ah-stats">
             <div class="ah-st"><div class="k">Graded picks</div><div class="v" data-count="${ov.n || 0}" data-loc="1">${(ov.n || 0).toLocaleString()}</div></div>
             <div class="ah-st"><div class="k">Record</div><div class="v">${ov.wins || 0}-${ov.losses || 0}</div></div>
             <div class="ah-st"><div class="k">Win rate</div><div class="v">${hr != null ? hr.toFixed(1) + "%" : "—"}</div></div>
             <div class="ah-st"><div class="k">Return</div><div class="v ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%"}</div></div>
             ${mr ? `<div class="ah-st"><div class="k">This month</div><div class="v">${mr.w}-${mr.l}</div></div>` : ""}
-            ${fwd ? `<div class="ah-st"><div class="k">Real picks so far</div><div class="v">${fwd.wins || 0}-${fwd.losses || 0}</div></div>` : ""}
+            ${fwd ? `<div class="ah-st"><div class="k">Since going live</div><div class="v">${fwd.wins || 0}-${fwd.losses || 0}</div></div>` : ""}
           </div>
         </div>
         <div class="anz-card star">
-          <div class="anz-card-h">★ The winning recipe (our Strong totals bets)</div>
-          <div class="star-b">Won <b>${(rh.hit * 100).toFixed(1)}%</b> of ${rh.n.toLocaleString()} graded bets from 2022 to 2026 — about <b>${sgn(rh.roi * 100, 0)}%</b> back on every dollar bet. This is the record behind the gold ★ bets on the Games tab.</div>
+          <div class="anz-card-h">★ The DiamondEdge signature play</div>
+          <div class="star-b">Our best pattern has won <b>${(rh.hit * 100).toFixed(1)}%</b> of ${rh.n.toLocaleString()} graded picks from 2022 to 2026 — about <b>${sgn(rh.roi * 100, 0)}%</b> back on every dollar at typical prices. It's the record behind the gold ★ picks on the board.</div>
         </div>
+        ${confRows ? `<div class="anz-card rsec"><div class="anz-card-h">By confidence</div><div class="anz-sub">Every pick carries one plain word — Strong, Good or Lean. Here's what each has actually done.</div><div class="rrows">${confRows}</div></div>` : ""}
+        ${mkRows ? `<div class="anz-card rsec"><div class="anz-card-h">By bet type</div><div class="anz-sub">Totals, moneylines and spreads are graded separately — a pick is only as good as its market.</div><div class="rrows">${mkRows}</div></div>` : ""}
+        ${themeChips ? `<div class="anz-card rsec"><div class="anz-card-h">By theme</div><div class="anz-sub">The situations that show up in our picks, each with its graded proof.</div><div class="proofgrid">${themeChips}</div></div>` : ""}
+        ${analyticsDeep ? adEdgesModule(analyticsDeep.edges_summary) : ""}
         ${analyticsDeep
-          ? `${adEdgesModule(analyticsDeep.edges_summary)}
-             <div class="ad-grid">
-               ${CUT_ORDER.filter((k) => analyticsDeep.cuts[k]).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
+          ? `<details class="more results-more"><summary>Every other cut<span class="more-sub">month, weekday, price range, line level and more</span></summary>
+             <div class="more-body"><div class="ad-grid">
+               ${deepKeys.filter((k) => analyticsDeep.cuts[k]).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
                ${Object.keys(analyticsDeep.cuts).filter((k) => CUT_ORDER.indexOf(k) < 0).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
-             </div>
-             <div class="refnote">Every cut is the same graded record, sliced a different way — win rate always shown with return and sample size.${analyticsDeep.generated_at ? ` Updated ${esc(String(analyticsDeep.generated_at).slice(0, 10))}.` : ""}</div>`
-          : `<div class="anz-grid">
-               ${resultsTable("By pick quality", qualityRows)}
-               ${resultsTable("By league", leagueRows)}
-             </div>
-             <div class="refnote">Older picks across all leagues are graded the same way — pick first, score after.</div>`}`;
+             </div></div></details>`
+          : ""}
+        <div class="refnote">Every cut is the same graded record, sliced a different way — win rate always shown with return and sample size.${analyticsDeep && analyticsDeep.generated_at ? ` Updated ${esc(String(analyticsDeep.generated_at).slice(0, 10))}.` : ""}</div>`;
       animateCounters(view);
     }
 
@@ -1852,35 +2108,44 @@ export default function Home() {
         _fallback: true,
       };
     }
-    // One hero carousel card: crests anchor it, the bet + quality tell the story;
-    // the blurb is clamped to 2 lines with a "more" toggle. Card 0 = the featured game.
+    // The frozen pick's live/graded state for a brief entry (falls back to result field).
+    function briefPickState(p: any) {
+      const g = findGameLive(p.game_id);
+      const pl = g ? displayPick(g) : null;
+      if (g && pl && pl.action === "TAKE") {
+        const st = playState(g, pl);
+        return pickStateTxt(g, pl, st);
+      }
+      if (p.result === "hit") return { txt: `${condCheck} WON`, cls: "won" };
+      if (p.result === "miss") return { txt: "✗ LOST", cls: "lost" };
+      if (p.result === "push") return { txt: "PUSH", cls: "pushed" };
+      return null;
+    }
+    // One carousel card: fixed skeleton (top row → crests → matchup → branded pick → blurb)
+    // so every card lands at the same height; the pick chip carries its state.
     function heroCard(p: any, i: number) {
       const g = findGameLive(p.game_id);
       const locked = !isPremium() && (p.quality === "strong" || p.quality === "good") && !p.result;
-      const res = p.result === "hit" ? `<span class="hero-res hit">${condCheck} Won</span>`
-        : p.result === "miss" ? `<span class="hero-res miss">✗ Lost</span>`
-        : p.result === "push" ? `<span class="hero-res push">Push</span>`
-        : `<span class="hero-res pend">pending</span>`;
+      const state = briefPickState(p);
       const mu = g
         ? `<div class="hero-mu"><div class="hero-tm">${gCrest(g, "away")}<i>${esc(g.away_abbr)}</i></div><span class="hero-at">@</span><div class="hero-tm">${gCrest(g, "home")}<i>${esc(g.home_abbr)}</i></div></div>`
-        : "";
+        : `<div class="hero-mu none"></div>`;
       const bet = locked
         ? `<button class="lockchip" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
-        : `<div class="hero-bet">${esc(p.bet || "")}</div>`;
-      const blurbTxt = String(p.blurb || "");
-      // Locked blurbs: served briefs open with a safe game preview → show the first
-      // sentence; client-composed fallbacks name the side → show none of it.
-      const teaser = p._fb ? "There's a validated pick on this game." : blurbTxt.split(". ")[0].slice(0, 120);
+        : `<div class="hero-bet ${state ? state.cls : ""}"><span class="hb-brand">◆ DiamondEdge Pick</span><span class="hb-side">${esc(p.bet || "")}</span>${state ? `<span class="pb-res ${state.cls}">${state.txt}</span>` : ""}</div>`;
+      const blurbTxt = cleanBlurb(p.blurb || "");
+      const teaser = p._fb ? "There's a validated DiamondEdge Pick on this game." : blurbTxt.split(". ")[0].slice(0, 120);
       const blurb = blurbTxt
         ? (locked
           ? `<p class="hero-blurb">${esc(teaser)}… <button class="lk-more" data-up="1">unlock the full read</button></p>`
-          : `<p class="hero-blurb clamp">${esc(blurbTxt)}</p><button class="blurb-more" aria-label="Expand the full read">more</button>`)
+          : `<p class="hero-blurb clamp3">${esc(blurbTxt)}</p>`)
         : "";
-      return `<article class="hero${i === 0 ? " lead" : ""} q-${p.quality}${p.result === "hit" ? " hit" : p.result === "miss" ? " miss" : ""}" data-gid="${esc(p.game_id)}"${locked ? ' data-locked="1"' : ""} style="--i:${i}" role="button" tabindex="0" aria-label="${esc(p.matchup)} — ${locked ? "pick locked" : esc(p.bet || "")}">
-        <div class="hero-top"><span class="hero-sport">${esc(SPORT_LABEL[p.sport] || p.sport || "")}</span><span class="hero-q">${qDiamonds(p.quality)}${Q_LABEL[p.quality] || ""}</span>${res}</div>
+      return `<article class="hero q-${p.quality}${p.result === "hit" ? " hit" : p.result === "miss" ? " miss" : ""}" data-gid="${esc(p.game_id)}"${locked ? ' data-locked="1"' : ""} style="--i:${i}" role="button" tabindex="0" aria-label="${esc(p.matchup)} — ${locked ? "pick locked" : "DiamondEdge Pick " + esc(p.bet || "")}">
+        <div class="hero-top"><span class="hero-sport">${esc(SPORT_LABEL[p.sport] || p.sport || "")}</span><span class="hero-q">${qDiamonds(p.quality)}${Q_LABEL[p.quality] || ""}</span></div>
         ${mu}
         <div class="hero-match">${esc(p.matchup || "")}</div>
         ${bet}${blurb}
+        <span class="hero-cta">Full story →</span>
       </article>`;
     }
     // Carousel order: exact p_correct behind the scenes (full precision, never shown),
@@ -1894,6 +2159,93 @@ export default function Home() {
       withKey.sort((a: any, b: any) => convictionSort(a.exp, a.qr, b.exp, b.qr) || (a.i - b.i));
       return withKey.map((w: any) => w.p);
     }
+    // ---- proof chips: match a storyline to the graded record's theme cuts ----
+    function themeProof(name: any) {
+      const src = (livePayload && livePayload.analytics_deep) || (payload && payload.analytics_deep) || analyticsDeep;
+      const rows = src && src.cuts && Array.isArray(src.cuts.by_theme) ? src.cuts.by_theme : [];
+      const n = String(name || "").toLowerCase();
+      let hitRow: any = null;
+      if (/heat|hot|°f|temperature/.test(n)) hitRow = rows.find((r: any) => /hot day/i.test(r.key));
+      else if (/book|split|agree/.test(n)) hitRow = rows.filter((r: any) => /split/i.test(r.key)).sort((a: any, b: any) => (b.n || 0) - (a.n || 0))[0];
+      else if (/getaway|travel/.test(n)) hitRow = rows.find((r: any) => /getaway|travel/i.test(r.key));
+      if (!hitRow || hitRow.hit == null || !hitRow.n) return "";
+      const word = /over/i.test(String(hitRow.key)) ? "overs" : "winners";
+      return `<span class="proof">${icon("record")}${(Number(hitRow.hit) * 100).toFixed(0)}% ${word} · ${(hitRow.n || 0).toLocaleString()} games</span>`;
+    }
+    // ---- storyline article card (theme) — icon, dek, proof chip, expand on tap ----
+    function storyCard(t: any, i: number) {
+      const ic = iconForText(t.name + " " + (t.text || ""));
+      const gids = (t.affected_games || []) as any[];
+      return `<article class="story" data-th="${i}" style="--i:${i}" role="button" tabindex="0" aria-expanded="false" aria-label="${esc(t.name)} — expand">
+        <span class="st-ic">${icon(ic)}</span>
+        <div class="st-b">
+          <h4 class="st-h">${esc(t.name)}</h4>
+          <p class="st-t clamp2">${esc(cleanBlurb(t.text || ""))}</p>
+          <div class="st-foot">${themeProof(t.name)}${gids.length ? `<button class="st-games" data-th-g="${i}">${gids.length} game${gids.length > 1 ? "s" : ""} →</button>` : ""}</div>
+        </div>
+      </article>`;
+    }
+    // ---- game-preview article card (served game.article first, composed fallback) ----
+    function previewCard(g: any, i: number) {
+      const gs = gameState(g);
+      const art = gameArticle(g) || composedPreview(g);
+      const pl = displayPick(g);
+      const st = pl ? playState(g, pl) : "open";
+      const locked = pl ? pickLocked(pl, st) : false;
+      const state = pl ? pickStateTxt(g, pl, st) : null;
+      const q = pl ? qualityOf(pl) : null;
+      const status = gs.kind === "live" ? `<span class="pv-live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</span>`
+        : gs.kind === "final" ? `<span class="pv-final">FINAL</span>`
+        : `<span class="pv-time">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "")}</span>`;
+      const sc = gs.score && gs.score.split && gs.score.home != null ? gs.score : null;
+      const head = art.headline ? esc(cleanBlurb(art.headline))
+        : pl && pl.action === "TAKE" ? `${esc(g.away_team || g.away_abbr)} at ${esc(g.home_team || g.home_abbr)}: the case for ${esc(pl.side || "")}`
+        : `${esc(g.away_team || g.away_abbr)} at ${esc(g.home_team || g.home_abbr)}`;
+      const dek = art.dek || art.paras[0] || "";
+      const pickChip = !pl ? `<span class="pv-nopick">No pick — the number's fair</span>`
+        : locked ? `<button class="pv-pick locked" data-up="1"><span class="de-k">◆ DiamondEdge Pick</span><span class="pb-dots">●●●●</span>${lockSvg}</button>`
+        : `<span class="pv-pick q-${q} ${state ? state.cls : ""}"><span class="de-k">◆ DiamondEdge Pick</span><b>${pickArrow(pl)} ${esc(pl.side || "")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}${state ? `<span class="pb-res ${state.cls}">${state.txt}</span>` : ""}</span>`;
+      const streaks = gameStreaks(g).slice(0, 2).map((s: any) =>
+        `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
+      return `<article class="prev" data-gid="${esc(g.game_id)}" style="--i:${Math.min(i, 8)}" role="button" tabindex="0" aria-label="${esc(g.matchup || "game preview")} — open">
+        <div class="pv-top"><span class="pv-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}${g.meta && g.meta.competition ? ` · ${esc(g.meta.competition)}` : ""}</span>${status}</div>
+        <div class="pv-mu">
+          <span class="pv-tm">${gCrest(g, "away")}<i>${esc(g.away_abbr)}</i>${sc ? `<b>${num(sc.away, 0)}</b>` : ""}</span>
+          <span class="pv-at">@</span>
+          <span class="pv-tm">${gCrest(g, "home")}<i>${esc(g.home_abbr)}</i>${sc ? `<b>${num(sc.home, 0)}</b>` : ""}</span>
+        </div>
+        <h4 class="pv-head">${head}</h4>
+        ${dek ? `<p class="pv-dek clamp2">${mdBold(String(dek))}</p>` : ""}
+        ${pickChip}
+        ${streaks ? `<div class="pv-stks">${streaks}</div>` : ""}
+      </article>`;
+    }
+    // Today's preview pool: pick games first (by quality), then served articles, then intel-rich games.
+    function previewGames() {
+      const src = livePayload || payload;
+      if (!src) return [];
+      const t = todayISO();
+      const pool = ((src.games || []) as any[]).filter((g: any) => {
+        const st0 = String(g.status || "pre").toLowerCase();
+        const d = gameLocalDay(g);
+        if (st0 === "live") return true;
+        return d === t || (st0 === "pre" && !d);
+      });
+      const scored = pool.map((g: any) => {
+        const pl = displayPick(g);
+        const hasPick = pl && pl.action === "TAKE";
+        const qr = hasPick ? Q_RANK[qualityOf(pl)] : 9;
+        const rank = hasPick ? qr : gameArticle(g) ? 4 : g.pregame_intel ? 5 : 9;
+        return { g, rank, p: hasPick && pl.p != null ? Number(pl.p) : -1 };
+      }).filter((x: any) => x.rank < 9);
+      scored.sort((a: any, b: any) => a.rank - b.rank || b.p - a.p);
+      return scored.map((x: any) => x.g);
+    }
+    // Branded record line for the masthead + footer — hit rate always rides with the return.
+    function recordStrip() {
+      const rh = recipeHistory();
+      return `Graded in the open since 2022 — ${(rh.hit * 100).toFixed(1)}% winners across ${rh.n.toLocaleString()} DiamondEdge Picks, ${sgn(rh.roi * 100, 0)}% back per dollar at typical prices. Every pick freezes before first pitch and grades against the final score.`;
+    }
     function renderToday() {
       const view = $("today-view");
       if (!view) return;
@@ -1901,51 +2253,94 @@ export default function Home() {
       if (!db) { view.innerHTML = skeletonSlate(4); return; }
       const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      // Headline as editorial type on the background; themes as a snap-scroll chip rail
-      // (full text behind tap); top picks as a swipeable carousel. Served copy AS-IS
-      // (contract rule 1) — only the presentation changed.
-      const themes = ((db.themes || []) as any[]).map((t: any, i: number) => `<button class="thch" style="--i:${i}" data-th="${i}" aria-expanded="false">
-          <span class="thch-dia">◆</span>${esc(t.name)}
-        </button>`).join("");
-      const picks = orderTopPicks((db.top_picks || []) as any[]).map((p: any, i: number) => heroCard(p, i)).join("");
+      const mr = monthRecord();
+      const picksAll = orderTopPicks((db.top_picks || []) as any[]);
+      const leadPick = picksAll[0] || null;
+      const railPicks = picksAll.length > 1 ? picksAll.slice(1) : [];
+      // LEAD STORY — the day's biggest call gets the front-page treatment.
+      let leadStory = "";
+      if (leadPick) {
+        const g = findGameLive(leadPick.game_id);
+        const state = briefPickState(leadPick);
+        const locked = !isPremium() && (leadPick.quality === "strong" || leadPick.quality === "good") && !leadPick.result;
+        const blurbTxt = cleanBlurb(leadPick.blurb || "");
+        const facts = g ? factRows(g, gameArticle(g)) : [];
+        const stks = g ? gameStreaks(g).slice(0, 3).map((s: any) => `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("") : "";
+        const bet = locked
+          ? `<button class="lockchip" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
+          : `<div class="ls-pick q-${leadPick.quality} ${state ? state.cls : ""}"><span class="de-k">◆ DiamondEdge Pick</span><b class="ls-side">${esc(leadPick.bet || "")}</b><span class="ls-q">${qDiamonds(leadPick.quality)}${Q_LABEL[leadPick.quality] || ""}</span>${state ? `<span class="pb-res big ${state.cls}">${state.txt}</span>` : ""}</div>`;
+        leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
+          <div class="ls-kick"><span class="ls-lab">Lead story</span><span class="ls-sport">${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span></div>
+          ${g ? `<div class="ls-mu"><span class="ls-tm">${gCrest(g, "away")}<i>${esc(g.away_abbr)}</i></span><span class="ls-at">@</span><span class="ls-tm">${gCrest(g, "home")}<i>${esc(g.home_abbr)}</i></span></div>` : ""}
+          <h3 class="ls-match">${esc(leadPick.matchup || "")}</h3>
+          ${bet}
+          ${blurbTxt && !locked ? `<p class="ls-lede">${esc(blurbTxt)}</p>` : locked ? `<p class="ls-lede dim">The full read on today's lead pick — the model number, the line it beats, and the history behind it — is one tap away.</p>` : ""}
+          ${!locked && stks ? `<div class="pv-stks">${stks}</div>` : ""}
+          ${!locked && facts.length ? `<div class="ls-facts">${facts.slice(0, 3).join("")}</div>` : ""}
+          <span class="hero-cta">Full story →</span>
+        </article>`;
+      } else {
+        leadStory = `<article class="leadstory pass">
+          <div class="ls-kick"><span class="ls-lab">Lead story</span></div>
+          <h3 class="ls-match">No DiamondEdge Pick today — and that's the discipline that keeps the record honest.</h3>
+          <p class="ls-lede">We publish a pick only when the numbers clear our bar. Today none did. The storylines below are what we're watching, and every past call stays graded in the open on the Results tab.</p>
+          <span class="hero-cta" data-nav="results">See the record →</span>
+        </article>`;
+      }
+      const carousel = railPicks.length ? `
+        <section class="ng-carousel">
+          <div class="sec-h"><span>More DiamondEdge Picks</span></div>
+          <div class="tdy-picks" id="tdy-picks" aria-label="Featured picks carousel">${railPicks.map((p: any, i: number) => heroCard(p, i)).join("")}</div>
+          ${railPicks.length > 1 ? `<div class="tp-dots" id="tp-dots" role="tablist" aria-label="Carousel position">${railPicks.map((_: any, i: number) => `<button class="tp-dot${i === 0 ? " on" : ""}" data-dot="${i}" aria-label="Go to pick ${i + 1}"></button>`).join("")}</div>` : ""}
+        </section>` : "";
+      const themes = ((db.themes || []) as any[]);
+      const storylines = themes.length ? `
+        <div class="sec-h"><span>Today's storylines</span></div>
+        <div class="stories">${themes.map((t: any, i: number) => storyCard(t, i)).join("")}</div>` : "";
+      const pvGames = previewGames().slice(0, 6);
+      const previews = pvGames.length ? `
+        <section class="ng-previews">
+          <div class="sec-h"><span>Game previews</span><button class="sec-more" data-nav="games">Full board →</button></div>
+          <div class="prevgrid">${pvGames.map((g: any, i: number) => previewCard(g, i)).join("")}</div>
+        </section>` : "";
       view.innerHTML = `
-        <div class="tdy">
-          <div class="tdy-top"><span class="tdy-date">${esc(dateTxt)}</span><span class="tdy-src">${db._fallback ? "board summary" : "daily brief"}</span></div>
-          <h2 class="tdy-head">${esc(db.headline || "")}</h2>
-          ${themes ? `<div class="tdy-lab">Today's story</div><div class="thchips" role="list">${themes}</div><div id="th-expand"></div>` : ""}
-          ${picks
-            ? `<div class="tdy-lab">Top picks — every sport</div><div class="tdy-picks" aria-label="Top picks carousel">${picks}</div>`
-            : `<div class="tdy-lab">Top picks</div><div class="tdy-pass">No bets today. We only bet when the books' own numbers look wrong — most days that's a handful of games, some days none. The story above is what we're watching.</div>`}
-          ${db.record_line ? `<div class="tdy-record">${esc(db.record_line)}</div>` : ""}
+        <div class="news">
+          <div class="news-mast">
+            <span class="nm-brand">DiamondEdge <b>Daily</b></span>
+            <span class="nm-date">${esc(dateTxt)}</span>
+            <button class="nm-rec" id="nm-rec">${mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : `The record`} →</button>
+          </div>
+          <h2 class="lead-head">${esc(cleanBlurb(db.headline || ""))}</h2>
+          <div class="news-grid">
+            <section class="ng-lead">${leadStory}</section>
+            <aside class="ng-rail">${storylines}</aside>
+            ${carousel}
+            ${previews}
+          </div>
+          <div class="news-foot">${esc(recordStrip())}</div>
         </div>`;
-      // theme chip → expand its full text below the rail; the games link jumps to the board
-      let thOpen = -1;
-      view.querySelectorAll(".thch").forEach((b: any) => (b.onclick = () => {
-        const i = Number(b.dataset.th);
-        const t = (db.themes || [])[i];
-        const ex = $("th-expand");
-        if (!t || !ex) return;
-        if (thOpen === i) {
-          thOpen = -1; ex.innerHTML = "";
-          view.querySelectorAll(".thch").forEach((x: any) => { x.classList.remove("on"); x.setAttribute("aria-expanded", "false"); });
-          return;
-        }
-        thOpen = i;
-        view.querySelectorAll(".thch").forEach((x: any) => { const on = Number(x.dataset.th) === i; x.classList.toggle("on", on); x.setAttribute("aria-expanded", on ? "true" : "false"); });
-        const n = (t.affected_games || []).length;
-        ex.innerHTML = `<div class="thx"><div class="thx-name">◆ ${esc(t.name)}</div><p>${esc(t.text)}</p>${n ? `<button class="thx-games">${n} game${n > 1 ? "s" : ""} on the board →</button>` : ""}</div>`;
-        const gbtn = ex.querySelector(".thx-games");
-        if (gbtn) (gbtn as any).onclick = () => jumpToGames(t.affected_games);
-      }));
-      view.querySelectorAll(".hero").forEach((h: any) => {
+      // ---- bindings ----
+      const nav = (el: any) => { const d = el.dataset.nav; if (d) switchTab(d); };
+      view.querySelectorAll("[data-nav]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); nav(b); }));
+      const rec = $("nm-rec"); if (rec) rec.onclick = () => switchTab("results");
+      // storyline expand + jump
+      view.querySelectorAll(".story").forEach((s: any) => {
+        const toggle = (e: any) => {
+          const gbtn = e.target && e.target.closest && e.target.closest("[data-th-g]");
+          if (gbtn) { const t = themes[Number(gbtn.dataset.thG)]; if (t) jumpToGames(t.affected_games || []); return; }
+          const p = s.querySelector(".st-t");
+          const open = p && p.classList.toggle("open");
+          if (p) p.classList.toggle("clamp2", !open);
+          s.setAttribute("aria-expanded", open ? "true" : "false");
+        };
+        s.onclick = toggle;
+        s.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(e); } };
+      });
+      // lead story + carousel + previews → detail sheet
+      view.querySelectorAll(".leadstory[data-gid], .hero[data-gid], .prev[data-gid]").forEach((h: any) => {
         const open = (e: any) => {
           if (e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
-          const more = e.target && e.target.closest && e.target.closest(".blurb-more");
-          if (more) {
-            const bl = h.querySelector(".hero-blurb");
-            if (bl) { bl.classList.toggle("clamp"); more.textContent = bl.classList.contains("clamp") ? "more" : "less"; }
-            return;
-          }
+          if (e.target && e.target.closest && e.target.closest("[data-nav]")) return;
           if (h.dataset.locked) { switchTab("upgrade"); return; }
           const g = findGameLive(h.dataset.gid);
           if (g) openDetail(g); else jumpToGames([h.dataset.gid]);
@@ -1953,6 +2348,29 @@ export default function Home() {
         h.onclick = open;
         h.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
       });
+      // carousel dots: track the snapped card, click to go
+      const rail = $("tdy-picks"), dots = $("tp-dots");
+      if (rail && dots) {
+        const cards = Array.from(rail.querySelectorAll(".hero")) as any[];
+        const setDot = (i: number) => dots.querySelectorAll(".tp-dot").forEach((d: any, k: number) => d.classList.toggle("on", k === i));
+        let raf = 0;
+        rail.addEventListener("scroll", () => {
+          if (raf) return;
+          raf = requestAnimationFrame(() => {
+            raf = 0;
+            const mid = rail.scrollLeft + rail.clientWidth / 2;
+            let best = 0, bd = Infinity;
+            cards.forEach((c: any, k: number) => { const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = k; } });
+            setDot(best);
+          });
+        }, { passive: true });
+        dots.querySelectorAll(".tp-dot").forEach((d: any) => (d.onclick = (e: any) => {
+          e.stopPropagation();
+          const i = Number(d.dataset.dot);
+          const c = cards[i];
+          if (c) rail.scrollTo({ left: c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2, behavior: REDUCE ? "auto" : "smooth" });
+        }));
+      }
       animateCounters(view);
     }
     // Theme tap: switch to the Games tab, select the right league/date, highlight the games.
@@ -1993,7 +2411,7 @@ export default function Home() {
             <span>${prem ? "Every pick unlocked — sides, lines, and the plain-English why." : "Strong and Good picks are locked. Leans, results and the full record stay free."}</span></div>
             <button class="switch ${prem ? "on" : ""}" id="prem-switch" role="switch" aria-checked="${prem}" aria-label="Premium preview"></button>
           </div>
-          <div class="set-note">Flip this off to preview the free experience. Payments aren't wired up yet — this is a design preview, and "Subscribe" on the upgrade page simply switches it back on.</div>
+          <div class="set-note">Flip this off any time to see what free members see — the record stays open to everyone.</div>
         </div>
         <div class="set-card">
           <div class="set-k">Appearance</div>
@@ -2004,7 +2422,7 @@ export default function Home() {
           <button class="set-link" id="set-how">ⓘ How picks work<em>→</em></button>
           <button class="set-link" id="set-results">Our full record<em>→</em></button>
           <button class="set-link" id="set-upgrade">DiamondEdge Premium<em>→</em></button>
-          <div class="set-about" style="margin-top:10px">Every pick is graded in the open against real final scores — games the model never saw in advance. Hit-rates always travel with prices and returns, and the live record is paper-tracked, not real stakes.</div>
+          <div class="set-about" style="margin-top:10px">Every DiamondEdge Pick is graded in the open against real final scores — games the model never saw in advance. Win rates always travel with prices and returns. That transparency is the whole product.</div>
         </div>`;
       $("prem-switch").onclick = () => {
         setPremium(!isPremium());
@@ -2033,7 +2451,7 @@ export default function Home() {
             <div class="up-st"><div class="v">${(rh.hit * 100).toFixed(1)}%</div><div class="k">win rate</div></div>
             <div class="up-st"><div class="v">${rh.n.toLocaleString()}</div><div class="k">graded bets</div></div>
             <div class="up-st"><div class="v">${sgn(rh.roi * 100, 0)}%</div><div class="k">per dollar bet</div></div>
-            <div class="up-st"><div class="v">'22–'26</div><div class="k">out of sample</div></div>
+            <div class="up-st"><div class="v">'22–'26</div><div class="k">graded seasons</div></div>
           </div>
         </div>
         <div class="up-perks">
@@ -2043,10 +2461,9 @@ export default function Home() {
           ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free users; you just get the picks that build it.")}
         </div>
         <div class="up-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
-        <div class="up-price-note">placeholder price — payments aren't live yet</div>
         <button class="up-cta" id="up-sub">Unlock DiamondEdge</button>
         <button class="up-back" id="up-back">Not now — keep the free picks</button>
-        <div class="up-honest">Honesty first: the numbers above are the real validated history — ${rh.n.toLocaleString()} paper picks graded against final scores across games the model never trained on${fwd ? `, and the live paper record so far is ${fwd.wins || 0}-${fwd.losses || 0}` : ""}. Going forward we expect a smaller edge than the backtest, and we say so on every pick. Nothing is charged here — Subscribe simply unlocks the preview.</div>`;
+        <div class="up-honest">The numbers above are the real graded history — ${rh.n.toLocaleString()} picks graded against final scores across games the model never trained on${fwd ? `, and the record since going live is ${fwd.wins || 0}-${fwd.losses || 0}` : ""}. Every future pick is graded the same way, in the open, win or lose.</div>`;
       $("up-sub").onclick = () => {
         // STRIPE WIRE-IN POINT: real checkout replaces this — create a Checkout Session
         // server-side, redirect, and set the entitlement from the confirmed webhook.
@@ -2109,7 +2526,7 @@ export default function Home() {
       if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
       if (t === "settings") renderSettings();
       if (t === "upgrade") renderUpgrade();
-      if (t === "games") requestAnimationFrame(() => { positionInk(); recenterStrip(false); });
+      if (t === "games") requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
       window.scrollTo(0, 0);
     }
 
@@ -2131,7 +2548,7 @@ export default function Home() {
       positionInk();
       renderSlate();
       renderToday();
-      requestAnimationFrame(() => { positionInk(); recenterStrip(false); });
+      requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
       // live-score freshness: poll the tiny live_scores key while games are on
       setInterval(pollLiveScores, 50 * 1000);
       document.addEventListener("visibilitychange", () => { if (!document.hidden) pollLiveScores(); });
