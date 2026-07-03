@@ -129,31 +129,6 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .histpanel .clr{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);background:#fff;color:var(--ink2);padding:8px 14px;border-radius:8px;cursor:pointer}
 .histpanel .rnote{font-size:11px;color:var(--ink3)}
 
-/* ============ TODAY'S BETS (the one list above the slate) ============ */
-.tbets{background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);padding:12px 14px 13px;margin-bottom:12px;animation:rise .4s var(--ease) both}
-.tb-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.tb-t{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy)}
-.tb-n{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-left:auto}
-.tb-list{display:flex;flex-direction:column;gap:6px;margin-top:9px}
-.tb-row{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:1px solid var(--line2);background:rgba(255,255,255,.72);border-radius:12px;padding:9px 12px;min-height:44px;cursor:pointer;transition:transform .2s var(--ease),box-shadow .25s ease,border-color .25s ease;box-shadow:var(--shadow)}
-.tb-row:hover{box-shadow:var(--shadow-hi);border-color:rgba(22,54,94,.28)}
-.tb-row:active{transform:scale(.99)}
-.tb-row.gold{border-color:var(--goldline);background:linear-gradient(120deg,var(--goldbg),rgba(255,255,255,.8))}
-.tb-row.lost{opacity:.72}
-.tb-mu{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;min-width:0}
-.tb-mu img,.tb-mu .crest{width:18px;height:18px;object-fit:contain}
-.tb-mu .crest{border-radius:5px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:6.5px;color:#fff;background:var(--navy)}
-.tb-mu em{font-style:normal;font-family:var(--disp);font-weight:700;font-size:12px;color:var(--ink)}
-.tb-at{font-family:var(--disp);font-weight:400;font-size:10px;color:var(--ink3)}
-.tb-bet{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.01em;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.tb-row.gold .tb-bet{color:var(--golddeep)}
-.tb-px2{font-family:var(--mono);font-weight:600;font-size:11px;color:var(--ink2);flex-shrink:0}
-.tb-qual{display:inline-flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0}
-.tb-qual u{text-decoration:none;font-family:var(--disp);font-weight:600;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2)}
-.tb-more{font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-top:8px;text-align:center}
-.tbets.quiet{padding:11px 14px}
-.tb-none{font-size:12px;color:var(--ink2);margin-top:6px;line-height:1.5}
-
 /* quality diamonds: ◆◆◆ Strong / ◆◆ Good / ◆ Lean */
 .qdia{display:inline-flex;gap:1px;font-size:9px;line-height:1}
 .qdia i{font-style:normal;color:rgba(16,21,29,.14)}
@@ -172,6 +147,17 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .tile:focus-visible{outline:2px solid var(--navy);outline-offset:1px}
 .tile.live{border-color:rgba(200,16,46,.35)}
 .tile.live::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2.5px;background:linear-gradient(180deg,var(--red),rgba(200,16,46,.3))}
+
+/* ---- the box IS the signal: quality borders pre-game, result borders after ---- */
+.tile.q-strong{border-color:rgba(220,165,45,.85);background:linear-gradient(135deg,rgba(255,248,228,.94),rgba(255,255,255,.82) 62%,rgba(255,246,220,.88));box-shadow:0 1px 1px rgba(255,255,255,.55) inset,0 0 0 1px rgba(240,180,41,.35),0 10px 28px rgba(160,112,15,.26)}
+.tile.q-strong:hover{border-color:rgba(220,165,45,1);box-shadow:0 1px 1px rgba(255,255,255,.55) inset,0 0 0 1.5px rgba(240,180,41,.5),0 14px 34px rgba(160,112,15,.32)}
+.tile.q-good{border-color:rgba(15,118,110,.55);background:linear-gradient(135deg,rgba(233,247,245,.92),rgba(255,255,255,.82) 62%);box-shadow:0 1px 1px rgba(255,255,255,.55) inset,0 8px 24px rgba(15,118,110,.16)}
+.tile.q-good:hover{border-color:rgba(15,118,110,.75)}
+.tile.q-lean{border-color:rgba(201,216,239,.95)}
+/* result resolution overrides the quality border once the pick is decided */
+.tile.res-won{border-color:rgba(21,137,63,.6);box-shadow:0 1px 1px rgba(255,255,255,.55) inset,0 0 0 1px rgba(21,137,63,.25),0 8px 24px rgba(21,137,63,.16)}
+.tile.res-lost{border-color:rgba(200,16,46,.45);box-shadow:var(--glass-shadow)}
+.tile.res-push{border-color:var(--pushline);box-shadow:var(--glass-shadow)}
 
 /* status strip */
 .t-status{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:13px}
@@ -196,30 +182,53 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .t-row.loser .t-crest{opacity:.7}
 
 /* live-score refresh: swap tiles in place without re-running the entrance animation */
-#slate-body.still .tile,#slate-body.still .tbets{animation:none}
+#slate-body.still .tile{animation:none}
 
 /* total-only score note (no home/away split served) */
 .t-note{font-family:var(--mono);font-size:8.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* ---- THE bet line: "★ BET · OVER 8 · −115 · Strong" or a quiet PASS ---- */
-.t-bet{margin-top:auto;display:flex;align-items:center;gap:4px;min-width:0;border-top:1px solid var(--line2);padding-top:6px;font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink2);white-space:nowrap}
-.t-bet.pass{color:var(--ink3);font-size:9.5px;letter-spacing:.08em}
-.t-bet .tb-star{flex-shrink:0;font-size:10px;line-height:1;color:var(--navy)}
-.t-bet.gold .tb-star{color:var(--gold);text-shadow:0 1px 4px rgba(200,134,10,.45)}
-.t-bet .tb-k{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.09em;color:var(--navy);flex-shrink:0}
-.t-bet.gold .tb-k{color:var(--golddeep)}
-.t-bet .tb-sep{color:var(--ink3);opacity:.6;flex-shrink:0}
-.t-bet .tb-side{font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;min-width:0}
-.t-bet.gold .tb-side{color:var(--golddeep)}
-.t-bet .tb-pxw{display:inline-flex;gap:4px;flex-shrink:0}
-.t-bet .tb-px{color:var(--ink2);flex-shrink:0}
-.t-bet .tb-q{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);flex-shrink:0}
-.t-bet.won .tb-side,.t-bet.clinched .tb-side{color:#0a6b30}
-.t-bet.lost .tb-side,.t-bet.cooked .tb-side{color:var(--miss)}
-.t-bet.pushed .tb-side{color:var(--push)}
+/* ---- readable mini odds row; the picked market's cell IS the take chip ---- */
+.t-odds{margin-top:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;border-top:1px solid var(--line2);padding-top:6px}
+.oc2{display:flex;flex-direction:column;align-items:center;gap:1.5px;min-width:0;background:rgba(255,255,255,.55);border:1px solid var(--line2);border-radius:9px;padding:5px 2px 4px}
+.oc2.dim{opacity:.45}
+.oc2-k{font-family:var(--disp);font-weight:600;font-size:6.8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.oc2-v{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:-.02em;color:var(--ink);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.oc2-p{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-weight:600;font-size:8.5px;color:var(--ink3);white-space:nowrap;max-width:100%}
+/* the take chip */
+.oc2.take{border-width:1.5px}
+.oc2.take .oc2-k{font-weight:700}
+.oc2.take .oc2-v{font-size:10.5px}
+.oc2.take.q-strong{border-color:rgba(220,165,45,.9);background:linear-gradient(135deg,#ffe9ad,#ffd987);box-shadow:0 2px 8px rgba(200,134,10,.28)}
+.oc2.take.q-strong .oc2-k,.oc2.take.q-strong .oc2-v{color:#5a4305}
+.oc2.take.q-strong .oc2-p{color:#7a5405}
+.oc2.take.q-good{border-color:rgba(15,118,110,.6);background:linear-gradient(135deg,#d8f0ec,#bfe6df)}
+.oc2.take.q-good .oc2-k,.oc2.take.q-good .oc2-v{color:#0b4f47}
+.oc2.take.q-good .oc2-p{color:#0f766e}
+.oc2.take.q-lean{border-color:var(--pickline);background:var(--pickbg)}
+.oc2.take.q-lean .oc2-v{color:var(--navy)}
+/* the chip resolves with the game */
+.oc2.take.won,.oc2.take.clinched{border-color:rgba(21,137,63,.65);background:linear-gradient(135deg,#dff5e6,#bce9cb)}
+.oc2.take.won .oc2-v,.oc2.take.clinched .oc2-v{color:#0a5c28}
+.oc2.take.lost,.oc2.take.cooked{border-color:rgba(200,16,46,.5);background:linear-gradient(135deg,#fbe9ec,#f5d3d9)}
+.oc2.take.lost .oc2-v,.oc2.take.cooked .oc2-v{color:#8f1024}
+.oc2.take.pushed{border-color:var(--pushline);background:var(--pushbg)}
+.oc2.take.pushed .oc2-v{color:var(--push)}
 
-/* shared result mark (tiles + bets list + call card) */
-.tb-res{flex-shrink:0;display:inline-grid;place-items:center;width:15px;height:15px;border-radius:5px;font-size:9px;font-weight:700;font-family:var(--mono);margin-left:auto;animation:respop .5s var(--spring) both}
+/* ---- live progress: current total filling toward the frozen line ---- */
+.t-prog{display:flex;align-items:center;gap:6px;margin-top:5px}
+.pg-track{position:relative;flex:1;height:5px;border-radius:3px;background:var(--line2);overflow:hidden}
+.pg-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--navy);transition:width .6s ease}
+.t-prog.chasing .pg-fill{background:var(--green)}
+.t-prog.holding .pg-fill{background:#c2700a}
+.t-prog.won .pg-fill{background:var(--green)}
+.t-prog.lost .pg-fill{background:var(--red)}
+.pg-txt{font-family:var(--mono);font-weight:600;font-size:8.5px;color:var(--ink2);white-space:nowrap;flex-shrink:0}
+
+/* status-row diamonds */
+.t-status .qdia{font-size:8px}
+
+/* shared result mark (take chips + call card) */
+.tb-res{flex-shrink:0;display:inline-grid;place-items:center;width:13px;height:13px;border-radius:4px;font-size:8px;font-weight:700;font-family:var(--mono);animation:respop .5s var(--spring) both}
 .tb-res.won{color:#0a5c28;background:#8ff0b0}
 .tb-res.won .chk{stroke-dasharray:20;stroke-dashoffset:20;animation:chkdraw .45s .15s ease forwards}
 .tb-res.lost{color:#fff;background:rgba(200,16,46,.85)}
@@ -550,13 +559,18 @@ details.more .more-body{padding-top:12px}
   .anz-hero .ah-stats{gap:20px}
   .cc-side{font-size:24px}
   .cc-res{font-size:12px;padding:5px 10px}
-  .tb-bet{font-size:13.5px}
-  .tb-qual .qdia{display:none}
-  .tb-qual u{font-size:9.5px}
+  /* narrow tiles: odds become readable stacked rows instead of 3 cramped cells */
+  .t-odds{grid-template-columns:1fr;gap:3px}
+  .oc2{flex-direction:row;align-items:center;gap:6px;padding:3.5px 8px;border-radius:8px}
+  .oc2-k{width:36px;flex-shrink:0;text-align:left;font-size:6.5px}
+  .oc2-v{text-align:left;font-size:10.5px}
+  .oc2.take .oc2-v{font-size:11px}
+  .oc2-p{margin-left:auto;flex-shrink:0}
 }
 @media(max-width:400px){
   .oc .oc-v{font-size:10.5px}
   .tile{padding:8px 9px 9px}
-  .t-bet{font-size:9px}
-  .t-bet .tb-pxw{display:none}
+  .oc2-v{font-size:9.5px}
+  .oc2.take .oc2-v{font-size:10px}
+  .oc2-p{font-size:8px}
 }
