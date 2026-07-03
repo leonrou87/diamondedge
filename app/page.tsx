@@ -18,9 +18,6 @@ export default function Home() {
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nhlLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nhl/500/${NHL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nflLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nfl/500/${NFL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
-    // Soccer: real logos when the payload serves home_logo/away_logo (ESPN fifa.world
-    // pass-through); otherwise try the ESPN country-flag CDN off the abbreviation
-    // (national teams), with a graceful text-crest fallback on 404 (club teams).
     const soccerFlag = (ab: any) => `https://a.espncdn.com/i/teamlogos/countries/500/${String(ab || "").toLowerCase()}.png`;
     const logoFor = (sp: string, ab: any) =>
       sp === "soccer" ? soccerFlag(ab)
@@ -38,13 +35,10 @@ export default function Home() {
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
     const SPORTS = ["mlb", "nba", "nhl", "nfl", "soccer"];
     const SPORT_LABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
-    const SPORT_UNIT: any = { mlb: "runs", nba: "pts", nhl: "goals", nfl: "pts", soccer: "goals" };
-    const fmtRec = (o: any) => o ? `${o.wins || 0}-${o.losses || 0}${o.pushes ? "-" + o.pushes : ""}` : "—";
+    const SPORT_UNIT: any = { mlb: "runs", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
     const REDUCE = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const FINE_HOVER = typeof matchMedia !== "undefined" && matchMedia("(hover: hover) and (pointer: fine)").matches;
-    // The viewer's local timezone abbreviation (e.g. "EDT", "PST") for labelling localized times.
     const TZ_ABBR = (() => {
       try {
         const p = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(new Date());
@@ -80,7 +74,7 @@ export default function Home() {
       }
       return { time: "", date: "", iso: false, hasTime: false };
     }
-    // The calendar day a game belongs to, in the VIEWER's timezone.
+    // The calendar day a game belongs to, in the VIEWER's timezone (today-view housekeeping only).
     function gameLocalDay(g: any) {
       const tsSrc = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
       if (tsSrc) {
@@ -108,14 +102,13 @@ export default function Home() {
       }
       return `<img class="${cls}" src="${url}" onerror="this.style.visibility='hidden'" alt="" loading="lazy">`;
     }
-    // per-side crest for a game object (uses served logo fields when present)
     const gCrest = (g: any, which: "home" | "away", cls = "") =>
       crestImg(g.sport, which === "home" ? g.home_abbr : g.away_abbr, cls, which === "home" ? g.home_logo : g.away_logo);
 
     const resOf = (pk: any) => (pk && pk.result && pk.result.status ? pk.result.status : null); // hit|miss|push|null
     const tierCls = (t: any) => "tier-" + (t || "low");
 
-    // ===================== SUGGESTED ACTIONS (fallback source for DE Plays) =====================
+    // ===================== SUGGESTED ACTIONS (fallback source for plays) =====================
     // A game carries `suggested_action` only on the live MLB slate. status SUGGEST → surfaced;
     // status ABSTAIN → silent. HOUSE RULE: the hit-rate NEVER renders without the price/ROI.
     const saOf = (g: any) => {
@@ -124,7 +117,6 @@ export default function Home() {
     };
     const saPct = (p: any, d = 0) => (p == null || isNaN(Number(p)) ? "—" : (Number(p) * 100).toFixed(d) + "%");
     const saAm = (p: any) => (p == null || isNaN(Number(p)) ? "—" : (Number(p) > 0 ? "+" + Number(p) : "" + Number(p)));
-    // 3-year record + gate stats, from the served track-record block (literal fallbacks = the frozen artifacts)
     function saTrack() {
       const t = (payload && payload.suggested_actions_track_record) || {};
       return {
@@ -145,13 +137,8 @@ export default function Home() {
       return 1 / (1 + net);
     }
 
-    // ===================== DIAMONDEDGE PLAYS =====================
-    // The signature element: per game, per market (spread / total / moneyline), a TAKE (side +
-    // confidence) or an explicit PASS. Primary source is the new `de_plays` field; when absent,
-    // fall back to `suggested_action` (run-line TAKEs) + PASS for the other markets, so the UI is
-    // correct today and automatically richer when de_plays lands.
+    // ===================== PLAYS (normalized per game, per market) =====================
     const MARKETS = ["spread", "total", "moneyline"];
-    const MK_LAB: any = { spread: "Spread", total: "Total", moneyline: "ML" };
     const MK_FULL: any = { spread: "Spread", total: "Total", moneyline: "Moneyline" };
 
     function normPlayResult(r: any) {
@@ -163,23 +150,20 @@ export default function Home() {
       const pnl = r.pnl != null ? Number(r.pnl) : (r.net_units != null ? Number(r.net_units) : null);
       return { status: st, pnl };
     }
-    // Build the WHY bullet list for a fallback suggested_action play — plain numbers, no hedging.
+    // Plain-number bullets for a fallback suggested_action play (power-user detail only).
     function saWhy(sa: any) {
       const w: string[] = [];
       if (sa.model_p_cover != null && sa.market_p_cover != null)
-        w.push(`Model has ${sa.side} covering ${saPct(sa.model_p_cover, 1)} of the time vs the market's implied ${saPct(sa.market_p_cover, 1)} — a ${((sa.model_p_cover - sa.market_p_cover) * 100).toFixed(1)}-pt edge in cover probability.`);
+        w.push(`Model has ${sa.side} covering ${saPct(sa.model_p_cover, 1)} of the time vs the market's implied ${saPct(sa.market_p_cover, 1)}.`);
       const p = sa.p_correct != null ? sa.p_correct : sa.meta_p;
-      if (p != null) w.push(`The gated meta-model puts this play at ${saPct(p, 1)} to cash.`);
+      if (p != null) w.push(`The model puts this play at ${saPct(p, 1)} to cash.`);
       if (sa.price != null) w.push(`${saAm(sa.price)} needs ${saPct(saBreakeven(sa), 1)} to break even; 3-yr hit ${saRecStr(sa)} at ~−184 avg.`);
-      if (sa.n_books) w.push(`Priced across ${sa.n_books} sportsbook${sa.n_books > 1 ? "s" : ""} (${sa.market_basis === "perbook_earliest_pregame" ? "earliest pregame lines" : "market consensus"}).`);
-      if (sa.reliability != null) w.push(`Line-reliability score ${(Number(sa.reliability) * 100).toFixed(0)}/100 for this matchup.`);
+      if (sa.n_books) w.push(`Priced across ${sa.n_books} sportsbook${sa.n_books > 1 ? "s" : ""}.`);
       return w;
     }
     function normPlay(raw: any, mk: string) {
       if (!raw || typeof raw !== "object") return null;
       const action = String(raw.action || "").toUpperCase() === "TAKE" ? "TAKE" : "PASS";
-      // VALUE tier plays (paper-tracked breakthrough totals policy) carry
-      // tier "value-a"/"value-b" + paper:true — preserved for distinct styling.
       const vt = raw.tier === "value-a" || raw.tier === "value-b" ? raw.tier : null;
       return {
         market: mk, action,
@@ -196,8 +180,6 @@ export default function Home() {
         p_model_over: raw.p_model_over != null ? Number(raw.p_model_over) : null,
         p_mkt_over: raw.p_mkt_over != null ? Number(raw.p_mkt_over) : null,
         shop: raw.shop || null,
-        // live-updating latest read (model workflow re-assesses unstarted plays);
-        // rendered when present, silently absent otherwise.
         latest_read: raw.latest_read && typeof raw.latest_read === "object" ? raw.latest_read : null,
         why: Array.isArray(raw.why) ? raw.why : [],
         result: normPlayResult(raw.result),
@@ -242,79 +224,53 @@ export default function Home() {
       }
       return "inplay";
     }
-    const hasTake = (g: any) => { const P = gamePlays(g); return MARKETS.some((m) => P[m].action === "TAKE"); };
-
-    // ===================== FEATURED PLAYS (Today's Card) =====================
-    // FEATURED = the day's headline plays: every VALUE-tier play (the winning recipe)
-    // plus any accuracy TAKE graded "featured" (the model's surest tier — still priced
-    // accordingly). Everything else stays quiet on the grid; PASS games show nothing.
-    const isFeatPlay = (pl: any) => !!pl && pl.action === "TAKE" && (pl.value_tier || pl.tier === "featured");
-    // Featured kind for a whole game: "gold" (VALUE) outranks "silver" (featured accuracy).
-    function featKindOf(P: any) {
-      let k: any = null;
-      MARKETS.forEach((mk) => {
-        const pl = P[mk];
-        if (!isFeatPlay(pl)) return;
-        if (pl.value_tier) k = "gold"; else if (!k) k = "silver";
-      });
-      return k;
-    }
-    const gameFeatured = (g: any) => !!featKindOf(gamePlays(g));
-    // The day's featured plays, ranked: VALUE A → VALUE B → featured accuracy (by confidence).
-    function featuredPlays(games: any[]) {
-      const out: any[] = [];
-      games.forEach((g: any) => {
-        const P = gamePlays(g);
-        MARKETS.forEach((mk) => { const pl = P[mk]; if (isFeatPlay(pl)) out.push({ g, pl }); });
-      });
-      const rank = (pl: any) => (pl.value_tier === "value-a" ? 0 : pl.value_tier === "value-b" ? 1 : 2);
-      out.sort((a, b) => (rank(a.pl) - rank(b.pl)) || ((b.pl.p || 0) - (a.pl.p || 0)));
-      return out;
+    // A play's display state: won|lost|pushed|clinched|cooked|inplay|open
+    function playState(g: any, pl: any) {
+      const r = pl.result;
+      if (r) return r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed";
+      const live = playLiveState(g, pl);
+      return live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : live === "inplay" ? "inplay" : "open";
     }
 
-    // ---- LIVE READ pill: de_plays.<mk>.latest_read, written by the assessment
-    // workflow as first pitch approaches. Renders only for unstarted games when the
-    // field exists; the graded morning play is never altered by it.
-    function latestReadPill(g: any, pl: any) {
-      const lr = pl && pl.latest_read;
-      if (!lr || typeof lr !== "object" || (g.status || "pre").toLowerCase() !== "pre") return "";
-      const st = String(lr.status || "").toLowerCase();
-      const cls = st === "strengthening" ? "up" : st === "fading" ? "down" : "hold";
-      const arrow = st === "strengthening" ? "↑" : st === "fading" ? "↓" : "→";
-      const word = st === "strengthening" || st === "fading" ? st : "holding";
-      const mins = lr.minutes_to_start != null && !isNaN(Number(lr.minutes_to_start)) ? Math.max(0, Math.round(Number(lr.minutes_to_start))) : null;
-      const toGo = mins != null ? ` · ${mins >= 100 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`} to ${g.sport === "mlb" ? "first pitch" : "start"}` : "";
-      const tip = [
-        lr.p_model != null ? `model ${(Number(lr.p_model) * 100).toFixed(1)}%` : "",
-        lr.p_mkt != null ? `market ${(Number(lr.p_mkt) * 100).toFixed(1)}%` : "",
-        lr.edge != null ? `edge ${(Number(lr.edge) >= 0 ? "+" : "") + (Number(lr.edge) * 100).toFixed(1)} pts` : "",
-        lr.nlines != null ? `${lr.nlines} lines` : "",
-        lr.ev != null ? `EV ${(Number(lr.ev) >= 0 ? "+" : "") + (Number(lr.ev) * 100).toFixed(1)}%` : "",
-        lr.assessed_at ? `assessed ${String(lr.assessed_at).slice(0, 16).replace("T", " ")}` : "",
-      ].filter(Boolean).join(" · ");
-      return `<span class="lread ${cls}" title="Latest model read — the graded morning play is unchanged.${tip ? " " + esc(tip) : ""}"><i>latest read</i><b class="lr-x">${arrow} ${esc(word)}${esc(toGo)}</b></span>`;
+    // ===================== ONE QUALITY VOCABULARY: Strong / Good / Lean =====================
+    // Every bet the app recommends gets exactly one plain word (and 1-3 filled diamonds):
+    //   Strong = the winning-recipe tier A, or the model's surest (featured) tier
+    //   Good   = recipe tier B, or a high-confidence pick
+    //   Lean   = everything else the model likes enough to flag
+    // Percentages and tier jargon stay off the primary surfaces.
+    function qualityOf(pl: any) {
+      if (!pl || pl.action !== "TAKE") return null;
+      if (pl.value_tier === "value-a" || pl.tier === "featured") return "strong";
+      if (pl.value_tier === "value-b" || pl.tier === "high") return "good";
+      return "lean";
     }
-    // Tiny model-transparency line off payload.model_status — renders only when served.
-    function modelStatusLine() {
-      const ms = (payload && payload.model_status) || (indexData && indexData.model_status) || null;
-      if (!ms || typeof ms !== "object") return "";
-      const bits: string[] = [];
-      if (ms.last_retrain) bits.push(`retrained ${esc(String(ms.last_retrain).slice(0, 10))}`);
-      if (ms.champion_hash) bits.push(`champion ${esc(String(ms.champion_hash).slice(0, 7))}`);
-      if (ms.challenger_verdict) bits.push(`challenger ${esc(String(ms.challenger_verdict))}`);
-      if (ms.next_assessment) bits.push(`next check ${esc(String(ms.next_assessment).slice(0, 16).replace("T", " "))}`);
-      if (!bits.length) return "";
-      return `<div class="modelline"><span class="ml-k">Model</span>${bits.join(" · ")}</div>`;
+    const Q_LABEL: any = { strong: "Strong", good: "Good", lean: "Lean" };
+    const Q_RANK: any = { strong: 0, good: 1, lean: 2 };
+    const qDiamonds = (q: any) => {
+      const n = q === "strong" ? 3 : q === "good" ? 2 : 1;
+      let h = "";
+      for (let i = 0; i < 3; i++) h += `<i class="${i < n ? "f" : ""}">◆</i>`;
+      return `<span class="qdia q-${q}" aria-hidden="true">${h}</span>`;
+    };
+    // Gold = the headline plays: any winning-recipe (VALUE) play + the surest accuracy tier.
+    const isGold = (pl: any) => !!pl && pl.action === "TAKE" && (pl.value_tier || pl.tier === "featured");
+    // The ONE bet we surface for a game: gold first, then quality, then confidence.
+    function orderedTakes(g: any, P?: any) {
+      const plays = P || gamePlays(g);
+      const prio: any = { total: 0, spread: 1, moneyline: 2 };
+      return MARKETS.map((mk) => plays[mk])
+        .filter((p: any) => p.action === "TAKE")
+        .sort((a: any, b: any) =>
+          ((isGold(b) ? 1 : 0) - (isGold(a) ? 1 : 0)) ||
+          ((a.value_tier === "value-a" ? 0 : 1) - (b.value_tier === "value-a" ? 0 : 1)) ||
+          (Q_RANK[qualityOf(a)] - Q_RANK[qualityOf(b)]) ||
+          ((b.p || 0) - (a.p || 0)) ||
+          (prio[a.market] - prio[b.market]));
     }
+    const bestPlay = (g: any) => orderedTakes(g)[0] || null;
 
-    // ===================== THE WINNING RECIPE (VALUE tier) =====================
-    // The ONE validated winning strategy: MLB totals at the morning line when BOTH
-    // (a) model vs de-vigged morning market gap >= 3 prob points AND (b) books quote
-    // >= 2 distinct total lines (the market itself is split = soft line). Fair prices
-    // only (-135..+135). Validated 60.9% over 567 bets @ median -106, +15.6% ROI.
-    // Everything below teaches that hierarchy at a glance.
-    const RECIPE_REC = "60.9% · −106 avg · +15.6% ROI · 567 bets";
-    // The two trigger conditions of a VALUE play, with live values off the payload.
+    const condCheck = `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    // The two trigger conditions of a recipe (VALUE) play, with live values off the payload.
     function valueConds(pl: any) {
       const gapPts = pl.edge != null ? Math.abs(Number(pl.edge)) * 100 : null;
       const need = pl.value_tier === "value-b" ? 2 : 3;
@@ -328,158 +284,22 @@ export default function Home() {
         split: pl.nlines != null ? `Books split across ${pl.nlines} lines` : "Books split on the line",
       };
     }
-    const condCheck = `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-    // Collapsible state for the recipe hero — expanded on first-ever view, collapsed on
-    // later sessions, user toggle wins; stable within a session.
-    let recipeOpenSess: any = null;
-    function recipeIsOpen() {
-      if (recipeOpenSess != null) return recipeOpenSess;
-      let open = true;
-      try {
-        const s = localStorage.getItem("de_recipe");
-        if (s === "open") open = true;
-        else if (s === "closed") open = false;
-        else if (localStorage.getItem("de_recipe_seen")) open = false;
-        else localStorage.setItem("de_recipe_seen", "1");
-      } catch {}
-      recipeOpenSess = open;
-      return open;
-    }
-    function recipeHero() {
-      if (rangeMode || curDate !== todayISO() || league !== "mlb") return "";
-      const open = recipeIsOpen();
-      return `<section class="recipehero ${open ? "" : "collapsed"}" id="recipehero">
-        <button class="rh-bar" id="rh-toggle" aria-expanded="${open}">
-          <span class="rh-dia">◆</span>
-          <span class="rh-t">The Winning Recipe</span>
-          <span class="rh-rec">${RECIPE_REC}</span>
-          <span class="rh-chev">▾</span>
-        </button>
-        <div class="rh-wrap"><div class="rh-inner">
-          <div class="rh-steps">
-            <div class="rh-step" style="--i:0"><span class="rh-n">1</span><div class="rh-sk">Model vs market</div><div class="rh-sv">gap ≥ 3 pts</div><div class="rh-sd">our de-vigged probability disagrees with the morning market</div></div>
-            <span class="rh-arrow" aria-hidden="true">→</span>
-            <div class="rh-step" style="--i:1"><span class="rh-n">2</span><div class="rh-sk">Books split</div><div class="rh-sv">≥ 2 total lines</div><div class="rh-sd">the market can't agree on the number — someone's line is soft</div></div>
-            <span class="rh-arrow" aria-hidden="true">→</span>
-            <div class="rh-step" style="--i:2"><span class="rh-n">3</span><div class="rh-sk">Bet the total</div><div class="rh-sv">model's side · morning line</div><div class="rh-sd">MLB totals only · fair prices only (−135 to +135)</div></div>
-          </div>
-          <div class="rh-foot">
-            <span class="rh-scope">~1 play per slate · most days it doesn't fire — passing IS the strategy</span>
-            <button class="rh-how" id="rh-how">How it works →</button>
-          </div>
-        </div></div>
-      </section>`;
-    }
-
-    // TODAY'S CARD — the day's featured plays as a ranked, numbered board.
-    // VALUE plays lead (gold, "★ FEATURED · THE RECIPE"), then featured-tier
-    // accuracy plays (silver, "ACCURACY — priced accordingly"). Merged with /
-    // replacing the old VALUE spotlight; if only VALUE plays qualify, only they show.
-    function todaysCard(games: any[]) {
-      if (rangeMode || curDate !== todayISO() || league !== "mlb") return "";
-      const fp = featuredPlays(games);
-      if (!fp.length) {
-        return `<section class="tcard quiet">
-          <div class="tc-h"><span class="tc-star">★</span><span class="tc-t">Today's Card</span><span class="tc-count">0 featured plays today</span></div>
-          <div class="tc-quiet">No featured plays today — the recipe didn't trigger (that's discipline, not absence).</div>
-        </section>`;
-      }
-      const items = fp.map(({ g, pl }: any, i: number) => {
-        const gold = !!pl.value_tier;
-        const live = playLiveState(g, pl);
-        const r = pl.result;
-        let stat = "";
-        if (r) {
-          stat = r.status === "hit" ? `<span class="pl-res won">${condCheck} WON</span>`
-            : r.status === "miss" ? `<span class="pl-res lost">✗ LOST</span>`
-            : `<span class="pl-res pushed">PUSH</span>`;
-        } else if (live === "clinch-won") stat = `<span class="pl-res clinched">${condCheck} clinched</span>`;
-        else if (live === "clinch-lost") stat = `<span class="pl-res lost">✗ LINE PASSED</span>`;
-        else if (live === "inplay") stat = `<span class="pl-res inplay"><span class="ip-dot"></span>in play</span>`;
-        let conds = "";
-        if (gold) {
-          const c = valueConds(pl);
-          conds = `<div class="vs-conds"><span class="vs-cond">${condCheck}${esc(c.gap)}</span><span class="vs-cond">${condCheck}${esc(c.split)}</span></div>`;
-        }
-        const ev = pl.claimed_ev != null ? `claimed EV ${(pl.claimed_ev >= 0 ? "+" : "") + (pl.claimed_ev * 100).toFixed(1)}%` : "";
-        const shop = pl.shop && pl.shop.price_american != null
-          ? `best shop ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}` : "";
-        const lread = latestReadPill(g, pl);
-        return `<button class="tc-item ${gold ? "gold" : "silver"}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}"
-          aria-label="Featured play ${i + 1}: ${esc(g.away_abbr)} at ${esc(g.home_abbr)}, ${esc(pl.side || "")}">
-          <span class="tc-rank">${i + 1}</span>
-          <div class="tc-main">
-            <div class="tc-top">
-              <span class="tc-badge ${gold ? "gold" : "silver"}">${gold ? "★ FEATURED · THE RECIPE" : "ACCURACY — priced accordingly"}</span>
-              ${gold ? `<span class="tc-tier">${pl.value_tier === "value-b" ? "tier B" : "tier A"}</span>` : ""}
-              ${pl.paper ? `<span class="vs-paper">PAPER</span>` : ""}
-              <span class="vs-stat">${stat}</span>
-            </div>
-            <div class="tc-mu">${gCrest(g, "away")}${esc(g.away_abbr)}<span class="vs-at">@</span>${gCrest(g, "home")}${esc(g.home_abbr)}</div>
-            <div class="tc-bet">${esc(pl.side || "—")}${pl.price != null ? `<span class="vs-px">@ ${fmtOdds(pl.price)}</span>` : ""}${pl.p != null ? `<span class="tc-conf">${saPct(pl.p, 1)} conf</span>` : ""}</div>
-            ${conds}
-            ${lread ? `<div class="tc-lread">${lread}</div>` : ""}
-            ${ev || shop ? `<div class="vs-meta">${[ev, shop].filter(Boolean).join(" · ")}</div>` : ""}
-          </div>
-        </button>`;
-      }).join("");
-      return `<section class="tcard">
-        <div class="tc-h"><span class="tc-star">★</span><span class="tc-t">Today's Card</span><span class="tc-sub2">the day's featured plays, ranked</span><span class="tc-count">${fp.length} featured play${fp.length > 1 ? "s" : ""} today</span></div>
-        <div class="tc-list">${items}</div>
-      </section>`;
-    }
-    function bindLead() {
-      const rh = $("recipehero"), tg = $("rh-toggle");
-      if (rh && tg) tg.onclick = () => {
-        const open = !rh.classList.toggle("collapsed");
-        recipeOpenSess = open;
-        tg.setAttribute("aria-expanded", String(open));
-        try { localStorage.setItem("de_recipe", open ? "open" : "closed"); } catch {}
-      };
-      const how = $("rh-how");
-      if (how) how.onclick = (e: any) => { e.stopPropagation(); openRecipeSheet(); };
-      root.querySelectorAll(".tc-item[data-gid]").forEach((c: any) => {
-        c.onclick = () => { const g = findGame(c.dataset.gid); if (g) openDetail(g, c.dataset.mk || "total"); };
-      });
-    }
-
-    // Day record across DE Plays (TAKEs only, resolved results only).
-    function dayPlaysRecord(games: any[]) {
-      let w = 0, l = 0, t = 0, open = 0, takes = 0;
-      games.forEach((g: any) => {
-        const P = gamePlays(g);
-        MARKETS.forEach((mk) => {
-          const pl = P[mk];
-          if (pl.action !== "TAKE") return;
-          takes++;
-          const r = pl.result;
-          if (!r) { open++; return; }
-          if (r.status === "hit") w++; else if (r.status === "miss") l++; else t++;
-        });
-      });
-      return { w, l, t, open, takes, settled: w + l + t };
-    }
-    // Season-level plays record line — hit-rate and price/ROI always together (house rule).
-    function seasonPlaysLine() {
-      const dr = payload && payload.de_plays_record;
-      if (dr && typeof dr === "object") {
-        const parts: string[] = [];
-        if (dr.wins != null || dr.losses != null) parts.push(`${dr.wins || 0}–${dr.losses || 0}${dr.pushes ? `–${dr.pushes}` : ""}`);
-        const hit = dr.hit_rate != null ? dr.hit_rate : dr.hit;
-        if (hit != null && (dr.roi != null || dr.avg_price != null)) {
-          parts.push(`${saPct(hit, 1)} hit${dr.avg_price != null ? ` @ ${saAm(dr.avg_price)} avg` : ""}${dr.roi != null ? ` · ${(dr.roi >= 0 ? "+" : "") + (dr.roi * 100).toFixed(1)}% ROI` : ""}`);
-        }
-        if (dr.n != null) parts.push(`n=${dr.n}`);
-        if (parts.length) return parts.join(" · ");
-      }
-      const T = saTrack();
-      const fwd = T.fwd && T.fwd.n_settled ? ` · live ${saPct(T.fwd.hit, 1)} (${T.fwd.n_settled})` : "";
-      return `${saPct(T.g26.hit, 1)} hit @ −184 avg · ${(T.g26.roi * 100).toFixed(1)}% ROI · n=${T.g26.n} (’26)${fwd}`;
+    // Live "latest read" pill — power-user detail inside the sheet only.
+    function latestReadPill(g: any, pl: any) {
+      const lr = pl && pl.latest_read;
+      if (!lr || typeof lr !== "object" || (g.status || "pre").toLowerCase() !== "pre") return "";
+      const st = String(lr.status || "").toLowerCase();
+      const cls = st === "strengthening" ? "up" : st === "fading" ? "down" : "hold";
+      const arrow = st === "strengthening" ? "↑" : st === "fading" ? "↓" : "→";
+      const word = st === "strengthening" || st === "fading" ? st : "holding";
+      const mins = lr.minutes_to_start != null && !isNaN(Number(lr.minutes_to_start)) ? Math.max(0, Math.round(Number(lr.minutes_to_start))) : null;
+      const toGo = mins != null ? ` · ${mins >= 100 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`} to ${g.sport === "mlb" ? "first pitch" : "start"}` : "";
+      return `<span class="lread ${cls}" title="Latest model read — the graded morning play is unchanged."><i>latest read</i><b class="lr-x">${arrow} ${esc(word)}${esc(toGo)}</b></span>`;
     }
 
     // ===================== STATE =====================
-    let tab = "scores";             // "scores" | "analyzer"
+    let tab = "games";              // "games" | "results"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
     let histOpen = false;           // history range panel open
@@ -487,11 +307,10 @@ export default function Home() {
     let rangeMode = false;          // showing range results
     let rangeGames: any[] = [];     // {date,games}
     let payload: any = null;        // current day's payload
+    let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
-    // "Featured only" slate filter — one tap, persisted across sessions.
-    let featOnly = false;
-    try { featOnly = localStorage.getItem("de_feat_only") === "1"; } catch {}
+    let liveScores: any = null;     // latest live_scores snapshot (fresh score overlay)
 
     let minDate = "2020-09-11";
     let maxDate = todayISO();
@@ -513,12 +332,108 @@ export default function Home() {
       const key = isToday ? "pregame_picks" : "pregame_picks:" + dateISO;
       let p = await snap(key);
       if ((!p || !(p.games || []).length) && isToday) p = await snap("pregame_picks:" + dateISO);
+      if (isToday) {
+        livePayload = p;
+      } else {
+        // Recent past days: the daily snapshot freezes mid-day (stale "live" statuses,
+        // ungraded plays). The live board's finals tail carries the SAME games fully
+        // graded — swap those in by game_id when the dates match.
+        if (!livePayload) { try { livePayload = await snap("pregame_picks"); } catch {} }
+        const tail: any = {};
+        (((livePayload && livePayload.games) || []) as any[]).forEach((g: any) => { if (g && g.game_id != null) tail[String(g.game_id)] = g; });
+        if (p && Array.isArray(p.games)) {
+          p = { ...p, games: p.games.map((g: any) => {
+            const t = tail[String(g.game_id)];
+            return t && String(t.date || "").slice(0, 10) === String(g.date || "").slice(0, 10) ? t : g;
+          }) };
+        }
+      }
       return p;
     }
 
-    function gamesForLeague(p: any, lg: string) {
+    // ===================== LIVE-SCORE OVERLAY (live_scores key) =====================
+    // A tiny `live_scores` snapshot refreshes every ~60-75s during game windows — far
+    // fresher than the ~30-min pregame payload. When present (and not older than the
+    // payload), its score/status/period overlays the tiles + sheet and flips tile
+    // states pre→live→final without waiting for the big payload. Degrades silently
+    // when the key doesn't exist.
+    function applyLiveScores() {
+      if (!liveScores || !liveScores.games || !payload) return false;
+      const pu = Date.parse(payload.generated_at || "") || 0;
+      const lu = Date.parse(liveScores.updated_at || "") || 0;
+      if (pu && lu && lu < pu) return false; // the big payload is newer — trust it
+      let changed = false;
+      ((payload.games || []) as any[]).forEach((g: any) => {
+        const ls = liveScores.games[String(g.game_id)] || (g.game_pk != null ? liveScores.games[String(g.game_pk)] : null);
+        if (!ls) return;
+        const st = String(ls.status || "").toLowerCase();
+        if ((st === "pre" || st === "live" || st === "final") && st !== String(g.status || "pre").toLowerCase()) { g.status = st; changed = true; }
+        if (ls.home_score != null && ls.away_score != null) {
+          const ca = g.current_actuals || (g.current_actuals = {});
+          if (ca.home_score !== ls.home_score || ca.away_score !== ls.away_score || (ls.period_label != null && ca.period_label !== ls.period_label)) changed = true;
+          ca.home_score = ls.home_score; ca.away_score = ls.away_score;
+          if (ls.period_label != null) ca.period_label = ls.period_label;
+          ca.total_so_far = ls.total_so_far != null ? ls.total_so_far : Number(ls.home_score) + Number(ls.away_score);
+        }
+      });
+      return changed;
+    }
+    // Poll only while it matters: games tab, today's board, and something live (or
+    // starting within 15 min). Paused while the tab is hidden.
+    function liveWindowActive() {
+      if (tab !== "games" || rangeMode || !payload || curDate !== todayISO()) return false;
+      const now = Date.now();
+      return ((payload.games || []) as any[]).some((g: any) => {
+        const st = String(g.status || "pre").toLowerCase();
+        if (st === "live") return true;
+        if (st !== "pre") return false;
+        const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
+        if (!ts) return false;
+        const dt = new Date(ts).getTime() - now;
+        return dt <= 15 * 60 * 1000 && dt > -12 * 3600 * 1000;
+      });
+    }
+    async function pollLiveScores() {
+      if (document.hidden || !liveWindowActive()) return;
+      let ls: any = null;
+      try { ls = await snap("live_scores"); } catch {}
+      if (!ls || !ls.games) return;
+      const fresh = !liveScores || ls.updated_at !== liveScores.updated_at;
+      liveScores = ls;
+      if (!fresh) return;
+      if (!applyLiveScores()) return;
+      if (tab === "games" && !rangeMode) renderSlate(true);
+      if (detail && detail.game_id != null) refreshSheetScore(detail);
+    }
+    // Update an open sheet's score banner in place (no re-render, keeps scroll).
+    function refreshSheetScore(g: any) {
+      const sheet = $("sheet"); if (!sheet) return;
+      const gs = gameState(g);
+      const el = sheet.querySelector(".sh-score");
+      if (el && gs.score && gs.score.split && gs.score.home != null) {
+        el.className = `sh-score ${gs.kind}`;
+        el.innerHTML = `<span class="shs-side"><span class="shs-ab">${esc(g.away_abbr)}</span><b>${num(gs.score.away, 0)}</b></span>
+          <span class="shs-mid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label)}`}</span>
+          <span class="shs-side"><b>${num(gs.score.home, 0)}</b><span class="shs-ab">${esc(g.home_abbr)}</span></span>`;
+      }
+    }
+
+    function gamesForLeague(p: any, lg: string, dateISO?: string) {
+      const forDate = dateISO || curDate;
       const all = (p && p.games) || [];
       let inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
+      // PAST/KEYED dates: the daily snapshots are captures of the whole live board, which
+      // carries a long finals tail from OTHER days (even other years). A selected date must
+      // show EXACTLY that date's games — trust the payload's own `date` field (the backend
+      // writes it in the slate's home timezone), never re-derive via the viewer's timezone.
+      if (rangeMode || forDate !== todayISO()) {
+        const payloadDate = String((p && p.date) || "").slice(0, 10);
+        inLg = inLg.filter((g: any) => {
+          const gd = String(g.date || "").slice(0, 10);
+          if (isISO(gd)) return gd === forDate;
+          return payloadDate === forDate; // no per-game date: trust the day key's own date
+        });
+      }
       // Today view: a real day slate. Pre games from today onward (the WC board includes
       // tomorrow's fixtures), live games only if plausibly still live (no timestamp, or started
       // within the last 12h — the payload carries stale "live" zombies from prior days), and
@@ -551,10 +466,11 @@ export default function Home() {
       return inLg;
     }
 
-    function leaguesPresent(p: any) {
-      const s = new Set<string>();
-      ((p && p.games) || []).forEach((g: any) => s.add((g.sport || "").toLowerCase()));
-      return s;
+    // Pick the first league that actually has games on the current date.
+    function bestLeague() {
+      if (!payload) return league;
+      if (gamesForLeague(payload, league).length) return league;
+      return SPORTS.find((s) => gamesForLeague(payload, s).length) || league;
     }
 
     // ===================== TRACK RECORD ACCESS =====================
@@ -567,6 +483,16 @@ export default function Home() {
       const src = f.by_tier || f.by_sport || {};
       Object.values(src).forEach((o: any) => { agg.wins += o.wins || 0; agg.losses += o.losses || 0; agg.pushes += o.pushes || 0; agg.n += o.n || 0; });
       return agg.n ? agg : null;
+    }
+    // The validated recipe history (58.1% over 886 graded bets, 2022-2026) off the payload.
+    function recipeHistory() {
+      const vh = payload && payload.value_record && payload.value_record.validated_history;
+      const mp = (vh && vh.median_price) || {};
+      return {
+        hit: mp.hit != null ? Number(mp.hit) : 0.581,
+        roi: mp.roi != null ? Number(mp.roi) : 0.108,
+        n: vh && vh.bets_graded ? Number(vh.bets_graded) : 886,
+      };
     }
 
     // ===================== SCORE DERIVATION =====================
@@ -584,7 +510,18 @@ export default function Home() {
       const st = (g.status || "pre").toLowerCase();
       const si = startInfo(g);
       const t = si.time || si.date || "";
-      if (st === "final") return { kind: "final", label: "Final", time: "", score: actualScore(g), si };
+      if (st === "final") {
+        let sc = actualScore(g);
+        // Overlay-flipped finals may not have graded pick results yet — use the live score.
+        if (!sc) {
+          const ca = g.current_actuals;
+          if (ca && ca.home_score != null && ca.away_score != null) {
+            const h = Number(ca.home_score), a = Number(ca.away_score);
+            sc = { total: h + a, home: h, away: a, margin: h - a, split: true };
+          }
+        }
+        return { kind: "final", label: "Final", time: "", score: sc, si };
+      }
       if (st === "live") {
         const ca = g.current_actuals;
         if (ca && ca.home_score != null && ca.away_score != null) {
@@ -597,7 +534,6 @@ export default function Home() {
     }
 
     // ===================== MICRO-INTERACTIONS =====================
-    // Animated number counters: elements carry data-count (target), data-dec, data-suf, data-loc.
     function animateCounters(scope: any) {
       const els = scope.querySelectorAll("[data-count]");
       els.forEach((el: any) => {
@@ -618,27 +554,13 @@ export default function Home() {
         requestAnimationFrame(step);
       });
     }
-    // Subtle 3D tilt on desktop hover (hero tiles only) — transforms only, disabled
-    // for reduced motion / touch.
-    function bindTilt(scope: any) {
-      if (REDUCE || !FINE_HOVER) return;
-      scope.querySelectorAll(".tile.hero").forEach((card: any) => {
-        card.addEventListener("pointermove", (e: any) => {
-          const r = card.getBoundingClientRect();
-          const x = (e.clientX - r.left) / r.width - 0.5;
-          const y = (e.clientY - r.top) / r.height - 0.5;
-          card.style.transform = `perspective(900px) rotateX(${(-y * 2.2).toFixed(2)}deg) rotateY(${(x * 2.8).toFixed(2)}deg) translateY(-2px)`;
-        });
-        card.addEventListener("pointerleave", () => { card.style.transform = ""; });
-      });
-    }
-    // Pull-to-refresh (touch): pull down from the top of the scores feed to reload the day.
+    // Pull-to-refresh (touch): pull down from the top of the games feed to reload the day.
     let ptrBound = false;
     function bindPull() {
       if (ptrBound) return; ptrBound = true;
       let y0: any = null, pull = 0, on = false;
       document.addEventListener("touchstart", (e: any) => {
-        if (window.scrollY <= 0 && tab === "scores" && !detail) { y0 = e.touches[0].clientY; on = true; pull = 0; }
+        if (window.scrollY <= 0 && tab === "games" && !detail) { y0 = e.touches[0].clientY; on = true; pull = 0; }
       }, { passive: true });
       document.addEventListener("touchmove", (e: any) => {
         if (!on || y0 == null) return;
@@ -661,7 +583,7 @@ export default function Home() {
       });
     }
 
-    // ===================== SHARED VISUALS (sheet) =====================
+    // ===================== POWER-USER VISUALS (sheet "More detail" only) =====================
     function confRing(pk: any) {
       if (!pk || pk.confidence == null) return "";
       const tier = pk.tier || "low";
@@ -743,7 +665,6 @@ export default function Home() {
       </span>`;
     }
 
-    // ===================== GAME CARD =====================
     // home-relative spread line (positive = home getting points)
     function spreadHomeLine(g: any, pk: any) {
       const line = Math.abs(Number(pk.line));
@@ -754,7 +675,7 @@ export default function Home() {
       if (backedHome) return backedLine;
       return -backedLine;
     }
-    // Compact sportsbook odds row: spread · total · moneyline.
+    // Compact sportsbook odds row (sheet "More detail").
     function oddsRow(g: any) {
       const cells: string[] = [];
       const sp = g.spread_pick;
@@ -782,74 +703,45 @@ export default function Home() {
       return `<div class="gc-odds">${cells.join("")}</div>`;
     }
 
-    // ---- compact-tile helpers (CBS-density grid) ----
-    const resMark = (st: string, small = false) => {
-      const sz = small ? 9 : 10;
-      return st === "hit"
-        ? `<svg viewBox="0 0 16 16" width="${sz}" height="${sz}" aria-hidden="true"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-        : st === "miss" ? "✗" : "P";
-    };
-    // A play's display state: won|lost|pushed|clinched|cooked|inplay|open
-    function playState(g: any, pl: any) {
-      const r = pl.result;
-      if (r) return r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed";
-      const live = playLiveState(g, pl);
-      return live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : live === "inplay" ? "inplay" : "open";
-    }
-    // TAKEs ordered for the tile micro-lines: VALUE first, then total > spread > ML.
-    function tileTakes(g: any, P: any) {
-      const prio: any = { total: 0, spread: 1, moneyline: 2 };
-      const w = (p: any) => (p.value_tier ? 4 : 0) + (p.tier === "featured" ? 2 : 0);
-      return MARKETS.map((mk) => P[mk])
-        .filter((p: any) => p.action === "TAKE")
-        .sort((a: any, b: any) => (w(b) - w(a)) || (prio[a.market] - prio[b.market]));
-    }
-    // ONE compact DE-play micro-line: "◆ UNDER 12 −112 · 63%" (+ ✓/✗ state tint).
-    function playMicro(g: any, pl: any) {
+    // ===================== GAME TILE (the whole slate story) =====================
+    const resMark = (st: string) =>
+      st === "won" || st === "clinched"
+        ? `<span class="tb-res won">${condCheck}</span>`
+        : st === "lost" || st === "cooked" ? `<span class="tb-res lost">✗</span>`
+        : st === "pushed" ? `<span class="tb-res pushed">P</span>`
+        : st === "inplay" ? `<span class="tb-res inplay"><span class="ip-dot"></span></span>` : "";
+
+    // Exactly ONE bet line per tile: "★ BET · OVER 8 · −115 · Strong" or a quiet PASS.
+    function betLine(g: any) {
+      const pl = bestPlay(g);
+      if (!pl) return `<div class="t-bet pass">PASS</div>`;
+      const q = qualityOf(pl);
+      const gold = isGold(pl);
       const st = playState(g, pl);
-      const vCls = pl.value_tier ? ` value ${pl.value_tier === "value-a" ? "va" : "vb"}` : " acc";
-      const mark = st === "won" || st === "clinched" ? `<span class="tp-res won">${resMark("hit", true)}</span>`
-        : st === "lost" || st === "cooked" ? `<span class="tp-res lost">✗</span>`
-        : st === "pushed" ? `<span class="tp-res pushed">P</span>`
-        : st === "inplay" ? `<span class="tp-res inplay"><span class="ip-dot"></span></span>` : "";
-      const conf = pl.p != null ? ` · ${saPct(pl.p)}` : "";
-      const px = pl.price != null ? ` ${fmtOdds(pl.price)}` : "";
-      return `<button class="t-play${vCls} ${st}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}"
-        aria-label="${pl.value_tier ? "VALUE " : ""}${MK_FULL[pl.market]} play: ${esc(pl.side || "")}">
-        <span class="tp-dia">◆</span><span class="tp-txt">${esc(pl.side || "—")}${px}${conf}</span>
-        ${pl.paper ? `<span class="tp-paper">P</span>` : ""}${mark}
-      </button>`;
+      const px = pl.price != null ? `<span class="tb-pxw"><span class="tb-sep">·</span><span class="tb-px">${fmtOdds(pl.price)}</span></span>` : "";
+      return `<div class="t-bet ${gold ? "gold" : "take"} ${st}">
+        <span class="tb-star">${gold ? "★" : "◆"}</span><b class="tb-k">BET</b>
+        <span class="tb-sep">·</span><span class="tb-side">${esc(pl.side || "—")}</span>${px}
+        <span class="tb-sep">·</span><span class="tb-q">${Q_LABEL[q]}</span>
+        ${resMark(st)}
+      </div>`;
     }
-    // Compact Vegas line: "O/U 8.5 · CLE −1.5" (soccer: O/U + 1X2 prices).
-    function tileVegas(g: any) {
-      const parts: string[] = [];
-      const tp = g.total_pick;
-      if (tp && tp.line != null) parts.push(`O/U ${num(tp.line)}`);
-      const sp = g.spread_pick;
-      if (sp && sp.line != null) parts.push(`${esc(g.home_abbr)} ${sgn(spreadHomeLine(g, sp))}`);
-      else {
-        const mp = g.ml_pick, pr = (mp && mp.prices) || {};
-        if (g.sport === "soccer" && pr.home != null && pr.draw != null && pr.away != null) parts.push(`${fmtOdds(pr.home)}·${fmtOdds(pr.draw)}·${fmtOdds(pr.away)}`);
-        else if (mp && mp.side && (mp.price ?? pr.home ?? pr.away) != null) parts.push(`ML ${esc(mp.side)} ${fmtOdds(mp.price ?? pr.home ?? pr.away)}`);
-      }
-      return parts.length ? `<div class="t-vegas">${parts.join(" · ")}</div>` : "";
-    }
+
     // Tile status strip: "Mid 8th" / "FINAL" / "7:10 PM" (+ competition / day tag right).
     function tileStatus(g: any, gs: any) {
       let left = "";
       if (gs.kind === "live") left = `<span class="ts-live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</span>`;
       else if (gs.kind === "final") left = `<span class="ts-final">FINAL</span>`;
       else {
-        const t = gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : (gs.si.date || "TBD");
+        const t = gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : (gs.si.date || "TBD");
         left = `<span class="ts-time">${esc(t)}</span>`;
       }
       const dayTag = gs.kind === "pre" && gameLocalDay(g) && gameLocalDay(g) !== curDate ? `<span class="ts-day">${esc(gs.si.date)}</span>` : "";
       const comp = g.meta && g.meta.competition ? `<span class="ts-comp">${esc(g.meta.competition)}</span>` : "";
       return `<div class="t-status">${left}${dayTag || comp}</div>`;
     }
-    function tileRow(g: any, which: "away" | "home", gs: any, hero = false) {
+    function tileRow(g: any, which: "away" | "home", gs: any) {
       const ab = which === "away" ? g.away_abbr : g.home_abbr;
-      const name = which === "away" ? (g.away_team || g.away_abbr) : (g.home_team || g.home_abbr);
       const sc = gs.score;
       let scoreHtml = "", winner = false, loser = false;
       if (gs.kind !== "pre" && sc && sc.split && sc.home != null) {
@@ -857,149 +749,100 @@ export default function Home() {
         const other = which === "home" ? sc.away : sc.home;
         winner = gs.kind === "final" && mine > other;
         loser = gs.kind === "final" && mine < other;
-        scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}" data-count="${num(mine, 0)}">${num(mine, 0)}</span>`;
-      }
-      // hero rows carry the sub-line (pitcher / L10 form) — compact tiles defer it to the sheet
-      let sub = "";
-      if (hero) {
-        const pi = g.pregame_intel || {};
-        const pit = (pi.pitchers || {})[which] || {};
-        const form = (pi.form || {})[which] || {};
-        if (pit.name) sub = `${esc(pit.name.split(" ").slice(-1)[0])}${pit.era != null ? ` · ${num(pit.era, 2)} ERA` : ""}`;
-        else if (form.last10_record) sub = `L10 ${esc(form.last10_record)}`;
+        scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}">${num(mine, 0)}</span>`;
       }
       return `<div class="t-row ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
         <span class="t-crest">${gCrest(g, which)}</span>
         <span class="t-ab">${esc(ab)}</span>
-        ${hero ? `<span class="t-nm">${esc(name)}</span>` : ""}
-        ${sub ? `<span class="t-sub">${sub}</span>` : ""}
         ${scoreHtml}
       </div>`;
     }
 
-    // The 2-col-span HERO tile: VALUE games (gold-edged) + featured live games.
-    function heroTile(g: any, idx: number, gs: any, P: any, vPlay: any) {
-      const takes = tileTakes(g, P);
-      const lead = vPlay || takes[0] || null;
-      const fk = featKindOf(P);
-      const lread = lead ? latestReadPill(g, lead) : "";
-      const ps = g.predicted_score || {};
-      const predTxt = ps.away != null && ps.home != null
-        ? `<span class="h-pred">pred <b>${esc(g.away_abbr)} ${num(ps.away, 1)}–${num(ps.home, 1)} ${esc(g.home_abbr)}</b></span>` : "";
-      const pk = lead ? (lead.market === "spread" ? g.spread_pick : lead.market === "total" ? g.total_pick : g.ml_pick) : g.total_pick;
-      const ring = confRing(pk || g.total_pick || g.spread_pick);
-      let conds = "";
-      if (vPlay) {
-        const c = valueConds(vPlay);
-        conds = `<div class="h-conds"><span class="vs-cond">${condCheck}${esc(c.gap)}</span><span class="vs-cond">${condCheck}${esc(c.split)}</span></div>`;
-      }
-      const rest = takes.filter((p: any) => p !== lead);
-      const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
-        ? `<div class="t-vegas">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      return `<article class="tile hero ${gs.kind}${vPlay ? " isvalue" : ""}${fk ? ` feat-${fk}` : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${fk ? " — featured play" : ""} — open deep dive">
-        ${fk ? `<span class="feat-corner ${fk}" aria-hidden="true"><i>★</i></span>` : ""}
-        ${tileStatus(g, gs)}
-        <div class="h-main">
-          <div class="t-teams">${tileRow(g, "away", gs, true)}${tileRow(g, "home", gs, true)}</div>
-          <div class="h-side">${ring}${predTxt}</div>
-        </div>
-        ${totOnly}
-        ${lead ? `<div class="h-play">${playMicro(g, lead)}${rest.length ? `<span class="h-more">+${rest.length}</span>` : ""}</div>` : ""}
-        ${lread ? `<div class="h-lread">${lread}</div>` : ""}
-        ${conds}
-        ${tileVegas(g)}
-      </article>`;
-    }
-
     function gameCard(g: any, idx: number) {
       const gs = gameState(g);
-      const P = gamePlays(g);
-      const vPlay = MARKETS.map((mk) => P[mk]).find((p: any) => p.action === "TAKE" && p.value_tier) || null;
-      // HERO: any VALUE-play game, plus featured live games.
-      if (vPlay || (gs.kind === "live" && g.featured)) return heroTile(g, idx, gs, P, vPlay);
-      const takes = tileTakes(g, P);
-      const anyTake = takes.length > 0;
-      // featured marker: gold corner star (VALUE) / silver (featured accuracy);
-      // non-featured plays stay quiet, PASS games show nothing.
-      const fk = featKindOf(P);
-      const lreadPl = fk ? takes.find((p: any) => p.latest_read) : null;
-      const lread = lreadPl ? latestReadPill(g, lreadPl) : "";
-      // total-only score (no home/away split available)
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
-        ? `<div class="t-vegas">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      return `<article class="tile ${gs.kind}${anyTake ? " has-play" : ""}${fk ? ` feat-${fk}` : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${fk ? " — featured play" : ""} — open deep dive">
-        ${fk ? `<span class="feat-corner ${fk}" aria-hidden="true"><i>★</i></span>` : ""}
+        ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
+      return `<article class="tile ${gs.kind}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — open details">
         ${tileStatus(g, gs)}
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}
-        ${anyTake ? `<div class="t-plays">${takes.slice(0, 2).map((p: any) => playMicro(g, p)).join("")}</div>` : ""}
-        ${lread ? `<div class="t-lread">${lread}</div>` : ""}
-        ${tileVegas(g)}
+        ${betLine(g)}
       </article>`;
     }
 
-    // ===================== PLAYS RECORD BAND (sticky) =====================
-    function playsBand(games: any[]) {
-      const r = dayPlaysRecord(games);
-      const season = seasonPlaysLine();
-      const recCls = r.settled ? (r.w > r.l ? "up" : r.w < r.l ? "down" : "even") : "pending";
-      const today = r.takes
-        ? `<span class="pb-rec"><b class="w" data-count="${r.w}">${r.w}</b><i>–</i><b class="l" data-count="${r.l}">${r.l}</b>${r.t ? `<i>–</i><b class="t">${r.t}</b>` : ""}</span>${r.open ? `<span class="pb-open">${r.open} open</span>` : ""}`
-        : `<span class="pb-none">no plays today</span>`;
-      const fCnt = games.filter(gameFeatured).length;
-      return `<div class="playsband ${recCls}">
-        <span class="pb-k"><span class="pb-dia">◆</span>DiamondEdge Plays</span>
-        ${today}
-        <button class="pb-filter ${featOnly ? "on" : ""}" id="feat-toggle" aria-pressed="${featOnly}" title="Collapse the slate to featured-play games only"><span class="pb-fstar">★</span>Featured only${fCnt ? `<span class="pb-fcnt">${fCnt}</span>` : ""}</button>
-        <span class="pb-season">${esc(season)}</span>
-      </div>`;
+    // ===================== TODAY'S BETS (the one list above the slate) =====================
+    function betsList(games: any[]) {
+      const all: any[] = [];
+      games.forEach((g: any) => {
+        const pl = bestPlay(g);
+        if (pl) all.push({ g, pl });
+      });
+      all.sort((a, b) =>
+        ((isGold(b.pl) ? 1 : 0) - (isGold(a.pl) ? 1 : 0)) ||
+        (Q_RANK[qualityOf(a.pl)] - Q_RANK[qualityOf(b.pl)]) ||
+        ((b.pl.p || 0) - (a.pl.p || 0)));
+      // The list features the bets worth taking: Strong and Good. Leans stay on the tiles.
+      const rows = all.filter(({ pl }: any) => qualityOf(pl) !== "lean");
+      const nLeans = all.length - rows.length;
+      const isToday = !rangeMode && curDate === todayISO();
+      const title = isToday ? "Today's Bets" : `Bets · ${new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+      if (!rows.length) {
+        return `<section class="tbets quiet">
+          <div class="tb-h"><span class="tb-t">${title}</span></div>
+          <div class="tb-none">No strong bets ${isToday ? "today" : "that day"} — ${nLeans ? `just ${nLeans} small lean${nLeans > 1 ? "s" : ""} on the game tiles below.` : "every game is a pass."} Most days that's the right call.</div>
+        </section>`;
+      }
+      const shown = rows.slice(0, 6);
+      const items = shown.map(({ g, pl }: any) => {
+        const q = qualityOf(pl);
+        const gold = isGold(pl);
+        const st = playState(g, pl);
+        return `<button class="tb-row ${gold ? "gold" : ""} ${st}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}"
+          aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}: ${esc(pl.side || "")}">
+          <span class="tb-mu">${gCrest(g, "away")}<em>${esc(g.away_abbr)}</em><span class="tb-at">@</span>${gCrest(g, "home")}<em>${esc(g.home_abbr)}</em></span>
+          <span class="tb-bet">${esc(pl.side || "—")}</span>
+          ${pl.price != null ? `<span class="tb-px2">${fmtOdds(pl.price)}</span>` : ""}
+          <span class="tb-qual">${qDiamonds(q)}<u>${Q_LABEL[q]}</u></span>
+          ${resMark(st)}
+        </button>`;
+      }).join("");
+      const extra = (rows.length - shown.length) + nLeans;
+      const more = extra > 0 ? `<div class="tb-more">+ ${extra} smaller lean${extra > 1 ? "s" : ""} on the game tiles below</div>` : "";
+      return `<section class="tbets">
+        <div class="tb-h"><span class="tb-t">${title}</span><span class="tb-n">${rows.length} bet${rows.length > 1 ? "s" : ""} · everything else is a pass</span></div>
+        <div class="tb-list">${items}</div>${more}
+      </section>`;
     }
 
-    // Recently-graded plays from the payload's finals tail (prior days) — shown as a compact
-    // results rail on the today view so ✓/✗ results are always visible without polluting the
-    // day slate. Works off de_plays when present, suggested_action otherwise.
-    function recentResultsRail() {
-      if (rangeMode || curDate !== todayISO() || !payload) return "";
-      const t = todayISO();
-      const graded: any[] = [];
-      ((payload.games || []) as any[]).forEach((g: any) => {
-        if ((g.sport || "").toLowerCase() !== league) return;
-        const d = gameLocalDay(g);
-        if (d && d >= t) return; // today's results show on the cards themselves
+    // Tiny record chip: this month's graded picks off the payload's finals tail.
+    function monthRecord() {
+      const src = livePayload || payload;
+      if (!src) return null;
+      const m = todayISO().slice(0, 7);
+      let w = 0, l = 0;
+      ((src.games || []) as any[]).forEach((g: any) => {
+        if (String(g.date || "").slice(0, 7) !== m) return;
         const P = gamePlays(g);
         MARKETS.forEach((mk) => {
           const pl = P[mk];
-          if (pl.action === "TAKE" && pl.result) graded.push({ g, pl, d: d || "" });
+          if (pl.action === "TAKE" && pl.result) {
+            if (pl.result.status === "hit") w++;
+            else if (pl.result.status === "miss") l++;
+          }
         });
       });
-      if (!graded.length) return "";
-      graded.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0));
-      let w = 0, l = 0, p = 0;
-      graded.forEach((x) => { if (x.pl.result.status === "hit") w++; else if (x.pl.result.status === "miss") l++; else p++; });
-      const chips = graded.slice(0, 12).map(({ g, pl, d }: any) => {
-        const st = pl.result.status;
-        const cls = st === "hit" ? "won" : st === "miss" ? "lost" : "pushed";
-        const mark = st === "hit"
-          ? `<span class="pl-res won"><svg viewBox="0 0 16 16" width="11" height="11"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`
-          : st === "miss" ? `<span class="pl-res lost">✗</span>` : `<span class="pl-res pushed">P</span>`;
-        const day = d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-        return `<button class="rr-chip ${cls}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}">
-          <span class="rr-mu">${esc(g.away_abbr)}@${esc(g.home_abbr)}</span>
-          <span class="rr-side">${esc(pl.side || "")}</span>
-          ${pl.price != null ? `<span class="rr-px">${fmtOdds(pl.price)}</span>` : ""}
-          ${mark}
-          ${day ? `<span class="rr-day">${esc(day)}</span>` : ""}
-        </button>`;
-      }).join("");
-      return `<div class="resultsrail">
-        <div class="rr-head"><span class="rr-k"><span class="gp-dia">◆</span>Recent Play Results</span><span class="rr-rec"><b class="w">${w}</b>–<b class="l">${l}</b>${p ? `–<b class="t">${p}</b>` : ""} last ${graded.length} plays</span></div>
-        <div class="rr-list">${chips}</div>
-      </div>`;
+      return w + l ? { w, l } : null;
+    }
+    function metaRow() {
+      const mr = monthRecord();
+      const chip = mr
+        ? `<button class="recchip" id="recchip">Picks <b>${mr.w}–${mr.l}</b> this month</button>`
+        : `<button class="recchip" id="recchip">Our record →</button>`;
+      return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
 
-    // ===================== SCORES TAB =====================
+    // ===================== GAMES TAB =====================
     function skeletonSlate(n = 8) {
       let cards = "";
       for (let i = 0; i < n; i++) {
@@ -1037,11 +880,11 @@ export default function Home() {
         const cnt = payload ? gamesForLeague(payload, lg).length : 0;
         return `<button class="sporttab ${lg === league ? "on" : ""}" data-lg="${lg}">${SPORT_LABEL[lg]}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
-      root.querySelector("#scores-view").innerHTML = `
+      root.querySelector("#games-view").innerHTML = `
         <div id="ptr"><div class="ptr-inner"><span class="ptr-sp"></span><span class="ptr-txt">release to refresh</span></div></div>
         <div class="subhead">
           <div class="sporttabs" id="sporttabs">${tabsHtml}<span class="tab-ink" id="tab-ink"></span></div>
-          <div id="band-area"></div>
+          <div id="meta-area">${metaRow()}</div>
         </div>
         <div class="datebar">
           <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
@@ -1066,7 +909,7 @@ export default function Home() {
           <input type="date" id="range-to" value="${rangeTo || curDate}" min="${minDate}" max="${maxDate}">
           <button class="go" id="range-go">Scan</button>
           ${rangeMode ? `<button class="clr" id="range-clear">Clear</button>` : ""}
-          <span class="rnote">Scans each day's ${SPORT_LABEL[league]} board across ${minDate.slice(0, 4)}–${maxDate.slice(0, 4)}.</span>
+          <span class="rnote">Shows each day's ${SPORT_LABEL[league]} games and bets across ${minDate.slice(0, 4)}–${maxDate.slice(0, 4)}.</span>
         </div>`;
     }
 
@@ -1080,64 +923,56 @@ export default function Home() {
       ink.style.transform = `translateX(${on.offsetLeft}px)`;
     }
 
-    function renderSlate() {
-      const body = $("slate-body"), band = $("band-area");
+    function renderSlate(quiet = false) {
+      const body = $("slate-body"), meta = $("meta-area");
       if (!body) return;
+      body.classList.toggle("still", quiet); // live-score refresh: no re-entrance animation
       if (rangeMode) {
-        if (band) band.innerHTML = "";
         body.innerHTML = renderRangeBody();
       } else if (!payload) {
-        if (band) band.innerHTML = "";
         body.innerHTML = skeletonSlate();
         return;
       } else {
+        if (meta) meta.innerHTML = metaRow();
         const games = gamesForLeague(payload, league);
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-        if (band) band.innerHTML = playsBand(games);
-        // The strategy hierarchy leads the feed: recipe hero, then TODAY'S CARD
-        // (ranked featured plays), then the game list.
-        const lead = recipeHero() + todaysCard(games);
-        const shown = featOnly ? games.filter(gameFeatured) : games;
         if (!games.length) {
-          body.innerHTML = `${lead}<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
-        } else if (featOnly && !shown.length) {
-          body.innerHTML = `${lead}<div class="state"><div class="st-ico">★</div><div class="big">No featured-play games</div><div class="sm">Nothing on this ${SPORT_LABEL[league]} slate is featured for ${esc(dispDate)}.</div><button class="feat-clear" id="feat-clear">Show all ${games.length} game${games.length > 1 ? "s" : ""}</button></div>`;
+          body.innerHTML = `<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
         } else {
-          const cntTxt = featOnly
-            ? `${shown.length} featured of ${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""}`
-            : `${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""}`;
-          body.innerHTML = `${lead}${recentResultsRail()}<div class="slate">${shown.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
-            <div class="refnote">${cntTxt} · ${esc(dispDate)} · <button class="refnote-link" id="open-analyzer">DiamondEdge model analyzer →</button></div>`;
+          body.innerHTML = `${betsList(games)}<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+            <div class="refnote">${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
       }
-      // update tab counts in place
       SPORTS.forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = payload ? gamesForLeague(payload, lg).length : 0; el.textContent = c || ""; } });
-      const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer");
-      const setFeat = (v: boolean) => { featOnly = v; try { localStorage.setItem("de_feat_only", v ? "1" : "0"); } catch {} renderSlate(); };
-      const ft = $("feat-toggle"); if (ft) ft.onclick = () => setFeat(!featOnly);
-      const fc = $("feat-clear"); if (fc) fc.onclick = () => setFeat(false);
+      bindMeta();
       bindCards();
-      bindLead();
       animateCounters(body);
-      if (band) animateCounters(band);
-      bindTilt(body);
     }
 
     function renderRangeBody() {
       if (!rangeGames.length) return `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games in range</div><div class="sm">Try a wider range or another league.</div></div>`;
       let html = "";
-      let N = 0, W = 0, L = 0, T = 0;
+      let N = 0, W = 0, L = 0;
       rangeGames.forEach((day: any) => {
-        const games = gamesForLeague({ games: day.games }, league);
+        const games = gamesForLeague({ games: day.games, date: day.date }, league, day.date);
         if (!games.length) return;
-        const dr = dayPlaysRecord(games);
-        N += games.length; W += dr.w; L += dr.l; T += dr.t;
+        let w = 0, l = 0;
+        games.forEach((g: any) => {
+          const P = gamePlays(g);
+          MARKETS.forEach((mk) => { const pl = P[mk]; if (pl.action === "TAKE" && pl.result) { if (pl.result.status === "hit") w++; else if (pl.result.status === "miss") l++; } });
+        });
+        N += games.length; W += w; L += l;
         const dd = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-        html += `<div class="dayhdr"><span class="dh-date">${esc(dd)}</span><span class="dh-rr">${games.length} game${games.length > 1 ? "s" : ""}${dr.settled ? ` · plays ${dr.w}-${dr.l}${dr.t ? "-" + dr.t : ""}` : ""}</span></div>`;
+        html += `<div class="dayhdr"><span class="dh-date">${esc(dd)}</span><span class="dh-rr">${games.length} game${games.length > 1 ? "s" : ""}${w + l ? ` · picks ${w}-${l}` : ""}</span></div>`;
         html += `<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>`;
       });
-      html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L + T ? ` · plays ${W}-${L}${T ? "-" + T : ""}` : ""}</div>`;
+      html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L ? ` · picks ${W}-${L}` : ""}</div>`;
       return html;
+    }
+
+    function bindMeta() {
+      const rc = $("recchip"); if (rc) rc.onclick = () => switchTab("results");
+      const hl = $("howlink"); if (hl) hl.onclick = () => openRecipeSheet();
     }
 
     function bindScoresChrome() {
@@ -1156,6 +991,7 @@ export default function Home() {
       const hb = $("hist-btn");
       if (hb) hb.onclick = () => { histOpen = !histOpen; const ha = $("hist-area"); if (ha) { ha.innerHTML = histOpen ? histPanel() : ""; bindHist(); } hb.classList.toggle("on", histOpen || rangeMode); };
       bindHist();
+      bindMeta();
       window.addEventListener("resize", () => { positionInk(); recenterStrip(false); });
     }
     function bindHist() {
@@ -1164,7 +1000,6 @@ export default function Home() {
       const rg = $("range-go"); if (rg) rg.onclick = () => runRange();
       const rc = $("range-clear"); if (rc) rc.onclick = () => { rangeMode = false; refreshStrip(); renderSlate(); };
     }
-    // Wire the date chips + smooth-slide the active one to centre (direct scrollLeft — no page jump).
     function recenterStrip(smooth = true) {
       const strip = $("datestrip");
       const on = strip && strip.querySelector(".dchip.on");
@@ -1188,9 +1023,9 @@ export default function Home() {
       refreshStrip();
       const body = $("slate-body"); if (body) body.innerHTML = skeletonSlate();
       payload = await loadDay(curDate);
-      const present = leaguesPresent(payload);
-      if (!present.has(league) && present.size) {
-        league = SPORTS.find((s) => present.has(s)) || league;
+      const lg = bestLeague();
+      if (lg !== league) {
+        league = lg;
         root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
         positionInk();
       }
@@ -1202,7 +1037,7 @@ export default function Home() {
         bx.onclick = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
         bx.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); const g = findGame(bx.dataset.gid); if (g) openDetail(g); } };
       });
-      root.querySelectorAll(".t-play[data-gid], .rr-chip[data-gid]").forEach((ch: any) => {
+      root.querySelectorAll(".tb-row[data-gid]").forEach((ch: any) => {
         ch.onclick = (e: any) => { e.stopPropagation(); const g = findGame(ch.dataset.gid); if (g) openDetail(g, ch.dataset.mk); };
       });
     }
@@ -1235,7 +1070,45 @@ export default function Home() {
       renderSlate();
     }
 
-    // ===================== DEEP-DIVE SHEET =====================
+    // ===================== DETAIL SHEET: THE CALL → WHY → MORE DETAIL =====================
+    // Plain-English WHY: 2-4 short sentences a first-time reader can follow, built from the
+    // play's served numbers. Real numbers, no jargon; hit-rates always ride with the price.
+    function whySentences(g: any, pl: any) {
+      const s: string[] = [];
+      const unit = SPORT_UNIT[g.sport] || "points";
+      const ps = g.predicted_score || {};
+      if (pl.market === "total") {
+        const pk = g.total_pick || {};
+        const line = pl.line != null ? pl.line : (pk.line != null ? Number(pk.line) : null);
+        const proj = pk.our_proj != null ? Number(pk.our_proj)
+          : (ps.home != null && ps.away != null ? Number(ps.home) + Number(ps.away) : null);
+        const over = /over/i.test(String(pl.side || ""));
+        if (proj != null && line != null)
+          s.push(`Our model expects about ${num(proj, 1)} ${unit} in this game — ${over ? "more" : "fewer"} than the ${num(line, 1)} the books are offering.`);
+      } else if (pl.market === "spread") {
+        if (ps.away != null && ps.home != null)
+          s.push(`Our model's expected final is ${esc(g.away_abbr)} ${num(ps.away, 1)}–${num(ps.home, 1)} ${esc(g.home_abbr)}, which lands on the ${esc(pl.side || "")} side of the line.`);
+      } else if (pl.market === "moneyline") {
+        const mp = g.ml_pick || {};
+        if (mp.our_winprob != null)
+          s.push(`Our model gives ${esc(pl.side || mp.side || "this side")} about a ${(Number(mp.our_winprob) * 100).toFixed(0)}% chance to win — more than the price implies.`);
+      }
+      if (pl.nlines != null && pl.nlines >= 2)
+        s.push(`The sportsbooks themselves don't agree on this line today — they're posting ${pl.nlines} different numbers — and split lines like that have historically been beatable.`);
+      if (pl.value_tier) {
+        const rh = recipeHistory();
+        s.push(`Bets made exactly this way have won about ${(rh.hit * 100).toFixed(0)}% of the time across ${rh.n.toLocaleString()} graded bets from 2022 to 2026 — roughly ${sgn(rh.roi * 100, 0)}% on every dollar bet.`);
+      } else {
+        if (pl.p != null && pl.price != null)
+          s.push(`The model gives this bet about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}.`);
+        s.push(`One honest caution: picks like this are right often, but at these prices the long-run profit is close to break-even — treat it as a lean, not a lock.`);
+      }
+      return s.slice(0, 4);
+    }
+    const passWhy = () =>
+      `We checked the spread, the total and the moneyline for this game, and none of them offered a real advantage over the books' numbers. Passing is part of the strategy — most games don't have a bet worth taking.`;
+
+    // ---- power-user blocks kept under "More detail" ----
     function modelsVsMarket(g: any) {
       const models = (g.why && g.why.models) || [];
       if (!models.length) return "";
@@ -1282,8 +1155,8 @@ export default function Home() {
       return `<div class="dsec"><div class="dsec-h">Pre-Game Intel</div><div class="dsec-b intel-grid">${blocks.join("")}</div></div>`;
     }
 
-    // One market's DE Play inside the sheet: action, why-bullets, model-vs-market, line move.
-    function sheetPlay(g: any, pl: any, focus: boolean) {
+    // One market's play inside "More detail": action, bullets, model-vs-market, line move.
+    function sheetPlay(g: any, pl: any) {
       const mk = pl.market;
       const pk = mk === "spread" ? g.spread_pick : mk === "total" ? g.total_pick : g.ml_pick;
       const live = playLiveState(g, pl);
@@ -1294,28 +1167,21 @@ export default function Home() {
         const resTxt = r
           ? (r.status === "hit" ? `✓ WON${r.pnl != null ? ` ${r.pnl >= 0 ? "+" : ""}${Number(r.pnl).toFixed(2)}u` : ""}` : r.status === "miss" ? `✗ LOST${r.pnl != null ? ` ${Number(r.pnl).toFixed(2)}u` : ""}` : "PUSH")
           : live === "clinch-won" ? "✓ CLINCHED" : live === "clinch-lost" ? "✗ LINE PASSED" : live === "inplay" ? "IN PLAY" : "";
-        const vBadge = pl.value_tier
-          ? `<span class="shp-vbadge ${pl.value_tier === "value-a" ? "va" : "vb"}"><span class="pl-vdia">◆</span>VALUE ${pl.value_tier === "value-a" ? "A" : "B"}</span>${pl.paper ? `<span class="shp-paper">PAPER</span>` : ""}`
-          : "";
-        head = `<div class="shp-head take ${rCls} ${pl.value_tier ? "is-value" : ""}">
+        head = `<div class="shp-head take ${rCls}">
           <span class="shp-mk">${MK_FULL[mk]}</span>
-          ${vBadge}
-          ${!pl.value_tier ? `<span class="shp-accbadge">accuracy play</span>` : ""}
-          <span class="shp-act">TAKE</span>
+          <span class="shp-act">BET</span>
           <span class="shp-side">${esc(pl.side || "—")}</span>
           ${pl.price != null ? `<span class="shp-px">${fmtOdds(pl.price)}</span>` : ""}
-          ${pl.p != null ? `<span class="shp-p">${saPct(pl.p, 1)} conf</span>` : ""}
-          ${pl.tier ? `<span class="shp-tier">${esc(pl.tier)}</span>` : ""}
+          <span class="shp-q">${Q_LABEL[qualityOf(pl)]}</span>
           ${resTxt ? `<span class="shp-res ${rCls || "inplay"}">${resTxt}</span>` : ""}
         </div>`;
       } else {
         head = `<div class="shp-head pass">
           <span class="shp-mk">${MK_FULL[mk]}</span>
           <span class="shp-act pass">PASS</span>
-          <span class="shp-passnote">no edge cleared the gate in this market</span>
+          <span class="shp-passnote">no edge in this market</span>
         </div>`;
       }
-      // VALUE play leads with the recipe conditions met + claimed EV + shop price.
       let recipeBlk = "";
       if (pl.action === "TAKE" && pl.value_tier) {
         const c = valueConds(pl);
@@ -1324,18 +1190,14 @@ export default function Home() {
           <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.gap)}</b>${c.gapSub ? ` <span class="sr-sub">${esc(c.gapSub)}</span>` : ""} <span class="sr-need">needs ≥ ${c.need}</span></div>
           <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.split)}</b> <span class="sr-sub">the market is split — someone's line is soft</span></div>
           <div class="sr-chips">
-            ${pl.claimed_ev != null ? `<span class="mvm-chip ${pl.claimed_ev >= 0 ? "pos" : "neg"}">claimed EV ${(pl.claimed_ev >= 0 ? "+" : "") + (pl.claimed_ev * 100).toFixed(1)}%</span>` : ""}
+            ${pl.claimed_ev != null ? `<span class="mvm-chip ${pl.claimed_ev >= 0 ? "pos" : "neg"}">claimed value ${(pl.claimed_ev >= 0 ? "+" : "") + (pl.claimed_ev * 100).toFixed(1)}%</span>` : ""}
             ${pl.price != null ? `<span class="mvm-chip">morning line ${fmtOdds(pl.price)}</span>` : ""}
-            ${pl.shop && pl.shop.price_american != null ? `<span class="mvm-chip be">best shop ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}</span>` : ""}
+            ${pl.shop && pl.shop.price_american != null ? `<span class="mvm-chip be">best price ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}</span>` : ""}
           </div>
         </div>`;
       }
-      // Regular TAKE = accuracy play: honest framing, right up front.
-      const accNote = pl.action === "TAKE" && !pl.value_tier
-        ? `<div class="shp-accnote"><b>Accuracy play</b> — picks like this hit ~60–63% of the time, but at prices where that's roughly breakeven money. A good prediction, not a proven edge. The gold <b>◆ VALUE</b> plays are the winning strategy.</div>` : "";
       const why = pl.why && pl.why.length
         ? `<ul class="shp-why">${pl.why.map((w: any) => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
-      // model vs market numbers for this market
       let mvm = "";
       if (pl.action === "TAKE" && pl.src === "sa" && pl.sa) {
         const sa = pl.sa;
@@ -1356,56 +1218,45 @@ export default function Home() {
       const move = pk ? lineMove(pk) : "";
       const lean = pk ? (mk === "moneyline" ? wpLean(pk) : leanMeter(pk, mk)) : "";
       const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
-      const vrec = pl.value_tier ? valueRecordBlock(pl) : "";
-      // live-updating latest read (unstarted games only) — the graded play above is unchanged
       const lread = pl.action === "TAKE" ? latestReadPill(g, pl) : "";
       const lreadBlk = lread ? `<div class="shp-lread">${lread}<span class="lr-note">the model's latest look — the graded morning play above is unchanged</span></div>` : "";
-      return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"} ${pl.value_tier ? "is-value" : ""} ${focus ? "hl" : ""}" id="shp-${mk}">
-        ${head}${lreadBlk}${recipeBlk}${accNote}${why}${mvm}${viz}${vrec}
+      return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"}">
+        ${head}${lreadBlk}${recipeBlk}${why}${mvm}${viz}
       </div>`;
     }
 
-    // VALUE tier record inside the sheet: frozen validation + June gate + the
-    // growing PAPER forward ledger (hit never shown without price/ROI).
-    function valueRecordBlock(pl: any) {
+    // Recipe (VALUE) record table — power-user detail.
+    function valueRecordBlock() {
       const vr = payload && payload.value_record;
       if (!vr) return "";
       const fwd = vr.forward || {};
       const fRow = (lab: string, o: any) => {
         if (!o || !o.n_settled) return `<tr><td>${esc(lab)}</td><td class="num">0</td><td class="num">—</td><td class="num">—</td></tr>`;
-        const ci = o.hit_ci95;
-        const hit = o.hit != null ? `${saPct(o.hit, 1)}${ci && ci[0] != null ? ` <span class="vr-ci">[${saPct(ci[0], 0)}–${saPct(ci[1], 0)}]</span>` : ""}` : "—";
+        const hit = o.hit != null ? saPct(o.hit, 1) : "—";
         const roi = o.roi != null ? `<span class="${o.roi >= 0 ? "pos" : "neg"}">${(o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1)}%</span>` : "—";
         return `<tr><td>${esc(lab)} <span class="vr-rec">${esc(o.record || "")}</span></td><td class="num">${o.n_settled}</td><td class="num">${hit}</td><td class="num">${roi}</td></tr>`;
       };
-      const shopRow = pl.shop && pl.shop.price_american != null
-        ? `<div class="vr-shop">best shop: ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american} @ ${num(pl.shop.line, 1)}</div>` : "";
       return `<div class="shp-vrec">
-        <div class="vr-h"><span class="pl-vdia">◆</span> VALUE tier record <span class="vr-papertag">paper-tracked</span></div>
+        <div class="vr-h"><span class="pl-vdia">◆</span> Recipe record <span class="vr-papertag">tracked, not staked</span></div>
         <div class="vr-line">${esc(vr.val_record || "")}</div>
         <div class="vr-line">${esc(vr.gate || "")}</div>
         <table class="dsa-tab vr-tab">
-          <thead><tr><th>Forward (paper)</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
-          <tbody>${fRow("Tier A", fwd.tier_a)}${fRow("Tier A+B", fwd.tier_ab)}${fRow("Tier A shopped", fwd.tier_a_shopped)}</tbody>
+          <thead><tr><th>Since going live</th><th>n</th><th>Win rate</th><th>Return</th></tr></thead>
+          <tbody>${fRow("Strong (tier A)", fwd.tier_a)}${fRow("Strong + Good", fwd.tier_ab)}</tbody>
         </table>
-        ${shopRow}
-        <div class="vr-foot">${esc(vr.claimed_forward || "")}. Real stakes only after the scaling gate (≥3 months, ≥150 tier-A bets, hit ≥ breakeven, ROI ≥ 0).</div>
       </div>`;
     }
 
-    // Plays track-record context table — record and price/ROI side by side, always.
     function playsTrackTable() {
       const T = saTrack();
-      const ci = T.g26.hit_ci95;
       const row = (lab: string, o: any) => o ? `<tr><td>${esc(lab)}</td><td class="num">${(o.n || 0).toLocaleString()}</td><td class="num">${o.hit != null ? saPct(o.hit, 1) : "—"}</td><td class="num ${o.roi != null && o.roi >= 0 ? "pos" : "neg"}">${o.roi != null ? (o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1) + "%" : "—"}</td></tr>` : "";
       const fwdRow = T.fwd && T.fwd.n_settled ? row("Live (forward)", { n: T.fwd.n_settled, hit: T.fwd.hit, roi: T.fwd.roi }) : "";
       return `<div class="shp-track">
-        <div class="shp-track-h">Play track record</div>
+        <div class="shp-track-h">Pick track record</div>
         <table class="dsa-tab">
-          <thead><tr><th>Window</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
-          <tbody>${row("2024 validation", T.v24)}${row("2025 test", T.t25)}${row("2026 gate", T.g26)}${fwdRow}</tbody>
+          <thead><tr><th>Window</th><th>n</th><th>Win rate</th><th>Return</th></tr></thead>
+          <tbody>${row("2024", T.v24)}${row("2025", T.t25)}${row("2026", T.g26)}${fwdRow}</tbody>
         </table>
-        <div class="dsa-foot">2026 gate: ${saPct(T.g26.hit, 1)}${ci ? ` (CI ${saPct(ci[0], 1)}–${saPct(ci[1], 1)})` : ""} on ${T.g26.n} plays at ~−184 avg · blind dog +1.5 baseline hit ${saPct(T.base.hit, 1)} / ${(T.base.roi * 100).toFixed(1)}% ROI in ’26.</div>
       </div>`;
     }
 
@@ -1413,17 +1264,16 @@ export default function Home() {
       if (!pk || pk.side == null) return "";
       const st = resOf(pk);
       const tier = pk.tier || "low";
-      const gapTxt = pk.gap != null ? ` · <span class="dgap">edge ${Math.abs(Number(pk.gap)).toFixed(1)} ${SPORT_UNIT[g.sport] || ""}</span>` : "";
       let line = "";
-      if (kind === "spread") line = `line <b>${sgn(pk.line)}</b> · proj margin <b>${pk.our_proj != null ? sgn(pk.our_proj) : "—"}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}${gapTxt}`;
-      else if (kind === "total") line = `line <b>${num(pk.line)}</b> · our proj <b>${num(pk.our_proj)}</b>${pk.interval && pk.interval.lo != null ? ` · 80% [${num(pk.interval.lo)}, ${num(pk.interval.hi)}]` : ""}${gapTxt}`;
-      else line = `price <b>${fmtOdds(pk.price)}</b>${pk.our_winprob != null ? ` · our win prob <b>${(pk.our_winprob * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
-      const resTxt = st === "hit" ? `WON ${pk.result.net_units >= 0 ? "+" : ""}${num(pk.result.net_units, 2)}u` : st === "miss" ? `LOST ${num(pk.result.net_units, 2)}u` : st === "push" ? "PUSH" : "";
+      if (kind === "spread") line = `line <b>${sgn(pk.line)}</b> · model margin <b>${pk.our_proj != null ? sgn(pk.our_proj) : "—"}</b>${pk.interval && pk.interval.lo != null ? ` · likely range ${num(pk.interval.lo)} to ${num(pk.interval.hi)}` : ""}`;
+      else if (kind === "total") line = `line <b>${num(pk.line)}</b> · model <b>${num(pk.our_proj)}</b>${pk.interval && pk.interval.lo != null ? ` · likely range ${num(pk.interval.lo)} to ${num(pk.interval.hi)}` : ""}`;
+      else line = `price <b>${fmtOdds(pk.price)}</b>${pk.our_winprob != null ? ` · model win chance <b>${(pk.our_winprob * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
+      const resTxt = st === "hit" ? `WON` : st === "miss" ? `LOST` : st === "push" ? "PUSH" : "";
       return `<div class="dbet">
         <div class="dbet-top">
           <div class="dmk">${esc(label)}</div>
           <div class="dmid"><div class="dside">${esc(pk.side)}</div><div class="dline">${line}</div></div>
-          <div class="dright">${confRing(pk)}<div class="dtier ${tierCls(tier)}">${esc(tier)}</div>${resTxt ? `<div class="dres ${st}">${resTxt}</div>` : ""}</div>
+          <div class="dright">${confRing(pk)}${resTxt ? `<div class="dres ${st}">${resTxt}</div>` : ""}</div>
         </div>
       </div>`;
     }
@@ -1438,32 +1288,88 @@ export default function Home() {
       const startTxt = gs.si.hasTime ? gs.si.time : gs.si.date;
       const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
       const P = gamePlays(g);
-      const anyTake = MARKETS.some((m) => P[m].action === "TAKE");
+      const takes = orderedTakes(g, P);
+      const lead = (focusMk && P[focusMk] && P[focusMk].action === "TAKE") ? P[focusMk] : takes[0] || null;
 
-      // score banner (live/final) with animated counters
+      // score banner (live/final)
       let scoreBanner = "";
       if (gs.score && gs.score.split && gs.score.home != null) {
         scoreBanner = `<div class="sh-score ${gs.kind}">
-          <span class="shs-side"><span class="shs-ab">${esc(g.away_abbr)}</span><b data-count="${num(gs.score.away, 0)}">${num(gs.score.away, 0)}</b></span>
+          <span class="shs-side"><span class="shs-ab">${esc(g.away_abbr)}</span><b>${num(gs.score.away, 0)}</b></span>
           <span class="shs-mid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label)}`}</span>
-          <span class="shs-side"><b data-count="${num(gs.score.home, 0)}">${num(gs.score.home, 0)}</b><span class="shs-ab">${esc(g.home_abbr)}</span></span>
+          <span class="shs-side"><b>${num(gs.score.home, 0)}</b><span class="shs-ab">${esc(g.home_abbr)}</span></span>
         </div>`;
       } else if (gs.score && gs.score.total != null) {
         scoreBanner = `<div class="sh-score ${gs.kind}"><span class="shs-mid">${gs.kind === "final" ? "Final" : "Live"}</span><span class="shs-tot">${num(gs.score.total, 0)} ${SPORT_UNIT[sp] || ""}</span></div>`;
       }
 
-      // VALUE plays lead the sheet — the winning recipe outranks accuracy plays.
-      const mksOrdered = MARKETS.slice().sort((a, b) => (P[b].value_tier ? 1 : 0) - (P[a].value_tier ? 1 : 0));
-      const plays = `<div class="dsec de-dsec">
-        <div class="dsec-h"><span class="gp-dia">◆</span> DiamondEdge Plays</div>
-        <div class="dsec-b shp-wrap">
-          ${mksOrdered.map((mk) => sheetPlay(g, P[mk], focusMk === mk)).join("")}
-          ${anyTake ? playsTrackTable() : `<div class="shp-none">No plays today — the gate passed on all three markets. The model read below is context, not a bet.</div>`}
-        </div>
+      // (1) THE CALL — big and unmissable, with the result state front and center.
+      let callBlock;
+      if (lead) {
+        const q = qualityOf(lead);
+        const gold = isGold(lead);
+        const st = playState(g, lead);
+        const res = st === "won" ? `<span class="cc-res won">${condCheck} WON</span>`
+          : st === "lost" ? `<span class="cc-res lost">✗ LOST</span>`
+          : st === "pushed" ? `<span class="cc-res pushed">PUSH</span>`
+          : st === "clinched" ? `<span class="cc-res won">${condCheck} CLINCHED</span>`
+          : st === "cooked" ? `<span class="cc-res lost">✗ LINE PASSED</span>`
+          : st === "inplay" ? `<span class="cc-res inplay"><span class="ip-dot"></span>IN PLAY</span>` : "";
+        const others = takes.filter((p: any) => p !== lead).map((p: any) =>
+          `<div class="cc-also">Also: <b>${esc(p.side || "—")}</b>${p.price != null ? ` · ${fmtOdds(p.price)}` : ""} · ${Q_LABEL[qualityOf(p)]}</div>`).join("");
+        callBlock = `<div class="callcard ${gold ? "gold" : ""} ${st}">
+          <div class="cc-k">${gold ? "★ " : ""}Our call</div>
+          <div class="cc-main">
+            <span class="cc-side">${esc(lead.side || "—")}</span>
+            ${lead.price != null ? `<span class="cc-px">${fmtOdds(lead.price)}</span>` : ""}
+            <span class="cc-qual">${qDiamonds(q)}<u>${Q_LABEL[q]}</u></span>
+            ${res}
+          </div>
+          ${others}
+        </div>`;
+      } else {
+        callBlock = `<div class="callcard pass">
+          <div class="cc-k">Our call</div>
+          <div class="cc-main"><span class="cc-side">PASS</span><span class="cc-passnote">no bet in this game</span></div>
+        </div>`;
+      }
+
+      // (2) WHY — plain English, short.
+      const why = lead ? whySentences(g, lead) : [passWhy()];
+      const whyBlock = `<div class="whycard">
+        <div class="wc-k">Why</div>
+        ${why.map((w) => `<p>${w}</p>`).join("")}
       </div>`;
 
+      // (3) More detail — everything the old sheet had, folded away for power users.
       const bets = [detailBet(g.spread_pick, "Spread", "spread", g), detailBet(g.ml_pick, "Moneyline", "ml", g), detailBet(g.total_pick, "Total", "total", g)].filter(Boolean).join("");
-      const reasoning = g.why && g.why.reasoning ? `<div class="dsec"><div class="dsec-h">Why This Read</div><div class="dsec-b reasoning">${esc(g.why.reasoning)}${g.why.chosen_rationale ? `<div class="rr2">${esc(g.why.chosen_rationale)}</div>` : ""}</div></div>` : "";
+      const reasoning = g.why && g.why.reasoning ? `<div class="dsec"><div class="dsec-h">Model Notes</div><div class="dsec-b reasoning">${esc(g.why.reasoning)}${g.why.chosen_rationale ? `<div class="rr2">${esc(g.why.chosen_rationale)}</div>` : ""}</div></div>` : "";
+      const anyValue = takes.some((p: any) => p.value_tier);
+      const more = `<details class="more"><summary>More detail<span class="more-sub">markets, model numbers, matchup intel</span></summary>
+        <div class="more-body">
+          <div class="dsec"><div class="dsec-h">Sportsbook Lines</div>${oddsRow(g)}</div>
+          <div class="dsec"><div class="dsec-h">All Three Markets</div><div class="dsec-b shp-wrap">
+            ${MARKETS.map((mk) => sheetPlay(g, P[mk])).join("")}
+            ${anyValue ? valueRecordBlock() : ""}
+            ${takes.length ? playsTrackTable() : ""}
+          </div></div>
+          <div class="dsec">
+            <div class="dsec-h">Predicted Final Score</div>
+            <div class="dsec-b">
+              <div class="dscore">
+                <div class="tm ${!homeWin ? "win" : ""}">${gCrest(g, "away")}<div class="pts">${num(ps.away, 1)}</div><div class="ab">${esc(g.away_abbr)}</div></div>
+                <div class="dx">–</div>
+                <div class="tm ${homeWin ? "win" : ""}">${gCrest(g, "home")}<div class="pts">${num(ps.home, 1)}</div><div class="ab">${esc(g.home_abbr)}</div></div>
+              </div>
+              <div class="dscore-foot">Pick: <b>${esc(ps.winner_abbr || "—")}</b> by <b>${ps.margin != null ? Math.abs(Number(ps.margin)).toFixed(1) : "—"}</b> · expected total <b>${tot} ${SPORT_UNIT[sp] || ""}</b></div>
+            </div>
+          </div>
+          ${bets ? `<div class="dsec"><div class="dsec-h">Model Reads (all markets)</div><div class="dsec-b" style="padding-top:4px;padding-bottom:4px">${bets}</div></div>` : ""}
+          ${intelSection(g)}
+          ${modelsVsMarket(g)}
+          ${reasoning}
+        </div>
+      </details>`;
 
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
@@ -1481,24 +1387,9 @@ export default function Home() {
           </div>
           <div class="sh-body">
             ${scoreBanner}
-            <div class="dsec"><div class="dsec-h">Sportsbook Lines</div>${oddsRow(g)}</div>
-            ${plays}
-            <div class="dsec">
-              <div class="dsec-h">Predicted Final Score</div>
-              <div class="dsec-b">
-                <div class="dscore">
-                  <div class="tm ${!homeWin ? "win" : ""}">${gCrest(g, "away")}<div class="pts">${num(ps.away, 1)}</div><div class="ab">${esc(g.away_abbr)}</div></div>
-                  <div class="dx">–</div>
-                  <div class="tm ${homeWin ? "win" : ""}">${gCrest(g, "home")}<div class="pts">${num(ps.home, 1)}</div><div class="ab">${esc(g.home_abbr)}</div></div>
-                </div>
-                <div class="dscore-foot">Edge: <b>${esc(ps.winner_abbr || "—")}</b> by <b>${ps.margin != null ? Math.abs(Number(ps.margin)).toFixed(1) : "—"}</b> · projected total <b>${tot} ${SPORT_UNIT[sp] || ""}</b></div>
-              </div>
-            </div>
-            <div class="dsec"><div class="dsec-h">Model Leans (all markets)</div><div class="dsec-b" style="padding-top:4px;padding-bottom:4px">${bets || `<div style="padding:10px 0;color:var(--ink3);font-size:12px">No graded model leans for this game.</div>`}</div></div>
-            ${intelSection(g)}
-            ${modelsVsMarket(g)}
-            ${reasoning}
-            ${modelStatusLine()}
+            ${callBlock}
+            ${whyBlock}
+            ${more}
           </div>
         </div>`;
 
@@ -1509,12 +1400,6 @@ export default function Home() {
       $("sheet-close").onclick = closeDetail;
       $("sheet-bg").onclick = closeDetail;
       bindSheetDrag($("sheet"), $("sh-grab"));
-      const sheetEl = $("sheet");
-      animateCounters(sheetEl);
-      if (focusMk) {
-        const t = $("shp-" + focusMk);
-        if (t) setTimeout(() => t.scrollIntoView({ block: "center", behavior: REDUCE ? "auto" : "smooth" }), 380);
-      }
     }
     function closeDetail() {
       detail = null;
@@ -1548,67 +1433,46 @@ export default function Home() {
         window.addEventListener("mousemove", mm); window.addEventListener("mouseup", mu);
       });
     }
-    // ===================== RECIPE EXPLAINER SHEET =====================
-    // Full "How it works" for the winning recipe: why market-error + soft-line
-    // detection wins where out-predicting Vegas failed, the validation table
-    // (val / gate / forward paper), and the honest status.
+
+    // ===================== "HOW PICKS WORK" SHEET (the ⓘ link) =====================
     function openRecipeSheet() {
       detail = { _recipe: true };
-      const vr = (payload && payload.value_record) || {};
-      const fwd = vr.forward || {};
-      const fRow = (lab: string, o: any) => {
-        if (!o || !o.n_settled) return `<tr><td>${esc(lab)}</td><td class="num">0</td><td class="num">—</td><td class="num">—</td></tr>`;
-        const ci = o.hit_ci95;
-        const hit = o.hit != null ? `${saPct(o.hit, 1)}${ci && ci[0] != null ? ` <span class="vr-ci">[${saPct(ci[0], 0)}–${saPct(ci[1], 0)}]</span>` : ""}` : "—";
-        const roi = o.roi != null ? `<span class="${o.roi >= 0 ? "pos" : "neg"}">${(o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1)}%</span>` : "—";
-        return `<tr><td>${esc(lab)} <span class="vr-rec">${esc(o.record || "")}</span></td><td class="num">${o.n_settled}</td><td class="num">${hit}</td><td class="num">${roi}</td></tr>`;
-      };
+      const rh = recipeHistory();
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
         <div class="sheet" id="sheet" role="dialog" aria-modal="true">
           <div class="sh-grab" id="sh-grab"><span></span></div>
           <div class="sh-head gold">
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
-            <div class="sh-sport">DiamondEdge · Value Tier</div>
-            <div class="rcp-title"><span class="pl-vdia">◆</span>The Winning Recipe</div>
-            <div class="sh-meta">MLB totals at the morning line · ${RECIPE_REC}</div>
+            <div class="sh-sport">DiamondEdge</div>
+            <div class="rcp-title"><span class="pl-vdia">◆</span>How picks work</div>
+            <div class="sh-meta">what the words mean, and why we pass so often</div>
           </div>
           <div class="sh-body">
             <div class="dsec">
-              <div class="dsec-h">The recipe</div>
-              <div class="dsec-b rcp-steps">
-                <div class="rcp-step"><span class="rh-n">1</span><div><b>Model vs market gap ≥ 3 pts.</b> Our de-vigged probability for the total disagrees with the morning consensus by at least 3 probability points.</div></div>
-                <div class="rcp-step"><span class="rh-n">2</span><div><b>Books split on the line.</b> The books quote ≥ 2 distinct total lines the same morning — the market itself is split, so someone's number is soft.</div></div>
-                <div class="rcp-step"><span class="rh-n">3</span><div><b>Bet the model's side of the total</b> at the morning line, fair prices only (−135 to +135).</div></div>
-              </div>
-            </div>
-            <div class="dsec">
-              <div class="dsec-h">Why this wins where prediction failed</div>
+              <div class="dsec-h">Strong / Good / Lean</div>
               <div class="dsec-b rcp">
-                <p><b>Out-predicting Vegas doesn't pay.</b> Our own accuracy plays prove it: they win roughly 60–63% of the time and still make about breakeven money, because the prices they come at (around −184) need ~65% just to break even. Being right a lot isn't an edge if the market charges you for it.</p>
-                <p><b>So the recipe stops competing with the market and starts auditing it.</b> Instead of asking "who wins?", it asks "is the market's number wrong this morning?" — and only bets when there's evidence it is.</p>
-                <p><b>Trigger one is the disagreement.</b> When our model's probability for a total is 3+ points away from the de-vigged morning consensus, that's a real disagreement, not noise. But a disagreement alone doesn't tell you who's wrong.</p>
-                <p><b>Trigger two is the tell.</b> When the books themselves are quoting two or more different total lines the same morning, the market is split — it hasn't settled on the number, and somebody's line is soft. That's the evidence the gap is the market's error, not ours.</p>
-                <p><b>Both together, and only then.</b> Take the model's side of the total at the morning line, at fair prices only (−135 to +135). That fires about once a slate. Most markets, most days, it doesn't fire — and passing is the strategy working, not the strategy missing.</p>
-                <p><b>The result:</b> 60.9% over 567 validation bets at a −106 median price — +15.6% ROI (CI +8.1 to +23.2) — and 5-1 in the June one-shot gate. That's the same hit rate the accuracy plays get, bought at coin-flip prices instead of favorite prices. The price is the whole difference.</p>
+                <p><b>◆◆◆ Strong</b> — our best kind of bet. Either the winning recipe below fired at full strength, or the model is at its surest.</p>
+                <p><b>◆◆ Good</b> — the same idea, slightly weaker signal.</p>
+                <p><b>◆ Lean</b> — the model likes it, but the edge is thin. Fine to skip.</p>
+                <p>Everything else is a <b>PASS</b>. Most games are a pass — that's the strategy working, not missing.</p>
               </div>
             </div>
             <div class="dsec">
-              <div class="dsec-h">Validation record</div>
-              <div class="dsec-b">
-                <div class="vr-line">${esc(vr.val_record || "Tier A (DISP3) val: 60.9% hit CI [57.0, 64.7], n=567 @ median -106, ROI +15.6% CI [+8.1, +23.2] (embargoed 2024|2025|Apr-May 2026)")}</div>
-                <div class="vr-line">${esc(vr.gate || "June 2026 one-shot gate: Tier A 5-1 (n=6), Tier A+B 14-10 (n=24)")}</div>
-                <table class="dsa-tab vr-tab">
-                  <thead><tr><th>Forward (paper)</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
-                  <tbody>${fRow("Tier A", fwd.tier_a)}${fRow("Tier A+B", fwd.tier_ab)}${fRow("Tier A shopped", fwd.tier_a_shopped)}</tbody>
-                </table>
+              <div class="dsec-h">The winning recipe</div>
+              <div class="dsec-b rcp-steps">
+                <div class="rcp-step"><span class="rh-n">1</span><div><b>Our model disagrees with the books' number</b> for the game total by a meaningful amount that morning.</div></div>
+                <div class="rcp-step"><span class="rh-n">2</span><div><b>The books disagree with each other too</b> — they're posting different totals for the same game, so someone's number is off.</div></div>
+                <div class="rcp-step"><span class="rh-n">3</span><div><b>Only then do we bet the total</b>, at the morning line, at fair prices only. Roughly one game a day qualifies.</div></div>
               </div>
             </div>
             <div class="dsec">
-              <div class="dsec-h">Honest status</div>
-              <div class="dsec-b rcp-status">
-                <p>Paper-tracking forward — every trigger is logged and graded, no real stakes yet. The ${esc(vr.claimed_forward || "defensible forward claim is ~54.6% at ~-108 (= +3.8% EV) — NOT the realized val 60.9%")}.</p>
-                <p>Auto-kill is armed: if the forward record decays (trailing hit, EV gap, or trigger-rate alarms), the tier shuts itself down. Real stakes only after the scaling gate — ≥3 months, ≥150 settled tier-A bets, hit ≥ breakeven, ROI ≥ 0.</p>
+              <div class="dsec-h">Why it works</div>
+              <div class="dsec-b rcp">
+                <p><b>Out-predicting the bookmakers doesn't pay.</b> Even when our picks win 60%+ of the time, the prices usually eat the profit. Being right a lot isn't an edge if the market charges you for it.</p>
+                <p><b>So instead of competing with the books, we audit them.</b> We only bet when there's evidence the books' own number is wrong — our model disagrees AND the books can't agree among themselves.</p>
+                <p><b>The receipts:</b> bets made exactly this way have won <b>${(rh.hit * 100).toFixed(1)}%</b> of the time across <b>${rh.n.toLocaleString()}</b> graded bets from 2022 to 2026, returning about <b>${sgn(rh.roi * 100, 0)}%</b> per dollar bet. Every bet was graded by a model that never saw the game in advance.</p>
+                <p><b>Honesty note:</b> going forward we expect less than that — the model's own claim is a small single-digit edge — and these picks are tracked publicly before any real money is staked.</p>
               </div>
             </div>
           </div>
@@ -1623,96 +1487,84 @@ export default function Home() {
     }
     document.addEventListener("keydown", (e: any) => { if (e.key === "Escape" && detail) closeDetail(); });
 
-    // ===================== ANALYZER TAB =====================
-    function recCell(o: any) { return o ? `${o.wins}-${o.losses}${o.pushes ? "-" + o.pushes : ""}` : "—"; }
+    // ===================== RESULTS TAB =====================
+    const recCell = (o: any) => (o ? `${o.wins}-${o.losses}${o.pushes ? "-" + o.pushes : ""}` : "—");
+    const pctCell = (v: any) => (v == null ? "—" : (v * 100).toFixed(1) + "%");
+    const roiCell = (v: any) => (v == null ? "—" : `<span class="roi ${v >= 0 ? "pos" : "neg"}">${(v >= 0 ? "+" : "") + (v * 100).toFixed(1)}%</span>`);
 
-    function anzTable(title: string, sub: string, obj: any, order: string[], labelMap: any) {
-      const rows = order.filter((k) => obj[k]).map((k) => {
-        const o = obj[k];
-        const roi = o.roi != null ? o.roi * 100 : null;
-        const hr = o.hit_rate != null ? o.hit_rate * 100 : null;
-        const be = o.breakeven_hit_rate != null ? o.breakeven_hit_rate * 100 : 52.4;
-        const barW = hr != null ? Math.max(2, Math.min(100, ((hr - 45) / 12) * 100)) : 0;
-        return `<tr>
-          <td>${esc(labelMap[k] || k)}</td>
-          <td class="num">${(o.n || 0).toLocaleString()}</td>
-          <td class="rec">${recCell(o)}</td>
-          <td class="hr">${hr != null ? hr.toFixed(1) + "%" : "—"}<span class="bar" style="width:${barW * 0.5}px;opacity:${hr != null && hr >= be ? 1 : 0.4}"></span></td>
-          <td class="roi ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%"}</td>
-          <td class="${o.units_net == null ? "" : o.units_net >= 0 ? "roi pos" : "roi neg"}">${o.units_net == null ? "—" : (o.units_net >= 0 ? "+" : "") + o.units_net.toFixed(0)}u</td>
-        </tr>`;
-      }).join("");
+    function mergeRecs(list: any[]) {
+      const out: any = { n: 0, wins: 0, losses: 0, pushes: 0, units_net: 0, _staked: 0, _roiN: 0, _roiSum: 0 };
+      list.forEach((o: any) => {
+        if (!o) return;
+        out.n += o.n || 0; out.wins += o.wins || 0; out.losses += o.losses || 0; out.pushes += o.pushes || 0;
+        if (o.units_net != null) out.units_net += o.units_net;
+        if (o.units_staked != null) out._staked += o.units_staked;
+        if (o.roi != null && o.n) { out._roiSum += o.roi * o.n; out._roiN += o.n; }
+      });
+      if (!out.n) return null;
+      out.hit_rate = out.wins + out.losses ? out.wins / (out.wins + out.losses) : null;
+      out.roi = out._staked ? out.units_net / out._staked : (out._roiN ? out._roiSum / out._roiN : null);
+      return out;
+    }
+
+    function resultsTable(title: string, rows: { label: string; o: any }[]) {
+      const body = rows.filter((r) => r.o && r.o.n).map((r) => `<tr>
+        <td>${r.label}</td>
+        <td class="num">${(r.o.n || 0).toLocaleString()}</td>
+        <td class="rec">${recCell(r.o)}</td>
+        <td class="hr">${pctCell(r.o.hit_rate)}</td>
+        <td>${roiCell(r.o.roi)}</td>
+      </tr>`).join("");
+      if (!body) return "";
       return `<div class="anz-card">
-        <div class="anz-card-h">${esc(title)}<span class="sub">${esc(sub)}</span></div>
-        <table class="anztab"><thead><tr><th>${esc(title.split(" ")[1] || title)}</th><th>Picks</th><th>W-L</th><th>Hit Rate</th><th>ROI</th><th>Units</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="anz-card-h">${esc(title)}</div>
+        <table class="anztab"><thead><tr><th></th><th>Picks</th><th>Record</th><th>Win rate</th><th>Return</th></tr></thead><tbody>${body}</tbody></table>
       </div>`;
     }
 
-    function calibrationCard() {
-      const tr = trackRecord();
-      const byTier = tr.by_tier || {};
-      const cc = tr.calibration_check || {};
-      const tiers = ["low", "medium", "high", "featured"];
-      const be = (tr.overall && tr.overall.breakeven_hit_rate ? tr.overall.breakeven_hit_rate : 0.524) * 100;
-      const rows = tiers.map((t) => {
-        const o = byTier[t]; if (!o) return "";
-        const hr = (o.hit_rate || 0) * 100;
-        const w = Math.max(3, Math.min(100, ((hr - 45) / 12) * 100));
-        return `<div class="calib-row">
-          <div class="cl">${t}</div>
-          <div class="track"><div class="fill" style="width:${w}%"></div><div class="be" style="left:${Math.max(0, Math.min(100, ((be - 45) / 12) * 100))}%"></div></div>
-          <div class="pct">${hr.toFixed(1)}%</div>
-        </div>`;
-      }).join("");
-      const ft = byTier.featured ? (byTier.featured.hit_rate * 100).toFixed(1) : "—";
-      const lo = byTier.low ? (byTier.low.hit_rate * 100).toFixed(1) : "—";
-      return `<div class="anz-card">
-        <div class="anz-card-h">Confidence Calibration<span class="sub">hit rate by tier</span></div>
-        <div class="calib">${rows}</div>
-        <div class="calib-leg"><span><i style="background:linear-gradient(90deg,var(--navy),var(--navy2))"></i>Hit rate</span><span><i style="background:var(--red)"></i>Breakeven (${be.toFixed(1)}%)</span></div>
-        <div class="calib-note">Featured plays land at ${ft}% over the full test set vs ${lo}% for low-confidence ones${cc.monotonic_increasing === false ? " (the tier ladder isn't perfectly monotonic, but the top tier clears breakeven)" : ""}.</div>
-      </div>`;
-    }
-
-    async function renderAnalyzer() {
+    async function renderResults() {
       await loadIndex();
       const tr = trackRecord();
       const ov = tr.overall || {};
-      const wnd = (tr.window && tr.window.by_sport) || {};
-      const nTest = ov.n != null ? ov.n : 0;
-      const roi = ov.roi != null ? ov.roi * 100 : null;
       const hr = ov.hit_rate != null ? ov.hit_rate * 100 : null;
+      const roi = ov.roi != null ? ov.roi * 100 : null;
       const be = ov.breakeven_hit_rate != null ? (ov.breakeven_hit_rate * 100).toFixed(1) : "52.4";
-      const ci = ov.hit_rate_ci95;
+      const byTier = tr.by_tier || {};
+      const qualityRows = [
+        { label: `<span class="ql strong">◆◆◆ Strong</span>`, o: byTier.featured },
+        { label: `<span class="ql good">◆◆ Good</span>`, o: byTier.high },
+        { label: `<span class="ql lean">◆ Lean</span>`, o: mergeRecs([byTier.medium, byTier.low]) },
+      ];
+      const bySport = tr.by_sport || {};
+      const leagueRows = SPORTS.map((s) => ({ label: SPORT_LABEL[s], o: bySport[s] }));
+      const rh = recipeHistory();
+      const mr = monthRecord();
       const fwd = forwardRecord();
 
-      const bySportTbl = anzTable("By League", "out-of-fold test", tr.by_sport || {}, ["mlb", "nba", "nhl", "nfl", "soccer"], SPORT_LABEL);
-      const byMarketTbl = anzTable("By Market", "spread / moneyline / total", tr.by_market || {}, ["total", "spread", "moneyline"], { total: "Total", spread: "Spread", moneyline: "Moneyline" });
-      const byTierTbl = anzTable("By Tier", "featured = surest", tr.by_tier || {}, ["featured", "high", "medium", "low"], { featured: "Featured", high: "High", medium: "Medium", low: "Low" });
-
-      const view = root.querySelector("#analyzer-view");
+      const view = root.querySelector("#results-view");
       view.innerHTML = `
         <div class="anz-hero">
-          <div class="ah-lab">DiamondEdge Analyzer</div>
-          <h2>Out-of-Fold Test Record</h2>
-          <div class="ah-sub">Every number below is from the out-of-fold test — games the model never trained on, graded against the real result across MLB, NBA, NHL, NFL and Soccer.</div>
+          <div class="ah-lab">DiamondEdge Results</div>
+          <h2>Every pick, graded</h2>
+          <div class="ah-sub">Every number below comes from picks graded against real final scores — games the model never saw in advance. Win rate needs to beat about ${be}% to make money at typical prices.</div>
           <div class="ah-stats">
-            <div class="ah-st"><div class="k">Graded Picks</div><div class="v" data-count="${nTest || 0}" data-loc="1">${(nTest || 0).toLocaleString()}</div></div>
-            <div class="ah-st"><div class="k">Record</div><div class="v">${ov.wins || 0}-${ov.losses || 0}${ov.pushes ? `<small> · ${ov.pushes}T</small>` : ""}</div></div>
-            <div class="ah-st"><div class="k">Hit Rate</div><div class="v"><span data-count="${hr != null ? hr.toFixed(1) : ""}" data-dec="1" data-suf="%">${hr != null ? hr.toFixed(1) + "%" : "—"}</span>${ci ? `<small> ±${((ci[1] - ci[0]) / 2 * 100).toFixed(1)}</small>` : ""}</div><div class="ah-k2">vs ${be}% breakeven</div></div>
-            <div class="ah-st"><div class="k">ROI</div><div class="v ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%"}</div></div>
-            <div class="ah-st"><div class="k">Net Units</div><div class="v ${ov.units_net == null ? "" : ov.units_net >= 0 ? "pos" : "neg"}">${ov.units_net == null ? "—" : (ov.units_net >= 0 ? "+" : "") + ov.units_net.toFixed(0)}</div></div>
-            ${fwd ? `<div class="ah-st"><div class="k">Real Picks So Far</div><div class="v">${fmtRec(fwd)}</div></div>` : ""}
+            <div class="ah-st"><div class="k">Graded picks</div><div class="v" data-count="${ov.n || 0}" data-loc="1">${(ov.n || 0).toLocaleString()}</div></div>
+            <div class="ah-st"><div class="k">Record</div><div class="v">${ov.wins || 0}-${ov.losses || 0}</div></div>
+            <div class="ah-st"><div class="k">Win rate</div><div class="v">${hr != null ? hr.toFixed(1) + "%" : "—"}</div></div>
+            <div class="ah-st"><div class="k">Return</div><div class="v ${roi == null ? "" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + roi.toFixed(1) + "%"}</div></div>
+            ${mr ? `<div class="ah-st"><div class="k">This month</div><div class="v">${mr.w}-${mr.l}</div></div>` : ""}
+            ${fwd ? `<div class="ah-st"><div class="k">Real picks so far</div><div class="v">${fwd.wins || 0}-${fwd.losses || 0}</div></div>` : ""}
           </div>
         </div>
-        <div class="anz-grid">
-          ${bySportTbl}
-          ${byMarketTbl}
-          ${byTierTbl}
-          ${calibrationCard()}
+        <div class="anz-card star">
+          <div class="anz-card-h">★ The winning recipe (our Strong totals bets)</div>
+          <div class="star-b">Won <b>${(rh.hit * 100).toFixed(1)}%</b> of ${rh.n.toLocaleString()} graded bets from 2022 to 2026 — about <b>${sgn(rh.roi * 100, 0)}%</b> back on every dollar bet. This is the record behind the gold ★ bets on the Games tab.</div>
         </div>
-        <div class="refnote">Out-of-fold test windows — ${SPORTS.map((s) => wnd[s] ? `${SPORT_LABEL[s]} ${wnd[s].start}→${wnd[s].end}` : "").filter(Boolean).join(" · ")}</div>
-        ${modelStatusLine()}`;
+        <div class="anz-grid">
+          ${resultsTable("By pick quality", qualityRows)}
+          ${resultsTable("By league", leagueRows)}
+        </div>
+        <div class="refnote">Older picks across all leagues are graded the same way — pick first, score after.</div>`;
       animateCounters(view);
     }
 
@@ -1722,30 +1574,30 @@ export default function Home() {
         <header><div class="hbar">
           <div class="brand" id="brand">
             <div class="diamond"></div>
-            <div><h1>Diamond<b>Edge</b></h1><div class="tag">Scores · Lines · Plays</div></div>
+            <div><h1>Diamond<b>Edge</b></h1><div class="tag">Games · Bets · Results</div></div>
           </div>
           <div class="hspacer"></div>
           <div class="toptabs">
-            <button data-tab="scores" class="${tab === "scores" ? "on" : ""}">Scores</button>
-            <button data-tab="analyzer" class="${tab === "analyzer" ? "on" : ""}">Analyzer</button>
+            <button data-tab="games" class="${tab === "games" ? "on" : ""}">Games</button>
+            <button data-tab="results" class="${tab === "results" ? "on" : ""}">Results</button>
           </div>
         </div></header>
         <main>
-          <div id="scores-view" style="display:${tab === "scores" ? "block" : "none"}"></div>
-          <div id="analyzer-view" style="display:${tab === "analyzer" ? "block" : "none"}"></div>
+          <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
+          <div id="results-view" style="display:${tab === "results" ? "block" : "none"}"></div>
         </main>`;
       root.querySelectorAll(".toptabs button").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
-      $("brand").onclick = () => switchTab("scores");
+      $("brand").onclick = () => switchTab("games");
     }
 
     function switchTab(t: string) {
       if (t === tab) return;
       tab = t;
-      $("scores-view").style.display = t === "scores" ? "block" : "none";
-      $("analyzer-view").style.display = t === "analyzer" ? "block" : "none";
+      $("games-view").style.display = t === "games" ? "block" : "none";
+      $("results-view").style.display = t === "results" ? "block" : "none";
       root.querySelectorAll(".toptabs button").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
-      if (t === "analyzer" && !$("analyzer-view").innerHTML.trim()) renderAnalyzer();
-      if (t === "scores") requestAnimationFrame(positionInk);
+      if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
+      if (t === "games") requestAnimationFrame(positionInk);
     }
 
     // ===================== INIT =====================
@@ -1755,12 +1607,17 @@ export default function Home() {
       bindPull();
       await loadIndex();
       payload = await loadDay(curDate);
-      const present = leaguesPresent(payload);
-      if (present.size && !present.has(league)) league = SPORTS.find((s) => present.has(s)) || "mlb";
+      league = bestLeague();
       root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
       positionInk();
       renderSlate();
       requestAnimationFrame(() => { positionInk(); recenterStrip(false); });
+      // live-score freshness: poll the tiny live_scores key while games are on
+      setInterval(pollLiveScores, 50 * 1000);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) pollLiveScores(); });
+      pollLiveScores();
+      // debug hook: inject a live_scores snapshot without waiting for the poller
+      root._injectLiveScores = (ls: any) => { liveScores = ls; const ch = applyLiveScores(); if (ch && tab === "games" && !rangeMode) renderSlate(true); if (detail) refreshSheetScore(detail); return ch; };
     })();
   }, []);
 
