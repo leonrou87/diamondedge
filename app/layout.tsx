@@ -2,18 +2,20 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DiamondEdge — Games, Bets & Results",
+  title: "DiamondEdge — Today's Picks, Games & Results",
   description:
-    "Today's games, the bets worth taking, and every pick graded in the open — MLB, NBA, NHL, NFL and Soccer.",
+    "Today's story, the bets worth taking, and every pick graded in the open — MLB, NBA, NHL, NFL and Soccer.",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "DiamondEdge" },
 };
 
-// Enable notch/home-indicator safe-area insets and a native-feeling theme colour.
+// Enable notch/home-indicator safe-area insets; theme colour matches the real dark
+// glass background (the native shell's StatusBar/webview background keys off this).
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0c2340",
+  themeColor: "#080d15",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({

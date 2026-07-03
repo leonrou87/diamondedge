@@ -35,6 +35,7 @@ export default function Home() {
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
     const SPORTS = ["mlb", "nba", "nhl", "nfl", "soccer"];
     const SPORT_LABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
+    const SPORT_ICON: any = { mlb: "⚾", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
     const SPORT_UNIT: any = { mlb: "runs", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
@@ -341,8 +342,26 @@ export default function Home() {
       return `<span class="lread ${cls}" title="Latest model read — the graded morning play is unchanged."><i>latest read</i><b class="lr-x">${arrow} ${esc(word)}${esc(toGo)}</b></span>`;
     }
 
+    // ===================== PREMIUM / FREEMIUM (design-complete; payments stubbed) =====================
+    // Entitlement is one localStorage flag `de_premium` — DEFAULT true (premium-assumed).
+    // STRIPE WIRE-IN POINT: a real flow replaces setPremium(true) in the Upgrade page's
+    // Subscribe handler with: POST /api/checkout → Stripe Checkout Session → redirect →
+    // webhook confirms the subscription → entitlement served with the payload/session.
+    const isPremium = () => { try { return localStorage.getItem("de_premium") !== "0"; } catch { return true; } };
+    const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
+    // Free mode locks the SIDE/LINE of pending Strong/Good picks only. Graded picks and
+    // the whole record stay visible (the record IS the ad); Leans and PASSes stay free.
+    function pickLocked(pl: any, st: string) {
+      if (!pl || isPremium()) return false;
+      const q = qualityOf(pl);
+      if (q !== "strong" && q !== "good") return false;
+      return !(st === "won" || st === "lost" || st === "pushed");
+    }
+    const lockSvg = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+
     // ===================== STATE =====================
-    let tab = "games";              // "games" | "results"
+    let tab = "today";              // "today" | "games" | "results" | "settings" | "upgrade"
+    const TABS = ["today", "games", "results", "settings", "upgrade"];
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
     let histOpen = false;           // history range panel open
@@ -354,6 +373,8 @@ export default function Home() {
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
     let liveScores: any = null;     // latest live_scores snapshot (fresh score overlay)
+    let analyticsDeep: any = null;  // analytics_deep block (deep results cuts) when served
+    let adTried = false;            // analytics_deep lookup attempted this session
 
     let minDate = "2020-09-11";
     let maxDate = todayISO();
@@ -786,12 +807,14 @@ export default function Home() {
     };
     // A readable mini odds row (Spread · Total · ML); the picked market's cell IS the
     // take chip — "▲ OVER 8 / −115" — and the ✓/✗ resolves on it post-game.
-    function oddsCells(g: any, pick: any, st: string) {
+    function oddsCells(g: any, pick: any, st: string, locked = false) {
       const q = pick ? qualityOf(pick) : null;
       const mk = pick ? pick.market : null;
       const mark = pick ? resMark(st) : "";
       const cell = (m: string, k: string, v: string, p: string, dim = false) => {
         if (pick && mk === m) {
+          // FREE MODE: the pick exists and its quality shows, but the side/line is locked.
+          if (locked) return `<div class="oc2 take q-${q} locked"><span class="oc2-k">Bet</span><span class="oc2-v">▲ ●●●● ●</span><span class="oc2-p">●●●</span><span class="lk">${lockSvg}Unlock</span></div>`;
           return `<div class="oc2 take q-${q} ${st}"><span class="oc2-k">Bet</span><span class="oc2-v">${pickArrow(pick)} ${esc(pick.side || v)}</span><span class="oc2-p">${pick.price != null ? fmtOdds(pick.price) : p}${mark}</span></div>`;
         }
         return `<div class="oc2 ${dim ? "dim" : ""}"><span class="oc2-k">${k}</span><span class="oc2-v">${v}</span><span class="oc2-p">${p}</span></div>`;
@@ -864,17 +887,18 @@ export default function Home() {
       const pick = displayPick(g);
       const q = pick ? qualityOf(pick) : null;
       const st = pick ? playState(g, pick) : "open";
+      const locked = pick ? pickLocked(pick, st) : false;
       // The box itself carries the verdict: quality border pre-game, result border after.
       const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? ` — bet ${esc(pick.side || "")}` : ""} — open details">
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — bet ${esc(pick.side || "")}`) : ""} — open details">
         ${tileStatus(g, gs, q)}
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}
-        ${oddsCells(g, pick, st)}
-        ${gs.kind === "live" && pick ? pickProgress(g, pick, st) : ""}
+        ${oddsCells(g, pick, st, locked)}
+        ${gs.kind === "live" && pick && !locked ? pickProgress(g, pick, st) : ""}
       </article>`;
     }
 
@@ -941,7 +965,7 @@ export default function Home() {
     function renderScoresChrome() {
       const tabsHtml = SPORTS.map((lg) => {
         const cnt = payload ? gamesForLeague(payload, lg).length : 0;
-        return `<button class="sporttab ${lg === league ? "on" : ""}" data-lg="${lg}">${SPORT_LABEL[lg]}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
+        return `<button class="sporttab ${lg === league ? "on" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
       root.querySelector("#games-view").innerHTML = `
         <div id="ptr"><div class="ptr-inner"><span class="ptr-sp"></span><span class="ptr-txt">release to refresh</span></div></div>
@@ -1365,8 +1389,20 @@ export default function Home() {
       }
 
       // (1) THE CALL — big and unmissable, with the result state front and center.
+      const leadLocked = lead ? pickLocked(lead, playState(g, lead)) : false;
       let callBlock;
-      if (lead) {
+      if (lead && leadLocked) {
+        // FREE MODE: the call exists — quality shows, side/line stays behind the lock.
+        const q = qualityOf(lead);
+        callBlock = `<div class="callcard locked ${isGold(lead) ? "gold" : ""}">
+          <div class="cc-k">Our call — locked</div>
+          <div class="cc-main">
+            <span class="cc-side" aria-hidden="true">●●●● ●</span>
+            <span class="cc-qual">${qDiamonds(q)}<u>${Q_LABEL[q]}</u></span>
+          </div>
+          <button class="lockchip" id="cc-unlock" style="margin-top:12px"><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>
+        </div>`;
+      } else if (lead) {
         const q = qualityOf(lead);
         const gold = isGold(lead);
         const st = playState(g, lead);
@@ -1395,12 +1431,17 @@ export default function Home() {
         </div>`;
       }
 
-      // (2) WHY — plain English, short.
+      // (2) WHY — plain English, short. Locked picks get an honest teaser instead.
       const why = lead ? whySentences(g, lead) : [passWhy()];
-      const whyBlock = `<div class="whycard">
-        <div class="wc-k">Why</div>
-        ${why.map((w) => `<p>${w}</p>`).join("")}
-      </div>`;
+      const whyBlock = leadLocked
+        ? `<div class="whycard">
+            <div class="wc-k">Why</div>
+            <p>The plain-English read behind this pick — the model number, the line it beats, and the history of bets made exactly this way — is part of DiamondEdge Premium. The quality rating above is real; nothing here is invented to sell you.</p>
+          </div>`
+        : `<div class="whycard">
+            <div class="wc-k">Why</div>
+            ${why.map((w) => `<p>${w}</p>`).join("")}
+          </div>`;
 
       // (3) More detail — everything the old sheet had, folded away for power users.
       const bets = [detailBet(g.spread_pick, "Spread", "spread", g), detailBet(g.ml_pick, "Moneyline", "ml", g), detailBet(g.total_pick, "Total", "total", g)].filter(Boolean).join("");
@@ -1450,7 +1491,7 @@ export default function Home() {
             ${scoreBanner}
             ${callBlock}
             ${whyBlock}
-            ${more}
+            ${leadLocked ? "" : more}
           </div>
         </div>`;
 
@@ -1460,6 +1501,8 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       $("sheet-close").onclick = closeDetail;
       $("sheet-bg").onclick = closeDetail;
+      const unl = $("cc-unlock");
+      if (unl) unl.onclick = () => { closeDetail(); switchTab("upgrade"); };
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
     function closeDetail() {
@@ -1583,8 +1626,71 @@ export default function Home() {
       </div>`;
     }
 
+    // ---- DEEP ANALYTICS (analytics_deep block; graceful fallback to the classic page) ----
+    async function loadAnalyticsDeep() {
+      if (analyticsDeep || adTried) return analyticsDeep;
+      adTried = true;
+      analyticsDeep = (livePayload && livePayload.analytics_deep) || (payload && payload.analytics_deep) || (indexData && indexData.analytics_deep) || null;
+      if (!analyticsDeep) { try { analyticsDeep = await snap("analytics_deep"); } catch {} }
+      if (analyticsDeep && !analyticsDeep.cuts) analyticsDeep = null; // malformed → fallback
+      return analyticsDeep;
+    }
+    // Jargon-free section labels for each cut.
+    const CUT_META: any = {
+      by_quality: "By pick quality",
+      by_sport: "By league",
+      by_market: "By pick type",
+      by_price_band: "By price range",
+      by_side: "Overs vs. unders",
+      by_theme: "By theme",
+      by_month: "By month",
+      by_day_of_week: "By day of week",
+      by_line_level: "By total line",
+    };
+    const CUT_ORDER = ["by_quality", "by_sport", "by_market", "by_price_band", "by_side", "by_theme", "by_month", "by_day_of_week", "by_line_level"];
+    function prettyKey(k: any) {
+      const s = String(k == null || k === "" ? "—" : k);
+      const map: any = { over: "Overs", under: "Unders", OVER: "Overs", UNDER: "Unders", heat_day: "Heat-day picks", heat: "Heat-day picks", split_books: "Split-book picks", mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer", total: "Totals", spread: "Spreads", moneyline: "Moneylines", strong: "◆◆◆ Strong", good: "◆◆ Good", lean: "◆ Lean" };
+      if (map[s] != null) return map[s];
+      return s.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+    }
+    // One cut → a compact module: hit% bar (breakeven tick at 52.4%) always paired with ROI + n.
+    function adCutModule(cutKey: string, rows: any[]) {
+      if (!Array.isArray(rows) || !rows.length) return "";
+      const body = rows.map((r: any) => {
+        const hit = r.hit != null && !isNaN(Number(r.hit)) ? Number(r.hit) : null;
+        const roi = r.roi != null && !isNaN(Number(r.roi)) ? Number(r.roi) : null;
+        const ci = Array.isArray(r.hit_ci95) ? r.hit_ci95 : Array.isArray(r.ci95) ? r.ci95 : Array.isArray(r.ci) ? r.ci : null;
+        const w = hit != null ? Math.max(4, Math.min(100, hit * 100)) : 0;
+        return `<div class="ad-row">
+          <span class="ad-k">${prettyKey(r.key)}<span class="ad-n">n=${(r.n || 0).toLocaleString()}${ci ? ` · CI ${(Number(ci[0]) * 100).toFixed(0)}–${(Number(ci[1]) * 100).toFixed(0)}%` : ""}</span></span>
+          <span class="ad-rec">${esc(r.record || "")}</span>
+          <span class="ad-barwrap" title="win rate${hit != null ? ` ${(hit * 100).toFixed(1)}%` : ""} · breakeven ≈52.4% at typical prices">
+            ${hit != null ? `<span class="ad-bar ${roi != null && roi < 0 ? "neg" : ""}" style="width:${w.toFixed(1)}%"></span>` : ""}
+            <span class="ad-be" style="left:52.4%"></span>
+            ${hit != null ? `<span class="ad-hit">${(hit * 100).toFixed(1)}%</span>` : ""}
+          </span>
+          <span class="ad-roi ${roi == null ? "dim" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + (roi * 100).toFixed(1) + "%"}</span>
+        </div>`;
+      }).join("");
+      return `<div class="anz-card"><div class="anz-card-h">${CUT_META[cutKey] || prettyKey(cutKey)}</div><div class="ad-rows">${body}</div></div>`;
+    }
+    function adEdgesModule(list: any[]) {
+      if (!Array.isArray(list) || !list.length) return "";
+      const cards = list.map((e: any) => {
+        const roi = e.roi != null && !isNaN(Number(e.roi)) ? Number(e.roi) : null;
+        return `<div class="edge ${esc(String(e.status || "").toLowerCase())}">
+          <div class="edge-h"><b>${esc(e.name || "")}</b>${e.status ? `<span class="edge-st">${esc(e.status)}</span>` : ""}
+            <span class="edge-nums">n=${(e.n || 0).toLocaleString()} · ${e.hit != null ? (Number(e.hit) * 100).toFixed(1) + "%" : "—"} · <span class="${roi != null && roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + (roi * 100).toFixed(1) + "%"}</span></span></div>
+          ${e.description ? `<p>${esc(e.description)}</p>` : ""}
+        </div>`;
+      }).join("");
+      return `<div class="anz-card" style="margin-bottom:14px"><div class="anz-card-h">★ Where the edges live</div><div class="edge-list">${cards}</div></div>`;
+    }
+
     async function renderResults() {
       await loadIndex();
+      await loadAnalyticsDeep();
       const tr = trackRecord();
       const ov = tr.overall || {};
       const hr = ov.hit_rate != null ? ov.hit_rate * 100 : null;
@@ -1621,57 +1727,312 @@ export default function Home() {
           <div class="anz-card-h">★ The winning recipe (our Strong totals bets)</div>
           <div class="star-b">Won <b>${(rh.hit * 100).toFixed(1)}%</b> of ${rh.n.toLocaleString()} graded bets from 2022 to 2026 — about <b>${sgn(rh.roi * 100, 0)}%</b> back on every dollar bet. This is the record behind the gold ★ bets on the Games tab.</div>
         </div>
-        <div class="anz-grid">
-          ${resultsTable("By pick quality", qualityRows)}
-          ${resultsTable("By league", leagueRows)}
-        </div>
-        <div class="refnote">Older picks across all leagues are graded the same way — pick first, score after.</div>`;
+        ${analyticsDeep
+          ? `${adEdgesModule(analyticsDeep.edges_summary)}
+             <div class="ad-grid">
+               ${CUT_ORDER.filter((k) => analyticsDeep.cuts[k]).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
+               ${Object.keys(analyticsDeep.cuts).filter((k) => CUT_ORDER.indexOf(k) < 0).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
+             </div>
+             <div class="refnote">Every cut is the same graded record, sliced a different way — win rate always shown with return and sample size.${analyticsDeep.generated_at ? ` Updated ${esc(String(analyticsDeep.generated_at).slice(0, 10))}.` : ""}</div>`
+          : `<div class="anz-grid">
+               ${resultsTable("By pick quality", qualityRows)}
+               ${resultsTable("By league", leagueRows)}
+             </div>
+             <div class="refnote">Older picks across all leagues are graded the same way — pick first, score after.</div>`}`;
       animateCounters(view);
     }
 
+    // ===================== TODAY (daily brief homepage) =====================
+    const briefSource = () => (livePayload && livePayload.daily_brief) || (payload && payload.daily_brief) || null;
+    const findGameLive = (gid: any) => {
+      const src = livePayload || payload;
+      return ((src && src.games) || []).find((g: any) => String(g.game_id) === String(gid)) || null;
+    };
+    // Degrade path: no served daily_brief → compose a minimal brief from display_pick games.
+    function fallbackBrief() {
+      const src = livePayload || payload;
+      if (!src) return null;
+      const t = todayISO();
+      const picks: any[] = [];
+      ((src.games || []) as any[]).forEach((g: any) => {
+        const st0 = String(g.status || "pre").toLowerCase();
+        const d = gameLocalDay(g);
+        if (st0 !== "live" && d && d !== t) return; // today's slate only
+        const pl = displayPick(g);
+        if (!pl || pl.action !== "TAKE") return;
+        const st = playState(g, pl);
+        picks.push({
+          sport: g.sport, game_id: String(g.game_id),
+          matchup: g.matchup || `${g.away_abbr} @ ${g.home_abbr}`,
+          bet: `${pl.side || ""}${pl.price != null ? " · " + fmtOdds(pl.price) : ""}`,
+          quality: qualityOf(pl),
+          blurb: whySentences(g, pl).slice(0, 2).join(" "),
+          result: st === "won" ? "hit" : st === "lost" ? "miss" : st === "pushed" ? "push" : null,
+          _fb: true, // composed client-side — first sentence names the side, so lock the whole blurb
+        });
+      });
+      picks.sort((a, b) => Q_RANK[a.quality] - Q_RANK[b.quality]);
+      const counts: any = { strong: 0, good: 0, lean: 0 };
+      picks.forEach((p) => counts[p.quality]++);
+      const mix = ["strong", "good", "lean"].filter((q) => counts[q]).map((q) => `${counts[q]} ${Q_LABEL[q]}`).join(", ");
+      const rh = recipeHistory();
+      return {
+        date: t,
+        headline: picks.length
+          ? `${picks.length} pick${picks.length > 1 ? "s" : ""} on today's board — ${mix}.`
+          : "No picks today — the lines look right to us. Passing is the strategy working, not missing.",
+        themes: [], top_picks: picks,
+        record_line: `Validated history: ${(rh.hit * 100).toFixed(1)}% winners across ${rh.n.toLocaleString()} graded paper picks (2022–2026), about ${sgn(rh.roi * 100, 0)}% per dollar bet — paper-tracked, not real stakes.`,
+        _fallback: true,
+      };
+    }
+    // One hero pick card: crests anchor it, the bet + quality + blurb tell the story.
+    function heroCard(p: any, i: number) {
+      const g = findGameLive(p.game_id);
+      const locked = !isPremium() && (p.quality === "strong" || p.quality === "good") && !p.result;
+      const res = p.result === "hit" ? `<span class="hero-res hit">${condCheck} Won</span>`
+        : p.result === "miss" ? `<span class="hero-res miss">✗ Lost</span>`
+        : p.result === "push" ? `<span class="hero-res push">Push</span>`
+        : `<span class="hero-res pend">pending</span>`;
+      const mu = g
+        ? `<div class="hero-mu"><div class="hero-tm">${gCrest(g, "away")}<i>${esc(g.away_abbr)}</i></div><span class="hero-at">@</span><div class="hero-tm">${gCrest(g, "home")}<i>${esc(g.home_abbr)}</i></div></div>`
+        : "";
+      const bet = locked
+        ? `<button class="lockchip" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
+        : `<div class="hero-bet">${esc(p.bet || "")}</div>`;
+      const blurbTxt = String(p.blurb || "");
+      // Locked blurbs: served briefs open with a safe game preview → show the first
+      // sentence; client-composed fallbacks name the side → show none of it.
+      const teaser = p._fb ? "There's a validated pick on this game." : blurbTxt.split(". ")[0].slice(0, 120);
+      const blurb = blurbTxt
+        ? (locked
+          ? `<p class="hero-blurb">${esc(teaser)}… <button class="lk-more" data-up="1">unlock the full read</button></p>`
+          : `<p class="hero-blurb">${esc(blurbTxt)}</p>`)
+        : "";
+      return `<article class="hero q-${p.quality}${p.result === "hit" ? " hit" : p.result === "miss" ? " miss" : ""}" data-gid="${esc(p.game_id)}"${locked ? ' data-locked="1"' : ""} style="--i:${i}" role="button" tabindex="0" aria-label="${esc(p.matchup)} — ${locked ? "pick locked" : esc(p.bet || "")}">
+        <div class="hero-top"><span class="hero-sport">${esc(SPORT_LABEL[p.sport] || p.sport || "")}</span><span class="hero-q">${qDiamonds(p.quality)}${Q_LABEL[p.quality] || ""}</span>${res}</div>
+        ${mu}
+        <div class="hero-match">${esc(p.matchup || "")}</div>
+        ${bet}${blurb}
+      </article>`;
+    }
+    function renderToday() {
+      const view = $("today-view");
+      if (!view) return;
+      const db = briefSource() || fallbackBrief();
+      if (!db) { view.innerHTML = skeletonSlate(4); return; }
+      const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
+      const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+      // Headline, themes, top picks, record line — served copy rendered AS-IS (contract rule 1).
+      const themes = ((db.themes || []) as any[]).map((t: any, i: number) => `<button class="thc" style="--i:${i}" data-th="${i}">
+          <div class="thc-name">${esc(t.name)}</div>
+          <div class="thc-text">${esc(t.text)}</div>
+          ${t.affected_games && t.affected_games.length ? `<div class="thc-games">${t.affected_games.length} game${t.affected_games.length > 1 ? "s" : ""} on the board →</div>` : ""}
+        </button>`).join("");
+      const picks = ((db.top_picks || []) as any[]).map((p: any, i: number) => heroCard(p, i)).join("");
+      view.innerHTML = `
+        <div class="tdy">
+          <div class="tdy-top"><span class="tdy-date">${esc(dateTxt)}</span><span class="tdy-src">${db._fallback ? "board summary" : "daily brief"}</span></div>
+          <h2 class="tdy-head">${esc(db.headline || "")}</h2>
+          ${themes ? `<div class="tdy-lab">Today's story</div><div class="tdy-themes">${themes}</div>` : ""}
+          ${picks
+            ? `<div class="tdy-lab">Top picks — every sport</div><div class="tdy-picks">${picks}</div>`
+            : `<div class="tdy-lab">Top picks</div><div class="tdy-pass">No bets today. We only bet when the books' own numbers look wrong — most days that's a handful of games, some days none. The story above is what we're watching.</div>`}
+          ${db.record_line ? `<div class="tdy-record">${esc(db.record_line)}</div>` : ""}
+        </div>`;
+      // themes → jump to the affected game cards; heroes → detail sheet (or the lock → upgrade)
+      view.querySelectorAll(".thc").forEach((b: any) => (b.onclick = () => {
+        const t = (db.themes || [])[Number(b.dataset.th)];
+        if (t && t.affected_games && t.affected_games.length) jumpToGames(t.affected_games);
+      }));
+      view.querySelectorAll(".hero").forEach((h: any) => {
+        const open = (e: any) => {
+          if (e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
+          if (h.dataset.locked) { switchTab("upgrade"); return; }
+          const g = findGameLive(h.dataset.gid);
+          if (g) openDetail(g); else jumpToGames([h.dataset.gid]);
+        };
+        h.onclick = open;
+        h.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
+      });
+      animateCounters(view);
+    }
+    // Theme tap: switch to the Games tab, select the right league/date, highlight the games.
+    async function jumpToGames(gids: any[]) {
+      const src = livePayload || payload;
+      const g0 = (gids || []).map((id) => ((src && src.games) || []).find((g: any) => String(g.game_id) === String(id))).find(Boolean);
+      if (g0 && String(g0.sport || "").toLowerCase() !== league) league = String(g0.sport || "mlb").toLowerCase();
+      const needLoad = curDate !== todayISO() || rangeMode;
+      curDate = todayISO(); rangeMode = false;
+      switchTab("games");
+      if (needLoad) await selectDate();
+      else {
+        root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
+        positionInk();
+        renderSlate();
+      }
+      setTimeout(() => {
+        let first: any = null;
+        (gids || []).forEach((id) => {
+          const el = root.querySelector(`.tile[data-gid="${CSS.escape(String(id))}"]`);
+          if (el) { el.classList.add("hl"); if (!first) first = el; }
+        });
+        if (first) first.scrollIntoView({ behavior: REDUCE ? "auto" : "smooth", block: "center" });
+      }, 160);
+    }
+
+    // ===================== SETTINGS =====================
+    function renderSettings() {
+      const view = $("settings-view");
+      if (!view) return;
+      const prem = isPremium();
+      view.innerHTML = `
+        <div class="set-h">Settings</div>
+        <div class="set-card">
+          <div class="set-k">Membership</div>
+          <div class="set-row">
+            <div class="sr-txt"><b>DiamondEdge Premium <span class="set-badge ${prem ? "prem" : "free"}">${prem ? "Active" : "Free"}</span></b>
+            <span>${prem ? "Every pick unlocked — sides, lines, and the plain-English why." : "Strong and Good picks are locked. Leans, results and the full record stay free."}</span></div>
+            <button class="switch ${prem ? "on" : ""}" id="prem-switch" role="switch" aria-checked="${prem}" aria-label="Premium preview"></button>
+          </div>
+          <div class="set-note">Flip this off to preview the free experience. Payments aren't wired up yet — this is a design preview, and "Subscribe" on the upgrade page simply switches it back on.</div>
+        </div>
+        <div class="set-card">
+          <div class="set-k">Appearance</div>
+          <div class="set-about"><b>Dark glass</b> is the DiamondEdge identity — deep charcoal, frosted cards, neon green and red for results, gold reserved for Strong picks. No light theme; the board reads best dark.</div>
+        </div>
+        <div class="set-card">
+          <div class="set-k">About</div>
+          <button class="set-link" id="set-how">ⓘ How picks work<em>→</em></button>
+          <button class="set-link" id="set-results">Our full record<em>→</em></button>
+          <button class="set-link" id="set-upgrade">DiamondEdge Premium<em>→</em></button>
+          <div class="set-about" style="margin-top:10px">Every pick is graded in the open against real final scores — games the model never saw in advance. Hit-rates always travel with prices and returns, and the live record is paper-tracked, not real stakes.</div>
+        </div>`;
+      $("prem-switch").onclick = () => {
+        setPremium(!isPremium());
+        renderSettings();
+        renderToday();
+        if ($("slate-body")) renderSlate();
+      };
+      $("set-how").onclick = () => openRecipeSheet();
+      $("set-results").onclick = () => switchTab("results");
+      $("set-upgrade").onclick = () => switchTab("upgrade");
+    }
+
+    // ===================== UPGRADE (stub checkout — no real payments) =====================
+    function renderUpgrade() {
+      const view = $("upgrade-view");
+      if (!view) return;
+      const rh = recipeHistory();
+      const fwd = forwardRecord();
+      const perk = (t: string, s: string) => `<div class="up-perk"><span class="pk-ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><b>${t}</b><span>${s}</span></div></div>`;
+      view.innerHTML = `
+        <div class="up-hero">
+          <div class="up-dia" aria-hidden="true"></div>
+          <h2>Every pick. Every why. Nothing hidden.</h2>
+          <div class="up-sub">One honest model, graded in public since 2022. Premium unlocks the side and line on every Strong and Good pick — plus the plain-English read behind each one.</div>
+          <div class="up-stats">
+            <div class="up-st"><div class="v">${(rh.hit * 100).toFixed(1)}%</div><div class="k">win rate</div></div>
+            <div class="up-st"><div class="v">${rh.n.toLocaleString()}</div><div class="k">graded bets</div></div>
+            <div class="up-st"><div class="v">${sgn(rh.roi * 100, 0)}%</div><div class="k">per dollar bet</div></div>
+            <div class="up-st"><div class="v">'22–'26</div><div class="k">out of sample</div></div>
+          </div>
+        </div>
+        <div class="up-perks">
+          ${perk("Every Strong ◆◆◆ and Good ◆◆ pick, unlocked", "The exact side, line and price we froze before the game — never re-written after the fact.")}
+          ${perk("The why, in plain English", "Two or three sentences a first-time reader can follow: the model's number, the line it beats, and the history of bets made exactly this way.")}
+          ${perk("Live reads and score overlay", "Fresh scores every minute during games, with each pick's progress toward its line.")}
+          ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free users; you just get the picks that build it.")}
+        </div>
+        <div class="up-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
+        <div class="up-price-note">placeholder price — payments aren't live yet</div>
+        <button class="up-cta" id="up-sub">Unlock DiamondEdge</button>
+        <button class="up-back" id="up-back">Not now — keep the free picks</button>
+        <div class="up-honest">Honesty first: the numbers above are the real validated history — ${rh.n.toLocaleString()} paper picks graded against final scores across games the model never trained on${fwd ? `, and the live paper record so far is ${fwd.wins || 0}-${fwd.losses || 0}` : ""}. Going forward we expect a smaller edge than the backtest, and we say so on every pick. Nothing is charged here — Subscribe simply unlocks the preview.</div>`;
+      $("up-sub").onclick = () => {
+        // STRIPE WIRE-IN POINT: real checkout replaces this — create a Checkout Session
+        // server-side, redirect, and set the entitlement from the confirmed webhook.
+        setPremium(true);
+        const d = document.createElement("div");
+        d.className = "up-done";
+        d.setAttribute("role", "status");
+        d.innerHTML = `<div class="ud-inner"><div class="ud-dia"></div><h3>You're in.</h3><p>Every pick is unlocked — welcome to the board.</p></div>`;
+        document.body.appendChild(d);
+        setTimeout(() => {
+          d.remove();
+          if ($("slate-body")) renderSlate();
+          switchTab("today");
+        }, REDUCE ? 250 : 1500);
+      };
+      $("up-back").onclick = () => switchTab("today");
+    }
+
     // ===================== HEADER / SHELL =====================
+    const NAV_ICONS: any = {
+      today: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 5.6L20 10.8l-5.8 2.2L12 19l-2.2-6L4 10.8l5.8-2.2z"/></svg>`,
+      games: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/></svg>`,
+      results: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>`,
+      settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M18.2 5.8l-1.8 1.8M7.6 16.4l-1.8 1.8"/></svg>`,
+    };
+    const NAV_LABEL: any = { today: "Today", games: "Games", results: "Results", settings: "Settings" };
     function renderShell() {
+      const navTabs = ["today", "games", "results", "settings"];
       root.innerHTML = `
         <header><div class="hbar">
           <div class="brand" id="brand">
             <div class="diamond"></div>
-            <div><h1>Diamond<b>Edge</b></h1><div class="tag">Games · Bets · Results</div></div>
+            <div><h1>Diamond<b>Edge</b></h1><div class="tag">Today · Games · Results</div></div>
           </div>
           <div class="hspacer"></div>
           <div class="toptabs">
-            <button data-tab="games" class="${tab === "games" ? "on" : ""}">Games</button>
-            <button data-tab="results" class="${tab === "results" ? "on" : ""}">Results</button>
+            ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}">${NAV_LABEL[t]}</button>`).join("")}
           </div>
         </div></header>
         <main>
+          <div id="today-view" style="display:${tab === "today" ? "block" : "none"}"></div>
           <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
-          <div id="results-view" style="display:${tab === "results" ? "block" : "none"}"></div>
-        </main>`;
-      root.querySelectorAll(".toptabs button").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
-      $("brand").onclick = () => switchTab("games");
+          <div id="results-view" style="display:none"></div>
+          <div id="settings-view" style="display:none"></div>
+          <div id="upgrade-view" style="display:none"></div>
+        </main>
+        <nav class="bnav" id="bnav" aria-label="Primary">
+          ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}">${NAV_ICONS[t]}<span>${NAV_LABEL[t]}</span></button>`).join("")}
+        </nav>`;
+      root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
+      $("brand").onclick = () => switchTab("today");
     }
 
     function switchTab(t: string) {
       if (t === tab) return;
       tab = t;
-      $("games-view").style.display = t === "games" ? "block" : "none";
-      $("results-view").style.display = t === "results" ? "block" : "none";
-      root.querySelectorAll(".toptabs button").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
+      TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
+      root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
+      if (t === "today") renderToday();
       if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
-      if (t === "games") requestAnimationFrame(positionInk);
+      if (t === "settings") renderSettings();
+      if (t === "upgrade") renderUpgrade();
+      if (t === "games") requestAnimationFrame(() => { positionInk(); recenterStrip(false); });
+      window.scrollTo(0, 0);
     }
 
     // ===================== INIT =====================
     (async function init() {
+      // Native-shell detection: the Capacitor WebView appends DiamondEdgeNative/1.0 to the
+      // UA and injects window.Capacitor; ?native=1 forces it for testing. Suppresses
+      // web-only chrome via body.native (CSS).
+      const NATIVE = /DiamondEdgeNative/i.test(navigator.userAgent) || !!(window as any).Capacitor || /[?&]native=1/.test(location.search);
+      if (NATIVE) document.body.classList.add("native");
       renderShell();
       renderScoresChrome();
       bindPull();
+      renderToday(); // skeleton until the payload lands
       await loadIndex();
       payload = await loadDay(curDate);
       league = bestLeague();
       root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
       positionInk();
       renderSlate();
+      renderToday();
       requestAnimationFrame(() => { positionInk(); recenterStrip(false); });
       // live-score freshness: poll the tiny live_scores key while games are on
       setInterval(pollLiveScores, 50 * 1000);
