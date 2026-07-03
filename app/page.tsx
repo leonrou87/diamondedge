@@ -18,9 +18,12 @@ export default function Home() {
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nhlLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nhl/500/${NHL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nflLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nfl/500/${NFL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
-    // Soccer national/club crests aren't in the payload — render a clean text crest.
+    // Soccer: real logos when the payload serves home_logo/away_logo (ESPN fifa.world
+    // pass-through); otherwise try the ESPN country-flag CDN off the abbreviation
+    // (national teams), with a graceful text-crest fallback on 404 (club teams).
+    const soccerFlag = (ab: any) => `https://a.espncdn.com/i/teamlogos/countries/500/${String(ab || "").toLowerCase()}.png`;
     const logoFor = (sp: string, ab: any) =>
-      sp === "soccer" ? null
+      sp === "soccer" ? soccerFlag(ab)
       : sp === "nba" ? nbaLogo(ab)
       : sp === "nhl" ? nhlLogo(ab)
       : sp === "nfl" ? nflLogo(ab)
@@ -94,12 +97,20 @@ export default function Home() {
       return rows && rows[0] ? rows[0].payload : null;
     }
 
-    // crest markup (logo img OR text crest for soccer)
-    function crestImg(sp: string, ab: any, cls = "") {
-      const url = logoFor(sp, ab);
-      if (url) return `<img class="${cls}" src="${url}" onerror="this.style.visibility='hidden'" alt="" loading="lazy">`;
-      return `<span class="crest ${cls}">${esc((ab || "").slice(0, 3))}</span>`;
+    // crest markup: served logo URL (soccer home_logo/away_logo) → sport CDN / country
+    // flag → text crest. Soccer images degrade to the text crest on load error.
+    function crestImg(sp: string, ab: any, cls = "", exUrl?: any) {
+      const url = (typeof exUrl === "string" && /^https?:\/\//.test(exUrl) ? exUrl : null) || logoFor(sp, ab);
+      if (!url) return `<span class="crest ${cls}">${esc((ab || "").slice(0, 3))}</span>`;
+      if (sp === "soccer") {
+        const fb = `<span class=&quot;crest ${cls}&quot;>${esc((ab || "").slice(0, 3))}</span>`;
+        return `<img class="${cls}" src="${url}" onerror="this.onerror=null;this.outerHTML='${fb}'" alt="" loading="lazy">`;
+      }
+      return `<img class="${cls}" src="${url}" onerror="this.style.visibility='hidden'" alt="" loading="lazy">`;
     }
+    // per-side crest for a game object (uses served logo fields when present)
+    const gCrest = (g: any, which: "home" | "away", cls = "") =>
+      crestImg(g.sport, which === "home" ? g.home_abbr : g.away_abbr, cls, which === "home" ? g.home_logo : g.away_logo);
 
     const resOf = (pk: any) => (pk && pk.result && pk.result.status ? pk.result.status : null); // hit|miss|push|null
     const tierCls = (t: any) => "tier-" + (t || "low");
@@ -331,7 +342,7 @@ export default function Home() {
           ? `best shop ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}` : "";
         return `<button class="vs-card" data-gid="${esc(g.game_id)}" aria-label="VALUE play: ${esc(g.away_abbr)} at ${esc(g.home_abbr)}, ${esc(pl.side || "")}">
           <div class="vs-top">
-            <span class="vs-mu">${crestImg(g.sport, g.away_abbr)}${esc(g.away_abbr)}<span class="vs-at">@</span>${crestImg(g.sport, g.home_abbr)}${esc(g.home_abbr)}</span>
+            <span class="vs-mu">${gCrest(g, "away")}${esc(g.away_abbr)}<span class="vs-at">@</span>${gCrest(g, "home")}${esc(g.home_abbr)}</span>
             <span class="vs-badge ${pl.value_tier === "value-b" ? "vb" : ""}">◆ VALUE${pl.value_tier === "value-b" ? " B" : " A"}</span>
             ${pl.paper ? `<span class="vs-paper">PAPER</span>` : ""}
             <span class="vs-stat">${stat}</span>
@@ -535,10 +546,11 @@ export default function Home() {
         requestAnimationFrame(step);
       });
     }
-    // Subtle 3D tilt on desktop hover — transforms only, disabled for reduced motion / touch.
+    // Subtle 3D tilt on desktop hover (hero tiles only) — transforms only, disabled
+    // for reduced motion / touch.
     function bindTilt(scope: any) {
       if (REDUCE || !FINE_HOVER) return;
-      scope.querySelectorAll(".gamecard").forEach((card: any) => {
+      scope.querySelectorAll(".tile.hero").forEach((card: any) => {
         card.addEventListener("pointermove", (e: any) => {
           const r = card.getBoundingClientRect();
           const x = (e.clientX - r.left) / r.width - 0.5;
@@ -698,113 +710,149 @@ export default function Home() {
       return `<div class="gc-odds">${cells.join("")}</div>`;
     }
 
-    // One DE Play chip (TAKE side+conf / PASS), with result + live states.
-    function playChip(g: any, pl: any) {
-      const mk = pl.market;
-      if (pl.action !== "TAKE") {
-        return `<button class="play pass" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="${MK_FULL[mk]}: pass">
-          <span class="pl-mk">${MK_LAB[mk]}</span><span class="pl-pass">Pass</span>
-        </button>`;
-      }
-      const live = playLiveState(g, pl);
+    // ---- compact-tile helpers (CBS-density grid) ----
+    const resMark = (st: string, small = false) => {
+      const sz = small ? 9 : 10;
+      return st === "hit"
+        ? `<svg viewBox="0 0 16 16" width="${sz}" height="${sz}" aria-hidden="true"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : st === "miss" ? "✗" : "P";
+    };
+    // A play's display state: won|lost|pushed|clinched|cooked|inplay|open
+    function playState(g: any, pl: any) {
       const r = pl.result;
-      const rCls = r ? (r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed") : (live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : live === "inplay" ? "inplay" : "open");
-      let resHtml = "";
-      if (r) {
-        resHtml = r.status === "hit"
-          ? `<span class="pl-res won"><svg viewBox="0 0 16 16" width="12" height="12"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`
-          : r.status === "miss"
-          ? `<span class="pl-res lost">✗</span>`
-          : `<span class="pl-res pushed">P</span>`;
-      } else if (live === "clinch-won") {
-        resHtml = `<span class="pl-res clinched"><svg viewBox="0 0 16 16" width="11" height="11"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> clinched</span>`;
-      } else if (live === "clinch-lost") {
-        resHtml = `<span class="pl-res lost">✗</span>`;
-      } else if (live === "inplay") {
-        resHtml = `<span class="pl-res inplay"><span class="ip-dot"></span>in play</span>`;
-      }
-      const conf = pl.p != null ? `<span class="pl-p">${saPct(pl.p)}</span>` : (pl.tier ? `<span class="pl-p">${esc(pl.tier)}</span>` : "");
-      // VALUE tier chip: distinct gold (value-a) / emerald (value-b) treatment
-      // + a PAPER microtag while the play is paper-tracked.
-      if (pl.value_tier) {
-        const vCls = pl.value_tier === "value-a" ? "va" : "vb";
-        return `<button class="play take value ${vCls} ${rCls}" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="VALUE ${MK_FULL[mk]} play: ${esc(pl.side || "")}">
-          <span class="pl-vbadge"><span class="pl-vdia">◆</span>VALUE${pl.value_tier === "value-b" ? " B" : ""}</span>
-          <span class="pl-side">${esc(pl.side || "—")}</span>
-          ${pl.price != null ? `<span class="pl-px">${fmtOdds(pl.price)}</span>` : ""}
-          ${conf}
-          ${pl.paper ? `<span class="pl-paper">PAPER</span>` : ""}
-          ${resHtml}
-        </button>`;
-      }
-      return `<button class="play take ${rCls}" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="${MK_FULL[mk]} accuracy play: ${esc(pl.side || "")}">
-        <span class="pl-mk">${MK_LAB[mk]}</span>
-        <span class="pl-side">${esc(pl.side || "—")}</span>
-        ${pl.price != null ? `<span class="pl-px">${fmtOdds(pl.price)}</span>` : ""}
-        ${conf}
-        <span class="pl-acc" title="Accuracy play — hits ~60%, priced to ~breakeven. Not the VALUE recipe.">ACC</span>
-        ${resHtml}
+      if (r) return r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed";
+      const live = playLiveState(g, pl);
+      return live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : live === "inplay" ? "inplay" : "open";
+    }
+    // TAKEs ordered for the tile micro-lines: VALUE first, then total > spread > ML.
+    function tileTakes(g: any, P: any) {
+      const prio: any = { total: 0, spread: 1, moneyline: 2 };
+      return MARKETS.map((mk) => P[mk])
+        .filter((p: any) => p.action === "TAKE")
+        .sort((a: any, b: any) => ((b.value_tier ? 4 : 0) - (a.value_tier ? 4 : 0)) || (prio[a.market] - prio[b.market]));
+    }
+    // ONE compact DE-play micro-line: "◆ UNDER 12 −112 · 63%" (+ ✓/✗ state tint).
+    function playMicro(g: any, pl: any) {
+      const st = playState(g, pl);
+      const vCls = pl.value_tier ? ` value ${pl.value_tier === "value-a" ? "va" : "vb"}` : " acc";
+      const mark = st === "won" || st === "clinched" ? `<span class="tp-res won">${resMark("hit", true)}</span>`
+        : st === "lost" || st === "cooked" ? `<span class="tp-res lost">✗</span>`
+        : st === "pushed" ? `<span class="tp-res pushed">P</span>`
+        : st === "inplay" ? `<span class="tp-res inplay"><span class="ip-dot"></span></span>` : "";
+      const conf = pl.p != null ? ` · ${saPct(pl.p)}` : "";
+      const px = pl.price != null ? ` ${fmtOdds(pl.price)}` : "";
+      return `<button class="t-play${vCls} ${st}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}"
+        aria-label="${pl.value_tier ? "VALUE " : ""}${MK_FULL[pl.market]} play: ${esc(pl.side || "")}">
+        <span class="tp-dia">◆</span><span class="tp-txt">${esc(pl.side || "—")}${px}${conf}</span>
+        ${pl.paper ? `<span class="tp-paper">P</span>` : ""}${mark}
       </button>`;
     }
-
-    function teamRow(g: any, which: "away" | "home", gs: any) {
+    // Compact Vegas line: "O/U 8.5 · CLE −1.5" (soccer: O/U + 1X2 prices).
+    function tileVegas(g: any) {
+      const parts: string[] = [];
+      const tp = g.total_pick;
+      if (tp && tp.line != null) parts.push(`O/U ${num(tp.line)}`);
+      const sp = g.spread_pick;
+      if (sp && sp.line != null) parts.push(`${esc(g.home_abbr)} ${sgn(spreadHomeLine(g, sp))}`);
+      else {
+        const mp = g.ml_pick, pr = (mp && mp.prices) || {};
+        if (g.sport === "soccer" && pr.home != null && pr.draw != null && pr.away != null) parts.push(`${fmtOdds(pr.home)}·${fmtOdds(pr.draw)}·${fmtOdds(pr.away)}`);
+        else if (mp && mp.side && (mp.price ?? pr.home ?? pr.away) != null) parts.push(`ML ${esc(mp.side)} ${fmtOdds(mp.price ?? pr.home ?? pr.away)}`);
+      }
+      return parts.length ? `<div class="t-vegas">${parts.join(" · ")}</div>` : "";
+    }
+    // Tile status strip: "Mid 8th" / "FINAL" / "7:10 PM" (+ competition / day tag right).
+    function tileStatus(g: any, gs: any) {
+      let left = "";
+      if (gs.kind === "live") left = `<span class="ts-live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</span>`;
+      else if (gs.kind === "final") left = `<span class="ts-final">FINAL</span>`;
+      else {
+        const t = gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : (gs.si.date || "TBD");
+        left = `<span class="ts-time">${esc(t)}</span>`;
+      }
+      const dayTag = gs.kind === "pre" && gameLocalDay(g) && gameLocalDay(g) !== curDate ? `<span class="ts-day">${esc(gs.si.date)}</span>` : "";
+      const comp = g.meta && g.meta.competition ? `<span class="ts-comp">${esc(g.meta.competition)}</span>` : "";
+      return `<div class="t-status">${left}${dayTag || comp}</div>`;
+    }
+    function tileRow(g: any, which: "away" | "home", gs: any, hero = false) {
       const ab = which === "away" ? g.away_abbr : g.home_abbr;
       const name = which === "away" ? (g.away_team || g.away_abbr) : (g.home_team || g.home_abbr);
-      const pi = g.pregame_intel || {};
-      let sub = "";
-      const pit = (pi.pitchers || {})[which] || {};
-      const form = (pi.form || {})[which] || {};
-      if (pit.name) sub = `${esc(pit.name.split(" ").slice(-1)[0])}${pit.era != null ? ` · ${num(pit.era, 2)} ERA` : ""}`;
-      else if (form.last10_record) sub = `L10 ${esc(form.last10_record)}`;
       const sc = gs.score;
-      let scoreHtml = "";
-      let winner = false;
+      let scoreHtml = "", winner = false, loser = false;
       if (gs.kind !== "pre" && sc && sc.split && sc.home != null) {
         const mine = which === "home" ? sc.home : sc.away;
         const other = which === "home" ? sc.away : sc.home;
         winner = gs.kind === "final" && mine > other;
-        scoreHtml = `<span class="gc-score${gs.kind === "live" ? " live" : ""}" data-count="${num(mine, 0)}">${num(mine, 0)}</span>`;
+        loser = gs.kind === "final" && mine < other;
+        scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}" data-count="${num(mine, 0)}">${num(mine, 0)}</span>`;
       }
-      return `<div class="gc-trow ${winner ? "winner" : ""} ${gs.kind === "final" && !winner && sc && sc.split ? "loser" : ""}">
-        <span class="gc-crest">${crestImg(g.sport, ab)}</span>
-        <span class="gc-ab">${esc(ab)}</span>
-        <span class="gc-nm">${esc(name)}</span>
-        ${sub ? `<span class="gc-sub">${sub}</span>` : ""}
+      // hero rows carry the sub-line (pitcher / L10 form) — compact tiles defer it to the sheet
+      let sub = "";
+      if (hero) {
+        const pi = g.pregame_intel || {};
+        const pit = (pi.pitchers || {})[which] || {};
+        const form = (pi.form || {})[which] || {};
+        if (pit.name) sub = `${esc(pit.name.split(" ").slice(-1)[0])}${pit.era != null ? ` · ${num(pit.era, 2)} ERA` : ""}`;
+        else if (form.last10_record) sub = `L10 ${esc(form.last10_record)}`;
+      }
+      return `<div class="t-row ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
+        <span class="t-crest">${gCrest(g, which)}</span>
+        <span class="t-ab">${esc(ab)}</span>
+        ${hero ? `<span class="t-nm">${esc(name)}</span>` : ""}
+        ${sub ? `<span class="t-sub">${sub}</span>` : ""}
         ${scoreHtml}
       </div>`;
+    }
+
+    // The 2-col-span HERO tile: VALUE games (gold-edged) + featured live games.
+    function heroTile(g: any, idx: number, gs: any, P: any, vPlay: any) {
+      const takes = tileTakes(g, P);
+      const lead = vPlay || takes[0] || null;
+      const ps = g.predicted_score || {};
+      const predTxt = ps.away != null && ps.home != null
+        ? `<span class="h-pred">pred <b>${esc(g.away_abbr)} ${num(ps.away, 1)}–${num(ps.home, 1)} ${esc(g.home_abbr)}</b></span>` : "";
+      const pk = lead ? (lead.market === "spread" ? g.spread_pick : lead.market === "total" ? g.total_pick : g.ml_pick) : g.total_pick;
+      const ring = confRing(pk || g.total_pick || g.spread_pick);
+      let conds = "";
+      if (vPlay) {
+        const c = valueConds(vPlay);
+        conds = `<div class="h-conds"><span class="vs-cond">${condCheck}${esc(c.gap)}</span><span class="vs-cond">${condCheck}${esc(c.split)}</span></div>`;
+      }
+      const rest = takes.filter((p: any) => p !== lead);
+      const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
+        ? `<div class="t-vegas">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
+      return `<article class="tile hero ${gs.kind}${vPlay ? " isvalue" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — open deep dive">
+        ${tileStatus(g, gs)}
+        <div class="h-main">
+          <div class="t-teams">${tileRow(g, "away", gs, true)}${tileRow(g, "home", gs, true)}</div>
+          <div class="h-side">${ring}${predTxt}</div>
+        </div>
+        ${totOnly}
+        ${lead ? `<div class="h-play">${playMicro(g, lead)}${rest.length ? `<span class="h-more">+${rest.length}</span>` : ""}</div>` : ""}
+        ${conds}
+        ${tileVegas(g)}
+      </article>`;
     }
 
     function gameCard(g: any, idx: number) {
       const gs = gameState(g);
       const P = gamePlays(g);
-      const anyTake = MARKETS.some((m) => P[m].action === "TAKE");
-      let stateHtml = "";
-      if (gs.kind === "live") {
-        stateHtml = `<span class="gc-live"><span class="livedot"></span>LIVE</span><span class="gc-period">${esc(gs.label !== "Live" ? gs.label : "")}</span>`;
-      } else if (gs.kind === "final") {
-        stateHtml = `<span class="gc-final">Final</span>${!rangeMode && curDate !== todayISO() ? "" : ""}`;
-      } else {
-        const dayLbl = gameLocalDay(g) && gameLocalDay(g) !== curDate ? `<span class="gc-day">${esc(gs.si.date)}</span>` : "";
-        stateHtml = `<span class="gc-time">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : (gs.si.date || "TBD"))}</span>${dayLbl}`;
-      }
-      const comp = g.meta && g.meta.competition ? `<span class="gc-comp">${esc(g.meta.competition)}</span>` : "";
-      // total-only score (no split available)
+      const vPlay = MARKETS.map((mk) => P[mk]).find((p: any) => p.action === "TAKE" && p.value_tier) || null;
+      // HERO: any VALUE-play game, plus featured live games.
+      if (vPlay || (gs.kind === "live" && g.featured)) return heroTile(g, idx, gs, P, vPlay);
+      const takes = tileTakes(g, P);
+      const anyTake = takes.length > 0;
+      // total-only score (no home/away split available)
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
-        ? `<div class="gc-totonly">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      return `<article class="gamecard ${gs.kind}${anyTake ? " has-play" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}">
-        <div class="gc-top">
-          <div class="gc-teams">
-            ${teamRow(g, "away", gs)}
-            ${teamRow(g, "home", gs)}
-          </div>
-          <div class="gc-state">${comp}${stateHtml}</div>
-        </div>
+        ? `<div class="t-vegas">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
+      return `<article class="tile ${gs.kind}${anyTake ? " has-play" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — open deep dive">
+        ${tileStatus(g, gs)}
+        <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}
-        ${oddsRow(g)}
-        <div class="gc-plays">
-          <span class="gp-brand" title="DiamondEdge Play"><span class="gp-dia">◆</span><span class="gp-txt">DE<br>Play</span></span>
-          <div class="gp-chips">${MARKETS.map((mk) => playChip(g, P[mk])).join("")}</div>
-        </div>
+        ${anyTake ? `<div class="t-plays">${takes.slice(0, 2).map((p: any) => playMicro(g, p)).join("")}</div>` : ""}
+        ${tileVegas(g)}
       </article>`;
     }
 
@@ -866,13 +914,14 @@ export default function Home() {
     }
 
     // ===================== SCORES TAB =====================
-    function skeletonSlate(n = 5) {
+    function skeletonSlate(n = 8) {
       let cards = "";
       for (let i = 0; i < n; i++) {
         cards += `<div class="skcard" style="--i:${i}">
-          <div class="sk-row"><span class="sk sk-crest"></span><span class="sk sk-line w60"></span><span class="sk sk-line w14 r"></span></div>
+          <div class="sk-row"><span class="sk sk-line w24"></span></div>
           <div class="sk-row"><span class="sk sk-crest"></span><span class="sk sk-line w48"></span><span class="sk sk-line w14 r"></span></div>
-          <div class="sk-row mt"><span class="sk sk-line w24"></span><span class="sk sk-line w24"></span><span class="sk sk-line w24"></span></div>
+          <div class="sk-row"><span class="sk sk-crest"></span><span class="sk sk-line w48"></span><span class="sk sk-line w14 r"></span></div>
+          <div class="sk-row mt"><span class="sk sk-line w60"></span></div>
         </div>`;
       }
       return `<div class="slate">${cards}</div>`;
@@ -1054,10 +1103,11 @@ export default function Home() {
     }
 
     function bindCards() {
-      root.querySelectorAll(".gamecard[data-gid]").forEach((bx: any) => {
+      root.querySelectorAll(".tile[data-gid]").forEach((bx: any) => {
         bx.onclick = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
+        bx.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); const g = findGame(bx.dataset.gid); if (g) openDetail(g); } };
       });
-      root.querySelectorAll(".play[data-gid], .rr-chip[data-gid]").forEach((ch: any) => {
+      root.querySelectorAll(".t-play[data-gid], .rr-chip[data-gid]").forEach((ch: any) => {
         ch.onclick = (e: any) => { e.stopPropagation(); const g = findGame(ch.dataset.gid); if (g) openDetail(g, ch.dataset.mk); };
       });
     }
@@ -1325,22 +1375,23 @@ export default function Home() {
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
             <div class="sh-sport">${SPORT_LABEL[sp] || sp}${g.meta && g.meta.competition ? ` · ${esc(g.meta.competition)}` : ""}</div>
             <div class="sh-mu">
-              <span class="sh-tm">${crestImg(sp, g.away_abbr)}<b>${esc(g.away_abbr)}</b></span>
+              <span class="sh-tm">${gCrest(g, "away")}<b>${esc(g.away_abbr)}</b></span>
               <span class="sh-at">@</span>
-              <span class="sh-tm">${crestImg(sp, g.home_abbr)}<b>${esc(g.home_abbr)}</b></span>
+              <span class="sh-tm">${gCrest(g, "home")}<b>${esc(g.home_abbr)}</b></span>
             </div>
             <div class="sh-meta">${esc([g.matchup, dispDate, startTxt].filter(Boolean).join(" · "))}</div>
           </div>
           <div class="sh-body">
             ${scoreBanner}
+            <div class="dsec"><div class="dsec-h">Sportsbook Lines</div>${oddsRow(g)}</div>
             ${plays}
             <div class="dsec">
               <div class="dsec-h">Predicted Final Score</div>
               <div class="dsec-b">
                 <div class="dscore">
-                  <div class="tm ${!homeWin ? "win" : ""}">${crestImg(sp, g.away_abbr)}<div class="pts">${num(ps.away, 1)}</div><div class="ab">${esc(g.away_abbr)}</div></div>
+                  <div class="tm ${!homeWin ? "win" : ""}">${gCrest(g, "away")}<div class="pts">${num(ps.away, 1)}</div><div class="ab">${esc(g.away_abbr)}</div></div>
                   <div class="dx">–</div>
-                  <div class="tm ${homeWin ? "win" : ""}">${crestImg(sp, g.home_abbr)}<div class="pts">${num(ps.home, 1)}</div><div class="ab">${esc(g.home_abbr)}</div></div>
+                  <div class="tm ${homeWin ? "win" : ""}">${gCrest(g, "home")}<div class="pts">${num(ps.home, 1)}</div><div class="ab">${esc(g.home_abbr)}</div></div>
                 </div>
                 <div class="dscore-foot">Edge: <b>${esc(ps.winner_abbr || "—")}</b> by <b>${ps.margin != null ? Math.abs(Number(ps.margin)).toFixed(1) : "—"}</b> · projected total <b>${tot} ${SPORT_UNIT[sp] || ""}</b></div>
               </div>
