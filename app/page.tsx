@@ -182,6 +182,8 @@ export default function Home() {
         claimed_ev: raw.claimed_ev != null ? Number(raw.claimed_ev) : null,
         edge: raw.edge != null ? Number(raw.edge) : null,
         nlines: raw.mm_tot_nlines != null ? Number(raw.mm_tot_nlines) : null,
+        p_model_over: raw.p_model_over != null ? Number(raw.p_model_over) : null,
+        p_mkt_over: raw.p_mkt_over != null ? Number(raw.p_mkt_over) : null,
         shop: raw.shop || null,
         why: Array.isArray(raw.why) ? raw.why : [],
         result: normPlayResult(raw.result),
@@ -227,6 +229,140 @@ export default function Home() {
       return "inplay";
     }
     const hasTake = (g: any) => { const P = gamePlays(g); return MARKETS.some((m) => P[m].action === "TAKE"); };
+
+    // ===================== THE WINNING RECIPE (VALUE tier) =====================
+    // The ONE validated winning strategy: MLB totals at the morning line when BOTH
+    // (a) model vs de-vigged morning market gap >= 3 prob points AND (b) books quote
+    // >= 2 distinct total lines (the market itself is split = soft line). Fair prices
+    // only (-135..+135). Validated 60.9% over 567 bets @ median -106, +15.6% ROI.
+    // Everything below teaches that hierarchy at a glance.
+    const RECIPE_REC = "60.9% · −106 avg · +15.6% ROI · 567 bets";
+    // The two trigger conditions of a VALUE play, with live values off the payload.
+    function valueConds(pl: any) {
+      const gapPts = pl.edge != null ? Math.abs(Number(pl.edge)) * 100 : null;
+      const need = pl.value_tier === "value-b" ? 2 : 3;
+      const over = /over/i.test(String(pl.side || ""));
+      const pm = pl.p_model_over != null ? (over ? pl.p_model_over : 1 - pl.p_model_over) : null;
+      const pk = pl.p_mkt_over != null ? (over ? pl.p_mkt_over : 1 - pl.p_mkt_over) : null;
+      return {
+        gap: gapPts != null ? `Model edge +${gapPts.toFixed(1)} pts` : "Model vs market gap",
+        gapSub: pm != null && pk != null ? `model ${(pm * 100).toFixed(1)}% vs market ${(pk * 100).toFixed(1)}%` : "",
+        need,
+        split: pl.nlines != null ? `Books split across ${pl.nlines} lines` : "Books split on the line",
+      };
+    }
+    const condCheck = `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+    // Collapsible state for the recipe hero — expanded on first-ever view, collapsed on
+    // later sessions, user toggle wins; stable within a session.
+    let recipeOpenSess: any = null;
+    function recipeIsOpen() {
+      if (recipeOpenSess != null) return recipeOpenSess;
+      let open = true;
+      try {
+        const s = localStorage.getItem("de_recipe");
+        if (s === "open") open = true;
+        else if (s === "closed") open = false;
+        else if (localStorage.getItem("de_recipe_seen")) open = false;
+        else localStorage.setItem("de_recipe_seen", "1");
+      } catch {}
+      recipeOpenSess = open;
+      return open;
+    }
+    function recipeHero() {
+      if (rangeMode || curDate !== todayISO() || league !== "mlb") return "";
+      const open = recipeIsOpen();
+      return `<section class="recipehero ${open ? "" : "collapsed"}" id="recipehero">
+        <button class="rh-bar" id="rh-toggle" aria-expanded="${open}">
+          <span class="rh-dia">◆</span>
+          <span class="rh-t">The Winning Recipe</span>
+          <span class="rh-rec">${RECIPE_REC}</span>
+          <span class="rh-chev">▾</span>
+        </button>
+        <div class="rh-wrap"><div class="rh-inner">
+          <div class="rh-steps">
+            <div class="rh-step" style="--i:0"><span class="rh-n">1</span><div class="rh-sk">Model vs market</div><div class="rh-sv">gap ≥ 3 pts</div><div class="rh-sd">our de-vigged probability disagrees with the morning market</div></div>
+            <span class="rh-arrow" aria-hidden="true">→</span>
+            <div class="rh-step" style="--i:1"><span class="rh-n">2</span><div class="rh-sk">Books split</div><div class="rh-sv">≥ 2 total lines</div><div class="rh-sd">the market can't agree on the number — someone's line is soft</div></div>
+            <span class="rh-arrow" aria-hidden="true">→</span>
+            <div class="rh-step" style="--i:2"><span class="rh-n">3</span><div class="rh-sk">Bet the total</div><div class="rh-sv">model's side · morning line</div><div class="rh-sd">MLB totals only · fair prices only (−135 to +135)</div></div>
+          </div>
+          <div class="rh-foot">
+            <span class="rh-scope">~1 play per slate · most days it doesn't fire — passing IS the strategy</span>
+            <button class="rh-how" id="rh-how">How it works →</button>
+          </div>
+        </div></div>
+      </section>`;
+    }
+
+    // Today's VALUE plays, hero placement above the game list.
+    function todaysValuePlays(games: any[]) {
+      const out: any[] = [];
+      games.forEach((g: any) => {
+        const P = gamePlays(g);
+        MARKETS.forEach((mk) => { const pl = P[mk]; if (pl.action === "TAKE" && pl.value_tier) out.push({ g, pl }); });
+      });
+      out.sort((a, b) => (a.pl.value_tier === "value-a" ? 0 : 1) - (b.pl.value_tier === "value-a" ? 0 : 1));
+      return out;
+    }
+    function valueSpotlight(games: any[]) {
+      if (rangeMode || curDate !== todayISO() || league !== "mlb") return "";
+      const vp = todaysValuePlays(games);
+      if (!vp.length) {
+        return `<section class="vspot quiet">
+          <div class="vspot-h"><span class="pl-vdia">◆</span><span class="vspot-t">Value Plays</span></div>
+          <div class="vq-line">No value plays today — the recipe didn't trigger (that's discipline, not absence).</div>
+        </section>`;
+      }
+      const cards = vp.map(({ g, pl }: any) => {
+        const c = valueConds(pl);
+        const live = playLiveState(g, pl);
+        const r = pl.result;
+        let stat = "";
+        if (r) {
+          stat = r.status === "hit" ? `<span class="pl-res won">${condCheck} WON</span>`
+            : r.status === "miss" ? `<span class="pl-res lost">✗ LOST</span>`
+            : `<span class="pl-res pushed">PUSH</span>`;
+        } else if (live === "clinch-won") stat = `<span class="pl-res clinched">${condCheck} clinched</span>`;
+        else if (live === "clinch-lost") stat = `<span class="pl-res lost">✗ LINE PASSED</span>`;
+        else if (live === "inplay") stat = `<span class="pl-res inplay"><span class="ip-dot"></span>in play</span>`;
+        const ev = pl.claimed_ev != null ? `claimed EV ${(pl.claimed_ev >= 0 ? "+" : "") + (pl.claimed_ev * 100).toFixed(1)}%` : "";
+        const shop = pl.shop && pl.shop.price_american != null
+          ? `best shop ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}` : "";
+        return `<button class="vs-card" data-gid="${esc(g.game_id)}" aria-label="VALUE play: ${esc(g.away_abbr)} at ${esc(g.home_abbr)}, ${esc(pl.side || "")}">
+          <div class="vs-top">
+            <span class="vs-mu">${crestImg(g.sport, g.away_abbr)}${esc(g.away_abbr)}<span class="vs-at">@</span>${crestImg(g.sport, g.home_abbr)}${esc(g.home_abbr)}</span>
+            <span class="vs-badge ${pl.value_tier === "value-b" ? "vb" : ""}">◆ VALUE${pl.value_tier === "value-b" ? " B" : " A"}</span>
+            ${pl.paper ? `<span class="vs-paper">PAPER</span>` : ""}
+            <span class="vs-stat">${stat}</span>
+          </div>
+          <div class="vs-bet">${esc(pl.side || "—")}${pl.price != null ? `<span class="vs-px">@ ${fmtOdds(pl.price)}</span>` : ""}</div>
+          <div class="vs-conds">
+            <span class="vs-cond">${condCheck}${esc(c.gap)}</span>
+            <span class="vs-cond">${condCheck}${esc(c.split)}</span>
+          </div>
+          ${ev || shop ? `<div class="vs-meta">${[ev, shop].filter(Boolean).join(" · ")}</div>` : ""}
+        </button>`;
+      }).join("");
+      return `<section class="vspot">
+        <div class="vspot-h"><span class="pl-vdia">◆</span><span class="vspot-t">Today's Value Plays</span><span class="vspot-sub">both triggers fired — this is the winning recipe</span></div>
+        <div class="vs-cards">${cards}</div>
+      </section>`;
+    }
+    function bindLead() {
+      const rh = $("recipehero"), tg = $("rh-toggle");
+      if (rh && tg) tg.onclick = () => {
+        const open = !rh.classList.toggle("collapsed");
+        recipeOpenSess = open;
+        tg.setAttribute("aria-expanded", String(open));
+        try { localStorage.setItem("de_recipe", open ? "open" : "closed"); } catch {}
+      };
+      const how = $("rh-how");
+      if (how) how.onclick = (e: any) => { e.stopPropagation(); openRecipeSheet(); };
+      root.querySelectorAll(".vs-card[data-gid]").forEach((c: any) => {
+        c.onclick = () => { const g = findGame(c.dataset.gid); if (g) openDetail(g, "total"); };
+      });
+    }
 
     // Day record across DE Plays (TAKEs only, resolved results only).
     function dayPlaysRecord(games: any[]) {
@@ -601,11 +737,12 @@ export default function Home() {
           ${resHtml}
         </button>`;
       }
-      return `<button class="play take ${rCls}" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="${MK_FULL[mk]} play: ${esc(pl.side || "")}">
+      return `<button class="play take ${rCls}" data-gid="${esc(g.game_id)}" data-mk="${mk}" aria-label="${MK_FULL[mk]} accuracy play: ${esc(pl.side || "")}">
         <span class="pl-mk">${MK_LAB[mk]}</span>
         <span class="pl-side">${esc(pl.side || "—")}</span>
         ${pl.price != null ? `<span class="pl-px">${fmtOdds(pl.price)}</span>` : ""}
         ${conf}
+        <span class="pl-acc" title="Accuracy play — hits ~60%, priced to ~breakeven. Not the VALUE recipe.">ACC</span>
         ${resHtml}
       </button>`;
     }
@@ -822,10 +959,13 @@ export default function Home() {
         const games = gamesForLeague(payload, league);
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         if (band) band.innerHTML = playsBand(games);
+        // The strategy hierarchy leads the feed: recipe hero, then today's VALUE
+        // spotlight, then the game list.
+        const lead = recipeHero() + valueSpotlight(games);
         if (!games.length) {
-          body.innerHTML = `<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
+          body.innerHTML = `${lead}<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
         } else {
-          body.innerHTML = `${recentResultsRail()}<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+          body.innerHTML = `${lead}${recentResultsRail()}<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
             <div class="refnote">${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)} · <button class="refnote-link" id="open-analyzer">DiamondEdge model analyzer →</button></div>`;
         }
       }
@@ -833,6 +973,7 @@ export default function Home() {
       SPORTS.forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = payload ? gamesForLeague(payload, lg).length : 0; el.textContent = c || ""; } });
       const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer");
       bindCards();
+      bindLead();
       animateCounters(body);
       if (band) animateCounters(band);
       bindTilt(body);
@@ -1014,6 +1155,7 @@ export default function Home() {
         head = `<div class="shp-head take ${rCls} ${pl.value_tier ? "is-value" : ""}">
           <span class="shp-mk">${MK_FULL[mk]}</span>
           ${vBadge}
+          ${!pl.value_tier ? `<span class="shp-accbadge">accuracy play</span>` : ""}
           <span class="shp-act">TAKE</span>
           <span class="shp-side">${esc(pl.side || "—")}</span>
           ${pl.price != null ? `<span class="shp-px">${fmtOdds(pl.price)}</span>` : ""}
@@ -1028,6 +1170,24 @@ export default function Home() {
           <span class="shp-passnote">no edge cleared the gate in this market</span>
         </div>`;
       }
+      // VALUE play leads with the recipe conditions met + claimed EV + shop price.
+      let recipeBlk = "";
+      if (pl.action === "TAKE" && pl.value_tier) {
+        const c = valueConds(pl);
+        recipeBlk = `<div class="shp-recipe">
+          <div class="sr-h"><span class="pl-vdia">◆</span> Recipe conditions met</div>
+          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.gap)}</b>${c.gapSub ? ` <span class="sr-sub">${esc(c.gapSub)}</span>` : ""} <span class="sr-need">needs ≥ ${c.need}</span></div>
+          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.split)}</b> <span class="sr-sub">the market is split — someone's line is soft</span></div>
+          <div class="sr-chips">
+            ${pl.claimed_ev != null ? `<span class="mvm-chip ${pl.claimed_ev >= 0 ? "pos" : "neg"}">claimed EV ${(pl.claimed_ev >= 0 ? "+" : "") + (pl.claimed_ev * 100).toFixed(1)}%</span>` : ""}
+            ${pl.price != null ? `<span class="mvm-chip">morning line ${fmtOdds(pl.price)}</span>` : ""}
+            ${pl.shop && pl.shop.price_american != null ? `<span class="mvm-chip be">best shop ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}</span>` : ""}
+          </div>
+        </div>`;
+      }
+      // Regular TAKE = accuracy play: honest framing, right up front.
+      const accNote = pl.action === "TAKE" && !pl.value_tier
+        ? `<div class="shp-accnote"><b>Accuracy play</b> — picks like this hit ~60–63% of the time, but at prices where that's roughly breakeven money. A good prediction, not a proven edge. The gold <b>◆ VALUE</b> plays are the winning strategy.</div>` : "";
       const why = pl.why && pl.why.length
         ? `<ul class="shp-why">${pl.why.map((w: any) => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
       // model vs market numbers for this market
@@ -1053,7 +1213,7 @@ export default function Home() {
       const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
       const vrec = pl.value_tier ? valueRecordBlock(pl) : "";
       return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"} ${pl.value_tier ? "is-value" : ""} ${focus ? "hl" : ""}" id="shp-${mk}">
-        ${head}${why}${mvm}${viz}${vrec}
+        ${head}${recipeBlk}${accNote}${why}${mvm}${viz}${vrec}
       </div>`;
     }
 
@@ -1144,10 +1304,12 @@ export default function Home() {
         scoreBanner = `<div class="sh-score ${gs.kind}"><span class="shs-mid">${gs.kind === "final" ? "Final" : "Live"}</span><span class="shs-tot">${num(gs.score.total, 0)} ${SPORT_UNIT[sp] || ""}</span></div>`;
       }
 
+      // VALUE plays lead the sheet — the winning recipe outranks accuracy plays.
+      const mksOrdered = MARKETS.slice().sort((a, b) => (P[b].value_tier ? 1 : 0) - (P[a].value_tier ? 1 : 0));
       const plays = `<div class="dsec de-dsec">
         <div class="dsec-h"><span class="gp-dia">◆</span> DiamondEdge Plays</div>
         <div class="dsec-b shp-wrap">
-          ${MARKETS.map((mk) => sheetPlay(g, P[mk], focusMk === mk)).join("")}
+          ${mksOrdered.map((mk) => sheetPlay(g, P[mk], focusMk === mk)).join("")}
           ${anyTake ? playsTrackTable() : `<div class="shp-none">No plays today — the gate passed on all three markets. The model read below is context, not a bet.</div>`}
         </div>
       </div>`;
@@ -1235,6 +1397,79 @@ export default function Home() {
         const mu = () => { end(); window.removeEventListener("mousemove", mm); window.removeEventListener("mouseup", mu); };
         window.addEventListener("mousemove", mm); window.addEventListener("mouseup", mu);
       });
+    }
+    // ===================== RECIPE EXPLAINER SHEET =====================
+    // Full "How it works" for the winning recipe: why market-error + soft-line
+    // detection wins where out-predicting Vegas failed, the validation table
+    // (val / gate / forward paper), and the honest status.
+    function openRecipeSheet() {
+      detail = { _recipe: true };
+      const vr = (payload && payload.value_record) || {};
+      const fwd = vr.forward || {};
+      const fRow = (lab: string, o: any) => {
+        if (!o || !o.n_settled) return `<tr><td>${esc(lab)}</td><td class="num">0</td><td class="num">—</td><td class="num">—</td></tr>`;
+        const ci = o.hit_ci95;
+        const hit = o.hit != null ? `${saPct(o.hit, 1)}${ci && ci[0] != null ? ` <span class="vr-ci">[${saPct(ci[0], 0)}–${saPct(ci[1], 0)}]</span>` : ""}` : "—";
+        const roi = o.roi != null ? `<span class="${o.roi >= 0 ? "pos" : "neg"}">${(o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1)}%</span>` : "—";
+        return `<tr><td>${esc(lab)} <span class="vr-rec">${esc(o.record || "")}</span></td><td class="num">${o.n_settled}</td><td class="num">${hit}</td><td class="num">${roi}</td></tr>`;
+      };
+      const html = `
+        <div class="sheet-bg" id="sheet-bg"></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+          <div class="sh-grab" id="sh-grab"><span></span></div>
+          <div class="sh-head gold">
+            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <div class="sh-sport">DiamondEdge · Value Tier</div>
+            <div class="rcp-title"><span class="pl-vdia">◆</span>The Winning Recipe</div>
+            <div class="sh-meta">MLB totals at the morning line · ${RECIPE_REC}</div>
+          </div>
+          <div class="sh-body">
+            <div class="dsec">
+              <div class="dsec-h">The recipe</div>
+              <div class="dsec-b rcp-steps">
+                <div class="rcp-step"><span class="rh-n">1</span><div><b>Model vs market gap ≥ 3 pts.</b> Our de-vigged probability for the total disagrees with the morning consensus by at least 3 probability points.</div></div>
+                <div class="rcp-step"><span class="rh-n">2</span><div><b>Books split on the line.</b> The books quote ≥ 2 distinct total lines the same morning — the market itself is split, so someone's number is soft.</div></div>
+                <div class="rcp-step"><span class="rh-n">3</span><div><b>Bet the model's side of the total</b> at the morning line, fair prices only (−135 to +135).</div></div>
+              </div>
+            </div>
+            <div class="dsec">
+              <div class="dsec-h">Why this wins where prediction failed</div>
+              <div class="dsec-b rcp">
+                <p><b>Out-predicting Vegas doesn't pay.</b> Our own accuracy plays prove it: they win roughly 60–63% of the time and still make about breakeven money, because the prices they come at (around −184) need ~65% just to break even. Being right a lot isn't an edge if the market charges you for it.</p>
+                <p><b>So the recipe stops competing with the market and starts auditing it.</b> Instead of asking "who wins?", it asks "is the market's number wrong this morning?" — and only bets when there's evidence it is.</p>
+                <p><b>Trigger one is the disagreement.</b> When our model's probability for a total is 3+ points away from the de-vigged morning consensus, that's a real disagreement, not noise. But a disagreement alone doesn't tell you who's wrong.</p>
+                <p><b>Trigger two is the tell.</b> When the books themselves are quoting two or more different total lines the same morning, the market is split — it hasn't settled on the number, and somebody's line is soft. That's the evidence the gap is the market's error, not ours.</p>
+                <p><b>Both together, and only then.</b> Take the model's side of the total at the morning line, at fair prices only (−135 to +135). That fires about once a slate. Most markets, most days, it doesn't fire — and passing is the strategy working, not the strategy missing.</p>
+                <p><b>The result:</b> 60.9% over 567 validation bets at a −106 median price — +15.6% ROI (CI +8.1 to +23.2) — and 5-1 in the June one-shot gate. That's the same hit rate the accuracy plays get, bought at coin-flip prices instead of favorite prices. The price is the whole difference.</p>
+              </div>
+            </div>
+            <div class="dsec">
+              <div class="dsec-h">Validation record</div>
+              <div class="dsec-b">
+                <div class="vr-line">${esc(vr.val_record || "Tier A (DISP3) val: 60.9% hit CI [57.0, 64.7], n=567 @ median -106, ROI +15.6% CI [+8.1, +23.2] (embargoed 2024|2025|Apr-May 2026)")}</div>
+                <div class="vr-line">${esc(vr.gate || "June 2026 one-shot gate: Tier A 5-1 (n=6), Tier A+B 14-10 (n=24)")}</div>
+                <table class="dsa-tab vr-tab">
+                  <thead><tr><th>Forward (paper)</th><th>n</th><th>Hit</th><th>ROI</th></tr></thead>
+                  <tbody>${fRow("Tier A", fwd.tier_a)}${fRow("Tier A+B", fwd.tier_ab)}${fRow("Tier A shopped", fwd.tier_a_shopped)}</tbody>
+                </table>
+              </div>
+            </div>
+            <div class="dsec">
+              <div class="dsec-h">Honest status</div>
+              <div class="dsec-b rcp-status">
+                <p>Paper-tracking forward — every trigger is logged and graded, no real stakes yet. The ${esc(vr.claimed_forward || "defensible forward claim is ~54.6% at ~-108 (= +3.8% EV) — NOT the realized val 60.9%")}.</p>
+                <p>Auto-kill is armed: if the forward record decays (trailing hit, EV gap, or trigger-rate alarms), the tier shuts itself down. Real stakes only after the scaling gate — ≥3 months, ≥150 settled tier-A bets, hit ≥ breakeven, ROI ≥ 0.</p>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      $("sheet-close").onclick = closeDetail;
+      $("sheet-bg").onclick = closeDetail;
+      bindSheetDrag($("sheet"), $("sh-grab"));
     }
     document.addEventListener("keydown", (e: any) => { if (e.key === "Escape" && detail) closeDetail(); });
 
