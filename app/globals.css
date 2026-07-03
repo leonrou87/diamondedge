@@ -568,37 +568,90 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
   .rh-how{margin-left:0}
 }
 
-/* ── TODAY'S VALUE PLAYS spotlight (above the game list) ───────────────── */
-.vspot{position:relative;border-radius:var(--r-lg);border:1px solid rgba(255,200,80,.6);background:linear-gradient(120deg,#33270a,#5c440d 50%,#33270a);box-shadow:0 1px 1px rgba(255,255,255,.2) inset,0 14px 36px rgba(140,100,15,.32);color:#fff;padding:12px 14px 13px;margin-bottom:12px;overflow:hidden;animation:rise .5s .06s var(--spring) both}
-.vspot::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 32%,rgba(255,220,120,.12) 46%,transparent 60%);transform:translateX(-100%);animation:goldsweep 5.5s 2s ease infinite;pointer-events:none}
-.vspot-h{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
-.vspot-h .pl-vdia{color:#ffd24d;font-size:12px;text-shadow:0 1px 6px rgba(255,200,60,.5)}
-.vspot-t{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:#ffe9ad}
-.vspot-sub{font-family:var(--mono);font-size:9px;color:#d8c690}
-.vs-cards{display:flex;flex-direction:column;gap:8px;margin-top:10px;position:relative;z-index:1}
-.vs-card{display:block;width:100%;text-align:left;border:1px solid rgba(255,220,120,.4);background:rgba(255,255,255,.08);border-radius:14px;padding:11px 13px;cursor:pointer;color:#fff;font-family:inherit;transition:transform .22s var(--spring),box-shadow .25s ease,background .25s ease}
-.vs-card:hover{background:rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(0,0,0,.25)}
-.vs-card:active{transform:scale(.98)}
-.vs-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vs-mu{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:13px;color:#fff}
-.vs-mu img,.vs-mu .crest{width:20px;height:20px;object-fit:contain}
-.vs-mu .crest{border-radius:5px;font-size:7px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;color:#fff;background:var(--navy)}
+/* ── TODAY'S CARD: ranked featured-play board (above the game list) ────── */
+.tcard{position:relative;border-radius:var(--r-lg);border:1px solid rgba(255,200,80,.6);background:linear-gradient(120deg,#33270a,#5c440d 50%,#33270a);box-shadow:0 1px 1px rgba(255,255,255,.2) inset,0 14px 36px rgba(140,100,15,.32);color:#fff;padding:12px 14px 13px;margin-bottom:12px;overflow:hidden;animation:rise .5s .06s var(--spring) both}
+.tcard::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 32%,rgba(255,220,120,.12) 46%,transparent 60%);transform:translateX(-100%);animation:goldsweep 5.5s 2s ease infinite;pointer-events:none}
+.tc-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tc-star{color:#ffd24d;font-size:13px;line-height:1;text-shadow:0 1px 6px rgba(255,200,60,.55)}
+.tc-t{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#ffe9ad}
+.tc-sub2{font-family:var(--mono);font-size:9px;color:#d8c690}
+.tc-count{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:9.5px;color:#ffe9ad;background:rgba(255,220,120,.14);border:1px solid rgba(255,220,120,.35);border-radius:7px;padding:2.5px 8px;white-space:nowrap}
+.tc-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;position:relative;z-index:1}
+.tc-item{display:flex;align-items:stretch;gap:11px;width:100%;text-align:left;border:1px solid rgba(255,220,120,.42);background:rgba(255,255,255,.08);border-radius:14px;padding:11px 13px;cursor:pointer;color:#fff;font-family:inherit;transition:transform .22s var(--spring),box-shadow .25s ease,background .25s ease}
+.tc-item:hover{background:rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(0,0,0,.25)}
+.tc-item:active{transform:scale(.985)}
+.tc-item.silver{border-color:rgba(200,210,225,.35);background:rgba(150,165,190,.13)}
+.tc-rank{align-self:center;flex-shrink:0;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-family:var(--disp);font-weight:800;font-size:13px;background:linear-gradient(135deg,#ffe9ad,#ffd24d);color:#5a4305;box-shadow:0 2px 10px rgba(255,200,60,.4)}
+.tc-item.silver .tc-rank{background:linear-gradient(135deg,#e8edf5,#b9c4d4);color:#33404f;box-shadow:0 2px 8px rgba(20,30,45,.3)}
+.tc-main{flex:1;min-width:0}
+.tc-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tc-badge{font-family:var(--disp);font-weight:800;font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;border-radius:5px;padding:2.5px 8px;white-space:nowrap}
+.tc-badge.gold{color:#5a4305;background:linear-gradient(135deg,#ffe9ad,#ffd24d)}
+.tc-badge.silver{color:#e8edf5;background:rgba(185,196,212,.22);border:1px solid rgba(200,210,225,.4)}
+.tc-tier{font-family:var(--mono);font-weight:700;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#ffe9ad;background:rgba(255,220,120,.14);border-radius:4px;padding:1.5px 5px}
+.tc-mu{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:13px;color:#fff;margin-top:7px}
+.tc-mu img,.tc-mu .crest{width:20px;height:20px;object-fit:contain}
+.tc-mu .crest{border-radius:5px;font-size:7px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;color:#fff;background:var(--navy)}
 .vs-at{opacity:.6;font-weight:400;font-size:11px}
-.vs-badge{font-family:var(--disp);font-weight:800;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#5a4305;background:linear-gradient(135deg,#ffe9ad,#ffd24d);border-radius:5px;padding:2.5px 7px;white-space:nowrap}
-.vs-badge.vb{color:#0b4a2e;background:linear-gradient(135deg,#c9f5e0,#5fe0a8)}
+.tc-bet{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:.01em;color:#ffd24d;margin-top:4px;line-height:1.1}
+.tc-item.silver .tc-bet{color:#eef2f8;font-size:17px}
+.tc-bet .vs-px{font-family:var(--mono);font-weight:600;font-size:12px;color:#ffe9ad}
+.tc-item.silver .tc-bet .vs-px{color:#c9d4e2}
+.tc-conf{font-family:var(--mono);font-weight:600;font-size:10px;color:#8ff0b0;background:rgba(126,226,160,.13);border:1px solid rgba(126,226,160,.3);border-radius:6px;padding:2px 7px}
+.tc-item.silver .tc-conf{color:#dbe3ee;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.tc-lread{margin-top:8px;display:flex;min-width:0}
 .vs-paper{font-family:var(--mono);font-weight:700;font-size:7.5px;letter-spacing:.08em;color:#3d3520;background:#f0e8cf;border:1px solid rgba(0,0,0,.12);border-radius:4px;padding:1.5px 4px}
 .vs-stat{margin-left:auto;display:inline-flex}
-.vs-bet{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:.01em;color:#ffd24d;margin-top:6px;line-height:1.1}
-.vs-bet .vs-px{font-family:var(--mono);font-weight:600;font-size:12px;color:#ffe9ad;margin-left:7px}
 .vs-conds{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .vs-cond{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-weight:600;font-size:10px;color:#8ff0b0;background:rgba(126,226,160,.13);border:1px solid rgba(126,226,160,.32);border-radius:7px;padding:3.5px 8px;white-space:nowrap}
 .vs-cond .chk{stroke-dasharray:20;stroke-dashoffset:20;animation:chkdraw .45s .4s ease forwards}
 .vs-meta{font-family:var(--mono);font-size:9.5px;color:#e2d1a0;margin-top:8px}
-.vspot.quiet{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px dashed rgba(200,150,30,.45);box-shadow:var(--shadow);color:var(--ink2)}
-.vspot.quiet::after{display:none}
-.vspot.quiet .vspot-t{color:#7a5405}
-.vspot.quiet .pl-vdia{color:#c8860a;text-shadow:none}
-.vq-line{font-size:12px;color:var(--ink2);margin-top:6px;line-height:1.5}
+.tcard.quiet{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px dashed rgba(200,150,30,.45);box-shadow:var(--shadow);color:var(--ink2)}
+.tcard.quiet::after{display:none}
+.tcard.quiet .tc-t{color:#7a5405}
+.tcard.quiet .tc-star{color:#c8860a;text-shadow:none}
+.tcard.quiet .tc-count{color:#7a5405;background:rgba(200,134,10,.08);border-color:rgba(200,150,30,.3)}
+.tc-quiet{font-size:12px;color:var(--ink2);margin-top:6px;line-height:1.5}
+
+/* ── FEATURED tile markers: gold star corner (VALUE) / silver (accuracy) ── */
+.feat-corner{position:absolute;top:0;right:0;width:32px;height:32px;pointer-events:none;z-index:2;background:linear-gradient(225deg,#ffd24d 0%,#f0b429 46%,transparent 46%)}
+.feat-corner i{position:absolute;top:2.5px;right:3.5px;font-style:normal;font-size:11px;line-height:1;color:#5a4305}
+.feat-corner.silver{background:linear-gradient(225deg,#e8edf5 0%,#aebbcd 46%,transparent 46%)}
+.feat-corner.silver i{color:#33404f}
+.tile.feat-gold{border-color:rgba(220,165,45,.8)}
+.tile.feat-silver{border-color:rgba(150,165,190,.8);box-shadow:0 1px 1px rgba(255,255,255,.55) inset,0 10px 26px rgba(60,75,95,.16)}
+.tile.feat-gold .t-status,.tile.feat-silver .t-status{padding-right:24px}
+
+/* ── "Featured only" slate filter (plays band) ─────────────────────────── */
+.pb-filter{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:#e6ecf5;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:5px 10px;min-height:28px;cursor:pointer;transition:.2s var(--spring);white-space:nowrap}
+.pb-filter .pb-fstar{color:#ffd98a;font-size:11px;line-height:1}
+.pb-filter:hover{background:rgba(255,255,255,.16)}
+.pb-filter:active{transform:scale(.95)}
+.pb-filter.on{color:#3a2b05;background:linear-gradient(135deg,#ffe9ad,#ffd24d);border-color:transparent;box-shadow:0 3px 10px rgba(255,200,60,.35)}
+.pb-filter.on .pb-fstar{color:#7a5405}
+.pb-filter .pb-fcnt{font-family:var(--mono);font-size:9px;background:rgba(0,0,0,.14);border-radius:5px;padding:1px 5px}
+.feat-clear{margin-top:14px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#3a2b05;background:linear-gradient(135deg,#ffe9ad,#ffd24d);border:0;border-radius:10px;padding:9px 16px;cursor:pointer;box-shadow:0 4px 14px rgba(255,200,60,.35);transition:.2s var(--spring)}
+.feat-clear:active{transform:scale(.95)}
+
+/* ── LIVE READ pill (latest_read — pre-game re-assessment) ─────────────── */
+.lread{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-weight:700;font-size:9.5px;line-height:1.2;border-radius:7px;padding:3.5px 8px;max-width:100%;min-width:0}
+.lread i{font-style:normal;font-weight:600;font-size:7.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.72;white-space:nowrap;flex-shrink:0}
+.lread .lr-x{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.lread.up{color:#0a6b30;background:var(--greenbg);border:1px solid var(--greenline)}
+.lread.hold{color:var(--ink2);background:var(--slatebg);border:1px solid var(--line)}
+.lread.down{color:#9a5b00;background:var(--amberbg);border:1px solid #f0d49a}
+/* dark gold surface (Today's Card) */
+.tc-item .lread.up{color:#8ff0b0;background:rgba(126,226,160,.14);border-color:rgba(126,226,160,.35)}
+.tc-item .lread.hold{color:#dbe3ee;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.tc-item .lread.down{color:#ffce7a;background:rgba(255,190,90,.16);border-color:rgba(255,200,110,.38)}
+.h-lread,.t-lread{display:flex;min-width:0}
+.t-lread .lread{font-size:8.5px;padding:3px 7px}
+.shp-lread{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+.shp-lread .lr-note{font-family:var(--mono);font-size:9px;color:var(--ink3)}
+
+/* ── model transparency line (sheet + analyzer footers) ────────────────── */
+.modelline{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-top:10px;text-align:center}
+.modelline .ml-k{font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);background:var(--line2);border-radius:4px;padding:2px 6px}
 
 /* ── accuracy-play microlabel (Tier 2 honesty) ─────────────────────────── */
 .pl-acc{font-family:var(--mono);font-weight:700;font-size:7px;letter-spacing:.09em;color:#aebfd6;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:4px;padding:1.5px 4px}

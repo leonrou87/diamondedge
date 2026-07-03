@@ -196,6 +196,9 @@ export default function Home() {
         p_model_over: raw.p_model_over != null ? Number(raw.p_model_over) : null,
         p_mkt_over: raw.p_mkt_over != null ? Number(raw.p_mkt_over) : null,
         shop: raw.shop || null,
+        // live-updating latest read (model workflow re-assesses unstarted plays);
+        // rendered when present, silently absent otherwise.
+        latest_read: raw.latest_read && typeof raw.latest_read === "object" ? raw.latest_read : null,
         why: Array.isArray(raw.why) ? raw.why : [],
         result: normPlayResult(raw.result),
         src: "de",
@@ -240,6 +243,69 @@ export default function Home() {
       return "inplay";
     }
     const hasTake = (g: any) => { const P = gamePlays(g); return MARKETS.some((m) => P[m].action === "TAKE"); };
+
+    // ===================== FEATURED PLAYS (Today's Card) =====================
+    // FEATURED = the day's headline plays: every VALUE-tier play (the winning recipe)
+    // plus any accuracy TAKE graded "featured" (the model's surest tier — still priced
+    // accordingly). Everything else stays quiet on the grid; PASS games show nothing.
+    const isFeatPlay = (pl: any) => !!pl && pl.action === "TAKE" && (pl.value_tier || pl.tier === "featured");
+    // Featured kind for a whole game: "gold" (VALUE) outranks "silver" (featured accuracy).
+    function featKindOf(P: any) {
+      let k: any = null;
+      MARKETS.forEach((mk) => {
+        const pl = P[mk];
+        if (!isFeatPlay(pl)) return;
+        if (pl.value_tier) k = "gold"; else if (!k) k = "silver";
+      });
+      return k;
+    }
+    const gameFeatured = (g: any) => !!featKindOf(gamePlays(g));
+    // The day's featured plays, ranked: VALUE A → VALUE B → featured accuracy (by confidence).
+    function featuredPlays(games: any[]) {
+      const out: any[] = [];
+      games.forEach((g: any) => {
+        const P = gamePlays(g);
+        MARKETS.forEach((mk) => { const pl = P[mk]; if (isFeatPlay(pl)) out.push({ g, pl }); });
+      });
+      const rank = (pl: any) => (pl.value_tier === "value-a" ? 0 : pl.value_tier === "value-b" ? 1 : 2);
+      out.sort((a, b) => (rank(a.pl) - rank(b.pl)) || ((b.pl.p || 0) - (a.pl.p || 0)));
+      return out;
+    }
+
+    // ---- LIVE READ pill: de_plays.<mk>.latest_read, written by the assessment
+    // workflow as first pitch approaches. Renders only for unstarted games when the
+    // field exists; the graded morning play is never altered by it.
+    function latestReadPill(g: any, pl: any) {
+      const lr = pl && pl.latest_read;
+      if (!lr || typeof lr !== "object" || (g.status || "pre").toLowerCase() !== "pre") return "";
+      const st = String(lr.status || "").toLowerCase();
+      const cls = st === "strengthening" ? "up" : st === "fading" ? "down" : "hold";
+      const arrow = st === "strengthening" ? "↑" : st === "fading" ? "↓" : "→";
+      const word = st === "strengthening" || st === "fading" ? st : "holding";
+      const mins = lr.minutes_to_start != null && !isNaN(Number(lr.minutes_to_start)) ? Math.max(0, Math.round(Number(lr.minutes_to_start))) : null;
+      const toGo = mins != null ? ` · ${mins >= 100 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`} to ${g.sport === "mlb" ? "first pitch" : "start"}` : "";
+      const tip = [
+        lr.p_model != null ? `model ${(Number(lr.p_model) * 100).toFixed(1)}%` : "",
+        lr.p_mkt != null ? `market ${(Number(lr.p_mkt) * 100).toFixed(1)}%` : "",
+        lr.edge != null ? `edge ${(Number(lr.edge) >= 0 ? "+" : "") + (Number(lr.edge) * 100).toFixed(1)} pts` : "",
+        lr.nlines != null ? `${lr.nlines} lines` : "",
+        lr.ev != null ? `EV ${(Number(lr.ev) >= 0 ? "+" : "") + (Number(lr.ev) * 100).toFixed(1)}%` : "",
+        lr.assessed_at ? `assessed ${String(lr.assessed_at).slice(0, 16).replace("T", " ")}` : "",
+      ].filter(Boolean).join(" · ");
+      return `<span class="lread ${cls}" title="Latest model read — the graded morning play is unchanged.${tip ? " " + esc(tip) : ""}"><i>latest read</i><b class="lr-x">${arrow} ${esc(word)}${esc(toGo)}</b></span>`;
+    }
+    // Tiny model-transparency line off payload.model_status — renders only when served.
+    function modelStatusLine() {
+      const ms = (payload && payload.model_status) || (indexData && indexData.model_status) || null;
+      if (!ms || typeof ms !== "object") return "";
+      const bits: string[] = [];
+      if (ms.last_retrain) bits.push(`retrained ${esc(String(ms.last_retrain).slice(0, 10))}`);
+      if (ms.champion_hash) bits.push(`champion ${esc(String(ms.champion_hash).slice(0, 7))}`);
+      if (ms.challenger_verdict) bits.push(`challenger ${esc(String(ms.challenger_verdict))}`);
+      if (ms.next_assessment) bits.push(`next check ${esc(String(ms.next_assessment).slice(0, 16).replace("T", " "))}`);
+      if (!bits.length) return "";
+      return `<div class="modelline"><span class="ml-k">Model</span>${bits.join(" · ")}</div>`;
+    }
 
     // ===================== THE WINNING RECIPE (VALUE tier) =====================
     // The ONE validated winning strategy: MLB totals at the morning line when BOTH
@@ -306,27 +372,21 @@ export default function Home() {
       </section>`;
     }
 
-    // Today's VALUE plays, hero placement above the game list.
-    function todaysValuePlays(games: any[]) {
-      const out: any[] = [];
-      games.forEach((g: any) => {
-        const P = gamePlays(g);
-        MARKETS.forEach((mk) => { const pl = P[mk]; if (pl.action === "TAKE" && pl.value_tier) out.push({ g, pl }); });
-      });
-      out.sort((a, b) => (a.pl.value_tier === "value-a" ? 0 : 1) - (b.pl.value_tier === "value-a" ? 0 : 1));
-      return out;
-    }
-    function valueSpotlight(games: any[]) {
+    // TODAY'S CARD — the day's featured plays as a ranked, numbered board.
+    // VALUE plays lead (gold, "★ FEATURED · THE RECIPE"), then featured-tier
+    // accuracy plays (silver, "ACCURACY — priced accordingly"). Merged with /
+    // replacing the old VALUE spotlight; if only VALUE plays qualify, only they show.
+    function todaysCard(games: any[]) {
       if (rangeMode || curDate !== todayISO() || league !== "mlb") return "";
-      const vp = todaysValuePlays(games);
-      if (!vp.length) {
-        return `<section class="vspot quiet">
-          <div class="vspot-h"><span class="pl-vdia">◆</span><span class="vspot-t">Value Plays</span></div>
-          <div class="vq-line">No value plays today — the recipe didn't trigger (that's discipline, not absence).</div>
+      const fp = featuredPlays(games);
+      if (!fp.length) {
+        return `<section class="tcard quiet">
+          <div class="tc-h"><span class="tc-star">★</span><span class="tc-t">Today's Card</span><span class="tc-count">0 featured plays today</span></div>
+          <div class="tc-quiet">No featured plays today — the recipe didn't trigger (that's discipline, not absence).</div>
         </section>`;
       }
-      const cards = vp.map(({ g, pl }: any) => {
-        const c = valueConds(pl);
+      const items = fp.map(({ g, pl }: any, i: number) => {
+        const gold = !!pl.value_tier;
         const live = playLiveState(g, pl);
         const r = pl.result;
         let stat = "";
@@ -337,27 +397,36 @@ export default function Home() {
         } else if (live === "clinch-won") stat = `<span class="pl-res clinched">${condCheck} clinched</span>`;
         else if (live === "clinch-lost") stat = `<span class="pl-res lost">✗ LINE PASSED</span>`;
         else if (live === "inplay") stat = `<span class="pl-res inplay"><span class="ip-dot"></span>in play</span>`;
+        let conds = "";
+        if (gold) {
+          const c = valueConds(pl);
+          conds = `<div class="vs-conds"><span class="vs-cond">${condCheck}${esc(c.gap)}</span><span class="vs-cond">${condCheck}${esc(c.split)}</span></div>`;
+        }
         const ev = pl.claimed_ev != null ? `claimed EV ${(pl.claimed_ev >= 0 ? "+" : "") + (pl.claimed_ev * 100).toFixed(1)}%` : "";
         const shop = pl.shop && pl.shop.price_american != null
           ? `best shop ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}` : "";
-        return `<button class="vs-card" data-gid="${esc(g.game_id)}" aria-label="VALUE play: ${esc(g.away_abbr)} at ${esc(g.home_abbr)}, ${esc(pl.side || "")}">
-          <div class="vs-top">
-            <span class="vs-mu">${gCrest(g, "away")}${esc(g.away_abbr)}<span class="vs-at">@</span>${gCrest(g, "home")}${esc(g.home_abbr)}</span>
-            <span class="vs-badge ${pl.value_tier === "value-b" ? "vb" : ""}">◆ VALUE${pl.value_tier === "value-b" ? " B" : " A"}</span>
-            ${pl.paper ? `<span class="vs-paper">PAPER</span>` : ""}
-            <span class="vs-stat">${stat}</span>
+        const lread = latestReadPill(g, pl);
+        return `<button class="tc-item ${gold ? "gold" : "silver"}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}"
+          aria-label="Featured play ${i + 1}: ${esc(g.away_abbr)} at ${esc(g.home_abbr)}, ${esc(pl.side || "")}">
+          <span class="tc-rank">${i + 1}</span>
+          <div class="tc-main">
+            <div class="tc-top">
+              <span class="tc-badge ${gold ? "gold" : "silver"}">${gold ? "★ FEATURED · THE RECIPE" : "ACCURACY — priced accordingly"}</span>
+              ${gold ? `<span class="tc-tier">${pl.value_tier === "value-b" ? "tier B" : "tier A"}</span>` : ""}
+              ${pl.paper ? `<span class="vs-paper">PAPER</span>` : ""}
+              <span class="vs-stat">${stat}</span>
+            </div>
+            <div class="tc-mu">${gCrest(g, "away")}${esc(g.away_abbr)}<span class="vs-at">@</span>${gCrest(g, "home")}${esc(g.home_abbr)}</div>
+            <div class="tc-bet">${esc(pl.side || "—")}${pl.price != null ? `<span class="vs-px">@ ${fmtOdds(pl.price)}</span>` : ""}${pl.p != null ? `<span class="tc-conf">${saPct(pl.p, 1)} conf</span>` : ""}</div>
+            ${conds}
+            ${lread ? `<div class="tc-lread">${lread}</div>` : ""}
+            ${ev || shop ? `<div class="vs-meta">${[ev, shop].filter(Boolean).join(" · ")}</div>` : ""}
           </div>
-          <div class="vs-bet">${esc(pl.side || "—")}${pl.price != null ? `<span class="vs-px">@ ${fmtOdds(pl.price)}</span>` : ""}</div>
-          <div class="vs-conds">
-            <span class="vs-cond">${condCheck}${esc(c.gap)}</span>
-            <span class="vs-cond">${condCheck}${esc(c.split)}</span>
-          </div>
-          ${ev || shop ? `<div class="vs-meta">${[ev, shop].filter(Boolean).join(" · ")}</div>` : ""}
         </button>`;
       }).join("");
-      return `<section class="vspot">
-        <div class="vspot-h"><span class="pl-vdia">◆</span><span class="vspot-t">Today's Value Plays</span><span class="vspot-sub">both triggers fired — this is the winning recipe</span></div>
-        <div class="vs-cards">${cards}</div>
+      return `<section class="tcard">
+        <div class="tc-h"><span class="tc-star">★</span><span class="tc-t">Today's Card</span><span class="tc-sub2">the day's featured plays, ranked</span><span class="tc-count">${fp.length} featured play${fp.length > 1 ? "s" : ""} today</span></div>
+        <div class="tc-list">${items}</div>
       </section>`;
     }
     function bindLead() {
@@ -370,8 +439,8 @@ export default function Home() {
       };
       const how = $("rh-how");
       if (how) how.onclick = (e: any) => { e.stopPropagation(); openRecipeSheet(); };
-      root.querySelectorAll(".vs-card[data-gid]").forEach((c: any) => {
-        c.onclick = () => { const g = findGame(c.dataset.gid); if (g) openDetail(g, "total"); };
+      root.querySelectorAll(".tc-item[data-gid]").forEach((c: any) => {
+        c.onclick = () => { const g = findGame(c.dataset.gid); if (g) openDetail(g, c.dataset.mk || "total"); };
       });
     }
 
@@ -420,6 +489,9 @@ export default function Home() {
     let payload: any = null;        // current day's payload
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
+    // "Featured only" slate filter — one tap, persisted across sessions.
+    let featOnly = false;
+    try { featOnly = localStorage.getItem("de_feat_only") === "1"; } catch {}
 
     let minDate = "2020-09-11";
     let maxDate = todayISO();
@@ -727,9 +799,10 @@ export default function Home() {
     // TAKEs ordered for the tile micro-lines: VALUE first, then total > spread > ML.
     function tileTakes(g: any, P: any) {
       const prio: any = { total: 0, spread: 1, moneyline: 2 };
+      const w = (p: any) => (p.value_tier ? 4 : 0) + (p.tier === "featured" ? 2 : 0);
       return MARKETS.map((mk) => P[mk])
         .filter((p: any) => p.action === "TAKE")
-        .sort((a: any, b: any) => ((b.value_tier ? 4 : 0) - (a.value_tier ? 4 : 0)) || (prio[a.market] - prio[b.market]));
+        .sort((a: any, b: any) => (w(b) - w(a)) || (prio[a.market] - prio[b.market]));
     }
     // ONE compact DE-play micro-line: "◆ UNDER 12 −112 · 63%" (+ ✓/✗ state tint).
     function playMicro(g: any, pl: any) {
@@ -808,6 +881,8 @@ export default function Home() {
     function heroTile(g: any, idx: number, gs: any, P: any, vPlay: any) {
       const takes = tileTakes(g, P);
       const lead = vPlay || takes[0] || null;
+      const fk = featKindOf(P);
+      const lread = lead ? latestReadPill(g, lead) : "";
       const ps = g.predicted_score || {};
       const predTxt = ps.away != null && ps.home != null
         ? `<span class="h-pred">pred <b>${esc(g.away_abbr)} ${num(ps.away, 1)}–${num(ps.home, 1)} ${esc(g.home_abbr)}</b></span>` : "";
@@ -821,8 +896,9 @@ export default function Home() {
       const rest = takes.filter((p: any) => p !== lead);
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-vegas">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      return `<article class="tile hero ${gs.kind}${vPlay ? " isvalue" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — open deep dive">
+      return `<article class="tile hero ${gs.kind}${vPlay ? " isvalue" : ""}${fk ? ` feat-${fk}` : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${fk ? " — featured play" : ""} — open deep dive">
+        ${fk ? `<span class="feat-corner ${fk}" aria-hidden="true"><i>★</i></span>` : ""}
         ${tileStatus(g, gs)}
         <div class="h-main">
           <div class="t-teams">${tileRow(g, "away", gs, true)}${tileRow(g, "home", gs, true)}</div>
@@ -830,6 +906,7 @@ export default function Home() {
         </div>
         ${totOnly}
         ${lead ? `<div class="h-play">${playMicro(g, lead)}${rest.length ? `<span class="h-more">+${rest.length}</span>` : ""}</div>` : ""}
+        ${lread ? `<div class="h-lread">${lread}</div>` : ""}
         ${conds}
         ${tileVegas(g)}
       </article>`;
@@ -843,15 +920,22 @@ export default function Home() {
       if (vPlay || (gs.kind === "live" && g.featured)) return heroTile(g, idx, gs, P, vPlay);
       const takes = tileTakes(g, P);
       const anyTake = takes.length > 0;
+      // featured marker: gold corner star (VALUE) / silver (featured accuracy);
+      // non-featured plays stay quiet, PASS games show nothing.
+      const fk = featKindOf(P);
+      const lreadPl = fk ? takes.find((p: any) => p.latest_read) : null;
+      const lread = lreadPl ? latestReadPill(g, lreadPl) : "";
       // total-only score (no home/away split available)
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-vegas">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      return `<article class="tile ${gs.kind}${anyTake ? " has-play" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — open deep dive">
+      return `<article class="tile ${gs.kind}${anyTake ? " has-play" : ""}${fk ? ` feat-${fk}` : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${fk ? " — featured play" : ""} — open deep dive">
+        ${fk ? `<span class="feat-corner ${fk}" aria-hidden="true"><i>★</i></span>` : ""}
         ${tileStatus(g, gs)}
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}
         ${anyTake ? `<div class="t-plays">${takes.slice(0, 2).map((p: any) => playMicro(g, p)).join("")}</div>` : ""}
+        ${lread ? `<div class="t-lread">${lread}</div>` : ""}
         ${tileVegas(g)}
       </article>`;
     }
@@ -864,9 +948,11 @@ export default function Home() {
       const today = r.takes
         ? `<span class="pb-rec"><b class="w" data-count="${r.w}">${r.w}</b><i>–</i><b class="l" data-count="${r.l}">${r.l}</b>${r.t ? `<i>–</i><b class="t">${r.t}</b>` : ""}</span>${r.open ? `<span class="pb-open">${r.open} open</span>` : ""}`
         : `<span class="pb-none">no plays today</span>`;
+      const fCnt = games.filter(gameFeatured).length;
       return `<div class="playsband ${recCls}">
         <span class="pb-k"><span class="pb-dia">◆</span>DiamondEdge Plays</span>
         ${today}
+        <button class="pb-filter ${featOnly ? "on" : ""}" id="feat-toggle" aria-pressed="${featOnly}" title="Collapse the slate to featured-play games only"><span class="pb-fstar">★</span>Featured only${fCnt ? `<span class="pb-fcnt">${fCnt}</span>` : ""}</button>
         <span class="pb-season">${esc(season)}</span>
       </div>`;
     }
@@ -1008,19 +1094,28 @@ export default function Home() {
         const games = gamesForLeague(payload, league);
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         if (band) band.innerHTML = playsBand(games);
-        // The strategy hierarchy leads the feed: recipe hero, then today's VALUE
-        // spotlight, then the game list.
-        const lead = recipeHero() + valueSpotlight(games);
+        // The strategy hierarchy leads the feed: recipe hero, then TODAY'S CARD
+        // (ranked featured plays), then the game list.
+        const lead = recipeHero() + todaysCard(games);
+        const shown = featOnly ? games.filter(gameFeatured) : games;
         if (!games.length) {
           body.innerHTML = `${lead}<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
+        } else if (featOnly && !shown.length) {
+          body.innerHTML = `${lead}<div class="state"><div class="st-ico">★</div><div class="big">No featured-play games</div><div class="sm">Nothing on this ${SPORT_LABEL[league]} slate is featured for ${esc(dispDate)}.</div><button class="feat-clear" id="feat-clear">Show all ${games.length} game${games.length > 1 ? "s" : ""}</button></div>`;
         } else {
-          body.innerHTML = `${lead}${recentResultsRail()}<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
-            <div class="refnote">${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)} · <button class="refnote-link" id="open-analyzer">DiamondEdge model analyzer →</button></div>`;
+          const cntTxt = featOnly
+            ? `${shown.length} featured of ${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""}`
+            : `${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""}`;
+          body.innerHTML = `${lead}${recentResultsRail()}<div class="slate">${shown.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+            <div class="refnote">${cntTxt} · ${esc(dispDate)} · <button class="refnote-link" id="open-analyzer">DiamondEdge model analyzer →</button></div>`;
         }
       }
       // update tab counts in place
       SPORTS.forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = payload ? gamesForLeague(payload, lg).length : 0; el.textContent = c || ""; } });
       const oa = $("open-analyzer"); if (oa) oa.onclick = () => switchTab("analyzer");
+      const setFeat = (v: boolean) => { featOnly = v; try { localStorage.setItem("de_feat_only", v ? "1" : "0"); } catch {} renderSlate(); };
+      const ft = $("feat-toggle"); if (ft) ft.onclick = () => setFeat(!featOnly);
+      const fc = $("feat-clear"); if (fc) fc.onclick = () => setFeat(false);
       bindCards();
       bindLead();
       animateCounters(body);
@@ -1262,8 +1357,11 @@ export default function Home() {
       const lean = pk ? (mk === "moneyline" ? wpLean(pk) : leanMeter(pk, mk)) : "";
       const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
       const vrec = pl.value_tier ? valueRecordBlock(pl) : "";
+      // live-updating latest read (unstarted games only) — the graded play above is unchanged
+      const lread = pl.action === "TAKE" ? latestReadPill(g, pl) : "";
+      const lreadBlk = lread ? `<div class="shp-lread">${lread}<span class="lr-note">the model's latest look — the graded morning play above is unchanged</span></div>` : "";
       return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"} ${pl.value_tier ? "is-value" : ""} ${focus ? "hl" : ""}" id="shp-${mk}">
-        ${head}${recipeBlk}${accNote}${why}${mvm}${viz}${vrec}
+        ${head}${lreadBlk}${recipeBlk}${accNote}${why}${mvm}${viz}${vrec}
       </div>`;
     }
 
@@ -1400,6 +1498,7 @@ export default function Home() {
             ${intelSection(g)}
             ${modelsVsMarket(g)}
             ${reasoning}
+            ${modelStatusLine()}
           </div>
         </div>`;
 
@@ -1612,7 +1711,8 @@ export default function Home() {
           ${byTierTbl}
           ${calibrationCard()}
         </div>
-        <div class="refnote">Out-of-fold test windows — ${SPORTS.map((s) => wnd[s] ? `${SPORT_LABEL[s]} ${wnd[s].start}→${wnd[s].end}` : "").filter(Boolean).join(" · ")}</div>`;
+        <div class="refnote">Out-of-fold test windows — ${SPORTS.map((s) => wnd[s] ? `${SPORT_LABEL[s]} ${wnd[s].start}→${wnd[s].end}` : "").filter(Boolean).join(" · ")}</div>
+        ${modelStatusLine()}`;
       animateCounters(view);
     }
 
