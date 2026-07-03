@@ -224,9 +224,51 @@ export default function Home() {
       }
       return "inplay";
     }
+    // Final score for grading: graded pick actuals first, live-score overlay second.
+    function finalScore(g: any) {
+      const sc = actualScore(g);
+      if (sc) return sc;
+      const ca = g.current_actuals;
+      if (ca && ca.home_score != null && ca.away_score != null) {
+        const h = Number(ca.home_score), a = Number(ca.away_score);
+        return { total: h + a, home: h, away: a, margin: h - a, split: true };
+      }
+      if (ca && ca.total_so_far != null) return { total: Number(ca.total_so_far), home: null, away: null, margin: null, split: false };
+      return null;
+    }
+    // A finished game whose pick isn't graded yet (the big payload lags the live
+    // scores) still resolves visually — grade it provisionally off the final score.
+    function provisionalResult(g: any, pl: any) {
+      if ((g.status || "").toLowerCase() !== "final" || pl.action !== "TAKE") return null;
+      const sc = finalScore(g);
+      if (!sc) return null;
+      const sideLine = () => { const m = String(pl.side || "").match(/([+-]?\d+(\.\d+)?)/); return m ? Number(m[1]) : null; };
+      if (pl.market === "total" && sc.total != null) {
+        const line = pl.line != null ? Number(pl.line) : sideLine();
+        if (line == null) return null;
+        const over = /over/i.test(String(pl.side));
+        if (sc.total === line) return { status: "push", pnl: null };
+        return { status: (sc.total > line) === over ? "hit" : "miss", pnl: null };
+      }
+      const side = String(pl.side || "");
+      const backedHome = side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0;
+      const backedAway = side.indexOf(g.away_abbr) >= 0 && side.indexOf(g.home_abbr) < 0;
+      if (sc.margin == null || (!backedHome && !backedAway)) return null;
+      if (pl.market === "spread") {
+        const line = sideLine() != null ? sideLine() : (pl.line != null ? Number(pl.line) : null);
+        if (line == null) return null;
+        const adj = (backedHome ? sc.margin : -sc.margin) + line!;
+        return adj === 0 ? { status: "push", pnl: null } : { status: adj > 0 ? "hit" : "miss", pnl: null };
+      }
+      if (pl.market === "moneyline") {
+        if (sc.margin === 0) return { status: "push", pnl: null };
+        return { status: (backedHome ? sc.margin > 0 : sc.margin < 0) ? "hit" : "miss", pnl: null };
+      }
+      return null;
+    }
     // A play's display state: won|lost|pushed|clinched|cooked|inplay|open
     function playState(g: any, pl: any) {
-      const r = pl.result;
+      const r = pl.result || provisionalResult(g, pl);
       if (r) return r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed";
       const live = playLiveState(g, pl);
       return live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : live === "inplay" ? "inplay" : "open";
@@ -240,6 +282,7 @@ export default function Home() {
     // Percentages and tier jargon stay off the primary surfaces.
     function qualityOf(pl: any) {
       if (!pl || pl.action !== "TAKE") return null;
+      if (pl.q === "strong" || pl.q === "good" || pl.q === "lean") return pl.q; // served quality wins
       if (pl.value_tier === "value-a" || pl.tier === "featured") return "strong";
       if (pl.value_tier === "value-b" || pl.tier === "high") return "good";
       return "lean";
@@ -711,24 +754,81 @@ export default function Home() {
         : st === "pushed" ? `<span class="tb-res pushed">P</span>`
         : st === "inplay" ? `<span class="tb-res inplay"><span class="ip-dot"></span></span>` : "";
 
-    // Exactly ONE bet line per tile: "★ BET · OVER 8 · −115 · Strong" or a quiet PASS.
-    function betLine(g: any) {
-      const pl = bestPlay(g);
-      if (!pl) return `<div class="t-bet pass">PASS</div>`;
-      const q = qualityOf(pl);
-      const gold = isGold(pl);
-      const st = playState(g, pl);
-      const px = pl.price != null ? `<span class="tb-pxw"><span class="tb-sep">·</span><span class="tb-px">${fmtOdds(pl.price)}</span></span>` : "";
-      return `<div class="t-bet ${gold ? "gold" : "take"} ${st}">
-        <span class="tb-star">${gold ? "★" : "◆"}</span><b class="tb-k">BET</b>
-        <span class="tb-sep">·</span><span class="tb-side">${esc(pl.side || "—")}</span>${px}
-        <span class="tb-sep">·</span><span class="tb-q">${Q_LABEL[q]}</span>
-        ${resMark(st)}
+    // The FROZEN pick a game box shows: prefer the served display_pick (frozen ~1h
+    // before start), fall back to the morning de_plays best TAKE. Never re-derived
+    // once the game starts — the box is the honest record of what we said pre-game.
+    const lineStr = (v: any) => (Number(v) % 1 ? num(v, 1) : num(v, 0));
+    function displayPick(g: any) {
+      const dp = g && g.display_pick;
+      if (dp && typeof dp === "object" && String(dp.action || "").toUpperCase() === "TAKE" && dp.side != null) {
+        const mk = MARKETS.indexOf(String(dp.market || "").toLowerCase()) >= 0 ? String(dp.market).toLowerCase() : "total";
+        // the same market's de_plays TAKE carries the richer fields (why, nlines, …) —
+        // reuse it only when it IS the same pick (same side and line)
+        const rich = gamePlays(g)[mk];
+        if (rich && rich.action === "TAKE" && String(rich.side || "").indexOf(String(dp.side)) === 0 &&
+            (dp.line == null || rich.line == null || Number(rich.line) === Number(dp.line))) return rich;
+        const pl: any = normPlay({ ...dp, action: "TAKE" }, mk);
+        if (pl) {
+          // serve "OVER" + line 8 as "OVER 8"
+          if (pl.side && pl.line != null && !/\d/.test(pl.side)) pl.side = `${pl.side} ${lineStr(pl.line)}`;
+          if (dp.quality === "strong" || dp.quality === "good" || dp.quality === "lean") pl.q = dp.quality;
+        }
+        return pl;
+      }
+      // display_pick absent or an explicit PASS in its (totals-only) lane:
+      // fall back to the morning de_plays best TAKE — the validated graded record.
+      return bestPlay(g);
+    }
+
+    const pickArrow = (pl: any) => {
+      const s = String(pl.side || "").toLowerCase();
+      return /(^|\s)over/.test(s) ? "▲" : /(^|\s)under/.test(s) ? "▼" : "►";
+    };
+    // A readable mini odds row (Spread · Total · ML); the picked market's cell IS the
+    // take chip — "▲ OVER 8 / −115" — and the ✓/✗ resolves on it post-game.
+    function oddsCells(g: any, pick: any, st: string) {
+      const q = pick ? qualityOf(pick) : null;
+      const mk = pick ? pick.market : null;
+      const mark = pick ? resMark(st) : "";
+      const cell = (m: string, k: string, v: string, p: string, dim = false) => {
+        if (pick && mk === m) {
+          return `<div class="oc2 take q-${q} ${st}"><span class="oc2-k">Bet</span><span class="oc2-v">${pickArrow(pick)} ${esc(pick.side || v)}</span><span class="oc2-p">${pick.price != null ? fmtOdds(pick.price) : p}${mark}</span></div>`;
+        }
+        return `<div class="oc2 ${dim ? "dim" : ""}"><span class="oc2-k">${k}</span><span class="oc2-v">${v}</span><span class="oc2-p">${p}</span></div>`;
+      };
+      const cells: string[] = [];
+      const sp = g.spread_pick;
+      if (sp && sp.line != null) cells.push(cell("spread", "Spread", `${esc(g.home_abbr)} ${sgn(spreadHomeLine(g, sp))}`, fmtOdds((sp.prices || {}).home ?? sp.price)));
+      else cells.push(cell("spread", "Spread", "—", "", true));
+      const tp = g.total_pick;
+      if (tp && tp.line != null) { const pr = tp.prices || {}; cells.push(cell("total", "Total", `O/U ${num(tp.line)}`, pr.over != null ? `o${fmtOdds(pr.over)}` : fmtOdds(tp.price))); }
+      else cells.push(cell("total", "Total", "—", "", true));
+      const mp = g.ml_pick; const mpr = (mp && mp.prices) || {};
+      if (g.sport === "soccer" && mpr.home != null && mpr.draw != null) cells.push(cell("moneyline", "1·X·2", `${fmtOdds(mpr.home)}·${fmtOdds(mpr.draw)}·${fmtOdds(mpr.away)}`, ""));
+      else if (mp && (mp.price ?? mpr.home ?? mpr.away) != null) cells.push(cell("moneyline", "ML", esc(mp.side || "—"), fmtOdds(mp.price ?? mpr.home ?? mpr.away)));
+      else cells.push(cell("moneyline", "ML", "—", "", true));
+      return `<div class="t-odds">${cells.join("")}</div>`;
+    }
+    // Live progress for a frozen total pick: the current total filling toward the line.
+    function pickProgress(g: any, pl: any, st: string) {
+      if (!pl || pl.market !== "total") return "";
+      if (st !== "inplay" && st !== "clinched" && st !== "cooked") return "";
+      const ca = g.current_actuals || {};
+      if (ca.total_so_far == null) return "";
+      const line = pl.line != null ? pl.line : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
+      if (line == null || !(line > 0)) return "";
+      const cur = Number(ca.total_so_far);
+      const pct = Math.max(0, Math.min(100, (cur / line) * 100));
+      const over = /over/i.test(String(pl.side));
+      const cls = st === "clinched" ? "won" : st === "cooked" ? "lost" : over ? "chasing" : "holding";
+      return `<div class="t-prog ${cls}" title="${num(cur, 0)} of ${num(line, 1)} ${SPORT_UNIT[g.sport] || ""} so far">
+        <span class="pg-track"><span class="pg-fill" style="width:${pct.toFixed(0)}%"></span></span>
+        <span class="pg-txt">${num(cur, 0)} of ${lineStr(line)}</span>
       </div>`;
     }
 
-    // Tile status strip: "Mid 8th" / "FINAL" / "7:10 PM" (+ competition / day tag right).
-    function tileStatus(g: any, gs: any) {
+    // Tile status strip: "Mid 8th" / "FINAL" / "7:10 PM"; confidence diamonds right.
+    function tileStatus(g: any, gs: any, q?: any) {
       let left = "";
       if (gs.kind === "live") left = `<span class="ts-live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</span>`;
       else if (gs.kind === "final") left = `<span class="ts-final">FINAL</span>`;
@@ -738,7 +838,8 @@ export default function Home() {
       }
       const dayTag = gs.kind === "pre" && gameLocalDay(g) && gameLocalDay(g) !== curDate ? `<span class="ts-day">${esc(gs.si.date)}</span>` : "";
       const comp = g.meta && g.meta.competition ? `<span class="ts-comp">${esc(g.meta.competition)}</span>` : "";
-      return `<div class="t-status">${left}${dayTag || comp}</div>`;
+      const right = q ? qDiamonds(q) : (dayTag || comp);
+      return `<div class="t-status">${left}${right}</div>`;
     }
     function tileRow(g: any, which: "away" | "home", gs: any) {
       const ab = which === "away" ? g.away_abbr : g.home_abbr;
@@ -760,59 +861,21 @@ export default function Home() {
 
     function gameCard(g: any, idx: number) {
       const gs = gameState(g);
+      const pick = displayPick(g);
+      const q = pick ? qualityOf(pick) : null;
+      const st = pick ? playState(g, pick) : "open";
+      // The box itself carries the verdict: quality border pre-game, result border after.
+      const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      return `<article class="tile ${gs.kind}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — open details">
-        ${tileStatus(g, gs)}
+      return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? ` — bet ${esc(pick.side || "")}` : ""} — open details">
+        ${tileStatus(g, gs, q)}
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}
-        ${betLine(g)}
+        ${oddsCells(g, pick, st)}
+        ${gs.kind === "live" && pick ? pickProgress(g, pick, st) : ""}
       </article>`;
-    }
-
-    // ===================== TODAY'S BETS (the one list above the slate) =====================
-    function betsList(games: any[]) {
-      const all: any[] = [];
-      games.forEach((g: any) => {
-        const pl = bestPlay(g);
-        if (pl) all.push({ g, pl });
-      });
-      all.sort((a, b) =>
-        ((isGold(b.pl) ? 1 : 0) - (isGold(a.pl) ? 1 : 0)) ||
-        (Q_RANK[qualityOf(a.pl)] - Q_RANK[qualityOf(b.pl)]) ||
-        ((b.pl.p || 0) - (a.pl.p || 0)));
-      // The list features the bets worth taking: Strong and Good. Leans stay on the tiles.
-      const rows = all.filter(({ pl }: any) => qualityOf(pl) !== "lean");
-      const nLeans = all.length - rows.length;
-      const isToday = !rangeMode && curDate === todayISO();
-      const title = isToday ? "Today's Bets" : `Bets · ${new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
-      if (!rows.length) {
-        return `<section class="tbets quiet">
-          <div class="tb-h"><span class="tb-t">${title}</span></div>
-          <div class="tb-none">No strong bets ${isToday ? "today" : "that day"} — ${nLeans ? `just ${nLeans} small lean${nLeans > 1 ? "s" : ""} on the game tiles below.` : "every game is a pass."} Most days that's the right call.</div>
-        </section>`;
-      }
-      const shown = rows.slice(0, 6);
-      const items = shown.map(({ g, pl }: any) => {
-        const q = qualityOf(pl);
-        const gold = isGold(pl);
-        const st = playState(g, pl);
-        return `<button class="tb-row ${gold ? "gold" : ""} ${st}" data-gid="${esc(g.game_id)}" data-mk="${pl.market}"
-          aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}: ${esc(pl.side || "")}">
-          <span class="tb-mu">${gCrest(g, "away")}<em>${esc(g.away_abbr)}</em><span class="tb-at">@</span>${gCrest(g, "home")}<em>${esc(g.home_abbr)}</em></span>
-          <span class="tb-bet">${esc(pl.side || "—")}</span>
-          ${pl.price != null ? `<span class="tb-px2">${fmtOdds(pl.price)}</span>` : ""}
-          <span class="tb-qual">${qDiamonds(q)}<u>${Q_LABEL[q]}</u></span>
-          ${resMark(st)}
-        </button>`;
-      }).join("");
-      const extra = (rows.length - shown.length) + nLeans;
-      const more = extra > 0 ? `<div class="tb-more">+ ${extra} smaller lean${extra > 1 ? "s" : ""} on the game tiles below</div>` : "";
-      return `<section class="tbets">
-        <div class="tb-h"><span class="tb-t">${title}</span><span class="tb-n">${rows.length} bet${rows.length > 1 ? "s" : ""} · everything else is a pass</span></div>
-        <div class="tb-list">${items}</div>${more}
-      </section>`;
     }
 
     // Tiny record chip: this month's graded picks off the payload's finals tail.
@@ -939,7 +1002,7 @@ export default function Home() {
         if (!games.length) {
           body.innerHTML = `<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
         } else {
-          body.innerHTML = `${betsList(games)}<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+          body.innerHTML = `<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
             <div class="refnote">${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
       }
@@ -1036,9 +1099,6 @@ export default function Home() {
       root.querySelectorAll(".tile[data-gid]").forEach((bx: any) => {
         bx.onclick = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
         bx.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); const g = findGame(bx.dataset.gid); if (g) openDetail(g); } };
-      });
-      root.querySelectorAll(".tb-row[data-gid]").forEach((ch: any) => {
-        ch.onclick = (e: any) => { e.stopPropagation(); const g = findGame(ch.dataset.gid); if (g) openDetail(g, ch.dataset.mk); };
       });
     }
     function findGame(gid: any) {
@@ -1289,7 +1349,8 @@ export default function Home() {
       const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
       const P = gamePlays(g);
       const takes = orderedTakes(g, P);
-      const lead = (focusMk && P[focusMk] && P[focusMk].action === "TAKE") ? P[focusMk] : takes[0] || null;
+      // The sheet's call is the SAME frozen pick the box shows.
+      const lead = (focusMk && P[focusMk] && P[focusMk].action === "TAKE") ? P[focusMk] : displayPick(g) || takes[0] || null;
 
       // score banner (live/final)
       let scoreBanner = "";
@@ -1315,7 +1376,7 @@ export default function Home() {
           : st === "clinched" ? `<span class="cc-res won">${condCheck} CLINCHED</span>`
           : st === "cooked" ? `<span class="cc-res lost">✗ LINE PASSED</span>`
           : st === "inplay" ? `<span class="cc-res inplay"><span class="ip-dot"></span>IN PLAY</span>` : "";
-        const others = takes.filter((p: any) => p !== lead).map((p: any) =>
+        const others = takes.filter((p: any) => p.market !== lead.market).map((p: any) =>
           `<div class="cc-also">Also: <b>${esc(p.side || "—")}</b>${p.price != null ? ` · ${fmtOdds(p.price)}` : ""} · ${Q_LABEL[qualityOf(p)]}</div>`).join("");
         callBlock = `<div class="callcard ${gold ? "gold" : ""} ${st}">
           <div class="cc-k">${gold ? "★ " : ""}Our call</div>
