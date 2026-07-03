@@ -805,32 +805,34 @@ export default function Home() {
       const s = String(pl.side || "").toLowerCase();
       return /(^|\s)over/.test(s) ? "▲" : /(^|\s)under/.test(s) ? "▼" : "►";
     };
-    // A readable mini odds row (Spread · Total · ML); the picked market's cell IS the
-    // take chip — "▲ OVER 8 / −115" — and the ✓/✗ resolves on it post-game.
-    function oddsCells(g: any, pick: any, st: string, locked = false) {
+    // ONE compact typographic market strip — "CLE −1.5 · O/U 8 · CLE −130". No stacked
+    // rows, no boxes: the taken market's segment is the tinted take chip ("▲ OVER 8 −115 ◆◆◆")
+    // and the ✓/✗ resolves on it post-game. Missing markets simply don't render.
+    function marketStrip(g: any, pick: any, st: string, locked = false) {
       const q = pick ? qualityOf(pick) : null;
       const mk = pick ? pick.market : null;
       const mark = pick ? resMark(st) : "";
-      const cell = (m: string, k: string, v: string, p: string, dim = false) => {
+      const seg = (m: string, v: string) => {
         if (pick && mk === m) {
           // FREE MODE: the pick exists and its quality shows, but the side/line is locked.
-          if (locked) return `<div class="oc2 take q-${q} locked"><span class="oc2-k">Bet</span><span class="oc2-v">▲ ●●●● ●</span><span class="oc2-p">●●●</span><span class="lk">${lockSvg}Unlock</span></div>`;
-          return `<div class="oc2 take q-${q} ${st}"><span class="oc2-k">Bet</span><span class="oc2-v">${pickArrow(pick)} ${esc(pick.side || v)}</span><span class="oc2-p">${pick.price != null ? fmtOdds(pick.price) : p}${mark}</span></div>`;
+          if (locked) return `<span class="ms take q-${q} locked"><span class="ms-lk">${lockSvg}</span><span class="ms-dots" aria-hidden="true">●●●● ●</span>${qDiamonds(q)}</span>`;
+          return `<span class="ms take q-${q} ${st}">${pickArrow(pick)} ${esc(pick.side || v)}${pick.price != null ? ` <i>${fmtOdds(pick.price)}</i>` : ""}${qDiamonds(q)}${mark}</span>`;
         }
-        return `<div class="oc2 ${dim ? "dim" : ""}"><span class="oc2-k">${k}</span><span class="oc2-v">${v}</span><span class="oc2-p">${p}</span></div>`;
+        return v ? `<span class="ms">${v}</span>` : "";
       };
-      const cells: string[] = [];
       const sp = g.spread_pick;
-      if (sp && sp.line != null) cells.push(cell("spread", "Spread", `${esc(g.home_abbr)} ${sgn(spreadHomeLine(g, sp))}`, fmtOdds((sp.prices || {}).home ?? sp.price)));
-      else cells.push(cell("spread", "Spread", "—", "", true));
       const tp = g.total_pick;
-      if (tp && tp.line != null) { const pr = tp.prices || {}; cells.push(cell("total", "Total", `O/U ${num(tp.line)}`, pr.over != null ? `o${fmtOdds(pr.over)}` : fmtOdds(tp.price))); }
-      else cells.push(cell("total", "Total", "—", "", true));
       const mp = g.ml_pick; const mpr = (mp && mp.prices) || {};
-      if (g.sport === "soccer" && mpr.home != null && mpr.draw != null) cells.push(cell("moneyline", "1·X·2", `${fmtOdds(mpr.home)}·${fmtOdds(mpr.draw)}·${fmtOdds(mpr.away)}`, ""));
-      else if (mp && (mp.price ?? mpr.home ?? mpr.away) != null) cells.push(cell("moneyline", "ML", esc(mp.side || "—"), fmtOdds(mp.price ?? mpr.home ?? mpr.away)));
-      else cells.push(cell("moneyline", "ML", "—", "", true));
-      return `<div class="t-odds">${cells.join("")}</div>`;
+      let mlTxt = "";
+      if (g.sport === "soccer" && mpr.home != null && mpr.draw != null) mlTxt = `${fmtOdds(mpr.home)}·${fmtOdds(mpr.draw)}·${fmtOdds(mpr.away)}`;
+      else if (mp && (mp.price ?? mpr.home ?? mpr.away) != null) mlTxt = `${esc(mp.side || "ML")} ${fmtOdds(mp.price ?? mpr.home ?? mpr.away)}`;
+      const parts = [
+        seg("spread", sp && sp.line != null ? `${esc(g.home_abbr)} ${sgn(spreadHomeLine(g, sp))}` : ""),
+        seg("total", tp && tp.line != null ? `O/U ${num(tp.line)}` : ""),
+        seg("moneyline", mlTxt),
+      ].filter(Boolean);
+      if (!parts.length) return "";
+      return `<div class="mline">${parts.join(`<span class="msep">·</span>`)}</div>`;
     }
     // Live progress for a frozen total pick: the current total filling toward the line.
     function pickProgress(g: any, pl: any, st: string) {
@@ -888,7 +890,8 @@ export default function Home() {
       const q = pick ? qualityOf(pick) : null;
       const st = pick ? playState(g, pick) : "open";
       const locked = pick ? pickLocked(pick, st) : false;
-      // The box itself carries the verdict: quality border pre-game, result border after.
+      // The card carries the verdict through LIGHT, not borders: quality glow pre-game,
+      // result glow after. Inside: typography + one inline market strip.
       const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
@@ -897,8 +900,64 @@ export default function Home() {
         ${tileStatus(g, gs, q)}
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}
-        ${oddsCells(g, pick, st, locked)}
+        ${marketStrip(g, pick, st, locked)}
         ${gs.kind === "live" && pick && !locked ? pickProgress(g, pick, st) : ""}
+      </article>`;
+    }
+
+    // ===================== FEATURED GAME (highest exact conviction) =====================
+    // Conviction = the quality ladder (Strong > Good > Lean, per the house vocabulary)
+    // ranked at FULL precision behind the scenes by the exact p_correct decimal within
+    // each tier — raw p is never comparable across markets (a −188 spread lean carries a
+    // high p with no value) and never displayed. The winner gets the big hero treatment.
+    function convictionSort(aP: any, aQ: number, bP: any, bQ: number) {
+      if (aQ !== bQ) return aQ - bQ;
+      const ap = aP != null ? Number(aP) : -1, bp = bP != null ? Number(bP) : -1;
+      return bp - ap;
+    }
+    function featuredPick(games: any[]) {
+      let best: any = null;
+      games.forEach((g: any) => {
+        const pl = displayPick(g);
+        if (!pl || pl.action !== "TAKE") return;
+        const cand = { g, pl, p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)] };
+        if (!best || convictionSort(cand.p, cand.qr, best.p, best.qr) < 0) best = cand;
+      });
+      return best;
+    }
+    function featuredCard(g: any, pl: any) {
+      const gs = gameState(g);
+      const q = qualityOf(pl);
+      const st = playState(g, pl);
+      const locked = pickLocked(pl, st);
+      const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
+      const res = st === "won" ? `<span class="ft-res won">${condCheck} WON</span>`
+        : st === "lost" ? `<span class="ft-res lost">✗ LOST</span>`
+        : st === "pushed" ? `<span class="ft-res pushed">PUSH</span>`
+        : st === "clinched" ? `<span class="ft-res won">${condCheck} CLINCHED</span>`
+        : st === "cooked" ? `<span class="ft-res lost">✗ LINE PASSED</span>`
+        : st === "inplay" ? `<span class="ft-res inplay"><span class="ip-dot"></span>IN PLAY</span>` : "";
+      const sc = gs.score;
+      const side = (which: "away" | "home") => {
+        const ab = which === "away" ? g.away_abbr : g.home_abbr;
+        const mine = sc && sc.split && sc.home != null ? (which === "home" ? sc.home : sc.away) : null;
+        const other = sc && sc.split && sc.home != null ? (which === "home" ? sc.away : sc.home) : null;
+        const win = gs.kind === "final" && mine != null && mine > other;
+        return `<div class="ft-tm ${win ? "win" : ""}">${gCrest(g, which)}<i>${esc(ab)}</i>${mine != null ? `<b>${num(mine, 0)}</b>` : ""}</div>`;
+      };
+      const mid = gs.kind === "live"
+        ? `<div class="ft-mid live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</div>`
+        : gs.kind === "final" ? `<div class="ft-mid">FINAL</div>`
+        : `<div class="ft-mid">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "@")}</div>`;
+      const take = locked
+        ? `<button class="lockchip ft-lock" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
+        : `<div class="ft-take q-${q} ${st}">${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${qDiamonds(q)}${Q_LABEL[q]}</span>${res}</div>`;
+      return `<article class="feat q-${q} ${gs.kind}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id)}" role="button" tabindex="0"
+        aria-label="Featured — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}${locked ? " — pick locked" : ` — bet ${esc(pl.side || "")}`} — open details">
+        <div class="ft-top"><span class="ft-lab">◆ Featured</span><span class="ft-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span></div>
+        <div class="ft-mu">${side("away")}${mid}${side("home")}</div>
+        ${take}
+        ${gs.kind === "live" && !locked ? pickProgress(g, pl, st) : ""}
       </article>`;
     }
 
@@ -1026,7 +1085,10 @@ export default function Home() {
         if (!games.length) {
           body.innerHTML = `<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} games</div><div class="sm">Nothing on the board for ${esc(dispDate)}. Try another league or date.</div></div>`;
         } else {
-          body.innerHTML = `<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+          // Featured hero: the single highest-conviction pick game leads the slate.
+          const ft = featuredPick(games);
+          const rest = ft ? games.filter((g: any) => g !== ft.g) : games;
+          body.innerHTML = `${ft ? featuredCard(ft.g, ft.pl) : ""}<div class="slate">${rest.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
             <div class="refnote">${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
       }
@@ -1120,9 +1182,13 @@ export default function Home() {
     }
 
     function bindCards() {
-      root.querySelectorAll(".tile[data-gid]").forEach((bx: any) => {
-        bx.onclick = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
-        bx.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); const g = findGame(bx.dataset.gid); if (g) openDetail(g); } };
+      root.querySelectorAll(".tile[data-gid], .feat[data-gid]").forEach((bx: any) => {
+        const open = (e: any) => {
+          if (e && e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
+          const g = findGame(bx.dataset.gid); if (g) openDetail(g);
+        };
+        bx.onclick = open;
+        bx.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
       });
     }
     function findGame(gid: any) {
@@ -1786,7 +1852,8 @@ export default function Home() {
         _fallback: true,
       };
     }
-    // One hero pick card: crests anchor it, the bet + quality + blurb tell the story.
+    // One hero carousel card: crests anchor it, the bet + quality tell the story;
+    // the blurb is clamped to 2 lines with a "more" toggle. Card 0 = the featured game.
     function heroCard(p: any, i: number) {
       const g = findGameLive(p.game_id);
       const locked = !isPremium() && (p.quality === "strong" || p.quality === "good") && !p.result;
@@ -1807,14 +1874,25 @@ export default function Home() {
       const blurb = blurbTxt
         ? (locked
           ? `<p class="hero-blurb">${esc(teaser)}… <button class="lk-more" data-up="1">unlock the full read</button></p>`
-          : `<p class="hero-blurb">${esc(blurbTxt)}</p>`)
+          : `<p class="hero-blurb clamp">${esc(blurbTxt)}</p><button class="blurb-more" aria-label="Expand the full read">more</button>`)
         : "";
-      return `<article class="hero q-${p.quality}${p.result === "hit" ? " hit" : p.result === "miss" ? " miss" : ""}" data-gid="${esc(p.game_id)}"${locked ? ' data-locked="1"' : ""} style="--i:${i}" role="button" tabindex="0" aria-label="${esc(p.matchup)} — ${locked ? "pick locked" : esc(p.bet || "")}">
+      return `<article class="hero${i === 0 ? " lead" : ""} q-${p.quality}${p.result === "hit" ? " hit" : p.result === "miss" ? " miss" : ""}" data-gid="${esc(p.game_id)}"${locked ? ' data-locked="1"' : ""} style="--i:${i}" role="button" tabindex="0" aria-label="${esc(p.matchup)} — ${locked ? "pick locked" : esc(p.bet || "")}">
         <div class="hero-top"><span class="hero-sport">${esc(SPORT_LABEL[p.sport] || p.sport || "")}</span><span class="hero-q">${qDiamonds(p.quality)}${Q_LABEL[p.quality] || ""}</span>${res}</div>
         ${mu}
         <div class="hero-match">${esc(p.matchup || "")}</div>
         ${bet}${blurb}
       </article>`;
+    }
+    // Carousel order: exact p_correct behind the scenes (full precision, never shown),
+    // quality rank as the stand-in — the featured game rides first.
+    function orderTopPicks(list: any[]) {
+      const withKey = list.map((p: any, i: number) => {
+        const g = findGameLive(p.game_id);
+        const pl = g ? displayPick(g) : null;
+        return { p, i, exp: pl && pl.action === "TAKE" && pl.p != null ? Number(pl.p) : null, qr: Q_RANK[p.quality] != null ? Q_RANK[p.quality] : 3 };
+      });
+      withKey.sort((a: any, b: any) => convictionSort(a.exp, a.qr, b.exp, b.qr) || (a.i - b.i));
+      return withKey.map((w: any) => w.p);
     }
     function renderToday() {
       const view = $("today-view");
@@ -1823,31 +1901,51 @@ export default function Home() {
       if (!db) { view.innerHTML = skeletonSlate(4); return; }
       const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      // Headline, themes, top picks, record line — served copy rendered AS-IS (contract rule 1).
-      const themes = ((db.themes || []) as any[]).map((t: any, i: number) => `<button class="thc" style="--i:${i}" data-th="${i}">
-          <div class="thc-name">${esc(t.name)}</div>
-          <div class="thc-text">${esc(t.text)}</div>
-          ${t.affected_games && t.affected_games.length ? `<div class="thc-games">${t.affected_games.length} game${t.affected_games.length > 1 ? "s" : ""} on the board →</div>` : ""}
+      // Headline as editorial type on the background; themes as a snap-scroll chip rail
+      // (full text behind tap); top picks as a swipeable carousel. Served copy AS-IS
+      // (contract rule 1) — only the presentation changed.
+      const themes = ((db.themes || []) as any[]).map((t: any, i: number) => `<button class="thch" style="--i:${i}" data-th="${i}" aria-expanded="false">
+          <span class="thch-dia">◆</span>${esc(t.name)}
         </button>`).join("");
-      const picks = ((db.top_picks || []) as any[]).map((p: any, i: number) => heroCard(p, i)).join("");
+      const picks = orderTopPicks((db.top_picks || []) as any[]).map((p: any, i: number) => heroCard(p, i)).join("");
       view.innerHTML = `
         <div class="tdy">
           <div class="tdy-top"><span class="tdy-date">${esc(dateTxt)}</span><span class="tdy-src">${db._fallback ? "board summary" : "daily brief"}</span></div>
           <h2 class="tdy-head">${esc(db.headline || "")}</h2>
-          ${themes ? `<div class="tdy-lab">Today's story</div><div class="tdy-themes">${themes}</div>` : ""}
+          ${themes ? `<div class="tdy-lab">Today's story</div><div class="thchips" role="list">${themes}</div><div id="th-expand"></div>` : ""}
           ${picks
-            ? `<div class="tdy-lab">Top picks — every sport</div><div class="tdy-picks">${picks}</div>`
+            ? `<div class="tdy-lab">Top picks — every sport</div><div class="tdy-picks" aria-label="Top picks carousel">${picks}</div>`
             : `<div class="tdy-lab">Top picks</div><div class="tdy-pass">No bets today. We only bet when the books' own numbers look wrong — most days that's a handful of games, some days none. The story above is what we're watching.</div>`}
           ${db.record_line ? `<div class="tdy-record">${esc(db.record_line)}</div>` : ""}
         </div>`;
-      // themes → jump to the affected game cards; heroes → detail sheet (or the lock → upgrade)
-      view.querySelectorAll(".thc").forEach((b: any) => (b.onclick = () => {
-        const t = (db.themes || [])[Number(b.dataset.th)];
-        if (t && t.affected_games && t.affected_games.length) jumpToGames(t.affected_games);
+      // theme chip → expand its full text below the rail; the games link jumps to the board
+      let thOpen = -1;
+      view.querySelectorAll(".thch").forEach((b: any) => (b.onclick = () => {
+        const i = Number(b.dataset.th);
+        const t = (db.themes || [])[i];
+        const ex = $("th-expand");
+        if (!t || !ex) return;
+        if (thOpen === i) {
+          thOpen = -1; ex.innerHTML = "";
+          view.querySelectorAll(".thch").forEach((x: any) => { x.classList.remove("on"); x.setAttribute("aria-expanded", "false"); });
+          return;
+        }
+        thOpen = i;
+        view.querySelectorAll(".thch").forEach((x: any) => { const on = Number(x.dataset.th) === i; x.classList.toggle("on", on); x.setAttribute("aria-expanded", on ? "true" : "false"); });
+        const n = (t.affected_games || []).length;
+        ex.innerHTML = `<div class="thx"><div class="thx-name">◆ ${esc(t.name)}</div><p>${esc(t.text)}</p>${n ? `<button class="thx-games">${n} game${n > 1 ? "s" : ""} on the board →</button>` : ""}</div>`;
+        const gbtn = ex.querySelector(".thx-games");
+        if (gbtn) (gbtn as any).onclick = () => jumpToGames(t.affected_games);
       }));
       view.querySelectorAll(".hero").forEach((h: any) => {
         const open = (e: any) => {
           if (e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
+          const more = e.target && e.target.closest && e.target.closest(".blurb-more");
+          if (more) {
+            const bl = h.querySelector(".hero-blurb");
+            if (bl) { bl.classList.toggle("clamp"); more.textContent = bl.classList.contains("clamp") ? "more" : "less"; }
+            return;
+          }
           if (h.dataset.locked) { switchTab("upgrade"); return; }
           const g = findGameLive(h.dataset.gid);
           if (g) openDetail(g); else jumpToGames([h.dataset.gid]);
@@ -1899,7 +1997,7 @@ export default function Home() {
         </div>
         <div class="set-card">
           <div class="set-k">Appearance</div>
-          <div class="set-about"><b>Dark glass</b> is the DiamondEdge identity — deep charcoal, frosted cards, neon green and red for results, gold reserved for Strong picks. No light theme; the board reads best dark.</div>
+          <div class="set-about"><b>Light liquid glass</b> is the DiamondEdge identity — airy daylight surfaces, frosted white cards, emerald and red for results, gold reserved for Strong picks. Depth comes from light and shadow, not boxes.</div>
         </div>
         <div class="set-card">
           <div class="set-k">About</div>

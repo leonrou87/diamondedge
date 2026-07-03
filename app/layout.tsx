@@ -5,17 +5,17 @@ export const metadata: Metadata = {
   title: "DiamondEdge — Today's Picks, Games & Results",
   description:
     "Today's story, the bets worth taking, and every pick graded in the open — MLB, NBA, NHL, NFL and Soccer.",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "DiamondEdge" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "DiamondEdge" },
 };
 
-// Enable notch/home-indicator safe-area insets; theme colour matches the real dark
-// glass background (the native shell's StatusBar/webview background keys off this).
+// Enable notch/home-indicator safe-area insets; theme colour matches the light
+// liquid-glass background (the native shell's StatusBar/webview background keys off this).
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#080d15",
-  colorScheme: "dark",
+  themeColor: "#eef1f7",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
