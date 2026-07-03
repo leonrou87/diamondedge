@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DiamondEdge — Scores, Lines & Plays",
+  title: "DiamondEdge — Games, Bets & Results",
   description:
-    "Live scores, Vegas lines and the DiamondEdge Play across MLB, NBA, NHL, NFL, and Soccer — spread, total and moneyline calls with a transparent track record.",
+    "Today's games, the bets worth taking, and every pick graded in the open — MLB, NBA, NHL, NFL and Soccer.",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "DiamondEdge" },
 };
 
