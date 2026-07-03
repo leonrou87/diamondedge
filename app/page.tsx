@@ -516,9 +516,22 @@ export default function Home() {
       return p;
     }
 
-    function gamesForLeague(p: any, lg: string) {
+    function gamesForLeague(p: any, lg: string, dateISO?: string) {
+      const forDate = dateISO || curDate;
       const all = (p && p.games) || [];
       let inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
+      // PAST/KEYED dates: the daily snapshots are captures of the whole live board, which
+      // carries a long finals tail from OTHER days (even other years). A selected date must
+      // show EXACTLY that date's games — trust the payload's own `date` field (the backend
+      // writes it in the slate's home timezone), never re-derive via the viewer's timezone.
+      if (rangeMode || forDate !== todayISO()) {
+        const payloadDate = String((p && p.date) || "").slice(0, 10);
+        inLg = inLg.filter((g: any) => {
+          const gd = String(g.date || "").slice(0, 10);
+          if (isISO(gd)) return gd === forDate;
+          return payloadDate === forDate; // no per-game date: trust the day key's own date
+        });
+      }
       // Today view: a real day slate. Pre games from today onward (the WC board includes
       // tomorrow's fixtures), live games only if plausibly still live (no timestamp, or started
       // within the last 12h — the payload carries stale "live" zombies from prior days), and
@@ -1128,7 +1141,7 @@ export default function Home() {
       let html = "";
       let N = 0, W = 0, L = 0, T = 0;
       rangeGames.forEach((day: any) => {
-        const games = gamesForLeague({ games: day.games }, league);
+        const games = gamesForLeague({ games: day.games, date: day.date }, league, day.date);
         if (!games.length) return;
         const dr = dayPlaysRecord(games);
         N += games.length; W += dr.w; L += dr.l; T += dr.t;
