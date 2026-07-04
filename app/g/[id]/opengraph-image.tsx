@@ -46,6 +46,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const kicker = [sport ? String(sport).toUpperCase() : "", !started && g && g.start_time ? String(g.start_time) : ""].filter(Boolean).join("  ·  ");
   const pick = g ? totalPick(g) : null;
   const pickTxt = pick ? `${pick.side}${pick.line != null && !/[0-9.]/.test(pick.side) ? " " + pick.line : ""}` : "";
+  // Our projected total = predicted_score.away + home (EXACT app computation) — the transparency
+  // edge, shown vs the market line so the card conveys WHY we like the pick.
+  const ps = g && g.predicted_score;
+  const ourNum = pick && ps && ps.away != null && ps.home != null ? (Number(ps.away) + Number(ps.home)).toFixed(1) : null;
+  const edgeTxt = ourNum && pick && pick.line != null ? `Our number ${ourNum} · market ${Number(pick.line)}` : "";
   return new ImageResponse(
     (
       <div
@@ -73,6 +78,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           {kicker ? <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif", letterSpacing: "2px", fontWeight: 700 }}>{kicker}</div> : null}
           <div style={{ display: "flex", fontSize: 86, fontWeight: 800, lineHeight: 1.05 }}>{mu}</div>
           {pickTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 46, color: "#e0ac20", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>DiamondEdge Pick: {pickTxt}</div> : null}
+          {edgeTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>{edgeTxt}</div> : null}
         </div>
         <div style={{ display: "flex", fontSize: 26, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>Every pick graded in the open · diamondedge.kytepush.com</div>
       </div>
