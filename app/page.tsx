@@ -3908,10 +3908,18 @@ export default function Home() {
     function bindHeaderScroll() {
       if (headerScrollBound) return; headerScrollBound = true;
       let raf = 0;
-      const onScroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; applyHeaderState(scrollY()); }); };
+      // Toggle immediately (cheap class flip — robust even where rAF is throttled), and also
+      // coalesce a rAF pass for the --hdr-h publish when animation frames are available.
+      const onScroll = () => { applyHeaderState(scrollY()); if (raf) return; raf = requestAnimationFrame(() => { raf = 0; applyHeaderState(scrollY()); }); };
       window.addEventListener("scroll", onScroll, { passive: true });
       document.addEventListener("scroll", onScroll, { passive: true, capture: true });
       window.addEventListener("resize", onScroll, { passive: true });
+      // the header shrinks/grows on scroll (ticker folds away) — republish --hdr-h when the
+      // collapse transition settles so the sticky sub-header offset stays exact, no gap/jump.
+      const hdrEl = $("app-header");
+      if (hdrEl) hdrEl.addEventListener("transitionend", (e: any) => {
+        if (e.propertyName === "max-height") document.documentElement.style.setProperty("--hdr-h", hdrEl.offsetHeight + "px");
+      });
       requestAnimationFrame(() => applyHeaderState(scrollY()));
     }
 
