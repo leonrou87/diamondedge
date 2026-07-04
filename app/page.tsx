@@ -2372,12 +2372,15 @@ export default function Home() {
       if ((navigator as any).share) {
         try { await (navigator as any).share({ title, text, url }); return; } catch { /* user cancelled or unsupported */ }
       }
+      // Desktop (no Web Share) — copy the SAME compelling text the share sheet would show
+      // (pick + matchup) with the link, not a bare URL. The link still unfurls to the OG card.
+      const clip = `${text} ${url}`;
       try {
-        await navigator.clipboard.writeText(url);
-        toast("Link copied to clipboard");
+        await navigator.clipboard.writeText(clip);
+        toast("Copied — paste it anywhere");
       } catch {
         // last-resort fallback: a temporary selection
-        try { const ta = document.createElement("textarea"); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast("Link copied"); } catch { toast("Copy this link: " + url); }
+        try { const ta = document.createElement("textarea"); ta.value = clip; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast("Copied to clipboard"); } catch { toast("Copy this: " + clip); }
       }
     }
     let toastT: any = null;
