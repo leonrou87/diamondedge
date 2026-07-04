@@ -3698,7 +3698,7 @@ export default function Home() {
     function openArticleSheet(s: any, key = "") {
       if (!s) return;
       detail = { _article: true };
-      try { document.title = `${s.headline || s.title} — DiamondEdge`; } catch {}  // tab reads the article; closeDetail restores base
+      try { const h = String(s.headline || s.title || ""); document.title = /diamondedge/i.test(h) ? h : `${h} — DiamondEdge`; } catch {}  // avoid double-branding; closeDetail restores base
       const navKeys = newsDisplayKeys();
       const ci = key ? navKeys.indexOf(key) : -1;
       const prevKey = ci > 0 ? navKeys[ci - 1] : null;
