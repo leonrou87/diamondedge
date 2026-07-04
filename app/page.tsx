@@ -3521,6 +3521,17 @@ export default function Home() {
       const pick = reveal ? `${esc(a.side)}${lineTxt}` : `<span class="nf-lock">${lockSvg} pick inside</span>`;
       return `<span class="nf-angle ${a.quality === "lean" ? "lean" : "edge"}">◆ ${pick}</span>`;
     }
+    // Humanize a story timestamp — raw ISO / "SAT, 04 JUL 2026 16:40:00 GMT" → "2h ago" / "Jul 4".
+    function niceTime(iso?: any, disp?: any) {
+      const t = Date.parse(String(iso || "")) || Date.parse(String(disp || ""));
+      if (isNaN(t)) { const d = String(disp || ""); return /^\d{4}-\d\dT/.test(d) || /GMT|UTC|\dZ$/.test(d) ? "" : d; }
+      const diff = (Date.now() - t) / 1000;
+      if (diff < 60) return "just now";
+      if (diff < 3600) return Math.round(diff / 60) + "m ago";
+      if (diff < 86400) return Math.round(diff / 3600) + "h ago";
+      if (diff < 172800) return "yesterday";
+      return new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
     function newsStory(s: any, big = false, key = "") {
       if (!s || !(s.headline || s.title)) return "";
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
@@ -3539,7 +3550,8 @@ export default function Home() {
         : "";
       const img = `<div class="nf-img nf-gen s-${sc}${g ? " nf-vs" : ""}"><span class="nf-gen-dia"></span>${crestRow || `<span class="nf-gen-lab">${lab || "DIAMONDEDGE"}</span>`}${muTxt ? `<span class="nf-gen-mu">${muTxt}</span>` : ""}${photo}</div>`;
       // Our own desk byline — the card opens OUR article in-app (not a link out to the source).
-      const meta = `${lab} · DiamondEdge${s.published_display ? " · " + esc(s.published_display) : ""}`;
+      const when = niceTime(s.published_at, s.published_display);
+      const meta = `${lab} · DiamondEdge${when ? " · " + esc(when) : ""}`;
       return `<a class="nf-story ${big ? "nf-hero" : ""}" href="${esc(String(s.url || "#"))}" data-nf="${esc(key)}" rel="noopener">
         ${img}
         <div class="nf-body"><div class="nf-kick">${meta}</div>
@@ -3550,7 +3562,11 @@ export default function Home() {
     function newsFront() {
       const nf = newsFeed;
       if (!nf || !nf.lead) return "";
-      const hl = ((nf.headlines || []) as any[]).slice(0, 8);
+      // Dedupe so the same game/story never appears as both the lead AND a headline (or twice in
+      // the list) — one card per game keeps the front clean.
+      const keyOf = (s: any) => String((s && s.angle && typeof s.angle === "object" && s.angle.game_id) || (s && (s.headline || s.title)) || "").toLowerCase();
+      const seen = new Set<string>([keyOf(nf.lead)]);
+      const hl = ((nf.headlines || []) as any[]).filter((s) => { const k = keyOf(s); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
       return `<section class="newsfront">
         <div class="nf-head"><span class="nf-lab">Top stories</span><span class="nf-live"><span class="livedot"></span>live</span></div>
         ${newsStory(nf.lead, true, "L")}
@@ -3583,7 +3599,7 @@ export default function Home() {
             ${s.dek ? `<div class="sh-meta">${esc(s.dek)}</div>` : ""}
           </div>
           <div class="sh-body">
-            <div class="art-byline">${esc(s.byline || "DiamondEdge Staff")}${s.published_display ? " · " + esc(s.published_display) : ""}</div>
+            <div class="art-byline">${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""}</div>
             ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
             ${angleChip ? `<div class="art-angle-row">${angleChip}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
