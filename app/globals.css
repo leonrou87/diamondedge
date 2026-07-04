@@ -2185,3 +2185,9 @@ details.results-more{margin-bottom:14px}
   .nf-hero .nf-gen-lab{font-size:15px}
   .nf-hero .nf-gen-mu{font-size:15px;margin-top:9px}
 }
+
+/* --- News hero: fixed banner height on wide desktop (full width) so it isn't a half-screen void --- */
+@media(min-width:1024px){
+  .nf-hero .nf-img{aspect-ratio:auto;height:420px}
+  .nf-hero .nf-vs-row img,.nf-hero .nf-vs-row .crest{width:88px;height:88px}
+}
