@@ -308,17 +308,33 @@ export default function Home() {
       return null;
     }
     const LIVE_DIR: any = {
-      trending_hit: { cls: "hit", word: "trending your way", short: "your way" },
-      too_close: { cls: "close", word: "too close to call", short: "too close" },
-      trending_miss: { cls: "miss", word: "heading the wrong way", short: "wrong way" },
+      trending_hit: { cls: "hit", word: "trending our way", short: "our way" },
+      too_close: { cls: "close", word: "still a coin flip", short: "coin flip" },
+      trending_miss: { cls: "miss", word: "trending against us", short: "against us" },
     };
     // The prominent live hit-odds indicator: "68% to cash · trending your way" + a meter
     // toward the line. size: "tile" (compact, on game boxes) | "full" (detail sheet).
     function liveHitOdds(g: any, pl: any, size = "tile") {
       const ls = liveStatusOf(g, pl);
       if (!ls) return "";
+      // A decided live bet reads as clinched/cooked — never a bare "100% to cash" (or 0%),
+      // which looks like a bug even though it's technically correct.
+      const clinched = ls.prob != null && ls.prob >= 0.985;
+      const cooked = ls.prob != null && ls.prob <= 0.015;
+      if (clinched || cooked) {
+        const cls = clinched ? "hit" : "miss";
+        const cash = clinched ? "Cashing ✓" : "Not landing";
+        const dir = clinched ? "as good as in" : "out of reach";
+        return `<div class="lho lho-${size} dir-${cls} lho-done" title="${clinched ? "This pick is all but clinched." : "This pick can no longer cash."}">
+          <div class="lho-top"><span class="lho-cash">${cash}</span><span class="lho-dir"><span class="lho-dot"></span>${esc(dir)}</span></div>
+          <span class="lho-track"><span class="lho-fill" style="width:${clinched ? 100 : 3}%"></span><span class="lho-goal"></span></span>
+        </div>`;
+      }
       const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-      const pctW = ls.pct != null ? Math.max(3, Math.min(100, ls.pct * 100)) : (ls.prob != null ? Math.max(3, Math.min(100, ls.prob * 100)) : 0);
+      // Meter tracks the SAME number as the label — probability to cash — so a fuller bar
+      // always means "more likely to win", for OVER and UNDER alike (pct_to_goal would fill
+      // toward the line, which reads backwards on an under).
+      const pctW = ls.prob != null ? Math.max(3, Math.min(100, ls.prob * 100)) : (ls.pct != null ? Math.max(3, Math.min(100, ls.pct * 100)) : 0);
       const cashTxt = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : (size === "full" ? "Live read" : "Live");
       const deltaTxt = ls.delta != null && Math.abs(ls.delta) >= 0.005
         ? `<span class="lho-delta ${ls.delta >= 0 ? "up" : "down"}">${ls.delta >= 0 ? "▲" : "▼"} ${Math.abs(ls.delta * 100).toFixed(0)}% vs pregame</span>` : "";
@@ -347,8 +363,15 @@ export default function Home() {
     const qDiamonds = (q: any) => {
       const n = q === "strong" ? 3 : q === "good" ? 2 : 1;
       let h = "";
-      for (let i = 0; i < 3; i++) h += `<i class="${i < n ? "f" : ""}">◆</i>`;
+      // Filled ◆ vs hollow ◇ so the COUNT reads as a strength scale at any size — not
+      // three same-shape glyphs that only differ by a faint tint.
+      for (let i = 0; i < 3; i++) h += `<i class="${i < n ? "f" : "e"}">${i < n ? "◆" : "◇"}</i>`;
       return `<span class="qdia q-${q}" aria-hidden="true">${h}</span>`;
+    };
+    // The tier as a self-explaining chip: the meter + the WORD together, always legible.
+    const qBadge = (q: any, size = "") => {
+      if (q !== "strong" && q !== "good" && q !== "lean") return "";
+      return `<span class="qbadge q-${q}${size ? " " + size : ""}">${qDiamonds(q)}<b>${Q_LABEL[q]}</b></span>`;
     };
     // A small, always-legible tier legend — states what each word means so "Good vs Lean"
     // is never ambiguous. Rendered on the board and inside the detail sheet.
@@ -577,9 +600,15 @@ export default function Home() {
       const ls = pl && pl.action === "TAKE" ? liveStatusOf(g, pl) : null;
       let trend = "";
       if (ls) {
-        const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-        const cash = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}%` : "";
-        trend = `<span class="hlb-trend ${meta.cls}">${cash ? `${cash} ` : ""}${esc(meta.short)}</span>`;
+        const clinched = ls.prob != null && ls.prob >= 0.985;
+        const cooked = ls.prob != null && ls.prob <= 0.015;
+        if (clinched) trend = `<span class="hlb-trend hit">Cashing ✓</span>`;
+        else if (cooked) trend = `<span class="hlb-trend miss">Not landing</span>`;
+        else {
+          const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
+          const cash = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}%` : "";
+          trend = `<span class="hlb-trend ${meta.cls}">${cash ? `${cash} ` : ""}${esc(meta.short)}</span>`;
+        }
       }
       return `<div class="hlb hlb-${size}">
         <span class="hlb-badge"><span class="livedot"></span>LIVE</span>
@@ -1389,10 +1418,15 @@ export default function Home() {
     function teamForm(g: any, which: "home" | "away") {
       const s = g.streaks && typeof g.streaks === "object" ? g.streaks[which] : null;
       if (!s || typeof s !== "object") return null;
-      const rec = typeof s.record_l15 === "string" && /\d+-\d+/.test(s.record_l15) ? s.record_l15 : null;
+      // Season W-L is the record fans expect next to a team; only fall back to last-15 form,
+      // and when we do, LABEL it so "7-8" never reads as a (broken) season record.
+      const seasonRec = typeof s.record_season === "string" && /^\d+-\d+$/.test(s.record_season) ? s.record_season : null;
+      const l15Rec = typeof s.record_l15 === "string" && /^\d+-\d+$/.test(s.record_l15) ? s.record_l15 : null;
+      const rec = seasonRec || l15Rec;
+      const recIsL15 = !seasonRec && !!l15Rec;
       const ws = s.win_streak && s.win_streak.n >= 2 && s.win_streak.result ? `${s.win_streak.result}${s.win_streak.n}` : null;
       if (!rec && !ws) return null;
-      return { rec, streak: ws, hot: ws && ws[0] === "W" };
+      return { rec, recIsL15, streak: ws, hot: ws && ws[0] === "W" };
     }
 
     function marketStrip(g: any, pick: any, st: string, locked = false, excludePick = false) {
@@ -1504,7 +1538,7 @@ export default function Home() {
       // recent form (MLB-only, degrades to nothing)
       const fm = teamForm(g, which);
       const formHtml = fm
-        ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
+        ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}${fm.recIsL15 ? `<i class="tf-tag">L15</i>` : ""}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
         : "";
       // this side's spread + moneyline (pre-game only; the odds vanish once the score
       // matters). Compact scores-app convention: spread LINE + ML price (spread price is
@@ -1576,9 +1610,11 @@ export default function Home() {
       const ls = live && !locked ? liveStatusOf(g, pl) : null;
       let liveRow = "";
       if (ls) {
-        const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-        const pctW = ls.pct != null ? Math.max(4, Math.min(100, ls.pct * 100)) : (ls.prob != null ? Math.max(4, Math.min(100, ls.prob * 100)) : 0);
-        const cash = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : "Live read";
+        const clinched = ls.prob != null && ls.prob >= 0.985;
+        const cooked = ls.prob != null && ls.prob <= 0.015;
+        const meta = clinched ? { cls: "hit", short: "as good as in" } : cooked ? { cls: "miss", short: "out of reach" } : (LIVE_DIR[ls.dir] || LIVE_DIR.too_close);
+        const pctW = clinched ? 100 : cooked ? 3 : (ls.prob != null ? Math.max(4, Math.min(100, ls.prob * 100)) : (ls.pct != null ? Math.max(4, Math.min(100, ls.pct * 100)) : 0));
+        const cash = clinched ? "Cashing ✓" : cooked ? "Not landing" : (ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : "Live read");
         liveRow = `<div class="ps-live dir-${meta.cls}">
           <span class="ps-cash">${esc(cash)}</span><span class="ps-dir"><span class="ps-dot"></span>${esc(meta.short)}</span>
           <span class="ps-meter"><span class="ps-fill" style="width:${pctW.toFixed(0)}%"></span></span>
@@ -2282,7 +2318,10 @@ export default function Home() {
       // (a) current game state banner (live only)
       if (gs.kind === "live") {
         const cur = d && d.current;
-        const bits = [cur && cur.inning_label ? esc(cur.inning_label) : (gs.label || "Live"),
+        // ONE inning source of truth: gs.label comes from the live_scores overlay that every
+        // other surface (ticker, tiles, hero) reads, so the box score can't disagree with them.
+        // live_detail's own inning_label is only a fallback when the overlay is still generic.
+        const bits = [gs.label && gs.label !== "Live" ? esc(gs.label) : (cur && cur.inning_label ? esc(cur.inning_label) : "Live"),
           cur && cur.outs != null ? `${esc(cur.outs)} out` : "",
           cur && cur.count ? `${esc(cur.count)}` : ""].filter(Boolean);
         rows.push(`<div class="lp-now"><span class="lp-live"><span class="livedot"></span>Live</span><span class="lp-state">${bits.join(" · ")}</span></div>`);
@@ -2474,7 +2513,7 @@ export default function Home() {
       const heroScore = (gs.score && gs.score.split && gs.score.home != null)
         ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
         : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
-      const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
+      const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.recIsL15 ? ` <span class="gp-rec-tag">L15</span>` : ""}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
       const heroTrend = (gs.kind === "live" && lead && !leadLocked) ? liveHitOdds(g, lead, "full") : "";
       const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
@@ -2495,7 +2534,6 @@ export default function Home() {
       </div>`;
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "live" && showLive ? "none" : "block"}">
         ${leadLocked ? "" : previewMasthead}
-        ${sheetHero}
         ${previewBlock}
         ${linesBlock}
         ${lead || !leadLocked ? pickPayoff : ""}
@@ -3248,11 +3286,12 @@ export default function Home() {
       // is the lead story's game, and drop repeats so no game headlines twice on the page.
       const seen = new Set<string>(); if (excludeGid) seen.add(String(excludeGid));
       const uniq = (themes || []).filter((t: any) => {
-        const gids = (t && t.affected_games) || [];
-        const primary = gids.length ? String(gids[0]) : null;
-        // themes with no game, or a fresh game, pass; a theme entirely about already-shown games is dropped
-        if (primary && gids.every((id: any) => seen.has(String(id)))) return false;
-        if (primary) seen.add(primary);
+        const gids = ((t && t.affected_games) || []).map((id: any) => String(id));
+        const primary = gids.length ? gids[0] : null;
+        // Drop a theme whose headline game already appeared (the hero, or an earlier
+        // storyline). Claim ALL of a kept theme's games so none can headline twice.
+        if (primary && seen.has(primary)) return false;
+        if (primary) gids.forEach((id: string) => seen.add(id));
         return true;
       });
       if (!uniq.length) return "";
@@ -3357,10 +3396,10 @@ export default function Home() {
           ? `<button class="lockchip" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
           : "";
         leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
-          ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead")}</div>` : ""}
+          ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}${gameState(g).kind !== "live" ? `<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>` : ""}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead")}</div>` : ""}
           <div class="ls-body">
             <h3 class="ls-match">${headline}</h3>
-            <div class="ls-byline">DiamondEdge · ${esc(dateTxt)}</div>
+            <div class="ls-byline">Lead story · DiamondEdge · ${esc(dateTxt)}</div>
             ${bet}
             ${blurbTxt && !locked ? `<p class="ls-lede">${esc(blurbTxt)}</p>` : locked ? `<p class="ls-lede dim">The full read on today's lead pick — the model number, the line it beats, and the history behind it — is one tap away.</p>` : ""}
             ${!locked && stks ? `<div class="pv-stks">${stks}</div>` : ""}
