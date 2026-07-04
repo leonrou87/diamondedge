@@ -3972,10 +3972,16 @@ export default function Home() {
     function tickerItems() {
       const src = livePayload || payload;
       if (!src || !src.games) return [];
-      // LIVE games ONLY — a live-scores strip. Nothing scheduled or finished, so it
-      // can never show a game that isn't currently playing. Empty => renderTicker hides it.
+      // GENUINELY-LIVE games ONLY. status==="live" isn't enough — games can get stuck at "live"
+      // after finishing (backend status-transition gap), so also require an actual in-progress
+      // score AND a period label that isn't a final marker (Final/FT/Ended). Empty => ticker hides.
       return ((src.games || []) as any[])
-        .filter((g: any) => String(g.status || "").toLowerCase() === "live")
+        .filter((g: any) => {
+          const gs = gameState(g);
+          if (gs.kind !== "live" || !gs.score || gs.score.home == null) return false;
+          const lab = String(gs.label || "").toLowerCase();
+          return !(lab.includes("final") || lab === "ft" || lab.includes("full") || lab.includes("end"));
+        })
         .slice(0, 20);
     }
     function tickerItemHtml(g: any) {
