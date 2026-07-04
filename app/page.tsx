@@ -522,6 +522,31 @@ export default function Home() {
           <span class="hpc-meta"><span class="hpc-q">${qDiamonds(q)}${Q_LABEL[q] || ""}</span>${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</span>
         </div></div>`;
     }
+    // LIVE composite for a hero image: a pulsing LIVE badge + the live score + how the
+    // pick is trending, woven onto the cover art (top band, over its own scrim). Shown only
+    // for live games; degrades to "" otherwise. Uses live_scores + display_pick.live_status.
+    function heroLiveBadge(g: any, size = "lead") {
+      const gs = gameState(g);
+      if (gs.kind !== "live") return "";
+      const sc = gs.score;
+      const scoreTxt = sc && sc.split && sc.home != null
+        ? `${esc(g.away_abbr)} <b>${num(sc.away, 0)}</b> · <b>${num(sc.home, 0)}</b> ${esc(g.home_abbr)}`
+        : "";
+      const per = gs.label && gs.label !== "Live" ? esc(gs.label) : "";
+      const pl = displayPick(g);
+      const ls = pl && pl.action === "TAKE" ? liveStatusOf(g, pl) : null;
+      let trend = "";
+      if (ls) {
+        const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
+        const cash = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}%` : "";
+        trend = `<span class="hlb-trend ${meta.cls}">${cash ? `${cash} ` : ""}${esc(meta.short)}</span>`;
+      }
+      return `<div class="hlb hlb-${size}">
+        <span class="hlb-badge"><span class="livedot"></span>LIVE</span>
+        ${scoreTxt ? `<span class="hlb-score">${scoreTxt}${per ? ` <i>${per}</i>` : ""}</span>` : per ? `<span class="hlb-score"><i>${per}</i></span>` : ""}
+        ${trend}
+      </div>`;
+    }
     // Choose the tint that fits a story: pick quality first, then theme keywords.
     function heroTintFor(g: any, pl: any) {
       if (pl && pl.action === "TAKE") {
@@ -772,7 +797,10 @@ export default function Home() {
     let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
+    let detailTab = "preview";      // detail page tab: "preview" | "live"
     let liveScores: any = null;     // latest live_scores snapshot (fresh score overlay)
+    let liveDetail: any = null;     // latest live_detail snapshot (box scores) — polled while live
+    let liveDetailTried = false;    // avoid hammering a missing live_detail key
     let analyticsDeep: any = null;  // analytics_deep block (deep results cuts) when served
     let adTried = false;            // analytics_deep lookup attempted this session
 
@@ -882,9 +910,29 @@ export default function Home() {
     }
     // Re-render whichever surface is showing, after a fresh overlay.
     function refreshLiveViews() {
+      renderTicker();
       if (tab === "today") renderToday();
       else if (tab === "games" && !rangeMode) renderSlate(true);
       if (detail && detail.game_id != null) refreshSheetScore(detail);
+    }
+    // ---- BANDWIDTH-SMART big-payload refresh: the pregame_picks payload changes ~every
+    // 30 min. Re-fetch infrequently and ONLY apply when generated_at advanced (no wasteful
+    // re-render). Paused while hidden; runs one immediate check on focus. ----
+    async function pollPregame() {
+      if (document.hidden) return;
+      if (curDate !== todayISO() || rangeMode) return; // only the live "today" board auto-refreshes
+      let p: any = null;
+      try { p = await snap("pregame_picks"); } catch {}
+      if (!p || !p.games) return;
+      const oldStamp = (livePayload && (livePayload.generated_at || livePayload.date)) || "";
+      const newStamp = p.generated_at || p.date || "";
+      if (newStamp && oldStamp && newStamp === oldStamp) return; // unchanged → do nothing
+      livePayload = p;
+      if (curDate === todayISO()) payload = p;
+      applyLiveScores();
+      // keep the selected league valid, then refresh the visible surface in place
+      root.querySelectorAll(".sporttab .cnt").forEach((el: any) => {});
+      refreshLiveViews();
     }
     async function pollLiveScores() {
       if (document.hidden || !liveWindowActive()) return;
@@ -897,17 +945,19 @@ export default function Home() {
       if (!applyLiveScores()) return;
       refreshLiveViews();
     }
-    // Update an open sheet's score banner in place (no re-render, keeps scroll).
+    // Update an open detail PAGE's score in place (no re-render, keeps scroll). Refreshes
+    // the fused hero score + the live box-score pane if the "How it's going" tab is mounted.
     function refreshSheetScore(g: any) {
-      const sheet = $("sheet"); if (!sheet) return;
+      const page = $("gamepage"); if (!page) return;
       const gs = gameState(g);
-      const el = sheet.querySelector(".sh-score");
+      const el = page.querySelector(".gp-center");
       if (el && gs.score && gs.score.split && gs.score.home != null) {
-        el.className = `sh-score ${gs.kind}`;
-        el.innerHTML = `<span class="shs-side"><span class="shs-ab">${esc(g.away_abbr)}</span><b>${num(gs.score.away, 0)}</b></span>
-          <span class="shs-mid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label)}`}</span>
-          <span class="shs-side"><b>${num(gs.score.home, 0)}</b><span class="shs-ab">${esc(g.home_abbr)}</span></span>`;
+        el.innerHTML = `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`;
       }
+      const pane = page.querySelector('.gp-pane[data-pane="live"]');
+      if (pane) pane.innerHTML = boxScorePanel(g);
+      // also refresh the box score from the (possibly newer) live_detail
+      pollLiveDetail();
     }
 
     function gamesForLeague(p: any, lg: string, dateISO?: string) {
@@ -1046,34 +1096,7 @@ export default function Home() {
         requestAnimationFrame(step);
       });
     }
-    // Pull-to-refresh (touch): pull down from the top of the games feed to reload the day.
-    let ptrBound = false;
-    function bindPull() {
-      if (ptrBound) return; ptrBound = true;
-      let y0: any = null, pull = 0, on = false;
-      document.addEventListener("touchstart", (e: any) => {
-        if (window.scrollY <= 0 && tab === "games" && !detail) { y0 = e.touches[0].clientY; on = true; pull = 0; }
-      }, { passive: true });
-      document.addEventListener("touchmove", (e: any) => {
-        if (!on || y0 == null) return;
-        const el = $("ptr"); if (!el) return;
-        const d = e.touches[0].clientY - y0;
-        pull = Math.max(0, Math.min(88, d * 0.42));
-        el.style.height = pull + "px";
-        el.classList.toggle("ready", pull > 58);
-      }, { passive: true });
-      document.addEventListener("touchend", async () => {
-        if (!on) return; on = false;
-        const el = $("ptr");
-        if (pull > 58 && el) {
-          el.classList.add("go");
-          payload = await loadDay(curDate);
-          renderSlate();
-        }
-        if (el) { el.style.height = "0px"; el.classList.remove("ready", "go"); }
-        y0 = null; pull = 0;
-      });
-    }
+    // (Pull-to-refresh removed — replaced by smart silent tiered auto-refresh in init.)
 
     // ===================== POWER-USER VISUALS (sheet "More detail" only) =====================
     function confRing(pk: any) {
@@ -1300,6 +1323,37 @@ export default function Home() {
       }
       return "";
     }
+    // ===================== PER-TEAM ODDS + FORM (the team rows do the work) =====================
+    // Scores-app line: each side carries its OWN spread(price) + moneyline next to the abbr.
+    // spread_pick.line is the HOME run-line; away = its negation. prices are DECIMAL per side.
+    // Degrades field-by-field: whatever isn't served simply doesn't render.
+    function teamOdds(g: any, which: "home" | "away") {
+      const out: any = { spread: null, spreadPx: null, ml: null };
+      const sp = g.spread_pick;
+      if (sp && sp.line != null) {
+        const hl = spreadHomeLine(g, sp);
+        out.spread = which === "home" ? hl : -hl;
+        const pr = sp.prices || {};
+        const px = which === "home" ? (pr.home ?? sp.price) : (pr.away ?? sp.price);
+        if (px != null) out.spreadPx = fmtOdds(px);
+      }
+      const mp = g.ml_pick, mpr = (mp && mp.prices) || {};
+      const mlpx = which === "home" ? mpr.home : mpr.away;
+      if (mlpx != null) out.ml = fmtOdds(mlpx);
+      else if (mp && mp.price != null && mp.side && String(mp.side) === String(which === "home" ? g.home_abbr : g.away_abbr)) out.ml = fmtOdds(mp.price);
+      return out;
+    }
+    // Recent form as a compact record — L15 record ("6-9") + optional hot/cold streak
+    // ("W3"/"L3"). Served for MLB only via streaks.{away,home}; absent → "".
+    function teamForm(g: any, which: "home" | "away") {
+      const s = g.streaks && typeof g.streaks === "object" ? g.streaks[which] : null;
+      if (!s || typeof s !== "object") return null;
+      const rec = typeof s.record_l15 === "string" && /\d+-\d+/.test(s.record_l15) ? s.record_l15 : null;
+      const ws = s.win_streak && s.win_streak.n >= 2 && s.win_streak.result ? `${s.win_streak.result}${s.win_streak.n}` : null;
+      if (!rec && !ws) return null;
+      return { rec, streak: ws, hot: ws && ws[0] === "W" };
+    }
+
     function marketStrip(g: any, pick: any, st: string, locked = false, excludePick = false) {
       const q = pick ? qualityOf(pick) : null;
       const mk = pick ? pick.market : null;
@@ -1391,21 +1445,116 @@ export default function Home() {
       const right = q ? qDiamonds(q) : (dayTag || comp);
       return `<div class="t-status">${left}${right}</div>`;
     }
+    // A scores-app team line: logo · ABBR · form(L15 + streak) · this side's spread(px) + ML · SCORE.
+    // The odds live WITH the team so the card needs no separate stacked market strip.
+    // Pre-game shows odds; live/final shows the score. Everything degrades independently.
     function tileRow(g: any, which: "away" | "home", gs: any) {
       const ab = which === "away" ? g.away_abbr : g.home_abbr;
       const sc = gs.score;
+      const started = gs.kind !== "pre";
       let scoreHtml = "", winner = false, loser = false;
-      if (gs.kind !== "pre" && sc && sc.split && sc.home != null) {
+      if (started && sc && sc.split && sc.home != null) {
         const mine = which === "home" ? sc.home : sc.away;
         const other = which === "home" ? sc.away : sc.home;
         winner = gs.kind === "final" && mine > other;
         loser = gs.kind === "final" && mine < other;
         scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}">${num(mine, 0)}</span>`;
       }
+      // recent form (MLB-only, degrades to nothing)
+      const fm = teamForm(g, which);
+      const formHtml = fm
+        ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
+        : "";
+      // this side's spread + moneyline (pre-game only; the odds vanish once the score
+      // matters). Compact scores-app convention: spread LINE + ML price (spread price is
+      // dropped on the tile to stay one clean line — the full price lives in the detail).
+      let oddsHtml = "";
+      if (!started) {
+        const o = teamOdds(g, which);
+        const parts: string[] = [];
+        if (o.spread != null) parts.push(`<span class="to-sp">${sgn(o.spread)}</span>`);
+        if (o.ml != null) parts.push(`<span class="to-ml">${esc(o.ml)}</span>`);
+        if (parts.length) oddsHtml = `<span class="t-odds">${parts.join(`<span class="to-sep">·</span>`)}</span>`;
+      }
       return `<div class="t-row ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
         <span class="t-crest">${gCrest(g, which)}</span>
         <span class="t-ab">${esc(ab)}</span>
+        ${formHtml}
+        <span class="t-rsp"></span>
+        ${oddsHtml}
         ${scoreHtml}
+      </div>`;
+    }
+
+    // The model's directional READ on a PASS game — enough to fill the pick slot with a
+    // calm "not confident" note instead of blank space. Derives from served fields:
+    // total our_proj vs line (over/under lean), else ml our_winprob (side lean). Returns
+    // a short phrase or null. NEVER a call — it's explicitly a non-pick.
+    function passRead(g: any) {
+      const tp = g.total_pick;
+      if (tp && tp.line != null && tp.our_proj != null) {
+        const diff = Number(tp.our_proj) - Number(tp.line);
+        if (Math.abs(diff) >= 0.15) return `leans ${diff > 0 ? "OVER" : "UNDER"} ${num(tp.line)}`;
+      }
+      const mp = g.ml_pick;
+      if (mp && mp.our_winprob != null) {
+        const wp = Number(mp.our_winprob);
+        if (wp >= 0.55 || wp <= 0.45) { const side = wp >= 0.5 ? (mp.side || g.home_abbr) : (mp.side === g.home_abbr ? g.away_abbr : g.home_abbr); return `slight edge ${esc(side)}`; }
+      }
+      return null;
+    }
+    // The PASS pick-slot: same footprint as a real pick strip so cards stay uniform height.
+    // Muted, empty diamonds (○○○), the model's directional read when we have one.
+    function passStrip(g: any) {
+      const read = passRead(g);
+      return `<div class="pstrip pass">
+        <div class="ps-main">
+          <span class="ps-k">${pickLabel(g)}</span>
+          <span class="ps-side">No Pick${read ? ` — ${esc(read)}` : " — line looks fair"}</span>
+          <span class="qdia q-pass" aria-hidden="true"><i>◇</i><i>◇</i><i>◇</i></span>
+        </div>
+      </div>`;
+    }
+
+    // ONE compact pick strip: the DiamondEdge Pick (side · price), ONE quality mark, and —
+    // when live — an inline hit read + ONE slim progress bar. Replaces the old stacked
+    // pickBanner + liveHitOdds + pickProgress trio so the card stays short and uncluttered.
+    function pickStrip(g: any, pl: any, st: string, locked: boolean, gs: any) {
+      const q = qualityOf(pl);
+      const live = gs.kind === "live";
+      if (locked) {
+        return `<div class="pstrip locked" data-up="1" role="button" aria-label="DiamondEdge Pick — locked">
+          <span class="ps-k">${lockSvg} ${pickLabel(g)}</span>
+          <span class="ps-dots" aria-hidden="true">●●●● ●</span>${qDiamonds(q)}
+          <span class="ps-unlock">Unlock</span>
+        </div>`;
+      }
+      const state = pickStateTxt(g, pl, st);
+      // pre/final: pick + price + result mark. no bar.
+      // live: pick + inline "68% to cash · your way" + ONE slim meter (only when live_status served).
+      const ls = live && !locked ? liveStatusOf(g, pl) : null;
+      let liveRow = "";
+      if (ls) {
+        const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
+        const pctW = ls.pct != null ? Math.max(4, Math.min(100, ls.pct * 100)) : (ls.prob != null ? Math.max(4, Math.min(100, ls.prob * 100)) : 0);
+        const cash = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : "Live read";
+        liveRow = `<div class="ps-live dir-${meta.cls}">
+          <span class="ps-cash">${esc(cash)}</span><span class="ps-dir"><span class="ps-dot"></span>${esc(meta.short)}</span>
+          <span class="ps-meter"><span class="ps-fill" style="width:${pctW.toFixed(0)}%"></span></span>
+        </div>`;
+      } else if (live) {
+        // live but no served live-odds: a single lean progress bar toward the total line.
+        const prog = pickProgress(g, pl, st);
+        if (prog) liveRow = prog;
+      }
+      return `<div class="pstrip q-${q} ${st}">
+        <div class="ps-main">
+          <span class="ps-k">${pickLabel(g)}</span>
+          <span class="ps-side">${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</span>
+          ${qDiamonds(q)}
+          ${state ? `<span class="ps-res ${state.cls}">${state.txt}</span>` : ""}
+        </div>
+        ${liveRow}
       </div>`;
     }
 
@@ -1416,21 +1565,24 @@ export default function Home() {
       const st = pick ? playState(g, pick) : "open";
       const locked = pick ? pickLocked(pick, st) : false;
       // The card carries the verdict through LIGHT, not borders: quality glow pre-game,
-      // result glow after. Inside: typography + one inline market strip.
+      // result glow after. The two TEAM ROWS carry the data (form + per-side odds + score);
+      // ONE compact pick strip carries the DiamondEdge Pick + live read + one bar. No
+      // duplicate diamonds, no separate stacked market strip, no second progress bar.
       const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
+      const totPick = g.total_pick && g.total_pick.line != null ? Number(g.total_pick.line) : null;
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      // The DiamondEdge Pick is a pinned banner in EVERY state — on live and final tiles
-      // it stays the loudest element, the score never demotes it.
+      // The shared total (O/U) shown ONCE — it's the DiamondEdge Pick market. Pre-game only;
+      // suppressed when the pick itself IS the total (the strip already names it).
+      const pickIsTotal = pick && pick.market === "total";
+      const totLine = gs.kind === "pre" && totPick != null && !pickIsTotal
+        ? `<div class="t-total"><span class="tt-k">O/U</span><b>${num(totPick)}</b></div>` : "";
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
-        ${tileStatus(g, gs, q)}
+        ${tileStatus(g, gs)}
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
-        ${totOnly}
-        ${pick ? pickBanner(g, pick, st, locked) : ""}
-        ${gs.kind === "live" && pick && !locked ? liveHitOdds(g, pick, "tile") : ""}
-        ${gs.kind === "live" && pick && !locked ? pickProgress(g, pick, st) : ""}
-        ${marketStrip(g, pick, st, locked, !!pick)}
+        ${totOnly}${totLine}
+        ${pick ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
       </article>`;
     }
 
@@ -1569,7 +1721,6 @@ export default function Home() {
         return `<button class="sporttab ${lg === league ? "on" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
       root.querySelector("#games-view").innerHTML = `
-        <div id="ptr"><div class="ptr-inner"><span class="ptr-sp"></span><span class="ptr-txt">release to refresh</span></div></div>
         <div class="subhead">
           <div class="sporttabs" id="sporttabs">${tabsHtml}<span class="tab-ink" id="tab-ink"></span></div>
           <div id="meta-area">${metaRow()}</div>
@@ -1805,6 +1956,21 @@ export default function Home() {
     }
     const passWhy = () =>
       `We checked the spread, the total and the moneyline for this game, and none of them offered a real advantage over the books' numbers. Passing is part of the strategy — most games don't have a bet worth taking.`;
+
+    // A TIGHT masthead headline from the full daily_brief sentence: take the lead phrase
+    // before the first ':' or '—'; if that's still long (or there's no break), cap to ~7
+    // words. The full sentence rides as a small dek beneath. Never a giant paragraph.
+    function shortHeadline(full: string) {
+      const s = cleanBlurb(String(full || "")).trim();
+      if (!s) return "";
+      let lead = s;
+      const m = s.match(/^(.{4,64}?)\s*[:—–-]\s+/);
+      if (m) lead = m[1];
+      const words = lead.split(/\s+/);
+      if (words.length > 8) lead = words.slice(0, 7).join(" ") + "…";
+      // strip a trailing comma/semicolon
+      return lead.replace(/[,;]\s*$/, "");
+    }
 
     // ---- power-user blocks kept under "More detail" ----
     function modelsVsMarket(g: any) {
@@ -2053,8 +2219,71 @@ export default function Home() {
         </div>
       </div>`;
     }
+    // ===================== LIVE DETAIL (box score — live_detail key) =====================
+    // A NEW small key the backend ships: { updated_at, games: { "<game_id>": {
+    //   line_score:[{inning,away,home}], totals:{away:{R,H,E},home:{R,H,E}},
+    //   pitching:{away:{name,line},home:{name,line}}, batting_leaders:[{name,line}],
+    //   current:{inning_label,outs,bases,count} } } }. Degrades to nothing when absent.
+    function liveDetailFor(g: any) {
+      if (!g || !liveDetail || !liveDetail.games) return null;
+      return liveDetail.games[String(g.game_id)] || (g.game_pk != null ? liveDetail.games[String(g.game_pk)] : null) || null;
+    }
+    // The "How it's going" box-score panel. Real served detail first; graceful fallback to
+    // the score/inning we already overlay when live_detail hasn't landed.
+    function boxScorePanel(g: any) {
+      const gs = gameState(g);
+      const started = gs.kind !== "pre";
+      if (!started) {
+        return `<div class="livepanel"><div class="state mini"><div class="big">Game hasn't started</div><div class="sm">The box score and live stats appear here once ${esc(g.away_abbr)} @ ${esc(g.home_abbr)} is underway.</div></div></div>`;
+      }
+      const d = liveDetailFor(g);
+      const rows: string[] = [];
+      // (a) current game state banner (live only)
+      if (gs.kind === "live") {
+        const cur = d && d.current;
+        const bits = [cur && cur.inning_label ? esc(cur.inning_label) : (gs.label || "Live"),
+          cur && cur.outs != null ? `${esc(cur.outs)} out` : "",
+          cur && cur.count ? `${esc(cur.count)}` : ""].filter(Boolean);
+        rows.push(`<div class="lp-now"><span class="lp-live"><span class="livedot"></span>Live</span><span class="lp-state">${bits.join(" · ")}</span></div>`);
+      }
+      // (b) line score grid (innings R/H/E) — the core box score
+      if (d && Array.isArray(d.line_score) && d.line_score.length) {
+        const inns = d.line_score;
+        const th = inns.map((c: any) => `<th>${esc(c.inning)}</th>`).join("");
+        const tot = d.totals || {};
+        const rhe = (side: "away" | "home") => {
+          const t = tot[side] || {};
+          return `<td class="rhe r">${t.R != null ? esc(t.R) : "—"}</td><td class="rhe">${t.H != null ? esc(t.H) : "—"}</td><td class="rhe">${t.E != null ? esc(t.E) : "—"}</td>`;
+        };
+        const rowFor = (side: "away" | "home", ab: any) =>
+          `<tr><td class="ls-ab">${gCrest(g, side, "ls-crest")}${esc(ab)}</td>${inns.map((c: any) => `<td>${c[side] != null ? esc(c[side]) : ""}</td>`).join("")}${rhe(side)}</tr>`;
+        rows.push(`<div class="lp-box"><div class="lp-scroll"><table class="linescore">
+          <thead><tr><th class="ls-ab"></th>${th}<th class="rhe r">R</th><th class="rhe">H</th><th class="rhe">E</th></tr></thead>
+          <tbody>${rowFor("away", g.away_abbr)}${rowFor("home", g.home_abbr)}</tbody>
+        </table></div></div>`);
+      } else if (gs.score && gs.score.split && gs.score.home != null) {
+        // fallback: the simple score we already have
+        rows.push(`<div class="lp-simplescore"><span class="lps-side"><span class="shs-ab">${esc(g.away_abbr)}</span><b>${num(gs.score.away, 0)}</b></span><span class="lps-mid">${gs.kind === "final" ? "Final" : esc(gs.label || "Live")}</span><span class="lps-side"><b>${num(gs.score.home, 0)}</b><span class="shs-ab">${esc(g.home_abbr)}</span></span></div>`);
+      }
+      // (c) pitching + batting leaders (when served)
+      if (d && d.pitching && (d.pitching.away || d.pitching.home)) {
+        const pit = (side: "away" | "home", ab: any) => {
+          const p = d.pitching[side]; if (!p) return "";
+          return `<div class="lp-pit-row"><span class="lp-pit-ab">${esc(ab)}</span><span class="lp-pit-nm">${esc(p.name || "—")}</span><span class="lp-pit-ln">${esc(p.line || "")}</span></div>`;
+        };
+        rows.push(`<div class="lp-sec"><div class="lp-sec-h">On the mound</div>${pit("away", g.away_abbr)}${pit("home", g.home_abbr)}</div>`);
+      }
+      if (d && Array.isArray(d.batting_leaders) && d.batting_leaders.length) {
+        const bl = d.batting_leaders.slice(0, 5).map((b: any) => `<div class="lp-bat-row"><span class="lp-bat-nm">${esc(b.name || "")}</span><span class="lp-bat-ln">${esc(b.line || "")}</span></div>`).join("");
+        rows.push(`<div class="lp-sec"><div class="lp-sec-h">At the plate</div>${bl}</div>`);
+      }
+      if (!rows.length) rows.push(`<div class="state mini"><div class="sm">Live box score updating…</div></div>`);
+      return `<div class="livepanel">${rows.join("")}</div>`;
+    }
+
     function openDetail(g: any, focusMk?: string, fromHistory = false) {
       detail = g;
+      detailTab = "preview";
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       const sp = g.sport;
       const ps = g.predicted_score || {};
@@ -2195,31 +2424,57 @@ export default function Home() {
         </div>
       </details>`;
 
+      // FUSED HERO HEADER — the matchup (crests + records), the frozen pick, and the live
+      // trend woven into ONE header over a subtle team-tinted wash. Sits above the tabs.
+      const heroPick = lead && lead.action === "TAKE" && !leadLocked
+        ? `<div class="gp-pick q-${qualityOf(lead)}"><span class="gp-pick-k">${pickLabel(g)}</span><span class="gp-pick-side">${pickArrow(lead)} ${esc(lead.side || "")}${lead.price != null ? `<i>${fmtOdds(lead.price)}</i>` : ""}</span>${qDiamonds(qualityOf(lead))}</div>`
+        : leadLocked ? `<button class="gp-pick locked" data-up="1"><span class="gp-pick-k">${pickLabel(g)}</span><span class="gp-lock">${lockSvg} Unlock the pick</span></button>`
+        : `<div class="gp-pick pass"><span class="gp-pick-k">The Verdict</span><span class="gp-pick-side">No Pick — Passing</span></div>`;
+      const heroScore = (gs.score && gs.score.split && gs.score.home != null)
+        ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
+        : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
+      const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
+      const heroTrend = (gs.kind === "live" && lead && !leadLocked) ? liveHitOdds(g, lead, "full") : "";
+      const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
+        <div class="gp-hero-wash" aria-hidden="true"></div>
+        <div class="gp-mu">
+          <div class="gp-team away"><span class="gp-crest">${gCrest(g, "away")}</span><span class="gp-ab">${esc(g.away_abbr)}</span>${heroForm("away")}</div>
+          <div class="gp-center">${heroScore}</div>
+          <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
+        </div>
+        ${heroPick}
+        ${heroTrend ? `<div class="gp-trend">${heroTrend}</div>` : ""}
+      </div>`;
+      // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
+      const showLive = gs.kind === "live" || gs.kind === "final";
+      const tabsBar = `<div class="gp-tabs" role="tablist">
+        <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
+        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">How it's going</button>` : ""}
+        <span class="gp-tab-ink" id="gp-tab-ink"></span>
+      </div>`;
+      const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "live" && showLive ? "none" : "block"}">
+        ${leadLocked ? "" : previewMasthead}
+        ${sheetHero}
+        ${previewBlock}
+        ${linesBlock}
+        ${lead || !leadLocked ? pickPayoff : ""}
+        ${passBlock}
+        ${leadLocked ? "" : more}
+      </div>`;
+      const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${boxScorePanel(g)}</div>` : "";
+
       const html = `
-        <div class="sheet-bg" id="sheet-bg"></div>
-        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
-          <div class="sh-grab" id="sh-grab"><span></span></div>
-          <div class="sh-head">
-            <button class="close" id="sheet-close" aria-label="Close">✕</button>
-            <button class="sh-share" id="sh-share" aria-label="Share this game"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg><span>Share</span></button>
-            <div class="sh-sport">${SPORT_LABEL[sp] || sp}${g.meta && g.meta.competition ? ` · ${esc(g.meta.competition)}` : ""}</div>
-            <div class="sh-mu">
-              <span class="sh-tm">${gCrest(g, "away")}<b>${esc(g.away_abbr)}</b></span>
-              <span class="sh-at">@</span>
-              <span class="sh-tm">${gCrest(g, "home")}<b>${esc(g.home_abbr)}</b></span>
-            </div>
-            <div class="sh-meta">${esc([g.matchup, dispDate, startTxt].filter(Boolean).join(" · "))}</div>
+        <div class="gamepage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.matchup || "Game")}">
+          <div class="gp-head">
+            <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <div class="gp-head-title"><span class="gp-head-sport">${SPORT_LABEL[sp] || sp}${g.meta && g.meta.competition ? ` · ${esc(g.meta.competition)}` : ""}</span><span class="gp-head-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span></div>
+            <button class="gp-share" id="gp-share" aria-label="Share this game"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button>
           </div>
-          <div class="sh-body">
-            ${scoreBanner}
-            ${gs.kind === "live" && lead && !leadLocked ? `<div class="sh-live">${liveHitOdds(g, lead, "full")}</div>` : ""}
-            ${leadLocked ? "" : previewMasthead}
-            ${sheetHero}
-            ${previewBlock}
-            ${linesBlock}
-            ${lead || !leadLocked ? pickPayoff : ""}
-            ${passBlock}
-            ${leadLocked ? "" : more}
+          <div class="gp-body" id="gp-body">
+            ${gameHero}
+            ${tabsBar}
+            ${previewPane}
+            ${livePane}
           </div>
         </div>`;
 
@@ -2227,25 +2482,73 @@ export default function Home() {
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
-      $("sheet-close").onclick = () => closeDetail();
-      $("sheet-bg").onclick = () => closeDetail();
+      requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); positionDetailInk(); });
+      $("gp-back").onclick = () => closeDetail();
       const unl = $("cc-unlock");
       if (unl) unl.onclick = () => { closeDetail(); switchTab("upgrade"); };
       const shTlh = $("tl-how"); if (shTlh) shTlh.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => openRecipeSheet(), 220); };
-      const shShare = $("sh-share"); if (shShare) shShare.onclick = (e: any) => { e.stopPropagation(); shareGame(g); };
-      bindSheetDrag($("sheet"), $("sh-grab"));
+      const shShare = $("gp-share"); if (shShare) shShare.onclick = (e: any) => { e.stopPropagation(); shareGame(g); };
+      // tab switching (no re-fetch; just show/hide + move the ink)
+      $("gamepage").querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
+      // if opened on a live game, pull the box score right away
+      if (showLive) pollLiveDetail();
+    }
+    function positionDetailInk() {
+      const bar = $("gamepage") && $("gamepage").querySelector(".gp-tabs");
+      const ink = $("gp-tab-ink"); if (!bar || !ink) return;
+      const on = bar.querySelector(".gp-tab.on"); if (!on) return;
+      ink.style.width = on.offsetWidth + "px";
+      ink.style.transform = `translateX(${on.offsetLeft}px)`;
+    }
+    function switchDetailTab(t: string) {
+      if (t === detailTab || !detail) return;
+      detailTab = t;
+      const page = $("gamepage"); if (!page) return;
+      page.querySelectorAll(".gp-tab").forEach((b: any) => b.classList.toggle("on", b.dataset.dtab === t));
+      page.querySelectorAll(".gp-pane").forEach((p: any) => { p.style.display = p.dataset.pane === t ? "block" : "none"; });
+      positionDetailInk();
+      if (t === "live") { pollLiveDetail(); const b = $("gp-body"); if (b) b.scrollTop = b.scrollTop; }
     }
     function closeDetail(fromHistory = false) {
       const wasGame = detail && !detail._recipe && detail.game_id != null;
+      // Back-arrow / user close pops the ?g= URL by walking browser history so the native
+      // back button and the arrow behave identically (a real page navigation). We DON'T
+      // null `detail` or tear down the DOM here — the resulting popstate → syncFromUrl(true)
+      // → closeDetail(true) does that, so both paths run the exact same teardown.
+      if (!fromHistory && wasGame) {
+        try {
+          if (new URL(location.href).searchParams.get("g")) { history.back(); return; }
+        } catch {}
+        clearGameUrl(false);
+      }
       detail = null;
-      if (!fromHistory && wasGame) clearGameUrl(false); // user-initiated close pops the ?g= URL
       const l = $("sheet-layer");
       if (!l || !l.innerHTML) return;
-      const sh = $("sheet"), bg = $("sheet-bg");
+      const page = $("gamepage"), sh = $("sheet"), bg = $("sheet-bg");
       document.body.classList.remove("sheet-open");
-      if (REDUCE || !sh) { l.innerHTML = ""; return; }
-      sh.classList.add("closing"); if (bg) bg.classList.add("closing");
-      setTimeout(() => { l.innerHTML = ""; }, 300);
+      if (REDUCE || (!page && !sh)) { l.innerHTML = ""; return; }
+      if (page) page.classList.add("out");
+      if (sh) sh.classList.add("closing"); if (bg) bg.classList.add("closing");
+      setTimeout(() => { l.innerHTML = ""; }, 320);
+    }
+    // Poll the live_detail (box-score) key while a detail page is open on a live game.
+    // Tiered/bandwidth-smart: only fetches when a live game's page is showing; pauses hidden.
+    async function pollLiveDetail() {
+      if (document.hidden) return;
+      if (!detail || detail.game_id == null) return;
+      const gs = gameState(detail);
+      if (gs.kind !== "live" && gs.kind !== "final") return;
+      let ld: any = null;
+      try { ld = await snap("live_detail"); } catch {}
+      liveDetailTried = true;
+      if (!ld || !ld.games) return;
+      const fresh = !liveDetail || ld.updated_at !== liveDetail.updated_at;
+      liveDetail = ld;
+      if (!fresh) return;
+      // update the live pane in place (no scroll jump) if it's mounted + visible
+      const page = $("gamepage"); if (!page) return;
+      const pane = page.querySelector('.gp-pane[data-pane="live"]');
+      if (pane) pane.innerHTML = boxScorePanel(detail);
     }
     function bindSheetDrag(sheet: any, grab: any) {
       if (!sheet || !grab) return;
@@ -2703,7 +3006,7 @@ export default function Home() {
       const kicker = THEME_KICKER[ic] || "Storyline";
       const gids = (t.affected_games || []) as any[];
       const proof = themeProofChip(t);
-      const games = gids.length ? `<button class="st-games" data-th-g="${i}">${gids.length} game${gids.length > 1 ? "s" : ""} →</button>` : "";
+      const games = gids.length ? `<button class="st-games" data-th-g="${esc(gids.join(","))}">${gids.length} game${gids.length > 1 ? "s" : ""} →</button>` : "";
       const body = esc(cleanBlurb(t.text || ""));
       const common = `data-th="${i}" style="--i:${i}" role="button" tabindex="0" aria-expanded="false" aria-label="${esc(t.name)} — expand"`;
       if (variant === "lead") {
@@ -2737,10 +3040,21 @@ export default function Home() {
       </article>`;
     }
     // Assemble the storyline section as a true magazine block: one lead, then secondaries.
-    function storylinesBlock(themes: any[]) {
-      if (!themes.length) return "";
-      const lead = storyCard(themes[0], 0, "lead");
-      const rest = themes.slice(1);
+    function storylinesBlock(themes: any[], excludeGid?: string | null) {
+      // DEDUPE: a theme "belongs" to its first affected game. Drop themes whose only game
+      // is the lead story's game, and drop repeats so no game headlines twice on the page.
+      const seen = new Set<string>(); if (excludeGid) seen.add(String(excludeGid));
+      const uniq = (themes || []).filter((t: any) => {
+        const gids = (t && t.affected_games) || [];
+        const primary = gids.length ? String(gids[0]) : null;
+        // themes with no game, or a fresh game, pass; a theme entirely about already-shown games is dropped
+        if (primary && gids.every((id: any) => seen.has(String(id)))) return false;
+        if (primary) seen.add(primary);
+        return true;
+      });
+      if (!uniq.length) return "";
+      const lead = storyCard(uniq[0], 0, "lead");
+      const rest = uniq.slice(1);
       const secondaries = rest.map((t: any, k: number) => storyCard(t, k + 1, rest.length > 2 ? "brief" : "second")).join("");
       return `<section class="ng-rail">
         <div class="sec-h"><span>Today's Storylines</span></div>
@@ -2775,8 +3089,9 @@ export default function Home() {
       const scoreBadge = sc ? `<span class="pv-topscore">${esc(g.away_abbr)} ${num(sc.away, 0)}–${num(sc.home, 0)} ${esc(g.home_abbr)}</span>` : "";
       // The pick rides ON the image (magazine cover line) so every card reads like a story.
       const coverSize = feature ? "lead" : "card";
+      const isLive = gs.kind === "live";
       return `<article class="prev ${feature ? "feature " : ""}${hasPick ? "haspick q-" + q : "nopick"}" data-gid="${esc(g.game_id)}" style="--i:${Math.min(i, 8)}" role="button" tabindex="0" aria-label="${esc(g.matchup || "game preview")}${hasPick ? " — DiamondEdge Pick " + esc(pl.side || "") : " — no pick"} — open">
-        <div class="pv-figure">${heroImage(g, tint, coverSize)}<div class="pv-fig-top"><span class="pv-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>${scoreBadge}${status}</div>${heroPickCover(g, coverSize)}</div>
+        <div class="pv-figure">${heroImage(g, tint, coverSize)}<div class="pv-fig-top"><span class="pv-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>${isLive ? "" : scoreBadge}${isLive ? "" : status}</div>${isLive ? heroLiveBadge(g, feature ? "lead" : "card") : ""}${heroPickCover(g, coverSize)}</div>
         <div class="pv-body">
           <h4 class="pv-head">${head}</h4>
           ${dek ? `<p class="pv-dek clamp2">${mdBold(String(dek))}</p>` : ""}
@@ -2839,7 +3154,7 @@ export default function Home() {
           ? `<button class="lockchip" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
           : "";
         leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
-          ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>${heroPickCover(g, "lead")}</div>` : ""}
+          ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead")}</div>` : ""}
           <div class="ls-body">
             <h3 class="ls-match">${headline}</h3>
             <div class="ls-byline">DiamondEdge · ${esc(dateTxt)}</div>
@@ -2865,23 +3180,31 @@ export default function Home() {
           <div class="tdy-picks" id="tdy-picks" aria-label="Featured picks carousel">${railPicks.map((p: any, i: number) => heroCard(p, i)).join("")}</div>
           ${railPicks.length > 1 ? `<div class="tp-dots" id="tp-dots" role="tablist" aria-label="Carousel position">${railPicks.map((_: any, i: number) => `<button class="tp-dot${i === 0 ? " on" : ""}" data-dot="${i}" aria-label="Go to pick ${i + 1}"></button>`).join("")}</div>` : ""}
         </section>` : "";
+      // DEDUPE — the lead story's game is excluded from storylines + the board preview
+      // grid, and previews de-dupe among themselves, so no game appears twice on the page.
+      const leadGid = leadPick ? String(leadPick.game_id) : null;
       const themes = ((db.themes || []) as any[]);
-      const storylines = storylinesBlock(themes);
-      const pvGames = previewGames().slice(0, 9);
+      const storylines = storylinesBlock(themes, leadGid);
+      const seen = new Set<string>(); if (leadGid) seen.add(leadGid);
+      const pvGames = previewGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; }).slice(0, 9);
       const previews = pvGames.length ? `
         <section class="ng-previews">
           <div class="sec-h"><span>The board</span><button class="sec-more" data-nav="games">Full board →</button></div>
           <div class="prevgrid">${pvGames.map((g: any, i: number) => previewCard(g, i, i === 0)).join("")}</div>
         </section>` : "";
+      // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
+      // A clear divider separates the masthead from the lead story below it.
+      const fullHead = cleanBlurb(db.headline || "");
+      const tightHead = shortHeadline(fullHead) || esc(fullHead);
+      const headDek = fullHead && esc(tightHead).replace(/…$/, "") !== esc(fullHead) ? fullHead : "";
       view.innerHTML = `
         <div class="news">
-          <div class="news-mast">
-            <span class="nm-brand">DiamondEdge <b>Daily</b></span>
-            <span class="nm-date">${esc(dateTxt)}</span>
-            <button class="nm-rec" id="nm-rec">${mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : `The record`} →</button>
+          <div class="masthead">
+            <div class="mh-kicker"><span class="lk-tag">Today</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : `The record`} →</button></div>
+            <h2 class="lead-head">${esc(tightHead)}</h2>
+            ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
-          <div class="lead-kicker"><span class="lk-tag">The Daily Brief</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span></div>
-          <h2 class="lead-head">${esc(cleanBlurb(db.headline || ""))}</h2>
+          <div class="mh-rule"></div>
           <div class="news-grid">
             <section class="ng-lead">${leadStory}</section>
             ${storylines}
@@ -2908,7 +3231,7 @@ export default function Home() {
       view.querySelectorAll(".story").forEach((s: any) => {
         const toggle = (e: any) => {
           const gbtn = e.target && e.target.closest && e.target.closest("[data-th-g]");
-          if (gbtn) { const t = themes[Number(gbtn.dataset.thG)]; if (t) jumpToGames(t.affected_games || []); return; }
+          if (gbtn) { const ids = String(gbtn.dataset.thG || "").split(",").filter(Boolean); if (ids.length) jumpToGames(ids); return; }
           const p = s.querySelector(".st-t");
           const open = p && p.classList.toggle("open");
           if (p) p.classList.toggle("clamp2", !open);
@@ -3073,17 +3396,21 @@ export default function Home() {
     const NAV_LABEL: any = { today: "Today", games: "Games", results: "Results", settings: "Settings" };
     function renderShell() {
       const navTabs = ["today", "games", "results", "settings"];
+      // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it.
       root.innerHTML = `
-        <header><div class="hbar">
-          <div class="brand" id="brand">
-            <div class="diamond"></div>
-            <div><h1>Diamond<b>Edge</b></h1><div class="tag">Today · Games · Results</div></div>
+        <header id="app-header">
+          <div class="hbar">
+            <div class="brand" id="brand">
+              <div class="diamond"></div>
+              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">Today · Games · Results</div></div>
+            </div>
+            <div class="hspacer"></div>
+            <div class="toptabs">
+              ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}">${NAV_LABEL[t]}</button>`).join("")}
+            </div>
           </div>
-          <div class="hspacer"></div>
-          <div class="toptabs">
-            ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}">${NAV_LABEL[t]}</button>`).join("")}
-          </div>
-        </div></header>
+          <div class="ticker" id="ticker" aria-label="Today's scores and picks"></div>
+        </header>
         <main>
           <div id="today-view" style="display:${tab === "today" ? "block" : "none"}"></div>
           <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
@@ -3096,6 +3423,73 @@ export default function Home() {
         </nav>`;
       root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
       $("brand").onclick = () => switchTab("today");
+      const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
+      bindHeaderScroll();
+      renderTicker();
+    }
+    // ---- TOP TICKER: today's slate at a glance (live scores + each game's pick + trend) ----
+    function tickerItems() {
+      const src = livePayload || payload;
+      if (!src || !src.games) return [];
+      const t = todayISO();
+      const pool = ((src.games || []) as any[]).filter((g: any) => {
+        const st0 = String(g.status || "pre").toLowerCase();
+        const d = gameLocalDay(g);
+        if (st0 === "live") return true;
+        return d === t || (st0 === "pre" && !d);
+      });
+      // live first, then upcoming, then finals; cap for a tight strip
+      const rank = (g: any) => { const s = String(g.status || "pre").toLowerCase(); return s === "live" ? 0 : s === "final" ? 2 : 1; };
+      return pool.sort((a: any, b: any) => rank(a) - rank(b)).slice(0, 20);
+    }
+    function tickerItemHtml(g: any) {
+      const gs = gameState(g);
+      const pl = displayPick(g);
+      let score = "";
+      if (gs.score && gs.score.split && gs.score.home != null) score = `<b>${num(gs.score.away, 0)}</b>–<b>${num(gs.score.home, 0)}</b>`;
+      const stateTag = gs.kind === "live" ? `<span class="tk-live"><span class="livedot"></span></span>` : gs.kind === "final" ? `<span class="tk-fin">F</span>` : `<span class="tk-time">${esc(gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : "", "") : "")}</span>`;
+      // pick + live trend arrow
+      let pickTag = "";
+      if (pl && pl.action === "TAKE") {
+        const ls = gs.kind === "live" ? liveStatusOf(g, pl) : null;
+        const dir = ls ? (ls.dir === "trending_hit" ? "hit" : ls.dir === "trending_miss" ? "miss" : "close") : "";
+        const arrow = dir === "hit" ? "▲" : dir === "miss" ? "▼" : "";
+        pickTag = `<span class="tk-pick ${dir}">${esc(pl.side || "")}${arrow ? ` ${arrow}` : ""}</span>`;
+      }
+      return `<button class="tk-item" data-gid="${esc(g.game_id)}">${stateTag}<span class="tk-mu">${esc(g.away_abbr)}${score ? ` ${score} ` : " @ "}${esc(g.home_abbr)}</span>${pickTag}</button>`;
+    }
+    function renderTicker() {
+      const el = $("ticker"); if (!el) return;
+      const items = tickerItems();
+      if (!items.length) { el.style.display = "none"; return; }
+      el.style.display = "";
+      const row = items.map(tickerItemHtml).join(`<span class="tk-dot">·</span>`);
+      // duplicate the row so the marquee loops seamlessly (unless reduced-motion)
+      el.innerHTML = `<div class="tk-track${REDUCE ? " still" : ""}" id="tk-track"><span class="tk-seq">${row}</span>${REDUCE ? "" : `<span class="tk-seq" aria-hidden="true">${row}</span>`}</div>`;
+      el.querySelectorAll(".tk-item").forEach((b: any) => (b.onclick = () => { const g = gameById(b.dataset.gid); if (g) openDetail(g); }));
+      // the ticker changes the header height — republish it for the sticky subhead offset
+      requestAnimationFrame(() => { const h = $("app-header"); if (h) document.documentElement.style.setProperty("--hdr-h", h.offsetHeight + "px"); });
+    }
+    // ---- unified sticky header + collapsing behavior on the Games tab (scroll-driven) ----
+    // Driven by BOTH a scroll listener (fast) AND IntersectionObserver sentinels (robust —
+    // fires even where programmatic scrolls don't dispatch scroll events). Idempotent.
+    let headerScrollBound = false;
+    function applyHeaderState(y: number) {
+      const hdr = $("app-header"); if (!hdr) return;
+      hdr.classList.toggle("scrolled", y > 6);
+      if (tab === "games") document.body.classList.toggle("games-condensed", y > 56);
+      else document.body.classList.remove("games-condensed");
+      document.documentElement.style.setProperty("--hdr-h", hdr.offsetHeight + "px");
+    }
+    function scrollY() { return window.scrollY || (document.scrollingElement ? document.scrollingElement.scrollTop : 0) || 0; }
+    function bindHeaderScroll() {
+      if (headerScrollBound) return; headerScrollBound = true;
+      let raf = 0;
+      const onScroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; applyHeaderState(scrollY()); }); };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+      window.addEventListener("resize", onScroll, { passive: true });
+      requestAnimationFrame(() => applyHeaderState(scrollY()));
     }
 
     function switchTab(t: string) {
@@ -3120,7 +3514,6 @@ export default function Home() {
       if (NATIVE) document.body.classList.add("native");
       renderShell();
       renderScoresChrome();
-      bindPull();
       renderToday(); // skeleton until the payload lands
       await loadIndex();
       payload = await loadDay(curDate);
@@ -3129,16 +3522,27 @@ export default function Home() {
       positionInk();
       renderSlate();
       renderToday();
+      renderTicker();
       requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
       // deep-link restore: a fresh ?g=<id> load opens that game's sheet (replace, not push).
       syncFromUrl(false);
-      // live-score freshness: poll the tiny live_scores key while games are on
+      // ---- SMART SILENT AUTO-REFRESH (no pull-to-refresh, no spinners on loaded content) ----
+      // Tiered by cost + volatility, all paused while the tab is hidden:
+      //   · live_scores (tiny)   → every ~50s while a game is live/near-start
+      //   · live_detail (box)    → every ~40s ONLY while a live game's detail page is open
+      //   · pregame_picks (big)  → every ~4 min, applied only when generated_at advances
       setInterval(pollLiveScores, 50 * 1000);
-      document.addEventListener("visibilitychange", () => { if (!document.hidden) pollLiveScores(); });
+      setInterval(() => { if (detail && detail.game_id != null) pollLiveDetail(); }, 40 * 1000);
+      setInterval(pollPregame, 4 * 60 * 1000);
+      // resume with one immediate fetch on focus; pausing is handled inside each poller.
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) { pollLiveScores(); pollPregame(); if (detail) pollLiveDetail(); } });
+      window.addEventListener("focus", () => { pollLiveScores(); });
       pollLiveScores();
       // debug hook: inject a live_scores snapshot without waiting for the poller
       root._injectLiveScores = (ls: any) => { liveScores = ls; const ch = applyLiveScores(); if (ch) refreshLiveViews(); return ch; };
       // debug hook: attach a per-pick live_status to a live game by id, then re-render.
+      // debug hook: attach a live_detail box score without waiting for the poller.
+      root._injectLiveDetail = (ld: any) => { liveDetail = ld; if (detail && detail.game_id != null) refreshSheetScore(detail); return true; };
       root._injectLiveStatus = (gid: any, status: any) => {
         const src = livePayload || payload;
         const g = ((src && src.games) || []).find((x: any) => String(x.game_id) === String(gid));
