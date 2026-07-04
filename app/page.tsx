@@ -2353,6 +2353,11 @@ export default function Home() {
         return u.toString();
       } catch { return location.origin + location.pathname + "?g=" + encodeURIComponent(String(gid)); }
     }
+    // SHARE url uses the /g/<id> route so a shared link unfurls to that game's OG card; the route
+    // redirects humans into the app (?g=<id>). Internal navigation keeps the lightweight ?g= form.
+    function shareGameUrl(gid: any) {
+      try { return location.origin + "/g/" + encodeURIComponent(String(gid)); } catch { return location.origin + "/g/" + gid; }
+    }
     function pushGameUrl(gid: any) {
       try {
         const u = new URL(location.href);
@@ -2376,7 +2381,7 @@ export default function Home() {
       return `${mu}${pick}`;
     }
     async function shareGame(g: any) {
-      const url = gameUrl(g.game_id);
+      const url = shareGameUrl(g.game_id);
       const title = "DiamondEdge";
       const text = shareText(g);
       if ((navigator as any).share) {
