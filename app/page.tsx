@@ -3584,6 +3584,7 @@ export default function Home() {
       view.innerHTML = `
         <div class="news">
           ${newsFront()}
+          ${newsFeed && newsFeed.lead ? `<div class="picks-divider"><span>◆ Today's DiamondEdge Picks</span></div>` : ""}
           <div class="masthead">
             <div class="mh-kicker"><span class="lk-tag">Today</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : `The record`} →</button></div>
             <h2 class="lead-head">${esc(tightHead)}</h2>

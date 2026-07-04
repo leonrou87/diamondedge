@@ -2012,3 +2012,8 @@ details.results-more{margin-bottom:14px}
 .nf-list .nf-noimg{font-size:9px}
 .nf-list .nf-sum{display:none}
 @media(min-width:760px){.nf-hero .nf-title{font-size:28px}.nf-hero .nf-img{aspect-ratio:16/8}.nf-list{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}}
+
+/* section divider between the news-front and the DiamondEdge picks */
+.picks-divider{display:flex;align-items:center;gap:12px;margin:6px 2px 14px;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--golddeep)}
+.picks-divider:before,.picks-divider:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+.picks-divider span{flex:0 0 auto}
