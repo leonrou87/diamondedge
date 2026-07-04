@@ -2626,11 +2626,18 @@ export default function Home() {
         ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">How it's going</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
+      // Backup-signal note (from the model's challenger accountability) — plain English, detail-only,
+      // behind an expand. Never on consumer front surfaces; never implies a stronger pick.
+      const cs = lead && lead.action === "TAKE" && !leadLocked && lead.market === "total" && g.de_plays && g.de_plays.total ? g.de_plays.total.challenger_summary : null;
+      const challengerNote = (cs && cs.consumer_label)
+        ? `<details class="gp-backup"><summary><span class="bk-dot">◆</span><span class="bk-lab">${esc(cs.consumer_label)}</span><span class="bk-chev" aria-hidden="true">›</span></summary><div class="bk-body">${cs.consumer_detail ? `<p>${esc(cs.consumer_detail)}</p>` : ""}${Array.isArray(cs.active_family_labels) && cs.active_family_labels.length ? `<div class="bk-tags">${cs.active_family_labels.map((t: any) => `<span class="bk-tag">${esc(String(t))}</span>`).join("")}</div>` : ""}<p class="bk-note">Backup context only — it doesn't change the pick or its grade.</p></div></details>`
+        : "";
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "live" && showLive ? "none" : "block"}">
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${linesBlock}
         ${lead || !leadLocked ? pickPayoff : ""}
+        ${challengerNote}
         ${passBlock}
         ${leadLocked ? "" : more}
       </div>`;
