@@ -34,6 +34,9 @@ export default function Home() {
     const fmtOdds = (o: any) => { if (o == null || o === "") return "—"; const n = Number(o); if (isNaN(n)) return "—"; if (n >= 100 || n <= -100) return n > 0 ? "+" + Math.round(n) : "" + Math.round(n); const am = n >= 2 ? Math.round((n - 1) * 100) : Math.round(-100 / (n - 1)); return am > 0 ? "+" + am : "" + am; };
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
     const SPORTS = ["mlb", "nba", "nhl", "nfl", "soccer"];
+    // Base document title — restored when a game sheet closes; a game sheet sets a per-matchup title
+    // so shared/opened ?g= links, bookmarks, browser history and tabs read as the actual game.
+    const DEF_TITLE = (typeof document !== "undefined" && document.title) || "DiamondEdge — Today's Picks, Games & Results";
     const SPORT_LABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
     const SPORT_ICON: any = { mlb: "⚾", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
     const SPORT_UNIT: any = { mlb: "runs", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
@@ -2507,6 +2510,7 @@ export default function Home() {
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
       detailTab = (_gsk === "live" || _gsk === "final") ? "live" : "preview";
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
+      if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       const sp = g.sport;
       const ps = g.predicted_score || {};
       const homeWin = ps.winner_abbr === g.home_abbr;
@@ -2753,6 +2757,7 @@ export default function Home() {
     }
     function closeDetail(fromHistory = false) {
       const wasGame = detail && !detail._recipe && detail.game_id != null;
+      try { document.title = DEF_TITLE; } catch {}   // restore the base tab title on close
       // Back-arrow / user close pops the ?g= URL by walking browser history so the native
       // back button and the arrow behave identically (a real page navigation). We DON'T
       // null `detail` or tear down the DOM here — the resulting popstate → syncFromUrl(true)
