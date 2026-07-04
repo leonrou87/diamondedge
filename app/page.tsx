@@ -2499,6 +2499,9 @@ export default function Home() {
         const bl = d.batting_leaders.slice(0, 5).map((b: any) => `<div class="lp-bat-row"><span class="lp-bat-nm">${esc(b.name || "")}</span><span class="lp-bat-ln">${esc(b.line || "")}</span></div>`).join("");
         rows.push(`<div class="lp-sec"><div class="lp-sec-h">At the plate</div>${bl}</div>`);
       }
+      // During the FIRST live_detail fetch we only have the bare score — tell the user the full
+      // box score is on its way (self-limiting: once the fetch lands it renders, or clears if none).
+      if (gs.kind === "live" && !d && !liveDetailTried && rows.length) rows.push(`<div class="lp-loading"><span class="lp-spin" aria-hidden="true"></span>Loading the full box score…</div>`);
       if (!rows.length) rows.push(`<div class="state mini"><div class="sm">Live box score updating…</div></div>`);
       return `<div class="livepanel">${rows.join("")}</div>`;
     }

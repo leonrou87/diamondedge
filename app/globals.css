@@ -2201,3 +2201,8 @@ details.results-more{margin-bottom:14px}
 .rb-share{width:100%;margin-top:10px;font-family:var(--mono);font-weight:800;font-size:12.5px;letter-spacing:.02em;
   padding:13px;border-radius:14px;border:1px solid rgba(215,164,21,.36);background:rgba(224,172,32,.12);color:var(--golddeep);cursor:pointer}
 .rb-share:active{transform:scale(.98)}
+
+/* --- Live box score: first-fetch loading hint --- */
+.lp-loading{display:flex;align-items:center;gap:9px;padding:11px 2px;color:var(--ink3);font-size:13px}
+.lp-spin{width:13px;height:13px;border-radius:50%;border:2px solid var(--glass-brd);border-top-color:var(--ink3);animation:lpspin .7s linear infinite;flex:0 0 auto}
+@keyframes lpspin{to{transform:rotate(360deg)}}
