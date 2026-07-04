@@ -1983,3 +1983,32 @@ details.results-more{margin-bottom:14px}
 .lp-pit-ab{font-family:var(--disp);font-weight:700;font-size:10px;color:var(--ink3);width:34px;flex-shrink:0}
 .lp-pit-nm,.lp-bat-nm{font-weight:600;color:var(--ink);min-width:0;flex:1}
 .lp-pit-ln,.lp-bat-ln{font-family:var(--mono);font-weight:600;font-size:11px;color:var(--navy);flex-shrink:0}
+
+/* ── NEWS-FORWARD FRONT (top sports stories + betting angle) ── */
+.newsfront{margin:0 0 20px}
+.nf-head{display:flex;align-items:center;gap:9px;margin:0 2px 12px}
+.nf-lab{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink)}
+.nf-live{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--red)}
+.nf-story{display:block;text-decoration:none;color:inherit}
+.nf-hero{border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--glass-shadow);border:1px solid var(--glass-brd);background:var(--glass-hi);margin-bottom:14px}
+.nf-hero:active{transform:scale(.995)}
+.nf-hero .nf-img{aspect-ratio:16/9;background-size:cover;background-position:center}
+.nf-hero .nf-body{padding:14px 16px 16px}
+.nf-hero .nf-title{font-size:23px;line-height:1.13;margin:7px 0 7px}
+.nf-img{background:linear-gradient(135deg,#dbe4f0,#eef2f8)}
+.nf-noimg{display:grid;place-items:center;color:var(--ink3);font-family:var(--disp);font-weight:700;letter-spacing:.12em;font-size:13px}
+.nf-kick{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink3)}
+.nf-title{font-family:var(--disp);font-weight:700;color:var(--ink);text-wrap:balance}
+.nf-sum{font-size:13.5px;color:var(--ink2);margin:1px 0 9px;line-height:1.5}
+.nf-angle{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-weight:700;font-size:11px;padding:4px 11px;border-radius:999px;background:rgba(224,172,32,.12);color:var(--golddeep);border:1px solid rgba(215,164,21,.28);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.nf-angle.lean{background:rgba(47,111,224,.1);color:#2c5cb8;border-color:rgba(47,111,224,.22)}
+.nf-lock{display:inline-flex;align-items:center;gap:3px;filter:blur(.2px)}
+.nf-lock svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2}
+.nf-list{display:flex;flex-direction:column}
+.nf-list .nf-story{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line3);align-items:start}
+.nf-list .nf-story:active{opacity:.7}
+.nf-list .nf-img{width:92px;aspect-ratio:16/10;border-radius:10px}
+.nf-list .nf-title{font-size:14.5px;line-height:1.26;margin:3px 0 6px}
+.nf-list .nf-noimg{font-size:9px}
+.nf-list .nf-sum{display:none}
+@media(min-width:760px){.nf-hero .nf-title{font-size:28px}.nf-hero .nf-img{aspect-ratio:16/8}.nf-list{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}}

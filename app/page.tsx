@@ -865,6 +865,7 @@ export default function Home() {
     let rangeMode = false;          // showing range results
     let rangeGames: any[] = [];     // {date,games}
     let payload: any = null;        // current day's payload
+    let newsFeed: any = null;       // live sports-news feed (news_feed key, ~20-min refresh)
     let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
@@ -3474,6 +3475,40 @@ export default function Home() {
       const rh = recipeHistory();
       return `Graded in the open since 2022 — ${(rh.hit * 100).toFixed(1)}% winners across ${rh.n.toLocaleString()} DiamondEdge Picks, at prices good enough to come out ahead. Every pick freezes before first pitch and grades against the final score.`;
     }
+    // ── News-forward front: real top sports stories (news_feed) with a DiamondEdge betting angle,
+    //    leading the Today page (ESPN/CBS-style), with the DiamondEdge Picks below.
+    function newsAngle(a: any) {
+      if (!a || typeof a !== "object" || !a.side) return "";           // headline angles can be stale strings — skip
+      const mu = a.matchup ? esc(a.matchup) : "";
+      const edge = a.market === "total" && a.quality !== "lean";        // a real edge → blur for non-subscribers
+      const reveal = !edge || isPremium();
+      const side = reveal ? esc(a.side) : `<span class="nf-lock">${lockSvg} pick inside</span>`;
+      return `<span class="nf-angle ${a.quality === "lean" ? "lean" : "edge"}">◆ ${mu ? mu + " · " : ""}${side}</span>`;
+    }
+    function newsStory(s: any, big = false) {
+      if (!s || !s.title) return "";
+      const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
+      const img = s.image_url
+        ? `<div class="nf-img" style="background-image:url('${esc(String(s.image_url))}')"></div>`
+        : `<div class="nf-img nf-noimg"><span>${lab}</span></div>`;
+      const meta = `${lab}${s.source ? " · " + esc(s.source) : ""}${s.published_display ? " · " + esc(s.published_display) : ""}`;
+      return `<a class="nf-story ${big ? "nf-hero" : ""}" href="${esc(String(s.url || "#"))}" target="_blank" rel="noopener">
+        ${img}
+        <div class="nf-body"><div class="nf-kick">${meta}</div>
+        <h3 class="nf-title">${esc(s.title)}</h3>
+        ${big && s.summary ? `<p class="nf-sum clamp2">${esc(s.summary)}</p>` : ""}
+        ${newsAngle(s.angle)}</div></a>`;
+    }
+    function newsFront() {
+      const nf = newsFeed;
+      if (!nf || !nf.lead) return "";
+      const hl = ((nf.headlines || []) as any[]).slice(0, 8);
+      return `<section class="newsfront">
+        <div class="nf-head"><span class="nf-lab">Top stories</span><span class="nf-live"><span class="livedot"></span>live</span></div>
+        ${newsStory(nf.lead, true)}
+        ${hl.length ? `<div class="nf-list">${hl.map((s) => newsStory(s, false)).join("")}</div>` : ""}
+      </section>`;
+    }
     function renderToday() {
       const view = $("today-view");
       if (!view) return;
@@ -3548,6 +3583,7 @@ export default function Home() {
       const headDek = fullHead && esc(tightHead).replace(/…$/, "") !== esc(fullHead) ? fullHead : "";
       view.innerHTML = `
         <div class="news">
+          ${newsFront()}
           <div class="masthead">
             <div class="mh-kicker"><span class="lk-tag">Today</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : `The record`} →</button></div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
@@ -4069,6 +4105,7 @@ export default function Home() {
       renderToday(); // skeleton until the payload lands
       await loadIndex();
       payload = await loadDay(curDate);
+      try { newsFeed = await snap("news_feed"); } catch {}
       league = bestLeague();
       root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
       positionInk();
