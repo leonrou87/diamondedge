@@ -415,6 +415,46 @@ export default function Home() {
     // webhook confirms the subscription → entitlement served with the payload/session.
     const isPremium = () => { try { return localStorage.getItem("de_premium") !== "0"; } catch { return true; } };
     const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
+
+    // ===================== ACCOUNT / AUTH (stubbed session — no real OAuth/signup) =====================
+    // The signed-in user is one localStorage record `de_account`:
+    //   { provider:"google"|"apple"|"facebook"|"x"|"email", name, email, since }
+    // OAUTH WIRE-IN POINT: each social button's handler currently calls mockSignIn(provider).
+    // A real flow replaces that with the provider's OAuth (redirect / popup / native SDK),
+    // then persists the returned profile + a session token here and mirrors it server-side.
+    function getAccount() {
+      try { const raw = localStorage.getItem("de_account"); return raw ? JSON.parse(raw) : null; } catch { return null; }
+    }
+    function setAccount(a: any) {
+      try { if (a) localStorage.setItem("de_account", JSON.stringify(a)); else localStorage.removeItem("de_account"); } catch {}
+    }
+    const isSignedIn = () => !!getAccount();
+    const PROVIDER_LABEL: any = { google: "Google", apple: "Apple", facebook: "Facebook", x: "X", email: "Email" };
+    // Create a mock signed-in session for a provider (persists immediately). Returns the account.
+    function mockSignIn(provider: string, email?: string, name?: string) {
+      const nm = name || (provider === "email" && email ? String(email).split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "DiamondEdge Member");
+      const em = email || `${provider === "email" ? "you" : provider}@diamondedge.app`;
+      const acct = { provider, name: nm, email: em, since: todayISO() };
+      setAccount(acct);
+      return acct;
+    }
+    function signOut() { setAccount(null); }
+    // Initials for the header avatar (from the account name/email, or a generic glyph).
+    function accountInitials() {
+      const a = getAccount();
+      if (!a) return "";
+      const src = String(a.name || a.email || "").trim();
+      const parts = src.split(/[\s@._]+/).filter(Boolean);
+      if (!parts.length) return "DE";
+      return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+    }
+    // Provider brand marks (inline SVG/glyph, self-contained — no external logo assets).
+    const PROVIDER_MARK: any = {
+      google: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.5 12.2c0-.7-.06-1.4-.18-2.06H12v3.9h5.9a5.04 5.04 0 0 1-2.19 3.31v2.75h3.54c2.07-1.9 3.25-4.71 3.25-7.9z"/><path fill="#34A853" d="M12 23c2.95 0 5.43-.98 7.24-2.65l-3.54-2.75c-.98.66-2.24 1.05-3.7 1.05-2.85 0-5.26-1.92-6.12-4.5H2.23v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.88 14.15a6.6 6.6 0 0 1 0-4.2V7.1H2.23a11 11 0 0 0 0 9.9l3.65-2.85z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.05.55 4.19 1.64l3.14-3.14A10.98 10.98 0 0 0 12 1 11 11 0 0 0 2.23 7.1l3.65 2.85C6.74 7.32 9.15 5.4 12 5.4z"/></svg>`,
+      apple: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M17.05 12.54c-.02-2.06 1.68-3.05 1.76-3.1-0.96-1.4-2.46-1.6-2.99-1.62-1.27-.13-2.48.75-3.13.75-.64 0-1.64-.73-2.7-.71-1.39.02-2.67.81-3.38 2.05-1.44 2.5-.37 6.2 1.03 8.23.69.99 1.51 2.1 2.58 2.06 1.04-.04 1.43-.67 2.69-.67 1.25 0 1.61.67 2.7.65 1.12-.02 1.82-1.01 2.5-2 .79-1.15 1.11-2.26 1.13-2.32-.02-.01-2.17-.83-2.19-3.29zM15 6.35c.57-.69.96-1.65.85-2.6-.82.03-1.82.55-2.41 1.24-.53.6-.99 1.58-.87 2.5.92.07 1.86-.46 2.43-1.14z"/></svg>`,
+      facebook: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3 1.79-4.67 4.53-4.67 1.31 0 2.68.24 2.68.24v2.95H15.8c-1.49 0-1.95.92-1.95 1.87V12h3.32l-.53 3.47h-2.79v8.38A12 12 0 0 0 24 12z"/></svg>`,
+      x: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.84L1.24 2.25h6.83l4.71 6.23 5.46-6.23zm-1.16 17.52h1.84L7.01 4.13H5.03l12.05 15.64z"/></svg>`,
+    };
     // Free mode locks the SIDE/LINE of pending Strong/Good picks only. Graded picks and
     // the whole record stay visible (the record IS the ad); Leans and PASSes stay free.
     function pickLocked(pl: any, st: string) {
@@ -785,8 +825,9 @@ export default function Home() {
     }
 
     // ===================== STATE =====================
-    let tab = "today";              // "today" | "games" | "results" | "settings" | "upgrade"
-    const TABS = ["today", "games", "results", "settings", "upgrade"];
+    let tab = "today";              // "today" | "games" | "results" | "settings" | "upgrade" | "account"
+    const TABS = ["today", "games", "results", "settings", "upgrade", "account"];
+    let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
     let histOpen = false;           // history range panel open
@@ -2773,6 +2814,165 @@ export default function Home() {
       return `<div class="anz-card" style="margin-bottom:14px"><div class="anz-card-h">★ Where the edges live</div><div class="edge-list">${cards}</div></div>`;
     }
 
+    // ===================== INSIGHTS CHARTS (self-contained SVG — no external libs) =====================
+    // Every chart reads REAL analytics_deep fields and degrades to "" when absent. Light
+    // liquid-glass palette, tabular-nums, reduced-motion honored (animations are CSS-gated).
+    // A served section's narrative + title accompany each so the page reads editorial.
+    const adSection = (key: string) => {
+      const s = analyticsDeep && Array.isArray(analyticsDeep.sections) ? analyticsDeep.sections.find((x: any) => x.key === key) : null;
+      return s || null;
+    };
+    const adNarr = (key: string) => { const s = adSection(key); return s && s.narrative ? cleanCopy(s.narrative) : ""; };
+    // Wrap a chart in the editorial article shell: figure glyph + kicker + title + narrative + chart.
+    function insightArticle(kick: string, title: string, narrative: string, tint: string, glyph: string, chart: string, note = "") {
+      if (!chart) return "";
+      return `<article class="ins-art">
+        <div class="ins-fig">${resFigure(tint, glyph)}</div>
+        <div class="ins-b">
+          <div class="ins-kick">${esc(kick)}</div>
+          <h3 class="ins-h">${esc(title)}</h3>
+          ${narrative ? `<p class="ins-narr">${esc(narrative)}</p>` : ""}
+          <div class="ins-chart">${chart}</div>
+          ${note ? `<p class="ins-note">${esc(note)}</p>` : ""}
+        </div>
+      </article>`;
+    }
+
+    // (H1) EQUITY CURVE — cumulative return over the graded history as a smooth area+line.
+    // Reads analytics_deep.equity_curve [{n,date,cum_units,cum_return_pct}]. The y-axis is
+    // cumulative return %; the x-axis is graded-pick order (time). Zero line marked.
+    function chartEquityCurve() {
+      const raw = (analyticsDeep && Array.isArray(analyticsDeep.equity_curve)) ? analyticsDeep.equity_curve : [];
+      const pts = raw.map((p: any) => ({ x: Number(p.n), y: Number(p.cum_return_pct), date: p.date })).filter((p: any) => !isNaN(p.x) && !isNaN(p.y));
+      if (pts.length < 3) return "";
+      const W = 320, H = 150, PL = 34, PR = 10, PT = 12, PB = 20;
+      const iw = W - PL - PR, ih = H - PT - PB;
+      const xs = pts.map((p: any) => p.x), ys = pts.map((p: any) => p.y);
+      const xMin = Math.min(...xs), xMax = Math.max(...xs);
+      let yMin = Math.min(0, ...ys), yMax = Math.max(...ys);
+      const pad = (yMax - yMin) * 0.08 || 1; yMax += pad; yMin -= pad;
+      const sx = (x: number) => PL + ((x - xMin) / (xMax - xMin || 1)) * iw;
+      const sy = (y: number) => PT + (1 - (y - yMin) / (yMax - yMin || 1)) * ih;
+      const y0 = sy(0);
+      const line = pts.map((p: any, i: number) => `${i ? "L" : "M"}${sx(p.x).toFixed(1)} ${sy(p.y).toFixed(1)}`).join(" ");
+      const area = `${line} L${sx(xMax).toFixed(1)} ${y0.toFixed(1)} L${sx(xMin).toFixed(1)} ${y0.toFixed(1)} Z`;
+      const last = pts[pts.length - 1];
+      // y gridlines at 0 and yMax
+      const yticks = [0, Math.round(yMax)].filter((v, i, a) => a.indexOf(v) === i);
+      const grid = yticks.map((v) => `<line class="ins-grid" x1="${PL}" y1="${sy(v).toFixed(1)}" x2="${W - PR}" y2="${sy(v).toFixed(1)}"/><text class="ins-axis" x="${PL - 5}" y="${(sy(v) + 3).toFixed(1)}" text-anchor="end">${v}%</text>`).join("");
+      const yr0 = String(pts[0].date || "").slice(0, 4), yr1 = String(last.date || "").slice(0, 4);
+      return `<div class="ins-svgwrap"><svg viewBox="0 0 ${W} ${H}" class="ins-svg equity" preserveAspectRatio="none" role="img" aria-label="Cumulative return grew to ${num(last.y, 0)}% over ${last.x} graded picks">
+        <defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--green)" stop-opacity=".26"/><stop offset="1" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
+        ${grid}
+        <line class="ins-zero" x1="${PL}" y1="${y0.toFixed(1)}" x2="${W - PR}" y2="${y0.toFixed(1)}"/>
+        <path class="eq-area" d="${area}" fill="url(#eqfill)"/>
+        <path class="eq-line" d="${line}"/>
+        <circle class="eq-dot" cx="${sx(last.x).toFixed(1)}" cy="${sy(last.y).toFixed(1)}" r="3.4"/>
+        <text class="ins-axis" x="${PL}" y="${H - 5}" text-anchor="start">${esc(yr0)}</text>
+        <text class="ins-axis" x="${W - PR}" y="${H - 5}" text-anchor="end">${esc(yr1)}</text>
+      </svg></div>
+      <div class="ins-legend"><span class="il-item wide"><span class="il-sw green"></span><span>A dollar riding every pick returned <b>+${num(last.y, 0)}%</b> across ${last.x.toLocaleString()} graded picks.</span></span></div>`;
+    }
+
+    // (H2) CALIBRATION — the trust chart: predicted vs actual with a diagonal reference.
+    // Reads analytics_deep.calibration [{predicted,actual,n,bucket_label}]. If our dots sit
+    // ON the diagonal, "when we say ~58% we hit ~58%". Dot size ∝ how many picks.
+    function chartCalibration() {
+      const raw = (analyticsDeep && Array.isArray(analyticsDeep.calibration)) ? analyticsDeep.calibration : [];
+      const pts = raw.map((p: any) => ({ px: Number(p.predicted), ay: Number(p.actual), n: Number(p.n || 0), lab: p.bucket_label })).filter((p: any) => !isNaN(p.px) && !isNaN(p.ay));
+      if (pts.length < 2) return "";
+      const W = 300, H = 220, P = 34;
+      const allv = pts.flatMap((p: any) => [p.px, p.ay]);
+      let lo = Math.min(...allv, 0.5), hi = Math.max(...allv, 0.6);
+      const pad = (hi - lo) * 0.12 || 0.04; lo = Math.max(0, lo - pad); hi = Math.min(1, hi + pad);
+      const sx = (v: number) => P + ((v - lo) / (hi - lo || 1)) * (W - P - 12);
+      const sy = (v: number) => (H - P) - ((v - lo) / (hi - lo || 1)) * (H - P - 12);
+      const nMax = Math.max(...pts.map((p: any) => p.n), 1);
+      const ticks = [lo, (lo + hi) / 2, hi].map((v) => Math.round(v * 100) / 100);
+      const gx = ticks.map((v) => `<line class="ins-grid" x1="${sx(v).toFixed(1)}" y1="12" x2="${sx(v).toFixed(1)}" y2="${(H - P).toFixed(1)}"/><text class="ins-axis" x="${sx(v).toFixed(1)}" y="${H - P + 14}" text-anchor="middle">${(v * 100).toFixed(0)}%</text>`).join("");
+      const gy = ticks.map((v) => `<line class="ins-grid" x1="${P}" y1="${sy(v).toFixed(1)}" x2="${W - 12}" y2="${sy(v).toFixed(1)}"/><text class="ins-axis" x="${P - 5}" y="${(sy(v) + 3).toFixed(1)}" text-anchor="end">${(v * 100).toFixed(0)}%</text>`).join("");
+      const diag = `M${sx(lo).toFixed(1)} ${sy(lo).toFixed(1)} L${sx(hi).toFixed(1)} ${sy(hi).toFixed(1)}`;
+      const dots = pts.map((p: any) => {
+        const r = 4 + (p.n / nMax) * 7;
+        const above = p.ay >= p.px; // hit MORE than predicted = good (above diagonal)
+        return `<circle class="cal-dot ${above ? "good" : "under"}" cx="${sx(p.px).toFixed(1)}" cy="${sy(p.ay).toFixed(1)}" r="${r.toFixed(1)}"><title>Said about ${(p.px * 100).toFixed(0)}% → actually won ${(p.ay * 100).toFixed(0)}% (${p.n} picks)</title></circle>`;
+      }).join("");
+      return `<div class="ins-svgwrap"><svg viewBox="0 0 ${W} ${H + 4}" class="ins-svg calib" role="img" aria-label="Calibration: predicted win chance versus how often those picks actually won">
+        ${gx}${gy}
+        <path class="cal-diag" d="${diag}"/>
+        ${dots}
+        <text class="ins-axtitle" x="${((W + P) / 2).toFixed(0)}" y="${H + 1}" text-anchor="middle">What we said</text>
+        <text class="ins-axtitle" x="12" y="${((H - P) / 2).toFixed(0)}" text-anchor="middle" transform="rotate(-90 12 ${((H - P) / 2).toFixed(0)})">What happened</text>
+      </svg></div>
+      <div class="ins-legend"><span class="il-item"><span class="il-sw diag"></span>Perfect line</span><span class="il-item"><span class="il-sw dot"></span>Bigger dot = more picks · on or above the line means we hit at least as often as we said</span></div>`;
+    }
+
+    // (H3) MONTHLY — win% and return per month, twin bars. Reads analytics_deep.monthly
+    // [{month,n,hit,roi,avg_odds,profit_note}]. Break-even tick on the win% bars. Caps to
+    // the most recent ~14 months so the strip stays legible on mobile.
+    function chartMonthly() {
+      const raw = (analyticsDeep && Array.isArray(analyticsDeep.monthly)) ? analyticsDeep.monthly : [];
+      const rows = raw.filter((m: any) => m && m.hit != null).slice(-14);
+      if (rows.length < 2) return "";
+      const maxRoi = Math.max(0.02, ...rows.map((m: any) => Math.abs(Number(m.roi || 0))));
+      const bars = rows.map((m: any) => {
+        const hit = Number(m.hit), roi = Number(m.roi);
+        const hpct = Math.max(0, Math.min(100, hit * 100));
+        const rH = Math.min(100, (Math.abs(roi) / maxRoi) * 100);
+        const mlab = (() => { const d = new Date(String(m.month) + "-15T12:00:00"); return isNaN(d.getTime()) ? String(m.month).slice(5) : d.toLocaleDateString("en-US", { month: "short" }); })();
+        const yr = String(m.month).slice(2, 4);
+        return `<div class="mo-col" title="${esc(mlab)} 20${yr}: won ${(hit * 100).toFixed(0)}% · ${roi >= 0 ? "+" : ""}${(roi * 100).toFixed(0)}% return · ${m.n} picks">
+          <div class="mo-hit"><span class="mo-hbar ${hit >= 0.524 ? "up" : "dn"}" style="height:${hpct.toFixed(0)}%"></span><span class="mo-be"></span></div>
+          <div class="mo-roi"><span class="mo-rbar ${roi >= 0 ? "pos" : "neg"}" style="height:${rH.toFixed(0)}%"></span></div>
+          <span class="mo-lab">${esc(mlab)}<i>${esc(yr)}</i></span>
+        </div>`;
+      }).join("");
+      return `<div class="mo-chart"><div class="mo-yhead"><span>Win %</span><span class="mo-be-key">— break-even</span></div>
+        <div class="mo-bars">${bars}</div>
+        <div class="mo-yhead roi"><span>Return per dollar</span></div></div>
+      <div class="ins-legend"><span class="il-item"><span class="il-sw green"></span>Above the dashed line = a winning month</span><span class="il-item"><span class="il-sw red"></span>Down bars = months that finished behind</span></div>`;
+    }
+
+    // (H4) BY-CONFIDENCE — Strong / Good / Lean as grouped win% + return bars. Reads
+    // analytics_deep.by_confidence [{key,tier,hit,roi,record,n,profit_note}]. The per-row
+    // profit_note renders inline so a strong win% next to a modest return always reads clearly.
+    function chartByConfidence() {
+      const raw = (analyticsDeep && Array.isArray(analyticsDeep.by_confidence)) ? analyticsDeep.by_confidence : [];
+      const rows = raw.filter((r: any) => r && r.hit != null);
+      if (!rows.length) return "";
+      const qKey = (t: any) => { const s = String(t || "").toLowerCase(); return s === "strong" ? "strong" : s === "good" ? "good" : "lean"; };
+      const body = rows.map((r: any) => {
+        const q = qKey(r.tier || r.key);
+        const hit = Number(r.hit), roi = Number(r.roi);
+        const hpct = Math.max(4, Math.min(100, hit * 100));
+        const note = r.profit_note ? cleanCopy(r.profit_note) : returnNote(r, hit, roi);
+        return `<div class="bc-row q-${q}">
+          <div class="bc-head"><span class="bc-lab">${qDiamonds(q)}<b>${esc(Q_LABEL[q] || r.key)}</b></span><span class="bc-rec">${esc(r.record || "")}</span></div>
+          <div class="bc-bars">
+            <div class="bc-metric"><span class="bc-k">Win rate</span><span class="bc-track"><span class="bc-fill hit" style="width:${hpct.toFixed(0)}%"></span><span class="bc-be" style="left:52.4%"></span></span><b class="bc-v">${(hit * 100).toFixed(0)}%</b></div>
+            <div class="bc-metric"><span class="bc-k">Return</span><span class="bc-track"><span class="bc-fill ${roi >= 0 ? "roi" : "roineg"}" style="width:${Math.max(4, Math.min(100, Math.abs(roi) * 100 * 3)).toFixed(0)}%"></span></span><b class="bc-v ${roi >= 0 ? "pos" : "neg"}">${roi >= 0 ? "+" : ""}${(roi * 100).toFixed(0)}%</b></div>
+          </div>
+          ${note ? `<p class="bc-note">${esc(note)}</p>` : ""}
+        </div>`;
+      }).join("");
+      return `<div class="bc-chart">${body}</div>`;
+    }
+
+    // The whole §H insights block: profit_primer up top, then the four keystone charts,
+    // then the existing cuts as clean bar modules with their served narratives.
+    function insightsBlock() {
+      if (!analyticsDeep) return "";
+      const primer = analyticsDeep.profit_primer ? cleanCopy(analyticsDeep.profit_primer) : "";
+      const primerCard = primer
+        ? `<div class="ins-primer"><span class="ip-k">◆ Reading these numbers</span><p>${esc(primer)}</p></div>`
+        : "";
+      const eq = insightArticle("The bottom line", "Every dollar, tracked since 2022", adNarr("equity") || "Each graded pick nudges this line. It's the running total of what a dollar riding every published pick would have become — the honest, cumulative result.", "green", "$", chartEquityCurve());
+      const cal = insightArticle("The trust chart", "When we say ~58%, do we hit ~58%?", adNarr("calibration") || "This is the chart that keeps us honest. The horizontal is what our model claimed; the vertical is what actually happened. Dots sitting on — or above — the diagonal mean our confidence is real, not marketing.", "record", "◎", chartCalibration());
+      const mo = insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.", "books", "▪", chartMonthly());
+      const bc = insightArticle("By conviction", "Strong, Good and Lean — what each has done", adNarr("by_quality") || "Every pick carries one plain word. Here's the graded truth behind each — win rate and the return it actually produced, side by side.", "gold", "◆", chartByConfidence());
+      return `${primerCard}${eq}${cal}${mo}${bc}`;
+    }
+
     // One expandable results row: record + win rate + return on the summary line,
     // a plain-English one-liner behind the tap.
     function resRow(label: string, o: any, liner: string) {
@@ -2849,7 +3049,10 @@ export default function Home() {
             <p class="res-lede sm">Across <b>${(ov.n || 0).toLocaleString()}</b> total graded calls — including thin Leans and situations we track but never publish as Picks — the raw win rate is ${hr != null ? hr.toFixed(1) + "%" : "—"}${roi != null ? `, a ${(roi >= 0 ? "+" : "") + roi.toFixed(1)}% return` : ""}. ${roi != null && roi < 0 && hr != null && hr > 50 ? "Some of those cuts win often but at odds too short to profit — " : "Many of those never clear our bar — "}that's exactly why they're not DiamondEdge Picks. <b>The ${(rh.hit * 100).toFixed(1)}% above is what you're actually paying for.</b></p>
           </div>
         </article>` : ""}
-        ${confRows ? `<div class="anz-card rsec"><div class="anz-card-h">By confidence</div><div class="anz-sub">Every pick carries one plain word — Strong, Good or Lean. Here's what each has actually done.</div><div class="rrows">${confRows}</div></div>` : ""}
+        ${analyticsDeep ? `<section class="ins-section">
+          <div class="ins-sec-h"><span class="ins-sec-k">The Charts</span><h2>How the record actually behaves</h2><p>Four ways of looking at the same graded ledger — the total it built, whether our confidence is real, how it moved through the calendar, and what each tier of pick has done. No jargon, just the receipts.</p></div>
+          ${insightsBlock()}
+        </section>` : (confRows ? `<div class="anz-card rsec"><div class="anz-card-h">By confidence</div><div class="anz-sub">Every pick carries one plain word — Strong, Good or Lean. Here's what each has actually done.</div><div class="rrows">${confRows}</div></div>` : "")}
         ${mkRows ? `<div class="anz-card rsec"><div class="anz-card-h">By bet type</div><div class="anz-sub">Totals, moneylines and spreads are graded separately — a pick is only as good as its market.</div><div class="rrows">${mkRows}</div></div>` : ""}
         ${themeChips ? `<div class="anz-card rsec"><div class="anz-card-h">By theme</div><div class="anz-sub">The situations that show up in our picks, each with its graded proof.</div><div class="proofgrid">${themeChips}</div></div>` : ""}
         ${analyticsDeep ? adEdgesModule(analyticsDeep.edges_summary) : ""}
@@ -3369,21 +3572,204 @@ export default function Home() {
         <button class="up-back" id="up-back">Not now — keep the free picks</button>
         <div class="up-honest">The numbers above are the real track record — ${rh.n.toLocaleString()} picks graded against final scores, on games the model never saw in advance${fwd ? `, and the record since going live is ${fwd.wins || 0}-${fwd.losses || 0}` : ""}. Every future pick is graded the same way, in the open, win or lose.</div>`;
       $("up-sub").onclick = () => {
-        // STRIPE WIRE-IN POINT: real checkout replaces this — create a Checkout Session
-        // server-side, redirect, and set the entitlement from the confirmed webhook.
+        // The buy-flow lives on the Account screen's payment step (Card / Apple Pay / …).
+        // Sign-in gates checkout; the payment stub sets the de_premium entitlement there.
+        accountMode = isSignedIn() ? "subscribe" : "signin";
+        switchTab("account");
+      };
+      $("up-back").onclick = () => switchTab("today");
+    }
+
+    // ===================== ACCOUNT / SIGN-IN / SUBSCRIBE (stubs) =====================
+    // Top-right header button: an avatar (initials) when signed in, a person glyph when not.
+    // Both open the Account screen; the screen branches to sign-in or subscribe as needed.
+    const personSvg = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.7 3.6-6.5 8-6.5s8 2.8 8 6.5"/></svg>`;
+    function accountButton() {
+      const a = getAccount();
+      const prem = isPremium();
+      const inner = a
+        ? `<span class="acct-av${prem ? " prem" : ""}">${esc(accountInitials())}</span>`
+        : `<span class="acct-ic">${personSvg}</span>`;
+      return `<button class="acctbtn" id="acctbtn" aria-label="${a ? "Your account" : "Sign in"}">${inner}${a && prem ? `<span class="acct-star" aria-hidden="true">◆</span>` : ""}</button>`;
+    }
+    function refreshAccountButton() {
+      const old = $("acctbtn"); if (!old || !old.parentElement) return;
+      const wrap = document.createElement("div"); wrap.innerHTML = accountButton();
+      const fresh = wrap.firstElementChild as any;
+      old.parentElement.replaceChild(fresh, old);
+      fresh.onclick = () => switchTab("account");
+    }
+    // The Account HUB (signed in) or the sign-in gateway (signed out).
+    function renderAccount() {
+      const view = $("account-view");
+      if (!view) return;
+      const a = getAccount();
+      if (!a) { accountMode = "signin"; renderSignIn(); return; }
+      if (accountMode === "subscribe") { renderSubscribe(); return; }
+      const prem = isPremium();
+      const rh = recipeHistory();
+      view.innerHTML = `
+        <div class="acct-page">
+          <div class="acct-hero">
+            <span class="acct-bigav${prem ? " prem" : ""}">${esc(accountInitials())}</span>
+            <h2>${esc(a.name || "DiamondEdge Member")}</h2>
+            <div class="acct-em">${esc(a.email || "")}</div>
+            <div class="acct-tags"><span class="acct-tag prov">${PROVIDER_MARK[a.provider] ? `<span class="atp">${PROVIDER_MARK[a.provider]}</span>` : ""}${esc(PROVIDER_LABEL[a.provider] || "Account")}</span><span class="acct-tag ${prem ? "prem" : "free"}">${prem ? "◆ Premium" : "Free member"}</span></div>
+          </div>
+          ${prem
+            ? `<div class="acct-card membercard">
+                <div class="mc-glow" aria-hidden="true"></div>
+                <div class="mc-k">DiamondEdge Premium</div>
+                <div class="mc-b">You're unlocked. Every Strong and Good pick shows its side, line and the plain-English why — and you're backing the record that's won <b>${(rh.hit * 100).toFixed(1)}%</b> since 2022.</div>
+                <button class="acct-link" id="acct-manage">Manage subscription<em>→</em></button>
+              </div>`
+            : `<div class="acct-card upsell">
+                <div class="uc-k">◆ Go Premium</div>
+                <div class="uc-b">Unlock the side & line on every Strong and Good pick — the calls behind the <b>${(rh.hit * 100).toFixed(1)}%</b> record, graded in the open since 2022.</div>
+                <button class="acct-cta" id="acct-upgrade">See Premium — $9.99/mo</button>
+              </div>`}
+          <div class="acct-card">
+            <div class="acct-card-k">Account</div>
+            <button class="acct-link" id="acct-prefs">Free vs Premium preview<span class="al-sub">See exactly what free members see</span><em>→</em></button>
+            <button class="acct-link" id="acct-record">Our full record<em>→</em></button>
+            <button class="acct-link" id="acct-how">How picks work<em>→</em></button>
+          </div>
+          <button class="acct-signout" id="acct-signout">Sign out</button>
+          <div class="acct-foot">Signed in since ${esc(a.since || todayISO())}. Your account and membership live on this device for now — real sign-in and billing wire in at the marked points in the code.</div>
+        </div>`;
+      const upg = $("acct-upgrade"); if (upg) upg.onclick = () => { accountMode = "subscribe"; renderSubscribe(); };
+      const mng = $("acct-manage"); if (mng) mng.onclick = () => { accountMode = "subscribe"; renderSubscribe(); };
+      $("acct-prefs").onclick = () => switchTab("settings");
+      $("acct-record").onclick = () => switchTab("results");
+      $("acct-how").onclick = () => openRecipeSheet();
+      $("acct-signout").onclick = () => { signOut(); refreshAccountButton(); accountMode = "signin"; renderSignIn(); };
+    }
+    // SIGN-IN gateway: social buttons (Google/Apple/Facebook/X) + email — all functional
+    // STUBS that set a mock session and persist it. NO real OAuth (wire-in points marked).
+    function renderSignIn() {
+      const view = $("account-view");
+      if (!view) return;
+      const rh = recipeHistory();
+      const social = (p: string) =>
+        `<button class="sgn-btn sgn-${p}" data-prov="${p}"><span class="sgn-mark">${PROVIDER_MARK[p]}</span><span class="sgn-tx">Continue with ${PROVIDER_LABEL[p]}</span></button>`;
+      view.innerHTML = `
+        <div class="acct-page signin">
+          <button class="acct-x" id="sgn-close" aria-label="Back">✕</button>
+          <div class="sgn-hero">
+            <div class="sgn-dia" aria-hidden="true"></div>
+            <h2>Join DiamondEdge</h2>
+            <p>Save your preferences and unlock Premium. One honest model, graded in public since 2022 — <b>${(rh.hit * 100).toFixed(1)}%</b> winners across ${rh.n.toLocaleString()} picks.</p>
+          </div>
+          <div class="sgn-socials">
+            ${social("google")}${social("apple")}${social("facebook")}${social("x")}
+          </div>
+          <div class="sgn-or"><span>or with email</span></div>
+          <form class="sgn-email" id="sgn-form">
+            <input type="email" id="sgn-mail" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required>
+            <button type="submit" class="sgn-emailbtn">Continue with email</button>
+          </form>
+          <div class="sgn-legal">By continuing you agree these are demo sign-in stubs — no real account is created and no password is stored. Wire-in points for real OAuth and email auth are marked in the source.</div>
+        </div>`;
+      $("sgn-close").onclick = () => { if (isSignedIn()) { accountMode = "menu"; renderAccount(); } else switchTab("today"); };
+      view.querySelectorAll(".sgn-btn").forEach((b: any) => (b.onclick = () => {
+        // OAUTH WIRE-IN POINT (per provider): replace mockSignIn with the real provider flow,
+        // then persist the returned profile via setAccount and confirm entitlement server-side.
+        mockSignIn(b.dataset.prov);
+        onSignedIn();
+      }));
+      const form = $("sgn-form");
+      if (form) form.onsubmit = (e: any) => {
+        e.preventDefault();
+        const mail = ($("sgn-mail") && $("sgn-mail").value || "").trim();
+        // EMAIL AUTH WIRE-IN POINT: send a magic link / OTP here; on verify, setAccount(...).
+        mockSignIn("email", mail || undefined);
+        onSignedIn();
+      };
+    }
+    // Post-sign-in: refresh header avatar, re-render surfaces that show account/pick state,
+    // land on the account hub with a brief confirmation.
+    function onSignedIn() {
+      refreshAccountButton();
+      accountMode = "menu";
+      const a = getAccount();
+      toast(`Signed in${a && a.name ? " as " + a.name : ""}`);
+      renderAccount();
+    }
+    // SUBSCRIPTION / PAYMENT: Credit Card + Apple Pay + PayPal + Google Pay as STUBS. On
+    // "subscribe" it sets the de_premium entitlement with a success animation. NO real
+    // Stripe/Apple Pay — documented wire-in points. The real record is the sell.
+    let payMethod = "card";
+    function renderSubscribe() {
+      const view = $("account-view");
+      if (!view) return;
+      const rh = recipeHistory();
+      const fwd = forwardRecord();
+      const method = (id: string, label: string, mark: string) =>
+        `<button class="pay-m ${payMethod === id ? "on" : ""}" data-pm="${id}"><span class="pm-mark">${mark}</span><span class="pm-l">${esc(label)}</span><span class="pm-r" aria-hidden="true"></span></button>`;
+      const cardMark = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/></svg>`;
+      const appleMark = PROVIDER_MARK.apple;
+      const gpayMark = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M12 10.2v3.7h5.1a4.4 4.4 0 0 1-1.9 2.9v2.4h3a9.2 9.2 0 0 0 2.8-6.9c0-.7-.06-1.3-.17-2.1z"/><path fill="#34A853" d="M12 21c2.5 0 4.6-.83 6.2-2.25l-3-2.35c-.83.56-1.9.9-3.2.9-2.45 0-4.5-1.65-5.25-3.87H3.6v2.42A9.4 9.4 0 0 0 12 21z"/><path fill="#FBBC04" d="M6.75 13.43a5.6 5.6 0 0 1 0-3.57V7.44H3.6a9.4 9.4 0 0 0 0 8.42z"/><path fill="#EA4335" d="M12 6.55c1.38 0 2.6.48 3.57 1.4l2.66-2.66A9.15 9.15 0 0 0 12 3a9.4 9.4 0 0 0-8.4 4.44l3.15 2.42C7.5 8.2 9.55 6.55 12 6.55z"/></svg>`;
+      const paypalMark = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#003087" d="M7.6 20.5l.5-3.1H5.4L7.8 3.8h6.1c2.7 0 4.5 1.4 4 4.1-.5 3.1-2.8 4.5-5.7 4.5H9.9l-.7 4.4z"/><path fill="#009CDE" d="M9.6 12.4h2.3c2.9 0 5.2-1.4 5.7-4.5.1-.5.1-.9.1-1.3 1 .6 1.5 1.7 1.2 3.4-.5 3.1-2.8 4.5-5.7 4.5h-1.7l-.7 4.4-.3 1.6H7.6l.5-3.1z"/></svg>`;
+      // The active method's detail form (all inert — a real gateway replaces each).
+      let detail = "";
+      if (payMethod === "card") {
+        detail = `<div class="pay-detail">
+          <label class="pay-fld"><span>Card number</span><input inputmode="numeric" placeholder="4242 4242 4242 4242" aria-label="Card number"></label>
+          <div class="pay-fld-row">
+            <label class="pay-fld"><span>Expiry</span><input placeholder="MM / YY" aria-label="Expiry"></label>
+            <label class="pay-fld"><span>CVC</span><input inputmode="numeric" placeholder="123" aria-label="CVC"></label>
+          </div>
+          <div class="pay-secure">${lockSvg} Demo only — inputs are inert. STRIPE WIRE-IN replaces this form with Stripe Elements + a Checkout Session.</div>
+        </div>`;
+      } else if (payMethod === "apple") {
+        detail = `<div class="pay-detail wallet"><div class="pw-line">${appleMark}<b>Apple Pay</b></div><p>Tap Subscribe to confirm with Face ID / Touch ID. <em>Demo stub</em> — a real build calls the Apple Pay JS / native sheet, then confirms the Stripe PaymentIntent.</p></div>`;
+      } else if (payMethod === "gpay") {
+        detail = `<div class="pay-detail wallet"><div class="pw-line">${gpayMark}<b>Google Pay</b></div><p>Tap Subscribe to confirm with your Google wallet. <em>Demo stub</em> — wire in the Google Pay API + Stripe token exchange here.</p></div>`;
+      } else {
+        detail = `<div class="pay-detail wallet"><div class="pw-line">${paypalMark}<b>PayPal</b></div><p>Tap Subscribe to check out with PayPal. <em>Demo stub</em> — wire in the PayPal Subscriptions SDK here.</p></div>`;
+      }
+      view.innerHTML = `
+        <div class="acct-page subscribe">
+          <button class="acct-x" id="sub-close" aria-label="Back">✕</button>
+          <div class="sub-hero">
+            <div class="sub-dia" aria-hidden="true"></div>
+            <div class="sub-k">DiamondEdge Premium</div>
+            <div class="sub-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
+            <p class="sub-sell">Every Strong ◆◆◆ and Good ◆◆ pick, unlocked — the exact calls behind a <b>${(rh.hit * 100).toFixed(1)}%</b> record across <b>${rh.n.toLocaleString()}</b> graded picks since 2022${fwd ? `, and <b>${fwd.wins || 0}-${fwd.losses || 0}</b> since going live` : ""}. Cancel anytime.</p>
+          </div>
+          <div class="pay-methods">
+            <div class="pay-k">Pay with</div>
+            ${method("card", "Credit or debit card", cardMark)}
+            ${method("apple", "Apple Pay", appleMark)}
+            ${method("gpay", "Google Pay", gpayMark)}
+            ${method("paypal", "PayPal", paypalMark)}
+          </div>
+          ${detail}
+          <button class="sub-cta" id="sub-go">${payMethod === "apple" ? " Pay — Subscribe" : payMethod === "gpay" ? "Subscribe with Google Pay" : payMethod === "paypal" ? "Subscribe with PayPal" : "Subscribe — $9.99/mo"}</button>
+          <button class="sub-skip" id="sub-skip">Not now</button>
+          <div class="sub-honest">The record above is real — ${rh.n.toLocaleString()} picks graded against final scores on games the model never saw in advance. No real charge is made in this demo; on Subscribe your Premium entitlement flips on. Real billing wires in at the marked points.</div>
+        </div>`;
+      view.querySelectorAll(".pay-m").forEach((b: any) => (b.onclick = () => { payMethod = b.dataset.pm; renderSubscribe(); }));
+      $("sub-close").onclick = () => { accountMode = "menu"; renderAccount(); };
+      $("sub-skip").onclick = () => { accountMode = "menu"; renderAccount(); };
+      $("sub-go").onclick = () => {
+        // STRIPE / APPLE PAY / PAYPAL WIRE-IN POINT: run the selected gateway here. On a
+        // confirmed charge (webhook/callback), set the entitlement — mirror server-side.
         setPremium(true);
+        refreshAccountButton();
         const d = document.createElement("div");
         d.className = "up-done";
         d.setAttribute("role", "status");
-        d.innerHTML = `<div class="ud-inner"><div class="ud-dia"></div><h3>You're in.</h3><p>Every pick is unlocked — welcome to the board.</p></div>`;
+        d.innerHTML = `<div class="ud-inner"><div class="ud-dia"></div><h3>You're in.</h3><p>Premium unlocked — every pick, every why.</p></div>`;
         document.body.appendChild(d);
         setTimeout(() => {
           d.remove();
+          accountMode = "menu";
           if ($("slate-body")) renderSlate();
-          switchTab("today");
-        }, REDUCE ? 250 : 1500);
+          renderToday();
+          renderAccount();
+        }, REDUCE ? 300 : 1600);
       };
-      $("up-back").onclick = () => switchTab("today");
     }
 
     // ===================== HEADER / SHELL =====================
@@ -3408,6 +3794,7 @@ export default function Home() {
             <div class="toptabs">
               ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}">${NAV_LABEL[t]}</button>`).join("")}
             </div>
+            ${accountButton()}
           </div>
           <div class="ticker" id="ticker" aria-label="Today's scores and picks"></div>
         </header>
@@ -3417,12 +3804,14 @@ export default function Home() {
           <div id="results-view" style="display:none"></div>
           <div id="settings-view" style="display:none"></div>
           <div id="upgrade-view" style="display:none"></div>
+          <div id="account-view" style="display:none"></div>
         </main>
         <nav class="bnav" id="bnav" aria-label="Primary">
           ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}" aria-label="${NAV_LABEL[t]}"${tab === t ? ' aria-current="page"' : ""}><span class="bn-ic">${NAV_ICONS[t]}</span><span class="bn-lab">${NAV_LABEL[t]}</span></button>`).join("")}
         </nav>`;
       root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
       $("brand").onclick = () => switchTab("today");
+      const ab = $("acctbtn"); if (ab) ab.onclick = () => switchTab("account");
       const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
       bindHeaderScroll();
       renderTicker();
@@ -3501,6 +3890,7 @@ export default function Home() {
       if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
       if (t === "settings") renderSettings();
       if (t === "upgrade") renderUpgrade();
+      if (t === "account") renderAccount();
       if (t === "games") requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
       window.scrollTo(0, 0);
     }
