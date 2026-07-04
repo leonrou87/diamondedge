@@ -2154,3 +2154,17 @@ details.results-more{margin-bottom:14px}
   border:1px solid var(--glass-brd);background:var(--glass-hi);color:var(--ink2);cursor:pointer;white-space:nowrap}
 .art-navbtn.next{border-color:rgba(215,164,21,.4);background:rgba(224,172,32,.12);color:var(--golddeep)}
 .art-navbtn:active{transform:scale(.96)}
+
+/* --- "How it went": graded pick outcome for final games --- */
+.lp-graded{margin-bottom:12px;padding:13px 15px;border-radius:14px;border:1px solid var(--glass-brd);background:var(--glass-hi)}
+.lp-graded.hit{border-color:rgba(11,158,109,.34);background:rgba(11,158,109,.08)}
+.lp-graded.miss{border-color:rgba(214,69,95,.28);background:rgba(214,69,95,.06)}
+.lp-graded.push{border-color:var(--glass-brd)}
+.lpg-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lpg-lab{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
+.lpg-res{font-family:var(--disp);font-weight:800;font-size:14px;padding:2px 10px;border-radius:999px}
+.lpg-res.hit{color:#06714f;background:rgba(11,158,109,.14)}
+.lpg-res.miss{color:#a32036;background:rgba(214,69,95,.12)}
+.lpg-res.push{color:var(--ink2);background:var(--pan2,#eef2f8)}
+.lpg-detail{margin-top:7px;font-size:14px;color:var(--ink2)}
+.lpg-detail b{color:var(--ink);font-variant-numeric:tabular-nums}

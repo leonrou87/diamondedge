@@ -2409,6 +2409,23 @@ export default function Home() {
       }
       const d = liveDetailFor(g);
       const rows: string[] = [];
+      // (a0) FINAL games — lead with the graded outcome: did our pick hit? This is the whole
+      // "graded in the open" promise, and it's the first thing a user wants on "How it went".
+      if (gs.kind === "final") {
+        const P = gamePlays(g);
+        const pl = P.total && P.total.action === "TAKE" ? P.total : displayPick(g);   // prefer the totals Pick (the edge)
+        // result may be an object {status} (de_plays) or a bare string "hit"/"miss" (raw
+        // display_pick, which normPlay can drop) — try the play, then the raw served pick.
+        const rawR: any = pl && pl.result;
+        let r = typeof rawR === "string" ? rawR : (rawR && rawR.status) || null;
+        if (!r && g.display_pick && typeof g.display_pick.result === "string") r = g.display_pick.result;
+        if (pl && pl.action === "TAKE" && r) {
+          const finalTotal = (gs.score && gs.score.away != null && gs.score.home != null) ? Number(gs.score.away) + Number(gs.score.home) : null;
+          const rlab = r === "hit" ? "Hit ✓" : r === "miss" ? "Missed" : "Push";
+          const showTot = pl.market === "total" && finalTotal != null;
+          rows.push(`<div class="lp-graded ${r}"><div class="lpg-top"><span class="lpg-lab">The DiamondEdge Pick — graded</span><span class="lpg-res ${r}">${rlab}</span></div><div class="lpg-detail"><b>${esc(pl.side || "")}</b>${showTot ? ` · final total <b>${finalTotal}</b>` : ""}</div></div>`);
+        }
+      }
       // (a) current game state banner (live only)
       if (gs.kind === "live") {
         const cur = d && d.current;
