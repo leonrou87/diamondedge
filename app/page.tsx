@@ -457,7 +457,7 @@ export default function Home() {
       return `<div class="intro-banner" id="intro-banner">
         <button class="ib-x" id="ib-x" aria-label="Dismiss">✕</button>
         <div class="ib-head"><span class="ib-dia">◆</span><b>Welcome to DiamondEdge</b></div>
-        <p class="ib-desc">One clear pick per game, every one graded in the open against the final score. We pass often — that's the discipline that keeps the record honest.</p>
+        <p class="ib-desc">We publish at most one pick per game — and only when the numbers clear our bar, so we pass often. Every pick we make is graded in the open against the final score. That discipline is what keeps the record honest.</p>
         <button class="ib-how" id="ib-how">See how it works →</button>
       </div>`;
     }
