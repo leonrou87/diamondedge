@@ -3587,6 +3587,8 @@ export default function Home() {
       const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => x.trim())
         .filter((p) => p && !/^—\s*DiamondEdge/i.test(p));           // drop any trailing byline line
       const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(s.summary || "")}</p>`;
+      const words = paras.join(" ").split(/\s+/).filter(Boolean).length;
+      const readMin = Math.max(1, Math.round(words / 200));
       const angleChip = newsAngle(s.angle);
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
@@ -3599,9 +3601,9 @@ export default function Home() {
             ${s.dek ? `<div class="sh-meta">${esc(s.dek)}</div>` : ""}
           </div>
           <div class="sh-body">
-            <div class="art-byline">${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""}</div>
+            <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span><button class="art-share" id="art-share" aria-label="Share this story">Share ↗</button></div>
             ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
-            ${angleChip ? `<div class="art-angle-row">${angleChip}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
+            ${angleChip ? `<div class="art-angle-row"><span class="art-take-lab">Our take</span>${angleChip}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
             ${s.url ? `<a class="art-src" href="${esc(String(s.url))}" target="_blank" rel="noopener">${esc(s.attribution || ("Source: " + (s.source || "the wire")))} ↗</a>` : ""}
           </div>
@@ -3614,6 +3616,14 @@ export default function Home() {
       $("sheet-bg").onclick = () => closeDetail();
       const gob = layer.querySelector(".art-go") as any;
       if (gob && g) gob.onclick = () => { closeDetail(); setTimeout(() => openDetail(g), 240); };
+      const shb = $("art-share");
+      if (shb) shb.onclick = async (e: any) => {
+        e.stopPropagation();
+        const title = String(s.headline || s.title || "DiamondEdge");
+        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
+        if ((navigator as any).share) { try { await (navigator as any).share({ title, text: s.dek || title, url }); return; } catch {} }
+        try { await navigator.clipboard.writeText(`${title} — ${url}`); toast("Link copied to clipboard"); } catch { toast(url); }
+      };
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
     function renderToday() {
