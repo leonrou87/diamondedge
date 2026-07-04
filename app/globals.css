@@ -2168,3 +2168,10 @@ details.results-more{margin-bottom:14px}
 .lpg-res.push{color:var(--ink2);background:var(--pan2,#eef2f8)}
 .lpg-detail{margin-top:7px;font-size:14px;color:var(--ink2)}
 .lpg-detail b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+
+/* --- Article reader: graded result on the pick (final games) --- */
+.art-res{font-family:var(--mono);font-weight:800;font-size:11px;letter-spacing:.02em;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.art-res.hit{background:rgba(11,158,109,.14);color:#06714f}
+.art-res.miss{background:rgba(214,69,95,.12);color:#a32036}
+.art-res.push{background:var(--pan2,#eef2f8);color:var(--ink2)}

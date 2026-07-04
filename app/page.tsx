@@ -107,6 +107,14 @@ export default function Home() {
       crestImg(g.sport, which === "home" ? g.home_abbr : g.away_abbr, cls, which === "home" ? g.home_logo : g.away_logo);
 
     const resOf = (pk: any) => (pk && pk.result && pk.result.status ? pk.result.status : null); // hit|miss|push|null
+    // Graded result for a game's surfaced pick — handles result as an object {status} (de_plays)
+    // OR a bare string (raw display_pick, which normPlay can drop). Returns hit|miss|push|null.
+    const pickResult = (g: any, pl: any) => {
+      const raw: any = pl && pl.result;
+      let r = typeof raw === "string" ? raw : (raw && raw.status) || null;
+      if (!r && g && g.display_pick && typeof g.display_pick.result === "string") r = g.display_pick.result;
+      return r;
+    };
     const tierCls = (t: any) => "tier-" + (t || "low");
 
     // ===================== SUGGESTED ACTIONS (fallback source for plays) =====================
@@ -2414,11 +2422,7 @@ export default function Home() {
       if (gs.kind === "final") {
         const P = gamePlays(g);
         const pl = P.total && P.total.action === "TAKE" ? P.total : displayPick(g);   // prefer the totals Pick (the edge)
-        // result may be an object {status} (de_plays) or a bare string "hit"/"miss" (raw
-        // display_pick, which normPlay can drop) — try the play, then the raw served pick.
-        const rawR: any = pl && pl.result;
-        let r = typeof rawR === "string" ? rawR : (rawR && rawR.status) || null;
-        if (!r && g.display_pick && typeof g.display_pick.result === "string") r = g.display_pick.result;
+        const r = pickResult(g, pl);
         if (pl && pl.action === "TAKE" && r) {
           const finalTotal = (gs.score && gs.score.away != null && gs.score.home != null) ? Number(gs.score.away) + Number(gs.score.home) : null;
           const rlab = r === "hit" ? "Hit ✓" : r === "miss" ? "Missed" : "Push";
@@ -3671,6 +3675,10 @@ export default function Home() {
       const words = paras.join(" ").split(/\s+/).filter(Boolean).length;
       const readMin = Math.max(1, Math.round(words / 200));
       const angleChip = newsAngle(s.angle);
+      // If the mapped game already finished, say — honestly — whether our pick hit.
+      const gpick = g ? displayPick(g) : null;
+      const gres = g && gameState(g).kind === "final" && gpick && gpick.action === "TAKE" ? pickResult(g, gpick) : null;
+      const artRes = gres ? `<span class="art-res ${gres}">${gres === "hit" ? "✓ Hit" : gres === "miss" ? "✗ Missed" : "Push"}</span>` : "";
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
         <div class="sheet" id="sheet" role="dialog" aria-modal="true">
@@ -3684,7 +3692,7 @@ export default function Home() {
           <div class="sh-body">
             <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span><button class="art-share" id="art-share" aria-label="Share this story">Share ↗</button></div>
             ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
-            ${angleChip ? `<div class="art-angle-row"><span class="art-take-lab">Our take</span>${angleChip}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
+            ${angleChip ? `<div class="art-angle-row"><span class="art-take-lab">Our take</span>${angleChip}${artRes}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
             ${s.url ? `<a class="art-src" href="${esc(String(s.url))}" target="_blank" rel="noopener">${esc(s.attribution || ("Source: " + (s.source || "the wire")))} ↗</a>` : ""}
             ${prevKey != null || nextKey != null ? `<div class="art-nav">${prevKey != null ? `<button class="art-navbtn" data-navk="${esc(prevKey)}">← Previous</button>` : `<span></span>`}${nextKey != null ? `<button class="art-navbtn next" data-navk="${esc(nextKey)}">Next story →</button>` : `<span></span>`}</div>` : ""}
