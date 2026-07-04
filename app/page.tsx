@@ -3759,7 +3759,8 @@ export default function Home() {
       if (shb) shb.onclick = async (e: any) => {
         e.stopPropagation();
         const title = String(s.headline || s.title || "DiamondEdge");
-        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
+        // Article maps to a game on our slate → share /g/<id> so it unfurls to that game's card.
+        const url = g && gid ? shareGameUrl(gid) : (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
         if ((navigator as any).share) { try { await (navigator as any).share({ title, text: s.dek || title, url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${title} — ${url}`); toast("Link copied to clipboard"); } catch { toast(url); }
       };
