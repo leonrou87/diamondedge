@@ -124,22 +124,29 @@ header#app-header.scrolled{
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
   box-shadow:0 1px 0 rgba(255,255,255,.6),0 8px 22px rgba(43,64,105,.07)}
 .hbar{max-width:1080px;margin:0 auto;padding:12px max(16px,var(--sal)) 8px max(16px,var(--sar));display:flex;align-items:center;gap:14px;transition:padding .28s var(--ease)}
-header#app-header.scrolled .hbar{padding-top:9px;padding-bottom:7px}
+/* ── condensed-on-scroll header: the wordmark shrinks and the live ticker folds away
+      into a slim frosted bar, reclaiming real space (not just hiding one line) ── */
+header#app-header.scrolled .hbar{padding-top:7px;padding-bottom:7px}
 .brand-tx{overflow:hidden}
-/* the wordmark tag hides once scrolled (condensed logo) */
-header#app-header.scrolled .brand .tag{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .2s ease,height .2s ease}
+header#app-header.scrolled .brand .tag{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .18s ease,height .2s ease}
 .brand{display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer}
-.diamond{width:26px;height:26px;transform:rotate(45deg);border-radius:7px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(226,236,250,.8));position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 4px 12px rgba(43,64,105,.18),0 0 16px rgba(215,164,21,.25)}
-.diamond::after{content:"";position:absolute;inset:7px;border:2px solid var(--gold);border-radius:2px}
-.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase;line-height:1;color:var(--ink)}
+.diamond{width:26px;height:26px;transform:rotate(45deg);border-radius:7px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(226,236,250,.8));position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 4px 12px rgba(43,64,105,.18),0 0 16px rgba(215,164,21,.25);transition:width .28s var(--ease),height .28s var(--ease)}
+.diamond::after{content:"";position:absolute;inset:7px;border:2px solid var(--gold);border-radius:2px;transition:inset .28s var(--ease)}
+header#app-header.scrolled .diamond{width:21px;height:21px}
+header#app-header.scrolled .diamond::after{inset:5.5px}
+.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase;line-height:1;color:var(--ink);transition:font-size .28s var(--ease)}
+header#app-header.scrolled .brand h1{font-size:16px}
 .brand h1 b{color:var(--golddeep)}
 .brand .tag{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-top:3px}
 .hspacer{flex:1}
 body.native .brand .tag{display:none}
 
 /* ---- LIVE TICKER: a slim auto-scrolling strip of today's slate (scores + picks) ---- */
-.ticker{position:relative;overflow:hidden;max-width:1080px;margin:0 auto;padding:0 max(10px,var(--sar)) 0 max(10px,var(--sal));
+.ticker{position:relative;overflow:hidden;max-width:1080px;margin:0 auto;padding:0 max(10px,var(--sar)) 0 max(10px,var(--sal));max-height:56px;
+  transition:max-height .34s var(--ease),opacity .22s ease;
   -webkit-mask:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+/* the ticker folds away when scrolled, leaving a clean slim sticky bar */
+header#app-header.scrolled .ticker{max-height:0;opacity:0;pointer-events:none}
 .tk-track{display:inline-flex;align-items:center;gap:0;white-space:nowrap;will-change:transform;padding:6px 0 7px;animation:tkscroll 46s linear infinite}
 .tk-track.still{animation:none;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;scrollbar-width:none}
 .tk-track.still::-webkit-scrollbar{display:none}
@@ -317,6 +324,13 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .ft-mu{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin:8px auto 10px;max-width:520px}
 .ft-take,.ft-lock{max-width:560px;margin-left:auto;margin-right:auto}
 .feat .t-prog{max-width:560px;margin-left:auto;margin-right:auto}
+/* on tablet+, let the featured content breathe across the wider card instead of floating
+   narrow in the middle with big empty side margins */
+@media(min-width:680px){
+  .ft-mu{max-width:680px;gap:16px}
+  .ft-take,.ft-lock,.feat .t-prog{max-width:680px}
+  .feat{padding-left:22px;padding-right:22px}
+}
 .ft-tm{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
 .ft-tm img,.ft-tm .crest{width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(43,64,105,.22))}
 .ft-tm .crest{border-radius:15px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:16px;color:var(--ink);background:rgba(255,255,255,.8)}
@@ -914,13 +928,18 @@ details.more .more-body{padding-top:12px}
 .ng-rail{order:2;min-width:0}
 .ng-carousel{order:3;min-width:0}
 .ng-previews{order:4;min-width:0}
-@media(min-width:900px){
-  .news-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;grid-template-areas:"lead rail" "carousel rail" "previews previews";gap:22px;align-items:start}
+/* magazine layout kicks in at tablet width (was 900) so portrait tablets don't get a
+   giant single stretched column with a ballooned hero */
+@media(min-width:760px){
+  .news-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(288px,340px);grid-template-areas:"lead rail" "carousel rail" "previews previews";gap:20px;align-items:start}
   .ng-lead{grid-area:lead}
   .ng-rail{grid-area:rail}
   .ng-carousel{grid-area:carousel}
   .ng-previews{grid-area:previews}
 }
+@media(min-width:900px){.news-grid{grid-template-columns:minmax(0,1fr) 340px;gap:24px}}
+/* safety cap so a full-width lead hero can never balloon on a wide viewport */
+.ls-figure .heroimg{max-height:300px}
 /* ============ EDITORIAL THUMBNAIL / HERO IMAGE (self-contained logo composite) ============ */
 /* A publication-style image area: a theme-tinted gradient wash, a faint sport icon
    watermark, and the two team logos composited over it. No external images. */
