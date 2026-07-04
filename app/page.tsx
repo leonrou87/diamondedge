@@ -3712,8 +3712,12 @@ export default function Home() {
       const prevKey = ci > 0 ? navKeys[ci - 1] : null;
       const nextKey = ci >= 0 && ci < navKeys.length - 1 ? navKeys[ci + 1] : null;
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
-      const gid = s.angle && typeof s.angle === "object" ? s.angle.game_id : null;
-      const g = gid ? findGameLive(gid) : null;
+      const gid = s.angle && typeof s.angle === "object" && s.angle.game_id != null ? s.angle.game_id : (s.game_id != null ? s.game_id : null);
+      // Resolve the mapped game across the WHOLE slate, not just the live set: live/today first
+      // (findGameLive), then the loaded slate (findGame / gameById) so finished games and games
+      // viewed on other dates still resolve. If it's genuinely not loaded we keep the affordance
+      // and fall back to jumping the board to it at click-time — never a dead pick.
+      const g = gid != null ? (findGameLive(gid) || findGame(gid) || gameById(gid) || null) : null;
       const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => x.trim())
         .filter((p) => p && !/^—\s*DiamondEdge/i.test(p));           // drop any trailing byline line
       const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(s.summary || "")}</p>`;
@@ -3737,7 +3741,7 @@ export default function Home() {
           <div class="sh-body">
             <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span><button class="art-share" id="art-share" aria-label="Share this story">Share ↗</button></div>
             ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
-            ${angleChip ? `<div class="art-angle-row"><span class="art-take-lab">Our take</span>${angleChip}${artRes}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
+            ${angleChip ? `<div class="art-angle-row${gid != null ? " art-angle-go" : ""}"${gid != null ? ` data-gid="${esc(String(gid))}" role="button" tabindex="0" aria-label="See our full pick"` : ""}><span class="art-take-lab">Our take</span>${angleChip}${artRes}${gid != null ? `<span class="art-go">See our full pick →</span>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
             ${s.url ? `<a class="art-src" href="${esc(String(s.url))}" target="_blank" rel="noopener">${esc(s.attribution || ("Source: " + (s.source || "the wire")))} ↗</a>` : ""}
             ${prevKey != null || nextKey != null ? `<div class="art-nav">${prevKey != null ? `<button class="art-navbtn" data-navk="${esc(prevKey)}">← Previous</button>` : `<span></span>`}${nextKey != null ? `<button class="art-navbtn next" data-navk="${esc(nextKey)}">Next story →</button>` : `<span></span>`}</div>` : ""}
@@ -3749,8 +3753,23 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       $("sheet-close").onclick = () => closeDetail();
       $("sheet-bg").onclick = () => closeDetail();
-      const gob = layer.querySelector(".art-go") as any;
-      if (gob && g) gob.onclick = () => { closeDetail(); setTimeout(() => openDetail(g), 240); };
+      // The whole "Our take" row is the pick affordance — clicking it ALWAYS opens the game's
+      // full pick. Resolve the game at click-time (state may have loaded since render), mirroring
+      // the article-row handlers: live/loaded slate → openDetail; otherwise jump the board to it.
+      const gow = layer.querySelector(".art-angle-go") as any;
+      if (gow && gid != null) {
+        const openPick = () => {
+          const gg = findGameLive(gid) || findGame(gid) || gameById(gid) || g;
+          closeDetail();
+          // closeDetail wipes #sheet-layer after its 320ms exit animation — openDetail renders
+          // into that SAME layer, so it must run AFTER the wipe or its DOM gets erased (the race
+          // that made the pick "do nothing"). 360ms clears the teardown; jumpToGames is unaffected.
+          if (gg) setTimeout(() => openDetail(gg), 360);
+          else setTimeout(() => jumpToGames([gid]), 360);
+        };
+        gow.onclick = openPick;
+        gow.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPick(); } };
+      }
       layer.querySelectorAll(".art-navbtn").forEach((b: any) => (b.onclick = () => {
         const ns = newsStoryByKey(b.dataset.navk);
         if (ns) { openArticleSheet(ns, b.dataset.navk); const sb = $("sheet") && $("sheet").querySelector(".sh-body"); if (sb) sb.scrollTop = 0; }
