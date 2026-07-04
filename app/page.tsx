@@ -442,6 +442,57 @@ export default function Home() {
       return `<span class="lread ${cls}" title="Latest model read — the graded morning play is unchanged."><i>latest read</i><b class="lr-x">${arrow} ${esc(word)}${esc(toGo)}</b></span>`;
     }
 
+    function diamondEdgeV2(g: any) {
+      const P = gamePlays(g);
+      const lr = P && P.total && P.total.latest_read;
+      const v2 = lr && lr.diamondedge_v2;
+      if (!v2 || typeof v2 !== "object") return null;
+      if (String(v2.action || "").toUpperCase() !== "TAKE") return null;
+      return v2;
+    }
+    function v2SideLine(v2: any) {
+      const side = String(v2.side || "").toUpperCase();
+      const line = v2.line != null && !isNaN(Number(v2.line)) ? ` ${num(Number(v2.line))}` : "";
+      return `${side || "TOTAL"}${line}`;
+    }
+    function v2EdgeText(v2: any) {
+      const edge = v2.edge != null && !isNaN(Number(v2.edge)) ? Math.abs(Number(v2.edge)) * 100 : null;
+      const ev = v2.ev != null && !isNaN(Number(v2.ev)) ? Number(v2.ev) * 100 : null;
+      if (edge != null && ev != null) return `+${edge.toFixed(1)} pts · ${ev >= 0 ? "+" : ""}${ev.toFixed(1)}% EV`;
+      if (edge != null) return `+${edge.toFixed(1)} pts`;
+      return "new model read";
+    }
+    function diamondEdgeV2Strip(g: any) {
+      const v2 = diamondEdgeV2(g);
+      if (!v2) return "";
+      const price = v2.side_odds != null && !isNaN(Number(v2.side_odds)) ? `<i>${fmtOdds(Number(v2.side_odds))}</i>` : "";
+      return `<div class="v2strip" title="DiamondEdge v2 is a challenger model displayed separately from the official graded pick.">
+        <span class="v2-k">DiamondEdge v2</span>
+        <span class="v2-side">${esc(v2SideLine(v2))}${price}</span>
+        <span class="v2-meta">${esc(v2EdgeText(v2))}</span>
+        <span class="v2-pill">challenger</span>
+      </div>`;
+    }
+    function diamondEdgeV2Detail(g: any) {
+      const v2 = diamondEdgeV2(g);
+      if (!v2) return "";
+      const pSide = v2.p_side != null && !isNaN(Number(v2.p_side)) ? `${(Number(v2.p_side) * 100).toFixed(1)}%` : "";
+      const pMkt = v2.p_mkt_now != null && !isNaN(Number(v2.p_mkt_now)) ? `${(Number(v2.p_mkt_now) * 100).toFixed(1)}%` : "";
+      const hash = v2.model_hash ? ` · model ${String(v2.model_hash).slice(0, 8)}` : "";
+      return `<details class="gp-v2" open>
+        <summary><span class="v2-dot">◆</span><span class="v2-lab">DiamondEdge v2 pick: ${esc(v2SideLine(v2))}</span><span class="v2-chev" aria-hidden="true">›</span></summary>
+        <div class="v2-body">
+          <p>New blend-offset model read shown as a separate challenger lane. It does not replace the official graded DiamondEdge pick yet.</p>
+          <div class="v2-tags">
+            <span class="v2-tag">${esc(v2EdgeText(v2))}</span>
+            ${pSide ? `<span class="v2-tag">model ${esc(pSide)}</span>` : ""}
+            ${pMkt ? `<span class="v2-tag">market ${esc(pMkt)}</span>` : ""}
+            <span class="v2-tag">shadow grade${esc(hash)}</span>
+          </div>
+        </div>
+      </details>`;
+    }
+
     // ===================== PREMIUM / FREEMIUM (design-complete; payments stubbed) =====================
     // Entitlement is one localStorage flag `de_premium` — DEFAULT true (premium-assumed).
     // STRIPE WIRE-IN POINT: a real flow replaces setPremium(true) in the Upgrade page's
@@ -1667,6 +1718,7 @@ export default function Home() {
     function gameCard(g: any, idx: number) {
       const gs = gameState(g);
       const pick = displayPick(g);
+      const v2 = diamondEdgeV2(g);
       const q = pick ? qualityOf(pick) : null;
       const st = pick ? playState(g, pick) : "open";
       const locked = pick ? pickLocked(pick, st) : false;
@@ -1689,6 +1741,7 @@ export default function Home() {
         <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${totOnly}${totLine}
         ${pick ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
+        ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
     }
 
@@ -1816,6 +1869,47 @@ export default function Home() {
     }
     const todayRec = () => recordFor((g: any) => String(g.date || "").slice(0, 10) === todayISO());
     const monthRec = () => recordFor((g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7));
+    // Per STRENGTH-TIER tally over a set of games. Every TAKE across all markets is bucketed by
+    // qualityOf() → strong / good / lean, using the SAME grading path as the rest of the record
+    // (pickResult on each market's play). This is what makes a bare "0–3" self-explanatory:
+    // spread/moneyline leans sit in the Lean tier; the totals edge sits in Strong/Good.
+    function tierRecordFor(filterFn: (g: any) => boolean) {
+      const src = livePayload || payload;
+      if (!src) return null;
+      const T: any = {
+        strong: { w: 0, l: 0, push: 0, live: 0, up: 0 },
+        good: { w: 0, l: 0, push: 0, live: 0, up: 0 },
+        lean: { w: 0, l: 0, push: 0, live: 0, up: 0 },
+      };
+      ((src.games || []) as any[]).forEach((g: any) => {
+        if (!filterFn(g)) return;
+        const P = gamePlays(g);
+        const gs = gameState(g);
+        MARKETS.forEach((mk) => {
+          const pl = P[mk];
+          if (!pl || pl.action !== "TAKE") return;
+          const q = qualityOf(pl);
+          if (!q || !T[q]) return;
+          const r = pickResult(g, pl);
+          if (r === "hit") T[q].w++;
+          else if (r === "miss") T[q].l++;
+          else if (r === "push") T[q].push++;
+          else if (gs.kind === "live") T[q].live++;
+          else if (gs.kind !== "final") T[q].up++;
+        });
+      });
+      const graded = (t: any) => t.w + t.l;
+      return {
+        strong: T.strong, good: T.good, lean: T.lean,
+        gradedTotal: graded(T.strong) + graded(T.good) + graded(T.lean),
+        w: T.strong.w + T.good.w + T.lean.w,
+        l: T.strong.l + T.good.l + T.lean.l,
+        live: T.strong.live + T.good.live + T.lean.live,
+        up: T.strong.up + T.good.up + T.lean.up,
+      };
+    }
+    const todayTierRec = () => tierRecordFor((g: any) => String(g.date || "").slice(0, 10) === todayISO());
+    const monthTierRec = () => tierRecordFor((g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7));
     function metaRow() {
       // "Picks" means the DiamondEdge Pick = TOTALS (the validated edge). We DON'T blend the
       // spread/moneyline leans into the headline number — that would flatter a rough day.
@@ -1827,9 +1921,11 @@ export default function Home() {
       const mt = m ? m.byMk.total : { w: 0, l: 0 };
       const outstanding = dr ? dr.live + dr.up : 0;
       const dayLab = isToday ? "Today" : "That day";
-      const dayTxt = (dr && (dr.graded + outstanding)) ? `${dayLab} <b>${dr.w}–${dr.l}</b>${outstanding ? ` · <b>${outstanding}</b> ${isToday ? "live" : "to come"}` : ""}` : "";
+      // W–L is made unmistakable: the first record carries a small "W–L" legend so "0–3"
+      // can never be misread. Clicking the chip opens the per-strength breakdown.
+      const dayTxt = (dr && (dr.graded + outstanding)) ? `${dayLab} <b>${dr.w}–${dr.l}</b>${dr.graded ? ` <span class="rc-wl">W–L</span>` : ""}${outstanding ? ` · <b>${outstanding}</b> ${isToday ? "live" : "to come"}` : ""}` : "";
       const goldTxt = dr && dr.graded && (dr.goldGreat || (dr.gw && !dr.gl)) ? `<span class="rc-gold">★ ${dr.gw}–${dr.gl}</span>` : "";
-      const monthTxt = (mt.w + mt.l) ? `${mt.w}–${mt.l} this month` : "Our record";
+      const monthTxt = (mt.w + mt.l) ? `${mt.w}–${mt.l}${dayTxt ? "" : ` <span class="rc-wl">W–L</span>`} this month` : "Our record";
       const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${dayTxt ? `<span class="rc-today">${dayTxt}</span>${goldTxt}<span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
       return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
@@ -2706,12 +2802,14 @@ export default function Home() {
       const challengerNote = (cs && cs.consumer_label)
         ? `<details class="gp-backup"><summary><span class="bk-dot">◆</span><span class="bk-lab">${esc(cs.consumer_label)}</span><span class="bk-chev" aria-hidden="true">›</span></summary><div class="bk-body">${cs.consumer_detail ? `<p>${esc(cs.consumer_detail)}</p>` : ""}${Array.isArray(cs.active_family_labels) && cs.active_family_labels.length ? `<div class="bk-tags">${cs.active_family_labels.map((t: any) => `<span class="bk-tag">${esc(String(t))}</span>`).join("")}</div>` : ""}<p class="bk-note">Backup context only — it doesn't change the pick or its grade.</p></div></details>`
         : "";
+      const v2Note = leadLocked ? "" : diamondEdgeV2Detail(g);
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "live" && showLive ? "none" : "block"}">
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${linesBlock}
         ${lead || !leadLocked ? pickPayoff : ""}
         ${challengerNote}
+        ${v2Note}
         ${passBlock}
         ${leadLocked ? "" : more}
       </div>`;
@@ -2880,33 +2978,67 @@ export default function Home() {
     }
     // The pick-record breakdown — TODAY (with how many are still live/to-come) and THIS MONTH,
     // each split by market. Same sheet chrome as everything else, so overlays stay consistent.
+    // Every graded/pending TAKE for a game+tier, as compact "matchup · pick · Won/Lost" rows —
+    // so a cold tier number is never a mystery. Uses the SAME pickResult grading path.
+    function tierPicksList(filterFn: (g: any) => boolean, q: string) {
+      const src = livePayload || payload;
+      if (!src) return "";
+      const rows: string[] = [];
+      ((src.games || []) as any[]).forEach((g: any) => {
+        if (!filterFn(g)) return;
+        const P = gamePlays(g);
+        MARKETS.forEach((mk) => {
+          const pl = P[mk];
+          if (!pl || pl.action !== "TAKE" || qualityOf(pl) !== q) return;
+          const r = pickResult(g, pl);
+          const gs = gameState(g);
+          const st = r === "hit" ? { c: "won", t: "✓ Won" } : r === "miss" ? { c: "lost", t: "✗ Lost" }
+            : r === "push" ? { c: "pushed", t: "Push" }
+            : gs.kind === "live" ? { c: "live", t: "Live" } : { c: "up", t: "To come" };
+          const side = `${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? ` ${fmtOdds(pl.price)}` : ""}`;
+          rows.push(`<div class="rbp-row"><span class="rbp-mu">${esc(g.away_abbr || "")} @ ${esc(g.home_abbr || "")}</span><span class="rbp-pk">${side}</span><span class="rbp-res ${st.c}">${st.t}</span></div>`);
+        });
+      });
+      return rows.length ? `<div class="rbp-list">${rows.join("")}</div>` : `<div class="rbp-empty">No picks in this tier for this window.</div>`;
+    }
     function openRecordBreakdown() {
       detail = { _record: true };
-      const t = todayRec(), m = monthRec();
-      // The HEADLINE is the DiamondEdge Pick (totals). Spreads/moneylines are shown as smaller
-      // "leans we also track" so the flagship number is never inflated by them.
-      const leanRow = (r: any, mk: string, lab: string) => {
-        const o = r.byMk[mk]; const n = o.w + o.l; if (!n) return "";
-        const pct = Math.round((o.w / n) * 100);
-        return `<div class="rb-lean"><span class="rb-lean-mk">${lab}</span><span class="rb-lean-rec"><b>${o.w}–${o.l}</b> <i>${pct}%</i></span></div>`;
+      const rh = recipeHistory();
+      const scopes = [
+        { key: "today", lab: "Today", filt: (g: any) => String(g.date || "").slice(0, 10) === todayISO(), empty: "No graded picks yet today — check back as games finish." },
+        { key: "month", lab: "This month", filt: (g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7), empty: "No graded picks yet this month." },
+      ];
+      // ONE row PER STRENGTH TIER (Leon's spec): ★★★ Strong / ★★ Good / ★ Lean, each W–L + hit%,
+      // expandable to the actual picks. Leans (spread/ML) live in the Lean tier — visibly separated
+      // from the totals edge (Strong/Good), so a bare "0–3" reads as "which tier, and normal variance".
+      const TIER_META: any = {
+        strong: { lab: "Strong", note: "highest-conviction totals" },
+        good: { lab: "Good", note: "solid published totals calls" },
+        lean: { lab: "Lean", note: "spread & moneyline directional reads" },
       };
-      const block = (r: any, title: string, empty: string) => {
-        if (!r) return `<div class="dsec"><div class="dsec-h">${title}</div><div class="rb-sub">${empty}</div></div>`;
-        const tot = r.byMk.total; const dec = tot.w + tot.l; const pct = dec ? Math.round((tot.w / dec) * 100) : 0;
-        const out = r.live + r.upcoming;
-        const outTxt = out
-          ? `<span class="rb-out">${r.live ? `<b>${r.live}</b> live` : ""}${r.live && r.upcoming ? " · " : ""}${r.upcoming ? `<b>${r.upcoming}</b> to come` : ""}</span>`
-          : (dec ? `<span class="rb-out done">all settled</span>` : "");
-        const leans = leanRow(r, "spread", "Spread leans") + leanRow(r, "moneyline", "Moneyline leans");
-        return `<div class="dsec">
-          <div class="dsec-h">${title} · the Pick <span class="rb-mkt">(totals)</span></div>
-          <div class="rb-head">
-            <div class="rb-big"><b>${tot.w}–${tot.l}</b>${dec ? `<span class="rb-pct">${pct}% won</span>` : ""}</div>
-            ${outTxt}
-          </div>
-          ${!dec && !out ? `<div class="rb-sub">${empty}</div>` : ""}
-          ${leans ? `<div class="rb-leans"><span class="rb-leans-h">Also tracked — lighter leans</span>${leans}</div>` : ""}
-        </div>`;
+      const tierRow = (rec: any, q: string, filt: (g: any) => boolean) => {
+        const o = rec[q]; const dec = o.w + o.l; const pct = dec ? Math.round((o.w / dec) * 100) : null;
+        const out = o.live + o.up;
+        const outTxt = out ? `<span class="rbt-out">${o.live ? `${o.live} live` : ""}${o.live && o.up ? " · " : ""}${o.up ? `${o.up} to come` : ""}</span>` : "";
+        const recTxt = dec
+          ? `<b class="rbt-wl">${o.w} won · ${o.l} lost</b>${pct != null ? `<span class="rbt-pct">${pct}%</span>` : ""}`
+          : (out ? `<span class="rbt-none">none graded yet</span>` : `<span class="rbt-none">—</span>`);
+        const expandable = dec + out > 0;
+        const head = `<div class="rbt-head"><span class="rbt-badge q-${q}">${qDiamonds(q)}<b>${TIER_META[q].lab}</b></span><span class="rbt-note">${TIER_META[q].note}</span><span class="rbt-rec">${recTxt}${outTxt}</span></div>`;
+        if (!expandable) return `<div class="rbt-item q-${q} flat">${head}</div>`;
+        return `<details class="rbt-item q-${q}"><summary>${head}<span class="rbt-caret">›</span></summary>${tierPicksList(filt, q)}</details>`;
+      };
+      const block = (scope: any) => {
+        const rec = tierRecordFor(scope.filt);
+        const gradedAny = rec && rec.gradedTotal;
+        const outAny = rec && (rec.live + rec.up);
+        const overall = rec && (gradedAny || outAny)
+          ? `<div class="rbt-overall"><span class="rbt-overall-lab">Overall</span><b>${rec.w} won · ${rec.l} lost</b>${outAny ? `<span class="rbt-out">${rec.live ? `${rec.live} live` : ""}${rec.live && rec.up ? " · " : ""}${rec.up ? `${rec.up} to come` : ""}</span>` : ""}</div>`
+          : "";
+        const body = rec && (gradedAny || outAny)
+          ? `${overall}${["strong", "good", "lean"].map((q) => tierRow(rec, q, scope.filt)).join("")}`
+          : `<div class="rb-sub">${scope.empty}</div>`;
+        return `<div class="dsec"><div class="dsec-h">${scope.lab} · by pick strength</div>${body}</div>`;
       };
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
@@ -2916,13 +3048,18 @@ export default function Home() {
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
             <div class="sh-sport">DiamondEdge</div>
             <div class="rcp-title"><span class="pl-vdia">◆</span>The record</div>
-            <div class="sh-meta">graded against real final scores — nothing hidden</div>
+            <div class="sh-meta">wins–losses by pick strength · graded against real final scores</div>
           </div>
           <div class="sh-body">
-            ${block(t, "Today", "No graded picks yet today — check back as games finish.")}
-            ${block(m, "This month", "No graded picks yet this month.")}
-            <div class="dsec"><div class="dsec-b rcp"><p>Totals are <b>the DiamondEdge Pick</b> — our validated edge. Spreads and moneylines are lighter directional leans. Every call freezes before first pitch and the final score does the judging.</p></div></div>
-            <button class="rb-full" id="rb-full">See the full record & charts →</button>
+            ${block(scopes[0])}
+            ${block(scopes[1])}
+            <div class="dsec">
+              <div class="dsec-h">Standing validated record</div>
+              <div class="rbt-valid"><b>${(rh.hit * 100).toFixed(1)}% won</b><span class="rbt-valid-n">${rh.n.toLocaleString()} graded picks</span><span class="rbt-valid-roi ${rh.roi >= 0 ? "pos" : "neg"}">${rh.roi >= 0 ? "+" : ""}${(rh.roi * 100).toFixed(0)}% return</span></div>
+              <p class="rbt-valid-sub">The long-run signature record since 2022 — a 58% edge means cold days are normal variance, not a broken model.</p>
+            </div>
+            <div class="dsec"><div class="dsec-b rcp"><p><b>Strong &amp; Good are totals — the validated DiamondEdge edge.</b> Lean holds our spread &amp; moneyline directional reads, kept separate so the flagship number is never inflated. Every call freezes before first pitch and the final score does the judging.</p></div></div>
+            <button class="rb-full" id="rb-full">See the full record &amp; charts →</button>
             <button class="rb-share" id="rb-share">Share our record ↗</button>
           </div>
         </div>`;
@@ -3316,7 +3453,10 @@ export default function Home() {
               ${mr ? `<span class="res-stat"><i>This month</i><b>${mr.w}-${mr.l}</b></span>` : ""}
               ${fwd ? `<span class="res-stat"><i>Since going live</i><b>${fwd.wins || 0}-${fwd.losses || 0}</b></span>` : ""}
             </div>
-            <button class="res-share" id="res-share">Share our record ↗</button>
+            <div class="res-btnrow">
+              <button class="res-breakdown" id="res-breakdown">See wins–losses by pick strength →</button>
+              <button class="res-share" id="res-share">Share our record ↗</button>
+            </div>
           </div>
         </article>
         ${ov.n ? `<article class="res-article second">
@@ -3351,6 +3491,8 @@ export default function Home() {
         if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
       };
+      const rbk = $("res-breakdown");
+      if (rbk) rbk.onclick = () => openRecordBreakdown();
     }
 
     // ===================== TODAY (daily brief homepage) =====================
@@ -3797,8 +3939,8 @@ export default function Home() {
       const mr = monthRecord();
       // masthead record pill reflects the DATE you're viewing; gold flex only on a great day
       const recLabel = dayRec && dayRec.graded
-        ? `Picks <b>${dayRec.w}–${dayRec.l}</b>${isToday ? " today" : ""}`
-        : (isToday && mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : "The record");
+        ? `Picks <b>${dayRec.w}–${dayRec.l}</b> <span class="nm-wl">W–L</span>${isToday ? " today" : ""}`
+        : (isToday && mr ? `Picks <b>${mr.w}–${mr.l}</b> <span class="nm-wl">W–L</span> this month` : "The record");
       const goldChip = dayRec && (dayRec.gw + dayRec.gl) && (dayRec.goldGreat || (dayRec.gw && !dayRec.gl))
         ? `<span class="nm-gold${dayRec.goldGreat ? " hot" : ""}" title="Gold (Strong) picks ${dayRec.gw}–${dayRec.gl}">★ Gold ${dayRec.gw}–${dayRec.gl}${dayRec.goldGreat ? " 🔥" : ""}</span>`
         : "";
