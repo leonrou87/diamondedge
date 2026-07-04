@@ -3599,14 +3599,26 @@ export default function Home() {
         ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(s.dek || s.summary)}</p>` : ""}
         ${newsAngle(s.angle)}</div></a>`;
     }
+    // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
+    // render and the article reader's prev/next nav so keys/order always agree.
+    function newsDedupedHeadlines(): any[] {
+      const nf = newsFeed;
+      if (!nf || !nf.lead) return [];
+      const keyOf = (s: any) => String((s && s.angle && typeof s.angle === "object" && s.angle.game_id) || (s && (s.headline || s.title)) || "").toLowerCase();
+      const seen = new Set<string>([keyOf(nf.lead)]);
+      return ((nf.headlines || []) as any[]).filter((s) => { const k = keyOf(s); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+    }
+    // Displayed story keys in order: lead ("L") then each deduped headline by its ORIGINAL index
+    // (so newsStoryByKey resolves the right story even after dedup shifts positions).
+    function newsDisplayKeys(): string[] {
+      if (!newsFeed || !newsFeed.lead) return [];
+      const orig = (newsFeed.headlines || []) as any[];
+      return ["L", ...newsDedupedHeadlines().map((s) => String(orig.indexOf(s)))];
+    }
     function newsFront() {
       const nf = newsFeed;
       if (!nf || !nf.lead) return "";
-      // Dedupe so the same game/story never appears as both the lead AND a headline (or twice in
-      // the list) — one card per game keeps the front clean.
-      const keyOf = (s: any) => String((s && s.angle && typeof s.angle === "object" && s.angle.game_id) || (s && (s.headline || s.title)) || "").toLowerCase();
-      const seen = new Set<string>([keyOf(nf.lead)]);
-      const hl = ((nf.headlines || []) as any[]).filter((s) => { const k = keyOf(s); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+      const hl = newsDedupedHeadlines();
       // Honest freshness — pulse "live" only if the feed actually refreshed recently; otherwise
       // just show when it last updated. No fake "live".
       const updT = Date.parse(String(nf.updated_at || nf.generated_at || ""));
@@ -3618,7 +3630,7 @@ export default function Home() {
       return `<section class="newsfront">
         <div class="nf-head"><span class="nf-lab">Top stories</span>${head}</div>
         ${newsStory(nf.lead, true, "L")}
-        ${hl.length ? `<div class="nf-list">${hl.map((s, i) => newsStory(s, false, String(i))).join("")}</div>` : ""}
+        ${hl.length ? `<div class="nf-list">${hl.map((s) => newsStory(s, false, String((nf.headlines || []).indexOf(s)))).join("")}</div>` : ""}
       </section>`;
     }
     // Resolve a story card back to its object, then open OUR article reader.
@@ -3626,9 +3638,13 @@ export default function Home() {
       if (!newsFeed) return null;
       return key === "L" ? newsFeed.lead : ((newsFeed.headlines || []) as any[])[Number(key)];
     }
-    function openArticleSheet(s: any) {
+    function openArticleSheet(s: any, key = "") {
       if (!s) return;
       detail = { _article: true };
+      const navKeys = newsDisplayKeys();
+      const ci = key ? navKeys.indexOf(key) : -1;
+      const prevKey = ci > 0 ? navKeys[ci - 1] : null;
+      const nextKey = ci >= 0 && ci < navKeys.length - 1 ? navKeys[ci + 1] : null;
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
       const gid = s.angle && typeof s.angle === "object" ? s.angle.game_id : null;
       const g = gid ? findGameLive(gid) : null;
@@ -3654,6 +3670,7 @@ export default function Home() {
             ${angleChip ? `<div class="art-angle-row"><span class="art-take-lab">Our take</span>${angleChip}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
             ${s.url ? `<a class="art-src" href="${esc(String(s.url))}" target="_blank" rel="noopener">${esc(s.attribution || ("Source: " + (s.source || "the wire")))} ↗</a>` : ""}
+            ${prevKey != null || nextKey != null ? `<div class="art-nav">${prevKey != null ? `<button class="art-navbtn" data-navk="${esc(prevKey)}">← Previous</button>` : `<span></span>`}${nextKey != null ? `<button class="art-navbtn next" data-navk="${esc(nextKey)}">Next story →</button>` : `<span></span>`}</div>` : ""}
           </div>
         </div>`;
       let layer = $("sheet-layer");
@@ -3664,6 +3681,10 @@ export default function Home() {
       $("sheet-bg").onclick = () => closeDetail();
       const gob = layer.querySelector(".art-go") as any;
       if (gob && g) gob.onclick = () => { closeDetail(); setTimeout(() => openDetail(g), 240); };
+      layer.querySelectorAll(".art-navbtn").forEach((b: any) => (b.onclick = () => {
+        const ns = newsStoryByKey(b.dataset.navk);
+        if (ns) { openArticleSheet(ns, b.dataset.navk); const sb = $("sheet") && $("sheet").querySelector(".sh-body"); if (sb) sb.scrollTop = 0; }
+      }));
       const shb = $("art-share");
       if (shb) shb.onclick = async (e: any) => {
         e.stopPropagation();
@@ -3819,7 +3840,7 @@ export default function Home() {
       });
       // News cards open OUR in-app article reader (not a link out).
       view.querySelectorAll(".nf-story[data-nf]").forEach((a: any) => {
-        a.onclick = (e: any) => { e.preventDefault(); openArticleSheet(newsStoryByKey(a.dataset.nf)); };
+        a.onclick = (e: any) => { e.preventDefault(); openArticleSheet(newsStoryByKey(a.dataset.nf), a.dataset.nf); };
       });
       // carousel dots: track the snapped card, click to go
       const rail = $("tdy-picks"), dots = $("tp-dots");

@@ -2147,3 +2147,10 @@ details.results-more{margin-bottom:14px}
 /* --- Games record chip: gold-day flex --- */
 .recchip .rc-gold{margin:0 5px 0 6px;font-family:var(--mono);font-weight:800;font-size:10.5px;color:var(--golddeep);
   padding:1px 7px;border-radius:999px;background:rgba(224,172,32,.14);border:1px solid rgba(215,164,21,.3)}
+
+/* --- Article reader: prev/next nav --- */
+.art-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--glass-brd)}
+.art-navbtn{font-family:var(--mono);font-weight:800;font-size:11.5px;letter-spacing:.02em;padding:10px 15px;border-radius:999px;
+  border:1px solid var(--glass-brd);background:var(--glass-hi);color:var(--ink2);cursor:pointer;white-space:nowrap}
+.art-navbtn.next{border-color:rgba(215,164,21,.4);background:rgba(224,172,32,.12);color:var(--golddeep)}
+.art-navbtn:active{transform:scale(.96)}
