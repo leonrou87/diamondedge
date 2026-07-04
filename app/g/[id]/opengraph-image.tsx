@@ -27,12 +27,12 @@ async function getGame(id: string) {
   }
 }
 
-// Totals only (the validated edge) — never surface a spread/ML lean on the share card.
+// Show a pick line ONLY for the validated edge: MLB totals. Soccer totals are exploratory leans
+// and spreads/ML are leans — never surface those as a "DiamondEdge Pick" on a public share card.
 function totalPick(g: any) {
-  const t = g && g.de_plays && g.de_plays.total;
+  if (!g || g.sport !== "mlb") return null;
+  const t = g.de_plays && g.de_plays.total;
   if (t && String(t.action).toUpperCase() === "TAKE" && t.side) return { side: String(t.side), line: t.line };
-  const dp = g && g.display_pick;
-  if (dp && String(dp.action).toUpperCase() === "TAKE" && dp.market === "total" && dp.side) return { side: String(dp.side), line: dp.line };
   return null;
 }
 
