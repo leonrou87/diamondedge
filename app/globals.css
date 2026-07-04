@@ -145,8 +145,7 @@ body.native .brand .tag{display:none}
 .ticker{position:relative;overflow:hidden;max-width:1080px;margin:0 auto;padding:0 max(10px,var(--sar)) 0 max(10px,var(--sal));max-height:56px;
   transition:max-height .34s var(--ease),opacity .22s ease;
   -webkit-mask:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
-/* the ticker folds away when scrolled, leaving a clean slim sticky bar */
-header#app-header.scrolled .ticker{max-height:0;opacity:0;pointer-events:none}
+/* ticker stays visible on scroll (collapse removed — it caused a jumpy header) */
 .tk-track{display:inline-flex;align-items:center;gap:0;white-space:nowrap;will-change:transform;padding:6px 0 7px;animation:tkscroll 46s linear infinite}
 .tk-track.still{animation:none;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;scrollbar-width:none}
 .tk-track.still::-webkit-scrollbar{display:none}
