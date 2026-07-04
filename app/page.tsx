@@ -1808,13 +1808,18 @@ export default function Home() {
     function metaRow() {
       // "Picks" means the DiamondEdge Pick = TOTALS (the validated edge). We DON'T blend the
       // spread/moneyline leans into the headline number — that would flatter a rough day.
-      const t = todayRec(), m = monthRec();
+      // The day figure tracks the DATE you're viewing (navigate the strip → it updates), with a
+      // little gold flex when the Strong picks had a great day.
+      const isToday = curDate === todayISO();
+      const dr = dayRecordFor(curDate);
+      const m = monthRec();
       const mt = m ? m.byMk.total : { w: 0, l: 0 };
-      const tt = t ? t.byMk.total : { w: 0, l: 0 };
-      const outstanding = t ? t.live + t.upcoming : 0;
-      const todayTxt = (tt.w + tt.l + outstanding) ? `Today <b>${tt.w}–${tt.l}</b>${outstanding ? ` · <b>${outstanding}</b> live` : ""}` : "";
+      const outstanding = dr ? dr.live + dr.up : 0;
+      const dayLab = isToday ? "Today" : "That day";
+      const dayTxt = (dr && (dr.graded + outstanding)) ? `${dayLab} <b>${dr.w}–${dr.l}</b>${outstanding ? ` · <b>${outstanding}</b> ${isToday ? "live" : "to come"}` : ""}` : "";
+      const goldTxt = dr && dr.graded && (dr.goldGreat || (dr.gw && !dr.gl)) ? `<span class="rc-gold">★ ${dr.gw}–${dr.gl}</span>` : "";
       const monthTxt = (mt.w + mt.l) ? `${mt.w}–${mt.l} this month` : "Our record";
-      const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${todayTxt ? `<span class="rc-today">${todayTxt}</span><span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
+      const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${dayTxt ? `<span class="rc-today">${dayTxt}</span>${goldTxt}<span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
       return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
 
