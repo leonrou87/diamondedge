@@ -2640,7 +2640,7 @@ export default function Home() {
       const showLive = gs.kind === "live" || gs.kind === "final";
       const tabsBar = `<div class="gp-tabs" role="tablist">
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
-        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">How it's going</button>` : ""}
+        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">${_gsk === "final" ? "How it went" : "How it's going"}</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
       // Backup-signal note (from the model's challenger accountability) — plain English, detail-only,
