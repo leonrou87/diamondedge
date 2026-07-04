@@ -3595,6 +3595,12 @@ export default function Home() {
       if (rail && dots) {
         const cards = Array.from(rail.querySelectorAll(".hero")) as any[];
         const setDot = (i: number) => dots.querySelectorAll(".tp-dot").forEach((d: any, k: number) => d.classList.toggle("on", k === i));
+        // PERF: pre-measure card centers once (+ on resize) so the scroll handler never reads
+        // layout (offsetLeft/Width) per frame — that was a forced reflow on every scroll tick.
+        let centers: number[] = [];
+        const measure = () => { centers = cards.map((c: any) => c.offsetLeft + c.offsetWidth / 2); };
+        measure();
+        window.addEventListener("resize", measure, { passive: true });
         let raf = 0;
         rail.addEventListener("scroll", () => {
           if (raf) return;
@@ -3602,7 +3608,7 @@ export default function Home() {
             raf = 0;
             const mid = rail.scrollLeft + rail.clientWidth / 2;
             let best = 0, bd = Infinity;
-            cards.forEach((c: any, k: number) => { const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid); if (d < bd) { bd = d; best = k; } });
+            for (let k = 0; k < centers.length; k++) { const d = Math.abs(centers[k] - mid); if (d < bd) { bd = d; best = k; } }
             setDot(best);
           });
         }, { passive: true });

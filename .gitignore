@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal ops/handoff docs — never push to the PUBLIC repo
+PROJECT_HANDOFF.md
+OPS_DEPLOYMENT.md
+
+# two-agent collaboration bus (internal, never push to PUBLIC repo)
+.agentbus/
