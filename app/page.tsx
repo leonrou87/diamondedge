@@ -3488,9 +3488,15 @@ export default function Home() {
     function newsStory(s: any, big = false) {
       if (!s || !s.title) return "";
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
-      const img = s.image_url
-        ? `<div class="nf-img" style="background-image:url('${esc(String(s.image_url))}')"></div>`
-        : `<div class="nf-img nf-noimg"><span>${lab}</span></div>`;
+      // Always render a branded gradient "matchup card" underneath; overlay the real photo only
+      // if it loads at usable resolution. Blurry/tiny/missing/broken images fall back gracefully
+      // to an intentional-looking graphic instead of a broken or fuzzy box.
+      const sc = esc(String(s.sport || "gen").toLowerCase().replace(/[^a-z]/g, ""));
+      const mline = s.angle && typeof s.angle === "object" && s.angle.matchup ? esc(String(s.angle.matchup)) : "";
+      const photo = s.image_url
+        ? `<img class="nf-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onload="if(!this.naturalWidth||this.naturalWidth<240){this.classList.add('bad')}" onerror="this.classList.add('bad')">`
+        : "";
+      const img = `<div class="nf-img nf-gen s-${sc}"><span class="nf-gen-dia"></span><span class="nf-gen-lab">${lab || "DIAMONDEDGE"}</span>${mline ? `<span class="nf-gen-mu">${mline}</span>` : ""}${photo}</div>`;
       const meta = `${lab}${s.source ? " · " + esc(s.source) : ""}${s.published_display ? " · " + esc(s.published_display) : ""}`;
       return `<a class="nf-story ${big ? "nf-hero" : ""}" href="${esc(String(s.url || "#"))}" target="_blank" rel="noopener">
         ${img}

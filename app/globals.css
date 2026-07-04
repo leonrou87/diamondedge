@@ -2017,3 +2017,31 @@ details.results-more{margin-bottom:14px}
 .picks-divider{display:flex;align-items:center;gap:12px;margin:6px 2px 14px;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--golddeep)}
 .picks-divider:before,.picks-divider:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,var(--line),transparent)}
 .picks-divider span{flex:0 0 auto}
+
+/* --- News image: branded gradient "matchup card" fallback (blurry/missing/broken → intentional graphic) --- */
+.nf-img{position:relative;overflow:hidden}
+.nf-gen{display:grid;place-items:center;isolation:isolate}
+.nf-gen::before{content:"";position:absolute;inset:0;background:
+  radial-gradient(120% 120% at 15% 12%, rgba(255,255,255,.28), transparent 42%),
+  repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 2px, transparent 2px 15px);
+  z-index:1;pointer-events:none}
+.nf-gen-lab{position:relative;z-index:2;font-family:var(--disp);font-weight:800;letter-spacing:.16em;
+  font-size:12px;color:rgba(255,255,255,.9);text-shadow:0 1px 6px rgba(0,0,0,.28);text-align:center;padding:0 8px}
+.nf-gen-mu{position:relative;z-index:2;margin-top:5px;font-size:11px;font-weight:700;color:rgba(255,255,255,.82);
+  text-align:center;padding:0 10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nf-gen-dia{position:absolute;z-index:0;width:46%;aspect-ratio:1;transform:rotate(45deg);border-radius:14%;
+  right:-9%;bottom:-16%;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.04));
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
+.nf-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;
+  transition:opacity .25s;background:inherit}
+.nf-photo.bad{opacity:0;pointer-events:none}
+/* per-sport palettes */
+.nf-gen{background:linear-gradient(135deg,#2b3550,#4a5a7e)}          /* default: DiamondEdge slate */
+.nf-gen.s-mlb{background:linear-gradient(135deg,#0a2a5e,#14477f 55%,#8a1c2b)}
+.nf-gen.s-nba{background:linear-gradient(135deg,#3d1a5b,#7a3d1e 60%,#c05a1e)}
+.nf-gen.s-nfl,.nf-gen.s-americanfootball{background:linear-gradient(135deg,#0c3b2a,#155e43)}
+.nf-gen.s-nhl,.nf-gen.s-hockey{background:linear-gradient(135deg,#123a52,#2f6f8f)}
+.nf-gen.s-soccer,.nf-gen.s-worldcup,.nf-gen.s-epl,.nf-gen.s-fifa,.nf-gen.s-uefa{background:linear-gradient(135deg,#0f5132,#1c7a45 60%,#0c3d26)}
+.nf-gen.s-wnba{background:linear-gradient(135deg,#5b1a3d,#a3436e)}
+.nf-gen.s-tennis{background:linear-gradient(135deg,#3a5a12,#6f9a1e)}
+.nf-gen.s-golf{background:linear-gradient(135deg,#123d1f,#2a6e3a)}
