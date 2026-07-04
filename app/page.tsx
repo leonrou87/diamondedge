@@ -2559,6 +2559,12 @@ export default function Home() {
         : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
       const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.recIsL15 ? ` <span class="gp-rec-tag">L15</span>` : ""}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
       const heroTrend = (gs.kind === "live" && lead && !leadLocked) ? liveHitOdds(g, lead, "full") : "";
+      // Honest transparency: our projected total vs the market line — the plain 'why' behind a
+      // totals Pick, shown as our own stated number (no thresholds / secret sauce revealed).
+      const lineNum = lead && lead.line != null ? Number(lead.line) : Number((String(lead && lead.side || "").match(/[\d.]+/) || [])[0]);
+      const transp = (lead && lead.action === "TAKE" && !leadLocked && lead.market === "total" && tot !== "—" && !isNaN(lineNum))
+        ? `<div class="gp-transp"><span class="gt-lab">Our number</span><b class="gt-num">${tot}</b><span class="gt-vs">vs market</span><b class="gt-mkt">${num(lineNum, 1)}</b></div>`
+        : "";
       const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
         <div class="gp-mu">
@@ -2567,6 +2573,7 @@ export default function Home() {
           <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
         </div>
         ${heroPick}
+        ${transp}
         ${heroTrend ? `<div class="gp-trend">${heroTrend}</div>` : ""}
       </div>`;
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.

@@ -1933,6 +1933,10 @@ details.results-more{margin-bottom:14px}
 .gp-lock{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#3a2c05;background:linear-gradient(135deg,#f6dd94,#e7b62e);border-radius:999px;padding:5px 12px}
 .gp-lock svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2}
 .gp-trend{margin-top:11px}
+.gp-transp{display:inline-flex;align-items:center;gap:7px;margin:9px auto 0;padding:5px 12px;border-radius:999px;background:var(--glass-hi);border:1px solid var(--glass-brd);font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.gp-transp .gt-lab{font-weight:600}.gp-transp .gt-vs{opacity:.6}
+.gp-transp b{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink)}
+.gp-transp .gt-num{color:var(--golddeep)}
 .gp-trend .lho-full{box-shadow:var(--glass-shadow)}
 /* TABS */
 .gp-tabs{position:relative;display:flex;gap:2px;margin:0 0 14px;padding:4px;border-radius:15px;
