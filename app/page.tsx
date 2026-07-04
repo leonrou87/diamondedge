@@ -331,7 +331,10 @@ export default function Home() {
         </div>`;
       }
       const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-      const pctW = ls.pct != null ? Math.max(3, Math.min(100, ls.pct * 100)) : (ls.prob != null ? Math.max(3, Math.min(100, ls.prob * 100)) : 0);
+      // Meter tracks the SAME number as the label — probability to cash — so a fuller bar
+      // always means "more likely to win", for OVER and UNDER alike (pct_to_goal would fill
+      // toward the line, which reads backwards on an under).
+      const pctW = ls.prob != null ? Math.max(3, Math.min(100, ls.prob * 100)) : (ls.pct != null ? Math.max(3, Math.min(100, ls.pct * 100)) : 0);
       const cashTxt = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : (size === "full" ? "Live read" : "Live");
       const deltaTxt = ls.delta != null && Math.abs(ls.delta) >= 0.005
         ? `<span class="lho-delta ${ls.delta >= 0 ? "up" : "down"}">${ls.delta >= 0 ? "▲" : "▼"} ${Math.abs(ls.delta * 100).toFixed(0)}% vs pregame</span>` : "";
@@ -1415,10 +1418,15 @@ export default function Home() {
     function teamForm(g: any, which: "home" | "away") {
       const s = g.streaks && typeof g.streaks === "object" ? g.streaks[which] : null;
       if (!s || typeof s !== "object") return null;
-      const rec = typeof s.record_l15 === "string" && /\d+-\d+/.test(s.record_l15) ? s.record_l15 : null;
+      // Season W-L is the record fans expect next to a team; only fall back to last-15 form,
+      // and when we do, LABEL it so "7-8" never reads as a (broken) season record.
+      const seasonRec = typeof s.record_season === "string" && /^\d+-\d+$/.test(s.record_season) ? s.record_season : null;
+      const l15Rec = typeof s.record_l15 === "string" && /^\d+-\d+$/.test(s.record_l15) ? s.record_l15 : null;
+      const rec = seasonRec || l15Rec;
+      const recIsL15 = !seasonRec && !!l15Rec;
       const ws = s.win_streak && s.win_streak.n >= 2 && s.win_streak.result ? `${s.win_streak.result}${s.win_streak.n}` : null;
       if (!rec && !ws) return null;
-      return { rec, streak: ws, hot: ws && ws[0] === "W" };
+      return { rec, recIsL15, streak: ws, hot: ws && ws[0] === "W" };
     }
 
     function marketStrip(g: any, pick: any, st: string, locked = false, excludePick = false) {
@@ -1530,7 +1538,7 @@ export default function Home() {
       // recent form (MLB-only, degrades to nothing)
       const fm = teamForm(g, which);
       const formHtml = fm
-        ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
+        ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}${fm.recIsL15 ? `<i class="tf-tag">L15</i>` : ""}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
         : "";
       // this side's spread + moneyline (pre-game only; the odds vanish once the score
       // matters). Compact scores-app convention: spread LINE + ML price (spread price is
@@ -1602,9 +1610,11 @@ export default function Home() {
       const ls = live && !locked ? liveStatusOf(g, pl) : null;
       let liveRow = "";
       if (ls) {
-        const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-        const pctW = ls.pct != null ? Math.max(4, Math.min(100, ls.pct * 100)) : (ls.prob != null ? Math.max(4, Math.min(100, ls.prob * 100)) : 0);
-        const cash = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : "Live read";
+        const clinched = ls.prob != null && ls.prob >= 0.985;
+        const cooked = ls.prob != null && ls.prob <= 0.015;
+        const meta = clinched ? { cls: "hit", short: "as good as in" } : cooked ? { cls: "miss", short: "out of reach" } : (LIVE_DIR[ls.dir] || LIVE_DIR.too_close);
+        const pctW = clinched ? 100 : cooked ? 3 : (ls.prob != null ? Math.max(4, Math.min(100, ls.prob * 100)) : (ls.pct != null ? Math.max(4, Math.min(100, ls.pct * 100)) : 0));
+        const cash = clinched ? "Cashing ✓" : cooked ? "Not landing" : (ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : "Live read");
         liveRow = `<div class="ps-live dir-${meta.cls}">
           <span class="ps-cash">${esc(cash)}</span><span class="ps-dir"><span class="ps-dot"></span>${esc(meta.short)}</span>
           <span class="ps-meter"><span class="ps-fill" style="width:${pctW.toFixed(0)}%"></span></span>
@@ -2308,7 +2318,10 @@ export default function Home() {
       // (a) current game state banner (live only)
       if (gs.kind === "live") {
         const cur = d && d.current;
-        const bits = [cur && cur.inning_label ? esc(cur.inning_label) : (gs.label || "Live"),
+        // ONE inning source of truth: gs.label comes from the live_scores overlay that every
+        // other surface (ticker, tiles, hero) reads, so the box score can't disagree with them.
+        // live_detail's own inning_label is only a fallback when the overlay is still generic.
+        const bits = [gs.label && gs.label !== "Live" ? esc(gs.label) : (cur && cur.inning_label ? esc(cur.inning_label) : "Live"),
           cur && cur.outs != null ? `${esc(cur.outs)} out` : "",
           cur && cur.count ? `${esc(cur.count)}` : ""].filter(Boolean);
         rows.push(`<div class="lp-now"><span class="lp-live"><span class="livedot"></span>Live</span><span class="lp-state">${bits.join(" · ")}</span></div>`);
@@ -2500,7 +2513,7 @@ export default function Home() {
       const heroScore = (gs.score && gs.score.split && gs.score.home != null)
         ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
         : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
-      const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
+      const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.recIsL15 ? ` <span class="gp-rec-tag">L15</span>` : ""}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
       const heroTrend = (gs.kind === "live" && lead && !leadLocked) ? liveHitOdds(g, lead, "full") : "";
       const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>

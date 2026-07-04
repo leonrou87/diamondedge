@@ -1848,6 +1848,11 @@ details.results-more{margin-bottom:14px}
 .gp-ab{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.03em;color:var(--ink)}
 .gp-form{font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink3)}
 .gp-form i{font-style:normal;font-weight:700}.gp-form i.hot{color:#06714f}
+/* recent-form tag — makes clear a fallback record is last-15, not season */
+.gp-rec-tag{font-family:var(--ui);font-weight:700;font-size:7.5px;letter-spacing:.08em;color:var(--ink3);opacity:.7;vertical-align:1px}
+.t-form .tf-rec .tf-tag{font-style:normal;font-size:6.5px;font-weight:700;letter-spacing:.06em;color:var(--ink3);opacity:.65;margin-left:2px;vertical-align:1px}
+/* upgrade/gated controls always read as tappable */
+[data-up]{cursor:pointer}
 .gp-center{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
 .gp-score{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:30px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
 .gp-score.live b{color:var(--acc2)}
