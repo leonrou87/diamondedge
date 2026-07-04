@@ -2601,6 +2601,12 @@ export default function Home() {
       const transp = (lead && lead.action === "TAKE" && !leadLocked && lead.market === "total" && tot !== "—" && !isNaN(lineNum))
         ? `<div class="gp-transp"><span class="gt-lab">Our number</span><b class="gt-num">${tot}</b><span class="gt-vs">vs market</span><b class="gt-mkt">${num(lineNum, 1)}</b></div>`
         : "";
+      // Best MORNING price (frozen at open, is_live_quote=false) — honest execution value on a
+      // value total: where the line was cheapest at freeze. Only for an active totals pick.
+      const ee = lead && lead.market === "total" && !leadLocked && g.de_plays && g.de_plays.total ? g.de_plays.total.execution_edge : null;
+      const bestPrice = (ee && ee.is_active_pick && ee.best_book && ee.best_price_american != null)
+        ? `<div class="gp-bestprice"><span class="gb-lab">Best morning price</span><b class="gb-val">${esc(String(lead.side || "").trim().split(/\s+/)[0])}${ee.best_line != null ? " " + num(ee.best_line, 1) : ""} ${fmtOdds(ee.best_price_american)}</b><span class="gb-at">at</span><b class="gb-book">${esc(ee.best_book)}</b></div>`
+        : "";
       const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
         <div class="gp-mu">
@@ -2610,6 +2616,7 @@ export default function Home() {
         </div>
         ${heroPick}
         ${transp}
+        ${bestPrice}
         ${heroTrend ? `<div class="gp-trend">${heroTrend}</div>` : ""}
       </div>`;
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
