@@ -3540,7 +3540,7 @@ export default function Home() {
         <div class="pv-figure">${heroImage(g, tint, coverSize)}<div class="pv-fig-top"><span class="pv-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>${isLive ? "" : scoreBadge}${isLive ? "" : status}</div>${isLive ? heroLiveBadge(g, feature ? "lead" : "card") : ""}${heroPickCover(g, coverSize)}</div>
         <div class="pv-body">
           <h4 class="pv-head">${head}</h4>
-          ${dek ? `<p class="pv-dek clamp2">${mdBold(String(dek))}</p>` : ""}
+          ${dek && gs.kind !== "final" ? `<p class="pv-dek clamp2">${mdBold(String(dek))}</p>` : ""}
           <div class="pv-byline">DiamondEdge · ${esc(gs.kind === "final" ? "Final" : gs.kind === "live" ? "Live now" : (gs.si.hasTime && gs.si.time ? gs.si.time : "Today"))}</div>
         </div>
       </article>`;
