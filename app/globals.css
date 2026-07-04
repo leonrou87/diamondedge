@@ -2138,3 +2138,8 @@ details.results-more{margin-bottom:14px}
 .intro-banner .ib-how:active{transform:scale(.96)}
 .intro-banner .ib-x{position:absolute;top:10px;right:11px;width:26px;height:26px;border:0;background:transparent;color:var(--ink3);font-size:14px;cursor:pointer;border-radius:50%;line-height:1}
 .intro-banner .ib-x:active{background:rgba(0,0,0,.06)}
+
+/* --- Results: share the record --- */
+.res-share{margin-top:15px;font-family:var(--mono);font-weight:800;font-size:12px;letter-spacing:.03em;
+  padding:11px 18px;border-radius:999px;border:1px solid rgba(11,158,109,.32);background:rgba(11,158,109,.10);color:#06714f;cursor:pointer}
+.res-share:active{transform:scale(.97)}

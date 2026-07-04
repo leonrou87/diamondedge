@@ -3246,6 +3246,7 @@ export default function Home() {
               ${mr ? `<span class="res-stat"><i>This month</i><b>${mr.w}-${mr.l}</b></span>` : ""}
               ${fwd ? `<span class="res-stat"><i>Since going live</i><b>${fwd.wins || 0}-${fwd.losses || 0}</b></span>` : ""}
             </div>
+            <button class="res-share" id="res-share">Share our record ↗</button>
           </div>
         </article>
         ${ov.n ? `<article class="res-article second">
@@ -3272,6 +3273,14 @@ export default function Home() {
           : ""}
         <div class="refnote">Every cut is the same graded record, sliced a different way — win rate always shown with its return.${analyticsDeep && analyticsDeep.generated_at ? ` Updated ${esc(String(analyticsDeep.generated_at).slice(0, 10))}.` : ""}</div>`;
       animateCounters(view);
+      // Share the headline record — honest text + the branded OG card renders from the URL.
+      const rs = $("res-share");
+      if (rs) rs.onclick = async () => {
+        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
+        const txt = `DiamondEdge — our published picks have won ${(rh.hit * 100).toFixed(1)}% of ${rh.n.toLocaleString()} graded picks since 2022 (${sgn(rh.roi * 100, 0)}% ROI). Every pick graded in the open.`;
+        if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
+        try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
+      };
     }
 
     // ===================== TODAY (daily brief homepage) =====================
