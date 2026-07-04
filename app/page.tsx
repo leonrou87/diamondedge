@@ -3567,8 +3567,16 @@ export default function Home() {
       const keyOf = (s: any) => String((s && s.angle && typeof s.angle === "object" && s.angle.game_id) || (s && (s.headline || s.title)) || "").toLowerCase();
       const seen = new Set<string>([keyOf(nf.lead)]);
       const hl = ((nf.headlines || []) as any[]).filter((s) => { const k = keyOf(s); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+      // Honest freshness — pulse "live" only if the feed actually refreshed recently; otherwise
+      // just show when it last updated. No fake "live".
+      const updT = Date.parse(String(nf.updated_at || nf.generated_at || ""));
+      const fresh = !isNaN(updT) && (Date.now() - updT) < 40 * 60 * 1000;
+      const updTxt = niceTime(nf.updated_at || nf.generated_at);
+      const head = fresh
+        ? `<span class="nf-live"><span class="livedot"></span>live${updTxt ? ` · ${esc(updTxt)}` : ""}</span>`
+        : (updTxt ? `<span class="nf-upd">Updated ${esc(updTxt)}</span>` : "");
       return `<section class="newsfront">
-        <div class="nf-head"><span class="nf-lab">Top stories</span><span class="nf-live"><span class="livedot"></span>live</span></div>
+        <div class="nf-head"><span class="nf-lab">Top stories</span>${head}</div>
         ${newsStory(nf.lead, true, "L")}
         ${hl.length ? `<div class="nf-list">${hl.map((s, i) => newsStory(s, false, String(i))).join("")}</div>` : ""}
       </section>`;

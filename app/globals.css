@@ -2098,3 +2098,6 @@ details.results-more{margin-bottom:14px}
   padding:5px 11px;border-radius:999px;border:1px solid var(--glass-brd);background:var(--glass-hi);color:var(--ink2);cursor:pointer;white-space:nowrap}
 .art-share:active{transform:scale(.95)}
 .art-take-lab{font-family:var(--mono);font-weight:800;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+
+/* --- News freshness: muted "Updated" when not live-fresh --- */
+.nf-upd{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
