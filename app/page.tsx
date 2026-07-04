@@ -3004,9 +3004,21 @@ export default function Home() {
     function openRecordBreakdown() {
       detail = { _record: true };
       const rh = recipeHistory();
+      // Scope the breakdown to the DATE being viewed on the strip (curDate), not always today.
+      // When curDate IS today, keep the familiar "Today" / "This month" labels; when it's a past
+      // date, label the day with that date (e.g. "Fri, Jul 3") and the month with its month name.
+      const scopeDate = curDate;
+      const scopeIsToday = scopeDate === todayISO();
+      const scopeDay = scopeDate.slice(0, 10);
+      const scopeMonth = scopeDate.slice(0, 7);
+      const scopeDayObj = new Date(scopeDate + "T12:00:00");
+      const dayLab = scopeIsToday ? "Today"
+        : (isNaN(scopeDayObj.getTime()) ? "That day" : scopeDayObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }));
+      const monthLab = scopeIsToday ? "This month"
+        : (isNaN(scopeDayObj.getTime()) ? "That month" : scopeDayObj.toLocaleDateString("en-US", { month: "long", year: "numeric" }));
       const scopes = [
-        { key: "today", lab: "Today", filt: (g: any) => String(g.date || "").slice(0, 10) === todayISO(), empty: "No graded picks yet today — check back as games finish." },
-        { key: "month", lab: "This month", filt: (g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7), empty: "No graded picks yet this month." },
+        { key: "today", lab: dayLab, filt: (g: any) => String(g.date || "").slice(0, 10) === scopeDay, empty: scopeIsToday ? "No graded picks yet today — check back as games finish." : "No graded picks on that date." },
+        { key: "month", lab: monthLab, filt: (g: any) => String(g.date || "").slice(0, 7) === scopeMonth, empty: scopeIsToday ? "No graded picks yet this month." : "No graded picks that month." },
       ];
       // ONE row PER STRENGTH TIER (Leon's spec): ★★★ Strong / ★★ Good / ★ Lean, each W–L + hit%,
       // expandable to the actual picks. Leans (spread/ML) live in the Lean tier — visibly separated
