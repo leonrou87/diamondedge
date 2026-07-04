@@ -47,3 +47,6 @@ OPS_DEPLOYMENT.md
 
 # two-agent collaboration bus (internal, never push to PUBLIC repo)
 .agentbus/
+
+# stray audit artifacts
+audit-screenshots/
