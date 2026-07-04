@@ -1739,11 +1739,41 @@ export default function Home() {
       });
       return w + l ? { w, l } : null;
     }
+    // Full record tally over a set of games (filter fn): graded W-L-push + still-outstanding
+    // (live now / yet to start), broken out per market. Powers the record-breakdown sheet.
+    function recordFor(filterFn: (g: any) => boolean) {
+      const src = livePayload || payload;
+      if (!src) return null;
+      let w = 0, l = 0, push = 0, live = 0, upcoming = 0;
+      const byMk: any = { total: { w: 0, l: 0 }, spread: { w: 0, l: 0 }, moneyline: { w: 0, l: 0 } };
+      ((src.games || []) as any[]).forEach((g: any) => {
+        if (!filterFn(g)) return;
+        const P = gamePlays(g);
+        const gs = gameState(g);
+        MARKETS.forEach((mk) => {
+          const pl = P[mk];
+          if (!pl || pl.action !== "TAKE") return;
+          if (pl.result) {
+            if (pl.result.status === "hit") { w++; byMk[mk].w++; }
+            else if (pl.result.status === "miss") { l++; byMk[mk].l++; }
+            else push++;
+          } else if (gs.kind === "live") live++;
+          else if (gs.kind !== "final") upcoming++;
+        });
+      });
+      return { w, l, push, live, upcoming, byMk };
+    }
+    const todayRec = () => recordFor((g: any) => String(g.date || "").slice(0, 10) === todayISO());
+    const monthRec = () => recordFor((g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7));
     function metaRow() {
       const mr = monthRecord();
-      const chip = mr
-        ? `<button class="recchip" id="recchip">Picks <b>${mr.w}–${mr.l}</b> this month</button>`
-        : `<button class="recchip" id="recchip">Our record →</button>`;
+      const t = todayRec();
+      const outstanding = t ? t.live + t.upcoming : 0;
+      // The chip now carries TODAY (record + how many still outstanding) and opens a full
+      // breakdown; the month total rides alongside.
+      const todayTxt = t && (t.w + t.l + outstanding) ? `Today <b>${t.w}–${t.l}</b>${outstanding ? ` · <b>${outstanding}</b> live` : ""}` : "";
+      const monthTxt = mr ? `${mr.w}–${mr.l} this month` : "Our record";
+      const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${todayTxt ? `<span class="rc-today">${todayTxt}</span><span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
       return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
 
@@ -1890,7 +1920,7 @@ export default function Home() {
     }
 
     function bindMeta() {
-      const rc = $("recchip"); if (rc) rc.onclick = () => switchTab("results");
+      const rc = $("recchip"); if (rc) rc.onclick = () => openRecordBreakdown();
       const hl = $("howlink"); if (hl) hl.onclick = () => openRecipeSheet();
     }
 
@@ -2702,6 +2732,60 @@ export default function Home() {
       $("sheet-bg").onclick = () => closeDetail();
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
+    // The pick-record breakdown — TODAY (with how many are still live/to-come) and THIS MONTH,
+    // each split by market. Same sheet chrome as everything else, so overlays stay consistent.
+    function openRecordBreakdown() {
+      detail = { _record: true };
+      const t = todayRec(), m = monthRec();
+      const mkLabel: any = { total: "Totals — the DiamondEdge Pick", spread: "Spreads · lean", moneyline: "Moneylines · lean" };
+      const mkRow = (r: any, mk: string) => {
+        const o = r.byMk[mk]; const n = o.w + o.l; if (!n) return "";
+        const pct = Math.round((o.w / n) * 100);
+        return `<div class="rb-row"><span class="rb-mk">${mkLabel[mk]}</span><span class="rb-rec"><b>${o.w}–${o.l}</b> <i>${pct}%</i></span><span class="rb-bar"><span class="rb-fill ${pct >= 50 ? "up" : "dn"}" style="width:${Math.max(4, pct)}%"></span></span></div>`;
+      };
+      const block = (r: any, title: string, empty: string) => {
+        if (!r) return `<div class="dsec"><div class="dsec-h">${title}</div><div class="rb-sub">${empty}</div></div>`;
+        const dec = r.w + r.l; const pct = dec ? Math.round((r.w / dec) * 100) : 0;
+        const out = r.live + r.upcoming;
+        const outTxt = out
+          ? `<span class="rb-out">${r.live ? `<b>${r.live}</b> live` : ""}${r.live && r.upcoming ? " · " : ""}${r.upcoming ? `<b>${r.upcoming}</b> to come` : ""}</span>`
+          : (dec ? `<span class="rb-out done">all settled</span>` : "");
+        const rows = MARKETS.map((mk: string) => mkRow(r, mk)).join("");
+        return `<div class="dsec">
+          <div class="dsec-h">${title}</div>
+          <div class="rb-head">
+            <div class="rb-big"><b>${r.w}–${r.l}${r.push ? `–${r.push}` : ""}</b>${dec ? `<span class="rb-pct">${pct}% won</span>` : ""}</div>
+            ${outTxt}
+          </div>
+          ${rows || (dec || out ? "" : `<div class="rb-sub">${empty}</div>`)}
+        </div>`;
+      };
+      const html = `
+        <div class="sheet-bg" id="sheet-bg"></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+          <div class="sh-grab" id="sh-grab"><span></span></div>
+          <div class="sh-head gold">
+            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <div class="sh-sport">DiamondEdge</div>
+            <div class="rcp-title"><span class="pl-vdia">◆</span>The record</div>
+            <div class="sh-meta">graded against real final scores — nothing hidden</div>
+          </div>
+          <div class="sh-body">
+            ${block(t, "Today", "No graded picks yet today — check back as games finish.")}
+            ${block(m, "This month", "No graded picks yet this month.")}
+            <div class="dsec"><div class="dsec-b rcp"><p>Totals are <b>the DiamondEdge Pick</b> — our validated edge. Spreads and moneylines are lighter directional leans. Every call freezes before first pitch and the final score does the judging.</p></div></div>
+            <button class="rb-full" id="rb-full">See the full record & charts →</button>
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      $("sheet-close").onclick = () => closeDetail();
+      $("sheet-bg").onclick = () => closeDetail();
+      const full = $("rb-full"); if (full) full.onclick = () => { closeDetail(); switchTab("results"); };
+      bindSheetDrag($("sheet"), $("sh-grab"));
+    }
     document.addEventListener("keydown", (e: any) => { if (e.key === "Escape" && detail) closeDetail(); });
     // ---- deep-link routing: ?g=<game_id> restores/opens a game sheet; back/forward works ----
     function gameById(gid: any) {
@@ -3468,7 +3552,7 @@ export default function Home() {
       };
       const nav = (el: any) => { const d = el.dataset.nav; if (d) switchTab(d); };
       view.querySelectorAll("[data-nav]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); nav(b); }));
-      const rec = $("nm-rec"); if (rec) rec.onclick = () => switchTab("results");
+      const rec = $("nm-rec"); if (rec) rec.onclick = () => openRecordBreakdown();
       // storyline expand + jump
       view.querySelectorAll(".story").forEach((s: any) => {
         const toggle = (e: any) => {
