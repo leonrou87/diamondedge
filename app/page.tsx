@@ -360,12 +360,12 @@ export default function Home() {
     }
     const Q_LABEL: any = { strong: "Strong", good: "Good", lean: "Lean" };
     const Q_RANK: any = { strong: 0, good: 1, lean: 2 };
+    // Confidence = STARS (universal), filled ★ vs empty ☆, count = conviction. One gold
+    // scale everywhere so ★★★ / ★★☆ / ★☆☆ reads instantly as Strong / Good / Lean.
     const qDiamonds = (q: any) => {
       const n = q === "strong" ? 3 : q === "good" ? 2 : 1;
       let h = "";
-      // Filled ◆ vs hollow ◇ so the COUNT reads as a strength scale at any size — not
-      // three same-shape glyphs that only differ by a faint tint.
-      for (let i = 0; i < 3; i++) h += `<i class="${i < n ? "f" : "e"}">${i < n ? "◆" : "◇"}</i>`;
+      for (let i = 0; i < 3; i++) h += `<i class="${i < n ? "f" : "e"}">${i < n ? "★" : "☆"}</i>`;
       return `<span class="qdia q-${q}" aria-hidden="true">${h}</span>`;
     };
     // The tier as a self-explaining chip: the meter + the WORD together, always legible.
@@ -578,11 +578,12 @@ export default function Home() {
       } else {
         bare = esc(bare);
       }
+      // Stars ride INLINE on the pick line (confidence), so there's no separate meta line —
+      // just kicker → "OVER 8 −115 ★★★" → optional result badge.
       return `<div class="hpc hpc-${size} q-${q}"><div class="hpc-scrim"></div>
         <div class="hpc-line">
           <span class="hpc-k">◆ ${esc(kick)}</span>
-          <b class="hpc-txt">${bare}</b>
-          <span class="hpc-meta"><span class="hpc-q">${qDiamonds(q)}${Q_LABEL[q] || ""}</span>${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</span>
+          <div class="hpc-pickrow"><b class="hpc-txt">${bare}</b><span class="hpc-stars">${qDiamonds(q)}</span>${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
         </div></div>`;
     }
     // LIVE composite for a hero image: a pulsing LIVE badge + the live score + how the
@@ -979,10 +980,14 @@ export default function Home() {
       });
     }
     // Re-render whichever surface is showing, after a fresh overlay.
+    // The Today view is expensive to rebuild (iterates the whole slate, composes hero images,
+    // runs count-ups). Cache it: only re-render on an actual data change, not on every tab
+    // flip — so switching tabs is instant instead of re-parsing a huge HTML string each time.
+    let todayFresh = false;
     function refreshLiveViews() {
       renderTicker();
-      if (tab === "today") renderToday();
-      else if (tab === "games" && !rangeMode) renderSlate(true);
+      if (tab === "today") { renderToday(); todayFresh = true; }
+      else { todayFresh = false; if (tab === "games" && !rangeMode) renderSlate(true); }
       if (detail && detail.game_id != null) refreshSheetScore(detail);
     }
     // ---- BANDWIDTH-SMART big-payload refresh: the pregame_picks payload changes ~every
@@ -1720,7 +1725,8 @@ export default function Home() {
       </article>`;
     }
 
-    // Tiny record chip: this month's graded picks off the payload's finals tail.
+    // This month's DiamondEdge Picks = TOTALS only (the validated edge). Spread/ML leans are
+    // NOT blended into this headline number — they live in the record-breakdown sheet.
     function monthRecord() {
       const src = livePayload || payload;
       if (!src) return null;
@@ -1729,9 +1735,9 @@ export default function Home() {
       ((src.games || []) as any[]).forEach((g: any) => {
         if (String(g.date || "").slice(0, 7) !== m) return;
         const P = gamePlays(g);
-        MARKETS.forEach((mk) => {
+        (["total"] as string[]).forEach((mk) => {
           const pl = P[mk];
-          if (pl.action === "TAKE" && pl.result) {
+          if (pl && pl.action === "TAKE" && pl.result) {
             if (pl.result.status === "hit") w++;
             else if (pl.result.status === "miss") l++;
           }
@@ -1766,13 +1772,14 @@ export default function Home() {
     const todayRec = () => recordFor((g: any) => String(g.date || "").slice(0, 10) === todayISO());
     const monthRec = () => recordFor((g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7));
     function metaRow() {
-      const mr = monthRecord();
-      const t = todayRec();
+      // "Picks" means the DiamondEdge Pick = TOTALS (the validated edge). We DON'T blend the
+      // spread/moneyline leans into the headline number — that would flatter a rough day.
+      const t = todayRec(), m = monthRec();
+      const mt = m ? m.byMk.total : { w: 0, l: 0 };
+      const tt = t ? t.byMk.total : { w: 0, l: 0 };
       const outstanding = t ? t.live + t.upcoming : 0;
-      // The chip now carries TODAY (record + how many still outstanding) and opens a full
-      // breakdown; the month total rides alongside.
-      const todayTxt = t && (t.w + t.l + outstanding) ? `Today <b>${t.w}–${t.l}</b>${outstanding ? ` · <b>${outstanding}</b> live` : ""}` : "";
-      const monthTxt = mr ? `${mr.w}–${mr.l} this month` : "Our record";
+      const todayTxt = (tt.w + tt.l + outstanding) ? `Today <b>${tt.w}–${tt.l}</b>${outstanding ? ` · <b>${outstanding}</b> live` : ""}` : "";
+      const monthTxt = (mt.w + mt.l) ? `${mt.w}–${mt.l} this month` : "Our record";
       const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${todayTxt ? `<span class="rc-today">${todayTxt}</span><span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
       return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
@@ -2393,7 +2400,10 @@ export default function Home() {
 
     function openDetail(g: any, focusMk?: string, fromHistory = false) {
       detail = g;
-      detailTab = "preview";
+      // Live & finished games open straight to "How it's going" (box score); only pre-game
+      // games default to the Preview narrative.
+      const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
+      detailTab = (_gsk === "live" || _gsk === "final") ? "live" : "preview";
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       const sp = g.sport;
       const ps = g.predicted_score || {};
@@ -2737,27 +2747,29 @@ export default function Home() {
     function openRecordBreakdown() {
       detail = { _record: true };
       const t = todayRec(), m = monthRec();
-      const mkLabel: any = { total: "Totals — the DiamondEdge Pick", spread: "Spreads · lean", moneyline: "Moneylines · lean" };
-      const mkRow = (r: any, mk: string) => {
+      // The HEADLINE is the DiamondEdge Pick (totals). Spreads/moneylines are shown as smaller
+      // "leans we also track" so the flagship number is never inflated by them.
+      const leanRow = (r: any, mk: string, lab: string) => {
         const o = r.byMk[mk]; const n = o.w + o.l; if (!n) return "";
         const pct = Math.round((o.w / n) * 100);
-        return `<div class="rb-row"><span class="rb-mk">${mkLabel[mk]}</span><span class="rb-rec"><b>${o.w}–${o.l}</b> <i>${pct}%</i></span><span class="rb-bar"><span class="rb-fill ${pct >= 50 ? "up" : "dn"}" style="width:${Math.max(4, pct)}%"></span></span></div>`;
+        return `<div class="rb-lean"><span class="rb-lean-mk">${lab}</span><span class="rb-lean-rec"><b>${o.w}–${o.l}</b> <i>${pct}%</i></span></div>`;
       };
       const block = (r: any, title: string, empty: string) => {
         if (!r) return `<div class="dsec"><div class="dsec-h">${title}</div><div class="rb-sub">${empty}</div></div>`;
-        const dec = r.w + r.l; const pct = dec ? Math.round((r.w / dec) * 100) : 0;
+        const tot = r.byMk.total; const dec = tot.w + tot.l; const pct = dec ? Math.round((tot.w / dec) * 100) : 0;
         const out = r.live + r.upcoming;
         const outTxt = out
           ? `<span class="rb-out">${r.live ? `<b>${r.live}</b> live` : ""}${r.live && r.upcoming ? " · " : ""}${r.upcoming ? `<b>${r.upcoming}</b> to come` : ""}</span>`
           : (dec ? `<span class="rb-out done">all settled</span>` : "");
-        const rows = MARKETS.map((mk: string) => mkRow(r, mk)).join("");
+        const leans = leanRow(r, "spread", "Spread leans") + leanRow(r, "moneyline", "Moneyline leans");
         return `<div class="dsec">
-          <div class="dsec-h">${title}</div>
+          <div class="dsec-h">${title} · the Pick <span class="rb-mkt">(totals)</span></div>
           <div class="rb-head">
-            <div class="rb-big"><b>${r.w}–${r.l}${r.push ? `–${r.push}` : ""}</b>${dec ? `<span class="rb-pct">${pct}% won</span>` : ""}</div>
+            <div class="rb-big"><b>${tot.w}–${tot.l}</b>${dec ? `<span class="rb-pct">${pct}% won</span>` : ""}</div>
             ${outTxt}
           </div>
-          ${rows || (dec || out ? "" : `<div class="rb-sub">${empty}</div>`)}
+          ${!dec && !out ? `<div class="rb-sub">${empty}</div>` : ""}
+          ${leans ? `<div class="rb-leans"><span class="rb-leans-h">Also tracked — lighter leans</span>${leans}</div>` : ""}
         </div>`;
       };
       const html = `
@@ -4012,13 +4024,14 @@ export default function Home() {
       tab = t;
       TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
       root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
-      if (t === "today") renderToday();
+      if (t === "today" && !todayFresh) { renderToday(); todayFresh = true; }
       if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
       if (t === "settings") renderSettings();
       if (t === "upgrade") renderUpgrade();
       if (t === "account") renderAccount();
       if (t === "games") requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
-      window.scrollTo(0, 0);
+      // Defer the scroll reset off the tab-switch path so the view flip paints immediately.
+      requestAnimationFrame(() => window.scrollTo(0, 0));
     }
 
     // ===================== INIT =====================
