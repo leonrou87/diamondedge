@@ -1830,9 +1830,13 @@ export default function Home() {
     }
 
     function renderScoresChrome() {
+      const tabSrc = livePayload || payload;
       const tabsHtml = SPORTS.map((lg) => {
-        const cnt = payload ? gamesForLeague(payload, lg).length : 0;
-        return `<button class="sporttab ${lg === league ? "on" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
+        const lgGames = tabSrc ? gamesForLeague(tabSrc, lg) : [];
+        const cnt = lgGames.length;
+        // a pulsing dot when a league has a game in progress right now (drives users to the live board)
+        const live = lgGames.some((g: any) => gameState(g).kind === "live");
+        return `<button class="sporttab ${lg === league ? "on" : ""}${live ? " haslive" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}${live ? `<span class="livedot" aria-label="live games"></span>` : ""}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
       root.querySelector("#games-view").innerHTML = `
         <div class="subhead">
