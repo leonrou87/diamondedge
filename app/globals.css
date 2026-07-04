@@ -2196,3 +2196,8 @@ details.results-more{margin-bottom:14px}
 .state.loaderr .ld-retry{margin-top:16px;font-family:var(--mono);font-weight:800;font-size:13px;letter-spacing:.03em;
   padding:12px 26px;border-radius:999px;border:0;background:linear-gradient(135deg,#f6dd94,#e0ac20);color:#231703;cursor:pointer}
 .state.loaderr .ld-retry:active{transform:scale(.96)}
+
+/* --- Record breakdown sheet: share button --- */
+.rb-share{width:100%;margin-top:10px;font-family:var(--mono);font-weight:800;font-size:12.5px;letter-spacing:.02em;
+  padding:13px;border-radius:14px;border:1px solid rgba(215,164,21,.36);background:rgba(224,172,32,.12);color:var(--golddeep);cursor:pointer}
+.rb-share:active{transform:scale(.98)}

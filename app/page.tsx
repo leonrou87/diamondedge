@@ -2903,6 +2903,7 @@ export default function Home() {
             ${block(m, "This month", "No graded picks yet this month.")}
             <div class="dsec"><div class="dsec-b rcp"><p>Totals are <b>the DiamondEdge Pick</b> — our validated edge. Spreads and moneylines are lighter directional leans. Every call freezes before first pitch and the final score does the judging.</p></div></div>
             <button class="rb-full" id="rb-full">See the full record & charts →</button>
+            <button class="rb-share" id="rb-share">Share our record ↗</button>
           </div>
         </div>`;
       let layer = $("sheet-layer");
@@ -2912,6 +2913,12 @@ export default function Home() {
       $("sheet-close").onclick = () => closeDetail();
       $("sheet-bg").onclick = () => closeDetail();
       const full = $("rb-full"); if (full) full.onclick = () => { closeDetail(); switchTab("results"); };
+      const rbs = $("rb-share"); if (rbs) rbs.onclick = async () => {
+        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
+        const txt = shareTagline();
+        if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
+        try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied — paste it anywhere"); } catch { toast(url); }
+      };
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
     document.addEventListener("keydown", (e: any) => { if (e.key === "Escape" && detail) closeDetail(); });
