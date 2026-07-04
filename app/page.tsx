@@ -4133,7 +4133,7 @@ export default function Home() {
           <div class="sgn-hero">
             <div class="sgn-dia" aria-hidden="true"></div>
             <h2>Join DiamondEdge</h2>
-            <p>Save your preferences and unlock Premium. One honest model, graded in public since 2022 — <b>${(rh.hit * 100).toFixed(1)}%</b> winners across ${rh.n.toLocaleString()} picks.</p>
+            <p>Save your preferences and unlock Premium. One honest model, graded in public since 2022 — <b>${(rh.hit * 100).toFixed(1)}%</b> winners across ${rh.n.toLocaleString()} graded picks.</p>
           </div>
           <div class="sgn-socials">
             ${social("google")}${social("apple")}${social("facebook")}${social("x")}
