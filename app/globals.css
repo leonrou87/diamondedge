@@ -271,6 +271,14 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .rb-fill.up{background:linear-gradient(90deg,#12c689,#0a9d6a)}
 .rb-fill.dn{background:linear-gradient(90deg,#e0455f,#c22440)}
 .rb-sub{font-family:var(--sans);font-size:12.5px;color:var(--ink3);line-height:1.5}
+.rb-mkt{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink3);text-transform:none;letter-spacing:0}
+.rb-leans{margin-top:10px;padding-top:9px;border-top:1px solid var(--line3)}
+.rb-leans-h{display:block;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+.rb-lean{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:3px 0}
+.rb-lean-mk{font-family:var(--sans);font-size:12px;color:var(--ink2)}
+.rb-lean-rec{font-family:var(--mono);font-size:11.5px;color:var(--ink2)}
+.rb-lean-rec b{color:var(--ink);font-weight:700}
+.rb-lean-rec i{font-style:normal;color:var(--ink3);font-size:10px;margin-left:2px}
 .rb-full{width:100%;border:0;border-radius:14px;padding:12px;margin-top:4px;font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.02em;color:var(--ink);background:var(--glass-hi);border:1px solid var(--glass-brd);box-shadow:var(--shadow);cursor:pointer;transition:box-shadow .2s ease}
 .rb-full:hover{box-shadow:var(--shadow-hi)}
 .howlink{border:0;background:transparent;font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--ink3);cursor:pointer;padding:5px 4px;transition:color .2s ease}
@@ -313,12 +321,11 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .histpanel .rnote{font-size:11px;color:var(--ink3)}
 
 /* quality diamonds: ◆◆◆ Strong / ◆◆◇ Good / ◆◇◇ Lean — filled vs hollow reads as a scale */
-.qdia{display:inline-flex;gap:1.5px;font-size:10px;line-height:1}
-.qdia i{font-style:normal;color:rgba(22,36,60,.32)}
-.qdia i.e{color:rgba(22,36,60,.26)}
-.qdia.q-strong i.f{color:var(--gold);text-shadow:0 1px 5px rgba(215,164,21,.45)}
-.qdia.q-good i.f{color:var(--green)}
-.qdia.q-lean i.f{color:var(--slate)}
+/* confidence STARS — one gold scale (count = conviction); empty stars faint */
+.qdia{display:inline-flex;gap:1px;font-size:11px;line-height:1}
+.qdia i{font-style:normal}
+.qdia i.f{color:var(--gold);text-shadow:0 1px 4px rgba(215,164,21,.4)}
+.qdia i.e{color:rgba(22,36,60,.2)}
 /* qbadge — the meter + word as one legible chip; the WORD carries the tier meaning */
 .qbadge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 6px;border-radius:999px;
   font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
@@ -989,6 +996,8 @@ details.more .more-body{padding-top:12px}
 .prev:not(.feature) .pv-figure .heroimg{aspect-ratio:3/2}
 .prev:not(.feature) .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:7%;padding-bottom:48%}
 .prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:34px;height:34px}
+/* wider tablet/desktop board cards have room — don't let the logos read as tiny & floaty */
+@media(min-width:680px){.prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:46px;height:46px}.prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:18px}}
 .prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:15px}
 .prev.feature .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:6%;padding-bottom:40%}
 .prev.feature .pv-figure .heroimg .hi-crest img,.prev.feature .pv-figure .heroimg .hi-crest .crest{width:58px;height:58px}
@@ -1009,12 +1018,13 @@ details.more .more-body{padding-top:12px}
 .hpc-card .hpc-txt{font-size:16px}
 .hpc-card .hpc-txt em{font-size:.66em;margin-left:3px}
 .hpc-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
-.hpc-q{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:3px 10px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-shadow:0 1px 4px rgba(0,0,0,.4)}
-.hpc-card .hpc-q{font-size:9px;padding:2px 8px}
-.hpc-q .qdia i{color:rgba(255,255,255,.4)}
-.hpc.q-strong .hpc-q .qdia i.f{color:#ffd75e;text-shadow:0 1px 5px rgba(0,0,0,.5)}
-.hpc.q-good .hpc-q .qdia i.f{color:#5fe6b3}
-.hpc.q-lean .hpc-q .qdia i.f{color:#a9c8ff}
+/* pick + confidence stars on ONE line (no separate meta row) */
+.hpc-pickrow{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.hpc-stars .qdia{font-size:16px;gap:1px}
+.hpc-card .hpc-pickrow{gap:6px}
+.hpc-card .hpc-stars .qdia{font-size:12px}
+.hpc-stars .qdia i.f{color:#ffd75e;text-shadow:0 1px 5px rgba(0,0,0,.55)}
+.hpc-stars .qdia i.e{color:rgba(255,255,255,.34)}
 .hpc-res{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;color:#fff}
 .hpc-card .hpc-res{font-size:9px;padding:2px 8px}
 .hpc-res.won{background:linear-gradient(135deg,#12c689,#0a9d6a)}
