@@ -1954,7 +1954,11 @@ export default function Home() {
       if (rangeMode) {
         body.innerHTML = renderRangeBody();
       } else if (!payload) {
-        body.innerHTML = skeletonSlate();
+        // renderSlate runs AFTER the load (selectDate/init show the skeleton during loading), so a
+        // null payload here means "loaded, but no data for this date" — show a real empty state,
+        // not an eternal skeleton.
+        const dd = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dd)}${curDate !== todayISO() ? " — try another date or head back to today" : " — check your connection"}. Every past DiamondEdge Pick stays graded on the Results tab.</div></div>`;
         return;
       } else {
         if (meta) meta.innerHTML = metaRow();
@@ -2055,7 +2059,7 @@ export default function Home() {
     async function selectDate() {
       refreshStrip();
       const body = $("slate-body"); if (body) body.innerHTML = skeletonSlate();
-      payload = await loadDay(curDate);
+      try { payload = await loadDay(curDate); } catch { payload = null; }  // no eternal skeleton on a failed/empty load
       const lg = bestLeague();
       if (lg !== league) {
         league = lg;
