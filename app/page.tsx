@@ -2393,9 +2393,16 @@ export default function Home() {
       toastT = setTimeout(() => el.classList.remove("show"), 2600);
     }
     // Social share buttons for the whole app (bottom of the front page).
+    // Share tagline — lead with the validated record (social proof), fall back to the plain line.
+    function shareTagline() {
+      const rh = recipeHistory();
+      return rh && rh.n
+        ? `DiamondEdge — ${(rh.hit * 100).toFixed(1)}% on ${rh.n.toLocaleString()} sports picks, every one graded in the open.`
+        : "DiamondEdge — every sports pick graded in the open.";
+    }
     function socialShareBar() {
       const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.origin + location.pathname; } })();
-      const txt = "DiamondEdge — every sports pick graded in the open.";
+      const txt = shareTagline();
       const enc = encodeURIComponent, u = enc(url), t = enc(txt);
       return `<div class="social">
         <span class="soc-lab">Share DiamondEdge</span>
@@ -3834,8 +3841,8 @@ export default function Home() {
       // ---- bindings ----
       const sn = $("soc-native"); if (sn) sn.onclick = async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
-        if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge", text: "DiamondEdge — every sports pick graded in the open.", url }); return; } catch {} }
-        try { await navigator.clipboard.writeText(url); toast("Link copied to clipboard"); } catch { toast(url); }
+        if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge", text: shareTagline(), url }); return; } catch {} }
+        try { await navigator.clipboard.writeText(`${shareTagline()} ${url}`); toast("Copied — paste it anywhere"); } catch { toast(url); }
       };
       const sc = $("soc-copy"); if (sc) sc.onclick = async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
