@@ -1746,6 +1746,27 @@ export default function Home() {
       });
       return w + l ? { w, l } : null;
     }
+    // Record for ONE specific date (updates when you navigate the date strip): overall totals-pick
+    // W-L plus the GOLD (Strong) subset, so a great gold day gets its own little flex.
+    function dayRecordFor(dateISO: string) {
+      const src = livePayload || payload;
+      if (!src) return null;
+      let w = 0, l = 0, gw = 0, gl = 0, live = 0, up = 0;
+      ((src.games || []) as any[]).forEach((g: any) => {
+        if (String(g.date || "").slice(0, 10) !== dateISO) return;
+        const pl = gamePlays(g)["total"];
+        if (pl && pl.action === "TAKE") {
+          if (pl.result) { if (pl.result.status === "hit") w++; else if (pl.result.status === "miss") l++; }
+          else { const gs = gameState(g); if (gs.kind === "live") live++; else if (gs.kind !== "final") up++; }
+        }
+        const dp = displayPick(g);
+        const dr = resOf(dp);
+        if (dp && dp.quality === "strong" && dr) { if (dr === "hit") gw++; else if (dr === "miss") gl++; }
+      });
+      // "great gold day" = at least 2 gold wins and a clearly winning slate
+      const goldGreat = gw >= 2 && gw >= gl * 2;
+      return { w, l, gw, gl, live, up, goldGreat, graded: w + l };
+    }
     // Full record tally over a set of games (filter fn): graded W-L-push + still-outstanding
     // (live now / yet to start), broken out per market. Powers the record-breakdown sheet.
     function recordFor(filterFn: (g: any) => boolean) {
@@ -1830,9 +1851,23 @@ export default function Home() {
       lens.style.transform = `translateX(${on.offsetLeft}px)`;
     }
 
+    // Leagues sort by number of games (busiest first) by default; a saved user order (Settings)
+    // pins preferred leagues to the front, remaining ones still fall in by game count.
+    function leagueOrderPref(): string[] | null { try { const v = JSON.parse(localStorage.getItem("de_league_order") || "null"); return Array.isArray(v) ? v : null; } catch { return null; } }
+    function orderedLeagues(src: any): string[] {
+      const counts: any = {}; SPORTS.forEach((lg) => { counts[lg] = src ? gamesForLeague(src, lg).length : 0; });
+      const byGames = (a: string, b: string) => (counts[b] - counts[a]) || (SPORTS.indexOf(a) - SPORTS.indexOf(b));
+      const pref = leagueOrderPref();
+      if (pref && pref.length) {
+        const inpref = pref.filter((lg) => SPORTS.includes(lg));
+        const rest = SPORTS.filter((lg) => !inpref.includes(lg)).sort(byGames);
+        return [...inpref, ...rest];
+      }
+      return [...SPORTS].sort(byGames);
+    }
     function renderScoresChrome() {
       const tabSrc = livePayload || payload;
-      const tabsHtml = SPORTS.map((lg) => {
+      const tabsHtml = orderedLeagues(tabSrc).map((lg) => {
         const lgGames = tabSrc ? gamesForLeague(tabSrc, lg) : [];
         const cnt = lgGames.length;
         // a pulsing dot when a league has a game in progress right now (drives users to the live board)
@@ -3479,30 +3514,37 @@ export default function Home() {
     //    leading the Today page (ESPN/CBS-style), with the DiamondEdge Picks below.
     function newsAngle(a: any) {
       if (!a || typeof a !== "object" || !a.side) return "";           // headline angles can be stale strings — skip
-      const mu = a.matchup ? esc(a.matchup) : "";
       const edge = a.market === "total" && a.quality !== "lean";        // a real edge → blur for non-subscribers
       const reveal = !edge || isPremium();
-      const side = reveal ? esc(a.side) : `<span class="nf-lock">${lockSvg} pick inside</span>`;
-      return `<span class="nf-angle ${a.quality === "lean" ? "lean" : "edge"}">◆ ${mu ? mu + " · " : ""}${side}</span>`;
+      // Keep the chip SHORT (side + line only) — matchup lives in the headline, so no wrap/cut-off.
+      const lineTxt = a.line != null && a.line !== "" ? " " + esc(String(a.line)) : "";
+      const pick = reveal ? `${esc(a.side)}${lineTxt}` : `<span class="nf-lock">${lockSvg} pick inside</span>`;
+      return `<span class="nf-angle ${a.quality === "lean" ? "lean" : "edge"}">◆ ${pick}</span>`;
     }
-    function newsStory(s: any, big = false) {
-      if (!s || !s.title) return "";
+    function newsStory(s: any, big = false, key = "") {
+      if (!s || !(s.headline || s.title)) return "";
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
       // Always render a branded gradient "matchup card" underneath; overlay the real photo only
       // if it loads at usable resolution. Blurry/tiny/missing/broken images fall back gracefully
       // to an intentional-looking graphic instead of a broken or fuzzy box.
       const sc = esc(String(s.sport || "gen").toLowerCase().replace(/[^a-z]/g, ""));
       const mline = s.angle && typeof s.angle === "object" && s.angle.matchup ? esc(String(s.angle.matchup)) : "";
+      // If the story maps to a game on our slate, the fallback is a real logo-vs-logo crest card.
+      const gid = s.angle && typeof s.angle === "object" ? s.angle.game_id : null;
+      const g = gid ? findGameLive(gid) : null;
+      const crestRow = g ? `<span class="nf-vs-row">${gCrest(g, "away", "nf-crest")}<span class="nf-vs-x">vs</span>${gCrest(g, "home", "nf-crest")}</span>` : "";
+      const muTxt = g ? `${esc(g.away_abbr)} @ ${esc(g.home_abbr)}` : mline;
       const photo = s.image_url
         ? `<img class="nf-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onload="if(!this.naturalWidth||this.naturalWidth<240){this.classList.add('bad')}" onerror="this.classList.add('bad')">`
         : "";
-      const img = `<div class="nf-img nf-gen s-${sc}"><span class="nf-gen-dia"></span><span class="nf-gen-lab">${lab || "DIAMONDEDGE"}</span>${mline ? `<span class="nf-gen-mu">${mline}</span>` : ""}${photo}</div>`;
-      const meta = `${lab}${s.source ? " · " + esc(s.source) : ""}${s.published_display ? " · " + esc(s.published_display) : ""}`;
-      return `<a class="nf-story ${big ? "nf-hero" : ""}" href="${esc(String(s.url || "#"))}" target="_blank" rel="noopener">
+      const img = `<div class="nf-img nf-gen s-${sc}${g ? " nf-vs" : ""}"><span class="nf-gen-dia"></span>${crestRow || `<span class="nf-gen-lab">${lab || "DIAMONDEDGE"}</span>`}${muTxt ? `<span class="nf-gen-mu">${muTxt}</span>` : ""}${photo}</div>`;
+      // Our own desk byline — the card opens OUR article in-app (not a link out to the source).
+      const meta = `${lab} · DiamondEdge${s.published_display ? " · " + esc(s.published_display) : ""}`;
+      return `<a class="nf-story ${big ? "nf-hero" : ""}" href="${esc(String(s.url || "#"))}" data-nf="${esc(key)}" rel="noopener">
         ${img}
         <div class="nf-body"><div class="nf-kick">${meta}</div>
-        <h3 class="nf-title">${esc(s.title)}</h3>
-        ${big && s.summary ? `<p class="nf-sum clamp2">${esc(s.summary)}</p>` : ""}
+        <h3 class="nf-title">${esc(s.headline || s.title)}</h3>
+        ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(s.dek || s.summary)}</p>` : ""}
         ${newsAngle(s.angle)}</div></a>`;
     }
     function newsFront() {
@@ -3511,9 +3553,52 @@ export default function Home() {
       const hl = ((nf.headlines || []) as any[]).slice(0, 8);
       return `<section class="newsfront">
         <div class="nf-head"><span class="nf-lab">Top stories</span><span class="nf-live"><span class="livedot"></span>live</span></div>
-        ${newsStory(nf.lead, true)}
-        ${hl.length ? `<div class="nf-list">${hl.map((s) => newsStory(s, false)).join("")}</div>` : ""}
+        ${newsStory(nf.lead, true, "L")}
+        ${hl.length ? `<div class="nf-list">${hl.map((s, i) => newsStory(s, false, String(i))).join("")}</div>` : ""}
       </section>`;
+    }
+    // Resolve a story card back to its object, then open OUR article reader.
+    function newsStoryByKey(key: string) {
+      if (!newsFeed) return null;
+      return key === "L" ? newsFeed.lead : ((newsFeed.headlines || []) as any[])[Number(key)];
+    }
+    function openArticleSheet(s: any) {
+      if (!s) return;
+      detail = { _article: true };
+      const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
+      const gid = s.angle && typeof s.angle === "object" ? s.angle.game_id : null;
+      const g = gid ? findGameLive(gid) : null;
+      const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => x.trim())
+        .filter((p) => p && !/^—\s*DiamondEdge/i.test(p));           // drop any trailing byline line
+      const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(s.summary || "")}</p>`;
+      const angleChip = newsAngle(s.angle);
+      const html = `
+        <div class="sheet-bg" id="sheet-bg"></div>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+          <div class="sh-grab" id="sh-grab"><span></span></div>
+          <div class="sh-head">
+            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <div class="sh-sport">${lab} · DiamondEdge</div>
+            <div class="art-title">${esc(s.headline || s.title)}</div>
+            ${s.dek ? `<div class="sh-meta">${esc(s.dek)}</div>` : ""}
+          </div>
+          <div class="sh-body">
+            <div class="art-byline">${esc(s.byline || "DiamondEdge Staff")}${s.published_display ? " · " + esc(s.published_display) : ""}</div>
+            ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
+            ${angleChip ? `<div class="art-angle-row">${angleChip}${g ? `<button class="art-go" data-gid="${esc(String(gid))}">See our full pick →</button>` : ""}</div>` : ""}
+            <div class="art-body">${body}</div>
+            ${s.url ? `<a class="art-src" href="${esc(String(s.url))}" target="_blank" rel="noopener">${esc(s.attribution || ("Source: " + (s.source || "the wire")))} ↗</a>` : ""}
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      $("sheet-close").onclick = () => closeDetail();
+      $("sheet-bg").onclick = () => closeDetail();
+      const gob = layer.querySelector(".art-go") as any;
+      if (gob && g) gob.onclick = () => { closeDetail(); setTimeout(() => openDetail(g), 240); };
+      bindSheetDrag($("sheet"), $("sh-grab"));
     }
     function renderToday() {
       const view = $("today-view");
@@ -3522,7 +3607,16 @@ export default function Home() {
       if (!db) { view.innerHTML = skeletonSlate(4); return; }
       const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+      const isToday = curDate === todayISO();
+      const dayRec = dayRecordFor(curDate);
       const mr = monthRecord();
+      // masthead record pill reflects the DATE you're viewing; gold flex only on a great day
+      const recLabel = dayRec && dayRec.graded
+        ? `Picks <b>${dayRec.w}–${dayRec.l}</b>${isToday ? " today" : ""}`
+        : (isToday && mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : "The record");
+      const goldChip = dayRec && (dayRec.gw + dayRec.gl) && (dayRec.goldGreat || (dayRec.gw && !dayRec.gl))
+        ? `<span class="nm-gold${dayRec.goldGreat ? " hot" : ""}" title="Gold (Strong) picks ${dayRec.gw}–${dayRec.gl}">★ Gold ${dayRec.gw}–${dayRec.gl}${dayRec.goldGreat ? " 🔥" : ""}</span>`
+        : "";
       const picksAll = orderTopPicks((db.top_picks || []) as any[]);
       const leadPick = picksAll[0] || null;
       const railPicks = picksAll.length > 1 ? picksAll.slice(1) : [];
@@ -3592,7 +3686,7 @@ export default function Home() {
           ${newsFront()}
           ${newsFeed && newsFeed.lead ? `<div class="picks-divider"><span>◆ Today's DiamondEdge Picks</span></div>` : ""}
           <div class="masthead">
-            <div class="mh-kicker"><span class="lk-tag">Today</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${mr ? `Picks <b>${mr.w}–${mr.l}</b> this month` : `The record`} →</button></div>
+            <div class="mh-kicker"><span class="lk-tag">${isToday ? "Today" : "Recap"}</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${recLabel} →</button>${goldChip}</div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
@@ -3643,6 +3737,10 @@ export default function Home() {
         };
         h.onclick = open;
         h.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
+      });
+      // News cards open OUR in-app article reader (not a link out).
+      view.querySelectorAll(".nf-story[data-nf]").forEach((a: any) => {
+        a.onclick = (e: any) => { e.preventDefault(); openArticleSheet(newsStoryByKey(a.dataset.nf)); };
       });
       // carousel dots: track the snapped card, click to go
       const rail = $("tdy-picks"), dots = $("tp-dots");
@@ -3716,6 +3814,12 @@ export default function Home() {
           <div class="set-note">Flip this off any time to see what free members see — the record stays open to everyone.</div>
         </div>
         <div class="set-card">
+          <div class="set-k">Leagues</div>
+          <div class="set-about" style="margin-bottom:9px">League tabs are ordered by how many games are on — busiest first. Reorder them to your taste and your order sticks.</div>
+          <div class="lg-order" id="lg-order">${orderedLeagues(livePayload || payload).map((lg, i, arr) => `<div class="lg-item"><span class="lg-name">${SPORT_LABEL[lg] || lg}</span><span class="lg-btns"><button class="lg-mv lg-up" data-lg="${lg}" ${i === 0 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} up">▲</button><button class="lg-mv lg-dn" data-lg="${lg}" ${i === arr.length - 1 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} down">▼</button></span></div>`).join("")}</div>
+          ${leagueOrderPref() ? `<button class="set-link" id="lg-reset">↺ Reset to auto (by games)<em>→</em></button>` : ""}
+        </div>
+        <div class="set-card">
           <div class="set-k">Appearance</div>
           <div class="set-about"><b>Light liquid glass</b> is the DiamondEdge identity — airy daylight surfaces, frosted white cards, emerald and red for results, gold reserved for Strong picks. Depth comes from light and shadow, not boxes.</div>
         </div>
@@ -3735,6 +3839,17 @@ export default function Home() {
       $("set-how").onclick = () => openRecipeSheet();
       $("set-results").onclick = () => switchTab("results");
       $("set-upgrade").onclick = () => switchTab("upgrade");
+      const moveLeague = (lg: string, dir: number) => {
+        const cur = orderedLeagues(livePayload || payload);
+        const i = cur.indexOf(lg), j = i + dir;
+        if (i < 0 || j < 0 || j >= cur.length) return;
+        const arr = [...cur]; [arr[i], arr[j]] = [arr[j], arr[i]];
+        try { localStorage.setItem("de_league_order", JSON.stringify(arr)); } catch {}
+        renderSettings();                       // Games tab re-reads the order when next shown
+      };
+      view.querySelectorAll(".lg-up").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, -1)));
+      view.querySelectorAll(".lg-dn").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, 1)));
+      const lr = $("lg-reset"); if (lr) lr.onclick = () => { try { localStorage.removeItem("de_league_order"); } catch {} renderSettings(); };
     }
 
     // ===================== UPGRADE (stub checkout — no real payments) =====================
