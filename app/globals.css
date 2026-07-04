@@ -2191,3 +2191,8 @@ details.results-more{margin-bottom:14px}
   .nf-hero .nf-img{aspect-ratio:auto;height:420px}
   .nf-hero .nf-vs-row img,.nf-hero .nf-vs-row .crest{width:88px;height:88px}
 }
+
+/* --- Boot load-error state + retry --- */
+.state.loaderr .ld-retry{margin-top:16px;font-family:var(--mono);font-weight:800;font-size:13px;letter-spacing:.03em;
+  padding:12px 26px;border-radius:999px;border:0;background:linear-gradient(135deg,#f6dd94,#e0ac20);color:#231703;cursor:pointer}
+.state.loaderr .ld-retry:active{transform:scale(.96)}

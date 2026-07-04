@@ -1844,6 +1844,13 @@ export default function Home() {
       }
       return `<div class="slate">${cards}</div>`;
     }
+    // A network/Supabase failure at boot must not leave an eternal skeleton — show a graceful,
+    // on-brand error with a retry (the auto-pollers keep trying and self-heal on recovery).
+    function renderLoadError() {
+      const html = `<div class="state loaderr"><div class="st-ico">◆</div><div class="big">Couldn't reach the board</div><div class="sm">Check your connection — DiamondEdge will keep trying in the background, or retry now. Every past pick stays graded once you're back.</div><button class="ld-retry" onclick="location.reload()">Retry</button></div>`;
+      const t = $("today-view"); if (t) t.innerHTML = html;
+      const b = $("slate-body"); if (b) b.innerHTML = html;
+    }
 
     // ONE continuous frosted capsule; days are quiet typographic cells inside it and a
     // fluid lens slides under the active day. No per-pill borders.
@@ -4350,18 +4357,24 @@ export default function Home() {
       renderShell();
       renderScoresChrome();
       renderToday(); // skeleton until the payload lands
-      await loadIndex();
-      payload = await loadDay(curDate);
-      try { newsFeed = await snap("news_feed"); } catch {}
-      league = bestLeague();
-      root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
-      positionInk();
-      renderSlate();
-      renderToday();
-      renderTicker();
-      requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
-      // deep-link restore: a fresh ?g=<id> load opens that game's sheet (replace, not push).
-      syncFromUrl(false);
+      try {
+        await loadIndex();
+        payload = await loadDay(curDate);
+        try { newsFeed = await snap("news_feed"); } catch {}
+        league = bestLeague();
+        root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
+        positionInk();
+        renderSlate();
+        renderToday();
+        renderTicker();
+        requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
+        // deep-link restore: a fresh ?g=<id> load opens that game's sheet (replace, not push).
+        syncFromUrl(false);
+      } catch {
+        // Boot data load failed (offline / Supabase blip): don't hang on the skeleton. Show a
+        // retry state; the pollers set up below keep trying and replace it on recovery.
+        renderLoadError();
+      }
       // ---- SMART SILENT AUTO-REFRESH (no pull-to-refresh, no spinners on loaded content) ----
       // Tiered by cost + volatility, all paused while the tab is hidden:
       //   · live_scores (tiny)   → every ~50s while a game is live/near-start
