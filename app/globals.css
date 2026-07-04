@@ -1839,6 +1839,29 @@ details.results-more{margin-bottom:14px}
 .res-stat b{font-family:var(--disp);font-weight:700;font-size:22px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
 .res-stat b.pos{color:var(--green)} .res-stat b.neg{color:var(--red)}
 
+/* ---- EQUITY CURVE card (Results view): validated cumulative-units line on glass ---- */
+.eqv-card{position:relative;overflow:hidden;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow),0 12px 34px rgba(11,158,109,.10);padding:16px 18px 15px;margin-bottom:14px;animation:rise .4s var(--ease) both}
+.eqv-head{margin-bottom:6px}
+.eqv-kick{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--green)}
+.eqv-h{font-family:var(--disp);font-weight:600;font-size:20px;line-height:1.16;color:var(--ink);margin:4px 0 6px;text-wrap:balance}
+.eqv-sub{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink2);margin:0}
+.eqv-sub b{color:var(--ink)}
+.eqv-wrap{width:100%;max-width:520px;margin:10px auto 4px}
+.eqv-svg{display:block;width:100%;height:auto;font-family:var(--mono)}
+.eqv-line{fill:none;stroke:var(--green);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.eqv-area{stroke:none}
+.eqv-zero{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
+.eqv-zlab,.eqv-tick{fill:var(--ink3);font-size:9px;font-weight:600;font-variant-numeric:tabular-nums}
+.eqv-endlab{fill:var(--green);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.eqv-dot{fill:var(--green);stroke:var(--glass-hi);stroke-width:2}
+.eqv-node{fill:var(--green);opacity:.55}
+.eqv-foot{display:flex;gap:26px;flex-wrap:wrap;margin:8px 0 0;padding-top:11px;border-top:1px dashed var(--line2)}
+.eqv-stat{display:flex;flex-direction:column;gap:3px}
+.eqv-stat i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.eqv-stat b{font-family:var(--disp);font-weight:700;font-size:20px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.eqv-stat b.pos{color:var(--green)}
+.eqv-cap{font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--ink3);margin:9px 0 0;letter-spacing:.01em}
+
 /* ════════════════════════════════════════════════════════════════════════════
    PREMIUM LIQUID-GLASS PASS — cohesion polish applied over the existing surfaces
    Specular rim highlights · layered frosted depth · ambient blooms · fluid

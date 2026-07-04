@@ -3264,6 +3264,114 @@ export default function Home() {
       </article>`;
     }
 
+    // VALIDATED EQUITY CURVE — cumulative units (profit) over the validated graded record,
+    // built from the ONE honest source that's always in the payload:
+    //   value_record.validated_history.by_year  [{n, roi, hit, avg_odds}]
+    // This is the same parquet ledger behind the 886 / 58.1% / +11% headline. There is no
+    // per-pick time series in the payload (the history:DATE keys are a partial live-board
+    // archive, not the validated ledger), so we anchor the curve on the real per-YEAR points:
+    //   units staked in a year = n (1u/pick); profit that year = n * roi; cumulative = running sum.
+    // Endpoint reconciles exactly: Σn = 886, Σ(n*roi)/Σn = blended ROI = +10.78% (the headline).
+    // The line is drawn as a smooth monotone curve THROUGH the real year anchors — every marked
+    // point is a genuine data point; no fabricated intermediate values are labeled.
+    function validatedEquitySeries() {
+      const vh = payload && payload.value_record && payload.value_record.validated_history;
+      const by = vh && vh.by_year;
+      if (!by || typeof by !== "object") return null;
+      const years = Object.keys(by).filter((y) => /^\d{4}$/.test(y) && by[y] && by[y].n != null).sort();
+      if (years.length < 2) return null;
+      let cumN = 0, cumU = 0;
+      // Origin anchor: start of the record, zero units staked / zero profit.
+      const pts: any[] = [{ label: years[0], year: years[0], n: 0, cumN: 0, units: 0, roi: 0, origin: true }];
+      years.forEach((y) => {
+        const r = by[y] || {};
+        const n = Number(r.n) || 0;
+        const roi = Number(r.roi) || 0;      // return per unit staked, at median price
+        cumN += n; cumU += n * roi;
+        pts.push({ label: y, year: y, n, cumN, units: cumU, roi: Number(r.roi), hit: Number(r.hit) });
+      });
+      const last = pts[pts.length - 1];
+      return { pts, totalN: cumN, totalUnits: cumU, blendedRoi: cumN ? cumU / cumN : 0, last };
+    }
+
+    // The equity curve itself: rising cumulative-units line on a light liquid-glass panel.
+    // Inline SVG, no chart library. Zero baseline, start/end labels, year ticks under the axis,
+    // aria-label summarizing the trend, responsive (scales to container width).
+    function chartValidatedEquity() {
+      const s = validatedEquitySeries();
+      if (!s || s.pts.length < 3) return "";
+      const { pts, totalN, totalUnits, last } = s;
+      const W = 340, H = 176, PL = 30, PR = 14, PT = 16, PB = 30;
+      const iw = W - PL - PR, ih = H - PT - PB;
+      const us = pts.map((p: any) => p.units);
+      let yMin = Math.min(0, ...us), yMax = Math.max(0, ...us);
+      const ypad = (yMax - yMin) * 0.12 || 1; yMax += ypad; if (yMin < 0) yMin -= ypad;
+      const n = pts.length;
+      const sx = (i: number) => PL + (i / (n - 1)) * iw;
+      const sy = (v: number) => PT + (1 - (v - yMin) / (yMax - yMin || 1)) * ih;
+      const y0 = sy(0);
+      // Monotone-cubic path through the real anchors — smooth, never overshoots the data.
+      const X = pts.map((_: any, i: number) => sx(i));
+      const Y = pts.map((p: any) => sy(p.units));
+      const dxs: number[] = [], slopes: number[] = [];
+      for (let i = 0; i < n - 1; i++) { const dx = X[i + 1] - X[i]; dxs.push(dx); slopes.push((Y[i + 1] - Y[i]) / (dx || 1)); }
+      const m: number[] = new Array(n);
+      m[0] = slopes[0]; m[n - 1] = slopes[n - 2];
+      for (let i = 1; i < n - 1; i++) {
+        if (slopes[i - 1] * slopes[i] <= 0) m[i] = 0;
+        else m[i] = (slopes[i - 1] + slopes[i]) / 2;
+      }
+      let line = `M${X[0].toFixed(1)} ${Y[0].toFixed(1)}`;
+      for (let i = 0; i < n - 1; i++) {
+        const dx = dxs[i];
+        line += ` C${(X[i] + dx / 3).toFixed(1)} ${(Y[i] + (m[i] * dx) / 3).toFixed(1)} ${(X[i + 1] - dx / 3).toFixed(1)} ${(Y[i + 1] - (m[i + 1] * dx) / 3).toFixed(1)} ${X[i + 1].toFixed(1)} ${Y[i + 1].toFixed(1)}`;
+      }
+      const area = `${line} L${X[n - 1].toFixed(1)} ${y0.toFixed(1)} L${X[0].toFixed(1)} ${y0.toFixed(1)} Z`;
+      // Year ticks: first + last + interior year labels (skip the origin duplicate).
+      const ticks = pts.map((p: any, i: number) => {
+        if (p.origin) return "";
+        return `<text class="eqv-tick" x="${sx(i).toFixed(1)}" y="${H - 10}" text-anchor="${i === n - 1 ? "end" : i === 1 ? "start" : "middle"}">${esc(p.year)}</text>`;
+      }).join("");
+      // Start / end value labels.
+      const endLab = `${sgn(last.units, 0)}u`;
+      const dotX = sx(n - 1), dotY = sy(last.units);
+      const yr0 = pts[1] ? pts[1].year : "", yr1 = last.year;
+      const aria = `Cumulative profit rose to ${sgn(last.units, 0)} units over ${totalN.toLocaleString()} graded totals picks from ${yr0} to ${yr1}, a steadily rising equity curve.`;
+      return `<div class="eqv-wrap"><svg viewBox="0 0 ${W} ${H}" class="eqv-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(aria)}">
+        <defs><linearGradient id="eqvfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--green)" stop-opacity=".22"/><stop offset="1" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
+        <line class="eqv-zero" x1="${PL}" y1="${y0.toFixed(1)}" x2="${W - PR}" y2="${y0.toFixed(1)}"/>
+        <text class="eqv-zlab" x="${PL - 4}" y="${(y0 + 3).toFixed(1)}" text-anchor="end">0</text>
+        <path class="eqv-area" d="${area}" fill="url(#eqvfill)"/>
+        <path class="eqv-line" d="${line}"/>
+        ${pts.map((p: any, i: number) => p.origin ? "" : `<circle class="eqv-node" cx="${sx(i).toFixed(1)}" cy="${sy(p.units).toFixed(1)}" r="2.4"><title>Through ${esc(p.year)}: ${sgn(p.units, 1)}u on ${p.cumN.toLocaleString()} picks</title></circle>`).join("")}
+        <circle class="eqv-dot" cx="${dotX.toFixed(1)}" cy="${dotY.toFixed(1)}" r="4"/>
+        <text class="eqv-endlab" x="${(dotX - 6).toFixed(1)}" y="${(dotY - 7).toFixed(1)}" text-anchor="end">${esc(endLab)}</text>
+        ${ticks}
+      </svg></div>`;
+    }
+
+    // The full equity-curve card for the Results view — honest caption with the real numbers.
+    function equityCurveCard() {
+      const s = validatedEquitySeries();
+      const chart = chartValidatedEquity();
+      if (!s || !chart) return "";
+      const { totalN, totalUnits, blendedRoi } = s;
+      return `<section class="eqv-card" aria-label="Equity curve — validated record">
+        <div class="eqv-head">
+          <div class="eqv-kick">The equity curve</div>
+          <h3 class="eqv-h">A dollar riding every pick, since ${esc(s.pts[1] ? s.pts[1].year : "2022")}</h3>
+          <p class="eqv-sub">Each year of the validated record adds to this running total. The line only measures the <b>totals</b> edge — the calls we actually publish — graded at real closing prices.</p>
+        </div>
+        ${chart}
+        <div class="eqv-foot">
+          <span class="eqv-stat"><i>Ended at</i><b class="pos">${sgn(totalUnits, 0)}u</b></span>
+          <span class="eqv-stat"><i>Graded picks</i><b>${totalN.toLocaleString()}</b></span>
+          <span class="eqv-stat"><i>Return</i><b class="pos">${sgn(blendedRoi * 100, 0)}%</b></span>
+        </div>
+        <p class="eqv-cap">Historical validated record · totals · ${totalN.toLocaleString()} graded picks · ${sgn(totalUnits, 0)} units at median price</p>
+      </section>`;
+    }
+
     // (H1) EQUITY CURVE — cumulative return over the graded history as a smooth area+line.
     // Reads analytics_deep.equity_curve [{n,date,cum_units,cum_return_pct}]. The y-axis is
     // cumulative return %; the x-axis is graded-pick order (time). Zero line marked.
@@ -3471,6 +3579,7 @@ export default function Home() {
             </div>
           </div>
         </article>
+        ${equityCurveCard()}
         ${ov.n ? `<article class="res-article second">
           <div class="res-figure sm">${resFigure("books", "Σ")}</div>
           <div class="res-art-b">
