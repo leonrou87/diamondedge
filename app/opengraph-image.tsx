@@ -16,7 +16,7 @@ async function getRecord() {
     if (!SUPA || !KEY) return null;
     const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.pregame_picks&select=payload`, {
       headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-      cache: "no-store",
+      next: { revalidate: 300 },
     });
     const rows = await r.json();
     const vh = rows && rows[0] && rows[0].payload && rows[0].payload.value_record && rows[0].payload.value_record.validated_history;
