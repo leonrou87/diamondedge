@@ -41,6 +41,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const g = await getGame(id);
   const mu = g ? `${g.away_abbr} @ ${g.home_abbr}` : "DiamondEdge";
   const sport = g ? (SPORT[g.sport] || g.sport || "") : "";
+  // Pre-game shares get the start time (the most useful context for an upcoming pick).
+  const started = g ? String(g.status || "pre").toLowerCase() !== "pre" : false;
+  const kicker = [sport ? String(sport).toUpperCase() : "", !started && g && g.start_time ? String(g.start_time) : ""].filter(Boolean).join("  ·  ");
   const pick = g ? totalPick(g) : null;
   const pickTxt = pick ? `${pick.side}${pick.line != null && !/[0-9.]/.test(pick.side) ? " " + pick.line : ""}` : "";
   return new ImageResponse(
@@ -67,7 +70,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {sport ? <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif", letterSpacing: "3px", fontWeight: 700 }}>{String(sport).toUpperCase()}</div> : null}
+          {kicker ? <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif", letterSpacing: "2px", fontWeight: 700 }}>{kicker}</div> : null}
           <div style={{ display: "flex", fontSize: 86, fontWeight: 800, lineHeight: 1.05 }}>{mu}</div>
           {pickTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 46, color: "#e0ac20", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>DiamondEdge Pick: {pickTxt}</div> : null}
         </div>
