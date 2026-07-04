@@ -2175,3 +2175,13 @@ details.results-more{margin-bottom:14px}
 .art-res.hit{background:rgba(11,158,109,.14);color:#06714f}
 .art-res.miss{background:rgba(214,69,95,.12);color:#a32036}
 .art-res.push{background:var(--pan2,#eef2f8);color:var(--ink2)}
+
+/* --- Crest-vs fallback: scale up content on the large (tablet/desktop) hero so it fills the card --- */
+@media(min-width:760px){
+  .nf-hero .nf-vs-row{gap:26px;margin-bottom:4px}
+  .nf-hero .nf-vs-row img,.nf-hero .nf-vs-row .crest{width:78px;height:78px}
+  .nf-hero .nf-vs-row .crest{font-size:20px}
+  .nf-hero .nf-vs-x{font-size:19px}
+  .nf-hero .nf-gen-lab{font-size:15px}
+  .nf-hero .nf-gen-mu{font-size:15px;margin-top:9px}
+}
