@@ -1982,7 +1982,7 @@ export default function Home() {
     }
 
     function renderRangeBody() {
-      if (!rangeGames.length) return `<div class="state"><div class="big">No ${SPORT_LABEL[league]} games in range</div><div class="sm">Try a wider range or another league.</div></div>`;
+      if (!rangeGames.length) return `<div class="state"><div class="st-ico">◆</div><div class="big">No ${SPORT_LABEL[league]} games in range</div><div class="sm">These dates aren't in the archive yet. Try a wider range, another league, or head back to the live board.</div><button class="ld-retry" id="rng-back">← Today's board</button></div>`;
       let html = "";
       let N = 0, W = 0, L = 0;
       rangeGames.forEach((day: any) => {
@@ -2005,6 +2005,9 @@ export default function Home() {
     function bindMeta() {
       const rc = $("recchip"); if (rc) rc.onclick = () => openRecordBreakdown();
       const hl = $("howlink"); if (hl) hl.onclick = () => openRecipeSheet();
+      // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
+      // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
+      const rgb = $("rng-back"); if (rgb) rgb.onclick = () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); };
     }
 
     function bindScoresChrome() {
