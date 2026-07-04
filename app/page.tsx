@@ -3845,7 +3845,7 @@ export default function Home() {
         <div class="news">
           ${introBanner()}
           ${newsFront()}
-          ${newsFeed && newsFeed.lead ? `<div class="picks-divider"><span>◆ Today's DiamondEdge Picks</span></div>` : ""}
+          ${newsFeed && newsFeed.lead ? `<div class="picks-divider"><span>◆ ${picksAll.length ? "Today's DiamondEdge Picks" : "Today's Board"}</span></div>` : ""}
           <div class="masthead">
             <div class="mh-kicker"><span class="lk-tag">${isToday ? "Today" : "Recap"}</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${recLabel} →</button>${goldChip}</div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
