@@ -3814,7 +3814,7 @@ export default function Home() {
             <div class="ls-kick"><span class="ls-lab">Lead story</span></div>
             <h3 class="ls-match">No DiamondEdge Pick today — and that's the discipline that keeps the record honest.</h3>
             <p class="ls-lede">We publish a pick only when the numbers clear our bar. Today none did. The storylines below are what we're watching, and every past call stays graded in the open on the Results tab.</p>
-            <span class="hero-cta" data-nav="results">See the record →</span>
+            <div class="ls-ctas"><span class="hero-cta" data-nav="results">See the record →</span><span class="hero-cta alt" data-nav="games">Browse today's board →</span></div>
           </div>
         </article>`;
       }

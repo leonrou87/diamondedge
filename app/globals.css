@@ -2206,3 +2206,8 @@ details.results-more{margin-bottom:14px}
 .lp-loading{display:flex;align-items:center;gap:9px;padding:11px 2px;color:var(--ink3);font-size:13px}
 .lp-spin{width:13px;height:13px;border-radius:50%;border:2px solid var(--glass-brd);border-top-color:var(--ink3);animation:lpspin .7s linear infinite;flex:0 0 auto}
 @keyframes lpspin{to{transform:rotate(360deg)}}
+
+/* --- No-pick lead story: dual CTAs (record + board) --- */
+.ls-ctas{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:4px}
+.ls-ctas .hero-cta.alt{color:var(--ink2);opacity:.85}
+.ls-ctas .hero-cta.alt:active{opacity:1}
