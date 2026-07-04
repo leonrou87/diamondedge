@@ -356,6 +356,123 @@ export default function Home() {
       </div>`;
     }
 
+    // ===================== LIVE TRACKING READ (honest, from real live fields ONLY) =====================
+    // "Is our pick on course to cash?" — computed from live score/inning fields the payload
+    // already carries (current_actuals.total_so_far, home_score+away_score, gameState). NEVER
+    // invents a score or projects a finish. For a TOTAL (the validated edge) it gives a plain
+    // "N runs through M · needs K more to cash OVER 8.5" read; for a spread/ML lean, a lighter
+    // "who's ahead" status. It is CONTEXT, not a new pick — the graded morning play is unchanged.
+    // A short phrase for how far the clock/inning is along, in the sport's own words.
+    function liveWhenPhrase(g: any, gs: any) {
+      const lab = String((gs && gs.label) || "").trim();
+      if (g.sport === "mlb") {
+        // period_label is "Top/Bot/Mid/End 6th" — turn into "through 5" (completed innings).
+        const m = lab.match(/(\d+)(?:st|nd|rd|th)/);
+        if (m) {
+          const inn = Number(m[1]);
+          const half = /^(bot|end)/i.test(lab) ? "bot" : /^mid/i.test(lab) ? "mid" : "top";
+          // Runs "through" the last COMPLETED inning; mid-inning we say "in the Nth".
+          if (half === "top") return inn > 1 ? `through ${inn - 1}` : "early";
+          if (half === "mid" || half === "bot" || half === "end") return `through ${inn}${half === "bot" ? " (home batting)" : ""}`;
+          return `in the ${inn}${["th","st","nd","rd"][inn % 10 > 3 || (inn >= 11 && inn <= 13) ? 0 : inn % 10]}`;
+        }
+      }
+      return lab && lab.toLowerCase() !== "live" ? `— ${lab}` : "in progress";
+    }
+    // The tracking read for the SURFACED pick. Returns { kind, cls, head, sub } or null.
+    //   cls: hit|close|miss|done-hit|done-miss  · kind: total|lean
+    function liveTrackingRead(g: any, pl: any) {
+      if (!g || !pl || pl.action !== "TAKE") return null;
+      const gs = gameState(g);
+      const live = gs.kind === "live", fin = gs.kind === "final";
+      if (!live && !fin) return null;
+      const unit = SPORT_UNIT[g.sport] || "runs";
+      // ---- TOTAL: the validated edge — the richest live read. ----
+      if (pl.market === "total") {
+        const line = pl.line != null ? Number(pl.line) : Number((String(pl.side || "").match(/[\d.]+/) || [])[0]);
+        if (line == null || isNaN(line)) return null;
+        const over = /over/i.test(String(pl.side || ""));
+        // Live combined total from real fields; final falls back to the graded final total.
+        const ca = g.current_actuals || {};
+        let runs: number | null = ca.total_so_far != null && !isNaN(Number(ca.total_so_far)) ? Number(ca.total_so_far)
+          : (ca.home_score != null && ca.away_score != null ? Number(ca.home_score) + Number(ca.away_score) : null);
+        if (fin) { const fsc = finalScore(g); if (fsc && fsc.total != null) runs = Number(fsc.total); }
+        if (runs == null || isNaN(runs)) return null;
+        const side = `${over ? "OVER" : "UNDER"} ${lineStr(line)}`;
+        const cushion = line - runs;                 // >0: still under the line
+        const overShot = runs > line;                // the line has been passed
+        const when = live ? liveWhenPhrase(g, gs) : "";
+        const runTxt = `${runs} ${runs === 1 ? unit.replace(/s$/, "") : unit}`;
+        if (fin) {
+          if (runs === line) return { kind: "total", cls: "close", head: `${runTxt} · pushed on ${side}`, sub: "" };
+          const won = overShot === over;
+          return { kind: "total", cls: won ? "done-hit" : "done-miss",
+            head: `${runTxt} · ${side} ${won ? "cashed" : "did not cash"}`, sub: "" };
+        }
+        // LIVE
+        if (over) {
+          if (overShot) return { kind: "total", cls: "done-hit", head: `${runTxt} ${when} · OVER ${lineStr(line)} already cashed`, sub: "The number is in — the rest of the game can't take it back." };
+          const need = Math.floor(line) + 1 - runs;   // integer runs still needed to clear the line
+          return { kind: "total", cls: need <= 2 ? "hit" : "close",
+            head: `${runTxt} ${when} · needs ${need} more to cash OVER ${lineStr(line)}`,
+            sub: need <= 2 ? "Right on the doorstep." : "" };
+        } else {
+          // UNDER
+          if (overShot) return { kind: "total", cls: "done-miss", head: `${runTxt} ${when} · OVER the ${lineStr(line)} — UNDER can't cash`, sub: "The total has already cleared the line." };
+          const room = Math.floor(cushion) + (cushion % 1 ? 1 : 0);   // runs of cushion before the line falls
+          const cls = cushion >= 3 ? "hit" : cushion >= 1 ? "close" : "close";
+          return { kind: "total", cls,
+            head: `${runTxt} ${when} · ${cushion >= 3 ? "tracking well" : "holding"} on UNDER ${lineStr(line)}`,
+            sub: `${room} ${room === 1 ? "run" : (unit === "runs" ? "runs" : unit)} of room before the line falls.` };
+        }
+      }
+      // ---- SPREAD / MONEYLINE lean: a LIGHTER live status from the real margin only. ----
+      const sc = fin ? finalScore(g) : (() => {
+        const ca = g.current_actuals || {};
+        if (ca.home_score != null && ca.away_score != null) return { home: Number(ca.home_score), away: Number(ca.away_score), margin: Number(ca.home_score) - Number(ca.away_score) };
+        return null;
+      })();
+      if (!sc || sc.margin == null) return null;
+      const side = String(pl.side || "");
+      const backedHome = side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0;
+      const backedAway = side.indexOf(g.away_abbr) >= 0 && side.indexOf(g.home_abbr) < 0;
+      if (!backedHome && !backedAway) return null;
+      const ab = backedHome ? g.home_abbr : g.away_abbr;
+      const ourMargin = backedHome ? sc.margin : -sc.margin;   // + = our side ahead on the scoreboard
+      const when = live ? liveWhenPhrase(g, gs) : "";
+      if (fin) {
+        // Grade the lean off the real final where we can (spread w/ line, ML off the winner).
+        const r = provisionalResult(g, pl) || (pl.result || null);
+        const st = r && (r.status || r);
+        if (st === "hit" || st === "miss" || st === "push")
+          return { kind: "lean", cls: st === "hit" ? "done-hit" : st === "miss" ? "done-miss" : "close",
+            head: `Final · our ${esc(side)} lean ${st === "hit" ? "landed" : st === "miss" ? "came up short" : "pushed"}`, sub: "" };
+        return null;
+      }
+      // LIVE lean — plain scoreboard status, no probabilities, no projection.
+      const state = ourMargin > 0 ? `${ab} up ${ourMargin}` : ourMargin < 0 ? `${ab} down ${Math.abs(ourMargin)}` : "all square";
+      const cls = ourMargin > 0 ? "hit" : ourMargin < 0 ? "miss" : "close";
+      return { kind: "lean", cls, head: `${state} ${when} · our ${esc(side)} lean`, sub: "A directional lean — scoreboard status only, not a graded bet." };
+    }
+    // Render the tracking read as a glass card (mirrors the live-hit-odds treatment). The
+    // honesty line is baked in: this is CONTEXT on the graded morning play, not a new pick.
+    function liveTrackCard(g: any, pl: any, variant = "full") {
+      const tr = liveTrackingRead(g, pl);
+      if (!tr) return "";
+      const live = gameState(g).kind === "live";
+      const hero = variant === "hero";
+      const done = tr.cls === "done-hit" || tr.cls === "done-miss";
+      const dirCls = tr.cls === "hit" || tr.cls === "done-hit" ? "dir-hit" : tr.cls === "miss" || tr.cls === "done-miss" ? "dir-miss" : "dir-close";
+      const kick = tr.kind === "total" ? (live ? "Tracking our pick — live" : "Our pick — graded") : (live ? "Live scoreboard read" : "Our lean — result");
+      // Hero = compact at-a-glance (the honesty note + sub-line live on the full pane card below).
+      return `<div class="ltrack ${dirCls}${done ? " is-done" : ""}${hero ? " ltrack-hero" : ""}" role="status">
+        <div class="ltr-k">${live ? `<span class="livedot"></span>` : ""}${esc(kick)}</div>
+        <div class="ltr-head">${esc(tr.head)}</div>
+        ${!hero && tr.sub ? `<div class="ltr-sub">${esc(tr.sub)}</div>` : ""}
+        ${!hero && live ? `<div class="ltr-note">Context on how it's going — the graded morning play is unchanged.</div>` : ""}
+      </div>`;
+    }
+
     // ===================== ONE QUALITY VOCABULARY: Strong / Good / Lean =====================
     // Every bet the app recommends gets exactly one plain word (and 1-3 filled diamonds):
     //   Strong = the winning-recipe tier A, or the model's surest (featured) tier
@@ -1106,6 +1223,14 @@ export default function Home() {
       }
       const pane = page.querySelector('.gp-pane[data-pane="live"]');
       if (pane) pane.innerHTML = boxScorePanel(g);
+      // Keep the hero's live tracking read in step with the fresh score (else it goes stale
+      // vs the score right above it). Only the served-meter-absent fallback lives here.
+      const trendEl = page.querySelector(".gp-trend");
+      if (trendEl && gs.kind === "live") {
+        const lead = displayPick(g) || bestPlay(g);
+        const trend = lead ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero")) : "";
+        if (trend) trendEl.innerHTML = trend;
+      }
       // also refresh the box score from the (possibly newer) live_detail
       pollLiveDetail();
     }
@@ -2568,6 +2693,13 @@ export default function Home() {
           cur && cur.outs != null ? `${esc(cur.outs)} out` : "",
           cur && cur.count ? `${esc(cur.count)}` : ""].filter(Boolean);
         rows.push(`<div class="lp-now"><span class="lp-live"><span class="livedot"></span>Live</span><span class="lp-state">${bits.join(" · ")}</span></div>`);
+        // (a1) TRACKING READ — is our surfaced pick on course to cash? Computed from the live
+        // score/inning fields above (no projection). The totals edge gets the rich runs-vs-line
+        // read; a spread/ML lean gets a lighter scoreboard status. Context, not a new pick.
+        const Plive = gamePlays(g);
+        const plLive = (Plive.total && Plive.total.action === "TAKE") ? Plive.total : (displayPick(g) || bestPlay(g));
+        const trackCard = plLive ? liveTrackCard(g, plLive) : "";
+        if (trackCard) rows.push(trackCard);
       }
       // (b) line score grid (innings R/H/E) — the core box score
       if (d && Array.isArray(d.line_score) && d.line_score.length) {
@@ -2764,7 +2896,12 @@ export default function Home() {
         ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
         : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
       const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.recIsL15 ? ` <span class="gp-rec-tag">L15</span>` : ""}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
-      const heroTrend = (gs.kind === "live" && lead && !leadLocked) ? liveHitOdds(g, lead, "full") : "";
+      // Live trend: the served hit-odds meter when the backend ships one; otherwise our own
+      // honest tracking read (runs-vs-line / scoreboard status), so a live game's hero is never
+      // a bare score. The SAME read headlines the "How it's going" pane below in full.
+      const heroTrend = (gs.kind === "live" && lead && !leadLocked)
+        ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero"))
+        : "";
       // Honest transparency: our projected total vs the market line — the plain 'why' behind a
       // totals Pick, shown as our own stated number (no thresholds / secret sauce revealed).
       const lineNum = lead && lead.line != null ? Number(lead.line) : Number((String(lead && lead.side || "").match(/[\d.]+/) || [])[0]);

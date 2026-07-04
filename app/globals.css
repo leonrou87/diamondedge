@@ -2268,6 +2268,24 @@ details.results-more{margin-bottom:14px}
 .lpg-res.push{color:var(--ink2);background:var(--pan2,#eef2f8)}
 .lpg-detail{margin-top:7px;font-size:14px;color:var(--ink2)}
 .lpg-detail b{color:var(--ink);font-variant-numeric:tabular-nums}
+/* ---- LIVE TRACKING READ ("is our pick on course to cash?") ---- */
+.ltrack{padding:12px 15px 13px;border-radius:14px;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--glass-shadow)}
+.ltr-k{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.ltr-k .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.ltr-head{margin-top:6px;font-family:var(--disp);font-weight:800;font-size:15.5px;line-height:1.3;letter-spacing:.005em;color:var(--ink);font-variant-numeric:tabular-nums}
+.ltr-sub{margin-top:5px;font-family:var(--sans);font-size:12.5px;line-height:1.45;color:var(--ink2)}
+.ltr-note{margin-top:8px;font-family:var(--sans);font-size:11px;line-height:1.4;color:var(--ink3)}
+.ltrack.dir-hit{border-color:var(--greenline);background:var(--greenbg)}
+.ltrack.dir-hit .ltr-head{color:#06714f}
+.ltrack.dir-close{border-color:rgba(197,138,20,.28);background:var(--amberbg)}
+.ltrack.dir-close .ltr-head{color:#8a5f08}
+.ltrack.dir-miss{border-color:var(--missline);background:var(--missbg)}
+.ltrack.dir-miss .ltr-head{color:#a32036}
+.ltrack.is-done .ltr-head{font-size:14.5px}
+/* hero variant — compact, sits in the fused game header */
+.ltrack-hero{padding:9px 12px 10px;border-radius:12px;box-shadow:var(--glass-shadow)}
+.ltrack-hero .ltr-head{font-size:13.5px;margin-top:4px}
+.gp-trend .ltrack-hero{margin-top:0}
 
 
 /* --- Article reader: graded result on the pick (final games) --- */
