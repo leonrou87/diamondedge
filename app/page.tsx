@@ -3820,16 +3820,11 @@ export default function Home() {
     function tickerItems() {
       const src = livePayload || payload;
       if (!src || !src.games) return [];
-      const t = todayISO();
-      const pool = ((src.games || []) as any[]).filter((g: any) => {
-        const st0 = String(g.status || "pre").toLowerCase();
-        const d = gameLocalDay(g);
-        if (st0 === "live") return true;
-        return d === t || (st0 === "pre" && !d);
-      });
-      // live first, then upcoming, then finals; cap for a tight strip
-      const rank = (g: any) => { const s = String(g.status || "pre").toLowerCase(); return s === "live" ? 0 : s === "final" ? 2 : 1; };
-      return pool.sort((a: any, b: any) => rank(a) - rank(b)).slice(0, 20);
+      // LIVE games ONLY — a live-scores strip. Nothing scheduled or finished, so it
+      // can never show a game that isn't currently playing. Empty => renderTicker hides it.
+      return ((src.games || []) as any[])
+        .filter((g: any) => String(g.status || "").toLowerCase() === "live")
+        .slice(0, 20);
     }
     function tickerItemHtml(g: any) {
       const gs = gameState(g);
