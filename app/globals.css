@@ -433,6 +433,23 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* One continuous frosted capsule; the days are quiet typographic cells inside it and a
    fluid glass lens slides under the active day. No per-pill borders anywhere. */
 .datebar{display:flex;align-items:center;gap:8px;margin:7px 0 8px}
+/* Date selection LEADS the Games tab now, on its own distinct soft band so it never merges
+   into the page. The inner strip goes transparent so there's no card-in-card. */
+.datebar.lead{margin:8px 0 10px;padding:6px 8px;border-radius:16px;background:linear-gradient(180deg,rgba(55,73,106,.09),rgba(55,73,106,.03));border:1px solid var(--glass-brd);box-shadow:var(--e0)}
+.datebar.lead .datestrip{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:2px}
+/* Leagues sit BELOW the date, styled subtly — a quiet text-chip rail, not a heavy pill bar. */
+.subhead.subtle{position:static;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;margin:0 -2px 8px;padding:0}
+.subhead.subtle .sporttabs{background:transparent;border:0;box-shadow:none;padding:1px 0;gap:2px}
+.subhead.subtle .sporttab{font-size:11px;min-height:28px;padding:4px 9px;color:var(--ink3);letter-spacing:.05em}
+.subhead.subtle .sporttab::before{width:14px;height:14px;box-shadow:none;background:rgba(255,255,255,.55)}
+.subhead.subtle .sporttab.on{color:#04543a}
+.subhead.subtle .sporttab.haslive{color:var(--ink2)}
+/* Small performance banner (overall picks + top-picks standing) */
+.recchip.perf{gap:8px}
+.recchip.perf .pf-k{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.recchip.perf .pf-v{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink);letter-spacing:-.01em}
+.recchip.perf .pf-v.pending{font-family:var(--sans);font-weight:500;font-size:10.5px;color:var(--ink3);letter-spacing:0}
+.recchip.perf .pf-top{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.02em;color:var(--golddeep);background:var(--goldbg);border-radius:999px;padding:2px 8px}
 /* COMPACT inline date strip — weekday + day number on ONE line per cell (reclaims vertical
    space vs the stacked "weekday-above-number" layout), a sliding emerald lens under the
    active day, a Today dot marker. Slimmer capsule to match. */
@@ -639,6 +656,30 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .t-col .tc-v{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
 .t-col .tc-v.none{color:var(--ink3);font-weight:600}
 @media(max-width:400px){.t-col{min-width:48px}.t-cols{padding-left:9px}}
+/* ── ALL-LINES ROW: Spread · Total · Moneyline, with any market we'd bet CALLED OUT ──
+   A 3-up grid so the three markets + labels never stack or overlap on small screens. */
+.lnrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px}
+.lncell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;min-width:0;padding:7px 5px;border:0;border-radius:11px;background:rgba(22,36,60,.04);font:inherit}
+.lncell .ln-k{font-family:var(--disp);font-weight:600;font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2}
+.lncell .ln-v{font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+/* the market we'd actually bet — tinted by tier, our side + star rating */
+.lncell.pick{cursor:pointer;background:var(--pickbg);box-shadow:inset 0 0 0 1px var(--pickline)}
+.lncell.pick.q-strong{background:var(--goldbg);box-shadow:inset 0 0 0 1px var(--goldline)}
+.lncell.pick.q-good{background:var(--greenbg);box-shadow:inset 0 0 0 1px var(--greenline)}
+.lncell.pick .ln-k{color:var(--ink2);font-weight:700}
+.lncell.pick .ln-side{font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lncell.pick .ln-side i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink2);margin-left:2px}
+.lncell .ln-stars{display:inline-flex;align-items:center;gap:5px}
+.lncell .ln-stars .qdia{font-size:11px}
+.lncell .ln-res{font-family:var(--disp);font-weight:800;font-size:10px}
+.lncell .ln-res.won{color:var(--hit)}.lncell .ln-res.lost{color:var(--miss)}.lncell .ln-res.pushed{color:var(--push)}
+.lncell.pick.res-won,.lncell.pick.won{background:var(--hitbg);box-shadow:inset 0 0 0 1px var(--hitline)}
+.lncell.pick.res-lost,.lncell.pick.lost{background:var(--missbg);box-shadow:inset 0 0 0 1px var(--missline)}
+/* locked pick market — lock + blurred stars (unpaid) */
+.lncell.pick.locked .ln-lock{display:inline-flex;align-items:center;gap:5px;color:var(--golddeep)}
+.lncell.pick.locked .ln-lock svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2}
+.lncell.pick.locked .ln-dots{font-size:11px;letter-spacing:1px;color:var(--gold);filter:blur(3px)}
+@media(max-width:360px){.lncell{padding:6px 3px}.lncell .ln-side,.lncell .ln-v{font-size:12px}}
 /* 2-UP MOBILE (≤819px): the board is a 2-col grid, so each card is narrow. Stack the
    O/U + Spread columns BELOW the team rows (full width, split 50/50) instead of beside
    them — the side-by-side layout doesn't fit a ~170px card at 375px. Tighter tile padding

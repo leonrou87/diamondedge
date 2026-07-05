@@ -1825,6 +1825,30 @@ export default function Home() {
       if (!parts.length) return "";
       return `<div class="mline">${parts.join(`<span class="msep">·</span>`)}</div>`;
     }
+    // ALL THREE Vegas markets woven onto a card — Spread · Total · Moneyline — with any market
+    // we'd actually bet CALLED OUT (our side + star rating). Markets we pass show the plain line.
+    // A clean 3-column grid so labels never stack/overlap on small screens.
+    function allLinesRow(g: any) {
+      const P = gamePlays(g);
+      const cell = (m: string, label: string) => {
+        const pl = P[m];
+        const isTake = pl && pl.action === "TAKE" && pl.side;
+        const line = vegasLine(g, m); // pre-escaped safe HTML ("BOS -1.5" / "O/U 8.5" / "LAA +120")
+        if (isTake) {
+          const q = qualityOf(pl);
+          const st = playState(g, pl);
+          const locked = pickLocked(pl, st);
+          if (locked) {
+            return `<button class="lncell pick locked q-${q}" data-up="1" aria-label="${label} pick — unlock"><span class="ln-k">${label}</span><span class="ln-lock">${lockSvg}<span class="ln-dots" aria-hidden="true">★★★</span></span></button>`;
+          }
+          const mark = resMark(st);
+          const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
+          return `<div class="lncell pick q-${q} ${st}"><span class="ln-k">Our call · ${label}</span><span class="ln-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ln-stars">${qDiamonds(q)}${mark ? `<span class="ln-res ${st}">${mark}</span>` : ""}</span></div>`;
+        }
+        return `<div class="lncell"><span class="ln-k">${label}</span><span class="ln-v">${line || "—"}</span></div>`;
+      };
+      return `<div class="lnrow">${cell("spread", "Spread")}${cell("total", "Total")}${cell("moneyline", "Moneyline")}</div>`;
+    }
     // Live progress for a frozen total pick: the current total filling toward the line.
     function pickProgress(g: any, pl: any, st: string) {
       if (!pl || pl.market !== "total") return "";
@@ -1947,19 +1971,13 @@ export default function Home() {
       const formHtml = fm
         ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}${fm.recIsL15 ? `<i class="tf-tag">L15</i>` : ""}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
         : "";
-      // The pre-game moneyline sits WITH the team (the spread now lives in its own column).
-      // A light per-side price so the card still carries "who's favored" at a glance.
-      let mlHtml = "";
-      if (!started) {
-        const o = teamOdds(g, which);
-        if (o.ml != null) mlHtml = `<span class="t-ml">${esc(o.ml)}</span>`;
-      }
+      // Odds (spread/ML/total) live in the 3-market line row below now, so the team row stays
+      // clean: crest · abbr · recent form · score.
       return `<div class="t-row ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
         <span class="t-crest">${gCrest(g, which)}</span>
         <span class="t-ab">${esc(ab)}</span>
         ${formHtml}
         <span class="t-rsp"></span>
-        ${mlHtml}
         ${scoreHtml}
       </div>`;
     }
@@ -2073,16 +2091,17 @@ export default function Home() {
       // The reference "Live & Upcoming" card: header (league tag + state chip) · body (team
       // rows on the left, the O/U + Spread columns on the right) · the DiamondEdge pick strip.
       // Pre-game shows the odds columns; once the score matters they quiet to the score itself.
-      const cols = gs.kind === "pre" ? oddsCols(g) : "";
+      // Pre-game: the 3-market line row (all Vegas lines + our starred call) does the work.
+      // Live/final: the score carries it, and the pick strip shows the live read / verdict.
+      const pre = gs.kind === "pre";
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
         <div class="t-head">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="t-body">
           <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
-          ${cols}
         </div>
-        ${totOnly}
-        ${pick ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
+        ${pre ? allLinesRow(g) : totOnly}
+        ${pre ? "" : (pick ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
         ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
     }
@@ -2301,29 +2320,40 @@ export default function Home() {
       const anchor = coldEdge ? `<span class="glp-anchor">long-run ${longRunPct()}%</span>` : "";
       return `<span class="rc-today rc-split"><span class="glp-scope">${scopeLab}</span>${parts.join(`<span class="glp-sep">·</span>`)}${anchor}</span>`;
     }
+    // Overall pick record for the VIEWED date/league — across ALL markets (spread + total + ML),
+    // plus a separate "top picks" (Strong ★★★) tally. Drives the small performance banner.
+    function dayPicksTally() {
+      const games = payload ? gamesForLeague(payload, league) : [];
+      let w = 0, l = 0, p = 0, sw = 0, sl = 0;
+      games.forEach((g: any) => {
+        const P = gamePlays(g);
+        MARKETS.forEach((mk) => {
+          const pl = P[mk];
+          if (!pl || pl.action !== "TAKE" || !pl.result) return;
+          const s = pl.result.status;
+          const strong = qualityOf(pl) === "strong";
+          if (s === "hit") { w++; if (strong) sw++; }
+          else if (s === "miss") { l++; if (strong) sl++; }
+          else if (s === "push") p++;
+        });
+      });
+      return { w, l, p, sw, sl, n: w + l + p };
+    }
+    // Small performance banner — OVERALL across all picks for the day, with a separate Top-picks
+    // (Strong) standing. Tapping opens the full record broken down by confidence level (scoped to
+    // the viewed date/league). Replaces the old totals-only "Today's Edge" line.
     function metaRow() {
-      // "Picks" means the DiamondEdge Pick = TOTALS (the validated edge). We DON'T blend the
-      // spread/moneyline leans into the headline number — that would flatter a rough day.
-      // The day figure tracks the DATE you're viewing (navigate the strip → it updates), with a
-      // little gold flex when the Strong picks had a great day.
       const isToday = curDate === todayISO();
-      const dr = dayRecordFor(curDate);
-      const m = monthRec();
-      const mt = m ? m.byMk.total : { w: 0, l: 0 };
-      const dayLab = isToday ? "Today" : "That day";
-      // The DAY glance now shows the EDGE (totals) and LEANS (spread/ML) as SEPARATE W–L, from
-      // the same tier tally — so a lean loss and an edge loss never look identical, and a cold
-      // edge day carries a muted "long-run 58%" anchor instead of reading as a broken model.
-      const dayTierRec = tierRecordFor((g: any) => String(g.date || "").slice(0, 10) === curDate);
-      const dayTxt = edgeLeanGlance(dayTierRec, dayLab, isToday);
-      const goldTxt = dr && dr.graded && (dr.goldGreat || (dr.gw && !dr.gl)) ? `<span class="rc-gold">★ ${dr.gw}–${dr.gl}</span>` : "";
-      // The month figure stays the TOTALS edge (never blended) — the honest headline "our record".
-      // A cold MONTH edge (graded losing totals record) carries the SAME "long-run 58%" anchor the
-      // DAY glance uses (edgeLeanGlance's coldEdge branch), so the two figures are framed consistently.
-      const monthCold = (mt.w + mt.l) > 0 && mt.l > mt.w;
-      const monthAnchor = monthCold ? ` <span class="glp-anchor">long-run ${longRunPct()}%</span>` : "";
-      const monthTxt = (mt.w + mt.l) ? `Edge ${mt.w}–${mt.l}${dayTxt ? "" : ` <span class="rc-wl">W–L</span>`} this month${monthAnchor}` : "Our record";
-      const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${dayTxt ? `${dayTxt}${goldTxt}<span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
+      const dayLab = isToday ? "Today" : "This day";
+      const t = dayPicksTally();
+      let inner: string;
+      if (!t.n) {
+        inner = `<span class="pf-k">${esc(dayLab)}'s picks</span><span class="pf-v pending">graded as games finish</span>`;
+      } else {
+        const strongTxt = (t.sw + t.sl) ? `<span class="pf-top">★ Top picks ${t.sw}–${t.sl}</span>` : "";
+        inner = `<span class="pf-k">${esc(dayLab)}'s picks</span><span class="pf-v">${t.w}–${t.l}${t.p ? ` · ${t.p}P` : ""}</span>${strongTxt}`;
+      }
+      const chip = `<button class="recchip perf" id="recchip" aria-label="See the full pick record, broken down by confidence level">${inner}<span class="rc-arw">→</span></button>`;
       return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
 
@@ -2412,15 +2442,15 @@ export default function Home() {
         return `<button class="sporttab ${lg === league ? "on" : ""}${live ? " haslive" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}${live ? `<span class="livedot" aria-label="live games"></span>` : ""}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
       root.querySelector("#games-view").innerHTML = `
-        <div class="subhead compact">
-          <div class="sporttabs" id="sporttabs">${tabsHtml}<span class="tab-ink" id="tab-ink"></span></div>
-        </div>
-        <div class="datebar">
+        <div class="datebar lead">
           <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
           <div class="datetools">
             <span class="calwrap"><button class="dtool cal" id="cal-btn" title="Pick a date" aria-label="Pick a date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.6h17M8 3v3.4M16 3v3.4"/><circle cx="12" cy="14.8" r="1.4" fill="currentColor" stroke="none"/></svg></button><input type="date" id="date-input" aria-label="Pick a date" value="${curDate}" min="${minDate}" max="${maxDate > shiftDate(todayISO(), 5) ? maxDate : shiftDate(todayISO(), 5)}"></span>
             <button class="dtool hist ${histOpen || rangeMode ? "on" : ""}" id="hist-btn" title="Scan a date range">History</button>
           </div>
+        </div>
+        <div class="subhead compact subtle">
+          <div class="sporttabs" id="sporttabs">${tabsHtml}<span class="tab-ink" id="tab-ink"></span></div>
         </div>
         <div id="meta-area" class="meta-area">${metaRow()}</div>
         <div id="hist-area">${histOpen ? histPanel() : ""}</div>
