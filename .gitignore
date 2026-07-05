@@ -50,3 +50,9 @@ OPS_DEPLOYMENT.md
 
 # stray audit artifacts
 audit-screenshots/
+
+# model experiments run by Codex (shadow only — NEVER commit to the PUBLIC repo)
+t2_*/
+t1_*/
+de_experiments/
+*_experiment/

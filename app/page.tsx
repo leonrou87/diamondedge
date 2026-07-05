@@ -1829,6 +1829,17 @@ export default function Home() {
         const prog = pickProgress(g, pl, st);
         if (prog) liveRow = prog;
       }
+      // GRADED VERDICT: once a pick finishes, keep the in-flight story going with a short
+      // past-tense plain-English line ("OVER 8.5 cashed · final 11") so the card doesn't
+      // collapse to a bare ✓/✗. Reuses liveTrackingRead's final-state phrasing (no new grading).
+      let verdictRow = "";
+      if ((st === "won" || st === "lost" || st === "pushed") && gs.kind === "final") {
+        const tr = liveTrackingRead(g, pl);
+        if (tr && tr.head) {
+          const vcls = st === "won" ? "won" : st === "lost" ? "lost" : "pushed";
+          verdictRow = `<div class="ps-verdict ${vcls}">${esc(tr.head)}</div>`;
+        }
+      }
       return `<div class="pstrip q-${q} ${st}">
         <div class="ps-main">
           <span class="ps-k">${pickLabel(g)}</span>
@@ -1836,6 +1847,7 @@ export default function Home() {
           ${qDiamonds(q)}
           ${state ? `<span class="ps-res ${state.cls}">${state.txt}</span>` : ""}
         </div>
+        ${verdictRow}
         ${liveRow}
       </div>`;
     }
@@ -2035,6 +2047,55 @@ export default function Home() {
     }
     const todayTierRec = () => tierRecordFor((g: any) => String(g.date || "").slice(0, 10) === todayISO());
     const monthTierRec = () => tierRecordFor((g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7));
+    // ===================== THE RECORD LADDER (one mental model everywhere) =====================
+    // The whole app tells ONE story about how the picks are doing: long-run we're 58% (the nav
+    // anchor / validated signature) → this window the EDGE (totals, the validated play) is X–Y
+    // and the LEANS (spread/ML directional reads) are A–B → tap for the exact picks. The Edge
+    // and the Leans are ALWAYS split so a lean loss and an edge loss never read identically, and
+    // a bad edge stretch is always framed against the 886-pick record as normal variance.
+    //
+    // edgeLeanSplit() collapses tierRecordFor()'s three tiers into that two-part shape WITHOUT
+    // recomputing anything: Edge = Strong + Good (both are totals); Leans = the Lean tier
+    // (spread + moneyline). Same grading path (pickResult/qualityOf) — presentation only.
+    function edgeLeanSplit(tr: any) {
+      if (!tr) return null;
+      const add = (a: any, b: any) => ({ w: a.w + b.w, l: a.l + b.l, push: (a.push || 0) + (b.push || 0), live: a.live + b.live, up: a.up + b.up });
+      const edge = add(tr.strong, tr.good);
+      const lean = { w: tr.lean.w, l: tr.lean.l, push: tr.lean.push || 0, live: tr.lean.live, up: tr.lean.up };
+      return {
+        edge, lean,
+        edgeGraded: edge.w + edge.l, leanGraded: lean.w + lean.l,
+        anyGraded: edge.w + edge.l + lean.w + lean.l,
+        anyOut: edge.live + edge.up + lean.live + lean.up,
+      };
+    }
+    const longRunPct = () => Math.round(recipeHistory().hit * 100); // the 58% anchor
+    // The two-part glance chip body: "Edge W–L · Leans W–L" with a muted "long-run 58%" anchor
+    // appended on a cold EDGE window so a 0–2 edge day never reads as a broken model. Both W–L
+    // parts are always shown when either side has graded picks, visibly distinct (edge vs lean).
+    function edgeLeanGlance(tr: any, scopeLab: string, isToday: boolean) {
+      const s = edgeLeanSplit(tr);
+      if (!s || (!s.anyGraded && !s.anyOut)) return "";
+      const wl = (o: any, kind: string, cls: string) => {
+        const dec = o.w + o.l;
+        const out = o.live + o.up;
+        if (!dec && !out) return "";
+        const rec = dec
+          ? `<b>${o.w}–${o.l}</b>`
+          : `<span class="glp-out">${out} ${isToday ? (o.live ? "live" : "to come") : "to come"}</span>`;
+        const outTail = dec && out ? `<span class="glp-out">+${out}</span>` : "";
+        return `<span class="glp ${cls}"><span class="glp-k">${kind}</span>${rec}${outTail}</span>`;
+      };
+      const edgeTxt = wl(s.edge, "Edge", "glp-edge");
+      const leanTxt = wl(s.lean, "Leans", "glp-lean");
+      const parts = [edgeTxt, leanTxt].filter(Boolean);
+      if (!parts.length) return "";
+      // Cold EDGE = the validated play is under water this window (a graded losing edge record).
+      // That's exactly when a user reads "0–2" as broken — so anchor it to the long-run 58%.
+      const coldEdge = s.edgeGraded > 0 && s.edge.l > s.edge.w;
+      const anchor = coldEdge ? `<span class="glp-anchor">long-run ${longRunPct()}%</span>` : "";
+      return `<span class="rc-today rc-split"><span class="glp-scope">${scopeLab}</span>${parts.join(`<span class="glp-sep">·</span>`)}${anchor}</span>`;
+    }
     function metaRow() {
       // "Picks" means the DiamondEdge Pick = TOTALS (the validated edge). We DON'T blend the
       // spread/moneyline leans into the headline number — that would flatter a rough day.
@@ -2044,14 +2105,16 @@ export default function Home() {
       const dr = dayRecordFor(curDate);
       const m = monthRec();
       const mt = m ? m.byMk.total : { w: 0, l: 0 };
-      const outstanding = dr ? dr.live + dr.up : 0;
       const dayLab = isToday ? "Today" : "That day";
-      // W–L is made unmistakable: the first record carries a small "W–L" legend so "0–3"
-      // can never be misread. Clicking the chip opens the per-strength breakdown.
-      const dayTxt = (dr && (dr.graded + outstanding)) ? `${dayLab} <b>${dr.w}–${dr.l}</b>${dr.graded ? ` <span class="rc-wl">W–L</span>` : ""}${outstanding ? ` · <b>${outstanding}</b> ${isToday ? "live" : "to come"}` : ""}` : "";
+      // The DAY glance now shows the EDGE (totals) and LEANS (spread/ML) as SEPARATE W–L, from
+      // the same tier tally — so a lean loss and an edge loss never look identical, and a cold
+      // edge day carries a muted "long-run 58%" anchor instead of reading as a broken model.
+      const dayTierRec = tierRecordFor((g: any) => String(g.date || "").slice(0, 10) === curDate);
+      const dayTxt = edgeLeanGlance(dayTierRec, dayLab, isToday);
       const goldTxt = dr && dr.graded && (dr.goldGreat || (dr.gw && !dr.gl)) ? `<span class="rc-gold">★ ${dr.gw}–${dr.gl}</span>` : "";
-      const monthTxt = (mt.w + mt.l) ? `${mt.w}–${mt.l}${dayTxt ? "" : ` <span class="rc-wl">W–L</span>`} this month` : "Our record";
-      const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${dayTxt ? `<span class="rc-today">${dayTxt}</span>${goldTxt}<span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
+      // The month figure stays the TOTALS edge (never blended) — the honest headline "our record".
+      const monthTxt = (mt.w + mt.l) ? `Edge ${mt.w}–${mt.l}${dayTxt ? "" : ` <span class="rc-wl">W–L</span>`} this month` : "Our record";
+      const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${dayTxt ? `${dayTxt}${goldTxt}<span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
       return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
 
@@ -3177,6 +3240,17 @@ export default function Home() {
         if (!expandable) return `<div class="rbt-item q-${q} flat">${head}</div>`;
         return `<details class="rbt-item q-${q}"><summary>${head}<span class="rbt-caret">›</span></summary>${tierPicksList(filt, q)}</details>`;
       };
+      // A small group W–L header ("The edge — totals" 1–2 · "Leans — spread & moneyline" 3–3)
+      // so the EDGE vs LEANS split is the PRIMARY structure of the sheet, tiers nested under it.
+      const groupHead = (title: string, sub: string, tiers: string[], rec: any) => {
+        let w = 0, l = 0, live = 0, up = 0;
+        tiers.forEach((q) => { const o = rec[q]; w += o.w; l += o.l; live += o.live; up += o.up; });
+        const dec = w + l, out = live + up;
+        const recTxt = dec
+          ? `<b class="rbg-wl">${w}–${l}</b><span class="rbg-legend">W–L</span>`
+          : (out ? `<span class="rbt-none">none graded yet</span>` : `<span class="rbt-none">—</span>`);
+        return `<div class="rbg-head"><div class="rbg-t"><b>${title}</b><i>${sub}</i></div><span class="rbg-rec">${recTxt}${out ? `<span class="rbt-out">${live ? `${live} live` : ""}${live && up ? " · " : ""}${up ? `${up} to come` : ""}</span>` : ""}</span></div>`;
+      };
       const block = (scope: any) => {
         const rec = tierRecordFor(scope.filt);
         const gradedAny = rec && rec.gradedTotal;
@@ -3184,10 +3258,17 @@ export default function Home() {
         const overall = rec && (gradedAny || outAny)
           ? `<div class="rbt-overall"><span class="rbt-overall-lab">Overall</span><b>${rec.w} won · ${rec.l} lost</b>${outAny ? `<span class="rbt-out">${rec.live ? `${rec.live} live` : ""}${rec.live && rec.up ? " · " : ""}${rec.up ? `${rec.up} to come` : ""}</span>` : ""}</div>`
           : "";
+        // Two honest groups: The edge (totals = Strong + Good) and Leans (spread & moneyline = Lean).
+        const edgeGroup = rec
+          ? `${groupHead("The edge — totals", "the validated +EV play", ["strong", "good"], rec)}${["strong", "good"].map((q) => tierRow(rec, q, scope.filt)).join("")}`
+          : "";
+        const leanGroup = rec
+          ? `${groupHead("Leans — spread &amp; moneyline", "directional reads, not validated", ["lean"], rec)}${tierRow(rec, "lean", scope.filt)}`
+          : "";
         const body = rec && (gradedAny || outAny)
-          ? `${overall}${["strong", "good", "lean"].map((q) => tierRow(rec, q, scope.filt)).join("")}`
+          ? `${overall}<div class="rbt-group">${edgeGroup}</div><div class="rbt-group">${leanGroup}</div>`
           : `<div class="rb-sub">${scope.empty}</div>`;
-        return `<div class="dsec"><div class="dsec-h">${scope.lab} · by pick strength</div>${body}</div>`;
+        return `<div class="dsec"><div class="dsec-h">${scope.lab} · the record ladder</div>${body}</div>`;
       };
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
@@ -3200,6 +3281,7 @@ export default function Home() {
             <div class="sh-meta">wins–losses by pick strength · graded against real final scores</div>
           </div>
           <div class="sh-body">
+            <div class="rbt-howread">How to read this — only the totals <b>edge</b> is validated at +EV. <b>Leans</b> are directional reads we grade in the open; a cold day on either is normal variance over an ${rh.n.toLocaleString()}-pick record.</div>
             ${block(scopes[0])}
             ${block(scopes[1])}
             <div class="dsec">
@@ -4195,10 +4277,14 @@ export default function Home() {
       const isToday = curDate === todayISO();
       const dayRec = dayRecordFor(curDate);
       const mr = monthRecord();
-      // masthead record pill reflects the DATE you're viewing; gold flex only on a great day
+      // masthead record pill reflects the DATE you're viewing; it names the EDGE (totals, the
+      // validated play) so it sits in the same ladder as the glance chip and the breakdown sheet.
+      // On a cold edge day it carries the muted long-run anchor so a bare loss reads as variance.
+      const coldEdgeDay = dayRec && dayRec.graded && dayRec.l > dayRec.w;
+      const anchorTxt = ` <span class="nm-anchor">long-run ${longRunPct()}%</span>`;
       const recLabel = dayRec && dayRec.graded
-        ? `Picks <b>${dayRec.w}–${dayRec.l}</b> <span class="nm-wl">W–L</span>${isToday ? " today" : ""}`
-        : (isToday && mr ? `Picks <b>${mr.w}–${mr.l}</b> <span class="nm-wl">W–L</span> this month` : "The record");
+        ? `Edge <b>${dayRec.w}–${dayRec.l}</b> <span class="nm-wl">W–L</span>${isToday ? " today" : ""}${coldEdgeDay ? anchorTxt : ""}`
+        : (isToday && mr ? `Edge <b>${mr.w}–${mr.l}</b> <span class="nm-wl">W–L</span> this month` : "The record");
       const goldChip = dayRec && (dayRec.gw + dayRec.gl) && (dayRec.goldGreat || (dayRec.gw && !dayRec.gl))
         ? `<span class="nm-gold${dayRec.goldGreat ? " hot" : ""}" title="Gold (Strong) picks ${dayRec.gw}–${dayRec.gl}">★ Gold ${dayRec.gw}–${dayRec.gl}${dayRec.goldGreat ? " 🔥" : ""}</span>`
         : "";
