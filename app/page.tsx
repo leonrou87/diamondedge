@@ -37,8 +37,8 @@ export default function Home() {
     // Base document title — restored when a game sheet closes; a game sheet sets a per-matchup title
     // so shared/opened ?g= links, bookmarks, browser history and tabs read as the actual game.
     const DEF_TITLE = (typeof document !== "undefined" && document.title) || "DiamondEdge — Today's Picks, Games & Results";
-    const SPORT_LABEL: any = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
-    const SPORT_ICON: any = { mlb: "⚾", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
+    const SPORT_LABEL: any = { all: "All", mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
+    const SPORT_ICON: any = { all: "◆", mlb: "⚾", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
     const SPORT_UNIT: any = { mlb: "runs", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
@@ -1238,6 +1238,20 @@ export default function Home() {
     function gamesForLeague(p: any, lg: string, dateISO?: string) {
       const forDate = dateISO || curDate;
       const all = (p && p.games) || [];
+      // "All" — the merged board across every league, live-first. Reuse the per-league
+      // path (date filtering + live-first sort already applied per league), then re-merge
+      // and re-sort so LIVE games from any sport rise to the top of one combined list.
+      if (lg === "all") {
+        const merged = SPORTS.flatMap((s) => gamesForLeague(p, s, dateISO));
+        const ord: any = { live: 0, pre: 1, final: 2 };
+        merged.sort((a: any, b: any) => {
+          const d = (ord[(a.status || "pre").toLowerCase()] ?? 1) - (ord[(b.status || "pre").toLowerCase()] ?? 1);
+          if (d) return d;
+          const ta = String(a.start_ts || a.start_time || ""), tb = String(b.start_ts || b.start_time || "");
+          return ta < tb ? -1 : ta > tb ? 1 : 0;
+        });
+        return merged;
+      }
       let inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
       // PAST/KEYED dates: the daily snapshots are captures of the whole live board, which
       // carries a long finals tail from OTHER days (even other years). A selected date must
@@ -1725,6 +1739,39 @@ export default function Home() {
       const right = q ? qDiamonds(q) : (dayTag || comp);
       return `<div class="t-status">${left}${right}</div>`;
     }
+    // Reference card header: a small LEAGUE TAG (left) + a GAME-STATE CHIP pill (right):
+    // live inning / start time / "Final". The chip carries the game phase at a glance.
+    function leagueTag(g: any) {
+      const lg = String(g.sport || "").toLowerCase();
+      const comp = g.meta && g.meta.competition ? esc(g.meta.competition) : "";
+      return `<span class="t-league"><span class="tl-ic" data-ic="${SPORT_ICON[lg] || "◆"}"></span>${esc(SPORT_LABEL[lg] || lg.toUpperCase())}${comp ? `<span class="tl-comp">${comp}</span>` : ""}</span>`;
+    }
+    function stateChip(g: any, gs: any) {
+      if (gs.kind === "live") {
+        const lab = gs.label && gs.label !== "Live" ? gs.label : "LIVE";
+        return `<span class="statechip live"><span class="livedot"></span>${esc(lab)}</span>`;
+      }
+      if (gs.kind === "final") return `<span class="statechip final">Final</span>`;
+      // pre: prefer the time; when browsing another day, show that day tag too
+      const t = gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : (gs.si.date || "TBD");
+      const dayTag = gameLocalDay(g) && gameLocalDay(g) !== curDate && gs.si.date ? `${esc(gs.si.date)} · ` : "";
+      return `<span class="statechip pre">${dayTag}${esc(t)}</span>`;
+    }
+    // The O/U (shared total) + SPREAD (home run-line) columns on the right of a card.
+    // Pre-game shows the lines; once the game matters (live/final) the score carries it, so
+    // the odds columns quiet down. Each cell degrades independently if the market isn't served.
+    function oddsCols(g: any) {
+      const tp = g.total_pick;
+      const ouVal = tp && tp.line != null ? num(tp.line) : null;
+      let spVal: string | null = null;
+      const sp = g.spread_pick;
+      if (sp && sp.line != null) { const hl = spreadHomeLine(g, sp); spVal = `${esc(g.home_abbr)} ${sgn(hl)}`; }
+      if (ouVal == null && spVal == null) return "";
+      return `<div class="t-cols">
+        <div class="t-col"><span class="tc-k">O/U</span><span class="tc-v">${ouVal != null ? ouVal : "—"}</span></div>
+        <div class="t-col"><span class="tc-k">Spread</span><span class="tc-v${spVal ? "" : " none"}">${spVal || "—"}</span></div>
+      </div>`;
+    }
     // A scores-app team line: logo · ABBR · form(L15 + streak) · this side's spread(px) + ML · SCORE.
     // The odds live WITH the team so the card needs no separate stacked market strip.
     // Pre-game shows odds; live/final shows the score. Everything degrades independently.
@@ -1745,23 +1792,19 @@ export default function Home() {
       const formHtml = fm
         ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}${fm.recIsL15 ? `<i class="tf-tag">L15</i>` : ""}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
         : "";
-      // this side's spread + moneyline (pre-game only; the odds vanish once the score
-      // matters). Compact scores-app convention: spread LINE + ML price (spread price is
-      // dropped on the tile to stay one clean line — the full price lives in the detail).
-      let oddsHtml = "";
+      // The pre-game moneyline sits WITH the team (the spread now lives in its own column).
+      // A light per-side price so the card still carries "who's favored" at a glance.
+      let mlHtml = "";
       if (!started) {
         const o = teamOdds(g, which);
-        const parts: string[] = [];
-        if (o.spread != null) parts.push(`<span class="to-sp">${sgn(o.spread)}</span>`);
-        if (o.ml != null) parts.push(`<span class="to-ml">${esc(o.ml)}</span>`);
-        if (parts.length) oddsHtml = `<span class="t-odds">${parts.join(`<span class="to-sep">·</span>`)}</span>`;
+        if (o.ml != null) mlHtml = `<span class="t-ml">${esc(o.ml)}</span>`;
       }
       return `<div class="t-row ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
         <span class="t-crest">${gCrest(g, which)}</span>
         <span class="t-ab">${esc(ab)}</span>
         ${formHtml}
         <span class="t-rsp"></span>
-        ${oddsHtml}
+        ${mlHtml}
         ${scoreHtml}
       </div>`;
     }
@@ -1864,19 +1907,21 @@ export default function Home() {
       // ONE compact pick strip carries the DiamondEdge Pick + live read + one bar. No
       // duplicate diamonds, no separate stacked market strip, no second progress bar.
       const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
-      const totPick = g.total_pick && g.total_pick.line != null ? Number(g.total_pick.line) : null;
+      // Live/final: a total-only note when the score isn't split into home/away.
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
         ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
-      // The shared total (O/U) shown ONCE — it's the DiamondEdge Pick market. Pre-game only;
-      // suppressed when the pick itself IS the total (the strip already names it).
-      const pickIsTotal = pick && pick.market === "total";
-      const totLine = gs.kind === "pre" && totPick != null && !pickIsTotal
-        ? `<div class="t-total"><span class="tt-k">O/U</span><b>${num(totPick)}</b></div>` : "";
+      // The reference "Live & Upcoming" card: header (league tag + state chip) · body (team
+      // rows on the left, the O/U + Spread columns on the right) · the DiamondEdge pick strip.
+      // Pre-game shows the odds columns; once the score matters they quiet to the score itself.
+      const cols = gs.kind === "pre" ? oddsCols(g) : "";
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
-        ${tileStatus(g, gs)}
-        <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
-        ${totOnly}${totLine}
+        <div class="t-head">${leagueTag(g)}${stateChip(g, gs)}</div>
+        <div class="t-body">
+          <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
+          ${cols}
+        </div>
+        ${totOnly}
         ${pick ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
         ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
@@ -2186,7 +2231,8 @@ export default function Home() {
     }
     function renderScoresChrome() {
       const tabSrc = livePayload || payload;
-      const tabsHtml = orderedLeagues(tabSrc).map((lg) => {
+      // "All" leads the rail (merged, live-first), then each league by game count.
+      const tabsHtml = ["all", ...orderedLeagues(tabSrc)].map((lg) => {
         const lgGames = tabSrc ? gamesForLeague(tabSrc, lg) : [];
         const cnt = lgGames.length;
         // a pulsing dot when a league has a game in progress right now (drives users to the live board)
@@ -2252,17 +2298,28 @@ export default function Home() {
         const games = gamesForLeague(payload, league);
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         if (!games.length) {
-          body.innerHTML = `<div class="state"><div class="st-ico">${SPORT_LABEL[league]}</div><div class="big">No ${SPORT_LABEL[league]} on the board</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Results tab.</div></div>`;
+          const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
+          body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Results tab.</div></div>`;
         } else {
           // Featured hero: the single highest-conviction pick game leads the slate.
           const ft = featuredPick(games);
           const rest = ft ? games.filter((g: any) => g !== ft.g) : games;
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
-          body.innerHTML = `${anyPick ? tierLegend() : ""}${ft ? featuredCard(ft.g, ft.pl) : ""}<div class="slate">${rest.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
-            <div class="refnote">${games.length} ${SPORT_LABEL[league]} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
+          // Reference "Live & Upcoming": group the remaining cards by game phase so LIVE games
+          // sit under a live subhead, upcoming below, finals last. gameState already gives phase.
+          const grp: any = { live: [], pre: [], final: [] };
+          rest.forEach((g: any) => { const k = gameState(g).kind; (grp[k] || grp.pre).push(g); });
+          let n = 0;
+          const section = (label: string, arr: any[], cls = "") => arr.length
+            ? `<div class="slate-sec ${cls}"><div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div><div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
+            : "";
+          const grouped = `${section("Live", grp.live, "live")}${section(ft ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}`;
+          const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
+          body.innerHTML = `${anyPick ? tierLegend() : ""}${ft ? featuredCard(ft.g, ft.pl) : ""}${grouped}
+            <div class="refnote">${games.length}${esc(lgSuffix)} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
       }
-      SPORTS.forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = payload ? gamesForLeague(payload, lg).length : 0; el.textContent = c || ""; } });
+      ["all", ...SPORTS].forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = payload ? gamesForLeague(payload, lg).length : 0; el.textContent = c || ""; } });
       bindMeta();
       bindCards();
       animateCounters(body);
