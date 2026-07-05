@@ -2612,7 +2612,7 @@ export default function Home() {
         s.push(`The sportsbooks themselves don't agree on this line today — they're posting ${pl.nlines} different numbers — and split lines like that have historically been beatable.`);
       if (pl.value_tier) {
         const rh = recipeHistory();
-        s.push(`Picks made exactly this way have won about ${(rh.hit * 100).toFixed(0)}% of the time since 2022 — and importantly, at prices good enough to come out ahead.`);
+        s.push(`Picks made exactly this way backtested around ${(rh.hit * 100).toFixed(0)}% since 2022 — real, but in-sample; the honest forward read is nearer 55% at morning prices, still ahead of break-even.`);
       } else {
         if (pl.p != null && pl.price != null)
           s.push(`The model gives this bet about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}.`);
@@ -2786,7 +2786,7 @@ export default function Home() {
       const rh = recipeHistory();
       return `<div class="shp-vrec">
         <div class="vr-h"><span class="pl-vdia">◆</span> Signature-play record</div>
-        <div class="vr-line">Calls made exactly this way have won ${(rh.hit * 100).toFixed(1)}% of the time since 2022 — at prices good enough to come out clearly ahead.</div>
+        <div class="vr-line">Calls made exactly this way won ${(rh.hit * 100).toFixed(1)}% since 2022 in backtest — real, but in-sample, so we plan around a more honest ~55% at morning prices (56.9% out-of-sample).</div>
         <table class="dsa-tab vr-tab">
           <thead><tr><th>Since going live</th><th>n</th><th>Win rate</th><th>Return</th></tr></thead>
           <tbody>${fRow("Strong", fwd.tier_a)}${fRow("Strong + Good", fwd.tier_ab)}</tbody>
@@ -2904,11 +2904,12 @@ export default function Home() {
       toastT = setTimeout(() => el.classList.remove("show"), 2600);
     }
     // Social share buttons for the whole app (bottom of the front page).
-    // Share tagline — lead with the validated record (social proof), fall back to the plain line.
+    // Share tagline — lead with the HONEST forward expectation (not the in-sample backtest %),
+    // then the clean out-of-sample evidence. Social proof that doesn't overstate the edge.
     function shareTagline() {
       const rh = recipeHistory();
       return rh && rh.n
-        ? `DiamondEdge — ${(rh.hit * 100).toFixed(1)}% on ${rh.n.toLocaleString()} sports picks, every one graded in the open.`
+        ? `DiamondEdge — a real, honestly-sized totals edge (~55% expected at morning prices; 56.9% on 239 picks the model never trained on). Every pick graded in the open.`
         : "DiamondEdge — every sports pick graded in the open.";
     }
     function socialShareBar() {
@@ -3379,7 +3380,7 @@ export default function Home() {
               <div class="dsec-h">The receipts</div>
               <div class="dsec-b rcp">
                 <p><b>Every pick is graded in public.</b> The side and line freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Insights tab.</p>
-                <p><b>Calls made exactly this way have won <b>${(rh.hit * 100).toFixed(1)}%</b> of the time since 2022</b> — and at prices good enough to come out clearly ahead, graded by a model that never saw the games in advance.</p>
+                <p><b>Calls made exactly this way backtested at <b>${(rh.hit * 100).toFixed(1)}%</b> since 2022</b> — real and rigorous, but in-sample. The honest forward read is <b>~55% at morning prices</b> (56.9% on 239 picks the model never trained on), graded by a model that never saw those games in advance.</p>
                 <p><b>Win rate always travels with the price.</b> A high hit rate at a terrible price is a losing bet — so every number we show you carries its return next to it.</p>
               </div>
             </div>
@@ -3502,9 +3503,9 @@ export default function Home() {
             ${block(scopes[0])}
             ${block(scopes[1])}
             <div class="dsec">
-              <div class="dsec-h">Standing validated record</div>
-              <div class="rbt-valid"><b>${(rh.hit * 100).toFixed(1)}% won</b><span class="rbt-valid-n">${rh.n.toLocaleString()} graded picks</span><span class="rbt-valid-roi ${rh.roi >= 0 ? "pos" : "neg"}">${rh.roi >= 0 ? "+" : ""}${(rh.roi * 100).toFixed(0)}% return</span></div>
-              <p class="rbt-valid-sub">The long-run signature record since 2022 — a 58% edge means cold days are normal variance, not a broken model.</p>
+              <div class="dsec-h">The honest expectation</div>
+              <div class="rbt-valid"><b>≈55% at morning prices</b><span class="rbt-valid-n">+3–4% expected</span><span class="rbt-valid-roi pos">56.9% · +8% out-of-sample</span></div>
+              <p class="rbt-valid-sub">Our backtest hit <b>${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded totals</b> at ${rh.roi >= 0 ? "+" : ""}${(rh.roi * 100).toFixed(0)}% — real and rigorous, but <b>in-sample</b> (this recipe was model-selected on that history), so the forward edge is honestly smaller. The cleanest evidence is the <b>239 picks the model never trained on: 56.9% · +8%</b>. A cold day is normal variance either way.</p>
             </div>
             <div class="dsec"><div class="dsec-b rcp"><p><b>Strong &amp; Good are totals — the validated DiamondEdge edge.</b> Lean holds our spread &amp; moneyline directional reads, kept separate so the flagship number is never inflated. Every call freezes before first pitch and the final score does the judging.</p></div></div>
             <button class="rb-full" id="rb-full">See the full record &amp; charts →</button>
@@ -4127,36 +4128,46 @@ export default function Home() {
       return { pts, totN, wGap, wPred, wAct };
     }
 
-    // The hero: the validated record as a confident, high-contrast statement. Big % · picks · return.
+    // The hero: the HONEST forward expectation, stated confidently but not overstated.
+    // We deliberately do NOT headline the 58.1%/886/+11% backtest — that number is real and
+    // rigorous but IN-SAMPLE (the winning policy was the best of ~29 recipes mined on the same
+    // data), so it overstates the forward edge. The hero leads with:
+    //   • the honest forward expectation (~55% at morning prices, +3–4%), and
+    //   • the clean OUT-OF-SAMPLE slice (56.9% / +8% on 239 picks the model never trained on),
+    // and the 58.1% backtest is shown BELOW, clearly relabelled as "backtested (in-sample)".
     function insHero() {
       const rh = recipeHistory();
       const vh = valHist();
       const sm = vh && vh.shopped_modal;
-      const ci = vh && vh.median_price && vh.median_price.hit_ci95;
       const by = vh && vh.by_year;
       const yrs = by ? Object.keys(by).filter((y) => /^\d{4}$/.test(y)).sort() : [];
       const span = yrs.length ? `${yrs[0]}–${yrs[yrs.length - 1]}` : "2022–2026";
-      const ciTxt = ci && ci.length === 2 ? `${(ci[0] * 100).toFixed(0)}–${(ci[1] * 100).toFixed(0)}%` : "";
-      return `<section class="ix-hero" aria-label="Validated record — headline">
+      // The clean out-of-sample slice — the strongest honest evidence (never used to pick the recipe).
+      const scs = vh && vh.selection_clean_split;
+      const clean = scs && scs["2022_23_never_used_to_select_recipe"];
+      const cleanN = clean && clean.n != null ? Number(clean.n) : 239;
+      const cleanHit = clean && clean.hit != null ? Number(clean.hit) : 0.569;
+      const cleanRoi = clean && clean.roi != null ? Number(clean.roi) : 0.084;
+      return `<section class="ix-hero" aria-label="Honest forward expectation">
         <div class="ix-hero-glow" aria-hidden="true"></div>
         <div class="ix-hero-top">
-          <span class="ix-badge">◆ Validated record · totals · ${esc(span)}</span>
+          <span class="ix-badge">◆ Totals edge · honest expectation</span>
           <span class="ix-live">Every pick graded in the open</span>
         </div>
         <div class="ix-hero-num">
-          <div class="ix-big"><span class="ix-pct">${(rh.hit * 100).toFixed(1)}</span><span class="ix-pctsym">%</span></div>
+          <div class="ix-big"><span class="ix-pct">≈55</span><span class="ix-pctsym">%</span></div>
           <div class="ix-big-cap">
-            <div class="ix-big-lab">of published picks won</div>
-            <div class="ix-big-sub">${rh.n.toLocaleString()} graded totals bets · ${sgn(rh.roi * 100, 0)}% return on every dollar${ciTxt ? ` · win rate holds in a ${ciTxt} band` : ""}</div>
+            <div class="ix-big-lab">win rate we expect at morning prices</div>
+            <div class="ix-big-sub">A real, priced-in edge on totals — roughly <b>+3–4% return</b> going forward, once we honestly discount for the fact that the winning recipe was chosen on past data. Break-even is 52.5%.</div>
           </div>
         </div>
         <div class="ix-hero-stats">
-          <div class="ix-stat"><b class="pos">${(rh.hit * 100).toFixed(1)}%</b><i>Win rate</i></div>
-          <div class="ix-stat"><b>${rh.n.toLocaleString()}</b><i>Graded picks</i></div>
-          <div class="ix-stat"><b class="pos">${sgn(rh.roi * 100, 0)}%</b><i>Return</i></div>
-          ${sm && sm.roi != null ? `<div class="ix-stat"><b class="pos">${sgn(sm.roi * 100, 0)}%</b><i>Shopping the price</i></div>` : ""}
+          <div class="ix-stat"><b class="pos">${(cleanHit * 100).toFixed(1)}%</b><i>Out-of-sample · ${cleanN} picks</i></div>
+          <div class="ix-stat"><b class="pos">${sgn(cleanRoi * 100, 0)}%</b><i>OOS return</i></div>
+          <div class="ix-stat"><b>${(rh.hit * 100).toFixed(1)}%</b><i>Backtest (in-sample)</i></div>
+          <div class="ix-stat"><b>${rh.n.toLocaleString()}</b><i>Backtested picks</i></div>
         </div>
-        <p class="ix-hero-line">This is the one number DiamondEdge is built to defend: a real, priced-in edge on totals, graded against final scores on games the model never saw in advance. Below is exactly where it comes from — and where it doesn't.</p>
+        <p class="ix-hero-line"><b>Why ~55% and not 58%?</b> Our full backtest hit <b>${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded totals</b> at ${sgn(rh.roi * 100, 0)}% — real and rigorously produced, but <b>in-sample</b>: this recipe was the best of ~29 we mined on that same history, so it flatters the forward number. The honest floor is the <b>${cleanN} picks the model never trained on: ${(cleanHit * 100).toFixed(1)}% · ${sgn(cleanRoi * 100, 0)}%</b> (directionally confirming, not yet independently significant). Our live forward sample is still tiny and proves nothing on its own — so we lead with the honest expectation, and show every real number below.</p>
       </section>`;
     }
 
@@ -4189,14 +4200,14 @@ export default function Home() {
       const matches = rc.sumN === rh.n && Math.abs((rc.blendHit || 0) - rh.hit) < 0.006;
       return `<section class="ix-sec" aria-label="Record by confidence tier">
         <div class="ix-sec-h">
-          <span class="ix-kick">Where the edge lives</span>
-          <h3 class="ix-h">The strong picks carry the record</h3>
-          <p class="ix-sub">Every published totals pick carries one honest word for how hard the signal fired. Here's what each tier has actually done across the validated history — win rate, the money it made, and the sample behind it. The dashed line on each bar is roughly break-even at typical prices.</p>
+          <span class="ix-kick">Inside the backtest</span>
+          <h3 class="ix-h">Where the backtested edge lives</h3>
+          <p class="ix-sub">These are the tiers <b>within the ${headlinePct}% in-sample backtest</b> — real, rigorous, but model-selected on this same history, so read them as structure, not the forward number. Each published totals pick carries one honest word for how hard the signal fired; here's win rate, the money it made, and the sample behind it. The dashed line on each bar is roughly break-even at typical prices.</p>
         </div>
         <div class="ix-tiers">${rc.tiers.map(card).join("")}</div>
         <div class="ix-reconcile ${matches ? "ok" : ""}">
           <span class="ix-rec-k">Reconciles</span>
-          <span class="ix-rec-body">${rc.tiers.map((t: any) => `${t.n}`).join(" + ")} = <b>${rc.sumN.toLocaleString()}</b> picks · ${rc.sumW}–${rc.sumL} blends to <b>${recPct}%</b> ${matches ? "=" : "≈"} the ${headlinePct}% headline${matches ? " ✓" : ""}</span>
+          <span class="ix-rec-body">${rc.tiers.map((t: any) => `${t.n}`).join(" + ")} = <b>${rc.sumN.toLocaleString()}</b> picks · ${rc.sumW}–${rc.sumL} blends to <b>${recPct}%</b> ${matches ? "=" : "≈"} the ${headlinePct}% backtest${matches ? " ✓" : ""}</span>
         </div>
       </section>`;
     }
@@ -4279,9 +4290,9 @@ export default function Home() {
         </div>
         <div class="ix-tp-grid">
           <div class="ix-tp-card validated">
-            <div class="ix-tp-tag">Validated</div>
+            <div class="ix-tp-tag">Real edge, honestly sized</div>
             <h4>The totals betting record</h4>
-            <p>The ${recipeHistory().n.toLocaleString()}-pick, ${(recipeHistory().hit * 100).toFixed(1)}% number above. Over/unders only — the one market where we publish a priced, graded, out-of-sample edge. This is what the gold ★ picks are built on.</p>
+            <p>Our backtest hit <b>${(recipeHistory().hit * 100).toFixed(1)}% over ${recipeHistory().n.toLocaleString()} graded totals</b> — real and rigorous, but <b>in-sample</b> (this recipe was model-selected on that history), so we don't sell it as the forward number. The honest read is <b>≈55% at morning prices, +3–4%</b>; the strongest clean evidence is the out-of-sample slice below. Over/unders only — the one market with a priced, graded edge, and what the gold ★ picks are built on.</p>
             ${cleanTxt}${eraTxt}
           </div>
           <div class="ix-tp-card context">
@@ -4394,7 +4405,7 @@ export default function Home() {
       const rs = $("res-share");
       if (rs) rs.onclick = async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
-        const txt = `DiamondEdge — our published picks have won ${(rh.hit * 100).toFixed(1)}% of ${rh.n.toLocaleString()} graded picks since 2022 (${sgn(rh.roi * 100, 0)}% ROI). Every pick graded in the open.`;
+        const txt = `DiamondEdge — a real, honestly-sized totals edge: ~55% expected at morning prices (56.9% on 239 picks the model never trained on). Backtest ${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded, but that's in-sample. Every pick graded in the open.`;
         if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
       };
@@ -4450,7 +4461,7 @@ export default function Home() {
           ? `${picks.length} pick${picks.length > 1 ? "s" : ""} on today's board — ${mix}.`
           : "No picks today — the lines look right to us. Passing is the strategy working, not missing.",
         themes: [], top_picks: picks,
-        record_line: `Our track record: ${(rh.hit * 100).toFixed(1)}% winners since 2022 — at prices good enough to come out ahead.`,
+        record_line: `The honest read: about 55% expected at morning prices (56.9% on 239 picks the model never trained on). The ${(rh.hit * 100).toFixed(1)}% backtest since 2022 is in-sample.`,
         _fallback: true,
       };
     }
@@ -4695,10 +4706,11 @@ export default function Home() {
       scored.sort((a: any, b: any) => a.rank - b.rank || (b.live ? 1 : 0) - (a.live ? 1 : 0) || b.p - a.p);
       return scored.map((x: any) => x.g);
     }
-    // Branded record line for the masthead + footer — hit rate always rides with the return.
+    // Branded record line for the masthead + footer — leads with the HONEST forward expectation,
+    // with the in-sample backtest labelled as such (never sold as the forward number).
     function recordStrip() {
       const rh = recipeHistory();
-      return `Graded in the open since 2022 — ${(rh.hit * 100).toFixed(1)}% winners across ${rh.n.toLocaleString()} DiamondEdge Picks, at prices good enough to come out ahead. Every pick freezes before first pitch and grades against the final score.`;
+      return `Graded in the open since 2022 — a real totals edge, honestly sized: about 55% at morning prices (56.9% on 239 picks the model never trained on). Our backtest ran ${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded, but that's in-sample. Every pick freezes before first pitch and grades against the final score.`;
     }
     // ── News-forward front: real top sports stories (news_feed) with a DiamondEdge betting angle,
     //    leading the Today page (ESPN/CBS-style), with the DiamondEdge Picks below.
@@ -5161,10 +5173,10 @@ export default function Home() {
           <h2>Every pick. Every why. Nothing hidden.</h2>
           <div class="up-sub">One honest model, graded in public since 2022. Premium unlocks the side and line on every Strong and Good pick — plus the plain-English read behind each one.</div>
           <div class="up-stats">
-            <div class="up-st"><div class="v">${(rh.hit * 100).toFixed(1)}%</div><div class="k">win rate</div></div>
-            <div class="up-st"><div class="v">${rh.n.toLocaleString()}</div><div class="k">graded picks</div></div>
-            <div class="up-st"><div class="v">${sgn(rh.roi * 100, 0)}%</div><div class="k">return</div></div>
-            <div class="up-st"><div class="v">'22–'26</div><div class="k">graded seasons</div></div>
+            <div class="up-st"><div class="v">≈55%</div><div class="k">expected · morning prices</div></div>
+            <div class="up-st"><div class="v">56.9%</div><div class="k">out-of-sample · 239 picks</div></div>
+            <div class="up-st"><div class="v">${(rh.hit * 100).toFixed(1)}%</div><div class="k">backtest (in-sample)</div></div>
+            <div class="up-st"><div class="v">${rh.n.toLocaleString()}</div><div class="k">backtested picks</div></div>
           </div>
         </div>
         <div class="up-perks">
@@ -5176,7 +5188,7 @@ export default function Home() {
         <div class="up-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
         <button class="up-cta" id="up-sub">Unlock DiamondEdge</button>
         <button class="up-back" id="up-back">Not now — keep the free picks</button>
-        <div class="up-honest">The numbers above are the real track record — ${rh.n.toLocaleString()} picks graded against final scores, on games the model never saw in advance${fwd ? `, and the record since going live is ${fwd.wins || 0}-${fwd.losses || 0}` : ""}. Every future pick is graded the same way, in the open, win or lose.</div>`;
+        <div class="up-honest">Straight talk: the ${(rh.hit * 100).toFixed(1)}% is a real, rigorous backtest over ${rh.n.toLocaleString()} graded picks — but in-sample, so we plan around the honest ~55% (the ${'56.9%'} out-of-sample slice is the cleanest evidence)${fwd ? `. Since going live the record is ${fwd.wins || 0}-${fwd.losses || 0} — still a tiny sample` : ""}. Every future pick is graded the same way, in the open, win or lose.</div>`;
       $("up-sub").onclick = () => {
         // The buy-flow lives on the Account screen's payment step (Card / Apple Pay / …).
         // Sign-in gates checkout; the payment stub sets the de_premium entitlement there.
@@ -5264,7 +5276,7 @@ export default function Home() {
           <div class="sgn-hero">
             <div class="sgn-dia" aria-hidden="true"></div>
             <h2>Join DiamondEdge</h2>
-            <p>Save your preferences and unlock Premium. One honest model, graded in public since 2022 — <b>${(rh.hit * 100).toFixed(1)}%</b> winners across ${rh.n.toLocaleString()} graded picks.</p>
+            <p>Save your preferences and unlock Premium. One honest model, graded in public since 2022 — a real totals edge, honestly sized at <b>~55%</b> expected (backtest ${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} is in-sample).</p>
           </div>
           <div class="sgn-socials">
             ${social("google")}${social("apple")}${social("facebook")}${social("x")}
@@ -5391,7 +5403,10 @@ export default function Home() {
       // mobile too now — the bottom nav is retired). Settings lives in the avatar/account hub.
       const primaryTabs = ["today", "games", "results"];
       const rh = recipeHistory();
-      const recPct = Math.round(rh.hit * 100);
+      // The nav pill leads with the HONEST forward expectation (~55% at morning prices), NOT the
+      // 58% in-sample backtest headline. The backtest number stays available (Insights labels it),
+      // but the ever-present masthead chip must not overstate the edge.
+      const recPct = Math.round(rh.hit * 100); // backtest %, kept for the aria/tooltip context
       // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it.
       root.innerHTML = `
         <header id="app-header">
@@ -5405,10 +5420,10 @@ export default function Home() {
             </nav>
             <div class="hspacer"></div>
             <div class="navright">
-              <button class="navrec" id="navrec" aria-label="Our validated record — ${recPct}% over ${rh.n} graded picks. Tap for the breakdown.">
+              <button class="navrec" id="navrec" aria-label="Our honest forward expectation — about 55% on totals at morning prices (backtest ${recPct}% over ${rh.n} graded picks is in-sample). Tap for the full breakdown.">
                 <span class="nr-dot" aria-hidden="true"></span>
-                <span class="nr-pct">${recPct}%</span>
-                <span class="nr-n">${rh.n} picks</span>
+                <span class="nr-pct">≈55%</span>
+                <span class="nr-n">expected</span>
               </button>
               ${accountButton()}
             </div>

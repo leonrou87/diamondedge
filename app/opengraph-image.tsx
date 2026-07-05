@@ -260,29 +260,27 @@ function Frame({ children }: { children: any }) {
   );
 }
 
-// TEXT fallback — the prior card. Used whenever the curve can't be built safely.
+// TEXT fallback — used whenever the curve can't be built safely. Leads with the HONEST forward
+// expectation; the 58.1%/886 backtest is shown only as a clearly-labelled in-sample sub-line.
 function TextCard(rec: any) {
-  const stat = rec
-    ? `${(rec.hit * 100).toFixed(1)}% winners${rec.n ? ` · ${rec.n.toLocaleString()} graded picks` : ""}${
-        rec.roi != null ? ` · ${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(0)}% return` : ""
+  const backtest = rec
+    ? `Backtest (in-sample): ${(rec.hit * 100).toFixed(1)}%${rec.n ? ` · ${rec.n.toLocaleString()} graded` : ""}${
+        rec.roi != null ? ` · ${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(0)}%` : ""
       }`
     : "";
   return (
     <Frame>
       <Brand />
-      <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-        <div style={{ display: "flex", fontSize: 72, fontWeight: 800, lineHeight: 1.05, maxWidth: 960 }}>
-          Every pick, graded in the open.
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ display: "flex", fontSize: 66, fontWeight: 800, lineHeight: 1.06, maxWidth: 1000 }}>
+          A real totals edge — honestly sized.
         </div>
-        {stat ? (
-          <div style={{ display: "flex", fontSize: 40, color: "#e0ac20", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>
-            {stat}
-          </div>
-        ) : (
-          <div style={{ display: "flex", fontSize: 34, color: "#8fa0b8", fontFamily: "Arial, sans-serif", maxWidth: 900 }}>
-            The story, the bets worth taking, and every call graded against the final score.
-          </div>
-        )}
+        <div style={{ display: "flex", fontSize: 40, color: "#4fe08a", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>
+          ≈55% expected at morning prices · +3–4%
+        </div>
+        <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif", maxWidth: 1000 }}>
+          56.9% on 239 picks we never trained on. {backtest ? backtest + "." : "Every call graded against the final score."}
+        </div>
       </div>
       <div
         style={{
@@ -301,11 +299,14 @@ function TextCard(rec: any) {
   );
 }
 
-// HERO card — the equity curve is the hero, record numbers beneath, brand + domain.
+// HERO card — the equity curve is honest visual proof of the historical edge, but the numbers
+// LEAD with the honest forward expectation (~55% at morning prices) and the clean out-of-sample
+// slice (56.9% / +8% on 239 picks the model never trained on). The 58.1%/886/+11% backtest is
+// shown too, but clearly labelled "backtest (in-sample)" — never sold as the forward number.
 function CurveCard(rec: any, series: any) {
-  const hitPct = rec && rec.hit != null ? `${(rec.hit * 100).toFixed(1)}%` : null;
-  const nPicks = rec && rec.n ? rec.n.toLocaleString() : series.totalN.toLocaleString();
-  const roiPct =
+  const btHit = rec && rec.hit != null ? `${(rec.hit * 100).toFixed(1)}%` : null;
+  const btN = rec && rec.n ? rec.n.toLocaleString() : series.totalN.toLocaleString();
+  const btRoi =
     rec && rec.roi != null
       ? `${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(0)}%`
       : `+${(series.blendedRoi * 100).toFixed(0)}%`;
@@ -326,42 +327,45 @@ function CurveCard(rec: any, series: any) {
             letterSpacing: "3px",
           }}
         >
-          HISTORICAL VALIDATED RECORD
+          A REAL EDGE, HONESTLY SIZED
         </div>
       </div>
 
-      {/* Hero: the curve */}
-      <div style={{ display: "flex", flexDirection: "column", marginTop: "4px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "16px" }}>
-          <div style={{ display: "flex", fontSize: 42, fontWeight: 800, color: "#f0f4fa", fontFamily: "Georgia, serif" }}>
-            Cumulative units, {yr0}–{yr1}
+      {/* Hero: the honest expectation, then the curve as historical proof */}
+      <div style={{ display: "flex", flexDirection: "column", marginTop: "2px" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: "18px" }}>
+          <div style={{ display: "flex", fontSize: 88, fontWeight: 800, color: "#4fe08a", fontFamily: "Georgia, serif", lineHeight: 1 }}>
+            ≈55%
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#f0f4fa", fontFamily: "Arial, sans-serif" }}>
+              expected on totals at morning prices
+            </div>
+            <div style={{ display: "flex", fontSize: 24, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>
+              +3–4% expected · 56.9% on 239 picks we never trained on
+            </div>
           </div>
         </div>
-        <div style={{ display: "flex", marginTop: "6px" }}>{buildCurveSvg(series)}</div>
+        <div style={{ display: "flex", marginTop: "10px" }}>{buildCurveSvg(series)}</div>
       </div>
 
-      {/* Record numbers + domain */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
-          {hitPct && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", fontSize: 46, fontWeight: 800, color: "#e0ac20", fontFamily: "Arial, sans-serif" }}>
-                {hitPct}
-              </div>
-              <div style={{ display: "flex", fontSize: 22, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>winners</div>
-            </div>
-          )}
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", fontSize: 46, fontWeight: 800, color: "#f0f4fa", fontFamily: "Arial, sans-serif" }}>
-              {nPicks}
-            </div>
-            <div style={{ display: "flex", fontSize: 22, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>graded picks</div>
+      {/* Backtest numbers (labelled in-sample) + domain */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 20,
+              color: "#7d8ba3",
+              fontFamily: "Arial, sans-serif",
+              fontWeight: 700,
+              letterSpacing: "2px",
+            }}
+          >
+            BACKTEST (IN-SAMPLE):
           </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", fontSize: 46, fontWeight: 800, color: "#4fe08a", fontFamily: "Arial, sans-serif" }}>
-              {roiPct}
-            </div>
-            <div style={{ display: "flex", fontSize: 22, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>return</div>
+          <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#cbd6e6", fontFamily: "Arial, sans-serif" }}>
+            {btHit ? `${btHit} · ` : ""}{btN} picks · {btRoi}
           </div>
         </div>
         <div
