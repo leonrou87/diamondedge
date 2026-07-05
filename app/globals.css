@@ -1139,6 +1139,71 @@ details.more .more-body{padding-top:12px}
 @media(min-width:900px){.news-grid{grid-template-columns:minmax(0,1fr) 340px;gap:24px}}
 /* safety cap so a full-width lead hero can never balloon on a wide viewport */
 .ls-figure .heroimg{max-height:300px}
+
+/* ============ THE FRONT — Top Stories woven with Today's Board ============ */
+/* Leon's direction: keep stories (the "read") and the board (games at a glance) clearly
+   SEPARATE surfaces, but weave them into one designed front page. On mobile they stack
+   (stories lead, board follows); on desktop they sit side-by-side in an asymmetric grid
+   so the page reads like a modern sports front, not two plain lists. */
+.front-hero{margin:0 0 22px}
+.front-full{margin:0 0 22px}
+.front-grid{display:flex;flex-direction:column;gap:26px}
+.front-stories{min-width:0}
+.front-board{min-width:0}
+@media(min-width:860px){
+  .front-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:30px;align-items:start}
+  .front-board{position:sticky;top:96px}
+}
+@media(min-width:1080px){.front-grid{grid-template-columns:minmax(0,1fr) 372px;gap:36px}}
+
+/* section headers get a touch more presence so each surface announces itself */
+.sec-h.stories-h span,.sec-h.board-h span{font-size:11.5px;color:var(--ink)}
+.sec-h.board-h{color:var(--golddeep)}
+
+/* ── TOP STORIES: a real editorial story list ──────────────────────────────────────── */
+/* First card is a big lead-preview (figure on top). The rest become horizontal story
+   ROWS — thumbnail left, headline + hook + pick right — the classic front-page rhythm. */
+.storylist{display:flex;flex-direction:column;gap:0}
+.storylist .prev{border-radius:0;border:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:18px 0;border-top:1px solid var(--line3)}
+.storylist .prev:hover{transform:none;box-shadow:none}
+.storylist .prev:first-child{border-top:0;padding-top:2px}
+/* the lead story card keeps its stacked figure-over-body form, just bigger type */
+.storylist .prev.feature{padding-bottom:20px}
+.storylist .prev.feature .pv-figure .heroimg{border-radius:var(--r-md);aspect-ratio:16/9}
+.storylist .prev.feature .pv-body{padding:14px 2px 2px}
+.storylist .prev.feature .pv-head{font-size:23px;line-height:1.14}
+.storylist .prev.feature .pv-dek{font-size:13px;-webkit-line-clamp:3}
+/* secondary story rows: thumbnail + text side by side */
+@media(min-width:520px){
+  .storylist .prev:not(.feature){display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:start}
+  .storylist .prev:not(.feature) .pv-figure .heroimg{border-radius:12px;aspect-ratio:16/10}
+  .storylist .prev:not(.feature) .pv-body{padding:1px 0 0}
+  .storylist .prev:not(.feature) .pv-head{font-size:17px}
+}
+.storylist .prev:not(.feature) .pv-head{font-size:16px}
+.storylist .prev:not(.feature) .pv-figure .heroimg{border-radius:12px}
+/* storylines fold in UNDER the story list, kept lighter as "also on our desk" */
+.storylines-woven{margin-top:20px;padding-top:20px;border-top:1px solid var(--line3)}
+.storylines-woven .ng-rail{margin:0}
+
+/* ── TODAY'S BOARD: the games-at-a-glance panel (distinct from the stories) ─────────── */
+/* A framed rail so it reads unmistakably as "the board", not more stories. Reuses the
+   real .tile game cards (score / O-U / spread / state) stacked one-per-row. */
+.front-board .boardlist{display:flex;flex-direction:column;gap:10px}
+.front-board{background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.24));border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--e0);padding:16px 14px 14px}
+.front-board .sec-h.board-h{margin:0 2px 12px}
+.front-board .board-all{width:100%;margin-top:12px;border:1px dashed var(--line);background:transparent;border-radius:var(--r-md);padding:10px;font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:.02em;color:var(--acc2);cursor:pointer;transition:background .18s ease}
+.front-board .board-all:hover{background:rgba(22,36,60,.04)}
+/* on desktop the board rail is narrow — let the tile's odds columns stack under the teams
+   (the same compact treatment the Games tab uses on mobile) so nothing clips in 340px */
+@media(min-width:860px){
+  .front-board .tile .t-body{flex-direction:column}
+  .front-board .tile .t-cols{border-left:0;border-top:1px solid var(--line3);width:100%;margin-top:6px;padding-top:8px}
+}
+
+/* ── the wire feed, demoted to a secondary strip below our editorial front ──────────── */
+.front-wire{margin-top:30px;padding-top:22px;border-top:2px solid var(--line2)}
+.front-wire .newsfront{margin:0}
 /* ============ EDITORIAL THUMBNAIL / HERO IMAGE (self-contained logo composite) ============ */
 /* A publication-style image area: a theme-tinted gradient wash, a faint sport icon
    watermark, and the two team logos composited over it. No external images. */

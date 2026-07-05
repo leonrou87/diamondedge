@@ -4404,7 +4404,7 @@ export default function Home() {
         ? `<span class="nf-live"><span class="livedot"></span>live${updTxt ? ` · ${esc(updTxt)}` : ""}</span>`
         : (updTxt ? `<span class="nf-upd">Updated ${esc(updTxt)}</span>` : "");
       return `<section class="newsfront">
-        <div class="nf-head"><span class="nf-lab">Top stories</span>${head}</div>
+        <div class="nf-head"><span class="nf-lab">Around the league</span>${head}</div>
         ${newsStory(nf.lead, true, "L")}
         ${hl.length ? `<div class="nf-list">${hl.map((s) => newsStory(s, false, String((nf.headlines || []).indexOf(s)))).join("")}</div>` : ""}
       </section>`;
@@ -4559,48 +4559,66 @@ export default function Home() {
           </div>
         </article>`;
       }
+      // "More DiamondEdge Picks" carousel — only when there's more than one real pick.
       const carousel = railPicks.length ? `
         <section class="ng-carousel">
           <div class="sec-h"><span>More DiamondEdge Picks</span></div>
           <div class="tdy-picks" id="tdy-picks" aria-label="Featured picks carousel">${railPicks.map((p: any, i: number) => heroCard(p, i)).join("")}</div>
           ${railPicks.length > 1 ? `<div class="tp-dots" id="tp-dots" role="tablist" aria-label="Carousel position">${railPicks.map((_: any, i: number) => `<button class="tp-dot${i === 0 ? " on" : ""}" data-dot="${i}" aria-label="Go to pick ${i + 1}"></button>`).join("")}</div>` : ""}
         </section>` : "";
-      // DEDUPE — the lead story's game is excluded from storylines + the board preview
-      // grid, and previews de-dupe among themselves, so no game appears twice on the page.
+      // DEDUPE — the lead story's game is excluded from the story previews + the board so no
+      // game appears twice on the page; the board and the stories draw from ONE curated pool.
       const leadGid = leadPick ? String(leadPick.game_id) : null;
       const themes = ((db.themes || []) as any[]);
       const storylines = storylinesBlock(themes, leadGid);
+      // ── THE CURATED FRONT ──────────────────────────────────────────────────────────────
+      // Leon's direction: SEPARATE the top stories from today's board, then weave them into
+      // ONE designed front page. Two surfaces, one pool of significant games:
+      //   • TOP STORIES  = the article-forward "read" — significant game PREVIEWS as story
+      //     cards (headline lean + hook), opening the full 3-para reader/detail on click.
+      //   • TODAY'S BOARD = the games at a glance — the compact game cards (score / O-U /
+      //     spread / state) that let a reader scan the slate. Its own labeled panel.
+      // The hero (our biggest bet, or the honest no-pick card) sits above both, full width.
       const seen = new Set<string>(); if (leadGid) seen.add(leadGid);
-      // CURATED HOMEPAGE — headlines for the games that MATTER today (our picks + live games),
-      // NOT the full board. The lead story above already features our biggest / most-confident
-      // bet; these are the rest of the significant slate. The full board lives on the Games tab.
-      const pvGames = significantGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; }).slice(0, 6);
-      const previews = pvGames.length ? `
-        <section class="ng-previews">
-          <div class="sec-h"><span>Games that matter today</span><button class="sec-more" data-nav="games">Full board →</button></div>
-          <div class="prevgrid">${pvGames.map((g: any, i: number) => previewCard(g, i, false)).join("")}</div>
-        </section>` : "";
+      const sig = significantGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; });
+      // Stories = the significant previews presented as the "read" surface (headline + hook).
+      const storyGames = sig.slice(0, 5);
+      // Board = every significant game at a glance (incl. the ones told as stories) — the
+      // reader can jump from "read about it" to "see the number." Capped so the rail stays
+      // scannable; the "Full board →" link carries the rest to the Games tab.
+      const boardGames = sig.slice(0, 8);
+      const stories = storyGames.length ? `
+        <section class="front-stories">
+          <div class="sec-h stories-h"><span>Top stories</span></div>
+          <div class="storylist">${storyGames.map((g: any, i: number) => previewCard(g, i, i === 0)).join("")}</div>
+          ${storylines ? `<div class="storylines-woven">${storylines}</div>` : ""}
+        </section>` : (storylines ? `<section class="front-stories">${storylines}</section>` : "");
+      const board = boardGames.length ? `
+        <aside class="front-board" aria-label="Today's board — games at a glance">
+          <div class="sec-h board-h"><span>Today's board</span><button class="sec-more" data-nav="games">Full board →</button></div>
+          <div class="boardlist">${boardGames.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+          <button class="board-all" data-nav="games">See the full slate on the board →</button>
+        </aside>` : "";
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
-      // A clear divider separates the masthead from the lead story below it.
+      // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
       const fullHead = cleanBlurb(db.headline || "");
       const tightHead = shortHeadline(fullHead) || esc(fullHead);
       const headDek = fullHead && esc(tightHead).replace(/…$/, "") !== esc(fullHead) ? fullHead : "";
       view.innerHTML = `
         <div class="news">
-          ${newsFront()}
-          ${newsFeed && newsFeed.lead ? `<div class="picks-divider"><span>◆ ${picksAll.length ? "Today's DiamondEdge Picks" : "Today's Board"}</span></div>` : ""}
-          <div class="masthead">
+          <div class="masthead lead">
             <div class="mh-kicker"><span class="lk-tag">${isToday ? "Today" : "Recap"}</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${recLabel} →</button>${goldChip}</div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
           <div class="mh-rule"></div>
-          <div class="news-grid">
-            <section class="ng-lead">${leadStory}</section>
-            ${storylines}
-            ${carousel}
-            ${previews}
+          <section class="ng-lead front-hero">${leadStory}</section>
+          ${carousel ? `<div class="front-full">${carousel}</div>` : ""}
+          <div class="front-grid">
+            ${stories}
+            ${board}
           </div>
+          ${newsFront() ? `<div class="front-wire">${newsFront()}</div>` : ""}
           ${socialShareBar()}
           <div class="news-foot">${esc(recordStrip())}</div>
         </div>`;
@@ -4630,8 +4648,8 @@ export default function Home() {
         s.onclick = toggle;
         s.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(e); } };
       });
-      // lead story + carousel + previews → detail sheet
-      view.querySelectorAll(".leadstory[data-gid], .hero[data-gid], .prev[data-gid]").forEach((h: any) => {
+      // lead story + carousel + story previews + board tiles → detail sheet
+      view.querySelectorAll(".leadstory[data-gid], .hero[data-gid], .prev[data-gid], .boardlist .tile[data-gid]").forEach((h: any) => {
         const open = (e: any) => {
           if (e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
           if (e.target && e.target.closest && e.target.closest("[data-nav]")) return;
