@@ -162,7 +162,7 @@ body.native .brand .tag{display:none}
   transition:max-height .34s var(--ease),opacity .22s ease;
   -webkit-mask:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
 /* ticker stays visible on scroll (collapse removed — it caused a jumpy header) */
-.tk-track{display:inline-flex;align-items:center;gap:0;white-space:nowrap;will-change:transform;padding:6px 0 7px;animation:tkscroll 46s linear infinite}
+.tk-track{display:inline-flex;align-items:center;gap:0;white-space:nowrap;will-change:transform;padding:6px 0 7px;animation:tkscroll 30s linear infinite}
 .tk-track.still{animation:none;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;scrollbar-width:none}
 .tk-track.still::-webkit-scrollbar{display:none}
 .ticker:hover .tk-track{animation-play-state:paused}
@@ -450,6 +450,17 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .dcell.today .dc-wd{color:var(--acc2)}
 .dcell.on .dc-wd{color:#045c3e}
 .dcell.on .dc-d{color:#023a27}
+/* Future days (up to 5 out) — dimmed until selected, so "ahead of the schedule" reads clearly. */
+.dcell.future:not(.on) .dc-wd,.dcell.future:not(.on) .dc-d{color:var(--ink4)}
+.dcell.future:not(.on){opacity:.85}
+/* FUTURE-DATE banner — picks not published yet. Compact strip above a schedule, or a full card. */
+.future-note{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:13px 16px;border-radius:var(--r-md);background:linear-gradient(180deg,var(--amberbg),rgba(255,255,255,.5));border:1px solid var(--glass-brd);box-shadow:var(--e0)}
+.future-note.full{margin:24px auto;max-width:520px;flex-direction:column;text-align:center;padding:28px 22px}
+.future-note .fn-ic{flex-shrink:0;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--goldbg);color:var(--golddeep);font-size:16px}
+.future-note.full .fn-ic{width:46px;height:46px;font-size:22px}
+.future-note .fn-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.future-note .fn-body b{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+.future-note .fn-body span{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink2)}
 .datetools{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative}
 .dtool{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--ink2);min-width:40px;height:38px;padding:0 9px;border-radius:13px;cursor:pointer;transition:.2s var(--spring);box-shadow:var(--shadow);display:inline-grid;place-items:center}
 .dtool svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -601,9 +612,9 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* TEAM ROWS — logo · ABBR · form(L15+streak) · [spacer] · ML · SCORE */
 .t-teams{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
 .t-row{display:flex;align-items:center;gap:8px;min-width:0;min-height:26px}
-.t-crest{flex-shrink:0;display:grid;place-items:center}
-.t-crest img,.t-crest .crest{width:26px;height:26px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(43,64,105,.2))}
-.t-crest .crest{border-radius:8px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:9px;color:var(--ink);background:rgba(255,255,255,.85)}
+.t-crest{flex-shrink:0;display:grid;place-items:center;padding:4px;border-radius:9px;background:rgba(255,255,255,.7);box-shadow:inset 0 0 0 1px rgba(43,64,105,.06)}
+.t-crest img,.t-crest .crest{width:24px;height:24px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(43,64,105,.18))}
+.t-crest .crest{border-radius:6px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:9px;color:var(--ink);background:transparent}
 .t-ab{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.02em;color:var(--ink);flex-shrink:0}
 .t-rsp{flex:1;min-width:1px}
 /* recent form: L15/season record + hot/cold streak chip — right after the abbr */
@@ -1255,10 +1266,12 @@ details.more .more-body{padding-top:12px}
 .heroimg .hi-wm{position:absolute;right:-8px;bottom:-14px;width:120px;height:120px;opacity:.14;color:var(--ink);pointer-events:none}
 .heroimg .hi-wm svg{width:100%;height:100%;fill:currentColor;stroke:none}
 .heroimg .hi-mu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:min(9%,34px)}
-.heroimg .hi-crest{display:inline-grid;place-items:center}
-.heroimg .hi-crest img,.heroimg .hi-crest .crest{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 6px 16px rgba(30,46,80,.28))}
-.heroimg .hi-crest.lg img,.heroimg .hi-crest.lg .crest{width:74px;height:74px}
-.heroimg .hi-crest .crest{border-radius:14px;background:rgba(255,255,255,.9);font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink)}
+/* A frosted plate behind every crest so ANY logo (white, light or dark) reads on the tint. */
+.heroimg .hi-crest{display:inline-grid;place-items:center;padding:9px;border-radius:16px;background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(30,46,80,.18),inset 0 0 0 1px rgba(255,255,255,.55)}
+.heroimg .hi-crest.lg{padding:12px;border-radius:20px}
+.heroimg .hi-crest img,.heroimg .hi-crest .crest{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(30,46,80,.22))}
+.heroimg .hi-crest.lg img,.heroimg .hi-crest.lg .crest{width:66px;height:66px}
+.heroimg .hi-crest .crest{border-radius:11px;background:transparent;font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink)}
 .heroimg .hi-at{font-family:var(--disp);font-weight:300;font-size:18px;color:rgba(22,36,60,.5)}
 .heroimg.hi-lead .hi-at{font-size:24px}
 /* when a pick cover sits at the bottom, lift the crest cluster into the top band */
@@ -1308,6 +1321,14 @@ details.more .more-body{padding-top:12px}
 .hpc-card.pass .hpc-txt{font-size:15px}
 .hpc-lock{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#3a2c05;background:linear-gradient(135deg,#f6dd94,#e7b62e);border-radius:999px;padding:5px 12px;box-shadow:0 3px 12px rgba(0,0,0,.3)}
 .hpc-lock svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2}
+/* Hero TEASE: "See the pick →" and BLURRED confidence for unpaid — the hero shows we have a
+   confident call and hypes the matchup, but never names the side/line on the News front. */
+.hpc-see{font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.hpc-conf{font-family:var(--mono);font-size:15px;letter-spacing:2px;color:#ffd75e;text-shadow:0 1px 5px rgba(0,0,0,.55)}
+.hpc-conf.blur{filter:blur(5px);opacity:.9;user-select:none}
+/* "Started"/pre-game state flag on a hero figure (mirrors the gold kicker, on the right). */
+.ls-fig-tag{position:absolute;right:12px;top:12px;z-index:3;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:999px;color:#fff;background:rgba(14,22,38,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.ls-fig-tag.started{color:#ffd0a8}.ls-fig-tag.started::first-letter{color:#ff7a3c}
 
 /* ---- HERO LIVE BADGE: LIVE + score + trend composited onto the top of the cover art ---- */
 .hlb{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:11px 13px;pointer-events:none}
@@ -1608,7 +1629,12 @@ details.more .more-body{padding-top:12px}
 /* header account button */
 .acctbtn{position:relative;flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1px solid var(--glass-brd);background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-shadow);display:grid;place-items:center;cursor:pointer;color:var(--ink2);transition:transform .2s var(--spring),box-shadow .2s ease}
 .acctbtn:hover{transform:scale(1.05)} .acctbtn:active{transform:scale(.94)}
+/* Signed-out: a compact "Sign in" pill (person glyph + label) instead of a bare avatar circle. */
+.acctbtn.signin{width:auto;height:34px;border-radius:17px;padding:0 12px 0 10px;gap:6px;grid-auto-flow:column;place-content:center;color:var(--ink)}
+.acctbtn.signin:hover{transform:translateY(-1px)}
+.acctbtn.signin .acct-signin-tx{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;line-height:1}
 .acctbtn .acct-ic{display:grid;place-items:center} .acctbtn .acct-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.acctbtn.signin .acct-ic svg{width:16px;height:16px}
 .acctbtn .acct-av{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#3d506e,#54688a);color:#fff;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.02em}
 .acctbtn .acct-av.prem{background:linear-gradient(135deg,#f4d476,#e0a81e);color:#3a2c05}
 .acctbtn .acct-star{position:absolute;right:-2px;bottom:-2px;font-size:10px;color:var(--golddeep);background:var(--bg);border-radius:50%;width:14px;height:14px;display:grid;place-items:center;box-shadow:0 1px 3px rgba(43,64,105,.25)}

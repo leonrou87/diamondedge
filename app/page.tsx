@@ -829,7 +829,10 @@ export default function Home() {
     // a bottom gradient scrim for legibility + the frozen pick as an overlaid cover line.
     // Uses the served article.pick_headline (via pickHeadline) so the image carries the
     // pick the way a magazine cover carries its headline. size: "lead" | "card".
-    function heroPickCover(g: any, size = "lead") {
+    // teaseOnly (used by the News hero): highlight that we HAVE a confident pick — show the
+    // confidence (stars, or blurred dots when unpaid) — but NOT the side/line. The call itself
+    // lives on the game page. Keeps the hero about the MATCHUP, not the bet.
+    function heroPickCover(g: any, size = "lead", teaseOnly = false) {
       const pl = displayPick(g);
       const locked = pl ? pickLocked(pl, playState(g, pl)) : false;
       const ph = pickHeadline(g);
@@ -838,12 +841,21 @@ export default function Home() {
       const state = pl && pl.action === "TAKE" ? pickStateTxt(g, pl, st) : null;
       const kick = isStarted(g) ? "Pre-Game Pick" : "DiamondEdge Pick";
       if (locked) {
+        // Unpaid: confidence is BLURRED and the pick is hidden — the whole draw is unlocking it.
         return `<div class="hpc hpc-${size} locked" data-up="1"><div class="hpc-scrim"></div>
-          <div class="hpc-line"><span class="hpc-k">◆ ${esc(kick)}</span><span class="hpc-lock">${lockSvg} Unlock</span></div></div>`;
+          <div class="hpc-line"><span class="hpc-k">◆ ${esc(kick)}</span><span class="hpc-conf blur" aria-hidden="true">●●●●●</span><span class="hpc-lock">${lockSvg} Unlock</span></div></div>`;
       }
       if (!ph.has) {
         return `<div class="hpc hpc-${size} pass"><div class="hpc-scrim"></div>
           <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">No Pick — Passing</b></div></div>`;
+      }
+      if (teaseOnly) {
+        // Paid but on the hero: show the CONFIDENCE, tease the call, don't name the side/line.
+        return `<div class="hpc hpc-${size} q-${q} tease"><div class="hpc-scrim"></div>
+          <div class="hpc-line">
+            <span class="hpc-k">◆ ${esc(kick)}</span>
+            <div class="hpc-pickrow"><span class="hpc-stars">${qDiamonds(q)}</span>${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : `<span class="hpc-see">See the pick →</span>`}</div>
+          </div></div>`;
       }
       // Prefer the FROZEN display pick's full side+line+price — the served pick_headline
       // often omits the line (e.g. "OVER"), and a cover line must name the whole call.
@@ -861,6 +873,20 @@ export default function Home() {
           <span class="hpc-k">◆ ${esc(kick)}</span>
           <div class="hpc-pickrow"><b class="hpc-txt">${bare}</b><span class="hpc-stars">${qDiamonds(q)}</span>${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
         </div></div>`;
+    }
+    // A hero/matchup headline that HYPES the game WITHOUT revealing the pick. Prefers the
+    // served article headline but strips any leading pick-lean clause ("Give us the OVER —
+    // Angels chase a skid" → "Angels chase a skid"); falls back to a plain matchup framing.
+    const PICK_WORDS = /\b(over|under|moneyline|money line|run ?line|spread|first ?5|f5|cover|take the|give us|back the|ride the|lay the|the pick)\b|[+-]\d{2,3}\b|\b\d+\.5\b/i;
+    function matchupHeadline(g: any, p: any) {
+      let h = cleanBlurb((g ? (gameArticle(g)?.headline || "") : "") || "");
+      if (h) {
+        const parts = h.split(/\s*[—–:]\s*/);
+        if (parts.length > 1 && PICK_WORDS.test(parts[0])) h = parts.slice(1).join(" — ").trim();
+        if (h && !PICK_WORDS.test(h)) return esc(h);
+      }
+      const mu = (p && p.matchup) ? String(p.matchup) : (g ? `${g.away_abbr} @ ${g.home_abbr}` : "");
+      return esc(cleanBlurb(mu));
     }
     // LIVE composite for a hero image: a pulsing LIVE badge + the live score + how the
     // pick is trending, woven onto the cover art (top band, over its own scrim). Shown only
@@ -1181,6 +1207,9 @@ export default function Home() {
         const dr = indexData && indexData.date_range;
         if (Array.isArray(dr) && dr.length === 2) { minDate = dr[0]; if (dr[1] > maxDate) maxDate = dr[1]; }
       }
+      // Let users look AHEAD up to 5 days — picks may not be published yet (a banner says so).
+      const futureCap = shiftDate(todayISO(), 5);
+      if (maxDate < futureCap) maxDate = futureCap;
       return indexData;
     }
 
@@ -1375,7 +1404,9 @@ export default function Home() {
         const t = todayISO();
         inLg = inLg.filter((g: any) => {
           const st = (g.status || "pre").toLowerCase();
-          if (st === "pre") { const d = gameLocalDay(g); return !d || d >= t; }
+          // TODAY means today — not "today onward". Tomorrow's fixtures (the WC board carries
+          // them, sometimes tagged to other sports) are reachable via the date picker, not here.
+          if (st === "pre") { const d = gameLocalDay(g); return !d || d === t; }
           if (st === "live") {
             const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
             if (ts) {
@@ -2306,12 +2337,15 @@ export default function Home() {
       const today = todayISO();
       let d = shiftDate(today, -13);
       if (d < minDate) d = minDate;
+      // Extend 5 days AHEAD so future slates are browsable (picks may not be out yet).
+      const end = shiftDate(today, 5);
       let cur = d;
-      while (cur <= today) {
+      while (cur <= end) {
         const dt = new Date(cur + "T12:00:00");
         const isToday = cur === today;
+        const isFuture = cur > today;
         const on = cur === curDate && !rangeMode;
-        cells.push(`<button class="dcell ${on ? "on" : ""} ${isToday ? "today" : ""}" data-date="${cur}" aria-label="${dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}">
+        cells.push(`<button class="dcell ${on ? "on" : ""} ${isToday ? "today" : ""} ${isFuture ? "future" : ""}" data-date="${cur}" aria-label="${dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}">
           <span class="dc-wd">${isToday ? "Today" : dt.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 2)}</span>
           <span class="dc-d">${dt.getDate()}</span>
         </button>`);
@@ -2366,7 +2400,7 @@ export default function Home() {
         <div class="datebar">
           <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
           <div class="datetools">
-            <span class="calwrap"><button class="dtool cal" id="cal-btn" title="Pick a date" aria-label="Pick a date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.6h17M8 3v3.4M16 3v3.4"/><circle cx="12" cy="14.8" r="1.4" fill="currentColor" stroke="none"/></svg></button><input type="date" id="date-input" aria-label="Pick a date" value="${curDate}" min="${minDate}" max="${maxDate}"></span>
+            <span class="calwrap"><button class="dtool cal" id="cal-btn" title="Pick a date" aria-label="Pick a date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.6h17M8 3v3.4M16 3v3.4"/><circle cx="12" cy="14.8" r="1.4" fill="currentColor" stroke="none"/></svg></button><input type="date" id="date-input" aria-label="Pick a date" value="${curDate}" min="${minDate}" max="${maxDate > shiftDate(todayISO(), 5) ? maxDate : shiftDate(todayISO(), 5)}"></span>
             <button class="dtool hist ${histOpen || rangeMode ? "on" : ""}" id="hist-btn" title="Scan a date range">History</button>
           </div>
         </div>
@@ -2400,6 +2434,12 @@ export default function Home() {
       ink.style.transform = `translateX(${on.offsetLeft}px)`;
     }
 
+    // Banner for a FUTURE date — picks aren't published yet. `full` = standalone (no schedule
+    // to show); otherwise a compact strip sitting above the known schedule.
+    function futureNote(dispDate: string, full: boolean) {
+      const body = `<div class="fn-body"><b>Picks aren't out yet for ${esc(dispDate)}</b><span>The DiamondEdge model locks each pick as first pitch approaches — check back closer to game day.${full ? "" : " Below is the schedule as it stands."}</span></div>`;
+      return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}</div>`;
+    }
     function renderSlate(quiet = false) {
       const body = $("slate-body"), meta = $("meta-area");
       if (!body) return;
@@ -2411,13 +2451,17 @@ export default function Home() {
         // null payload here means "loaded, but no data for this date" — show a real empty state,
         // not an eternal skeleton.
         const dd = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        // Future date with nothing loaded yet → the picks simply aren't out; say so plainly.
+        if (curDate > todayISO()) { body.innerHTML = futureNote(dd, true); return; }
         body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dd)}${curDate !== todayISO() ? " — try another date or head back to today" : " — check your connection"}. Every past DiamondEdge Pick stays graded on the Insights tab.</div></div>`;
         return;
       } else {
         if (meta) meta.innerHTML = metaRow();
         const games = gamesForLeague(payload, league);
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        const isFuture = curDate > todayISO();
         if (!games.length) {
+          if (isFuture) { body.innerHTML = futureNote(dispDate, true); return; }
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
           body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Insights tab.</div></div>`;
         } else {
@@ -2435,7 +2479,9 @@ export default function Home() {
             : "";
           const grouped = `${section("Live", grp.live, "live")}${section(ft ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
-          body.innerHTML = `${anyPick ? tierLegend() : ""}${ft ? featuredCard(ft.g, ft.pl) : ""}${grouped}
+          // Future slate: the schedule is known but picks aren't published yet — banner says so.
+          const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false) : "";
+          body.innerHTML = `${futureBanner}${anyPick ? tierLegend() : ""}${ft ? featuredCard(ft.g, ft.pl) : ""}${grouped}
             <div class="refnote">${games.length}${esc(lgSuffix)} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
       }
@@ -4665,7 +4711,14 @@ export default function Home() {
       const pool = ((src.games || []) as any[]).filter((g: any) => {
         const st0 = String(g.status || "pre").toLowerCase();
         const d = gameLocalDay(g);
-        if (st0 === "live") return true;
+        // Only TODAY's games belong on the News front. "live" is trusted only when plausibly still
+        // live — the payload carries stale cross-day "live" zombies (incl. other sports, e.g. a
+        // days-old USA vs BEL) that must not surface here.
+        if (st0 === "live") {
+          const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
+          if (ts) { const age = Date.now() - new Date(ts).getTime(); return isNaN(age) || (age > -12 * 3600 * 1000 && age < 12 * 3600 * 1000); }
+          return !d || d >= shiftDate(t, -1);
+        }
         return d === t || (st0 === "pre" && !d);
       });
       const scored = pool.map((g: any) => {
@@ -4691,7 +4744,14 @@ export default function Home() {
       const pool = ((src.games || []) as any[]).filter((g: any) => {
         const st0 = String(g.status || "pre").toLowerCase();
         const d = gameLocalDay(g);
-        if (st0 === "live") return true;
+        // Only TODAY's games belong on the News front. "live" is trusted only when plausibly still
+        // live — the payload carries stale cross-day "live" zombies (incl. other sports, e.g. a
+        // days-old USA vs BEL) that must not surface here.
+        if (st0 === "live") {
+          const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
+          if (ts) { const age = Date.now() - new Date(ts).getTime(); return isNaN(age) || (age > -12 * 3600 * 1000 && age < 12 * 3600 * 1000); }
+          return !d || d >= shiftDate(t, -1);
+        }
         return d === t || (st0 === "pre" && !d);
       });
       const scored = pool.map((g: any) => {
@@ -4892,15 +4952,9 @@ export default function Home() {
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       const isToday = curDate === todayISO();
       const dayRec = dayRecordFor(curDate);
-      const mr = monthRecord();
-      // masthead record pill reflects the DATE you're viewing; it names the EDGE (totals, the
-      // validated play) so it sits in the same ladder as the glance chip and the breakdown sheet.
-      // On a cold edge day it carries the muted long-run anchor so a bare loss reads as variance.
-      const coldEdgeDay = dayRec && dayRec.graded && dayRec.l > dayRec.w;
-      const anchorTxt = ` <span class="nm-anchor">long-run ${longRunPct()}%</span>`;
-      const recLabel = dayRec && dayRec.graded
-        ? `Edge <b>${dayRec.w}–${dayRec.l}</b> <span class="nm-wl">W–L</span>${isToday ? " today" : ""}${coldEdgeDay ? anchorTxt : ""}`
-        : (isToday && mr ? `Edge <b>${mr.w}–${mr.l}</b> <span class="nm-wl">W–L</span> this month` : "The record");
+      // The News front never leads with a bare W–L — a cold day reads as "we're losing," which
+      // is both discouraging and misleading over a single slate. The full, honest record lives
+      // on Insights. We keep only a POSITIVE gold-pick chip (shown only when it's winning).
       const goldChip = dayRec && (dayRec.gw + dayRec.gl) && (dayRec.goldGreat || (dayRec.gw && !dayRec.gl))
         ? `<span class="nm-gold${dayRec.goldGreat ? " hot" : ""}" title="Gold (Strong) picks ${dayRec.gw}–${dayRec.gl}">★ Gold ${dayRec.gw}–${dayRec.gl}${dayRec.goldGreat ? " 🔥" : ""}</span>`
         : "";
@@ -4911,28 +4965,29 @@ export default function Home() {
       let leadStory = "";
       if (leadPick) {
         const g = findGameLive(leadPick.game_id);
-        const state = briefPickState(leadPick);
         const locked = !isPremium() && (leadPick.quality === "strong" || leadPick.quality === "good") && !leadPick.result;
-        const blurbTxt = cleanBlurb(leadPick.blurb || "");
         const art = g ? gameArticle(g) : null;
         const pl = g ? displayPick(g) : null;
+        const started = g ? isStarted(g) : false;
+        const live = g ? gameState(g).kind === "live" : false;
         const stks = g ? gameStreaks(g).slice(0, 3).map((s: any) => `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("") : "";
         const tint = g ? heroTintFor(g, pl) : (leadPick.quality === "strong" ? "gold" : "green");
-        const headline = art && art.headline ? esc(cleanBlurb(art.headline)) : esc(leadPick.matchup || "");
-        // The pick is now WOVEN onto the hero image (magazine cover line) — for locked
-        // free-mode we still show the unlock chip in the body.
-        const bet = locked
-          ? `<button class="lockchip" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
-          : "";
+        // HYPE THE MATCHUP — the hero headline is about the GAME, never the pick.
+        const headline = matchupHeadline(g, leadPick);
+        // A game-focused dek: prefer a served matchup dek that doesn't leak the pick; else the
+        // hook. We never lead the hero with the model's number — that's behind the game page.
+        const dekRaw = cleanBlurb((art && art.dek) || "");
+        const dek = dekRaw && !PICK_WORDS.test(dekRaw) ? dekRaw : "";
+        // A "started" / "live" flag when the game is under way.
+        const startedTag = live ? "" : (started ? `<span class="ls-fig-tag started">● Started</span>` : "");
         leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
-          ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}${gameState(g).kind !== "live" ? `<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>` : ""}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead")}</div>` : ""}
+          ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}${gameState(g).kind !== "live" ? `<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead", true)}</div>` : ""}
           <div class="ls-body">
             <h3 class="ls-match">${headline}</h3>
-            <div class="ls-byline">Lead story · DiamondEdge · ${esc(dateTxt)}</div>
-            ${bet}
-            ${blurbTxt && !locked ? `<p class="ls-lede">${esc(blurbTxt)}</p>` : locked ? `<p class="ls-lede dim">The full read on today's lead pick — the model number, the line it beats, and the history behind it — is one tap away.</p>` : ""}
-            ${!locked && stks ? `<div class="pv-stks">${stks}</div>` : ""}
-            <span class="hero-cta">Read the full preview →</span>
+            <div class="ls-byline">Feature bet · DiamondEdge · ${esc(dateTxt)}</div>
+            ${dek ? `<p class="ls-lede">${esc(dek)}</p>` : `<p class="ls-lede dim">The DiamondEdge Desk's headline game today. ${locked ? "Unlock to see the side, the line and the plain-English why." : "Tap in for the full read and the call."}</p>`}
+            ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
+            <span class="hero-cta">${locked ? "Unlock the full preview →" : "Read the full preview →"}</span>
           </div>
         </article>`;
       } else {
@@ -4988,12 +5043,16 @@ export default function Home() {
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
       // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
       const fullHead = cleanBlurb(db.headline || "");
-      const tightHead = shortHeadline(fullHead) || esc(fullHead);
-      const headDek = fullHead && esc(tightHead).replace(/…$/, "") !== esc(fullHead) ? fullHead : "";
+      // The masthead is the editorial nameplate — it must not leak the pick (side/line/edge %).
+      const revealsPick = PICK_WORDS.test(fullHead) || /\d+(\.\d+)?\s?%/.test(fullHead);
+      let tightHead = shortHeadline(fullHead) || esc(fullHead);
+      // trim a dangling article/ellipsis artifact ("… The…" → "…")
+      tightHead = tightHead.replace(/[\s.]+\b(the|a|an|our|its?|we|this)\b\s*…\s*$/i, "…").replace(/\s+…$/, "…");
+      const headDek = !revealsPick && fullHead && esc(tightHead).replace(/…$/, "") !== esc(fullHead) ? fullHead : "";
       view.innerHTML = `
         <div class="news">
           <div class="masthead lead">
-            <div class="mh-kicker"><span class="lk-tag">${isToday ? "Today" : "Recap"}</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span><button class="nm-rec" id="nm-rec">${recLabel} →</button>${goldChip}</div>
+            <div class="mh-kicker"><span class="lk-tag">${isToday ? "Today" : "Recap"}</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span>${goldChip}</div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
@@ -5020,7 +5079,6 @@ export default function Home() {
       };
       const nav = (el: any) => { const d = el.dataset.nav; if (d) switchTab(d); };
       view.querySelectorAll("[data-nav]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); nav(b); }));
-      const rec = $("nm-rec"); if (rec) rec.onclick = () => openRecordBreakdown();
       // storyline expand + jump
       view.querySelectorAll(".story").forEach((s: any) => {
         const toggle = (e: any) => {
@@ -5207,8 +5265,8 @@ export default function Home() {
       const prem = isPremium();
       const inner = a
         ? `<span class="acct-av${prem ? " prem" : ""}">${esc(accountInitials())}</span>`
-        : `<span class="acct-ic">${personSvg}</span>`;
-      return `<button class="acctbtn" id="acctbtn" aria-label="${a ? "Your account" : "Sign in"}">${inner}${a && prem ? `<span class="acct-star" aria-hidden="true">◆</span>` : ""}</button>`;
+        : `<span class="acct-ic">${personSvg}</span><span class="acct-signin-tx">Sign in</span>`;
+      return `<button class="acctbtn${a ? "" : " signin"}" id="acctbtn" aria-label="${a ? "Your account" : "Sign in"}">${inner}${a && prem ? `<span class="acct-star" aria-hidden="true">◆</span>` : ""}</button>`;
     }
     function refreshAccountButton() {
       const old = $("acctbtn"); if (!old || !old.parentElement) return;
@@ -5397,38 +5455,28 @@ export default function Home() {
       results: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>`,
       settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M18.2 5.8l-1.8 1.8M7.6 16.4l-1.8 1.8"/></svg>`,
     };
-    const NAV_LABEL: any = { today: "Today", games: "Games", results: "Insights", settings: "Settings" };
+    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", settings: "Settings" };
     function renderShell() {
       // Primary nav = the three destinations at EVERY width (the top bar is the nav on
       // mobile too now — the bottom nav is retired). Settings lives in the avatar/account hub.
       const primaryTabs = ["today", "games", "results"];
-      const rh = recipeHistory();
-      // The nav pill leads with the HONEST forward expectation (~55% at morning prices), NOT the
-      // 58% in-sample backtest headline. The backtest number stays available (Insights labels it),
-      // but the ever-present masthead chip must not overstate the edge.
-      const recPct = Math.round(rh.hit * 100); // backtest %, kept for the aria/tooltip context
-      // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it.
+      // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it (News only).
       root.innerHTML = `
         <header id="app-header">
           <div class="hbar">
             <div class="brand" id="brand">
               <div class="diamond"></div>
-              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">Today · Games · Insights</div></div>
+              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">News · Games · Insights</div></div>
             </div>
             <nav class="toptabs" aria-label="Primary">
               ${primaryTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}"${tab === t ? ' aria-current="page"' : ""}>${NAV_LABEL[t]}</button>`).join("")}
             </nav>
             <div class="hspacer"></div>
             <div class="navright">
-              <button class="navrec" id="navrec" aria-label="Our honest forward expectation — about 55% on totals at morning prices (backtest ${recPct}% over ${rh.n} graded picks is in-sample). Tap for the full breakdown.">
-                <span class="nr-dot" aria-hidden="true"></span>
-                <span class="nr-pct">≈55%</span>
-                <span class="nr-n">expected</span>
-              </button>
               ${accountButton()}
             </div>
           </div>
-          <div class="ticker" id="ticker" aria-label="Today's scores and picks"></div>
+          <div class="ticker" id="ticker" aria-label="Live scores"></div>
         </header>
         <main>
           <div id="today-view" style="display:${tab === "today" ? "block" : "none"}"></div>
@@ -5441,7 +5489,6 @@ export default function Home() {
       root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
       $("brand").onclick = () => switchTab("today");
       const ab = $("acctbtn"); if (ab) ab.onclick = () => switchTab("account");
-      const nrec = $("navrec"); if (nrec) nrec.onclick = () => openRecordBreakdown();
       const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
       bindHeaderScroll();
       renderTicker();
@@ -5480,6 +5527,8 @@ export default function Home() {
     }
     function renderTicker() {
       const el = $("ticker"); if (!el) return;
+      // The live ticker rides the News homepage only — the Games tab has its own date/league chrome.
+      if (tab === "games") { el.style.display = "none"; return; }
       const items = tickerItems();
       if (!items.length) { el.style.display = "none"; return; }
       el.style.display = "";
@@ -5519,6 +5568,7 @@ export default function Home() {
       tab = t;
       TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
       root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
+      renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
       if (t === "today" && !todayFresh) { renderToday(); todayFresh = true; }
       if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
       if (t === "settings") renderSettings();
