@@ -5168,10 +5168,9 @@ export default function Home() {
     };
     const NAV_LABEL: any = { today: "Today", games: "Games", results: "Results", settings: "Settings" };
     function renderShell() {
-      // Primary WEB nav = the three destinations (Settings lives in the avatar/account hub now).
+      // Primary nav = the three destinations at EVERY width (the top bar is the nav on
+      // mobile too now — the bottom nav is retired). Settings lives in the avatar/account hub.
       const primaryTabs = ["today", "games", "results"];
-      // The mobile bottom nav keeps Settings (it's the source of truth below 720px).
-      const bnavTabs = ["today", "games", "results", "settings"];
       const rh = recipeHistory();
       const recPct = Math.round(rh.hit * 100);
       // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it.
@@ -5204,11 +5203,8 @@ export default function Home() {
           <div id="settings-view" style="display:none"></div>
           <div id="upgrade-view" style="display:none"></div>
           <div id="account-view" style="display:none"></div>
-        </main>
-        <nav class="bnav" id="bnav" aria-label="Primary">
-          ${bnavTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}" aria-label="${NAV_LABEL[t]}"${tab === t ? ' aria-current="page"' : ""}><span class="bn-ic">${NAV_ICONS[t]}</span><span class="bn-lab">${NAV_LABEL[t]}</span></button>`).join("")}
-        </nav>`;
-      root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
+        </main>`;
+      root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
       $("brand").onclick = () => switchTab("today");
       const ab = $("acctbtn"); if (ab) ab.onclick = () => switchTab("account");
       const nrec = $("navrec"); if (nrec) nrec.onclick = () => openRecordBreakdown();
@@ -5288,7 +5284,7 @@ export default function Home() {
       if (t === tab) return;
       tab = t;
       TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
-      root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
+      root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
       if (t === "today" && !todayFresh) { renderToday(); todayFresh = true; }
       if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
       if (t === "settings") renderSettings();

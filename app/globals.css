@@ -24,22 +24,28 @@
            durations 160 tap · 250 hover · 380 layout · 450 entrance.
    ════════════════════════════════════════════════════════════════════════════ */
 :root{
-  --bg:#eef1f7;
-  --ink:#16202e; --ink2:#57667c; --ink3:#8894a7;
-  --line:rgba(22,36,60,.13); --line2:rgba(22,36,60,.09); --line3:rgba(22,36,60,.06);
-  --navy:#3d506e; --navy2:#54688a;
-  --red:#d92c47; --redsoft:rgba(217,44,71,.10);
-  --green:#0b9e6d; --greenbg:rgba(11,158,109,.11); --greenline:rgba(11,158,109,.30);
+  /* ── SURFACE + INK ──────────────────────────────────────────────────────────
+     Modern refresh: a cleaner, faintly-warm neutral paper (was cool blue #eef1f7)
+     and a deeper near-slate ink ladder for a crisper, more premium hierarchy —
+     the near-black-on-off-white register of a top-tier modern sports/editorial app.
+     ink3 lifted out of the failing-AA zone; a dedicated --ink4 keeps the truly
+     decorative micro-labels light without dragging real text below contrast. */
+  --bg:#f1f3f7;
+  --ink:#101826; --ink2:#48576d; --ink3:#67748a; --ink4:#95a0b1;
+  --line:rgba(20,32,54,.14); --line2:rgba(20,32,54,.09); --line3:rgba(20,32,54,.055);
+  --navy:#37496a; --navy2:#4f6488;
+  --red:#e02747; --redsoft:rgba(224,39,71,.10);
+  --green:#079669; --greenbg:rgba(7,150,105,.11); --greenline:rgba(7,150,105,.30);
   --blue:#2f6fe0; --bluebg:rgba(47,111,224,.10);
   --amber:#b97c0a; --amberbg:rgba(197,138,20,.13);
-  --slate:#6d7d94; --slatebg:rgba(109,125,148,.12);
-  --pick:#2c5cb8; --pickbg:rgba(47,111,224,.09); --pickline:rgba(47,111,224,.28);
-  --over:#0b9e6d; --under:#d92c47;
-  --hit:#0b9e6d; --hitbg:rgba(11,158,109,.12); --hitline:rgba(11,158,109,.32);
-  --miss:#d92c47; --missbg:rgba(217,44,71,.10); --missline:rgba(217,44,71,.28);
-  --gold:#d7a415; --goldbg:rgba(224,172,32,.14); --goldline:rgba(200,152,24,.38); --golddeep:#8a6708;
-  --push:#7c8a9e; --pushbg:rgba(124,138,158,.13); --pushline:rgba(124,138,158,.3);
-  --acc:#0eb47c; --acc2:#0a9465;
+  --slate:#657288; --slatebg:rgba(101,114,136,.12);
+  --pick:#2b56b0; --pickbg:rgba(43,86,176,.09); --pickline:rgba(43,86,176,.28);
+  --over:#079669; --under:#e02747;
+  --hit:#079669; --hitbg:rgba(7,150,105,.12); --hitline:rgba(7,150,105,.32);
+  --miss:#e02747; --missbg:rgba(224,39,71,.10); --missline:rgba(224,39,71,.28);
+  --gold:#cf9a12; --goldbg:rgba(216,160,26,.15); --goldline:rgba(193,145,20,.40); --golddeep:#8a6708;
+  --push:#78869c; --pushbg:rgba(120,134,156,.13); --pushline:rgba(120,134,156,.3);
+  --acc:#0aa876; --acc2:#087a54;
   --shadow:0 1px 2px rgba(38,58,96,.06),0 5px 16px rgba(38,58,96,.08);
   --shadow-hi:0 2px 6px rgba(38,58,96,.08),0 16px 40px rgba(38,58,96,.14);
   --mono:'IBM Plex Mono',ui-monospace,monospace;
@@ -87,15 +93,17 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;
+  font-size:14px;line-height:1.5;letter-spacing:-.006em;
   overscroll-behavior:contain;
   background-attachment:fixed;
-  /* softened ~20% vs the original 5-radial wash — calmer, more "editorial paper", less "app wallpaper" */
+  /* Modern editorial wash: cooler, quieter tints on a warmer paper base — the color
+     lives near the edges as a faint aura, the reading area stays clean off-white. */
   background-image:
-    radial-gradient(1000px 620px at 10% -12%,rgba(84,164,255,.16),transparent 60%),
-    radial-gradient(860px 540px at 102% -6%,rgba(255,124,148,.10),transparent 55%),
-    radial-gradient(1100px 720px at 50% 116%,rgba(18,199,133,.12),transparent 62%),
-    radial-gradient(700px 460px at 78% 42%,rgba(255,199,92,.07),transparent 60%),
-    linear-gradient(180deg,#f4f6fb,#e8edf6)}
+    radial-gradient(1050px 640px at 8% -14%,rgba(74,150,255,.12),transparent 58%),
+    radial-gradient(880px 560px at 104% -8%,rgba(255,118,142,.075),transparent 54%),
+    radial-gradient(1150px 760px at 50% 118%,rgba(7,178,120,.09),transparent 60%),
+    radial-gradient(720px 480px at 80% 40%,rgba(255,196,88,.05),transparent 58%),
+    linear-gradient(180deg,#f7f8fc,#eaeef6)}
 body.sheet-open{overflow:hidden}
 img{display:block}
 button{font-family:inherit}
@@ -108,10 +116,11 @@ button{font-family:inherit}
    condensed Oswald stays on UI chrome (kickers, team abbr, scores, labels). */
 .lead-head,.ls-match,.pv-head,.hero-match,.art-h,.sh-mast-h,.res-h,.anz-hero h2,
 .story-lead .st-h.lead,.rcp-title,.set-h,.up-hero h2,.up-done h3{
-  font-family:var(--serif)!important;font-optical-sizing:auto;letter-spacing:-.012em;
-  font-weight:600;font-synthesis:none}
-/* the biggest display headlines carry a touch more weight + tighter tracking */
-.lead-head,.anz-hero h2,.up-hero h2{font-weight:700;letter-spacing:-.02em}
+  font-family:var(--serif)!important;font-optical-sizing:auto;letter-spacing:-.018em;
+  font-weight:600;font-synthesis:none;line-height:1.08}
+/* the biggest display headlines carry a touch more weight + tighter tracking — a
+   modern high-contrast display register (crisper, more confident hierarchy) */
+.lead-head,.anz-hero h2,.up-hero h2{font-weight:700;letter-spacing:-.028em}
 /* SPECULAR EDGE — a faint diagonal light streak across the top-left of a glass sheet,
    the way a real pane catches a highlight. Opt-in via .spec (added to hero surfaces). */
 .spec{position:relative}
@@ -141,9 +150,10 @@ header#app-header.scrolled{
 .brand{display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer}
 .diamond{width:26px;height:26px;transform:rotate(45deg);border-radius:7px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(226,236,250,.8));position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 4px 12px rgba(43,64,105,.18),0 0 16px rgba(215,164,21,.25)}
 .diamond::after{content:"";position:absolute;inset:7px;border:2px solid var(--gold);border-radius:2px}
-.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase;line-height:1;color:var(--ink)}
+.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.045em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .brand h1 b{color:var(--golddeep)}
-.brand .tag{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-top:3px}
+/* tagline: dedicated AA-passing ink (#5c6678 ≈ 5.1:1 on the paper) — was --ink3 (2.71, failed AA) */
+.brand .tag{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#5c6678;font-weight:600;margin-top:3px}
 .hspacer{flex:1}
 body.native .brand .tag{display:none}
 
@@ -197,7 +207,33 @@ body.native .ticker{display:none}
 .navrec .nr-pct{font-family:var(--mono);font-weight:700;font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .navrec .nr-n{font-family:var(--disp);font-weight:600;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
 @media(max-width:560px){.navrec .nr-n{display:none}}
-@media(max-width:720px){.toptabs,.navrec{display:none}}
+
+/* ══════ MOBILE TOP BAR (≤720px) — the top bar IS the nav at every width ══════
+   The bottom nav is retired. On a phone the header becomes a compact two-tier bar:
+   ROW 1 = wordmark + a slim record chip + avatar; ROW 2 = the primary section nav
+   (Today/Games/Results) as a full-width segmented strip. This fits 340–375px with
+   no horizontal overflow and keeps every view + the record + the account reachable. */
+@media(max-width:720px){
+  .hbar{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding-bottom:6px}
+  /* the section nav drops to its own full-width row beneath the brand row */
+  .toptabs{order:3;flex-basis:100%;width:100%;gap:4px;
+    background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-brd);box-shadow:var(--e0);border-radius:13px;padding:3px}
+  .toptabs button{flex:1;text-align:center;justify-content:center;padding:8px 6px;border-radius:10px;font-size:12px;letter-spacing:.05em}
+  .toptabs button:hover{background:transparent}
+  /* active on mobile = a soft filled segment (not just an underline) so it reads as a tab bar */
+  .toptabs button.on{color:#04543a;background:linear-gradient(135deg,rgba(10,168,118,.20),rgba(7,150,105,.12));box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+  .toptabs button.on::after{display:none}
+  /* record chip stays in the top row as a compact % pill */
+  .navrec{padding:6px 10px}
+  .hspacer{order:2}
+}
+/* very narrow phones: tighten the chip + brand so nothing clips at 340px */
+@media(max-width:380px){
+  .hbar{column-gap:6px}
+  .navrec{padding:5px 9px;gap:5px}
+  .navrec .nr-pct{font-size:11.5px}
+}
 
 /* ============ FLOATING BOTTOM NAV (mobile) — SCORIFY-STYLE PILL, LIGHT PALETTE ============ */
 /* A floating rounded-pill tab bar: inactive tabs are ICON-ONLY and muted; the ACTIVE
@@ -214,7 +250,7 @@ body.native .ticker{display:none}
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,1),inset 0 0 0 1px rgba(255,255,255,.5),0 3px 10px rgba(30,46,80,.12),0 16px 38px rgba(30,46,80,.22),0 30px 70px rgba(30,46,80,.14)}
 /* soft ground scrim so page content dissolves upward into the bar instead of hard-cutting */
 .bnav::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:calc(-14px - var(--sab));width:100vw;height:calc(100px + var(--sab));background:linear-gradient(180deg,rgba(238,241,247,0),rgba(232,238,247,.7) 60%,rgba(226,233,244,.92));pointer-events:none;z-index:-1;transition:opacity .3s ease}
-@media(max-width:720px){.bnav{display:flex}}
+/* Bottom nav RETIRED — the top bar is the navigation at every width. .bnav no longer renders. */
 .bnav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:transparent;color:var(--ink3);
   min-width:64px;padding:6px 6px 5px;border-radius:19px;cursor:pointer;
   transition:background .25s var(--ease),color .2s ease,transform .16s var(--spring)}
@@ -236,7 +272,8 @@ body.sheet-open .bnav::before{opacity:0}
 
 /* ============ MAIN ============ */
 main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + var(--sab)) max(12px,var(--sal))}
-@media(max-width:720px){main{padding-bottom:calc(104px + var(--sab))}}
+/* Bottom nav retired → mobile no longer reserves a floating-bar gutter; just a comfortable tail. */
+@media(max-width:720px){main{padding-bottom:calc(40px + var(--sab))}}
 #results-view{max-width:none}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -311,7 +348,8 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .recchip .glp-edge b{color:var(--ink)}
 .recchip .glp-lean .glp-k{color:#2c5cb8}
 .recchip .glp-lean b{color:var(--ink2);font-weight:700}
-.recchip .glp-out{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--acc2)}
+/* +N out-count: dedicated deeper green (#077049 ≈ 5.4:1) — was --acc2 at old hue (3.41, failed AA) */
+.recchip .glp-out{font-family:var(--mono);font-weight:700;font-size:9px;color:#077049}
 .recchip .glp-sep{color:var(--ink3);opacity:.5}
 .recchip .glp-anchor{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3);opacity:.85}
 .nm-anchor{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3);opacity:.85;margin-left:2px}
