@@ -1380,6 +1380,8 @@ details.more .more-body{padding-top:12px}
 .ls-pick.lost{background:linear-gradient(135deg,rgba(217,44,71,.13),rgba(255,255,255,.5) 70%)}
 .ls-lede{font-size:14px;line-height:1.65;color:var(--ink);margin:0 2px 10px}
 .ls-lede.dim{color:var(--ink2)}
+/* smaller, game-focused hero lede (one clean sentence about the matchup) */
+.ls-lede.small{font-size:12.5px;line-height:1.55;color:var(--ink2);margin:0 2px 9px;max-width:640px}
 .ls-facts{display:flex;flex-direction:column;gap:0;margin:8px 0 4px;border-top:1px solid var(--line3)}
 
 /* ---- BANDED PICK CALLOUT (woven into the article body — never hidden) ---- */

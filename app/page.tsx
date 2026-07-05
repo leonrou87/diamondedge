@@ -888,6 +888,24 @@ export default function Home() {
       const mu = (p && p.matchup) ? String(p.matchup) : (g ? `${g.away_abbr} @ ${g.home_abbr}` : "");
       return esc(cleanBlurb(mu));
     }
+    const leaksPick = (s: string) => PICK_WORDS.test(s) || /\d+(\.\d+)?\s?%/.test(s);
+    // A short, GAME-focused hero lede (pitching matchup / storyline) — never the pick or the
+    // model's number. Prefers a clean served dek, then the article's first non-pick sentence,
+    // then a streak. Returns "" if we can only find pick-flavored copy.
+    function gameLede(g: any) {
+      if (!g) return "";
+      const art = gameArticle(g);
+      const dek = cleanBlurb((art && art.dek) || "");
+      if (dek && !leaksPick(dek)) return dek;
+      const paras = (art && art.paras) || [];
+      for (const para of paras) {
+        const first = String(para).split(/(?<=[.!?])\s+/)[0] || "";
+        if (first && !leaksPick(first)) return cleanBlurb(first);
+      }
+      const stk = gameStreaks(g)[0];
+      if (stk && stk.text && !leaksPick(String(stk.text))) return cleanBlurb(String(stk.text));
+      return "";
+    }
     // LIVE composite for a hero image: a pulsing LIVE badge + the live score + how the
     // pick is trending, woven onto the cover art (top band, over its own scrim). Shown only
     // for live games; degrades to "" otherwise. Uses live_scores + display_pick.live_status.
@@ -4974,10 +4992,8 @@ export default function Home() {
         const tint = g ? heroTintFor(g, pl) : (leadPick.quality === "strong" ? "gold" : "green");
         // HYPE THE MATCHUP — the hero headline is about the GAME, never the pick.
         const headline = matchupHeadline(g, leadPick);
-        // A game-focused dek: prefer a served matchup dek that doesn't leak the pick; else the
-        // hook. We never lead the hero with the model's number — that's behind the game page.
-        const dekRaw = cleanBlurb((art && art.dek) || "");
-        const dek = dekRaw && !PICK_WORDS.test(dekRaw) ? dekRaw : "";
+        // A short, game-focused lede — pitching matchup / storyline, never the pick or number.
+        const heroLede = gameLede(g);
         // A "started" / "live" flag when the game is under way.
         const startedTag = live ? "" : (started ? `<span class="ls-fig-tag started">● Started</span>` : "");
         leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
@@ -4985,7 +5001,7 @@ export default function Home() {
           <div class="ls-body">
             <h3 class="ls-match">${headline}</h3>
             <div class="ls-byline">Feature bet · DiamondEdge · ${esc(dateTxt)}</div>
-            ${dek ? `<p class="ls-lede">${esc(dek)}</p>` : `<p class="ls-lede dim">The DiamondEdge Desk's headline game today. ${locked ? "Unlock to see the side, the line and the plain-English why." : "Tap in for the full read and the call."}</p>`}
+            ${heroLede ? `<p class="ls-lede small">${esc(heroLede)}</p>` : ""}
             ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
             <span class="hero-cta">${locked ? "Unlock the full preview →" : "Read the full preview →"}</span>
           </div>
@@ -5043,12 +5059,11 @@ export default function Home() {
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
       // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
       const fullHead = cleanBlurb(db.headline || "");
-      // The masthead is the editorial nameplate — it must not leak the pick (side/line/edge %).
-      const revealsPick = PICK_WORDS.test(fullHead) || /\d+(\.\d+)?\s?%/.test(fullHead);
-      let tightHead = shortHeadline(fullHead) || esc(fullHead);
-      // trim a dangling article/ellipsis artifact ("… The…" → "…")
-      tightHead = tightHead.replace(/[\s.]+\b(the|a|an|our|its?|we|this)\b\s*…\s*$/i, "…").replace(/\s+…$/, "…");
-      const headDek = !revealsPick && fullHead && esc(tightHead).replace(/…$/, "") !== esc(fullHead) ? fullHead : "";
+      // The masthead is a clean editorial nameplate: the brief's FIRST sentence, no ellipsis
+      // stacking (CSS clamps if needed), and never the pick/edge % (fall back to a neutral line).
+      let tightHead = (fullHead.split(/(?<=[.!?])\s+/)[0] || fullHead).replace(/[.\s]+$/, "");
+      if (!tightHead || leaksPick(tightHead)) tightHead = isToday ? "Today on the board" : "The board, recapped";
+      const headDek = ""; // the read lives in the hero + game page; the nameplate stays one clean line
       view.innerHTML = `
         <div class="news">
           <div class="masthead lead">
