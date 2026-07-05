@@ -617,19 +617,6 @@ export default function Home() {
     // webhook confirms the subscription → entitlement served with the payload/session.
     const isPremium = () => { try { return localStorage.getItem("de_premium") !== "0"; } catch { return true; } };
     const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
-    // One-time welcome banner — sets expectations for new users (we pass often; every pick graded).
-    const introSeen = () => { try { return localStorage.getItem("de_seen_intro") === "1"; } catch { return true; } };
-    const setIntroSeen = () => { try { localStorage.setItem("de_seen_intro", "1"); } catch {} };
-    function introBanner() {
-      if (introSeen()) return "";
-      return `<div class="intro-banner" id="intro-banner">
-        <button class="ib-x" id="ib-x" aria-label="Dismiss">✕</button>
-        <div class="ib-head"><span class="ib-dia">◆</span><b>Welcome to DiamondEdge</b></div>
-        <p class="ib-desc">We publish at most one pick per game — and only when the numbers clear our bar, so we pass often. Every pick we make is graded in the open against the final score. That discipline is what keeps the record honest.</p>
-        <button class="ib-how" id="ib-how">See how it works →</button>
-      </div>`;
-    }
-
     // ===================== ACCOUNT / AUTH (stubbed session — no real OAuth/signup) =====================
     // The signed-in user is one localStorage record `de_account`:
     //   { provider:"google"|"apple"|"facebook"|"x"|"email", name, email, since }
@@ -2231,6 +2218,9 @@ export default function Home() {
     // Leagues sort by number of games (busiest first) by default; a saved user order (Settings)
     // pins preferred leagues to the front, remaining ones still fall in by game count.
     function leagueOrderPref(): string[] | null { try { const v = JSON.parse(localStorage.getItem("de_league_order") || "null"); return Array.isArray(v) ? v : null; } catch { return null; } }
+    // MLB + Soccer are the active leagues, so they LEAD the rail (after "All"): the chips
+    // read All · MLB · Soccer · (rest). The remaining leagues follow, ordered by game count.
+    const LEAD_LEAGUES = ["mlb", "soccer"];
     function orderedLeagues(src: any): string[] {
       const counts: any = {}; SPORTS.forEach((lg) => { counts[lg] = src ? gamesForLeague(src, lg).length : 0; });
       const byGames = (a: string, b: string) => (counts[b] - counts[a]) || (SPORTS.indexOf(a) - SPORTS.indexOf(b));
@@ -2240,7 +2230,9 @@ export default function Home() {
         const rest = SPORTS.filter((lg) => !inpref.includes(lg)).sort(byGames);
         return [...inpref, ...rest];
       }
-      return [...SPORTS].sort(byGames);
+      const lead = LEAD_LEAGUES.filter((lg) => SPORTS.includes(lg));
+      const rest = SPORTS.filter((lg) => !lead.includes(lg)).sort(byGames);
+      return [...lead, ...rest];
     }
     function renderScoresChrome() {
       const tabSrc = livePayload || payload;
@@ -2253,9 +2245,8 @@ export default function Home() {
         return `<button class="sporttab ${lg === league ? "on" : ""}${live ? " haslive" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}${live ? `<span class="livedot" aria-label="live games"></span>` : ""}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
       root.querySelector("#games-view").innerHTML = `
-        <div class="subhead">
+        <div class="subhead compact">
           <div class="sporttabs" id="sporttabs">${tabsHtml}<span class="tab-ink" id="tab-ink"></span></div>
-          <div id="meta-area">${metaRow()}</div>
         </div>
         <div class="datebar">
           <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
@@ -2264,6 +2255,7 @@ export default function Home() {
             <button class="dtool hist ${histOpen || rangeMode ? "on" : ""}" id="hist-btn" title="Scan a date range">History</button>
           </div>
         </div>
+        <div id="meta-area" class="meta-area">${metaRow()}</div>
         <div id="hist-area">${histOpen ? histPanel() : ""}</div>
         <div id="slate-body">${skeletonSlate()}</div>`;
       bindScoresChrome();
@@ -4456,7 +4448,6 @@ export default function Home() {
       const headDek = fullHead && esc(tightHead).replace(/…$/, "") !== esc(fullHead) ? fullHead : "";
       view.innerHTML = `
         <div class="news">
-          ${introBanner()}
           ${newsFront()}
           ${newsFeed && newsFeed.lead ? `<div class="picks-divider"><span>◆ ${picksAll.length ? "Today's DiamondEdge Picks" : "Today's Board"}</span></div>` : ""}
           <div class="masthead">
@@ -4487,10 +4478,6 @@ export default function Home() {
       const nav = (el: any) => { const d = el.dataset.nav; if (d) switchTab(d); };
       view.querySelectorAll("[data-nav]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); nav(b); }));
       const rec = $("nm-rec"); if (rec) rec.onclick = () => openRecordBreakdown();
-      // First-run welcome banner: dismiss (persist) or open "how it works".
-      const dismissIntro = () => { setIntroSeen(); const b = $("intro-banner"); if (b) { b.classList.add("gone"); setTimeout(() => b.remove(), 240); } };
-      const ibx = $("ib-x"); if (ibx) ibx.onclick = dismissIntro;
-      const ibh = $("ib-how"); if (ibh) ibh.onclick = () => { dismissIntro(); openRecipeSheet(); };
       // storyline expand + jump
       view.querySelectorAll(".story").forEach((s: any) => {
         const toggle = (e: any) => {
@@ -4967,9 +4954,9 @@ export default function Home() {
     let headerScrollBound = false;
     function applyHeaderState(y: number) {
       const hdr = $("app-header"); if (!hdr) return;
+      // The header stays FULL SIZE at every width — no scroll-condense/shrink. `.scrolled`
+      // only adds a frosted backing so content reads under the sticky bar (it does not resize).
       hdr.classList.toggle("scrolled", y > 6);
-      if (tab === "games") document.body.classList.toggle("games-condensed", y > 56);
-      else document.body.classList.remove("games-condensed");
       document.documentElement.style.setProperty("--hdr-h", hdr.offsetHeight + "px");
     }
     function scrollY() { return window.scrollY || (document.scrollingElement ? document.scrollingElement.scrollTop : 0) || 0; }
@@ -4982,12 +4969,6 @@ export default function Home() {
       window.addEventListener("scroll", onScroll, { passive: true });
       document.addEventListener("scroll", onScroll, { passive: true, capture: true });
       window.addEventListener("resize", onScroll, { passive: true });
-      // the header shrinks/grows on scroll (ticker folds away) — republish --hdr-h when the
-      // collapse transition settles so the sticky sub-header offset stays exact, no gap/jump.
-      const hdrEl = $("app-header");
-      if (hdrEl) hdrEl.addEventListener("transitionend", (e: any) => {
-        if (e.propertyName === "max-height") document.documentElement.style.setProperty("--hdr-h", hdrEl.offsetHeight + "px");
-      });
       requestAnimationFrame(() => applyHeaderState(scrollY()));
     }
 

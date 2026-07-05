@@ -134,19 +134,14 @@ header#app-header.scrolled{
   background:linear-gradient(180deg,rgba(240,243,249,.9),rgba(238,241,247,.72));
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
   box-shadow:0 1px 0 rgba(255,255,255,.6),0 8px 22px rgba(43,64,105,.07)}
-.hbar{max-width:var(--wide);margin:0 auto;padding:12px max(20px,var(--sal)) 8px max(20px,var(--sar));display:flex;align-items:center;gap:20px;transition:padding .28s var(--ease)}
-/* ── condensed-on-scroll header: the wordmark shrinks and the live ticker folds away
-      into a slim frosted bar, reclaiming real space (not just hiding one line) ── */
-header#app-header.scrolled .hbar{padding-top:7px;padding-bottom:7px}
+/* The header stays FULL SIZE on scroll at every width — no condense/shrink. `.scrolled`
+   only swaps in the frosted backing above; the wordmark, diamond and tag never resize. */
+.hbar{max-width:var(--wide);margin:0 auto;padding:12px max(20px,var(--sal)) 8px max(20px,var(--sar));display:flex;align-items:center;gap:20px}
 .brand-tx{overflow:hidden}
-header#app-header.scrolled .brand .tag{opacity:0;height:0;margin:0;overflow:hidden;transition:opacity .18s ease,height .2s ease}
 .brand{display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer}
-.diamond{width:26px;height:26px;transform:rotate(45deg);border-radius:7px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(226,236,250,.8));position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 4px 12px rgba(43,64,105,.18),0 0 16px rgba(215,164,21,.25);transition:width .28s var(--ease),height .28s var(--ease)}
-.diamond::after{content:"";position:absolute;inset:7px;border:2px solid var(--gold);border-radius:2px;transition:inset .28s var(--ease)}
-header#app-header.scrolled .diamond{width:21px;height:21px}
-header#app-header.scrolled .diamond::after{inset:5.5px}
-.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase;line-height:1;color:var(--ink);transition:font-size .28s var(--ease)}
-header#app-header.scrolled .brand h1{font-size:16px}
+.diamond{width:26px;height:26px;transform:rotate(45deg);border-radius:7px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(226,236,250,.8));position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 4px 12px rgba(43,64,105,.18),0 0 16px rgba(215,164,21,.25)}
+.diamond::after{content:"";position:absolute;inset:7px;border:2px solid var(--gold);border-radius:2px}
+.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .brand h1 b{color:var(--golddeep)}
 .brand .tag{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-top:3px}
 .hspacer{flex:1}
@@ -177,17 +172,6 @@ body.native .brand .tag{display:none}
 .tk-dot{color:var(--ink3);opacity:.4;padding:0 2px;font-size:10px}
 body.native .ticker{display:none}
 
-/* ---- GAMES: COLLAPSING sticky subhead. Expanded = logo→leagues→dates roomy; scrolled
-   down = leagues rise onto the shrunk-logo row, dates tuck directly under (still switchable). ---- */
-.subhead{transition:padding .28s var(--ease)}
-body.games-condensed header#app-header .toptabs{/* desktop nav unaffected */}
-/* on mobile, when condensed: pull the sticky league rail up under the header, tighten dates */
-@media(max-width:820px){
-  body.games-condensed .subhead{padding-top:calc(2px + var(--sat))}
-  body.games-condensed .metarow{max-height:0;opacity:0;margin-top:0;overflow:hidden;transition:max-height .3s var(--ease),opacity .2s ease,margin .3s var(--ease)}
-  body.games-condensed .datebar{margin-top:6px}
-  .metarow{transition:max-height .3s var(--ease),opacity .25s ease}
-}
 
 /* ============ MODERN WEB TOP-NAV — underline links, right cluster (record pill + avatar) ============
    Promoted to the primary pattern at all widths ≥720px (the floating .bnav takes over below 720).
@@ -261,20 +245,22 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 
 /* ============ STICKY SUBHEAD: league rail + meta row ============ */
 .subhead{position:sticky;top:calc(var(--hdr-h,0px) - 2px);z-index:60;padding:6px 0 6px;margin:0 -4px;background:linear-gradient(180deg,rgba(238,241,247,.94) 74%,rgba(238,241,247,0));-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
-.sporttabs{position:relative;display:flex;gap:4px;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:19px;padding:4px;box-shadow:var(--glass-shadow);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sporttabs{position:relative;display:flex;gap:4px;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:16px;padding:3px;box-shadow:var(--glass-shadow);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .sporttabs::-webkit-scrollbar{display:none}
-.sporttab{position:relative;z-index:1;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.07em;text-transform:uppercase;border:0;background:transparent;color:var(--ink2);padding:9px 10px;border-radius:15px;cursor:pointer;transition:color .25s ease;white-space:nowrap}
-.sporttab::before{content:attr(data-ic);display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.7);box-shadow:0 1px 3px rgba(43,64,105,.12);font-size:10px;letter-spacing:0;flex-shrink:0}
+/* slimmer chips — reclaim vertical space (min-height 42→34, tighter icon) */
+.sporttab{position:relative;z-index:1;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:0;background:transparent;color:var(--ink2);padding:6px 10px;border-radius:13px;cursor:pointer;transition:color .25s ease;white-space:nowrap}
+.sporttab::before{content:attr(data-ic);display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.7);box-shadow:0 1px 3px rgba(43,64,105,.12);font-size:9px;letter-spacing:0;flex-shrink:0}
 .sporttab:hover{color:var(--ink)}
 .sporttab.on{color:#04543a}
 .sporttab .cnt{font-family:var(--mono);font-size:9.5px;font-weight:600;opacity:.65;margin-left:1px}
 .sporttab .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite;margin-left:1px}
 .sporttab.haslive{color:var(--ink)}
 .sporttab.on .cnt{opacity:.9}
-.tab-ink{position:absolute;z-index:0;left:0;top:4px;bottom:4px;width:0;border-radius:15px;background:linear-gradient(135deg,rgba(18,198,137,.28),rgba(10,157,106,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 14px rgba(10,157,106,.22);transition:transform .38s var(--spring),width .38s var(--spring),opacity .2s ease}
+.tab-ink{position:absolute;z-index:0;left:0;top:3px;bottom:3px;width:0;border-radius:13px;background:linear-gradient(135deg,rgba(18,198,137,.28),rgba(10,157,106,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 14px rgba(10,157,106,.22);transition:transform .38s var(--spring),width .38s var(--spring),opacity .2s ease}
 
-/* ---- slim meta row ---- */
-.metarow{display:flex;align-items:center;gap:8px;margin-top:7px;padding:0 2px}
+/* ---- slim meta row (record chip + "how picks work"), sits just above the board ---- */
+.meta-area{margin:2px 0 0}
+.metarow{display:flex;align-items:center;gap:8px;margin:0 0 6px;padding:0 2px}
 .mr-sp{flex:1}
 .recchip{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--ink2);background:var(--glass-hi);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--glass-brd);border-radius:999px;padding:5px 11px;cursor:pointer;box-shadow:var(--shadow);transition:.2s ease}
 .recchip b{color:var(--acc2);font-weight:700}
@@ -408,27 +394,27 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* ============ LIQUID DATE STRIP ============ */
 /* One continuous frosted capsule; the days are quiet typographic cells inside it and a
    fluid glass lens slides under the active day. No per-pill borders anywhere. */
-.datebar{display:flex;align-items:center;gap:8px;margin:8px 0 14px}
-/* Reference "03 04 05 06 07 08" strip: a calm flat capsule (--e0), weekday ABOVE a big
-   day number, a sliding emerald lens under the active day, a Today dot marker. */
-.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:5px;border-radius:var(--r-md);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--e0)}
+.datebar{display:flex;align-items:center;gap:8px;margin:7px 0 8px}
+/* COMPACT inline date strip — weekday + day number on ONE line per cell (reclaims vertical
+   space vs the stacked "weekday-above-number" layout), a sliding emerald lens under the
+   active day, a Today dot marker. Slimmer capsule to match. */
+.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px;border-radius:var(--r-sm);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--e0)}
 .datestrip::-webkit-scrollbar{display:none}
-.dlens{position:absolute;left:0;top:5px;bottom:5px;width:0;border-radius:var(--r-sm);background:linear-gradient(150deg,rgba(46,229,164,.34),rgba(10,157,106,.20));box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.25),0 6px 16px rgba(10,157,106,.24);opacity:0;pointer-events:none;transition:transform .42s var(--spring),width .42s var(--spring),opacity .25s ease;will-change:transform}
-.dcell{position:relative;z-index:1;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px;border:0;background:transparent;border-radius:var(--r-sm);padding:8px 9px 7px;cursor:pointer;transition:transform .22s var(--spring)}
+.dlens{position:absolute;left:0;top:4px;bottom:4px;width:0;border-radius:var(--r-sm);background:linear-gradient(150deg,rgba(46,229,164,.34),rgba(10,157,106,.20));box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.25),0 6px 16px rgba(10,157,106,.24);opacity:0;pointer-events:none;transition:transform .42s var(--spring),width .42s var(--spring),opacity .25s ease;will-change:transform}
+.dcell{position:relative;z-index:1;flex-shrink:0;display:inline-flex;flex-direction:row;align-items:baseline;justify-content:center;gap:4px;min-width:0;border:0;background:transparent;border-radius:var(--r-sm);padding:6px 11px;cursor:pointer;transition:transform .22s var(--spring)}
 .dcell:hover:not(.on){background:rgba(22,36,60,.04)}
 .dcell:active{transform:scale(.9)}
-.dcell .dc-wd{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-variant-caps:all-small-caps;color:var(--ink3);transition:color .25s ease}
-.dcell .dc-d{font-family:var(--disp);font-weight:700;font-size:17px;color:var(--ink2);line-height:1.05;font-variant-numeric:tabular-nums;transition:color .25s ease}
-/* Today marker: a small emerald dot under the number when it's not the selected day
-   (when selected, the lens already carries the emphasis). */
-.dcell.today::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--acc2);transition:opacity .2s ease}
+.dcell .dc-wd{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-variant-caps:all-small-caps;color:var(--ink3);transition:color .25s ease}
+.dcell .dc-d{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink2);line-height:1;font-variant-numeric:tabular-nums;transition:color .25s ease}
+/* Today marker: a small emerald dot the selected-day lens replaces. */
+.dcell.today::after{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--acc2);transition:opacity .2s ease}
 .dcell.today.on::after{opacity:0}
 .dcell.today .dc-wd{color:var(--acc2)}
 .dcell.on .dc-wd{color:#045c3e}
 .dcell.on .dc-d{color:#023a27}
 .datetools{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative}
-.dtool{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--ink2);min-width:46px;height:46px;padding:0 10px;border-radius:18px;cursor:pointer;transition:.2s var(--spring);box-shadow:var(--shadow);display:inline-grid;place-items:center}
-.dtool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dtool{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--ink2);min-width:40px;height:38px;padding:0 9px;border-radius:13px;cursor:pointer;transition:.2s var(--spring);box-shadow:var(--shadow);display:inline-grid;place-items:center}
+.dtool svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .dtool:hover{color:var(--ink);box-shadow:var(--shadow-hi)}
 .dtool:active{transform:scale(.92)}
 .dtool.on{background:linear-gradient(135deg,#14cd8e,#0a9d6a);color:#fff;border-color:transparent}
@@ -527,9 +513,11 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .slate-sec .sec-n{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink3);background:rgba(22,36,60,.06);border-radius:999px;padding:1px 8px;line-height:1.5}
 .slate-sec.live .sec-n{color:#a32036;background:rgba(217,44,71,.1)}
 .slate-sec .sec-hd::after{content:"";flex:1;height:1px;background:var(--line3)}
-/* LIST layout: single column of wide cards on mobile, TWO columns on wide desktop. */
-.slate{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
-@media(min-width:820px){.slate{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+/* GRID layout: 2-up (2x2) at every width DOWN to ~360px, so the board reads as a grid on
+   mobile; below 360px it falls back to a single column so the cards don't crush. */
+.slate{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media(max-width:359px){.slate{grid-template-columns:minmax(0,1fr);gap:10px}}
+@media(min-width:820px){.slate{gap:12px}}
 
 /* ---- WIDE GAME CARD: a calm flat resting card (--e0). Header (league tag + state chip),
    body (team rows | O/U + Spread columns), then the DiamondEdge pick strip. ---- */
@@ -602,6 +590,25 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .t-col .tc-v{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
 .t-col .tc-v.none{color:var(--ink3);font-weight:600}
 @media(max-width:400px){.t-col{min-width:48px}.t-cols{padding-left:9px}}
+/* 2-UP MOBILE (≤819px): the board is a 2-col grid, so each card is narrow. Stack the
+   O/U + Spread columns BELOW the team rows (full width, split 50/50) instead of beside
+   them — the side-by-side layout doesn't fit a ~170px card at 375px. Tighter tile padding
+   + slightly smaller abbr/score so nothing clips or overflows in the narrower card. */
+@media(max-width:819px){
+  .tile{padding:11px 12px 12px;gap:7px}
+  /* narrow 2-up cards: drop the competition sub-label + let the league tag ellipsize, and
+     slim the state chip so a long "Sun, Jul 5 · 1:00 PM" never crowds the league label */
+  .tile .t-league .tl-comp{display:none}
+  .tile .t-league{overflow:hidden;text-overflow:ellipsis}
+  .tile .t-head .statechip{font-size:8.5px;padding:3px 7px;letter-spacing:.03em}
+  .t-body{flex-direction:column;align-items:stretch;gap:8px}
+  .t-teams{width:100%}
+  .t-cols{border-left:0;border-top:1px solid var(--line3);padding-left:0;padding-top:8px;width:100%}
+  .t-col{flex:1;min-width:0;padding:0 2px}
+  .t-col+.t-col{margin-left:0}
+  .t-ab{font-size:15px}
+  .t-score{font-size:19px}
+}
 /* total-only score note (no home/away split served) */
 .t-note{font-family:var(--mono);font-size:9px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 
@@ -2322,20 +2329,6 @@ details.results-more{margin-bottom:14px}
 .gp-v2 .v2-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .gp-v2 .v2-tag{font-family:var(--mono);font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;background:rgba(76,91,255,.10);color:#3844b8}
 
-/* --- First-run welcome banner --- */
-.intro-banner{position:relative;display:flex;flex-direction:column;gap:9px;margin:0 0 16px;padding:16px 17px;border-radius:16px;
-  background:linear-gradient(135deg,rgba(224,172,32,.10),rgba(11,158,109,.07));border:1px solid rgba(215,164,21,.28);
-  box-shadow:var(--glass-shadow);transition:opacity .22s,transform .22s}
-.intro-banner.gone{opacity:0;transform:translateY(-6px)}
-.intro-banner .ib-head{display:flex;align-items:center;gap:9px}
-.intro-banner .ib-dia{font-size:15px;color:var(--gold)}
-.intro-banner .ib-head b{font-family:var(--disp);font-size:16px;color:var(--ink)}
-.intro-banner .ib-desc{margin:0;font-size:13px;line-height:1.5;color:var(--ink2);max-width:58ch;padding-right:20px}
-.intro-banner .ib-how{align-self:flex-start;margin-top:2px;font-family:var(--mono);font-weight:800;font-size:11.5px;letter-spacing:.02em;
-  padding:9px 15px;border-radius:999px;border:1px solid rgba(215,164,21,.4);background:rgba(224,172,32,.14);color:var(--golddeep);cursor:pointer;white-space:nowrap}
-.intro-banner .ib-how:active{transform:scale(.96)}
-.intro-banner .ib-x{position:absolute;top:10px;right:11px;width:26px;height:26px;border:0;background:transparent;color:var(--ink3);font-size:14px;cursor:pointer;border-radius:50%;line-height:1}
-.intro-banner .ib-x:active{background:rgba(0,0,0,.06)}
 
 /* --- Results: share the record --- */
 .res-share{margin-top:15px;font-family:var(--mono);font-weight:800;font-size:12px;letter-spacing:.03em;
