@@ -550,7 +550,7 @@ export default function Home() {
       // LIVE lean — plain scoreboard status, no probabilities, no projection.
       const state = ourMargin > 0 ? `${ab} up ${ourMargin}` : ourMargin < 0 ? `${ab} down ${Math.abs(ourMargin)}` : "all square";
       const cls = ourMargin > 0 ? "hit" : ourMargin < 0 ? "miss" : "close";
-      return { kind: "lean", cls, head: `${state} ${when} · our ${esc(side)} lean`, sub: "A directional lean — scoreboard status only, not a graded bet." };
+      return { kind: "lean", cls, head: `${state} ${when} · our ${esc(side)} lean`, sub: "" };
     }
     // Render the tracking read as a glass card (mirrors the live-hit-odds treatment). The
     // honesty line is baked in: this is CONTEXT on the graded morning play, not a new pick.
@@ -1154,7 +1154,7 @@ export default function Home() {
         paras.push(...whySentences(g, pl).slice(0, 2));
       } else if (_v3s || (ps.home != null && ps.away != null)) {
         const aw = _v3s ? _v3s.away : Number(ps.away), hm = _v3s ? _v3s.home : Number(ps.home);
-        paras.push(`Our model's expected final is ${g.away_abbr} ${num(aw, 1)}–${num(hm, 1)} ${g.home_abbr}. The books' numbers land close to ours across every market, so there's no DiamondEdge Pick here — that discipline is why the record holds up.`);
+        paras.push(`Our model's expected final is ${g.away_abbr} ${num(aw, 1)}–${num(hm, 1)} ${g.home_abbr}. The books' numbers land close to ours across every market, so there's no DiamondEdge Pick here.`);
       }
       return { headline: null, dek: null, paras: paras.map(cleanBlurb).filter(Boolean), facts: [], served: false };
     }
@@ -2482,11 +2482,47 @@ export default function Home() {
       ink.style.transform = `translateX(${on.offsetLeft}px)`;
     }
 
+    // First-pitch epoch ms for a game (from start_ts/start_time), or null.
+    function firstPitchTs(g: any) {
+      const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
+      if (!ts) return null;
+      const t = new Date(ts).getTime();
+      return isNaN(t) ? null : t;
+    }
+    function fmtCountdown(ms: number) {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+      if (d > 0) return `${d}d ${h}h`;
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m || 1}m`;
+    }
+    // One shared, idempotent ticker keeps every rendered countdown live (minute granularity).
+    function startCountdowns() {
+      if ((window as any).__deCd) return;
+      (window as any).__deCd = setInterval(() => {
+        document.querySelectorAll(".fnc-val[data-drop]").forEach((el: any) => {
+          const ms = Number(el.dataset.drop) - Date.now();
+          el.textContent = ms > 0 ? fmtCountdown(ms) : "now";
+        });
+      }, 30000);
+    }
     // Banner for a FUTURE date — picks aren't published yet. `full` = standalone (no schedule
-    // to show); otherwise a compact strip sitting above the known schedule.
-    function futureNote(dispDate: string, full: boolean) {
-      const body = `<div class="fn-body"><b>Picks aren't out yet for ${esc(dispDate)}</b><span>The DiamondEdge model locks each pick as first pitch approaches — check back closer to game day.${full ? "" : " Below is the schedule as it stands."}</span></div>`;
-      return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}</div>`;
+    // to show); otherwise a compact strip above the known schedule, with a picks countdown.
+    function futureNote(dispDate: string, full: boolean, games?: any[]) {
+      // Picks publish as the ~24h decision point approaches; count down to that from first pitch.
+      let countdown = "";
+      const list = games || [];
+      let earliest: number | null = null;
+      list.forEach((g: any) => { const ts = firstPitchTs(g); if (ts != null && (earliest == null || ts < earliest)) earliest = ts; });
+      if (earliest != null) {
+        const dropAt = earliest - 24 * 3600 * 1000;
+        const ms = dropAt - Date.now();
+        countdown = ms > 6 * 60 * 1000
+          ? `<div class="fn-countdown"><span class="fnc-k">Picks drop in</span><b class="fnc-val" data-drop="${dropAt}">${fmtCountdown(ms)}</b></div>`
+          : `<div class="fn-countdown soon"><span class="fnc-k">Picks expected soon</span></div>`;
+      }
+      const body = `<div class="fn-body"><b>Picks aren't out yet for ${esc(dispDate)}</b><span>The DiamondEdge model locks each pick as first pitch approaches.${full ? "" : " Here's the schedule as it stands."}</span></div>`;
+      return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     function renderSlate(quiet = false) {
       const body = $("slate-body"), meta = $("meta-area");
@@ -2494,29 +2530,24 @@ export default function Home() {
       body.classList.toggle("still", quiet); // live-score refresh: no re-entrance animation
       if (rangeMode) {
         body.innerHTML = renderRangeBody();
-      } else if (!payload) {
-        // renderSlate runs AFTER the load (selectDate/init show the skeleton during loading), so a
-        // null payload here means "loaded, but no data for this date" — show a real empty state,
-        // not an eternal skeleton.
-        const dd = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-        // Future date with nothing loaded yet → the picks simply aren't out; say so plainly.
-        if (curDate > todayISO()) { body.innerHTML = futureNote(dd, true); return; }
-        body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dd)}${curDate !== todayISO() ? " — try another date or head back to today" : " — check your connection"}. Every past DiamondEdge Pick stays graded on the Insights tab.</div></div>`;
-        return;
       } else {
-        if (meta) meta.innerHTML = metaRow();
-        const games = gamesForLeague(payload, league);
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         const isFuture = curDate > todayISO();
+        // Games for this date. Future dates often have no snapshot yet — fall back to the live
+        // board (it carries upcoming fixtures) so the SCHEDULE still shows even without picks.
+        let games = payload ? gamesForLeague(payload, league) : [];
+        if (isFuture && !games.length && livePayload) games = gamesForLeague(livePayload, league, curDate);
+        if (meta) meta.innerHTML = metaRow();
         if (!games.length) {
-          if (isFuture) { body.innerHTML = futureNote(dispDate, true); return; }
+          if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); return; }
+          if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Insights tab.</div></div>`; return; }
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
           body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Insights tab.</div></div>`;
         } else {
-          // Featured hero: the single highest-conviction pick game leads the slate.
-          const ft = featuredPick(games);
-          const rest = ft ? games.filter((g: any) => g !== ft.g) : games;
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
+          // No featured pick hero on a future (no-pick) slate — it's a schedule, not a board.
+          const ft = anyPick ? featuredPick(games) : null;
+          const rest = ft ? games.filter((g: any) => g !== ft.g) : games;
           // Reference "Live & Upcoming": group the remaining cards by game phase so LIVE games
           // sit under a live subhead, upcoming below, finals last. gameState already gives phase.
           const grp: any = { live: [], pre: [], final: [] };
@@ -2527,15 +2558,18 @@ export default function Home() {
             : "";
           const grouped = `${section("Live", grp.live, "live")}${section(ft ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
-          // Future slate: the schedule is known but picks aren't published yet — banner says so.
-          const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false) : "";
+          // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
+          const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
           body.innerHTML = `${futureBanner}${anyPick ? tierLegend() : ""}${ft ? featuredCard(ft.g, ft.pl) : ""}${grouped}
             <div class="refnote">${games.length}${esc(lgSuffix)} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
       }
-      ["all", ...SPORTS].forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = payload ? gamesForLeague(payload, lg).length : 0; el.textContent = c || ""; } });
+      // League counts — from the loaded snapshot, or the live board when browsing a future date.
+      const cntSrc = payload || (curDate > todayISO() ? livePayload : null);
+      ["all", ...SPORTS].forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = cntSrc ? gamesForLeague(cntSrc, lg).length : 0; el.textContent = c || ""; } });
       bindMeta();
       bindCards();
+      startCountdowns();
       animateCounters(body);
     }
 
@@ -3109,6 +3143,51 @@ export default function Home() {
       return `<div class="livepanel">${rows.join("")}</div>`;
     }
 
+    // A LARGE score to sit beside a headline for live/final games. "" for pre-game / no split score.
+    function bigScore(g: any) {
+      const gs = gameState(g);
+      if (gs.kind !== "live" && gs.kind !== "final") return "";
+      const sc = gs.score;
+      if (!sc || !sc.split || sc.home == null) return "";
+      const aw = num(sc.away, 0), hm = num(sc.home, 0);
+      const awWin = gs.kind === "final" && sc.away > sc.home, hmWin = gs.kind === "final" && sc.home > sc.away;
+      const tag = gs.kind === "live"
+        ? `<span class="bsc-tag live"><span class="livedot"></span>${esc(gs.label && gs.label !== "Live" ? gs.label : "LIVE")}</span>`
+        : `<span class="bsc-tag final">Final</span>`;
+      return `<div class="bigscore ${gs.kind}">
+        <span class="bsc-team ${awWin ? "win" : ""}"><span class="bsc-ab">${esc(g.away_abbr)}</span><b>${aw}</b></span>
+        <span class="bsc-dash">–</span>
+        <span class="bsc-team ${hmWin ? "win" : ""}"><b>${hm}</b><span class="bsc-ab">${esc(g.home_abbr)}</span></span>
+        ${tag}
+      </div>`;
+    }
+    // A compact TABLE of the model's lean on every market — side + line + confidence (or Pass) —
+    // shown at the top of the game detail; the narrative below explains WHY.
+    function marketsTable(g: any) {
+      const P = gamePlays(g);
+      const row = (mk: string, label: string) => {
+        const pl = P[mk];
+        const line = vegasLine(g, mk);
+        const isTake = pl && pl.action === "TAKE" && pl.side;
+        if (isTake) {
+          const q = qualityOf(pl);
+          const st = playState(g, pl);
+          const locked = pickLocked(pl, st);
+          const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
+          const call = locked
+            ? `<span class="mt-lock" data-up="1">${lockSvg} Unlock</span>`
+            : `<span class="mt-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span>`;
+          const conf = locked
+            ? `<span class="mt-conf blur" aria-hidden="true">★★★</span>`
+            : `<span class="mt-conf">${qDiamonds(q)}<i>${Q_LABEL[q] || ""}</i></span>`;
+          return `<tr class="mt-take q-${q} ${st}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
+        }
+        return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call"><span class="mt-passlab">Pass</span></td><td class="mt-c">—</td></tr>`;
+      };
+      return `<div class="mkt-table"><div class="mt-h">Our lean · every market</div>
+        <table class="mt-tbl"><thead><tr><th>Market</th><th>Line</th><th>Our call</th><th>Confidence</th></tr></thead>
+        <tbody>${row("total", "Total (O/U)")}${row("spread", "Spread")}${row("moneyline", "Moneyline")}</tbody></table></div>`;
+    }
     // The core thesis, made visible: OUR number vs the MARKET's, and the gap that makes the bet.
     function deDivergence(g: any, lead: any) {
       if (!lead || lead.action !== "TAKE") return "";
@@ -3146,7 +3225,6 @@ export default function Home() {
       const narrative = why && why.length ? `<div class="de-sec"><div class="de-h">The read</div>${why.slice(0, 4).map((w: string) => `<p>${mdBold(w)}</p>`).join("")}</div>` : "";
       const div = deDivergence(g, lead);
       const viz = previewViz(g);
-      const mvm = modelsVsMarket(g);
       const facts = factRows(g, gameArticle(g));
       const stks = gameStreaks(g).slice(0, 4).map((s: any) => `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
       const lead2 = lead && lead.action === "TAKE";
@@ -3158,7 +3236,6 @@ export default function Home() {
         ${narrative}
         ${div ? `<div class="de-sec"><div class="de-h">Our number vs the market</div>${div}</div>` : ""}
         ${viz ? `<div class="de-sec"><div class="de-h">The numbers</div>${viz}</div>` : ""}
-        ${mvm ? `<div class="de-sec"><div class="de-h">Model vs market</div>${mvm}</div>` : ""}
         ${(facts.length || stks) ? `<div class="de-sec"><div class="de-h">What's driving it</div>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</div>` : ""}
       </div>`;
     }
@@ -3309,7 +3386,6 @@ export default function Home() {
             ${takes.length ? playsTrackTable() : ""}
           </div></div>
           ${intelSection(g)}
-          ${modelsVsMarket(g)}
           ${reasoning}
         </div>
       </details>`;
@@ -3391,6 +3467,7 @@ export default function Home() {
           </div>
           <div class="gp-body" id="gp-body">
             ${gameHero}
+            ${marketsTable(g)}
             ${tabsBar}
             ${previewPane}
             ${livePane}
@@ -4823,6 +4900,7 @@ export default function Home() {
       return `<article class="prev ${feature ? "feature " : ""}${hasPick ? "haspick q-" + q : "nopick"}" data-gid="${esc(g.game_id)}" style="--i:${Math.min(i, 8)}" role="button" tabindex="0" aria-label="${esc(g.matchup || "game preview")}${hasPick ? " — DiamondEdge Pick " + esc(pl.side || "") : " — no pick"} — open">
         <div class="pv-figure">${heroImage(g, tint, coverSize)}<div class="pv-fig-top"><span class="pv-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>${isLive ? "" : scoreBadge}${isLive ? "" : status}</div>${isLive ? heroLiveBadge(g, feature ? "lead" : "card") : ""}${heroPickCover(g, coverSize)}</div>
         <div class="pv-body">
+          ${bigScore(g)}
           <h4 class="pv-head">${head}</h4>
           ${dek && gs.kind !== "final" ? `<p class="pv-dek clamp2">${mdBold(String(dek))}</p>` : ""}
           <div class="pv-byline">DiamondEdge · ${esc(gs.kind === "final" ? "Final" : gs.kind === "live" ? "Live now" : (gs.si.hasTime && gs.si.time ? gs.si.time : "Today"))}</div>
@@ -5107,6 +5185,7 @@ export default function Home() {
         leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
           ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}${gameState(g).kind !== "live" ? `<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead", true)}</div>` : ""}
           <div class="ls-body">
+            ${g ? bigScore(g) : ""}
             <h3 class="ls-match">${headline}</h3>
             <div class="ls-byline">Feature bet · DiamondEdge · ${esc(dateTxt)}</div>
             ${heroLede ? `<p class="ls-lede small">${esc(heroLede)}</p>` : ""}

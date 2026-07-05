@@ -473,6 +473,12 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* FUTURE-DATE banner — picks not published yet. Compact strip above a schedule, or a full card. */
 .future-note{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:13px 16px;border-radius:var(--r-md);background:linear-gradient(180deg,var(--amberbg),rgba(255,255,255,.5));border:1px solid var(--glass-brd);box-shadow:var(--e0)}
 .future-note.full{margin:24px auto;max-width:520px;flex-direction:column;text-align:center;padding:28px 22px}
+.future-note .fn-countdown{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;background:var(--goldbg);border:1px solid var(--goldline);flex-shrink:0;white-space:nowrap}
+.future-note.full .fn-countdown{margin:14px auto 0}
+.fn-countdown .fnc-k{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--golddeep)}
+.fn-countdown .fnc-val{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+.fn-countdown.soon{background:var(--greenbg);border-color:var(--greenline)}
+.fn-countdown.soon .fnc-k{color:var(--acc2)}
 .future-note .fn-ic{flex-shrink:0;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--goldbg);color:var(--golddeep);font-size:16px}
 .future-note.full .fn-ic{width:46px;height:46px;font-size:22px}
 .future-note .fn-body{display:flex;flex-direction:column;gap:3px;min-width:0}
@@ -1320,9 +1326,10 @@ details.more .more-body{padding-top:12px}
 /* compact cards: a taller 3:2 figure gives the crests a clear top band above the cover */
 .prev:not(.feature) .pv-figure .heroimg{aspect-ratio:3/2}
 .prev:not(.feature) .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:7%;padding-bottom:48%}
-.prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:34px;height:34px}
+.prev:not(.feature) .pv-figure .heroimg .hi-crest{padding:7px}
+.prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:46px;height:46px}
 /* wider tablet/desktop board cards have room — don't let the logos read as tiny & floaty */
-@media(min-width:680px){.prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:46px;height:46px}.prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:18px}}
+@media(min-width:680px){.prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:54px;height:54px}.prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:18px}}
 .prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:15px}
 .prev.feature .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:6%;padding-bottom:40%}
 .prev.feature .pv-figure .heroimg .hi-crest img,.prev.feature .pv-figure .heroimg .hi-crest .crest{width:58px;height:58px}
@@ -1406,9 +1413,28 @@ details.more .more-body{padding-top:12px}
 .ls-body{padding:15px 18px 15px}
 .ls-kick{display:flex;align-items:center;gap:8px}
 .ls-lab{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--red)}
-.ls-match{font-size:25px;line-height:1.14;color:var(--ink);margin:2px 0 6px;text-wrap:balance}
-@media(min-width:900px){.ls-match{font-size:28px}}
+.ls-match{font-size:clamp(27px,4vw,42px);line-height:1.08;letter-spacing:-.015em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
+@media(min-width:900px){.ls-match{font-size:clamp(34px,3.4vw,44px)}}
 .leadstory.pass .ls-match{font-size:22px;margin-top:2px}
+/* LARGE SCORE beside a headline for live/final games */
+.bigscore{display:inline-flex;align-items:center;gap:10px;margin-bottom:8px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.bigscore .bsc-team{display:inline-flex;align-items:center;gap:7px}
+.bigscore .bsc-team b{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1;color:var(--ink2)}
+.bigscore .bsc-team.win b,.bigscore .bsc-team.win .bsc-ab{color:var(--ink)}
+.bigscore .bsc-ab{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.04em;color:var(--ink3)}
+.bigscore .bsc-dash{font-family:var(--disp);font-weight:400;font-size:22px;color:var(--ink4)}
+.bigscore .bsc-tag{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px}
+.bigscore .bsc-tag.live{color:#fff;background:var(--red)}
+.bigscore .bsc-tag.live .livedot{background:#fff}
+.bigscore .bsc-tag.final{color:var(--ink2);background:var(--slatebg)}
+/* hero scores are big; story-card scores scale down */
+.ls-body .bigscore .bsc-team b{font-size:40px}
+.ls-body .bigscore .bsc-ab{font-size:15px}
+.pv-body .bigscore{margin-bottom:5px;gap:8px}
+.pv-body .bigscore .bsc-team b{font-size:27px}
+.pv-body .bigscore .bsc-ab{font-size:11px}
+.prev:not(.feature) .pv-body .bigscore .bsc-team b{font-size:22px}
+.prev:not(.feature) .pv-body .bigscore .bsc-tag{font-size:8px;padding:2px 7px}
 .ls-byline{font-family:var(--mono);font-weight:600;font-size:9.5px;letter-spacing:.02em;color:var(--ink3);text-transform:uppercase;margin-bottom:11px;padding-bottom:9px;border-bottom:1px solid var(--line3)}
 .ls-pick{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-radius:14px;padding:11px 14px;background:rgba(255,255,255,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 3px 10px rgba(43,64,105,.07);margin-bottom:12px}
 .ls-pick .ls-side{font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:.01em;color:var(--ink)}
@@ -1946,7 +1972,7 @@ details.results-more{margin-bottom:14px}
   .ft-tm b{font-size:22px}
   .ft-take{font-size:16px;gap:7px}
   .ls-tm img,.ls-tm .crest{width:48px;height:48px}
-  .ls-match{font-size:17px}
+  .ls-match{font-size:26px}
   .ad-row{grid-template-columns:minmax(66px,1fr) minmax(70px,1.2fr) auto;gap:7px}
   .ad-rec{display:none}
   .rrow summary{grid-template-columns:minmax(0,1.4fr) auto auto 12px;gap:7px;padding:11px 4px}
@@ -2381,6 +2407,28 @@ details.results-more{margin-bottom:14px}
   background:linear-gradient(135deg,rgba(18,198,137,.28),rgba(10,157,106,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px rgba(10,157,106,.2);
   transition:transform .38s var(--spring),width .38s var(--spring);will-change:transform}
 .gp-pane{animation:rise .3s var(--ease-out) both}
+/* ── ALL-MARKETS LEAN TABLE — model's call on every market, at the top of the game detail ── */
+.mkt-table{margin:0 0 14px;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e1);padding:13px 15px 7px}
+.mkt-table .mt-h{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:9px}
+.mt-tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.mt-tbl th{font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:0 8px 7px 0;border-bottom:1px solid var(--line2)}
+.mt-tbl th:last-child{text-align:right;padding-right:0}
+.mt-tbl td{padding:10px 8px 10px 0;border-bottom:1px solid var(--line3);vertical-align:middle}
+.mt-tbl tbody tr:last-child td{border-bottom:0}
+.mt-mk{font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--ink);white-space:nowrap}
+.mt-line{font-family:var(--mono);font-size:12px;color:var(--ink2);white-space:nowrap}
+.mt-call .mt-side{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap}
+.mt-call .mt-side i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink2);margin-left:3px}
+.mt-passlab{font-family:var(--disp);font-weight:600;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.mt-c{text-align:right;padding-right:0!important}
+.mt-conf{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end}
+.mt-conf i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink2)}
+.mt-conf.blur{filter:blur(4px)}
+.mt-conf .qdia{font-size:11px}
+.mt-take.q-strong .mt-mk{color:var(--golddeep)}.mt-take.q-good .mt-mk{color:var(--acc2)}
+.mt-take.won .mt-side,.mt-take.pushed .mt-side{color:var(--hit)}.mt-take.lost .mt-side{color:var(--miss)}
+.mt-lock{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:11px;text-transform:uppercase;color:var(--golddeep);cursor:pointer}
+.mt-lock svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2}
 /* ── DIAMONDEDGE reasoning tab: narrative → divergence → graphs → factors ── */
 .de-pane{display:flex;flex-direction:column;gap:14px}
 .de-lead{background:linear-gradient(180deg,var(--goldbg),rgba(255,255,255,.5));border:1px solid var(--goldline);border-radius:var(--r-md);padding:15px 17px;box-shadow:var(--e0)}
