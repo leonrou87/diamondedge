@@ -2434,6 +2434,7 @@ details.results-more{margin-bottom:14px}
 .mt-call .mt-side{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap}
 .mt-call .mt-side i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink2);margin-left:3px}
 .mt-passlab{font-family:var(--disp);font-weight:600;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.mt-passwhy{display:block;font-family:var(--sans);font-size:9.5px;color:var(--ink4);margin-top:1px;text-transform:none;letter-spacing:0}
 .mt-c{text-align:right;padding-right:0!important}
 .mt-conf{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end}
 .mt-conf i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink2)}

@@ -763,6 +763,39 @@ export default function Home() {
       if (q !== "strong" && q !== "good") return false;
       return !(st === "won" || st === "lost" || st === "pushed");
     }
+    // ===================== VIG / +EV GATE =====================
+    // A bet is only worth taking when our win probability clears the PRICE's break-even (the
+    // vig-inclusive hurdle). "Right side of the line" at a bad price (e.g. 64% at -196, which
+    // needs 66.2%) is a LOSING bet — we never present it as a pick.
+    // Normalize a price to DECIMAL odds. The payload stores american when |n|>=100, else decimal
+    // (matches fmtOdds): -196 or +120 → american; 1.62 or 2.5 → decimal.
+    function priceToDecimal(price: any) {
+      const n = Number(price);
+      if (!isFinite(n) || n === 0) return null;
+      if (n >= 100 || n <= -100) return n > 0 ? 1 + n / 100 : 1 + 100 / Math.abs(n);
+      return n > 1 ? n : null;
+    }
+    function breakevenProb(price: any) {
+      const dec = priceToDecimal(price);
+      return dec ? 1 / dec : null;
+    }
+    // { be, p, ev, ok } for a pick, or null if we can't judge (missing price/prob → don't block).
+    function pickEdge(pl: any) {
+      if (!pl || pl.price == null || pl.p == null) return null;
+      const dec = priceToDecimal(pl.price);
+      const p = Number(pl.p);
+      if (!dec || !isFinite(p)) return null;
+      const be = 1 / dec;
+      return { be, p, ev: p * dec - 1, ok: p > be };
+    }
+    // True unless we can prove the pick is below break-even (then it's not a bet — it's a pass).
+    function pickPlusEV(pl: any) {
+      if (!pl || pl.action !== "TAKE") return true;
+      const e = pickEdge(pl);
+      return e ? e.ok : true;
+    }
+    // A TAKE we'd actually recommend = a real pick AND +EV at its price.
+    const isBet = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side && pickPlusEV(pl));
     const lockSvg = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
 
     // ===================== EDITORIAL ICON SET (inline SVG, stroke = currentColor) =====================
@@ -849,6 +882,11 @@ export default function Home() {
       const st = pl ? playState(g, pl) : "open";
       const state = pl && pl.action === "TAKE" ? pickStateTxt(g, pl, st) : null;
       const kick = isStarted(g) ? "Pre-Game Pick" : "DiamondEdge Pick";
+      // A lean that doesn't clear its price's break-even isn't a pick — show the pass verdict.
+      if (pl && pl.action === "TAKE" && !pickPlusEV(pl)) {
+        return `<div class="hpc hpc-${size} pass"><div class="hpc-scrim"></div>
+          <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">No Bet — Price Too Steep</b></div></div>`;
+      }
       if (locked) {
         // Unpaid: confidence is BLURRED and the pick is hidden — the whole draw is unlocking it.
         return `<div class="hpc hpc-${size} locked" data-up="1"><div class="hpc-scrim"></div>
@@ -1838,9 +1876,8 @@ export default function Home() {
       const P = gamePlays(g);
       const cell = (m: string, label: string) => {
         const pl = P[m];
-        const isTake = pl && pl.action === "TAKE" && pl.side;
         const line = vegasLine(g, m); // pre-escaped safe HTML ("BOS -1.5" / "O/U 8.5" / "LAA +120")
-        if (isTake) {
+        if (isBet(pl)) {
           const q = qualityOf(pl);
           const st = playState(g, pl);
           const locked = pickLocked(pl, st);
@@ -2112,7 +2149,7 @@ export default function Home() {
           <div class="t-teams">${tileRow(g, "away", gs, !!bs)}${tileRow(g, "home", gs, !!bs)}</div>
         </div>
         ${pre ? allLinesRow(g) : (bs ? "" : totOnly)}
-        ${pre ? "" : (pick ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
+        ${pre ? "" : (isBet(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
         ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
     }
@@ -2131,7 +2168,7 @@ export default function Home() {
       let best: any = null;
       games.forEach((g: any) => {
         const pl = displayPick(g);
-        if (!pl || pl.action !== "TAKE") return;
+        if (!isBet(pl)) return; // never feature a bet that doesn't clear its price's break-even
         const cand = { g, pl, p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)] };
         if (!best || convictionSort(cand.p, cand.qr, best.p, best.qr) < 0) best = cand;
       });
@@ -2340,7 +2377,7 @@ export default function Home() {
         const P = gamePlays(g);
         MARKETS.forEach((mk) => {
           const pl = P[mk];
-          if (!pl || pl.action !== "TAKE" || !pl.result) return;
+          if (!isBet(pl) || !pl.result) return; // only count bets we'd actually make (+EV)
           const s = pl.result.status;
           const strong = qualityOf(pl) === "strong";
           if (s === "hit") { w++; if (strong) sw++; }
@@ -2744,8 +2781,13 @@ export default function Home() {
         const _side = pl.side || mp.side;
         const _v3wp = v3WinProb(g, _side === g.away_abbr ? "away" : "home");
         const ourWp = _v3wp != null ? _v3wp : (mp.our_winprob != null ? Number(mp.our_winprob) : null);
-        if (ourWp != null)
-          s.push(`Our model gives ${esc(_side || "this side")} about a ${(ourWp * 100).toFixed(0)}% chance to win — more than the price implies.`);
+        if (ourWp != null) {
+          const be = pl.price != null ? breakevenProb(pl.price) : null;
+          if (be != null && ourWp <= be)
+            s.push(`Our model gives ${esc(_side || "this side")} about a ${(ourWp * 100).toFixed(0)}% chance to win — but at ${fmtOdds(pl.price)} you'd need about ${(be * 100).toFixed(0)}% just to break even, so the price is too steep. That's a pass, not a bet.`);
+          else
+            s.push(`Our model gives ${esc(_side || "this side")} about a ${(ourWp * 100).toFixed(0)}% chance to win${be != null ? ` — past the ${(be * 100).toFixed(0)}% the ${fmtOdds(pl.price)} price needs to profit` : " — more than the price implies"}.`);
+        }
       }
       if (pl.nlines != null && pl.nlines >= 2)
         s.push(`The sportsbooks themselves don't agree on this line today — they're posting ${pl.nlines} different numbers — and split lines like that have historically been beatable.`);
@@ -2753,8 +2795,13 @@ export default function Home() {
         const rh = recipeHistory();
         s.push(`Picks made exactly this way backtested around ${(rh.hit * 100).toFixed(0)}% since 2022 — real, but in-sample; the honest forward read is nearer 55% at morning prices, still ahead of break-even.`);
       } else {
-        if (pl.p != null && pl.price != null)
-          s.push(`The model gives this bet about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}.`);
+        if (pl.p != null && pl.price != null) {
+          const be = breakevenProb(pl.price);
+          if (be != null && Number(pl.p) <= be)
+            s.push(`The model gives this about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win, but ${fmtOdds(pl.price)} needs roughly ${(be * 100).toFixed(0)}% just to break even — the price is too steep, so we pass.`);
+          else
+            s.push(`The model gives this about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}${be != null ? `, clear of the ${(be * 100).toFixed(0)}% break-even` : ""}.`);
+        }
         s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Insights tab.`);
       }
       return s.slice(0, 4);
@@ -3179,8 +3226,7 @@ export default function Home() {
       const row = (mk: string, label: string) => {
         const pl = P[mk];
         const line = vegasLine(g, mk);
-        const isTake = pl && pl.action === "TAKE" && pl.side;
-        if (isTake) {
+        if (isBet(pl)) {
           const q = qualityOf(pl);
           const st = playState(g, pl);
           const locked = pickLocked(pl, st);
@@ -3193,7 +3239,12 @@ export default function Home() {
             : `<span class="mt-conf">${qDiamonds(q)}<i>${Q_LABEL[q] || ""}</i></span>`;
           return `<tr class="mt-take q-${q} ${st}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
         }
-        return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call"><span class="mt-passlab">Pass</span></td><td class="mt-c">—</td></tr>`;
+        // A model lean that DOESN'T clear the price's break-even is a PASS on value, not a bet.
+        const e = pl && pl.action === "TAKE" ? pickEdge(pl) : null;
+        const passNote = e && !e.ok
+          ? `<span class="mt-passlab">Pass</span><span class="mt-passwhy">price too steep</span>`
+          : `<span class="mt-passlab">Pass</span>`;
+        return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${passNote}</td><td class="mt-c">—</td></tr>`;
       };
       return `<div class="mkt-table"><div class="mt-h">Our lean · every market</div>
         <table class="mt-tbl"><thead><tr><th>Market</th><th>Line</th><th>Our call</th><th>Confidence</th></tr></thead>
