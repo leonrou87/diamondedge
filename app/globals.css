@@ -1435,6 +1435,11 @@ details.more .more-body{padding-top:12px}
 .pv-body .bigscore .bsc-ab{font-size:11px}
 .prev:not(.feature) .pv-body .bigscore .bsc-team b{font-size:22px}
 .prev:not(.feature) .pv-body .bigscore .bsc-tag{font-size:8px;padding:2px 7px}
+/* Games-tab tiles: big score sits below the header, teams below carry names + form */
+.tile .bigscore{margin:1px 0 7px;gap:9px}
+.tile .bigscore .bsc-team b{font-size:29px}
+.tile .bigscore .bsc-ab{font-size:12px}
+.tile .bigscore .bsc-tag{font-size:8px;padding:2px 7px}
 .ls-byline{font-family:var(--mono);font-weight:600;font-size:9.5px;letter-spacing:.02em;color:var(--ink3);text-transform:uppercase;margin-bottom:11px;padding-bottom:9px;border-bottom:1px solid var(--line3)}
 .ls-pick{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-radius:14px;padding:11px 14px;background:rgba(255,255,255,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 3px 10px rgba(43,64,105,.07);margin-bottom:12px}
 .ls-pick .ls-side{font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:.01em;color:var(--ink)}
@@ -2342,9 +2347,16 @@ details.results-more{margin-bottom:14px}
 .gp-back:hover,.gp-share:hover{background:rgba(22,36,60,.11)}
 .gp-back:active,.gp-share:active{transform:scale(.9)}
 .gp-share:hover{background:rgba(11,158,109,.14);color:#06714f}
-.gp-head-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:center}
+.gp-head-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:right}
 .gp-head-sport{font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
-.gp-head-mu{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.03em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gp-head-mu{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.03em;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* DiamondEdge brand in the game-page header — clicking it goes HOME (News). */
+.gp-brand{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:10px;transition:background .2s ease}
+.gp-brand:hover{background:rgba(22,36,60,.06)}.gp-brand:active{transform:scale(.97)}
+.gp-brand .gp-diamond{width:20px;height:20px;transform:rotate(45deg);border-radius:6px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(226,236,250,.8));box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 3px 9px rgba(43,64,105,.18),0 0 12px rgba(215,164,21,.22);flex-shrink:0}
+.gp-brand .gp-brand-tx{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.01em;color:var(--ink);text-transform:none}
+.gp-brand .gp-brand-tx b{font-weight:600;color:var(--golddeep)}
+@media(max-width:520px){.gp-brand .gp-brand-tx{display:none}.gp-head-mu{font-size:14px;color:var(--ink)}}
 /* PAGE BODY (scrolls) */
 .gp-body{position:relative;z-index:1;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   padding:14px max(14px,var(--sar)) calc(34px + var(--sab)) max(14px,var(--sal))}

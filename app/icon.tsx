@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-// Branded app/favicon — gold diamond on the dark liquid-glass field, matching the OG card.
+// Branded app/favicon — modern: a white, soft-cornered diamond on a pure black field.
 export const size = { width: 512, height: 512 };
 export const contentType = "image/png";
 
@@ -14,17 +14,16 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0b0f18 0%, #1a2233 100%)",
+          background: "#000000",
         }}
       >
         <div
           style={{
-            width: 300,
-            height: 300,
+            width: 296,
+            height: 296,
             transform: "rotate(45deg)",
-            borderRadius: 56,
-            background: "linear-gradient(135deg, #f6dd94, #e0ac20)",
-            boxShadow: "0 0 70px rgba(224,172,32,0.6)",
+            borderRadius: 84,
+            background: "#ffffff",
           }}
         />
       </div>

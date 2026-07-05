@@ -99,12 +99,13 @@ export default function Home() {
     // flag → text crest. Soccer images degrade to the text crest on load error.
     function crestImg(sp: string, ab: any, cls = "", exUrl?: any) {
       const url = (typeof exUrl === "string" && /^https?:\/\//.test(exUrl) ? exUrl : null) || logoFor(sp, ab);
-      if (!url) return `<span class="crest ${cls}">${esc((ab || "").slice(0, 3))}</span>`;
-      if (sp === "soccer") {
-        const fb = `<span class=&quot;crest ${cls}&quot;>${esc((ab || "").slice(0, 3))}</span>`;
-        return `<img class="${cls}" src="${url}" onerror="this.onerror=null;this.outerHTML='${fb}'" alt="" loading="lazy">`;
-      }
-      return `<img class="${cls}" src="${url}" onerror="this.style.visibility='hidden'" alt="" loading="lazy">`;
+      const abbr = esc((ab || "").slice(0, 3));
+      if (!url) return `<span class="crest ${cls}">${abbr}</span>`;
+      // EVERY sport falls back to the readable text crest (team abbr) if the logo fails or is
+      // slow — never an empty box. Eager load (crests are tiny SVGs) so nothing flashes blank
+      // while scrolling. (Was: MLB used visibility:hidden → empty white plate on any miss.)
+      const fb = `<span class=&quot;crest ${cls}&quot;>${abbr}</span>`;
+      return `<img class="${cls}" src="${url}" onerror="this.onerror=null;this.outerHTML='${fb}'" alt="">`;
     }
     const gCrest = (g: any, which: "home" | "away", cls = "") =>
       crestImg(g.sport, which === "home" ? g.home_abbr : g.away_abbr, cls, which === "home" ? g.home_logo : g.away_logo);
@@ -1954,7 +1955,7 @@ export default function Home() {
     // A scores-app team line: logo · ABBR · form(L15 + streak) · this side's spread(px) + ML · SCORE.
     // The odds live WITH the team so the card needs no separate stacked market strip.
     // Pre-game shows odds; live/final shows the score. Everything degrades independently.
-    function tileRow(g: any, which: "away" | "home", gs: any) {
+    function tileRow(g: any, which: "away" | "home", gs: any, hideScore = false) {
       const ab = which === "away" ? g.away_abbr : g.home_abbr;
       const sc = gs.score;
       const started = gs.kind !== "pre";
@@ -1964,7 +1965,8 @@ export default function Home() {
         const other = which === "home" ? sc.away : sc.home;
         winner = gs.kind === "final" && mine > other;
         loser = gs.kind === "final" && mine < other;
-        scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}">${num(mine, 0)}</span>`;
+        // score is suppressed here when the big score line above already shows it
+        if (!hideScore) scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}">${num(mine, 0)}</span>`;
       }
       // recent form (MLB-only, degrades to nothing)
       const fm = teamForm(g, which);
@@ -2094,13 +2096,17 @@ export default function Home() {
       // Pre-game: the 3-market line row (all Vegas lines + our starred call) does the work.
       // Live/final: the score carries it, and the pick strip shows the live read / verdict.
       const pre = gs.kind === "pre";
+      // Live/final: the score rides as BIG numbers (bigScore); the team rows then drop their
+      // inline score so it isn't shown twice.
+      const bs = !pre ? bigScore(g) : "";
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
         <div class="t-head">${leagueTag(g)}${stateChip(g, gs)}</div>
+        ${bs}
         <div class="t-body">
-          <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
+          <div class="t-teams">${tileRow(g, "away", gs, !!bs)}${tileRow(g, "home", gs, !!bs)}</div>
         </div>
-        ${pre ? allLinesRow(g) : totOnly}
+        ${pre ? allLinesRow(g) : (bs ? "" : totOnly)}
         ${pre ? "" : (pick ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
         ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
@@ -3284,10 +3290,8 @@ export default function Home() {
       const art = gameArticle(g);
       // The masthead headline: served article.headline (backend now writes preview-first),
       // else a composed matchup framing — the MATCH, never the pick, leads.
-      const mastHead = art && art.headline
-        ? esc(cleanBlurb(art.headline))
-        : `${esc(g.away_team || g.away_abbr)} at ${esc(g.home_team || g.home_abbr)}`;
-      const mastDek = art && art.dek ? mdBold(cleanBlurb(art.dek)) : "";
+      const mastHead = matchupHeadline(g, lead);
+      const mastDek = art && art.dek && !PICK_WORDS.test(cleanBlurb(art.dek)) ? mdBold(cleanBlurb(art.dek)) : "";
       const kickLine = [SPORT_LABEL[sp] || sp, g.meta && g.meta.competition ? esc(g.meta.competition) : ""].filter(Boolean).join(" · ");
       const previewMasthead = `<div class="sh-mast">
         <div class="sh-mast-kick">${esc(kickLine || "Game Preview")}</div>
@@ -3462,7 +3466,8 @@ export default function Home() {
         <div class="gamepage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.matchup || "Game")}">
           <div class="gp-head">
             <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <div class="gp-head-title"><span class="gp-head-sport">${SPORT_LABEL[sp] || sp}${g.meta && g.meta.competition ? ` · ${esc(g.meta.competition)}` : ""}</span><span class="gp-head-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span></div>
+            <button class="gp-brand" id="gp-brand" aria-label="DiamondEdge — home"><span class="gp-diamond" aria-hidden="true"></span><span class="gp-brand-tx">Diamond<b>Edge</b></span></button>
+            <div class="gp-head-title"><span class="gp-head-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span></div>
             <button class="gp-share" id="gp-share" aria-label="Share this game"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button>
           </div>
           <div class="gp-body" id="gp-body">
@@ -3481,6 +3486,8 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); positionDetailInk(); });
       $("gp-back").onclick = () => closeDetail();
+      // The DiamondEdge logo goes HOME (News) from anywhere — the back button goes back a step.
+      const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
       const unl = $("cc-unlock");
       if (unl) unl.onclick = () => { closeDetail(); switchTab("upgrade"); };
       const shTlh = $("tl-how"); if (shTlh) shTlh.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => openRecipeSheet(), 220); };
@@ -4887,9 +4894,8 @@ export default function Home() {
         : gs.kind === "final" ? `<span class="pv-final">FINAL</span>`
         : `<span class="pv-time">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "")}</span>`;
       const sc = gs.score && gs.score.split && gs.score.home != null ? gs.score : null;
-      const head = art.headline ? esc(cleanBlurb(art.headline))
-        : pl && pl.action === "TAKE" ? `${esc(g.away_team || g.away_abbr)} at ${esc(g.home_team || g.home_abbr)}: the case for ${esc(pl.side || "")}`
-        : `${esc(g.away_team || g.away_abbr)} at ${esc(g.home_team || g.home_abbr)}`;
+      // Hype the MATCHUP, never the pick — strips served "A small lean to TOR +1.5 — …" prefixes.
+      const head = matchupHeadline(g, pl);
       const dek = art.dek || art.paras[0] || "";
       const tint = heroTintFor(g, pl);
       // Live/final team score rides in the TOP cluster (the bottom carries the pick cover).
