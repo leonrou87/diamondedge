@@ -329,14 +329,14 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .recchip .glp-sep{color:var(--ink3);opacity:.5}
 .recchip .glp-anchor{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3);opacity:.85}
 .nm-anchor{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3);opacity:.85;margin-left:2px}
-.rbt-overall{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:2px 0 12px;font-family:var(--disp)}
+.rbt-overall{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:2px 0 12px;padding:0 12px;font-family:var(--disp)}
 .rbt-overall-lab{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
 .rbt-overall b{font-size:20px;font-weight:700;color:var(--ink);line-height:1;letter-spacing:.01em}
 .rbt-item{border-top:1px solid var(--line3);margin:0}
 .rbt-item summary{list-style:none;cursor:pointer;display:block}
 .rbt-item summary::-webkit-details-marker{display:none}
 .rbt-item.flat{padding:0}
-.rbt-head{display:flex;align-items:center;gap:9px;padding:11px 0;position:relative}
+.rbt-head{display:flex;align-items:center;gap:9px;padding:11px 12px;position:relative}
 .rbt-badge{display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
 .rbt-badge .qdia{font-size:10px}
 .rbt-badge b{font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.01em;color:var(--ink)}
@@ -349,8 +349,8 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .rbt-pct{font-size:11px;font-weight:600;color:var(--ink3)}
 .rbt-none{font-size:11px;color:var(--ink3)}
 .rbt-out{font-size:10.5px;color:var(--acc2);font-weight:600;white-space:nowrap}
-.rbt-caret{position:absolute;right:-2px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:14px;transition:transform .2s ease;display:none}
-details.rbt-item .rbt-head{padding-right:16px}
+.rbt-caret{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:14px;transition:transform .2s ease;display:none}
+details.rbt-item .rbt-head{padding-right:22px}
 details.rbt-item .rbt-caret{display:block}
 details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .rbp-list{padding:2px 0 11px;display:flex;flex-direction:column;gap:2px}
@@ -376,13 +376,24 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .rbt-howread b{color:var(--ink);font-weight:700}
 .rbt-group{margin-top:4px}
 .rbt-group+.rbt-group{margin-top:14px}
-.rbg-head{display:flex;align-items:center;gap:9px;padding:7px 0 5px;border-bottom:1px solid var(--line2)}
+.rbg-head{display:flex;align-items:center;gap:9px;padding:7px 12px 5px;border-bottom:1px solid var(--line2)}
 .rbg-t{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
 .rbg-t b{font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.02em;color:var(--ink)}
 .rbg-t i{font-family:var(--sans);font-style:normal;font-size:10px;color:var(--ink3)}
 .rbg-rec{display:flex;align-items:baseline;gap:6px;flex-shrink:0;font-family:var(--mono);text-align:right}
 .rbg-wl{font-size:15px;font-weight:700;color:var(--ink)}
 .rbg-legend{font-family:var(--mono);font-weight:700;font-size:8px;letter-spacing:.06em;color:var(--ink3);vertical-align:1px}
+/* R1: on narrow phones the widest (Lean) row's "N live · N to come" tail can't fit beside the
+   W–L + % — let the rec column wrap the out-tail onto its own right-aligned line so the row fits
+   the card cleanly at 375px instead of clipping/overflowing the card edge. */
+@media(max-width:400px){
+  /* Let the rec column shrink (it was flex-shrink:0) and wrap its "N live · N to come" tail onto
+     its own right-aligned line, so the widest (Lean) row fits the card at 375px without clipping.
+     The W–L and % stay intact on line 1; only the out-tail drops below. */
+  .rbt-rec,.rbg-rec{flex-wrap:wrap;justify-content:flex-end;row-gap:1px;flex-shrink:1;min-width:0}
+  .rbt-rec .rbt-out,.rbg-rec .rbt-out{flex-basis:100%;text-align:right}
+  .rbt-note{font-size:10px}
+}
 /* graded verdict line on the game-card pick strip */
 .pstrip .ps-verdict{font-family:var(--sans);font-size:11px;line-height:1.35;padding-top:5px;border-top:1px solid rgba(22,36,60,.08);font-weight:600}
 .pstrip .ps-verdict.won{color:#06714f}

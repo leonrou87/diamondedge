@@ -1908,8 +1908,9 @@ export default function Home() {
       // duplicate diamonds, no separate stacked market strip, no second progress bar.
       const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
       // Live/final: a total-only note when the score isn't split into home/away.
+      const totUnit = SPORT_UNIT[g.sport] || "";
       const totOnly = gs.kind !== "pre" && gs.score && !gs.score.split && gs.score.total != null
-        ? `<div class="t-note">${num(gs.score.total, 0)} ${SPORT_UNIT[g.sport] || ""} total</div>` : "";
+        ? `<div class="t-note">${num(gs.score.total, 0)} ${gs.score.total === 1 ? totUnit.replace(/s$/, "") : totUnit} total</div>` : "";
       // The reference "Live & Upcoming" card: header (league tag + state chip) · body (team
       // rows on the left, the O/U + Spread columns on the right) · the DiamondEdge pick strip.
       // Pre-game shows the odds columns; once the score matters they quiet to the score itself.
@@ -2158,7 +2159,11 @@ export default function Home() {
       const dayTxt = edgeLeanGlance(dayTierRec, dayLab, isToday);
       const goldTxt = dr && dr.graded && (dr.goldGreat || (dr.gw && !dr.gl)) ? `<span class="rc-gold">★ ${dr.gw}–${dr.gl}</span>` : "";
       // The month figure stays the TOTALS edge (never blended) — the honest headline "our record".
-      const monthTxt = (mt.w + mt.l) ? `Edge ${mt.w}–${mt.l}${dayTxt ? "" : ` <span class="rc-wl">W–L</span>`} this month` : "Our record";
+      // A cold MONTH edge (graded losing totals record) carries the SAME "long-run 58%" anchor the
+      // DAY glance uses (edgeLeanGlance's coldEdge branch), so the two figures are framed consistently.
+      const monthCold = (mt.w + mt.l) > 0 && mt.l > mt.w;
+      const monthAnchor = monthCold ? ` <span class="glp-anchor">long-run ${longRunPct()}%</span>` : "";
+      const monthTxt = (mt.w + mt.l) ? `Edge ${mt.w}–${mt.l}${dayTxt ? "" : ` <span class="rc-wl">W–L</span>`} this month${monthAnchor}` : "Our record";
       const chip = `<button class="recchip" id="recchip" aria-label="See the pick record breakdown">${dayTxt ? `${dayTxt}${goldTxt}<span class="rc-dot">·</span>` : ""}<span class="rc-month">${monthTxt}</span> <span class="rc-arw">→</span></button>`;
       return `<div class="metarow">${chip}<span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
