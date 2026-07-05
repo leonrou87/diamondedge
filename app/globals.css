@@ -1327,7 +1327,7 @@ details.more .more-body{padding-top:12px}
 .heroimg .hi-score.final b:not(.win){color:var(--ink3)}
 .heroimg .hi-score .hi-dash{font-size:22px;font-weight:300;color:var(--ink4)}
 .heroimg.hi-lead .hi-score b{font-size:48px}.heroimg.hi-lead .hi-score .hi-dash{font-size:30px}
-.prev:not(.feature) .heroimg .hi-score b{font-size:30px}.prev:not(.feature) .heroimg .hi-score .hi-dash{font-size:19px}
+.prev:not(.feature) .heroimg .hi-score b{font-size:40px}.prev:not(.feature) .heroimg .hi-score .hi-dash{font-size:25px}
 /* when a pick cover sits at the bottom, lift the crest+score cluster into the top band */
 .ls-figure .heroimg .hi-mu,.sh-figure .heroimg .hi-mu{align-items:flex-start;padding-top:9%}
 /* compact cards: a 16:10 figure keeps the crest+score band tight (less dead gradient) */

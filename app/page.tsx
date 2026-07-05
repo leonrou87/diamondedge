@@ -789,8 +789,12 @@ export default function Home() {
       return { be, p, ev: p * dec - 1, ok: p > be };
     }
     // True unless we can prove the pick is below break-even (then it's not a bet — it's a pass).
+    // TOTALS are the champion's validated, value-selected edge (priced ~-110) — their `p` field is
+    // a tier proxy, not a calibrated win prob, so we DON'T re-gate them here. The vig gate targets
+    // the SPREAD/MONEYLINE "leans", which are the ones surfaced at heavy juice (e.g. -196 run-lines).
     function pickPlusEV(pl: any) {
       if (!pl || pl.action !== "TAKE") return true;
+      if (pl.market === "total") return true;
       const e = pickEdge(pl);
       return e ? e.ok : true;
     }
