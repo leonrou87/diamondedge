@@ -4473,6 +4473,25 @@ export default function Home() {
         <div class="rr-b"><p>${liner}</p><span class="rr-n">${(o.n || 0).toLocaleString()} graded picks</span></div>
       </details>`;
     }
+    // The aggressive premium upsell card on Insights — the record is the proof, this is the ask.
+    function insightsUpsell() {
+      const rh = recipeHistory();
+      if (isPremium()) {
+        return `<div class="ix-upsell owned"><span class="ixu-k">◆ You're Premium</span><span class="ixu-owned-b">Every Strong and Good pick is unlocked — you're backing the record above.</span></div>`;
+      }
+      return `<div class="ix-upsell">
+        <div class="ixu-glow" aria-hidden="true"></div>
+        <div class="ixu-k">◆ DiamondEdge Premium</div>
+        <h3 class="ixu-h">The record is free. The picks are premium.</h3>
+        <p class="ixu-b">You've just seen the proof — graded in the open since 2022. Unlock the exact side, line and price on every <b>Strong ◆◆◆</b> and <b>Good ◆◆</b> pick the moment we freeze it, plus the plain-English reasoning behind each one.</p>
+        <div class="ixu-perks">
+          <span class="ixu-perk">✓ Every Strong &amp; Good pick, unlocked</span>
+          <span class="ixu-perk">✓ The full DiamondEdge reasoning</span>
+          <span class="ixu-perk">✓ Live reads during games</span>
+        </div>
+        <div class="ixu-cta-row"><button class="ixu-cta" id="ins-upsell">Unlock DiamondEdge — $9.99/mo</button><span class="ixu-fine">Cancel anytime · the record stays free</span></div>
+      </div>`;
+    }
     async function renderResults() {
       await loadIndex();
       await loadAnalyticsDeep();
@@ -4520,11 +4539,16 @@ export default function Home() {
             <button class="ix-btn" id="res-share">Share the record ↗</button>
           </div>
         </div>
+        ${insightsUpsell()}
         ${insightsShowcase()}
         ${equityCurveCard()}
+        ${strengthBreakdownCard()}
+        ${analyticsDeep && chartMonthly() ? `<section class="ins-section">
+          <div class="ins-sec-h"><span class="ins-sec-k">Month by month</span><h2>The edge across the calendar</h2><p>A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.</p></div>
+          ${insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "", "books", "▪", chartMonthly())}
+        </section>` : ""}
         <details class="ix-more"><summary><span class="ix-more-k">The full ledger</span><span class="ix-more-sub">the edge-vs-leans split and every recently graded score</span><span class="ix-more-car" aria-hidden="true">▾</span></summary>
         <div class="ix-more-b">
-        ${strengthBreakdownCard()}
         ${gradedScoresList()}
         ${ov.n ? `<article class="res-article second">
           <div class="res-figure sm">${resFigure("books", "Σ")}</div>
@@ -4534,10 +4558,6 @@ export default function Home() {
             <p class="res-lede sm">Across <b>${(ov.n || 0).toLocaleString()}</b> total graded calls — including thin Leans and situations we track but never publish as Picks — the raw win rate is ${hr != null ? hr.toFixed(1) + "%" : "—"}${roi != null ? `, a ${(roi >= 0 ? "+" : "") + roi.toFixed(1)}% return` : ""}. ${roi != null && roi < 0 && hr != null && hr > 50 ? "Some of those cuts win often but at odds too short to profit — " : "Many of those never clear our bar — "}that's exactly why they're not DiamondEdge Picks. <b>The ${(rh.hit * 100).toFixed(1)}% above is what you're actually paying for.</b></p>
           </div>
         </article>` : ""}
-        ${analyticsDeep && chartMonthly() ? `<section class="ins-section">
-          <div class="ins-sec-h"><span class="ins-sec-k">Month by month</span><h2>The edge across the calendar</h2><p>A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.</p></div>
-          ${insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "", "books", "▪", chartMonthly())}
-        </section>` : ""}
         ${mkRows ? `<div class="anz-card rsec"><div class="anz-card-h">By bet type</div><div class="anz-sub">Totals, moneylines and spreads are graded separately — a pick is only as good as its market.</div><div class="rrows">${mkRows}</div></div>` : ""}
         ${themeChips ? `<div class="anz-card rsec"><div class="anz-card-h">By theme</div><div class="anz-sub">The situations that show up in our picks, each with its graded proof.</div><div class="proofgrid">${themeChips}</div></div>` : ""}
         ${analyticsDeep ? adEdgesModule(analyticsDeep.edges_summary) : ""}
@@ -4561,6 +4581,8 @@ export default function Home() {
       };
       const rbk = $("res-breakdown");
       if (rbk) rbk.onclick = () => openRecordBreakdown();
+      const iu = $("ins-upsell");
+      if (iu) iu.onclick = () => { accountMode = isSignedIn() ? "subscribe" : "signin"; switchTab("account"); };
       const sbm = $("sb-more");
       if (sbm) sbm.onclick = () => openRecordBreakdown();
       // Recent-scores rows open the game detail (same path as the board cards).

@@ -2807,6 +2807,22 @@ details.results-more{margin-bottom:14px}
 .ix-tp-v{font-family:var(--mono);font-weight:600;font-size:11.5px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 
 /* — Collapsible full ledger — */
+/* ── INSIGHTS PREMIUM UPSELL — the record is the proof, this is the aggressive ask ── */
+.ix-upsell{position:relative;overflow:hidden;border-radius:var(--r-lg);padding:22px 22px 20px;margin:0 0 16px;background:linear-gradient(135deg,#26324a,#1a2438);box-shadow:0 12px 40px rgba(26,36,56,.28)}
+.ix-upsell .ixu-glow{position:absolute;top:-45%;right:-8%;width:60%;height:190%;background:radial-gradient(circle,rgba(216,160,26,.38),transparent 70%);pointer-events:none}
+.ix-upsell .ixu-k{position:relative;font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#f4d476}
+.ix-upsell .ixu-h{position:relative;font-family:var(--serif);font-weight:700;font-size:clamp(21px,3.4vw,26px);line-height:1.14;margin:8px 0;color:#fff}
+.ix-upsell .ixu-b{position:relative;font-family:var(--sans);font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.82);margin:0 0 14px;max-width:580px}
+.ix-upsell .ixu-b b{color:#fff}
+.ix-upsell .ixu-perks{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.ix-upsell .ixu-perk{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.02em;color:#eafff6;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:5px 11px}
+.ix-upsell .ixu-cta-row{position:relative;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ix-upsell .ixu-cta{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.03em;color:#3a2c05;background:linear-gradient(135deg,#f6dd94,#e7b62e);border:0;border-radius:999px;padding:12px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(216,160,26,.4);transition:transform .2s var(--spring)}
+.ix-upsell .ixu-cta:hover{transform:translateY(-2px)}
+.ix-upsell .ixu-fine{font-family:var(--sans);font-size:11.5px;color:rgba(255,255,255,.6)}
+.ix-upsell.owned{background:linear-gradient(180deg,var(--goldbg),rgba(255,255,255,.5));box-shadow:var(--e0);border:1px solid var(--goldline);padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ix-upsell.owned .ixu-k{color:var(--golddeep)}
+.ix-upsell.owned .ixu-owned-b{font-family:var(--sans);font-size:13px;color:var(--ink2)}
 .ix-more{margin-top:4px}
 .ix-more>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:var(--r-md);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--e0);transition:box-shadow .2s ease}
 .ix-more>summary::-webkit-details-marker{display:none}
