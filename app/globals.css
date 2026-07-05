@@ -2271,7 +2271,6 @@ details.results-more{margin-bottom:14px}
 .art-angle-go:hover .art-go{background:rgba(224,172,32,.2)}
 .art-body p{font-size:15.5px;line-height:1.62;color:var(--ink2,#2a3346);margin:0 0 13px}
 .art-body p b{color:var(--ink)}
-.art-src{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--ink3);text-decoration:none;border-bottom:1px dashed var(--glass-brd);padding-bottom:1px}
 
 /* --- Ticker: give the bet its own pill so it doesn't blend into the live score --- */
 .tk-pick{padding:1px 8px;border-radius:999px;background:rgba(224,172,32,.12);border:1px solid rgba(215,164,21,.24);margin-left:2px}

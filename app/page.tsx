@@ -927,6 +927,14 @@ export default function Home() {
         .replace(/\bsample\b/gi, "")
         .replace(/\bexperimental\b/gi, "emerging")
         .replace(/,?\s*\bnot a bet\b[.,]?/gi, "")
+        // AI-tell meta-filler (per ARTICLE_SPEC "Remove meta/AI-tell filler"). Kill the whole
+        // known scaffolding sentence first ("The … storyline, translated into what it means for
+        // the number."), then any residual fragments of the same tells.
+        .replace(/\bthe\b[^.?!]*\bstoryline,\s*translated into what it means for (?:the )?(?:number|line|bet)s?\b[^.?!]*[.?!]/gi, "")
+        .replace(/,?\s*translated into what it means for (?:the )?(?:number|line|bet)s?\b[.,]?/gi, "")
+        .replace(/,?\s*(?:brought|comes?|coming|distilled|translated)\s+to the board\b[.,]?/gi, "")
+        .replace(/\btranslated into\b/gi, "")
+        .replace(/\bto the board\b/gi, "")
         .replace(/\s{2,}/g, " ")
         .replace(/\s+([.,;])/g, "$1")
         .replace(/\.\s*\./g, ".")
@@ -4154,6 +4162,34 @@ export default function Home() {
       scored.sort((a: any, b: any) => a.rank - b.rank || b.p - a.p);
       return scored.map((x: any) => x.g);
     }
+    // The HOMEPAGE is CURATED — not the full board. Significance, from the data we have:
+    //  • games where we have an actual DiamondEdge Pick (a TAKE — Strong/Good/Lean), our best
+    //    call first (that game is also the featured lead story above);
+    //  • marquee LIVE games (something is happening right now).
+    // Everything else (no-pick, intel-only, upcoming filler) stays on the Games tab's full board.
+    // Returns the curated significant games in significance order (pick-quality, then live).
+    function significantGames() {
+      const src = livePayload || payload;
+      if (!src) return [];
+      const t = todayISO();
+      const pool = ((src.games || []) as any[]).filter((g: any) => {
+        const st0 = String(g.status || "pre").toLowerCase();
+        const d = gameLocalDay(g);
+        if (st0 === "live") return true;
+        return d === t || (st0 === "pre" && !d);
+      });
+      const scored = pool.map((g: any) => {
+        const pl = displayPick(g);
+        const hasPick = !!(pl && pl.action === "TAKE");
+        const live = String(g.status || "pre").toLowerCase() === "live";
+        // rank: pick-quality (0=strong,1=good,2=lean) beats a live-but-no-pick game (3).
+        const rank = hasPick ? (Q_RANK[qualityOf(pl)] != null ? Q_RANK[qualityOf(pl)] : 2) : (live ? 3 : 9);
+        return { g, rank, live, p: hasPick && pl.p != null ? Number(pl.p) : -1 };
+      }).filter((x: any) => x.rank < 9); // significant only: a pick OR live
+      // picks (by conviction) first, live-no-pick after; live rises within its band.
+      scored.sort((a: any, b: any) => a.rank - b.rank || (b.live ? 1 : 0) - (a.live ? 1 : 0) || b.p - a.p);
+      return scored.map((x: any) => x.g);
+    }
     // Branded record line for the masthead + footer — hit rate always rides with the return.
     function recordStrip() {
       const rh = recipeHistory();
@@ -4201,11 +4237,11 @@ export default function Home() {
       // Our own desk byline — the card opens OUR article in-app (not a link out to the source).
       const when = niceTime(s.published_at, s.published_display);
       const meta = `${lab} · DiamondEdge${when ? " · " + esc(when) : ""}`;
-      return `<a class="nf-story ${big ? "nf-hero" : ""}" href="${esc(String(s.url || "#"))}" data-nf="${esc(key)}" rel="noopener">
+      return `<a class="nf-story ${big ? "nf-hero" : ""}" href="#" data-nf="${esc(key)}" rel="noopener">
         ${img}
         <div class="nf-body"><div class="nf-kick">${meta}</div>
         <h3 class="nf-title">${esc(s.headline || s.title)}</h3>
-        ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(s.dek || s.summary)}</p>` : ""}
+        ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(cleanBlurb(s.dek || s.summary))}</p>` : ""}
         ${newsAngle(s.angle)}</div></a>`;
     }
     // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
@@ -4262,9 +4298,11 @@ export default function Home() {
       // viewed on other dates still resolve. If it's genuinely not loaded we keep the affordance
       // and fall back to jumping the board to it at click-time — never a dead pick.
       const g = gid != null ? (findGameLive(gid) || findGame(gid) || gameById(gid) || null) : null;
-      const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => x.trim())
+      // cleanBlurb() scrubs AI-tell meta-filler ("… storyline, translated into what it means for
+      // the number", "to the board") per ARTICLE_SPEC while preserving **bold** lead-ins.
+      const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => cleanBlurb(x.trim()))
         .filter((p) => p && !/^—\s*DiamondEdge/i.test(p));           // drop any trailing byline line
-      const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(s.summary || "")}</p>`;
+      const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(cleanBlurb(s.summary || ""))}</p>`;
       const words = paras.join(" ").split(/\s+/).filter(Boolean).length;
       const readMin = Math.max(1, Math.round(words / 200));
       const angleChip = newsAngle(s.angle);
@@ -4280,14 +4318,13 @@ export default function Home() {
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
             <div class="sh-sport">${lab} · DiamondEdge</div>
             <div class="art-title">${esc(s.headline || s.title)}</div>
-            ${s.dek ? `<div class="sh-meta">${esc(s.dek)}</div>` : ""}
+            ${s.dek ? `<div class="sh-meta">${esc(cleanBlurb(s.dek))}</div>` : ""}
           </div>
           <div class="sh-body">
             <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span><button class="art-share" id="art-share" aria-label="Share this story">Share ↗</button></div>
             ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
             ${angleChip ? `<div class="art-angle-row${gid != null ? " art-angle-go" : ""}"${gid != null ? ` data-gid="${esc(String(gid))}" role="button" tabindex="0" aria-label="See our full pick"` : ""}><span class="art-take-lab">Our take</span>${angleChip}${artRes}${gid != null ? `<span class="art-go">See our full pick →</span>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
-            ${s.url ? `<a class="art-src" href="${esc(String(s.url))}" target="_blank" rel="noopener">${esc(s.attribution || ("Source: " + (s.source || "the wire")))} ↗</a>` : ""}
             ${prevKey != null || nextKey != null ? `<div class="art-nav">${prevKey != null ? `<button class="art-navbtn" data-navk="${esc(prevKey)}">← Previous</button>` : `<span></span>`}${nextKey != null ? `<button class="art-navbtn next" data-navk="${esc(nextKey)}">Next story →</button>` : `<span></span>`}</div>` : ""}
           </div>
         </div>`;
@@ -4403,11 +4440,14 @@ export default function Home() {
       const themes = ((db.themes || []) as any[]);
       const storylines = storylinesBlock(themes, leadGid);
       const seen = new Set<string>(); if (leadGid) seen.add(leadGid);
-      const pvGames = previewGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; }).slice(0, 9);
+      // CURATED HOMEPAGE — headlines for the games that MATTER today (our picks + live games),
+      // NOT the full board. The lead story above already features our biggest / most-confident
+      // bet; these are the rest of the significant slate. The full board lives on the Games tab.
+      const pvGames = significantGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; }).slice(0, 6);
       const previews = pvGames.length ? `
         <section class="ng-previews">
-          <div class="sec-h"><span>The board</span><button class="sec-more" data-nav="games">Full board →</button></div>
-          <div class="prevgrid">${pvGames.map((g: any, i: number) => previewCard(g, i, i === 0)).join("")}</div>
+          <div class="sec-h"><span>Games that matter today</span><button class="sec-more" data-nav="games">Full board →</button></div>
+          <div class="prevgrid">${pvGames.map((g: any, i: number) => previewCard(g, i, false)).join("")}</div>
         </section>` : "";
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
       // A clear divider separates the masthead from the lead story below it.
