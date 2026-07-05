@@ -3582,7 +3582,10 @@ export default function Home() {
       const s = validatedEquitySeries();
       if (!s || s.pts.length < 3) return "";
       const { pts, totalN, totalUnits, last } = s;
-      const W = 340, H = 176, PL = 30, PR = 14, PT = 16, PB = 30;
+      // Wider, flatter web aspect (was 340×176 ≈ 1.93:1, which — capped at 520px in a full-width
+      // card — left a big dead band on desktop and read as "off" while scrolling). A 720×230
+      // viewBox (≈3.1:1) fills the card cleanly at every width via width:100%.
+      const W = 720, H = 200, PL = 34, PR = 18, PT = 18, PB = 32;
       const iw = W - PL - PR, ih = H - PT - PB;
       const us = pts.map((p: any) => p.units);
       let yMin = Math.min(0, ...us), yMax = Math.max(0, ...us);
@@ -3624,9 +3627,9 @@ export default function Home() {
         <text class="eqv-zlab" x="${PL - 4}" y="${(y0 + 3).toFixed(1)}" text-anchor="end">0</text>
         <path class="eqv-area" d="${area}" fill="url(#eqvfill)"/>
         <path class="eqv-line" d="${line}"/>
-        ${pts.map((p: any, i: number) => p.origin ? "" : `<circle class="eqv-node" cx="${sx(i).toFixed(1)}" cy="${sy(p.units).toFixed(1)}" r="2.4"><title>Through ${esc(p.year)}: ${sgn(p.units, 1)}u on ${p.cumN.toLocaleString()} picks</title></circle>`).join("")}
-        <circle class="eqv-dot" cx="${dotX.toFixed(1)}" cy="${dotY.toFixed(1)}" r="4"/>
-        <text class="eqv-endlab" x="${(dotX - 6).toFixed(1)}" y="${(dotY - 7).toFixed(1)}" text-anchor="end">${esc(endLab)}</text>
+        ${pts.map((p: any, i: number) => p.origin ? "" : `<circle class="eqv-node" cx="${sx(i).toFixed(1)}" cy="${sy(p.units).toFixed(1)}" r="3.4"><title>Through ${esc(p.year)}: ${sgn(p.units, 1)}u on ${p.cumN.toLocaleString()} picks</title></circle>`).join("")}
+        <circle class="eqv-dot" cx="${dotX.toFixed(1)}" cy="${dotY.toFixed(1)}" r="5.6"/>
+        <text class="eqv-endlab" x="${(dotX - 9).toFixed(1)}" y="${(dotY - 11).toFixed(1)}" text-anchor="end">${esc(endLab)}</text>
         ${ticks}
       </svg></div>`;
     }
@@ -3781,11 +3784,137 @@ export default function Home() {
       const primerCard = primer
         ? `<div class="ins-primer"><span class="ip-k">◆ Reading these numbers</span><p>${esc(primer)}</p></div>`
         : "";
-      const eq = insightArticle("The bottom line", "Every dollar, tracked since 2022", adNarr("equity") || "Each graded pick nudges this line. It's the running total of what a dollar riding every published pick would have become — the honest, cumulative result.", "green", "$", chartEquityCurve());
+      // NOTE: the equity curve is now the prominent hero card (equityCurveCard) above this block,
+      // so the redundant second equity chart that used to lead here has been removed.
       const cal = insightArticle("The trust chart", "When we say ~58%, do we hit ~58%?", adNarr("calibration") || "This is the chart that keeps us honest. The horizontal is what our model claimed; the vertical is what actually happened. Dots sitting on — or above — the diagonal mean our confidence is real, not marketing.", "record", "◎", chartCalibration());
       const mo = insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.", "books", "▪", chartMonthly());
-      const bc = insightArticle("By conviction", "Strong, Good and Lean — what each has done", adNarr("by_quality") || "Every pick carries one plain word. Here's the graded truth behind each — win rate and the return it actually produced, side by side.", "gold", "◆", chartByConfidence());
-      return `${primerCard}${eq}${cal}${mo}${bc}`;
+      return `${primerCard}${cal}${mo}`;
+    }
+
+    // ===================== RESULTS — STRENGTH BREAKDOWN (Edge vs Leans) =====================
+    // The at-a-glance strength story, right on the Results page (not just one click deep in the
+    // record sheet). Reuses tierRecordFor() over the WHOLE served slate + edgeLeanSplit() — the
+    // exact same grading path as everywhere else, no new tally. Edge (Strong+Good totals, the
+    // validated play) sits above Leans (spread/ML directional reads), each with its own W–L, and
+    // the three tiers listed with diamonds. Honest by construction: only the edge is +EV.
+    function strengthBreakdownCard() {
+      const tr = tierRecordFor(() => true);
+      const els = edgeLeanSplit(tr);
+      if (!tr || !els || els.anyGraded < 1) return "";
+      const pct = (o: any) => { const g = o.w + o.l; return g ? Math.round((o.w / g) * 100) : null; };
+      const wl = (o: any) => `${o.w}<i>–</i>${o.l}`;
+      const bar = (o: any, cls: string) => {
+        const g = o.w + o.l; const p = g ? (o.w / g) * 100 : 0;
+        return `<span class="sb-track"><span class="sb-fill ${cls}" style="width:${p.toFixed(0)}%"></span></span>`;
+      };
+      const outNote = (o: any) => { const out = (o.live || 0) + (o.up || 0); return out ? `<span class="sb-out">${out} still live / to come</span>` : ""; };
+      const tierRow = (q: "strong" | "good" | "lean", o: any) => {
+        if (!(o.w + o.l + o.live + o.up)) return "";
+        const p = pct(o);
+        return `<div class="sb-tier q-${q}">
+          <span class="sb-tlab">${qDiamonds(q)}<b>${Q_LABEL[q]}</b></span>
+          <span class="sb-twl">${wl(o)}</span>
+          <span class="sb-tpct">${p != null ? p + "%" : "—"}</span>
+        </div>`;
+      };
+      const grp = (title: string, sub: string, o: any, cls: string, tiers: string) => {
+        const p = pct(o);
+        return `<div class="sb-grp ${cls}">
+          <div class="sb-ghead">
+            <div class="sb-gtitle"><b>${title}</b><i>${sub}</i></div>
+            <div class="sb-grec"><span class="sb-gwl">${wl(o)}</span><span class="sb-gpct">${p != null ? p + "%" : "—"}</span></div>
+          </div>
+          ${bar(o, cls)}
+          ${outNote(o)}
+          <div class="sb-tiers">${tiers}</div>
+        </div>`;
+      };
+      return `<section class="sb-card" aria-label="Record by pick strength — edge vs leans">
+        <div class="sb-head">
+          <div class="sb-kick">By pick strength</div>
+          <h3 class="sb-h">Where the record comes from</h3>
+          <p class="sb-sub">Our <b>edge</b> is the totals play — the calls we validate at a real price. <b>Leans</b> are spread &amp; moneyline reads we grade in the open. They're shown apart on purpose: only the edge is proven +EV.</p>
+        </div>
+        ${grp("The edge", "Totals · Strong + Good", els.edge, "edge", tierRow("strong", tr.strong) + tierRow("good", tr.good))}
+        ${grp("The leans", "Spread &amp; moneyline", els.lean, "lean", tierRow("lean", tr.lean))}
+        <button class="sb-more" id="sb-more">See every graded pick by strength →</button>
+      </section>`;
+    }
+
+    // ===================== RESULTS — RECENT GRADED SCORES =====================
+    // A scannable, date-grouped ledger of recently GRADED DiamondEdge picks — the "scores" a user
+    // scrolls through. Sourced from the SAME served slate (payload.games) + the SAME grading path
+    // (displayPick / finalScore / gameState / pickResult) used everywhere; NOTHING re-graded here.
+    // Each row: matchup + final score + our pick + Won/Lost, grouped under a date header.
+    function recentGradedGames(cap = 40) {
+      const src = livePayload || payload;
+      if (!src || !src.games) return [];
+      const out: any[] = [];
+      ((src.games || []) as any[]).forEach((g: any) => {
+        const gs = gameState(g);
+        if (gs.kind !== "final") return;            // graded ledger = finished games only
+        const pl = displayPick(g);
+        if (!pl || pl.action !== "TAKE" || !pl.side) return;
+        const r = pickResult(g, pl);
+        if (r !== "hit" && r !== "miss" && r !== "push") return; // must be graded
+        const day = String(g.date || gameLocalDay(g) || "").slice(0, 10);
+        if (!day) return;
+        out.push({ g, pl, r, day, q: qualityOf(pl), fsc: finalScore(g) });
+      });
+      // newest first; within a day, wins/strong first for a tidy scan
+      out.sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
+      return out.slice(0, cap);
+    }
+    function gradedScoreRow(item: any) {
+      const { g, pl, r, q, fsc } = item;
+      const resCls = r === "hit" ? "won" : r === "miss" ? "lost" : "push";
+      const resLab = r === "hit" ? `${condCheck} WON` : r === "miss" ? "✗ LOST" : "PUSH";
+      const sc = fsc && fsc.home != null ? fsc : null;
+      const awayWin = sc && sc.away > sc.home, homeWin = sc && sc.home > sc.away;
+      const teamCol = (which: "away" | "home", win: boolean) => `<span class="gs-tm ${win ? "win" : ""}">${gCrest(g, which, "gs-crest")}<b>${esc(which === "away" ? g.away_abbr : g.home_abbr)}</b>${sc ? `<em>${num(which === "away" ? sc.away : sc.home, 0)}</em>` : ""}</span>`;
+      const pick = `${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}`;
+      return `<article class="gs-row ${resCls}" data-gid="${esc(g.game_id)}" role="button" tabindex="0" aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — our pick ${esc(pl.side || "")} ${r === "hit" ? "won" : r === "miss" ? "lost" : "pushed"} — open details">
+        <span class="gs-lg">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>
+        <span class="gs-mu">${teamCol("away", !!awayWin)}<span class="gs-at">@</span>${teamCol("home", !!homeWin)}</span>
+        <span class="gs-pick q-${q}">${qDiamonds(q)}${pick}</span>
+        <span class="gs-res ${resCls}">${resLab}</span>
+      </article>`;
+    }
+    function gradedScoresList() {
+      const items = recentGradedGames(40);
+      if (!items.length) return "";
+      // group by day (already sorted newest-first)
+      const groups: any[] = [];
+      let cur: any = null;
+      items.forEach((it) => {
+        if (!cur || cur.day !== it.day) { cur = { day: it.day, rows: [] }; groups.push(cur); }
+        cur.rows.push(it);
+      });
+      const dayLabel = (iso: string) => {
+        const d = new Date(iso + "T12:00:00");
+        if (isNaN(d.getTime())) return iso;
+        const t = todayISO();
+        if (iso === t) return "Today";
+        const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+        if (iso === y) return "Yesterday";
+        return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+      };
+      const body = groups.map((grp) => {
+        let w = 0, l = 0; grp.rows.forEach((it: any) => { if (it.r === "hit") w++; else if (it.r === "miss") l++; });
+        const dayRec = w + l ? `<span class="gsd-rec ${w > l ? "up" : w < l ? "dn" : ""}">${w}–${l}</span>` : "";
+        return `<div class="gs-day">
+          <div class="gs-dhead"><span class="gsd-date">${esc(dayLabel(grp.day))}</span>${dayRec}</div>
+          <div class="gs-rows">${grp.rows.map(gradedScoreRow).join("")}</div>
+        </div>`;
+      }).join("");
+      return `<section class="gs-card" aria-label="Recent graded scores">
+        <div class="gs-head">
+          <div class="gs-kick">The ledger</div>
+          <h3 class="gs-h">Recent picks, graded against the final</h3>
+          <p class="gs-subx">Every published DiamondEdge Pick that has finished, most recent first — the matchup, the final score, our call and how it landed. Tap any row for the full breakdown.</p>
+        </div>
+        ${body}
+      </section>`;
     }
 
     // One expandable results row: record + win rate + return on the summary line,
@@ -3861,6 +3990,8 @@ export default function Home() {
           </div>
         </article>
         ${equityCurveCard()}
+        ${strengthBreakdownCard()}
+        ${gradedScoresList()}
         ${ov.n ? `<article class="res-article second">
           <div class="res-figure sm">${resFigure("books", "Σ")}</div>
           <div class="res-art-b">
@@ -3870,7 +4001,7 @@ export default function Home() {
           </div>
         </article>` : ""}
         ${analyticsDeep ? `<section class="ins-section">
-          <div class="ins-sec-h"><span class="ins-sec-k">The Charts</span><h2>How the record actually behaves</h2><p>Four ways of looking at the same graded ledger — the total it built, whether our confidence is real, how it moved through the calendar, and what each tier of pick has done. No jargon, just the receipts.</p></div>
+          <div class="ins-sec-h"><span class="ins-sec-k">The Charts</span><h2>How the record actually behaves</h2><p>Two more ways of reading the same graded ledger — whether our stated confidence holds up, and how the edge moved through the calendar. No jargon, just the receipts.</p></div>
           ${insightsBlock()}
         </section>` : (confRows ? `<div class="anz-card rsec"><div class="anz-card-h">By confidence</div><div class="anz-sub">Every pick carries one plain word — Strong, Good or Lean. Here's what each has actually done.</div><div class="rrows">${confRows}</div></div>` : "")}
         ${mkRows ? `<div class="anz-card rsec"><div class="anz-card-h">By bet type</div><div class="anz-sub">Totals, moneylines and spreads are graded separately — a pick is only as good as its market.</div><div class="rrows">${mkRows}</div></div>` : ""}
@@ -3895,6 +4026,14 @@ export default function Home() {
       };
       const rbk = $("res-breakdown");
       if (rbk) rbk.onclick = () => openRecordBreakdown();
+      const sbm = $("sb-more");
+      if (sbm) sbm.onclick = () => openRecordBreakdown();
+      // Recent-scores rows open the game detail (same path as the board cards).
+      view.querySelectorAll(".gs-row[data-gid]").forEach((bx: any) => {
+        const open = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
+        bx.onclick = open;
+        bx.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } };
+      });
     }
 
     // ===================== TODAY (daily brief homepage) =====================
