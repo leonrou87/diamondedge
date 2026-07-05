@@ -4767,7 +4767,12 @@ export default function Home() {
     };
     const NAV_LABEL: any = { today: "Today", games: "Games", results: "Results", settings: "Settings" };
     function renderShell() {
-      const navTabs = ["today", "games", "results", "settings"];
+      // Primary WEB nav = the three destinations (Settings lives in the avatar/account hub now).
+      const primaryTabs = ["today", "games", "results"];
+      // The mobile bottom nav keeps Settings (it's the source of truth below 720px).
+      const bnavTabs = ["today", "games", "results", "settings"];
+      const rh = recipeHistory();
+      const recPct = Math.round(rh.hit * 100);
       // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it.
       root.innerHTML = `
         <header id="app-header">
@@ -4776,11 +4781,18 @@ export default function Home() {
               <div class="diamond"></div>
               <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">Today · Games · Results</div></div>
             </div>
+            <nav class="toptabs" aria-label="Primary">
+              ${primaryTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}"${tab === t ? ' aria-current="page"' : ""}>${NAV_LABEL[t]}</button>`).join("")}
+            </nav>
             <div class="hspacer"></div>
-            <div class="toptabs">
-              ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}">${NAV_LABEL[t]}</button>`).join("")}
+            <div class="navright">
+              <button class="navrec" id="navrec" aria-label="Our validated record — ${recPct}% over ${rh.n} graded picks. Tap for the breakdown.">
+                <span class="nr-dot" aria-hidden="true"></span>
+                <span class="nr-pct">${recPct}%</span>
+                <span class="nr-n">${rh.n} picks</span>
+              </button>
+              ${accountButton()}
             </div>
-            ${accountButton()}
           </div>
           <div class="ticker" id="ticker" aria-label="Today's scores and picks"></div>
         </header>
@@ -4793,11 +4805,12 @@ export default function Home() {
           <div id="account-view" style="display:none"></div>
         </main>
         <nav class="bnav" id="bnav" aria-label="Primary">
-          ${navTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}" aria-label="${NAV_LABEL[t]}"${tab === t ? ' aria-current="page"' : ""}><span class="bn-ic">${NAV_ICONS[t]}</span><span class="bn-lab">${NAV_LABEL[t]}</span></button>`).join("")}
+          ${bnavTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}" aria-label="${NAV_LABEL[t]}"${tab === t ? ' aria-current="page"' : ""}><span class="bn-ic">${NAV_ICONS[t]}</span><span class="bn-lab">${NAV_LABEL[t]}</span></button>`).join("")}
         </nav>`;
       root.querySelectorAll(".toptabs [data-tab], .bnav [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
       $("brand").onclick = () => switchTab("today");
       const ab = $("acctbtn"); if (ab) ab.onclick = () => switchTab("account");
+      const nrec = $("navrec"); if (nrec) nrec.onclick = () => openRecordBreakdown();
       const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
       bindHeaderScroll();
       renderTicker();
