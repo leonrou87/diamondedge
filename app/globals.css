@@ -2381,6 +2381,31 @@ details.results-more{margin-bottom:14px}
   background:linear-gradient(135deg,rgba(18,198,137,.28),rgba(10,157,106,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px rgba(10,157,106,.2);
   transition:transform .38s var(--spring),width .38s var(--spring);will-change:transform}
 .gp-pane{animation:rise .3s var(--ease-out) both}
+/* ── DIAMONDEDGE reasoning tab: narrative → divergence → graphs → factors ── */
+.de-pane{display:flex;flex-direction:column;gap:14px}
+.de-lead{background:linear-gradient(180deg,var(--goldbg),rgba(255,255,255,.5));border:1px solid var(--goldline);border-radius:var(--r-md);padding:15px 17px;box-shadow:var(--e0)}
+.de-lead .de-k{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--golddeep);margin-bottom:5px}
+.de-lead .de-sub{font-family:var(--serif);font-weight:500;font-size:16px;line-height:1.4;color:var(--ink);margin:0}
+.de-lead p{font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink2);margin:6px 0 0}
+.de-unlock{margin-top:11px;display:inline-flex;align-items:center;gap:7px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#3a2c05;background:linear-gradient(135deg,#f6dd94,#e7b62e);border:0;border-radius:999px;padding:9px 16px;cursor:pointer;box-shadow:0 3px 12px rgba(215,164,21,.3)}
+.de-unlock svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2}
+.de-sec{background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:14px 16px}
+.de-sec .de-h{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px}
+.de-sec p{font-size:13.5px;line-height:1.62;color:var(--ink);margin:0 0 9px}
+.de-sec p:last-child{margin-bottom:0}
+.de-sec .pvz{margin-bottom:10px}.de-sec .pvz:last-child{margin-bottom:0}
+/* the divergence callout — our number vs the market, and the gap that makes the bet */
+.de-diverge{border-radius:12px;padding:13px 14px;background:rgba(255,255,255,.5);border:1px solid var(--line3)}
+.de-diverge.over{background:linear-gradient(180deg,var(--greenbg),rgba(255,255,255,.4));border-color:var(--greenline)}
+.de-diverge.under{background:linear-gradient(180deg,var(--redsoft),rgba(255,255,255,.4));border-color:var(--missline)}
+.de-diverge .dd-pair{display:flex;align-items:center;justify-content:center;gap:14px}
+.de-diverge .dd-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.de-diverge .dd-cell .dd-k{font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:center}
+.de-diverge .dd-cell b{font-family:var(--mono);font-weight:700;font-size:26px;color:var(--ink2);line-height:1}
+.de-diverge .dd-cell.ours b{color:var(--ink);font-size:30px}
+.de-diverge .dd-vs{font-family:var(--disp);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.de-diverge .dd-gap{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line2);text-align:center;font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink)}
+.de-diverge .dd-gap b{font-family:var(--disp);font-weight:800}
 /* the article masthead/hero/cards already styled — they live inside .gp-pane now */
 .gp-pane .sh-mast,.gp-pane .sh-figure,.gp-pane .whycard,.gp-pane .art-pick,.gp-pane details.more,.gp-pane .callcard,.gp-pane .threemk,.gp-pane .tm-note,.gp-pane .tierlegend{position:relative}
 

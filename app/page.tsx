@@ -3109,6 +3109,59 @@ export default function Home() {
       return `<div class="livepanel">${rows.join("")}</div>`;
     }
 
+    // The core thesis, made visible: OUR number vs the MARKET's, and the gap that makes the bet.
+    function deDivergence(g: any, lead: any) {
+      if (!lead || lead.action !== "TAKE") return "";
+      if (lead.market === "total") {
+        const our = v3PredTotal(g) != null ? Number(v3PredTotal(g)) : (g.total_pick && g.total_pick.our_proj != null ? Number(g.total_pick.our_proj) : null);
+        const line = lead.line != null ? Number(lead.line) : (g.total_pick && g.total_pick.line != null ? Number(g.total_pick.line) : null);
+        if (our == null || line == null) return "";
+        const diff = our - line, over = diff > 0;
+        return `<div class="de-diverge ${over ? "over" : "under"}">
+          <div class="dd-pair"><div class="dd-cell ours"><span class="dd-k">Our projection</span><b>${num(our, 1)}</b></div><div class="dd-vs">vs</div><div class="dd-cell"><span class="dd-k">Vegas total</span><b>${num(line, 1)}</b></div></div>
+          <div class="dd-gap">We see <b>${num(Math.abs(diff), 1)}</b> ${over ? "more" : "fewer"} runs than the market — that gap is the <b>${over ? "OVER" : "UNDER"}</b>.</div>
+        </div>`;
+      }
+      const mp = g.ml_pick;
+      if ((lead.market === "moneyline" || lead.market === "spread") && mp) {
+        const which: "home" | "away" = (mp.side || g.home_abbr) === g.away_abbr ? "away" : "home";
+        const our = v3WinProb(g, which) != null ? Number(v3WinProb(g, which)) : (mp.our_winprob != null ? Number(mp.our_winprob) : null);
+        let mkt = mp.market_winprob != null ? Number(mp.market_winprob) : (mp.price != null && Number(mp.price) > 1 && Number(mp.price) < 100 ? 1 / Number(mp.price) : null);
+        if (our == null || mkt == null) return "";
+        const edge = (our - mkt) * 100;
+        return `<div class="de-diverge ${edge > 0 ? "over" : "under"}">
+          <div class="dd-pair"><div class="dd-cell ours"><span class="dd-k">Our win chance · ${esc(mp.side || g.home_abbr)}</span><b>${(our * 100).toFixed(0)}%</b></div><div class="dd-vs">vs</div><div class="dd-cell"><span class="dd-k">Market implies</span><b>${(mkt * 100).toFixed(0)}%</b></div></div>
+          <div class="dd-gap">We give <b>${esc(mp.side || g.home_abbr)}</b> a <b>${Math.abs(edge).toFixed(0)}-point</b> ${edge > 0 ? "better" : "worse"} chance than the price implies.</div>
+        </div>`;
+      }
+      return "";
+    }
+    // The DiamondEdge reasoning tab: a plain-English narrative FIRST, then the divergence, the
+    // data visuals (graphs), the model-vs-market read, and the driving factors. Easy to follow, deep.
+    function diamondEdgeReasoning(g: any, lead: any, leadLocked: boolean) {
+      if (leadLocked) {
+        return `<div class="de-pane"><div class="de-lead"><div class="de-k">◆ The DiamondEdge Read</div><p>The full model reasoning — our projected number, where it diverges from the market, and the data behind it — is part of DiamondEdge Premium.</p><button class="de-unlock" data-up="1">${lockSvg} Unlock the reasoning</button></div></div>`;
+      }
+      const why = lead && lead.action === "TAKE" ? whySentences(g, lead) : composedPreview(g).paras;
+      const narrative = why && why.length ? `<div class="de-sec"><div class="de-h">The read</div>${why.slice(0, 4).map((w: string) => `<p>${mdBold(w)}</p>`).join("")}</div>` : "";
+      const div = deDivergence(g, lead);
+      const viz = previewViz(g);
+      const mvm = modelsVsMarket(g);
+      const facts = factRows(g, gameArticle(g));
+      const stks = gameStreaks(g).slice(0, 4).map((s: any) => `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
+      const lead2 = lead && lead.action === "TAKE";
+      const intro = lead2
+        ? `How the model sees ${esc(g.away_abbr)} at ${esc(g.home_abbr)} — and where it disagrees with Vegas.`
+        : `We're passing this one. Here's the read that didn't clear our bar.`;
+      return `<div class="de-pane">
+        <div class="de-lead"><div class="de-k">◆ Why DiamondEdge ${lead2 ? "is on this" : "passed"}</div><p class="de-sub">${intro}</p></div>
+        ${narrative}
+        ${div ? `<div class="de-sec"><div class="de-h">Our number vs the market</div>${div}</div>` : ""}
+        ${viz ? `<div class="de-sec"><div class="de-h">The numbers</div>${viz}</div>` : ""}
+        ${mvm ? `<div class="de-sec"><div class="de-h">Model vs market</div>${mvm}</div>` : ""}
+        ${(facts.length || stks) ? `<div class="de-sec"><div class="de-h">What's driving it</div>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</div>` : ""}
+      </div>`;
+    }
     function openDetail(g: any, focusMk?: string, fromHistory = false) {
       detail = g;
       // Live & finished games open straight to "How it's going" (box score); only pre-game
@@ -3304,8 +3357,9 @@ export default function Home() {
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
       const showLive = gs.kind === "live" || gs.kind === "final";
       const tabsBar = `<div class="gp-tabs" role="tablist">
-        <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
-        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">${_gsk === "final" ? "How it went" : "How it's going"}</button>` : ""}
+        <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Game Preview</button>
+        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box Score</button>` : ""}
+        <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">DiamondEdge</button>
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
       // Backup-signal note (from the model's challenger accountability) — plain English, detail-only,
@@ -3315,7 +3369,7 @@ export default function Home() {
         ? `<details class="gp-backup"><summary><span class="bk-dot">◆</span><span class="bk-lab">${esc(cs.consumer_label)}</span><span class="bk-chev" aria-hidden="true">›</span></summary><div class="bk-body">${cs.consumer_detail ? `<p>${esc(cs.consumer_detail)}</p>` : ""}${Array.isArray(cs.active_family_labels) && cs.active_family_labels.length ? `<div class="bk-tags">${cs.active_family_labels.map((t: any) => `<span class="bk-tag">${esc(String(t))}</span>`).join("")}</div>` : ""}<p class="bk-note">Backup context only — it doesn't change the pick or its grade.</p></div></details>`
         : "";
       const v2Note = leadLocked ? "" : diamondEdgeV2Detail(g);
-      const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "live" && showLive ? "none" : "block"}">
+      const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${linesBlock}
@@ -3326,6 +3380,7 @@ export default function Home() {
         ${leadLocked ? "" : more}
       </div>`;
       const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${boxScorePanel(g)}</div>` : "";
+      const dePane = `<div class="gp-pane" data-pane="de" style="display:${detailTab === "de" ? "block" : "none"}">${diamondEdgeReasoning(g, lead, leadLocked)}</div>`;
 
       const html = `
         <div class="gamepage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.matchup || "Game")}">
@@ -3339,6 +3394,7 @@ export default function Home() {
             ${tabsBar}
             ${previewPane}
             ${livePane}
+            ${dePane}
           </div>
         </div>`;
 
