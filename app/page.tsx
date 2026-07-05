@@ -149,6 +149,104 @@ export default function Home() {
       return 1 / (1 + net);
     }
 
+    // ===================== V3 RECONCILED SURFACES (shadow, additive) =====================
+    // The backend serves a per-game `g.v3` block (MLB only today; absent elsewhere). It carries
+    //   - a RECONCILED display total / per-team score that AGREES with the served pick side
+    //     (fixes "OVER 8.5" next to a predicted 7.9),
+    //   - win_prob (p_home_win / p_away_win),
+    //   - correct push accounting (p_over / p_under / p_push — push is NOT credited to UNDER),
+    //   - a unified confidence,
+    //   - totals_pick that is BYTE-IDENTICAL to the served de_plays pick (side/tier/price) — so the
+    //     PICK itself is NEVER re-sourced from v3; this only makes the SCORE/WP/PUSH presentation
+    //     cohere with that pick.
+    // Every accessor reads DEFENSIVELY and returns null when v3 (or the needed field) is missing, so
+    // callers can fall back to the legacy fields (predicted_score / total_pick.our_proj / ml_pick)
+    // exactly as before. v3 may be partial/degraded — never crash, never blank a field.
+    const _fin = (x: any) => (x == null || x === "" || isNaN(Number(x)) ? null : Number(x));
+    const v3Of = (g: any) => {
+      const v = g && g.v3;
+      return v && typeof v === "object" ? v : null;
+    };
+    // Did the DISPLAY RECONCILER actually run for this game? The reconciler is what tilts the shown
+    // score to AGREE with the pick side. When it's SKIPPED (missing line / NaN mu / no sim), v3's
+    // predicted_total_display is just the raw sim mean, which can DISAGREE with the pick exactly like
+    // the legacy number — so in that case we must NOT prefer it over the (identical-or-better) legacy
+    // field. We treat it as reconciled when the note doesn't say "skipped", OR a non-zero reconcile
+    // delta was applied, OR the sim distribution is present. This is the guard that keeps us from
+    // introducing incoherence: we only override the legacy display with a GENUINELY reconciled value.
+    function v3Reconciled(g: any): boolean {
+      const v = v3Of(g);
+      if (!v) return false;
+      const disp = (v.display && typeof v.display === "object") ? v.display : {};
+      const note = String(disp.note || "").toLowerCase();
+      if (note.includes("skip")) {
+        // Even if flagged skipped, honor an explicitly non-zero applied delta or a real sim.
+        const dlt = _fin(disp.reconcile_delta);
+        const dist = (v.distribution && typeof v.distribution === "object") ? v.distribution : {};
+        return (dlt != null && Math.abs(dlt) > 1e-9) || _fin(dist.p_over_nopush) != null || _fin(dist.q50) != null;
+      }
+      return true;
+    }
+    // Reconciled predicted TOTAL ("our number") — ONLY when the reconciler ran (else null → legacy).
+    function v3PredTotal(g: any): number | null {
+      if (!v3Reconciled(g)) return null;
+      const v = v3Of(g)!;
+      const disp = (v.display && typeof v.display === "object") ? v.display : {};
+      const ps = (v.predicted_score && typeof v.predicted_score === "object") ? v.predicted_score : {};
+      const t = _fin(disp.predicted_total_display);
+      if (t != null) return t;
+      const t2 = _fin(ps.predicted_total);
+      if (t2 != null) return t2;
+      const a = _fin(disp.mu_away_display != null ? disp.mu_away_display : ps.mu_away);
+      const h = _fin(disp.mu_home_display != null ? disp.mu_home_display : ps.mu_home);
+      return a != null && h != null ? a + h : null;
+    }
+    // Reconciled per-team expected score {away,home} — ONLY when the reconciler ran (else null → legacy).
+    function v3Score(g: any): { away: number; home: number } | null {
+      if (!v3Reconciled(g)) return null;
+      const v = v3Of(g)!;
+      const disp = (v.display && typeof v.display === "object") ? v.display : {};
+      const ps = (v.predicted_score && typeof v.predicted_score === "object") ? v.predicted_score : {};
+      const a = _fin(disp.mu_away_display != null ? disp.mu_away_display : ps.mu_away);
+      const h = _fin(disp.mu_home_display != null ? disp.mu_home_display : ps.mu_home);
+      return a != null && h != null ? { away: a, home: h } : null;
+    }
+    // Reconciled win probability for a given side (home/away). Falls back defensively; null if absent.
+    // GATED on the reconciler: in the current shadow payload v3.win_prob can DISAGREE with v3's own
+    // predicted_score (e.g. score favors the away team but p_home_win>0.5), so we only prefer it once
+    // the block is genuinely reconciled — otherwise legacy ml_pick.our_winprob stands (zero change).
+    function v3WinProb(g: any, which: "home" | "away"): number | null {
+      if (!v3Reconciled(g)) return null;
+      const v = v3Of(g);
+      if (!v || !v.win_prob || typeof v.win_prob !== "object") return null;
+      const wp = v.win_prob;
+      const ph = _fin(wp.p_home_win), pa = _fin(wp.p_away_win);
+      if (which === "home") return ph != null ? ph : (pa != null ? 1 - pa : null);
+      return pa != null ? pa : (ph != null ? 1 - ph : null);
+    }
+    // Correct over/under/push accounting for a totals pick. Returns {p_over, p_under, p_push} where
+    // available so integer-line push mass is shown as PUSH, never mis-credited to UNDER. Prefers the
+    // distribution block, then reconstructs from totals_pick.p_over + p_push. Null if nothing usable.
+    function v3Push(g: any): { p_over: number | null; p_under: number | null; p_push: number | null } | null {
+      const v = v3Of(g);
+      if (!v) return null;
+      const dist = (v.distribution && typeof v.distribution === "object") ? v.distribution : {};
+      const tp = (v.totals_pick && typeof v.totals_pick === "object") ? v.totals_pick : {};
+      let po = _fin(dist.p_over), pu = _fin(dist.p_under), pp = _fin(dist.p_push);
+      if (po == null) po = _fin(tp.p_over);
+      // If we have over + push but not under, the remainder is under (push kept separate).
+      if (pu == null && po != null) pu = pp != null ? Math.max(0, 1 - po - pp) : null;
+      if (po == null && pu == null && pp == null) return null;
+      return { p_over: po, p_under: pu, p_push: pp };
+    }
+    // Unified v3 confidence label ("Strong" | "Good" | "Lean"), defensively read. Null if absent.
+    function v3Conf(g: any): string | null {
+      const v = v3Of(g);
+      if (!v) return null;
+      const c = v.confidence != null ? v.confidence : (v.totals_pick && v.totals_pick.confidence);
+      return c != null && String(c).trim() !== "" ? String(c) : null;
+    }
+
     // ===================== PLAYS (normalized per game, per market) =====================
     const MARKETS = ["spread", "total", "moneyline"];
     const MK_FULL: any = { spread: "Spread", total: "Total", moneyline: "Moneyline" };
@@ -816,8 +914,10 @@ export default function Home() {
     // (a) Predicted-score bar: the model's expected final as two proportional bars.
     function vizPredScore(g: any) {
       const ps = g.predicted_score || {};
-      if (ps.home == null || ps.away == null) return "";
-      const a = Number(ps.away), h = Number(ps.home);
+      // Prefer v3's RECONCILED per-team expected final so the bars agree with the pick; else legacy.
+      const _v3s = v3Score(g);
+      const a = _v3s ? _v3s.away : (ps.away == null ? NaN : Number(ps.away));
+      const h = _v3s ? _v3s.home : (ps.home == null ? NaN : Number(ps.home));
       if (isNaN(a) || isNaN(h)) return "";
       const mx = Math.max(a, h, 1);
       const unit = SPORT_UNIT[g.sport] || "points";
@@ -825,7 +925,7 @@ export default function Home() {
         `<div class="pvz-brow"><span class="pvz-ab">${esc(ab)}</span><span class="pvz-track"><span class="pvz-fill ${win ? "win" : ""}" style="width:${Math.max(6, (v / mx) * 100).toFixed(0)}%"></span></span><b class="pvz-v">${num(v, 1)}</b></div>`;
       return `<div class="pvz"><div class="pvz-h">${icon("form", "sm")}Model's expected final</div>
         ${bar(g.away_abbr, a, a > h)}${bar(g.home_abbr, h, h > a)}
-        <div class="pvz-foot">~${num(a + h, 1)} ${unit} combined · ${esc(ps.winner_abbr || (h > a ? g.home_abbr : g.away_abbr))} by ${num(Math.abs(h - a), 1)}</div></div>`;
+        <div class="pvz-foot">~${num(a + h, 1)} ${unit} combined · ${esc(_v3s ? (h > a ? g.home_abbr : g.away_abbr) : (ps.winner_abbr || (h > a ? g.home_abbr : g.away_abbr)))} by ${num(Math.abs(h - a), 1)}</div></div>`;
     }
 
     // (b) Recent-form over/under strip: "OVER in 7 of last 10" as a 10-cell bar. Reads
@@ -852,11 +952,16 @@ export default function Home() {
     // (c) Win-probability meter: model vs market implied, from ml_pick.
     function vizWinProb(g: any) {
       const mp = g.ml_pick || {};
-      const our = mp.our_winprob != null ? Number(mp.our_winprob) : null;
+      // Which team the meter is about (ml_pick side, else home). Prefer v3's reconciled win prob for
+      // THAT side so the WP coheres with the reconciled score; fall back to ml_pick.our_winprob.
+      const sideAbbr = mp.side || g.home_abbr;
+      const which: "home" | "away" = sideAbbr === g.away_abbr ? "away" : "home";
+      const v3wp = v3WinProb(g, which);
+      const our = v3wp != null ? v3wp : (mp.our_winprob != null ? Number(mp.our_winprob) : null);
       let mkt = mp.market_winprob != null ? Number(mp.market_winprob) : null;
       if (mkt == null && mp.price != null) { const d = Number(mp.price); if (d > 1 && d < 100) mkt = 1 / d; }
       if (our == null) return "";
-      const side = esc(mp.side || g.home_abbr);
+      const side = esc(sideAbbr);
       const p = (v: any) => (v == null ? "—" : (Number(v) * 100).toFixed(0) + "%");
       return `<div class="pvz"><div class="pvz-h">${icon("record", "sm")}Win chance — ${side}</div>
         <div class="wp-bars">
@@ -1000,10 +1105,12 @@ export default function Home() {
       const pl = displayPick(g);
       const ps = g.predicted_score || {};
       const paras: string[] = [];
+      const _v3s = v3Score(g);
       if (pl && pl.action === "TAKE") {
         paras.push(...whySentences(g, pl).slice(0, 2));
-      } else if (ps.home != null && ps.away != null) {
-        paras.push(`Our model's expected final is ${g.away_abbr} ${num(ps.away, 1)}–${num(ps.home, 1)} ${g.home_abbr}. The books' numbers land close to ours across every market, so there's no DiamondEdge Pick here — that discipline is why the record holds up.`);
+      } else if (_v3s || (ps.home != null && ps.away != null)) {
+        const aw = _v3s ? _v3s.away : Number(ps.away), hm = _v3s ? _v3s.home : Number(ps.home);
+        paras.push(`Our model's expected final is ${g.away_abbr} ${num(aw, 1)}–${num(hm, 1)} ${g.home_abbr}. The books' numbers land close to ours across every market, so there's no DiamondEdge Pick here — that discipline is why the record holds up.`);
       }
       return { headline: null, dek: null, paras: paras.map(cleanBlurb).filter(Boolean), facts: [], served: false };
     }
@@ -1423,10 +1530,13 @@ export default function Home() {
         <span class="lm-open">${fmtL(open)}</span><span class="lm-arrow">${arrow}</span><span class="lm-cur">${fmtL(cur)}</span>${n ? `<span class="lm-n">·${n}</span>` : ""}${badge}
       </span>`;
     }
-    function leanMeter(pk: any, kind: string) {
+    function leanMeter(pk: any, kind: string, g?: any) {
       if (!pk) return "";
       const line = pk.line != null ? Number(pk.line) : null;
-      const proj = pk.our_proj != null ? Number(pk.our_proj) : null;
+      // For a total, prefer v3's reconciled number for the tick so it agrees with the pick side; the
+      // lean DIRECTION is already sourced from the pick side below (never re-derived from the proj).
+      const _v3tot = (kind === "total" && g) ? v3PredTotal(g) : null;
+      const proj = _v3tot != null ? _v3tot : (pk.our_proj != null ? Number(pk.our_proj) : null);
       const iv = pk.interval || {};
       const lo = iv.lo != null ? Number(iv.lo) : null;
       const hi = iv.hi != null ? Number(iv.hi) : null;
@@ -1451,8 +1561,9 @@ export default function Home() {
         <span class="ln-proj" style="left:${projPct.toFixed(1)}%"></span>
       </span>`;
     }
-    function wpLean(pk: any) {
-      const our = pk.our_winprob != null ? Number(pk.our_winprob) : null;
+    function wpLean(pk: any, g?: any) {
+      const _v3wp = g ? v3WinProb(g, pk && pk.side === g.away_abbr ? "away" : "home") : null;
+      const our = _v3wp != null ? _v3wp : (pk.our_winprob != null ? Number(pk.our_winprob) : null);
       let mkt = pk.market_winprob != null ? Number(pk.market_winprob) : null;
       if (mkt == null && pk.price != null) { const d = Number(pk.price); if (d > 1 && d < 100) mkt = 1 / d; }
       if (our == null || mkt == null) return "";
@@ -1810,13 +1921,17 @@ export default function Home() {
     // a short phrase or null. NEVER a call — it's explicitly a non-pick.
     function passRead(g: any) {
       const tp = g.total_pick;
-      if (tp && tp.line != null && tp.our_proj != null) {
-        const diff = Number(tp.our_proj) - Number(tp.line);
+      // Prefer v3's reconciled total for the directional read so it coheres with the shown score.
+      const _v3tot = v3PredTotal(g);
+      if (tp && tp.line != null && (_v3tot != null || tp.our_proj != null)) {
+        const projV = _v3tot != null ? _v3tot : Number(tp.our_proj);
+        const diff = projV - Number(tp.line);
         if (Math.abs(diff) >= 0.15) return `leans ${diff > 0 ? "OVER" : "UNDER"} ${num(tp.line)}`;
       }
       const mp = g.ml_pick;
-      if (mp && mp.our_winprob != null) {
-        const wp = Number(mp.our_winprob);
+      const _v3wp = mp ? v3WinProb(g, mp.side === g.away_abbr ? "away" : "home") : null;
+      if (mp && (_v3wp != null || mp.our_winprob != null)) {
+        const wp = _v3wp != null ? _v3wp : Number(mp.our_winprob);
         if (wp >= 0.55 || wp <= 0.45) { const side = wp >= 0.5 ? (mp.side || g.home_abbr) : (mp.side === g.home_abbr ? g.away_abbr : g.home_abbr); return `slight edge ${esc(side)}`; }
       }
       return null;
@@ -2471,18 +2586,27 @@ export default function Home() {
       if (pl.market === "total") {
         const pk = g.total_pick || {};
         const line = pl.line != null ? pl.line : (pk.line != null ? Number(pk.line) : null);
-        const proj = pk.our_proj != null ? Number(pk.our_proj)
-          : (ps.home != null && ps.away != null ? Number(ps.home) + Number(ps.away) : null);
+        // Prefer v3's RECONCILED display total so the stated projection agrees with the pick side
+        // (no more "OVER 8.5" next to a predicted 7.9). Fall back to the legacy proj when v3 is absent.
+        const proj = v3PredTotal(g) != null ? v3PredTotal(g)
+          : (pk.our_proj != null ? Number(pk.our_proj)
+          : (ps.home != null && ps.away != null ? Number(ps.home) + Number(ps.away) : null));
         const over = /over/i.test(String(pl.side || ""));
         if (proj != null && line != null)
           s.push(`Our model expects about ${num(proj, 1)} ${unit} in this game — ${over ? "more" : "fewer"} than the ${num(line, 1)} the books are offering.`);
       } else if (pl.market === "spread") {
-        if (ps.away != null && ps.home != null)
-          s.push(`Our model's expected final is ${esc(g.away_abbr)} ${num(ps.away, 1)}–${num(ps.home, 1)} ${esc(g.home_abbr)}, which lands on the ${esc(pl.side || "")} side of the line.`);
+        const _v3s = v3Score(g);
+        const aw = _v3s ? _v3s.away : (ps.away != null ? Number(ps.away) : null);
+        const hm = _v3s ? _v3s.home : (ps.home != null ? Number(ps.home) : null);
+        if (aw != null && hm != null)
+          s.push(`Our model's expected final is ${esc(g.away_abbr)} ${num(aw, 1)}–${num(hm, 1)} ${esc(g.home_abbr)}, which lands on the ${esc(pl.side || "")} side of the line.`);
       } else if (pl.market === "moneyline") {
         const mp = g.ml_pick || {};
-        if (mp.our_winprob != null)
-          s.push(`Our model gives ${esc(pl.side || mp.side || "this side")} about a ${(Number(mp.our_winprob) * 100).toFixed(0)}% chance to win — more than the price implies.`);
+        const _side = pl.side || mp.side;
+        const _v3wp = v3WinProb(g, _side === g.away_abbr ? "away" : "home");
+        const ourWp = _v3wp != null ? _v3wp : (mp.our_winprob != null ? Number(mp.our_winprob) : null);
+        if (ourWp != null)
+          s.push(`Our model gives ${esc(_side || "this side")} about a ${(ourWp * 100).toFixed(0)}% chance to win — more than the price implies.`);
       }
       if (pl.nlines != null && pl.nlines >= 2)
         s.push(`The sportsbooks themselves don't agree on this line today — they're posting ${pl.nlines} different numbers — and split lines like that have historically been beatable.`);
@@ -2614,17 +2738,32 @@ export default function Home() {
           ${sa.model_p_cover != null ? `<span class="mvm-chip">our model ${saPct(sa.model_p_cover, 0)}</span>` : ""}
           ${sa.market_p_cover != null ? `<span class="mvm-chip">the market ${saPct(sa.market_p_cover, 0)}</span>` : ""}
         </div>`;
-      } else if (pk && pk.our_proj != null && pk.line != null) {
+      } else if (pk && (mk === "total" ? (v3PredTotal(g) != null || pk.our_proj != null) : pk.our_proj != null) && pk.line != null) {
+        // For a TOTAL, prefer v3's reconciled number and recompute the gap so model/line/gap all
+        // agree with the pick side. Spread keeps its legacy our_proj (v3 doesn't reconcile spread).
+        const _v3tot = mk === "total" ? v3PredTotal(g) : null;
+        const modelV = _v3tot != null ? _v3tot : Number(pk.our_proj);
+        const gapV = _v3tot != null ? modelV - Number(pk.line) : Number(pk.gap);
+        // Correct push accounting: when v3 gives a meaningful push chance (integer lines), show it
+        // as its OWN chip so it's never silently folded into UNDER. Dormant until the backend serves
+        // distribution/p_push (currently null everywhere) — additive and defensive.
+        const _pu = mk === "total" ? v3Push(g) : null;
+        const pushChip = (_pu && _pu.p_push != null && _pu.p_push >= 0.005)
+          ? `<span class="mvm-chip">push ${saPct(_pu.p_push, 1)}</span>` : "";
         mvm = `<div class="shp-mvm">
-          <span class="mvm-chip">model ${num(pk.our_proj, 1)}</span>
+          <span class="mvm-chip">model ${num(modelV, 1)}</span>
           <span class="mvm-chip">line ${num(pk.line, 1)}</span>
-          <span class="mvm-chip ${Number(pk.gap) >= 0 ? "pos" : "neg"}">gap ${sgn(pk.gap, 1)} ${SPORT_UNIT[g.sport] || ""}</span>
+          <span class="mvm-chip ${gapV >= 0 ? "pos" : "neg"}">gap ${sgn(gapV, 1)} ${SPORT_UNIT[g.sport] || ""}</span>
+          ${pushChip}
         </div>`;
-      } else if (pk && pk.our_winprob != null) {
-        mvm = `<div class="shp-mvm"><span class="mvm-chip">model win prob ${saPct(pk.our_winprob, 1)}</span>${pk.market_winprob != null ? `<span class="mvm-chip">market ${saPct(pk.market_winprob, 1)}</span>` : ""}</div>`;
+      } else if (pk && (v3WinProb(g, pk.side === g.away_abbr ? "away" : "home") != null || pk.our_winprob != null)) {
+        // Prefer v3's reconciled win prob for the picked side; else the pick's own our_winprob.
+        const _wp = v3WinProb(g, pk.side === g.away_abbr ? "away" : "home");
+        const ourWp = _wp != null ? _wp : Number(pk.our_winprob);
+        mvm = `<div class="shp-mvm"><span class="mvm-chip">model win prob ${saPct(ourWp, 1)}</span>${pk.market_winprob != null ? `<span class="mvm-chip">market ${saPct(pk.market_winprob, 1)}</span>` : ""}</div>`;
       }
       const move = pk ? lineMove(pk) : "";
-      const lean = pk ? (mk === "moneyline" ? wpLean(pk) : leanMeter(pk, mk)) : "";
+      const lean = pk ? (mk === "moneyline" ? wpLean(pk, g) : leanMeter(pk, mk, g)) : "";
       const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
       const lread = pl.action === "TAKE" ? latestReadPill(g, pl) : "";
       const lreadBlk = lread ? `<div class="shp-lread">${lread}<span class="lr-note">the model's latest look — the graded morning play above is unchanged</span></div>` : "";
@@ -2674,8 +2813,19 @@ export default function Home() {
       const tier = pk.tier || "low";
       let line = "";
       if (kind === "spread") line = `line <b>${sgn(pk.line)}</b> · model margin <b>${pk.our_proj != null ? sgn(pk.our_proj) : "—"}</b>${pk.interval && pk.interval.lo != null ? ` · likely range ${num(pk.interval.lo)} to ${num(pk.interval.hi)}` : ""}`;
-      else if (kind === "total") line = `line <b>${num(pk.line)}</b> · model <b>${num(pk.our_proj)}</b>${pk.interval && pk.interval.lo != null ? ` · likely range ${num(pk.interval.lo)} to ${num(pk.interval.hi)}` : ""}`;
-      else line = `price <b>${fmtOdds(pk.price)}</b>${pk.our_winprob != null ? ` · model win chance <b>${(pk.our_winprob * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
+      else if (kind === "total") {
+        // Prefer v3's reconciled total so "model X" agrees with the pick side; else legacy our_proj.
+        const _v3tot = v3PredTotal(g);
+        const modelTot = _v3tot != null ? num(_v3tot) : (pk.our_proj != null ? num(pk.our_proj) : "—");
+        line = `line <b>${num(pk.line)}</b> · model <b>${modelTot}</b>${pk.interval && pk.interval.lo != null ? ` · likely range ${num(pk.interval.lo)} to ${num(pk.interval.hi)}` : ""}`;
+      }
+      else {
+        // Prefer v3's reconciled win prob for the picked side; else the pick's own our_winprob.
+        const _which: "home" | "away" = pk.side === (g && g.away_abbr) ? "away" : "home";
+        const _v3wp = v3WinProb(g, _which);
+        const ourWp = _v3wp != null ? _v3wp : (pk.our_winprob != null ? Number(pk.our_winprob) : null);
+        line = `price <b>${fmtOdds(pk.price)}</b>${ourWp != null ? ` · model win chance <b>${(ourWp * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
+      }
       const resTxt = st === "hit" ? `WON` : st === "miss" ? `LOST` : st === "push" ? "PUSH" : "";
       return `<div class="dbet">
         <div class="dbet-top">
@@ -2878,7 +3028,12 @@ export default function Home() {
       const dispDate = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
       const gs = gameState(g);
       const startTxt = gs.si.hasTime ? gs.si.time : gs.si.date;
-      const tot = (ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1) : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—");
+      // "Our number" prefers v3's RECONCILED display total (agrees with the pick side); falls back
+      // to the legacy predicted-score sum / total_pick.our_proj exactly as before when v3 is absent.
+      const _v3tot = v3PredTotal(g);
+      const tot = _v3tot != null ? num(_v3tot, 1)
+        : ((ps.home != null && ps.away != null) ? num(Number(ps.home) + Number(ps.away), 1)
+        : (g.total_pick && g.total_pick.our_proj != null ? num(g.total_pick.our_proj) : "—"));
       const P = gamePlays(g);
       const takes = orderedTakes(g, P);
       // The sheet's call is the SAME frozen pick the box shows.
