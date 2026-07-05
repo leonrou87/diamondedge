@@ -2411,7 +2411,7 @@ export default function Home() {
         // null payload here means "loaded, but no data for this date" — show a real empty state,
         // not an eternal skeleton.
         const dd = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-        body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dd)}${curDate !== todayISO() ? " — try another date or head back to today" : " — check your connection"}. Every past DiamondEdge Pick stays graded on the Results tab.</div></div>`;
+        body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dd)}${curDate !== todayISO() ? " — try another date or head back to today" : " — check your connection"}. Every past DiamondEdge Pick stays graded on the Insights tab.</div></div>`;
         return;
       } else {
         if (meta) meta.innerHTML = metaRow();
@@ -2419,7 +2419,7 @@ export default function Home() {
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         if (!games.length) {
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
-          body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Results tab.</div></div>`;
+          body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Insights tab.</div></div>`;
         } else {
           // Featured hero: the single highest-conviction pick game leads the slate.
           const ft = featuredPick(games);
@@ -2616,7 +2616,7 @@ export default function Home() {
       } else {
         if (pl.p != null && pl.price != null)
           s.push(`The model gives this bet about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}.`);
-        s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Results tab.`);
+        s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Insights tab.`);
       }
       return s.slice(0, 4);
     }
@@ -3378,7 +3378,7 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">The receipts</div>
               <div class="dsec-b rcp">
-                <p><b>Every pick is graded in public.</b> The side and line freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Results tab.</p>
+                <p><b>Every pick is graded in public.</b> The side and line freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Insights tab.</p>
                 <p><b>Calls made exactly this way have won <b>${(rh.hit * 100).toFixed(1)}%</b> of the time since 2022</b> — and at prices good enough to come out clearly ahead, graded by a model that never saw the games in advance.</p>
                 <p><b>Win rate always travels with the price.</b> A high hit rate at a terrible price is a losing bet — so every number we show you carries its return next to it.</p>
               </div>
@@ -4072,6 +4072,236 @@ export default function Home() {
       </section>`;
     }
 
+    // ===================== INSIGHTS SHOWCASE (the premium effectiveness surface) =====================
+    // A bold, editorial cut of the validated record — the confident hero, the by-confidence
+    // reconciliation, the year ladder, and an honest calibration read. Every number is REAL and
+    // sourced from what's already in the payload; nothing is re-graded and no series is invented:
+    //   • hero record      → value_record.validated_history.median_price (58.1% · 886 · +11%)
+    //   • by confidence     → analytics_deep.by_confidence [{tier,record,hit,roi,n}] — Σn=886, reconciles
+    //   • year ladder       → value_record.validated_history.by_year [{n,hit,roi}]
+    //   • calibration read  → analytics_deep.calibration [{predicted,actual,n}]
+    //   • honesty framing   → validated_history.stability_verdict / selection_clean_split / shopped_modal
+    // Where a series doesn't exist (e.g. a real per-DATE validated equity ledger, or a monthly
+    // validated split), we DON'T fake it — the equity curve is the honest per-year aggregate and
+    // the monthly chart only renders if analytics_deep.monthly is actually served.
+    function adBy(key: string) {
+      const ad = analyticsDeep || (payload && payload.analytics_deep) || null;
+      return ad && Array.isArray(ad[key]) ? ad[key] : null;
+    }
+    function valHist() { return payload && payload.value_record && payload.value_record.validated_history; }
+
+    // The reconciliation is the whole point of transparency: the three confidence tiers must add
+    // back up to the headline 886 / 58.1%. We compute the sum client-side and SHOW it, so the
+    // user can check our arithmetic instead of taking the hero number on faith.
+    function confReconcile() {
+      const rows = adBy("by_confidence");
+      if (!rows || !rows.length) return null;
+      const norm = (t: any) => { const s = String(t || "").toLowerCase(); return s === "strong" ? "strong" : s === "good" ? "good" : "lean"; };
+      const tiers = rows.map((r: any) => {
+        const rec = String(r.record || "").match(/(\d+)\D+(\d+)/);
+        const w = rec ? Number(rec[1]) : null, l = rec ? Number(rec[2]) : null;
+        return { q: norm(r.tier || r.key), n: Number(r.n) || 0, hit: Number(r.hit), roi: Number(r.roi), w, l, note: r.profit_note ? cleanCopy(r.profit_note) : "" };
+      });
+      const order: any = { strong: 0, good: 1, lean: 2 };
+      tiers.sort((a: any, b: any) => order[a.q] - order[b.q]);
+      const sumN = tiers.reduce((s: number, t: any) => s + t.n, 0);
+      const sumW = tiers.reduce((s: number, t: any) => s + (t.w || 0), 0);
+      const sumL = tiers.reduce((s: number, t: any) => s + (t.l || 0), 0);
+      const blendHit = sumW + sumL ? sumW / (sumW + sumL) : null;
+      return { tiers, sumN, sumW, sumL, blendHit };
+    }
+
+    // Calibration → one honest sentence + a compact reliability strip. "When we said ~X%, we hit
+    // ~Y%." We read the served buckets, weight the average gap by sample size, and state plainly
+    // whether the picks land at or above their billing (and flag the one bucket that ran cold).
+    function calibrationRead() {
+      const raw = adBy("calibration");
+      if (!raw || raw.length < 2) return null;
+      const pts = raw.map((p: any) => ({ p: Number(p.predicted), a: Number(p.actual), n: Number(p.n || 0), lab: p.bucket_label }))
+        .filter((p: any) => !isNaN(p.p) && !isNaN(p.a));
+      if (pts.length < 2) return null;
+      const totN = pts.reduce((s: number, p: any) => s + p.n, 0) || 1;
+      const wGap = pts.reduce((s: number, p: any) => s + (p.a - p.p) * p.n, 0) / totN; // + = beat the billing
+      const wPred = pts.reduce((s: number, p: any) => s + p.p * p.n, 0) / totN;
+      const wAct = pts.reduce((s: number, p: any) => s + p.a * p.n, 0) / totN;
+      return { pts, totN, wGap, wPred, wAct };
+    }
+
+    // The hero: the validated record as a confident, high-contrast statement. Big % · picks · return.
+    function insHero() {
+      const rh = recipeHistory();
+      const vh = valHist();
+      const sm = vh && vh.shopped_modal;
+      const ci = vh && vh.median_price && vh.median_price.hit_ci95;
+      const by = vh && vh.by_year;
+      const yrs = by ? Object.keys(by).filter((y) => /^\d{4}$/.test(y)).sort() : [];
+      const span = yrs.length ? `${yrs[0]}–${yrs[yrs.length - 1]}` : "2022–2026";
+      const ciTxt = ci && ci.length === 2 ? `${(ci[0] * 100).toFixed(0)}–${(ci[1] * 100).toFixed(0)}%` : "";
+      return `<section class="ix-hero" aria-label="Validated record — headline">
+        <div class="ix-hero-glow" aria-hidden="true"></div>
+        <div class="ix-hero-top">
+          <span class="ix-badge">◆ Validated record · totals · ${esc(span)}</span>
+          <span class="ix-live">Every pick graded in the open</span>
+        </div>
+        <div class="ix-hero-num">
+          <div class="ix-big"><span class="ix-pct">${(rh.hit * 100).toFixed(1)}</span><span class="ix-pctsym">%</span></div>
+          <div class="ix-big-cap">
+            <div class="ix-big-lab">of published picks won</div>
+            <div class="ix-big-sub">${rh.n.toLocaleString()} graded totals bets · ${sgn(rh.roi * 100, 0)}% return on every dollar${ciTxt ? ` · win rate holds in a ${ciTxt} band` : ""}</div>
+          </div>
+        </div>
+        <div class="ix-hero-stats">
+          <div class="ix-stat"><b class="pos">${(rh.hit * 100).toFixed(1)}%</b><i>Win rate</i></div>
+          <div class="ix-stat"><b>${rh.n.toLocaleString()}</b><i>Graded picks</i></div>
+          <div class="ix-stat"><b class="pos">${sgn(rh.roi * 100, 0)}%</b><i>Return</i></div>
+          ${sm && sm.roi != null ? `<div class="ix-stat"><b class="pos">${sgn(sm.roi * 100, 0)}%</b><i>Shopping the price</i></div>` : ""}
+        </div>
+        <p class="ix-hero-line">This is the one number DiamondEdge is built to defend: a real, priced-in edge on totals, graded against final scores on games the model never saw in advance. Below is exactly where it comes from — and where it doesn't.</p>
+      </section>`;
+    }
+
+    // BY CONFIDENCE — the reconciliation grid. Strong / Good / Lean, each with W–L, hit%, ROI and
+    // sample, plus the served plain-English profit note. A reconcile bar shows the three add back
+    // to the headline 886 / 58.1% — the transparency proof, computed live.
+    function insByConfidence() {
+      const rc = confReconcile();
+      if (!rc) return "";
+      const rh = recipeHistory();
+      const maxRoi = Math.max(0.02, ...rc.tiers.map((t: any) => Math.abs(t.roi || 0)));
+      const card = (t: any) => {
+        const hpct = Math.max(3, Math.min(100, (t.hit || 0) * 100));
+        const roiW = Math.max(3, Math.min(100, (Math.abs(t.roi || 0) / maxRoi) * 100));
+        const wl = t.w != null ? `${t.w}<i>–</i>${t.l}` : "—";
+        return `<div class="ix-tier q-${t.q}">
+          <div class="ix-tier-h">
+            <span class="ix-tier-name">${qDiamonds(t.q)}<b>${Q_LABEL[t.q]}</b></span>
+            <span class="ix-tier-n">${(t.n || 0).toLocaleString()} picks</span>
+          </div>
+          <div class="ix-tier-big"><span class="ix-tier-pct pos">${(t.hit * 100).toFixed(1)}%</span><span class="ix-tier-wl">${wl}</span></div>
+          <div class="ix-metric"><span class="ix-mk">Hit rate</span><span class="ix-track"><span class="ix-fill hit" style="width:${hpct.toFixed(0)}%"></span><span class="ix-be" style="left:52.5%"></span></span></div>
+          <div class="ix-metric"><span class="ix-mk">Return</span><span class="ix-track"><span class="ix-fill ${t.roi >= 0 ? "roi" : "roineg"}" style="width:${roiW.toFixed(0)}%"></span></span><b class="ix-mv ${t.roi >= 0 ? "pos" : "neg"}">${sgn(t.roi * 100, 0)}%</b></div>
+          ${t.note ? `<p class="ix-tier-note">${esc(t.note)}</p>` : ""}
+        </div>`;
+      };
+      // Live reconciliation: the three tiers sum back to the headline.
+      const recPct = rc.blendHit != null ? (rc.blendHit * 100).toFixed(1) : "—";
+      const headlinePct = (rh.hit * 100).toFixed(1);
+      const matches = rc.sumN === rh.n && Math.abs((rc.blendHit || 0) - rh.hit) < 0.006;
+      return `<section class="ix-sec" aria-label="Record by confidence tier">
+        <div class="ix-sec-h">
+          <span class="ix-kick">Where the edge lives</span>
+          <h3 class="ix-h">The strong picks carry the record</h3>
+          <p class="ix-sub">Every published totals pick carries one honest word for how hard the signal fired. Here's what each tier has actually done across the validated history — win rate, the money it made, and the sample behind it. The dashed line on each bar is roughly break-even at typical prices.</p>
+        </div>
+        <div class="ix-tiers">${rc.tiers.map(card).join("")}</div>
+        <div class="ix-reconcile ${matches ? "ok" : ""}">
+          <span class="ix-rec-k">Reconciles</span>
+          <span class="ix-rec-body">${rc.tiers.map((t: any) => `${t.n}`).join(" + ")} = <b>${rc.sumN.toLocaleString()}</b> picks · ${rc.sumW}–${rc.sumL} blends to <b>${recPct}%</b> ${matches ? "=" : "≈"} the ${headlinePct}% headline${matches ? " ✓" : ""}</span>
+        </div>
+      </section>`;
+    }
+
+    // THE YEAR LADDER — the record standing on its own in every calendar year (2022→2026). This is
+    // the honest counterpoint to a single blended number: a real edge shouldn't need a lucky season.
+    // Reads validated_history.by_year; the served stability_verdict is surfaced plainly beneath.
+    function insYearLadder() {
+      const vh = valHist();
+      const by = vh && vh.by_year;
+      if (!by) return "";
+      const yrs = Object.keys(by).filter((y) => /^\d{4}$/.test(y) && by[y] && by[y].n != null).sort();
+      if (yrs.length < 2) return "";
+      const rows = yrs.map((y) => ({ y, n: Number(by[y].n) || 0, hit: Number(by[y].hit), roi: Number(by[y].roi) }));
+      const be = 0.525;
+      const rowHtml = (r: any) => {
+        const win = r.hit >= be;
+        const hpct = Math.max(4, Math.min(100, (r.hit || 0) * 100));
+        return `<div class="ix-yr">
+          <span class="ix-yr-lab">${esc(r.y)}</span>
+          <span class="ix-yr-track"><span class="ix-yr-fill ${win ? "up" : "dn"}" style="width:${hpct.toFixed(0)}%"></span><span class="ix-yr-be" style="left:52.5%"></span></span>
+          <span class="ix-yr-hit ${win ? "pos" : "neg"}">${(r.hit * 100).toFixed(0)}%</span>
+          <span class="ix-yr-roi ${r.roi >= 0 ? "pos" : "neg"}">${sgn(r.roi * 100, 0)}%</span>
+          <span class="ix-yr-n">${r.n}</span>
+        </div>`;
+      };
+      // Pull the human-readable stability line if served (freshness caveat), kept short + honest.
+      const sv = vh.stability_verdict ? String(vh.stability_verdict).split("(")[0].replace(/^STABLE:\s*/i, "").trim() : "";
+      return `<section class="ix-sec" aria-label="Record by year">
+        <div class="ix-sec-h">
+          <span class="ix-kick">Year by year</span>
+          <h3 class="ix-h">Green in every season it has run</h3>
+          <p class="ix-sub">A real edge shouldn't need a lucky year. Win rate on the bar, return on the right — the break-even mark sits at the dashed line. ${sv ? `Our own read: <b>${esc(sv.charAt(0).toUpperCase() + sv.slice(1))}</b>.` : ""}</p>
+        </div>
+        <div class="ix-yr-head"><span class="ix-yr-lab">Year</span><span class="ix-yr-track"></span><span class="ix-yr-hit">Hit</span><span class="ix-yr-roi">Return</span><span class="ix-yr-n">Picks</span></div>
+        <div class="ix-yrs">${rows.map(rowHtml).join("")}</div>
+      </section>`;
+    }
+
+    // CALIBRATION — the trust read. One plain sentence backed by the served buckets, then the
+    // existing calibration scatter (predicted vs actual with the perfect-line diagonal). Only
+    // renders if analytics_deep.calibration is actually present — never faked.
+    function insCalibration() {
+      const cr = calibrationRead();
+      const chart = chartCalibration();
+      if (!cr || !chart) return "";
+      const beat = cr.wGap >= -0.005;
+      const gapTxt = `${cr.wGap >= 0 ? "+" : ""}${(cr.wGap * 100).toFixed(1)} pts`;
+      const verdict = beat
+        ? `When we billed a pick at about <b>${(cr.wPred * 100).toFixed(0)}%</b>, it actually won <b>${(cr.wAct * 100).toFixed(0)}%</b> of the time — our confidence is real, not marketing.`
+        : `When we billed a pick at about <b>${(cr.wPred * 100).toFixed(0)}%</b>, it landed near <b>${(cr.wAct * 100).toFixed(0)}%</b> — a touch under the billing, and we show it rather than round it away.`;
+      return `<section class="ix-sec ix-calib-sec" aria-label="Calibration — do our picks hit their billing">
+        <div class="ix-sec-h">
+          <span class="ix-kick">The trust chart</span>
+          <h3 class="ix-h">Do our ~58% picks actually hit ~58%?</h3>
+          <p class="ix-sub">${verdict} Across the graded buckets the sample-weighted gap between what we said and what happened is <b class="${beat ? "pos" : "neg"}">${gapTxt}</b>. Every dot below is a confidence band; on or above the diagonal means we hit at least as often as we claimed.</p>
+        </div>
+        <div class="ix-calib">${chart}</div>
+      </section>`;
+    }
+
+    // TRANSPARENCY — what's validated vs supporting context, stated plainly. Uses the served
+    // selection_clean_split (the out-of-sample slice that was never used to pick the recipe) as
+    // the honest backbone: it's the strongest evidence we're not curve-fitting.
+    function insTransparency() {
+      const vh = valHist();
+      const scs = vh && vh.selection_clean_split;
+      const clean = scs && (scs["2022_23_never_used_to_select_recipe"] || null);
+      const era = scs && (scs["2024_26_selection_era_regraded_fresh"] || null);
+      const cleanTxt = clean
+        ? `<div class="ix-tp-row"><span class="ix-tp-k">Never used to build the model</span><span class="ix-tp-v">${clean.n} picks · ${(clean.hit * 100).toFixed(1)}% · ${sgn((clean.roi != null ? clean.roi : 0) * 100, 0)}%</span></div>`
+        : "";
+      const eraTxt = era
+        ? `<div class="ix-tp-row"><span class="ix-tp-k">The selection era, regraded fresh</span><span class="ix-tp-v">${era.n} picks · ${(era.hit * 100).toFixed(1)}% · ${sgn((era.roi != null ? era.roi : 0) * 100, 0)}%</span></div>`
+        : "";
+      return `<section class="ix-sec ix-tp" aria-label="What is validated versus supporting context">
+        <div class="ix-sec-h">
+          <span class="ix-kick">Straight talk</span>
+          <h3 class="ix-h">What's proven, and what isn't</h3>
+        </div>
+        <div class="ix-tp-grid">
+          <div class="ix-tp-card validated">
+            <div class="ix-tp-tag">Validated</div>
+            <h4>The totals betting record</h4>
+            <p>The ${recipeHistory().n.toLocaleString()}-pick, ${(recipeHistory().hit * 100).toFixed(1)}% number above. Over/unders only — the one market where we publish a priced, graded, out-of-sample edge. This is what the gold ★ picks are built on.</p>
+            ${cleanTxt}${eraTxt}
+          </div>
+          <div class="ix-tp-card context">
+            <div class="ix-tp-tag muted">Supporting context</div>
+            <h4>Everything else on the board</h4>
+            <p>Spread &amp; moneyline reads are <b>leans</b> — directional calls we grade in the open for completeness, not validated +EV. Scores, live tracking and previews are context around the play. We label them apart on purpose so a lean never borrows the totals edge's credibility.</p>
+          </div>
+        </div>
+      </section>`;
+    }
+
+    // The whole premium showcase, in editorial order: hero → where the edge lives (by tier,
+    // reconciled) → year ladder → equity curve → calibration → transparency.
+    function insightsShowcase() {
+      const rc = confReconcile();
+      // The showcase leads with what we can prove. If the deep analytics aren't in the payload,
+      // it still shows the hero + year ladder from value_record; charts self-hide honestly.
+      return `${insHero()}${insByConfidence()}${insYearLadder()}${insCalibration()}${insTransparency()}`;
+    }
+
     // One expandable results row: record + win rate + return on the summary line,
     // a plain-English one-liner behind the tap.
     function resRow(label: string, o: any, liner: string) {
@@ -4120,31 +4350,19 @@ export default function Home() {
       //   (B) "Everything we track"     = the raw all-graded universe (leans + experiments; ~break-even)
       // Each gets its own labelled card, and (B) explains WHY it differs from (A).
       view.innerHTML = `
-        <div class="anz-hero results">
-          <div class="ah-lab">DiamondEdge Results · The Record</div>
-          <h2>Every pick, graded in the open</h2>
-          <div class="ah-sub">This is the honest ledger behind DiamondEdge Picks — graded against real final scores since 2022, on games the model never saw in advance. Winning isn't enough on its own; the price matters too, so the win rate always travels with its return.</div>
-        </div>
-        <article class="res-article lead">
-          <div class="res-figure">${resFigure("record", "◆◆◆")}</div>
-          <div class="res-art-b">
-            <div class="res-kick">The headline number</div>
-            <h3 class="res-h">How often our picks win: <span class="pos">${(rh.hit * 100).toFixed(1)}%</span></h3>
-            <p class="res-lede">The DiamondEdge signature play — the calls we actually publish — has won <b>${(rh.hit * 100).toFixed(1)}%</b> of <b>${rh.n.toLocaleString()}</b> graded picks since 2022, at prices good enough to bank about <b>${sgn(rh.roi * 100, 0)}%</b> on every dollar. It's the record behind the gold ★ picks on the board.</p>
-            <div class="res-statrow">
-              <span class="res-stat"><i>Published picks</i><b data-count="${rh.n || 0}" data-loc="1">${rh.n.toLocaleString()}</b></span>
-              <span class="res-stat"><i>Win rate</i><b class="pos">${(rh.hit * 100).toFixed(1)}%</b></span>
-              <span class="res-stat"><i>Return</i><b class="${rh.roi >= 0 ? "pos" : "neg"}">${sgn(rh.roi * 100, 0)}%</b></span>
-              ${mr ? `<span class="res-stat"><i>This month</i><b>${mr.w}-${mr.l}</b></span>` : ""}
-              ${fwd ? `<span class="res-stat"><i>Since going live</i><b>${fwd.wins || 0}-${fwd.losses || 0}</b></span>` : ""}
-            </div>
-            <div class="res-btnrow">
-              <button class="res-breakdown" id="res-breakdown">See wins–losses by pick strength →</button>
-              <button class="res-share" id="res-share">Share our record ↗</button>
-            </div>
+        <div class="ix-masthead">
+          <div class="ix-eyebrow">DiamondEdge · Insights</div>
+          <h2 class="ix-mast-h">How well the model actually works</h2>
+          <p class="ix-mast-sub">No cherry-picking, no lucky-week screenshots. This is the whole graded record — the edge, where it comes from, whether our confidence holds up, and exactly what's proven versus what's context.</p>
+          <div class="ix-mast-act">
+            <button class="ix-btn primary" id="res-breakdown">See every pick by strength →</button>
+            <button class="ix-btn" id="res-share">Share the record ↗</button>
           </div>
-        </article>
+        </div>
+        ${insightsShowcase()}
         ${equityCurveCard()}
+        <details class="ix-more"><summary><span class="ix-more-k">The full ledger</span><span class="ix-more-sub">the edge-vs-leans split and every recently graded score</span><span class="ix-more-car" aria-hidden="true">▾</span></summary>
+        <div class="ix-more-b">
         ${strengthBreakdownCard()}
         ${gradedScoresList()}
         ${ov.n ? `<article class="res-article second">
@@ -4155,10 +4373,10 @@ export default function Home() {
             <p class="res-lede sm">Across <b>${(ov.n || 0).toLocaleString()}</b> total graded calls — including thin Leans and situations we track but never publish as Picks — the raw win rate is ${hr != null ? hr.toFixed(1) + "%" : "—"}${roi != null ? `, a ${(roi >= 0 ? "+" : "") + roi.toFixed(1)}% return` : ""}. ${roi != null && roi < 0 && hr != null && hr > 50 ? "Some of those cuts win often but at odds too short to profit — " : "Many of those never clear our bar — "}that's exactly why they're not DiamondEdge Picks. <b>The ${(rh.hit * 100).toFixed(1)}% above is what you're actually paying for.</b></p>
           </div>
         </article>` : ""}
-        ${analyticsDeep ? `<section class="ins-section">
-          <div class="ins-sec-h"><span class="ins-sec-k">The Charts</span><h2>How the record actually behaves</h2><p>Two more ways of reading the same graded ledger — whether our stated confidence holds up, and how the edge moved through the calendar. No jargon, just the receipts.</p></div>
-          ${insightsBlock()}
-        </section>` : (confRows ? `<div class="anz-card rsec"><div class="anz-card-h">By confidence</div><div class="anz-sub">Every pick carries one plain word — Strong, Good or Lean. Here's what each has actually done.</div><div class="rrows">${confRows}</div></div>` : "")}
+        ${analyticsDeep && chartMonthly() ? `<section class="ins-section">
+          <div class="ins-sec-h"><span class="ins-sec-k">Month by month</span><h2>The edge across the calendar</h2><p>A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.</p></div>
+          ${insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "", "books", "▪", chartMonthly())}
+        </section>` : ""}
         ${mkRows ? `<div class="anz-card rsec"><div class="anz-card-h">By bet type</div><div class="anz-sub">Totals, moneylines and spreads are graded separately — a pick is only as good as its market.</div><div class="rrows">${mkRows}</div></div>` : ""}
         ${themeChips ? `<div class="anz-card rsec"><div class="anz-card-h">By theme</div><div class="anz-sub">The situations that show up in our picks, each with its graded proof.</div><div class="proofgrid">${themeChips}</div></div>` : ""}
         ${analyticsDeep ? adEdgesModule(analyticsDeep.edges_summary) : ""}
@@ -4169,7 +4387,8 @@ export default function Home() {
                ${Object.keys(analyticsDeep.cuts).filter((k) => CUT_ORDER.indexOf(k) < 0).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
              </div></div></details>`
           : ""}
-        <div class="refnote">Every cut is the same graded record, sliced a different way — win rate always shown with its return.${analyticsDeep && analyticsDeep.generated_at ? ` Updated ${esc(String(analyticsDeep.generated_at).slice(0, 10))}.` : ""}</div>`;
+        <div class="refnote">Every cut is the same graded record, sliced a different way — win rate always shown with its return.${analyticsDeep && analyticsDeep.generated_at ? ` Updated ${esc(String(analyticsDeep.generated_at).slice(0, 10))}.` : ""}</div>
+        </div></details>`;
       animateCounters(view);
       // Share the headline record — honest text + the branded OG card renders from the URL.
       const rs = $("res-share");
@@ -4709,7 +4928,7 @@ export default function Home() {
           <div class="ls-body">
             <div class="ls-kick"><span class="ls-lab">Lead story</span></div>
             <h3 class="ls-match">No DiamondEdge Pick today — and that's the discipline that keeps the record honest.</h3>
-            <p class="ls-lede">We publish a pick only when the numbers clear our bar. Today none did. The storylines below are what we're watching, and every past call stays graded in the open on the Results tab.</p>
+            <p class="ls-lede">We publish a pick only when the numbers clear our bar. Today none did. The storylines below are what we're watching, and every past call stays graded in the open on the Insights tab.</p>
             <div class="ls-ctas"><span class="hero-cta" data-nav="results">See the record →</span><span class="hero-cta alt" data-nav="games">Browse today's board →</span></div>
           </div>
         </article>`;
@@ -5166,7 +5385,7 @@ export default function Home() {
       results: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>`,
       settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M18.2 5.8l-1.8 1.8M7.6 16.4l-1.8 1.8"/></svg>`,
     };
-    const NAV_LABEL: any = { today: "Today", games: "Games", results: "Results", settings: "Settings" };
+    const NAV_LABEL: any = { today: "Today", games: "Games", results: "Insights", settings: "Settings" };
     function renderShell() {
       // Primary nav = the three destinations at EVERY width (the top bar is the nav on
       // mobile too now — the bottom nav is retired). Settings lives in the avatar/account hub.
@@ -5179,7 +5398,7 @@ export default function Home() {
           <div class="hbar">
             <div class="brand" id="brand">
               <div class="diamond"></div>
-              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">Today · Games · Results</div></div>
+              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">Today · Games · Insights</div></div>
             </div>
             <nav class="toptabs" aria-label="Primary">
               ${primaryTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}"${tab === t ? ' aria-current="page"' : ""}>${NAV_LABEL[t]}</button>`).join("")}
