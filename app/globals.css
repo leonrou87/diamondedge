@@ -1312,27 +1312,29 @@ details.more .more-body{padding-top:12px}
 .heroimg.hi-lead{aspect-ratio:2/1}
 .heroimg .hi-wm{position:absolute;right:-8px;bottom:-14px;width:120px;height:120px;opacity:.14;color:var(--ink);pointer-events:none}
 .heroimg .hi-wm svg{width:100%;height:100%;fill:currentColor;stroke:none}
-.heroimg .hi-mu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:min(9%,34px)}
-/* A frosted plate behind every crest so ANY logo (white, light or dark) reads on the tint. */
-.heroimg .hi-crest{display:inline-grid;place-items:center;padding:9px;border-radius:16px;background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(30,46,80,.18),inset 0 0 0 1px rgba(255,255,255,.55)}
-.heroimg .hi-crest.lg{padding:12px;border-radius:20px}
+.heroimg .hi-mu{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:min(7%,26px)}
+/* A frosted plate behind every crest so ANY logo reads on the tint. ONE consistent size
+   across every card type (hero, feature story, compact story) — no more mismatched logos. */
+.heroimg .hi-crest{display:inline-grid;place-items:center;padding:10px;border-radius:16px;background:rgba(255,255,255,.66);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(30,46,80,.18),inset 0 0 0 1px rgba(255,255,255,.55)}
 .heroimg .hi-crest img,.heroimg .hi-crest .crest{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(30,46,80,.22))}
-.heroimg .hi-crest.lg img,.heroimg .hi-crest.lg .crest{width:66px;height:66px}
 .heroimg .hi-crest .crest{border-radius:11px;background:transparent;font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink)}
-.heroimg .hi-at{font-family:var(--disp);font-weight:300;font-size:18px;color:rgba(22,36,60,.5)}
-.heroimg.hi-lead .hi-at{font-size:24px}
-/* when a pick cover sits at the bottom, lift the crest cluster into the top band */
-.ls-figure .heroimg .hi-mu,.sh-figure .heroimg .hi-mu{align-items:flex-start;padding-top:8%}
-/* compact cards: a taller 3:2 figure gives the crests a clear top band above the cover */
-.prev:not(.feature) .pv-figure .heroimg{aspect-ratio:3/2}
-.prev:not(.feature) .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:7%;padding-bottom:48%}
-.prev:not(.feature) .pv-figure .heroimg .hi-crest{padding:7px}
-.prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:46px;height:46px}
-/* wider tablet/desktop board cards have room — don't let the logos read as tiny & floaty */
-@media(min-width:680px){.prev:not(.feature) .pv-figure .heroimg .hi-crest img,.prev:not(.feature) .pv-figure .heroimg .hi-crest .crest{width:54px;height:54px}.prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:18px}}
-.prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:15px}
-.prev.feature .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:6%;padding-bottom:40%}
-.prev.feature .pv-figure .heroimg .hi-crest img,.prev.feature .pv-figure .heroimg .hi-crest .crest{width:58px;height:58px}
+.heroimg .hi-at{font-family:var(--disp);font-weight:300;font-size:22px;color:rgba(22,36,60,.45)}
+.heroimg.hi-lead .hi-at{font-size:26px}
+/* the SCORE woven BETWEEN the two crests (live/final) — the winner reads darkest */
+.heroimg .hi-score{display:inline-flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.heroimg .hi-score b{font-size:36px;color:var(--ink2)}
+.heroimg .hi-score b.win{color:var(--ink)}
+.heroimg .hi-score.final b:not(.win){color:var(--ink3)}
+.heroimg .hi-score .hi-dash{font-size:22px;font-weight:300;color:var(--ink4)}
+.heroimg.hi-lead .hi-score b{font-size:48px}.heroimg.hi-lead .hi-score .hi-dash{font-size:30px}
+.prev:not(.feature) .heroimg .hi-score b{font-size:30px}.prev:not(.feature) .heroimg .hi-score .hi-dash{font-size:19px}
+/* when a pick cover sits at the bottom, lift the crest+score cluster into the top band */
+.ls-figure .heroimg .hi-mu,.sh-figure .heroimg .hi-mu{align-items:flex-start;padding-top:9%}
+/* compact cards: a 16:10 figure keeps the crest+score band tight (less dead gradient) */
+.prev:not(.feature) .pv-figure .heroimg{aspect-ratio:16/10}
+.prev:not(.feature) .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:8%;padding-bottom:40%}
+.prev:not(.feature) .pv-figure .heroimg .hi-at{font-size:16px}
+.prev.feature .pv-figure .heroimg .hi-mu{align-items:flex-start;padding-top:7%;padding-bottom:36%}
 
 /* ---- HERO PICK COVER (the pick composited ONTO the image, magazine cover-line) ---- */
 .hpc{position:absolute;left:0;right:0;bottom:0;z-index:2;pointer-events:none}

@@ -817,11 +817,19 @@ export default function Home() {
       const ic = tint === "gold" || tint === "green" || tint === "pick" ? "trend" : tint;
       const cls = `heroimg hi-${size}${big ? " big" : ""}`;
       const crestCls = size === "lead" ? "hi-crest lg" : "hi-crest";
-      return `<div class="${cls}" style="--t1:${c1};--t2:${c2}" aria-hidden="true">
+      // Weave the score BETWEEN the logos for live/final; a quiet "@" pre-game.
+      const gs = gameState(g);
+      const sc = gs.score;
+      const hasScore = (gs.kind === "live" || gs.kind === "final") && sc && sc.split && sc.home != null;
+      const aw = gs.kind === "final" && sc && sc.away > sc.home, hm = gs.kind === "final" && sc && sc.home > sc.away;
+      const mid = hasScore
+        ? `<span class="hi-score${gs.kind === "final" ? " final" : ""}"><b class="${aw ? "win" : ""}">${num(sc.away, 0)}</b><span class="hi-dash">–</span><b class="${hm ? "win" : ""}">${num(sc.home, 0)}</b></span>`
+        : `<span class="hi-at">@</span>`;
+      return `<div class="${cls}${hasScore ? " scored" : ""}" style="--t1:${c1};--t2:${c2}" aria-hidden="true">
         <span class="hi-wm">${IC[ic] ? `<svg viewBox="0 0 24 24">${IC[ic].replace(/^<svg[^>]*>|<\/svg>$/g, "")}</svg>` : ""}</span>
         <div class="hi-mu">
           <span class="${crestCls}">${gCrest(g, "away")}</span>
-          <span class="hi-at">@</span>
+          ${mid}
           <span class="${crestCls}">${gCrest(g, "home")}</span>
         </div>
       </div>`;
@@ -913,10 +921,7 @@ export default function Home() {
     function heroLiveBadge(g: any, size = "lead") {
       const gs = gameState(g);
       if (gs.kind !== "live") return "";
-      const sc = gs.score;
-      const scoreTxt = sc && sc.split && sc.home != null
-        ? `${esc(g.away_abbr)} <b>${num(sc.away, 0)}</b> · <b>${num(sc.home, 0)}</b> ${esc(g.home_abbr)}`
-        : "";
+      // The score is woven between the crests now; this top band carries just LIVE + inning + trend.
       const per = gs.label && gs.label !== "Live" ? esc(gs.label) : "";
       const pl = displayPick(g);
       const ls = pl && pl.action === "TAKE" ? liveStatusOf(g, pl) : null;
@@ -934,7 +939,7 @@ export default function Home() {
       }
       return `<div class="hlb hlb-${size}">
         <span class="hlb-badge"><span class="livedot"></span>LIVE</span>
-        ${scoreTxt ? `<span class="hlb-score">${scoreTxt}${per ? ` <i>${per}</i>` : ""}</span>` : per ? `<span class="hlb-score"><i>${per}</i></span>` : ""}
+        ${per ? `<span class="hlb-score"><i>${per}</i></span>` : ""}
         ${trend}
       </div>`;
     }
@@ -4906,7 +4911,6 @@ export default function Home() {
       return `<article class="prev ${feature ? "feature " : ""}${hasPick ? "haspick q-" + q : "nopick"}" data-gid="${esc(g.game_id)}" style="--i:${Math.min(i, 8)}" role="button" tabindex="0" aria-label="${esc(g.matchup || "game preview")}${hasPick ? " — DiamondEdge Pick " + esc(pl.side || "") : " — no pick"} — open">
         <div class="pv-figure">${heroImage(g, tint, coverSize)}<div class="pv-fig-top"><span class="pv-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>${isLive ? "" : scoreBadge}${isLive ? "" : status}</div>${isLive ? heroLiveBadge(g, feature ? "lead" : "card") : ""}${heroPickCover(g, coverSize)}</div>
         <div class="pv-body">
-          ${bigScore(g)}
           <h4 class="pv-head">${head}</h4>
           ${dek && gs.kind !== "final" ? `<p class="pv-dek clamp2">${mdBold(String(dek))}</p>` : ""}
           <div class="pv-byline">DiamondEdge · ${esc(gs.kind === "final" ? "Final" : gs.kind === "live" ? "Live now" : (gs.si.hasTime && gs.si.time ? gs.si.time : "Today"))}</div>
@@ -5191,7 +5195,6 @@ export default function Home() {
         leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
           ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}${gameState(g).kind !== "live" ? `<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead", true)}</div>` : ""}
           <div class="ls-body">
-            ${g ? bigScore(g) : ""}
             <h3 class="ls-match">${headline}</h3>
             <div class="ls-byline">Feature bet · DiamondEdge · ${esc(dateTxt)}</div>
             ${heroLede ? `<p class="ls-lede small">${esc(heroLede)}</p>` : ""}
