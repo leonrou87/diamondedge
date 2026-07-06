@@ -1565,9 +1565,21 @@ export default function Home() {
       }
       if (st === "live") {
         const ca = g.current_actuals;
+        const per = ca && ca.period_label ? String(ca.period_label) : "";
+        // A game the backend still flags "live" is EFFECTIVELY FINAL when its period label says so
+        // (Final/Ended/Game Over/FT), or when first pitch was long enough ago that it must be over
+        // (MLB rarely runs past ~5h) — clean these up to "Final" instead of a stuck inning.
+        const labelFinal = /\b(final|ended|game\s*over|full[-\s]?time|walk[-\s]?off)\b|^\s*f\s*\/?\s*t?\s*$/i.test(per);
+        const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
+        const ageH = ts ? (Date.now() - new Date(ts).getTime()) / 3600000 : null;
+        const staleFinal = ageH != null && ageH > 5;
+        if ((labelFinal || staleFinal) && ca && ca.home_score != null && ca.away_score != null) {
+          const h = Number(ca.home_score), a = Number(ca.away_score);
+          return { kind: "final", label: "Final", time: "", score: { total: h + a, home: h, away: a, margin: h - a, split: true }, si };
+        }
         if (ca && ca.home_score != null && ca.away_score != null) {
           const home = Number(ca.home_score), away = Number(ca.away_score);
-          return { kind: "live", label: ca.period_label || "Live", time: t, score: { total: home + away, home, away, margin: home - away, split: true }, si };
+          return { kind: "live", label: per || "Live", time: t, score: { total: home + away, home, away, margin: home - away, split: true }, si };
         }
         return { kind: "live", label: "Live", time: t, score: actualScore(g), si };
       }
@@ -3314,12 +3326,45 @@ export default function Home() {
         ${(facts.length || stks) ? `<div class="de-sec"><div class="de-h">What's driving it</div>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</div>` : ""}
       </div>`;
     }
+    // POST-GAME RECAP (own tab, only when final): the result, how our pick did, and a served
+    // recap story if the backend provides one (g.article.recap). The Preview stays the pregame read.
+    function gameRecap(g: any) {
+      const gs = gameState(g);
+      const sc = gs.score;
+      const away = g.away_abbr, home = g.home_abbr;
+      const finalTxt = sc && sc.split && sc.home != null ? `Final — ${esc(away)} ${num(sc.away, 0)}, ${esc(home)} ${num(sc.home, 0)}` : "Final";
+      const bits: string[] = [];
+      if (sc && sc.split && sc.home != null) {
+        if (sc.home === sc.away) bits.push(`${esc(g.away_team || away)} and ${esc(g.home_team || home)} finished level at ${num(sc.away, 0)}–${num(sc.home, 0)}.`);
+        else {
+          const wName = sc.home > sc.away ? esc(g.home_team || home) : esc(g.away_team || away);
+          bits.push(`${wName} took it ${Math.max(sc.home, sc.away)}–${Math.min(sc.home, sc.away)}.`);
+        }
+      }
+      const pl = displayPick(g);
+      if (isPick(pl)) {
+        const st = playState(g, pl);
+        const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
+        const low = isLowConf(pl) ? "low-confidence " : "";
+        if (st === "won") bits.push(`Our ${low}pick — <b>${esc(sideTxt)}</b> — cashed.`);
+        else if (st === "lost") bits.push(`Our ${low}pick — <b>${esc(sideTxt)}</b> — came up short.`);
+        else if (st === "pushed") bits.push(`Our pick — <b>${esc(sideTxt)}</b> — pushed.`);
+      }
+      const art = gameArticle(g);
+      const recapRaw = art && (art as any).recap;
+      const recapParas = Array.isArray(recapRaw) ? recapRaw : (recapRaw ? [String(recapRaw)] : []);
+      return `<div class="de-pane">
+        <div class="de-lead"><div class="de-k">◆ Recap</div><p class="de-sub">${finalTxt}</p></div>
+        ${bits.length ? `<div class="de-sec"><div class="de-h">How it finished</div>${bits.map((b) => `<p>${b}</p>`).join("")}</div>` : ""}
+        ${recapParas.length ? `<div class="de-sec"><div class="de-h">The story</div>${recapParas.map((p: any) => `<p>${mdBold(cleanBlurb(String(p)))}</p>`).join("")}</div>` : ""}
+      </div>`;
+    }
     function openDetail(g: any, focusMk?: string, fromHistory = false) {
       detail = g;
       // Live & finished games open straight to "How it's going" (box score); only pre-game
       // games default to the Preview narrative.
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
-      detailTab = (_gsk === "live" || _gsk === "final") ? "live" : "preview";
+      detailTab = _gsk === "final" ? "recap" : _gsk === "live" ? "live" : "preview";
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       const sp = g.sport;
@@ -3505,7 +3550,9 @@ export default function Home() {
       </div>`;
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
       const showLive = gs.kind === "live" || gs.kind === "final";
+      const isFinal = gs.kind === "final";
       const tabsBar = `<div class="gp-tabs" role="tablist">
+        ${isFinal ? `<button class="gp-tab ${detailTab === "recap" ? "on" : ""}" data-dtab="recap" role="tab">Recap</button>` : ""}
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Game Preview</button>
         ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box Score</button>` : ""}
         <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">DiamondEdge</button>
@@ -3529,6 +3576,7 @@ export default function Home() {
         ${leadLocked ? "" : more}
       </div>`;
       const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${boxScorePanel(g)}</div>` : "";
+      const recapPane = isFinal ? `<div class="gp-pane" data-pane="recap" style="display:${detailTab === "recap" ? "block" : "none"}">${gameRecap(g)}</div>` : "";
       const dePane = `<div class="gp-pane" data-pane="de" style="display:${detailTab === "de" ? "block" : "none"}">${diamondEdgeReasoning(g, lead, leadLocked)}</div>`;
 
       const html = `
@@ -3543,6 +3591,7 @@ export default function Home() {
             ${gameHero}
             ${marketsTable(g)}
             ${tabsBar}
+            ${recapPane}
             ${previewPane}
             ${livePane}
             ${dePane}
@@ -5236,7 +5285,8 @@ export default function Home() {
       const tint = heroTintFor(g, pl);
       const headline = matchupHeadline(g, pl);
       const lede = gameLede(g);
-      const startedTag = live ? "" : (started ? `<span class="ls-fig-tag started">● Started</span>` : "");
+      // "Started" only for a pre-status game that's begun — never for live (has its own badge) or final.
+      const startedTag = gs.kind === "pre" && started ? `<span class="ls-fig-tag started">● Started</span>` : "";
       const sport = SPORT_LABEL[g.sport] || String(g.sport || "").toUpperCase();
       const cta = locked ? "Unlock the full preview →" : "Read the full preview →";
       // Show the pick tease for ANY pick (even the slightest lean, clearly flagged low-confidence);
