@@ -1235,16 +1235,11 @@ details.more .more-body{padding-top:12px}
 @media(min-width:900px){.news-grid{grid-template-columns:minmax(0,1fr) 340px;gap:24px}}
 /* safety cap so a full-width lead hero can never balloon on a wide viewport */
 .ls-figure .heroimg{max-height:250px}
-/* Top-games grid cards: smaller score + logos than the full-width hero (they were oversized). */
-.top-games .leadstory .heroimg .hi-score b{font-size:34px}
-.top-games .leadstory .heroimg .hi-score .hi-dash{font-size:21px}
-.top-games .leadstory .heroimg .hi-crest{padding:8px}
-.top-games .leadstory .heroimg .hi-crest img,.top-games .leadstory .heroimg .hi-crest .crest{width:44px;height:44px}
-.top-games .leadstory .ls-figure .heroimg{max-height:200px}
-/* No-pick (storyline) cards: no pick cover, so CENTER the matchup and shrink the figure — no
-   empty gradient band at the bottom. */
+/* CENTER the matchup (logos + woven score) in EVERY lead-story figure — hero + top games all
+   use the identical full-width format, games/logos dead-centered. */
+.leadstory .ls-figure .heroimg .hi-mu{align-items:center!important;padding-top:0!important;padding-bottom:0!important}
+/* No-pick (storyline) cards: no pick cover, so shrink the figure — no empty gradient band. */
 .leadstory.nopick .ls-figure .heroimg{aspect-ratio:16/9}
-.leadstory.nopick .ls-figure .heroimg .hi-mu{align-items:center!important;padding-top:0!important;padding-bottom:0!important}
 
 /* ============ THE FRONT — Top Stories woven with Today's Board ============ */
 /* Leon's direction: keep stories (the "read") and the board (games at a glance) clearly
@@ -1254,12 +1249,12 @@ details.more .more-body{padding-top:12px}
 .front-hero{margin:0 0 22px}
 .front-full{margin:0 0 22px}
 .front-grid{display:flex;flex-direction:column;gap:26px}
-/* TOP GAMES TO WATCH — a grid of full lead-story cards (the format Leon likes), 2-up on wide. */
-.top-games{margin-top:22px}
-.top-games .sec-h{margin-bottom:14px}
-.topgames-list{display:flex;flex-direction:column;gap:18px}
-@media(min-width:820px){.topgames-list{display:grid;grid-template-columns:1fr 1fr;gap:22px}}
-.top-games .board-all{margin-top:18px}
+/* TOP GAMES TO WATCH — every card is the SAME full-width lead-story format as the feature hero
+   (Leon: use this exact form factor for all games). Full-width stack, not a grid. */
+.top-games{margin-top:24px}
+.top-games .sec-h{margin-bottom:16px}
+.topgames-list{display:flex;flex-direction:column;gap:26px}
+.top-games .board-all{margin-top:22px}
 /* "Next up" first-pitch countdown banner on the News front */
 .nextup{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 18px;padding:11px 16px;border:0;border-radius:14px;background:linear-gradient(135deg,#26324a,#33456a);color:#fff;cursor:pointer;box-shadow:0 6px 20px rgba(26,36,56,.22);text-align:left;transition:transform .2s var(--spring)}
 .nextup:hover{transform:translateY(-1px)}
