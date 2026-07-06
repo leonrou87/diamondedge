@@ -841,7 +841,14 @@ export default function Home() {
     function v4ToPlay(g: any, c: any) {
       if (!c) return null;
       const mk = c.bet_type;
-      const ln = c.pick_line != null ? c.pick_line : c.market_line;
+      let ln = c.pick_line != null ? c.pick_line : c.market_line;
+      // LIVE-feed guard: spread lines can arrive UNSIGNED (walk payload signs them). The price
+      // gives the truth away — a run line paying plus money IS the −1.5 side ("+1.5 +190" is
+      // free-money impossible). Flip until the feed emits signed lines (flagged to modeling).
+      if (mk === "spread" && ln != null && ln > 0 && c.per_side_price != null) {
+        const px0 = Number(c.per_side_price);
+        if (px0 >= 120) ln = -ln;
+      }
       let side = "";
       if (mk === "total") side = `${/over/i.test(String(c.pick_side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim();
       else if (mk === "spread") side = `${c.pick_side === "home" ? g.home_abbr : g.away_abbr} ${ln != null ? sgn(ln) : ""}`.trim();
@@ -2362,7 +2369,12 @@ export default function Home() {
       const cell = (val: any, on: boolean, pl: any) => {
         if (!on) return `<span class="oc${val == null || val === "" ? " none" : ""}">${val == null || val === "" ? "–" : val}</span>`;
         const q0 = qualityOf(pl);
-        const v = val != null && val !== "" ? String(val) : esc(String(pl.side || ""));
+        // the chip shows THE PICK's own numbers (side-signed line), never a mixed source
+        let v: string;
+        if (pl.market === "spread" && pl.line != null) v = sgn(pl.line);
+        else if (pl.market === "total" && pl.line != null) v = (/over/i.test(String(pl.side || "")) ? "o" : "u") + num(pl.line);
+        else if (pl.market === "moneyline" && pl.price != null) v = fmtOdds(pl.price); // ML value IS the model's real price
+        else v = val != null && val !== "" ? String(val) : esc(String(pl.side || ""));
         // compact chip: the value, the REAL price small beneath (when different), and a
         // micro star-count row — small enough that it can never overflow the cell.
         const px = pl.price != null && fmtOdds(pl.price) !== v ? `<em>${fmtOdds(pl.price)}</em>` : "";
