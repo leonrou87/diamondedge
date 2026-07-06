@@ -2363,9 +2363,11 @@ export default function Home() {
         if (!on) return `<span class="oc${val == null || val === "" ? " none" : ""}">${val == null || val === "" ? "–" : val}</span>`;
         const q0 = qualityOf(pl);
         const v = val != null && val !== "" ? String(val) : esc(String(pl.side || ""));
-        // compact two-line chip: the value, with the REAL price small beneath (when different)
+        // compact chip: the value, the REAL price small beneath (when different), and a
+        // micro star-count row — small enough that it can never overflow the cell.
         const px = pl.price != null && fmtOdds(pl.price) !== v ? `<em>${fmtOdds(pl.price)}</em>` : "";
-        return `<span class="oc pick q-${q0}"><b>${v}</b>${px}</span>`;
+        const n = pl.stars != null ? Math.max(1, Math.min(5, pl.stars)) : (q0 === "strong" ? 3 : q0 === "good" ? 2 : 1);
+        return `<span class="oc pick q-${q0}"><b>${v}</b>${px}<i class="oc-mst">${"★".repeat(n)}</i></span>`;
       };
       const totV = tp && tp.line != null ? num(tp.line) : null;
       const row = (which: "away" | "home") => {
@@ -2446,7 +2448,7 @@ export default function Home() {
         : `<div class="ft-mid">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "@")}</div>`;
       const take = locked
         ? `<button class="lockchip ft-lock" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
-        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">${pickLabel(g)}</span>${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${pickStars(pl)}${Q_LABEL[q]}</span>${res}</div>`;
+        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">${pickLabel(g)}</span>${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : ""}</span>${res}</div>`;
       return `<article class="feat q-${q} ${gs.kind}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id)}" role="button" tabindex="0"
         aria-label="Featured — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}${locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pl.side || "")}`} — open details">
         <div class="ft-top"><span class="ft-lab">◆ Featured</span><span class="ft-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span></div>

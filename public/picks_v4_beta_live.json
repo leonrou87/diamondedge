@@ -1,7 +1,7 @@
 {
   "model": "v4_beta_live",
   "status": "shadow",
-  "generated_utc": "2026-07-06T20:30:48Z",
+  "generated_utc": "2026-07-06T21:36:01Z",
   "dates": [
     "2026-07-06",
     "2026-07-07"
@@ -18,11 +18,11 @@
   },
   "board_census": {
     "n_games": 8,
-    "n_rows": 84,
+    "n_rows": 87,
     "n_takes": 28,
-    "n_passes": 56,
+    "n_passes": 59,
     "stars": {
-      "0": 56,
+      "0": 59,
       "1": 9,
       "2": 19,
       "3": 0,
@@ -1083,7 +1083,8 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1257,6 +1258,63 @@
           "pick_side": null,
           "informational_lean": null,
           "pass_reason": "model 50.7% < break-even 51.2% at -105 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -108,
+          "our_prob": 0.5126,
+          "p_breakeven": 0.5192,
+          "ev": -0.0128,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "pick_side": null,
+          "informational_lean": null,
+          "pass_reason": "model 51.3% < break-even 51.9% at -108 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": -172,
+          "our_prob": 0.6278,
+          "p_breakeven": 0.6324,
+          "ev": -0.0071,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "pick_side": null,
+          "informational_lean": null,
+          "pass_reason": "model 62.8% < break-even 63.2% at -172 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": -105,
+          "our_prob": 0.5082,
+          "p_breakeven": 0.5122,
+          "ev": -0.0078,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "pick_side": null,
+          "informational_lean": null,
+          "pass_reason": "model 50.8% < break-even 51.2% at -105 \u2014 priced out (-EV)"
         }
       ]
     },
