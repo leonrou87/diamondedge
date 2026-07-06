@@ -2293,11 +2293,14 @@ export default function Home() {
         const n = qualityOf(pl) === "strong" ? 3 : qualityOf(pl) === "good" ? 2 : 1;
         return `<i class="oc-st">${"★".repeat(n)}</i>`;
       };
+      // Reference style (theScore): odds are PLAIN TEXT — no boxes. Only OUR pick becomes an
+      // unmistakable solid chip (► side + real price + stars). The picked side shows the REAL
+      // per-side price from the model feed (never a champion −110 placeholder).
       const cell = (val: any, on: boolean, pl: any) => {
-        if (val == null || val === "") return `<span class="oc none">–</span>`;
-        if (!on) return `<span class="oc">${val}</span>`;
+        if (!on) return `<span class="oc${val == null || val === "" ? " none" : ""}">${val == null || val === "" ? "–" : val}</span>`;
         const q0 = qualityOf(pl), low = isLowConf(pl);
-        return `<span class="oc pick q-${q0}${low ? " low" : ""}">${val}${starsFor(pl)}</span>`;
+        const px = pl.price != null ? ` <em>${fmtOdds(pl.price)}</em>` : "";
+        return `<span class="oc pick q-${q0}${low ? " low" : ""}">▸ ${val != null && val !== "" ? val : esc(String(pl.side || ""))}${px}${starsFor(pl)}</span>`;
       };
       const totV = tp && tp.line != null ? num(tp.line) : null;
       const row = (which: "away" | "home") => {
@@ -2307,6 +2310,17 @@ export default function Home() {
         return cell(spV, spRow === which, P.spread) + cell(t, totRow === which, P.total) + cell(o.ml, mlRow === which, P.moneyline);
       };
       return `<div class="t-oddsgrid" aria-label="Odds — spread, total, moneyline">${row("away")}${row("home")}</div>`;
+    }
+    // A human sentence for WHY the model passed a market — built from the numbers when we
+    // have them, never the raw jargon string.
+    function plainPassReason(c: any) {
+      if (!c) return "";
+      if (c.our_prob != null && c.p_breakeven != null && c.per_side_price != null) {
+        const our = (c.our_prob * 100).toFixed(0), need = (c.p_breakeven * 100).toFixed(0);
+        return `Needs ${need}% to break even at ${fmtOdds(c.per_side_price)} — our model says ${our}%. No bet.`;
+      }
+      const raw = String(c.pass_reason || "").replace(/\s*—\s*priced out.*$/i, "").trim();
+      return raw ? raw : "No edge at today's prices.";
     }
     // "Sanchez vs Cameron" — the probable-pitcher line under a pre-game MLB tile.
     function pitchLine(g: any, gs: any) {
@@ -3410,9 +3424,8 @@ export default function Home() {
             : `<span class="mt-conf${low ? " low" : ""}">${pickStars(pl)}<i>${esc(confWord(pl))}</i></span>`;
           return `<tr class="mt-take q-${q} ${st}${low ? " low" : ""}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
         }
-        // A TRUE pass — with the v4 model's priced-out reason when it carries one
-        // (the transparency IS the feature: "model 47.7% < break-even 52.4% at −110").
-        const pr = pl && pl.v4pass && pl.v4pass.pass_reason ? String(pl.v4pass.pass_reason).replace(/\s*—\s*priced out.*$/i, "") : "";
+        // A TRUE pass — explained like a human would say it.
+        const pr = pl && pl.v4pass ? plainPassReason(pl.v4pass) : "";
         return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call"><span class="mt-passlab">Pass</span>${pr ? `<span class="mt-passwhy">${esc(pr)}</span>` : ""}</td><td class="mt-c">—</td></tr>`;
       };
       return `<div class="mkt-table"><div class="mt-h">Our lean · every market</div>
@@ -3698,17 +3711,16 @@ export default function Home() {
           <div class="gp-center">${heroScore}</div>
           <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
         </div>
-        ${heroPick}
         ${heroTrend ? `<div class="gp-trend">${heroTrend}</div>` : ""}
       </div>`;
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
       const showLive = gs.kind === "live" || gs.kind === "final";
       const isFinal = gs.kind === "final";
-      const tabsBar = `<div class="gp-tabs" role="tablist">
-        ${isFinal ? `<button class="gp-tab ${detailTab === "recap" ? "on" : ""}" data-dtab="recap" role="tab">Recap</button>` : ""}
-        <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Game Preview</button>
-        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box Score</button>` : ""}
+      const tabsBar = `<div class="gp-tabs underline" role="tablist">
+        <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
         <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">DiamondEdge</button>
+        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box Score</button>` : ""}
+        ${isFinal ? `<button class="gp-tab ${detailTab === "recap" ? "on" : ""}" data-dtab="recap" role="tab">Recap</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
       // Backup-signal note (from the model's challenger accountability) — plain English, detail-only,
@@ -3719,6 +3731,7 @@ export default function Home() {
         : "";
       const v2Note = leadLocked ? "" : diamondEdgeV2Detail(g);
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
+        ${marketsTable(g)}
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${linesBlock}
@@ -3740,7 +3753,6 @@ export default function Home() {
           </div>
           <div class="gp-body" id="gp-body">
             ${gameHero}
-            ${marketsTable(g)}
             ${tabsBar}
             ${recapPane}
             ${previewPane}
@@ -3782,9 +3794,8 @@ export default function Home() {
           strip.innerHTML = `<span class="bm-badge sm">Model</span><span class="bis-k">wall by wall</span>
                <span class="bis-pass">how this game's picks formed from T-24h to first pitch — every take and every pass, priced.</span>
                <button class="bis-open">Full grid →</button>`;
-          const body = $("gp-body");
-          const mkt = body && body.querySelector(".mkt-table");
-          if (mkt) mkt.insertAdjacentElement("afterend", strip); else if (body) body.prepend(strip);
+          const deP = $("gp-body") && $("gp-body").querySelector('.gp-pane[data-pane="de"] .de-pane');
+          if (deP) deP.appendChild(strip); else { const body = $("gp-body"); if (body) body.appendChild(strip); }
           const btn = strip.querySelector(".bis-open");
           if (btn) (btn as any).onclick = (e: any) => { e.stopPropagation(); openBetaGame(bg); };
         }).catch(() => {});
@@ -6191,12 +6202,12 @@ export default function Home() {
           return `<td class="bgrid-td"><div class="bcell take s${c.stars} ${c.result || ""}"><span class="bcell-stars">${bStars(c.stars)}</span><span class="bcell-side">${esc(side)}</span><span class="bcell-px">${c.per_side_price != null ? fmtOdds(c.per_side_price) : ""}</span>${res}</div></td>`;
         }
         // PASS — the reason IS the feature. tap to reveal.
-        return `<td class="bgrid-td"><div class="bcell pass" data-reason="${esc(c.pass_reason || "priced out")}"><span class="bcell-pass">PASS</span></div></td>`;
+        return `<td class="bgrid-td"><div class="bcell pass" data-reason="${esc(plainPassReason(c))}"><span class="bcell-pass">PASS</span></div></td>`;
       };
       const rows = BETA_MKTS.map(([mk, lab]) => `<tr><th class="bgrid-mk">${lab}</th>${BETA_LEADS.map((lt) => cellHtml(byKey[`${mk}|${lt}`])).join("")}</tr>`).join("");
       // the pass reasons, listed for transparency (the ones that carried a directional lean or a real number)
       const passes = (g.grid || []).filter((c: any) => !c.take && c.pass_reason);
-      const passList = passes.slice(0, 8).map((c: any) => `<div class="bpass-row"><span class="bpass-k">${esc(c.bet_type)} · ${esc(c.lead_time)}</span><span class="bpass-why">${esc(c.pass_reason)}</span></div>`).join("");
+      const passList = passes.slice(0, 8).map((c: any) => `<div class="bpass-row"><span class="bpass-k">${esc(c.bet_type)} · ${esc(c.lead_time)}</span><span class="bpass-why">${esc(plainPassReason(c))}</span></div>`).join("");
       const html = `
         <div class="gamepage betapage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.away)} at ${esc(g.home)}">
           <div class="gp-head">

@@ -3145,3 +3145,22 @@ details.results-more{margin-bottom:14px}
 /* the "All picks · record" entry next to the perf chip */
 .howlink.strong{color:var(--acc2);font-weight:700}
 .howlink.strong:hover{color:#045c3e}
+
+/* ══ ODDS = PLAIN TEXT, PICK = UNMISTAKABLE (reference: theScore) ══
+   Kills the boxed 'pairs' look: odds cells are quiet mono text; only OUR pick is a chip. */
+.oc{background:transparent!important;box-shadow:none!important;padding:2px 4px;font-size:12px;color:var(--ink2)}
+.oc.none{color:var(--ink4)}
+.oc.pick{border-radius:9px;padding:3px 9px;font-weight:800;color:#fff!important;background:var(--pick)!important;box-shadow:0 2px 8px rgba(43,86,176,.3)!important}
+.oc.pick.q-strong{background:linear-gradient(135deg,#e7b62e,#cf9a12)!important;color:#2b2005!important;box-shadow:0 2px 10px rgba(207,154,18,.4)!important}
+.oc.pick.q-good{background:linear-gradient(135deg,#0aa876,#087a54)!important;color:#fff!important;box-shadow:0 2px 10px rgba(8,122,84,.35)!important}
+.oc.pick.low{background:var(--slate)!important;color:#fff!important;box-shadow:0 2px 8px rgba(101,114,136,.3)!important}
+.oc.pick em{font-style:normal;font-family:var(--mono);font-weight:600;font-size:10px;opacity:.85;margin-left:1px}
+.oc.pick .oc-st{color:currentColor;opacity:.95}
+.oc.pick.q-strong .oc-st{color:#5c4406}
+/* game-page tabs: UNDERLINE style (reference), right under the hero */
+.gp-tabs.underline{background:transparent;border:0;box-shadow:none;border-bottom:1px solid var(--line3);border-radius:0;padding:0;gap:0;margin:2px 0 14px}
+.gp-tabs.underline .gp-tab{border-radius:0;background:transparent!important;box-shadow:none!important;font-size:13px;padding:10px 14px 12px;color:var(--ink3)}
+.gp-tabs.underline .gp-tab.on{color:var(--ink);font-weight:700}
+.gp-tabs.underline .gp-tab-ink{top:auto;bottom:-1px;height:3px;border-radius:2px;background:var(--acc2);box-shadow:none}
+/* the picks table leads the preview pane — tighten its top margin */
+.gp-pane .mkt-table{margin-top:2px}
