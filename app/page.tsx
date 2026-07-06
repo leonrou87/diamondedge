@@ -2166,20 +2166,70 @@ export default function Home() {
       // Pre-game: the 3-market line row (all Vegas lines + our starred call) does the work.
       // Live/final: the score carries it, and the pick strip shows the live read / verdict.
       const pre = gs.kind === "pre";
-      // Live/final: the score rides as BIG numbers (bigScore); the team rows then drop their
-      // inline score so it isn't shown twice.
-      const bs = !pre ? bigScore(g) : "";
+      // COMPACT scores-app layout (reference: theScore/ESPN odds row). Teams left (crest ·
+      // abbr · record), per-side ODDS GRID right (Spread | o/u Total | ML) with OUR pick's
+      // cells highlighted + tiny stars. Pitchers underneath. Live/final: the odds column
+      // quiets to the inline per-team score; the pick strip carries the live read.
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
         <div class="t-head">${leagueTag(g)}${stateChip(g, gs)}</div>
-        ${bs}
         <div class="t-body">
-          <div class="t-teams">${tileRow(g, "away", gs, !!bs)}${tileRow(g, "home", gs, !!bs)}</div>
+          <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
+          ${pre ? tileOddsGrid(g) : ""}
         </div>
-        ${pre ? allLinesRow(g) : (bs ? "" : totOnly)}
-        ${pre ? "" : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
+        ${pitchLine(g, gs)}
+        ${pre ? "" : totOnly}
+        ${pre ? (locked && isPick(pick) ? pickStrip(g, pick, st, locked, gs) : "") : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
         ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
+    }
+    // Per-side odds grid for a PRE-GAME tile — 2 rows (away/home) × 3 cols (Spread · Total · ML),
+    // the scores-app convention. Our pick's cell is tinted by tier + carries tiny stars; a
+    // low-confidence lean reads slate. Empty cells keep the grid aligned.
+    function tileOddsGrid(g: any) {
+      const P = gamePlays(g);
+      const sp = g.spread_pick, tp = g.total_pick;
+      const hl = sp && sp.line != null ? spreadHomeLine(g, sp) : null;
+      const oddsA = teamOdds(g, "away"), oddsH = teamOdds(g, "home");
+      // which row (away=top / home=bottom) each market's pick highlights; over=top, under=bottom
+      const rowOf = (pl: any) => {
+        if (!isPick(pl) || pickLocked(pl, playState(g, pl))) return null;
+        const s = String(pl.side || "");
+        if (/over/i.test(s)) return "away";
+        if (/under/i.test(s)) return "home";
+        if (g.away_abbr && s.indexOf(g.away_abbr) >= 0) return "away";
+        if (g.home_abbr && s.indexOf(g.home_abbr) >= 0) return "home";
+        return /^away$/i.test(s) ? "away" : /^home$/i.test(s) ? "home" : null;
+      };
+      const spRow = rowOf(P.spread), totRow = rowOf(P.total), mlRow = rowOf(P.moneyline);
+      const starsFor = (pl: any) => {
+        if (isLowConf(pl)) return `<i class="oc-st low">☆</i>`;
+        const n = qualityOf(pl) === "strong" ? 3 : qualityOf(pl) === "good" ? 2 : 1;
+        return `<i class="oc-st">${"★".repeat(n)}</i>`;
+      };
+      const cell = (val: any, on: boolean, pl: any) => {
+        if (val == null || val === "") return `<span class="oc none">–</span>`;
+        if (!on) return `<span class="oc">${val}</span>`;
+        const q0 = qualityOf(pl), low = isLowConf(pl);
+        return `<span class="oc pick q-${q0}${low ? " low" : ""}">${val}${starsFor(pl)}</span>`;
+      };
+      const totV = tp && tp.line != null ? num(tp.line) : null;
+      const row = (which: "away" | "home") => {
+        const spV = hl != null ? sgn(which === "home" ? hl : -hl) : null;
+        const o = which === "away" ? oddsA : oddsH;
+        const t = totV != null ? (which === "away" ? "o" + totV : "u" + totV) : null;
+        return cell(spV, spRow === which, P.spread) + cell(t, totRow === which, P.total) + cell(o.ml, mlRow === which, P.moneyline);
+      };
+      return `<div class="t-oddsgrid" aria-label="Odds — spread, total, moneyline">${row("away")}${row("home")}</div>`;
+    }
+    // "Sanchez vs Cameron" — the probable-pitcher line under a pre-game MLB tile.
+    function pitchLine(g: any, gs: any) {
+      if (g.sport !== "mlb" || gs.kind !== "pre") return "";
+      const p = (g.pregame_intel || {}).pitchers || {};
+      const a = (p.away || {}).name, h = (p.home || {}).name;
+      if (!a && !h) return "";
+      const last = (n: any) => esc(String(n || "").trim().split(/\s+/).pop() || "TBD");
+      return `<div class="t-pitch">${a ? last(a) : "TBD"} vs ${h ? last(h) : "TBD"}</div>`;
     }
 
     // ===================== FEATURED GAME (highest exact conviction) =====================
