@@ -593,7 +593,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 
 /* ---- WIDE GAME CARD: a calm flat resting card (--e0). Header (league tag + state chip),
    body (team rows | O/U + Spread columns), then the DiamondEdge pick strip. ---- */
-.tile{min-width:0;display:flex;flex-direction:column;gap:8px;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e0);padding:12px 14px 13px;cursor:pointer;position:relative;overflow:hidden;transition:box-shadow .3s ease,transform .2s var(--spring);animation:cardIn .4s var(--ease) both;animation-delay:calc(var(--i,0)*24ms)}
+.tile{min-width:0;display:flex;flex-direction:column;gap:8px;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e0);padding:12px 14px 13px;cursor:pointer;position:relative;overflow:hidden;transition:box-shadow .3s ease,transform .2s var(--spring);animation:cardIn .4s var(--ease) both;animation-delay:calc(var(--i,0)*24ms);container-type:inline-size}
 .tile:hover{transform:translateY(-1px);box-shadow:var(--e1)}
 .tile:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
 .tile.live{box-shadow:var(--e0),0 6px 20px rgba(217,44,71,.10)}
@@ -685,7 +685,18 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .lncell.pick.locked .ln-lock{display:inline-flex;align-items:center;gap:5px;color:var(--golddeep)}
 .lncell.pick.locked .ln-lock svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2}
 .lncell.pick.locked .ln-dots{font-size:11px;letter-spacing:1px;color:var(--gold);filter:blur(3px)}
-@media(max-width:360px){.lncell{padding:6px 3px}.lncell .ln-side,.lncell .ln-v{font-size:12px}}
+/* NARROW TILES (container query on the tile itself): the 3-up market columns can't fit —
+   values were truncating to "KC +…" / "O/U …" / "MONEY…". Re-imagined as STACKED full-width
+   rows — label left, full value right — so NOTHING truncates at any tile width. */
+@container (max-width: 339px){
+  .lnrow{display:flex;flex-direction:column;gap:4px}
+  .lncell{flex-direction:row;align-items:center;justify-content:space-between;text-align:left;gap:8px;padding:7px 10px}
+  .lncell .ln-k{overflow:visible;text-overflow:clip;max-width:none;flex-shrink:0;font-size:8.5px}
+  .lncell .ln-v,.lncell.pick .ln-side{overflow:visible;text-overflow:clip;max-width:none;white-space:nowrap;font-size:13px}
+  .lncell .ln-stars{margin-left:auto}
+  .lncell.pick .ln-side{margin-left:auto}
+  .lncell.pick .ln-stars{margin-left:0}
+}
 /* 2-UP MOBILE (≤819px): the board is a 2-col grid, so each card is narrow. Stack the
    O/U + Spread columns BELOW the team rows (full width, split 50/50) instead of beside
    them — the side-by-side layout doesn't fit a ~170px card at 375px. Tighter tile padding
