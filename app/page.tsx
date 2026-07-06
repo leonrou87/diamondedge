@@ -6321,15 +6321,35 @@ export default function Home() {
       const el = $("ticker"); if (!el) return;
       // The live ticker rides the News homepage only — the Games tab has its own date/league chrome.
       if (tab === "games") { el.style.display = "none"; return; }
-      const items = tickerItems();
+      // dedupe by game_id (belt-and-suspenders — a game must never appear twice)
+      const seenT = new Set<string>();
+      const items = tickerItems().filter((g: any) => { const id = String(g.game_id); if (seenT.has(id)) return false; seenT.add(id); return true; });
       if (!items.length) { el.style.display = "none"; return; }
       el.style.display = "";
       const row = items.map(tickerItemHtml).join(`<span class="tk-dot">·</span>`);
-      // duplicate the row so the marquee loops seamlessly (unless reduced-motion)
-      el.innerHTML = `<div class="tk-track${REDUCE ? " still" : ""}" id="tk-track"><span class="tk-seq">${row}</span>${REDUCE ? "" : `<span class="tk-seq" aria-hidden="true">${row}</span>`}</div>`;
+      // Render ONE row first; only clone it for the marquee loop when the content actually
+      // OVERFLOWS the ticker — a short row would otherwise show visible duplicates.
+      el.innerHTML = `<div class="tk-track still" id="tk-track"><span class="tk-seq" id="tk-seq">${row}</span></div>`;
       el.querySelectorAll(".tk-item").forEach((b: any) => (b.onclick = () => { const g = gameById(b.dataset.gid); if (g) openDetail(g); }));
-      // the ticker changes the header height — republish it for the sticky subhead offset
-      requestAnimationFrame(() => { const h = $("app-header"); if (h) document.documentElement.style.setProperty("--hdr-h", h.offsetHeight + "px"); });
+      // Clone-for-marquee only once the row PROVABLY overflows. Measure twice — right away
+      // and again after fonts/layout settle (the first paint can under-measure).
+      const maybeLoop = () => {
+        const track = $("tk-track"), seq = $("tk-seq");
+        if (!track || !seq || REDUCE) return;
+        if (track.querySelectorAll(".tk-seq").length > 1) return; // already looping
+        if (seq.scrollWidth > el.clientWidth + 12) {
+          seq.insertAdjacentHTML("afterend", `<span class="tk-seq" aria-hidden="true">${row}</span>`);
+          const clone = track.lastElementChild as any;
+          if (clone) clone.querySelectorAll(".tk-item").forEach((b: any) => (b.onclick = () => { const g = gameById(b.dataset.gid); if (g) openDetail(g); }));
+          track.classList.remove("still");
+        }
+      };
+      requestAnimationFrame(() => {
+        maybeLoop();
+        // the ticker changes the header height — republish it for the sticky subhead offset
+        const h = $("app-header"); if (h) document.documentElement.style.setProperty("--hdr-h", h.offsetHeight + "px");
+      });
+      setTimeout(maybeLoop, 700);
     }
     // ---- unified sticky header + collapsing behavior on the Games tab (scroll-driven) ----
     // Driven by BOTH a scroll listener (fast) AND IntersectionObserver sentinels (robust —
