@@ -5996,14 +5996,20 @@ export default function Home() {
       betaData = await r.json();
       return betaData;
     }
-    // LIVE board (today + tomorrow) — refreshes server-side every 10-30 min, so never
-    // hard-cache: keep it for 5 minutes then refetch.
+    // LIVE picks (today + tomorrow) — the freshest copy lives in Supabase (slate_snapshots
+    // key 'picks_v4_beta_live', synced from the model box every few minutes), so PRODUCTION
+    // updates intraday with no deploy. The bundled static file is the fallback. 5-min cache.
     let betaLiveData: any = null, betaLiveAt = 0;
     async function loadBetaLive() {
       if (betaLiveData && Date.now() - betaLiveAt < 5 * 60 * 1000) return betaLiveData;
-      const r = await fetch("/picks_v4_beta_live.json", { cache: "no-store" });
-      if (!r.ok) throw new Error("beta live fetch " + r.status);
-      betaLiveData = await r.json();
+      let fresh: any = null;
+      try { fresh = await snap("picks_v4_beta_live"); } catch {}
+      if (!fresh) {
+        const r = await fetch("/picks_v4_beta_live.json", { cache: "no-store" });
+        if (!r.ok) throw new Error("beta live fetch " + r.status);
+        fresh = await r.json();
+      }
+      betaLiveData = fresh;
       betaLiveAt = Date.now();
       return betaLiveData;
     }
