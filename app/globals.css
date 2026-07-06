@@ -140,7 +140,7 @@ button{font-family:inherit}
 header#app-header{position:sticky;top:0;z-index:65;padding-top:var(--sat);background:transparent;transition:box-shadow .3s ease}
 /* when scrolled, the header gains a frosted glass backing so content reads under it */
 header#app-header.scrolled{
-  background:linear-gradient(180deg,rgba(240,243,249,.9),rgba(238,241,247,.72));
+  background:linear-gradient(180deg,rgba(240,243,249,.99),rgba(238,241,247,.97));
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
   box-shadow:0 1px 0 rgba(255,255,255,.6),0 8px 22px rgba(43,64,105,.07)}
 /* The header stays FULL SIZE on scroll at every width — no condense/shrink. `.scrolled`
@@ -1399,6 +1399,14 @@ details.more .more-body{padding-top:12px}
 /* Hero TEASE: "See the pick →" and BLURRED confidence for unpaid — the hero shows we have a
    confident call and hypes the matchup, but never names the side/line on the News front. */
 .hpc-see{font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+/* LOW CONFIDENCE flags — the slightest picks are shown but clearly marked. */
+.hpc-lowconf{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:rgba(120,134,156,.55);border-radius:999px;padding:2.5px 8px;text-shadow:none}
+.hpc.tease.low .hpc-k{color:#d7deea}
+.lncell.pick.low{background:var(--slatebg);box-shadow:inset 0 0 0 1px var(--pushline)}
+.lncell.pick.low .ln-k{color:var(--ink3)}
+.lncell .ln-lowc{font-style:normal;font-family:var(--disp);font-weight:700;font-size:8px;text-transform:uppercase;letter-spacing:.03em;color:var(--push)}
+.mt-conf.low i{color:var(--push)}
+.mt-take.low .mt-mk{color:var(--ink2)}
 .hpc-conf{font-family:var(--mono);font-size:15px;letter-spacing:2px;color:#ffd75e;text-shadow:0 1px 5px rgba(0,0,0,.55)}
 .hpc-conf.blur{filter:blur(5px);opacity:.9;user-select:none}
 /* "Started"/pre-game state flag on a hero figure (mirrors the gold kicker, on the right). */

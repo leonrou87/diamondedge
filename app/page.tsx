@@ -800,6 +800,20 @@ export default function Home() {
     }
     // A TAKE we'd actually recommend = a real pick AND +EV at its price.
     const isBet = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side && pickPlusEV(pl));
+    // A real pick of ANY strength (shown on every game — even the slightest lean).
+    const isPick = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side);
+    // LOW CONFIDENCE = a Lean-tier pick, OR a spread/ML lean whose price doesn't clear break-even.
+    // We still SHOW these (Leon: include the slightest picks) but flag them clearly.
+    function isLowConf(pl: any) {
+      if (!isPick(pl)) return false;
+      if (qualityOf(pl) === "lean") return true;
+      return pl.market !== "total" && !pickPlusEV(pl);
+    }
+    // The confidence word shown next to the stars: Strong / Good / Low confidence.
+    function confWord(pl: any) {
+      if (isLowConf(pl)) return "Low confidence";
+      return Q_LABEL[qualityOf(pl)] || "";
+    }
     const lockSvg = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
 
     // ===================== EDITORIAL ICON SET (inline SVG, stroke = currentColor) =====================
@@ -886,11 +900,6 @@ export default function Home() {
       const st = pl ? playState(g, pl) : "open";
       const state = pl && pl.action === "TAKE" ? pickStateTxt(g, pl, st) : null;
       const kick = isStarted(g) ? "Pre-Game Pick" : "DiamondEdge Pick";
-      // A lean that doesn't clear its price's break-even isn't a pick — show the pass verdict.
-      if (pl && pl.action === "TAKE" && !pickPlusEV(pl)) {
-        return `<div class="hpc hpc-${size} pass"><div class="hpc-scrim"></div>
-          <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">No Bet — Price Too Steep</b></div></div>`;
-      }
       if (locked) {
         // Unpaid: confidence is BLURRED and the pick is hidden — the whole draw is unlocking it.
         return `<div class="hpc hpc-${size} locked" data-up="1"><div class="hpc-scrim"></div>
@@ -901,11 +910,13 @@ export default function Home() {
           <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">No Pick — Passing</b></div></div>`;
       }
       if (teaseOnly) {
-        // Paid but on the hero: show the CONFIDENCE, tease the call, don't name the side/line.
-        return `<div class="hpc hpc-${size} q-${q} tease"><div class="hpc-scrim"></div>
+        // Show the CONFIDENCE and tease the call (not the side/line). A weak/steep-priced lean is
+        // still shown — just clearly flagged "Low confidence".
+        const low = isLowConf(pl);
+        return `<div class="hpc hpc-${size} q-${q} tease${low ? " low" : ""}"><div class="hpc-scrim"></div>
           <div class="hpc-line">
-            <span class="hpc-k">◆ ${esc(kick)}</span>
-            <div class="hpc-pickrow"><span class="hpc-stars">${qDiamonds(q)}</span>${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : `<span class="hpc-see">See the pick →</span>`}</div>
+            <span class="hpc-k">◆ ${esc(low ? "Lean" : kick)}</span>
+            <div class="hpc-pickrow"><span class="hpc-stars">${qDiamonds(q)}</span>${low ? `<span class="hpc-lowconf">Low confidence</span>` : ""}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : `<span class="hpc-see">See the pick →</span>`}</div>
           </div></div>`;
       }
       // Prefer the FROZEN display pick's full side+line+price — the served pick_headline
@@ -1881,8 +1892,9 @@ export default function Home() {
       const cell = (m: string, label: string) => {
         const pl = P[m];
         const line = vegasLine(g, m); // pre-escaped safe HTML ("BOS -1.5" / "O/U 8.5" / "LAA +120")
-        if (isBet(pl)) {
+        if (isPick(pl)) {
           const q = qualityOf(pl);
+          const low = isLowConf(pl);
           const st = playState(g, pl);
           const locked = pickLocked(pl, st);
           if (locked) {
@@ -1890,7 +1902,7 @@ export default function Home() {
           }
           const mark = resMark(st);
           const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
-          return `<div class="lncell pick q-${q} ${st}"><span class="ln-k">Our call · ${label}</span><span class="ln-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ln-stars">${qDiamonds(q)}${mark ? `<span class="ln-res ${st}">${mark}</span>` : ""}</span></div>`;
+          return `<div class="lncell pick q-${q} ${st}${low ? " low" : ""}"><span class="ln-k">${low ? "Lean" : "Our call"} · ${label}</span><span class="ln-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ln-stars">${qDiamonds(q)}${low ? `<i class="ln-lowc">Low conf</i>` : ""}${mark ? `<span class="ln-res ${st}">${mark}</span>` : ""}</span></div>`;
         }
         return `<div class="lncell"><span class="ln-k">${label}</span><span class="ln-v">${line || "—"}</span></div>`;
       };
@@ -2153,7 +2165,7 @@ export default function Home() {
           <div class="t-teams">${tileRow(g, "away", gs, !!bs)}${tileRow(g, "home", gs, !!bs)}</div>
         </div>
         ${pre ? allLinesRow(g) : (bs ? "" : totOnly)}
-        ${pre ? "" : (isBet(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
+        ${pre ? "" : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
         ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
     }
@@ -2788,7 +2800,7 @@ export default function Home() {
         if (ourWp != null) {
           const be = pl.price != null ? breakevenProb(pl.price) : null;
           if (be != null && ourWp <= be)
-            s.push(`Our model gives ${esc(_side || "this side")} about a ${(ourWp * 100).toFixed(0)}% chance to win — but at ${fmtOdds(pl.price)} you'd need about ${(be * 100).toFixed(0)}% just to break even, so the price is too steep. That's a pass, not a bet.`);
+            s.push(`Our model gives ${esc(_side || "this side")} about a ${(ourWp * 100).toFixed(0)}% chance to win — but at ${fmtOdds(pl.price)} you'd need about ${(be * 100).toFixed(0)}% just to break even, so it's a low-confidence lean at this price, not a strong bet.`);
           else
             s.push(`Our model gives ${esc(_side || "this side")} about a ${(ourWp * 100).toFixed(0)}% chance to win${be != null ? ` — past the ${(be * 100).toFixed(0)}% the ${fmtOdds(pl.price)} price needs to profit` : " — more than the price implies"}.`);
         }
@@ -2802,7 +2814,7 @@ export default function Home() {
         if (pl.p != null && pl.price != null) {
           const be = breakevenProb(pl.price);
           if (be != null && Number(pl.p) <= be)
-            s.push(`The model gives this about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win, but ${fmtOdds(pl.price)} needs roughly ${(be * 100).toFixed(0)}% just to break even — the price is too steep, so we pass.`);
+            s.push(`The model gives this about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win, but ${fmtOdds(pl.price)} needs roughly ${(be * 100).toFixed(0)}% just to break even — so it's a low-confidence lean at this price, not a strong bet.`);
           else
             s.push(`The model gives this about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}${be != null ? `, clear of the ${(be * 100).toFixed(0)}% break-even` : ""}.`);
         }
@@ -3230,8 +3242,9 @@ export default function Home() {
       const row = (mk: string, label: string) => {
         const pl = P[mk];
         const line = vegasLine(g, mk);
-        if (isBet(pl)) {
+        if (isPick(pl)) {
           const q = qualityOf(pl);
+          const low = isLowConf(pl);
           const st = playState(g, pl);
           const locked = pickLocked(pl, st);
           const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
@@ -3240,15 +3253,11 @@ export default function Home() {
             : `<span class="mt-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span>`;
           const conf = locked
             ? `<span class="mt-conf blur" aria-hidden="true">★★★</span>`
-            : `<span class="mt-conf">${qDiamonds(q)}<i>${Q_LABEL[q] || ""}</i></span>`;
-          return `<tr class="mt-take q-${q} ${st}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
+            : `<span class="mt-conf${low ? " low" : ""}">${qDiamonds(q)}<i>${esc(confWord(pl))}</i></span>`;
+          return `<tr class="mt-take q-${q} ${st}${low ? " low" : ""}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
         }
-        // A model lean that DOESN'T clear the price's break-even is a PASS on value, not a bet.
-        const e = pl && pl.action === "TAKE" ? pickEdge(pl) : null;
-        const passNote = e && !e.ok
-          ? `<span class="mt-passlab">Pass</span><span class="mt-passwhy">price too steep</span>`
-          : `<span class="mt-passlab">Pass</span>`;
-        return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${passNote}</td><td class="mt-c">—</td></tr>`;
+        // Only a TRUE pass (no lean at all) shows "Pass".
+        return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call"><span class="mt-passlab">Pass</span></td><td class="mt-c">—</td></tr>`;
       };
       return `<div class="mkt-table"><div class="mt-h">Our lean · every market</div>
         <table class="mt-tbl"><thead><tr><th>Market</th><th>Line</th><th>Our call</th><th>Confidence</th></tr></thead>
@@ -5230,9 +5239,9 @@ export default function Home() {
       const startedTag = live ? "" : (started ? `<span class="ls-fig-tag started">● Started</span>` : "");
       const sport = SPORT_LABEL[g.sport] || String(g.sport || "").toUpperCase();
       const cta = locked ? "Unlock the full preview →" : "Read the full preview →";
-      // Only show the pick cover when there's a REAL (+EV) pick — storyline/pass games stay a
-      // clean matchup instead of a wall of "No Bet — Price Too Steep".
-      const cover = isBet(pl) ? heroPickCover(g, "lead", true) : "";
+      // Show the pick tease for ANY pick (even the slightest lean, clearly flagged low-confidence);
+      // only true PASS games (no lean at all) stay a clean matchup.
+      const cover = isPick(pl) ? heroPickCover(g, "lead", true) : "";
       return `<article class="leadstory q-${q || "lean"}${cover ? "" : " nopick"}" data-gid="${esc(g.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="${esc(kicker)} — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}">
         <div class="ls-figure">${heroImage(g, tint, "lead")}${!live ? `<span class="ls-fig-kick">${esc(kicker)} · ${esc(sport)}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${cover}</div>
         <div class="ls-body">
@@ -5268,7 +5277,9 @@ export default function Home() {
     // The kicker label for a top game: a real +EV pick → "Top Pick"; live → "Live Now"; else a
     // storyline to watch.
     function topKicker(g: any) {
-      if (isBet(displayPick(g))) return "Top Pick";
+      const pl = displayPick(g);
+      if (isBet(pl)) return "Top Pick";
+      if (isPick(pl)) return "Lean";
       if (gameState(g).kind === "live") return "Live Now";
       return "Storyline";
     }
