@@ -3169,3 +3169,16 @@ details.results-more{margin-bottom:14px}
 .pgrade{font-style:normal;font-family:var(--mono);font-weight:700;font-size:10.5px;color:var(--golddeep);background:var(--goldbg);border-radius:999px;padding:1.5px 6px;margin-left:5px;vertical-align:1px}
 .hpc-stars .pgrade{color:#ffd75e;background:rgba(0,0,0,.32);font-size:11px}
 .oc.pick .pgrade{display:none} /* tile chips stay compact */
+
+/* ══ ODDS CHIP REDESIGN: compact two-line (value / small price), never overlaps ══ */
+.t-oddsgrid{grid-auto-rows:auto;gap:7px 6px;align-items:stretch}
+.oc{overflow:hidden}
+.oc.pick{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.15;padding:4px 10px;min-width:52px;border-radius:10px;white-space:nowrap}
+.oc.pick b{font-family:var(--disp);font-weight:800;font-size:12.5px;letter-spacing:.01em}
+.oc.pick em{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9.5px;opacity:.85;margin:0}
+/* modern readable tiers: gold=strong, green=solid, BLUE for everything else (no muddy gray) */
+.oc.pick,.oc.pick.low{background:linear-gradient(135deg,#3d6bd6,#2b56b0)!important;color:#fff!important;box-shadow:0 2px 8px rgba(43,86,176,.28)!important}
+.oc.pick.q-strong{background:linear-gradient(135deg,#e7b62e,#cf9a12)!important;color:#2b2005!important;box-shadow:0 2px 10px rgba(207,154,18,.4)!important}
+.oc.pick.q-good{background:linear-gradient(135deg,#0aa876,#087a54)!important;color:#fff!important;box-shadow:0 2px 10px rgba(8,122,84,.35)!important}
+/* legend without descriptions reads as a simple key */
+.tierlegend .tl-item i:empty{display:none}

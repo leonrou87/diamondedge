@@ -619,10 +619,10 @@ export default function Home() {
       const item = (q: string, n: number, lab: string, desc: string) =>
         `<span class="tl-item q-${q}">${bStars(n)}<b>${lab}</b>${compact ? "" : `<i>${desc}</i>`}</span>`;
       return `<div class="tierlegend${compact ? " compact" : ""}">
-        ${item("strong", 5, "Proven", "cleared every statistical gate")}
-        ${item("strong", 4, "Strong", "a big edge over the price")}
-        ${item("good", 3, "Solid", "a clear edge over the price")}
-        ${item("lean", 2, "Lean", "a small edge — light conviction")}
+        ${item("strong", 5, "Proven", "")}
+        ${item("strong", 4, "Strong", "")}
+        ${item("good", 3, "Solid", "")}
+        ${item("lean", 2, "Lean", "")}
         <button class="tl-how" id="tl-how" aria-label="How picks work">How picks work →</button>
       </div>`;
     }
@@ -854,7 +854,6 @@ export default function Home() {
         why.push(`Our model gives this side about a ${(c.our_prob * 100).toFixed(0)}% chance, and at ${fmtOdds(c.per_side_price)} it only needs ${(c.p_breakeven * 100).toFixed(0)}% to profit — a real edge after the price.`);
       if (take && c.ev != null)
         why.push(`That works out to roughly ${(c.ev >= 0 ? "+" : "")}${(c.ev * 100).toFixed(1)}% expected value per dollar at the quoted price.`);
-      if (take) why.push(`Rated ${"★".repeat(Math.max(1, Math.min(5, c.stars)))} on the new five-star scale — every star requires beating the actual price.`);
       // DECIMAL GRADE behind the stars: stars carry the conviction band, the fraction ranks
       // WITHIN the band by +EV size (0.015 EV → x.0, 0.3+ EV → x.9). Powers the flagship pick.
       const grade = take ? Math.min(5, c.stars + Math.max(0, Math.min(0.9, ((c.ev != null ? c.ev : 0.015) - 0.015) * 3))) : 0;
@@ -2362,9 +2361,11 @@ export default function Home() {
       // per-side price from the model feed (never a champion −110 placeholder).
       const cell = (val: any, on: boolean, pl: any) => {
         if (!on) return `<span class="oc${val == null || val === "" ? " none" : ""}">${val == null || val === "" ? "–" : val}</span>`;
-        const q0 = qualityOf(pl), low = isLowConf(pl);
-        const px = pl.price != null ? ` <em>${fmtOdds(pl.price)}</em>` : "";
-        return `<span class="oc pick q-${q0}${low ? " low" : ""}">▸ ${val != null && val !== "" ? val : esc(String(pl.side || ""))}${px}${starsFor(pl)}</span>`;
+        const q0 = qualityOf(pl);
+        const v = val != null && val !== "" ? String(val) : esc(String(pl.side || ""));
+        // compact two-line chip: the value, with the REAL price small beneath (when different)
+        const px = pl.price != null && fmtOdds(pl.price) !== v ? `<em>${fmtOdds(pl.price)}</em>` : "";
+        return `<span class="oc pick q-${q0}"><b>${v}</b>${px}</span>`;
       };
       const totV = tp && tp.line != null ? num(tp.line) : null;
       const row = (which: "away" | "home") => {
@@ -4938,11 +4939,11 @@ export default function Home() {
         <div class="ixu-glow" aria-hidden="true"></div>
         <div class="ixu-k">◆ DiamondEdge Premium</div>
         <h3 class="ixu-h">The record is free. The picks are premium.</h3>
-        <p class="ixu-b">You've just seen the proof — graded in the open since 2022. Unlock the exact side, line and price on every <b>Strong ◆◆◆</b> and <b>Good ◆◆</b> pick the moment we freeze it, plus the plain-English reasoning behind each one.</p>
+        <p class="ixu-b">You've seen the receipts — every result above is public. Premium gets you every pick the moment it drops: the side, the real price, and the <b>1–5 star rating</b> that tells you exactly how much we like it.</p>
         <div class="ixu-perks">
-          <span class="ixu-perk">✓ Every Strong &amp; Good pick, unlocked</span>
-          <span class="ixu-perk">✓ The full DiamondEdge reasoning</span>
-          <span class="ixu-perk">✓ Live reads during games</span>
+          <span class="ixu-perk">✓ Every pick, the moment it drops</span>
+          <span class="ixu-perk">✓ Stars + the why, in plain English</span>
+          <span class="ixu-perk">✓ Live tracking while games run</span>
         </div>
         <div class="ixu-cta-row"><button class="ixu-cta" id="ins-upsell">Unlock DiamondEdge — $9.99/mo</button><span class="ixu-fine">Cancel anytime · the record stays free</span></div>
       </div>`;
@@ -4989,7 +4990,7 @@ export default function Home() {
         <div class="ix-masthead">
           <div class="ix-eyebrow">DiamondEdge · Insights</div>
           <h2 class="ix-mast-h">How well the model actually works</h2>
-          <p class="ix-mast-sub">No cherry-picking, no lucky-week screenshots. This is the whole graded record — the edge, where it comes from, whether our confidence holds up, and exactly what's proven versus what's context.</p>
+          <p class="ix-mast-sub">Every pick we make, graded in public — wins, losses, and the record they add up to. No cherry-picking, no screenshots of lucky weeks.</p>
           <div class="ix-mast-act">
             <button class="ix-btn primary" id="res-breakdown">See every pick by strength →</button>
             <button class="ix-btn" id="res-share">Share the record ↗</button>
@@ -4998,38 +4999,8 @@ export default function Home() {
         ${insightsUpsell()}
         ${betaData ? betaFrame(betaData) + betaDashboard(betaData) : `<div class="beta-skel">Loading the model record…</div>`}
         <button class="board-all" id="ins-allpicks">Every pick, wall by wall →</button>
-        <details class="ix-more"><summary><span class="ix-more-k">Legacy record</span><span class="ix-more-sub">the previous model's graded history</span><span class="ix-more-car" aria-hidden="true">▾</span></summary><div class="ix-more-b">
-        ${insightsShowcase()}
-        ${equityCurveCard()}
-        ${strengthBreakdownCard()}
-        </div></details>
-        ${analyticsDeep && chartMonthly() ? `<section class="ins-section">
-          <div class="ins-sec-h"><span class="ins-sec-k">Month by month</span><h2>The edge across the calendar</h2><p>A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.</p></div>
-          ${insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "", "books", "▪", chartMonthly())}
-        </section>` : ""}
-        <details class="ix-more"><summary><span class="ix-more-k">The full ledger</span><span class="ix-more-sub">the edge-vs-leans split and every recently graded score</span><span class="ix-more-car" aria-hidden="true">▾</span></summary>
-        <div class="ix-more-b">
-        ${gradedScoresList()}
-        ${ov.n ? `<article class="res-article second">
-          <div class="res-figure sm">${resFigure("books", "Σ")}</div>
-          <div class="res-art-b">
-            <div class="res-kick muted">A different, bigger number — and why it's lower</div>
-            <h3 class="res-h sm">Everything we track: <span class="${roi != null && roi < 0 ? "neg" : ""}">${hr != null ? hr.toFixed(1) + "%" : "—"}</span></h3>
-            <p class="res-lede sm">Across <b>${(ov.n || 0).toLocaleString()}</b> total graded calls — including thin Leans and situations we track but never publish as Picks — the raw win rate is ${hr != null ? hr.toFixed(1) + "%" : "—"}${roi != null ? `, a ${(roi >= 0 ? "+" : "") + roi.toFixed(1)}% return` : ""}. ${roi != null && roi < 0 && hr != null && hr > 50 ? "Some of those cuts win often but at odds too short to profit — " : "Many of those never clear our bar — "}that's exactly why they're not DiamondEdge Picks. <b>The ${(rh.hit * 100).toFixed(1)}% above is what you're actually paying for.</b></p>
-          </div>
-        </article>` : ""}
-        ${mkRows ? `<div class="anz-card rsec"><div class="anz-card-h">By bet type</div><div class="anz-sub">Totals, moneylines and spreads are graded separately — a pick is only as good as its market.</div><div class="rrows">${mkRows}</div></div>` : ""}
-        ${themeChips ? `<div class="anz-card rsec"><div class="anz-card-h">By theme</div><div class="anz-sub">The situations that show up in our picks, each with its graded proof.</div><div class="proofgrid">${themeChips}</div></div>` : ""}
-        ${analyticsDeep ? adEdgesModule(analyticsDeep.edges_summary) : ""}
-        ${analyticsDeep
-          ? `<details class="more results-more"><summary>Every other cut<span class="more-sub">month, weekday, price range, line level and more</span></summary>
-             <div class="more-body"><div class="ad-grid">
-               ${deepKeys.filter((k) => analyticsDeep.cuts[k]).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
-               ${Object.keys(analyticsDeep.cuts).filter((k) => CUT_ORDER.indexOf(k) < 0).map((k) => adCutModule(k, analyticsDeep.cuts[k])).join("")}
-             </div></div></details>`
-          : ""}
-        <div class="refnote">Every cut is the same graded record, sliced a different way — win rate always shown with its return.${analyticsDeep && analyticsDeep.generated_at ? ` Updated ${esc(String(analyticsDeep.generated_at).slice(0, 10))}.` : ""}</div>
-        </div></details>`;
+        <div class="refnote">${esc(recordStrip())}</div>`;
+
       animateCounters(view);
       // Share the headline record — honest text + the branded OG card renders from the URL.
       const rs = $("res-share");
@@ -5356,8 +5327,8 @@ export default function Home() {
     // with the in-sample backtest labelled as such (never sold as the forward number).
     function recordStrip() {
       const ov = betaData && betaData.record && betaData.record.overall_takes;
-      if (ov && ov.n) return `Every DiamondEdge pick is star-rated, priced against the real line, and graded in the open — the record so far: ${ov.win}–${ov.loss}${ov.push ? `–${ov.push}` : ""} (${(ov.hit_rate * 100).toFixed(1)}%). Judge us by what accrues.`;
-      return `Every DiamondEdge pick is star-rated, priced against the real line, and graded in the open, win or lose.`;
+      if (ov && ov.n) return `Every pick graded in the open — ${ov.win}–${ov.loss}${ov.push ? `–${ov.push}` : ""} (${(ov.hit_rate * 100).toFixed(1)}%) so far.`;
+      return `Every pick graded in the open, win or lose.`;
     }
     // ── News-forward front: real top sports stories (news_feed) with a DiamondEdge betting angle,
     //    leading the Today page (ESPN/CBS-style), with the DiamondEdge Picks below.
@@ -6114,7 +6085,7 @@ export default function Home() {
     function betaFrame(d: any) {
       const wn = d.walk_scope_note || {};
       return `<div class="beta-frame">
-        <p class="bf-lede">Every DiamondEdge pick comes from this model — price-aware, star-rated 1–5, and graded in the open, win or lose. The record below is young and grows every day; judge it by what accrues, not by promises.</p>
+        <p class="bf-lede">Every pick, star-rated 1–5 and graded in the open — win or lose.</p>
         <div class="bf-note">${wn.date_range ? `Graded ${esc(wn.date_range[0])} → ${esc(wn.date_range[1])} · ${wn.n_games || 0} games so far` : ""}</div>
       </div>`;
     }
@@ -6144,15 +6115,15 @@ export default function Home() {
       const fivePlus = (census[5] || 0);
       return `
         <div class="beta-hero">
-          <div class="bh-k">Takes only · +EV gated · graded at the real price</div>
+          <div class="bh-k">The record</div>
           <div class="bh-rec"><b>${bWL(ov)}</b><span class="bh-hit">${bPct(ov.hit_rate, 1)} hit</span><span class="bh-roi ${ov.roi >= 0 ? "pos" : "neg"}">${bRoi(ov.roi)} ROI</span></div>
-          <div class="bh-sub">${ov.n || 0} graded picks the +EV gate let through${fivePlus ? "" : ` · <b>0 five-star picks</b> — nothing statistically proven yet (correct behavior, not missing data)`}.</div>
+          <div class="bh-sub">${ov.n || 0} graded picks — every result public, win or lose.</div>
         </div>
         <div class="beta-card">
           <div class="bcard-h">Does a higher star actually win more?</div>
-          <div class="bcard-sub">Stars = <b>conviction</b> (gate-driven). The floor for any star is +EV at the real price. If the stars are real, higher tiers should out-earn lower ones — shown honestly either way.</div>
+          <div class="bcard-sub">More stars should mean more wins — here's the live proof.</div>
           <table class="beta-startbl"><thead><tr><th>Tier</th><th>Picks</th><th>W–L</th><th>Hit</th><th>ROI</th></tr></thead><tbody>${starRows}</tbody></table>
-          <div class="bcard-foot">Directional only on this thin slice — a signal to watch, not proof.</div>
+
         </div>
         <div class="beta-splitgrid">
           <div class="beta-card"><div class="bcard-h">By market</div><div class="bcuts">${cut(rec.by_market || {}, ["total", "spread", "moneyline"], (k) => ({ total: "Totals", spread: "Spreads", moneyline: "Moneylines" } as any)[k] || k)}</div></div>
@@ -6202,9 +6173,9 @@ export default function Home() {
       return `
         <div class="beta-card livehead">
           <div class="bcard-h">Today's board — live</div>
-          <div class="bcard-sub">Same engine and +EV gate as the sealed walk, running on live odds. Picks firm up as each decision wall arrives — a game with no pick yet may earn one closer to first pitch.${upd ? ` Updated ${esc(upd)}.` : ""}</div>
+          <div class="bcard-sub">Picks firm up as game time nears — a game without one yet may earn one later.${upd ? ` Updated ${esc(upd)}.` : ""}</div>
           ${recBit}
-          <div class="bcard-foot">${bc.n_takes || 0} takes across ${bc.n_games || games.length} games so far · a game with no take yet may earn one at a later wall.</div>
+          <div class="bcard-foot">${bc.n_takes || 0} picks across ${bc.n_games || games.length} games so far.</div>
         </div>
         ${sections}`;
     }
@@ -6293,7 +6264,7 @@ export default function Home() {
             <div class="bgrid-card">
               <div class="bgrid-h">What the model said at each wall before first pitch</div>
               <div class="bgrid-scroll"><table class="bgrid"><thead><tr><th></th>${BETA_LEADS.map((l) => `<th class="bgrid-lt">${esc(l)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
-              <div class="bgrid-legend">Stars = conviction (+EV-gated). Tap a <b>PASS</b> for why we passed on price.</div>
+              <div class="bgrid-legend">Tap a <b>PASS</b> to see why.</div>
             </div>
             ${passList ? `<div class="bpass-card"><div class="bgrid-h">Why we passed</div><div class="bpass-list">${passList}</div></div>` : ""}
           </div>
