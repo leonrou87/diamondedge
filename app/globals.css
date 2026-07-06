@@ -1244,6 +1244,26 @@ details.more .more-body{padding-top:12px}
 .front-hero{margin:0 0 22px}
 .front-full{margin:0 0 22px}
 .front-grid{display:flex;flex-direction:column;gap:26px}
+/* TOP GAMES TO WATCH — a grid of full lead-story cards (the format Leon likes), 2-up on wide. */
+.top-games{margin-top:22px}
+.top-games .sec-h{margin-bottom:14px}
+.topgames-list{display:flex;flex-direction:column;gap:18px}
+@media(min-width:820px){.topgames-list{display:grid;grid-template-columns:1fr 1fr;gap:22px}}
+.top-games .board-all{margin-top:18px}
+/* "Next up" first-pitch countdown banner on the News front */
+.nextup{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 18px;padding:11px 16px;border:0;border-radius:14px;background:linear-gradient(135deg,#26324a,#33456a);color:#fff;cursor:pointer;box-shadow:0 6px 20px rgba(26,36,56,.22);text-align:left;transition:transform .2s var(--spring)}
+.nextup:hover{transform:translateY(-1px)}
+.nextup .nu-k{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#f4d476;flex-shrink:0}
+.nextup .nu-mu{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.03em;color:#fff}
+.nextup .nu-cd{margin-left:auto;font-family:var(--sans);font-size:12px;color:rgba(255,255,255,.82);white-space:nowrap;flex-shrink:0}
+.nextup .nu-cd b{font-family:var(--mono);font-weight:700;color:#fff;font-variant-numeric:tabular-nums;margin-left:2px}
+@media(max-width:520px){.nextup{flex-wrap:wrap;gap:5px 12px}.nextup .nu-cd{margin-left:0;width:100%}}
+/* News-format loading skeleton — matches the lead-story card shape (was a compact-card shim) */
+.skls{border-radius:var(--r-lg);overflow:hidden;background:var(--glass-hi);box-shadow:var(--e0);border:1px solid var(--glass-brd);margin-bottom:18px}
+.skls .sk-fig{width:100%;aspect-ratio:16/9;display:block}
+.skls-b{padding:15px 16px}
+.skls-b .sk-line{height:24px;margin-bottom:9px}
+@media(min-width:820px){.sk-topgrid{display:grid;grid-template-columns:1fr 1fr;gap:22px}}
 .front-stories{min-width:0}
 .front-board{min-width:0}
 @media(min-width:860px){
@@ -2352,13 +2372,13 @@ details.results-more{margin-bottom:14px}
 .gp-head-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:right}
 .gp-head-sport{font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
 .gp-head-mu{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.03em;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* DiamondEdge brand in the game-page header — clicking it goes HOME (News). */
-.gp-brand{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:10px;transition:background .2s ease}
+/* DiamondEdge brand in the game-page header — the REAL app logo (gold-edged diamond +
+   wordmark). Clicking it goes HOME (News). */
+.gp-brand{display:inline-flex;align-items:center;gap:10px;border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:10px;transition:background .2s ease}
 .gp-brand:hover{background:rgba(22,36,60,.06)}.gp-brand:active{transform:scale(.97)}
-.gp-brand .gp-diamond{width:20px;height:20px;transform:rotate(45deg);border-radius:6px;background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(226,236,250,.8));box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 3px 9px rgba(43,64,105,.18),0 0 12px rgba(215,164,21,.22);flex-shrink:0}
-.gp-brand .gp-brand-tx{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.01em;color:var(--ink);text-transform:none}
-.gp-brand .gp-brand-tx b{font-weight:600;color:var(--golddeep)}
-@media(max-width:520px){.gp-brand .gp-brand-tx{display:none}.gp-head-mu{font-size:14px;color:var(--ink)}}
+.gp-brand .diamond{width:24px;height:24px;flex-shrink:0}
+.gp-brand .gp-brand-tx{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:.045em;text-transform:uppercase;color:var(--ink);line-height:1}
+.gp-brand .gp-brand-tx b{font-weight:700;color:var(--golddeep)}
 /* PAGE BODY (scrolls) */
 .gp-body{position:relative;z-index:1;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   padding:14px max(14px,var(--sar)) calc(34px + var(--sab)) max(14px,var(--sal))}

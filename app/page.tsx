@@ -3526,8 +3526,8 @@ export default function Home() {
         <div class="gamepage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.matchup || "Game")}">
           <div class="gp-head">
             <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <button class="gp-brand" id="gp-brand" aria-label="DiamondEdge — home"><span class="gp-diamond" aria-hidden="true"></span><span class="gp-brand-tx">Diamond<b>Edge</b></span></button>
-            <div class="gp-head-title"><span class="gp-head-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span></div>
+            <button class="gp-brand" id="gp-brand" aria-label="DiamondEdge — home"><span class="diamond" aria-hidden="true"></span><span class="gp-brand-tx">Diamond<b>Edge</b></span></button>
+            <div class="hspacer"></div>
             <button class="gp-share" id="gp-share" aria-label="Share this game"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button>
           </div>
           <div class="gp-body" id="gp-body">
@@ -5212,11 +5212,74 @@ export default function Home() {
       };
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
+    // The LEAD-STORY card — the front-page format Leon loves — reusable for ANY game (the
+    // feature bet + the top games to watch). Woven-score matchup image, matchup headline (never
+    // the pick), a game-focused lede, streak chips, and the pick tease on the cover.
+    function leadStoryCard(g: any, kicker: string, dateTxt: string) {
+      if (!g) return "";
+      const gs = gameState(g);
+      const pl = displayPick(g);
+      const q = pl ? qualityOf(pl) : null;
+      const locked = pl ? pickLocked(pl, playState(g, pl)) : false;
+      const started = isStarted(g);
+      const live = gs.kind === "live";
+      const stks = gameStreaks(g).slice(0, 3).map((s: any) => `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
+      const tint = heroTintFor(g, pl);
+      const headline = matchupHeadline(g, pl);
+      const lede = gameLede(g);
+      const startedTag = live ? "" : (started ? `<span class="ls-fig-tag started">● Started</span>` : "");
+      const sport = SPORT_LABEL[g.sport] || String(g.sport || "").toUpperCase();
+      const cta = locked ? "Unlock the full preview →" : "Read the full preview →";
+      return `<article class="leadstory q-${q || "lean"}" data-gid="${esc(g.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="${esc(kicker)} — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}">
+        <div class="ls-figure">${heroImage(g, tint, "lead")}${!live ? `<span class="ls-fig-kick">${esc(kicker)} · ${esc(sport)}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead", true)}</div>
+        <div class="ls-body">
+          <h3 class="ls-match">${headline}</h3>
+          <div class="ls-byline">${esc(kicker)} · DiamondEdge${dateTxt ? ` · ${esc(dateTxt)}` : ""}</div>
+          ${lede ? `<p class="ls-lede small">${esc(lede)}</p>` : ""}
+          ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
+          <span class="hero-cta">${cta}</span>
+        </div>
+      </article>`;
+    }
+    // "Next up" — a live countdown to the soonest upcoming first pitch on today's slate, so the
+    // News front always shows when the next game (and its pick) goes live.
+    function nextUpBanner() {
+      const src = livePayload || payload;
+      if (!src || !src.games) return "";
+      const now = Date.now();
+      let next: any = null;
+      (src.games as any[]).forEach((g: any) => {
+        if (String(g.status || "pre").toLowerCase() !== "pre") return;
+        if (gameLocalDay(g) && gameLocalDay(g) !== todayISO()) return;
+        const ts = firstPitchTs(g);
+        if (ts && ts > now && (!next || ts < next.ts)) next = { g, ts };
+      });
+      if (!next) return "";
+      const g = next.g;
+      return `<button class="nextup" data-gid="${esc(g.game_id)}" aria-label="Next game — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}">
+        <span class="nu-k">◷ Next up</span>
+        <span class="nu-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>
+        <span class="nu-cd">first pitch in <b class="fnc-val" data-drop="${next.ts}">${fmtCountdown(next.ts - now)}</b></span>
+      </button>`;
+    }
+    // The kicker label for a top game: a real +EV pick → "Top Pick"; live → "Live Now"; else a
+    // storyline to watch.
+    function topKicker(g: any) {
+      if (isBet(displayPick(g))) return "Top Pick";
+      if (gameState(g).kind === "live") return "Live Now";
+      return "Storyline";
+    }
+    // A News-shaped loading skeleton — a lead-story card + a 2-up grid of them — so the loading
+    // state matches the actual content format (not a stack of compact-card shims).
+    function skeletonNews() {
+      const card = `<div class="skls"><span class="sk sk-fig"></span><div class="skls-b"><span class="sk sk-line w60"></span><span class="sk sk-line w40"></span></div></div>`;
+      return `<div class="news"><div class="masthead lead"><span class="sk sk-line" style="height:34px;width:58%;display:block"></span></div><div class="mh-rule"></div>${card}<div class="sk-topgrid">${card}${card}</div></div>`;
+    }
     function renderToday() {
       const view = $("today-view");
       if (!view) return;
       const db = briefSource() || fallbackBrief();
-      if (!db) { view.innerHTML = skeletonSlate(4); return; }
+      if (!db) { view.innerHTML = skeletonNews(); return; }
       const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       const isToday = curDate === todayISO();
@@ -5230,83 +5293,33 @@ export default function Home() {
       const picksAll = orderTopPicks((db.top_picks || []) as any[]);
       const leadPick = picksAll[0] || null;
       const railPicks = picksAll.length > 1 ? picksAll.slice(1) : [];
-      // LEAD STORY — the day's biggest call gets the front-page treatment.
+      // LEAD STORY — the day's feature bet, in the front-page format.
+      const leadGame = leadPick ? findGameLive(leadPick.game_id) : null;
       let leadStory = "";
-      if (leadPick) {
-        const g = findGameLive(leadPick.game_id);
-        const locked = !isPremium() && (leadPick.quality === "strong" || leadPick.quality === "good") && !leadPick.result;
-        const art = g ? gameArticle(g) : null;
-        const pl = g ? displayPick(g) : null;
-        const started = g ? isStarted(g) : false;
-        const live = g ? gameState(g).kind === "live" : false;
-        const stks = g ? gameStreaks(g).slice(0, 3).map((s: any) => `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("") : "";
-        const tint = g ? heroTintFor(g, pl) : (leadPick.quality === "strong" ? "gold" : "green");
-        // HYPE THE MATCHUP — the hero headline is about the GAME, never the pick.
-        const headline = matchupHeadline(g, leadPick);
-        // A short, game-focused lede — pitching matchup / storyline, never the pick or number.
-        const heroLede = gameLede(g);
-        // A "started" / "live" flag when the game is under way.
-        const startedTag = live ? "" : (started ? `<span class="ls-fig-tag started">● Started</span>` : "");
-        leadStory = `<article class="leadstory q-${leadPick.quality}" data-gid="${esc(leadPick.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="Lead story — ${esc(leadPick.matchup)}">
-          ${g ? `<div class="ls-figure">${heroImage(g, tint, "lead")}${gameState(g).kind !== "live" ? `<span class="ls-fig-kick">Lead story · ${esc(SPORT_LABEL[leadPick.sport] || leadPick.sport || "")}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead", true)}</div>` : ""}
-          <div class="ls-body">
-            <h3 class="ls-match">${headline}</h3>
-            <div class="ls-byline">Feature bet · DiamondEdge · ${esc(dateTxt)}</div>
-            ${heroLede ? `<p class="ls-lede small">${esc(heroLede)}</p>` : ""}
-            ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
-            <span class="hero-cta">${locked ? "Unlock the full preview →" : "Read the full preview →"}</span>
-          </div>
-        </article>`;
+      if (leadGame) {
+        leadStory = leadStoryCard(leadGame, "Feature Bet", dateTxt);
       } else {
         leadStory = `<article class="leadstory pass">
           <div class="ls-body">
-            <div class="ls-kick"><span class="ls-lab">Lead story</span></div>
-            <h3 class="ls-match">No DiamondEdge Pick today — and that's the discipline that keeps the record honest.</h3>
-            <p class="ls-lede">We publish a pick only when the numbers clear our bar. Today none did. The storylines below are what we're watching, and every past call stays graded in the open on the Insights tab.</p>
+            <div class="ls-kick"><span class="ls-lab">Feature bet</span></div>
+            <h3 class="ls-match">No DiamondEdge Pick today — we only publish when the numbers clear our bar.</h3>
+            <p class="ls-lede">Today none did. The top games to watch are below, and every past call stays graded in the open on the Insights tab.</p>
             <div class="ls-ctas"><span class="hero-cta" data-nav="results">See the record →</span><span class="hero-cta alt" data-nav="games">Browse today's board →</span></div>
           </div>
         </article>`;
       }
-      // "More DiamondEdge Picks" carousel — only when there's more than one real pick.
-      const carousel = railPicks.length ? `
-        <section class="ng-carousel">
-          <div class="sec-h"><span>More DiamondEdge Picks</span></div>
-          <div class="tdy-picks" id="tdy-picks" aria-label="Featured picks carousel">${railPicks.map((p: any, i: number) => heroCard(p, i)).join("")}</div>
-          ${railPicks.length > 1 ? `<div class="tp-dots" id="tp-dots" role="tablist" aria-label="Carousel position">${railPicks.map((_: any, i: number) => `<button class="tp-dot${i === 0 ? " on" : ""}" data-dot="${i}" aria-label="Go to pick ${i + 1}"></button>`).join("")}</div>` : ""}
-        </section>` : "";
-      // DEDUPE — the lead story's game is excluded from the story previews + the board so no
-      // game appears twice on the page; the board and the stories draw from ONE curated pool.
-      const leadGid = leadPick ? String(leadPick.game_id) : null;
-      const themes = ((db.themes || []) as any[]);
-      const storylines = storylinesBlock(themes, leadGid);
-      // ── THE CURATED FRONT ──────────────────────────────────────────────────────────────
-      // Leon's direction: SEPARATE the top stories from today's board, then weave them into
-      // ONE designed front page. Two surfaces, one pool of significant games:
-      //   • TOP STORIES  = the article-forward "read" — significant game PREVIEWS as story
-      //     cards (headline lean + hook), opening the full 3-para reader/detail on click.
-      //   • TODAY'S BOARD = the games at a glance — the compact game cards (score / O-U /
-      //     spread / state) that let a reader scan the slate. Its own labeled panel.
-      // The hero (our biggest bet, or the honest no-pick card) sits above both, full width.
+      // TOP GAMES TO WATCH — up to 6 significant games (top picks OR interesting storylines),
+      // each in the SAME lead-story format. Replaces the old preview-card stories + storylines.
+      const leadGid = leadGame ? String(leadGame.game_id) : (leadPick ? String(leadPick.game_id) : null);
       const seen = new Set<string>(); if (leadGid) seen.add(leadGid);
       const sig = significantGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; });
-      // Stories = the significant previews presented as the "read" surface (headline + hook).
-      const storyGames = sig.slice(0, 5);
-      // Board = every significant game at a glance (incl. the ones told as stories) — the
-      // reader can jump from "read about it" to "see the number." Capped so the rail stays
-      // scannable; the "Full board →" link carries the rest to the Games tab.
-      const boardGames = sig.slice(0, 8);
-      const stories = storyGames.length ? `
-        <section class="front-stories">
-          <div class="sec-h stories-h"><span>Top stories</span></div>
-          <div class="storylist">${storyGames.map((g: any, i: number) => previewCard(g, i, i === 0)).join("")}</div>
-          ${storylines ? `<div class="storylines-woven">${storylines}</div>` : ""}
-        </section>` : (storylines ? `<section class="front-stories">${storylines}</section>` : "");
-      const board = boardGames.length ? `
-        <aside class="front-board" aria-label="Today's board — games at a glance">
-          <div class="sec-h board-h"><span>Today's board</span><button class="sec-more" data-nav="games">Full board →</button></div>
-          <div class="boardlist">${boardGames.map((g: any, i: number) => gameCard(g, i)).join("")}</div>
+      const topGames = sig.slice(0, 6);
+      const topSection = topGames.length ? `
+        <section class="top-games">
+          <div class="sec-h"><span>Top games to watch</span></div>
+          <div class="topgames-list">${topGames.map((g: any) => leadStoryCard(g, topKicker(g), dateTxt)).join("")}</div>
           <button class="board-all" data-nav="games">See the full slate on the board →</button>
-        </aside>` : "";
+        </section>` : "";
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
       // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
       const fullHead = cleanBlurb(db.headline || "");
@@ -5323,12 +5336,9 @@ export default function Home() {
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
           <div class="mh-rule"></div>
+          ${nextUpBanner()}
           <section class="ng-lead front-hero">${leadStory}</section>
-          ${carousel ? `<div class="front-full">${carousel}</div>` : ""}
-          <div class="front-grid">
-            ${stories}
-            ${board}
-          </div>
+          ${topSection}
           ${newsFront() ? `<div class="front-wire">${newsFront()}</div>` : ""}
           ${socialShareBar()}
           <div class="news-foot">${esc(recordStrip())}</div>
@@ -5359,7 +5369,8 @@ export default function Home() {
         s.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(e); } };
       });
       // lead story + carousel + story previews + board tiles → detail sheet
-      view.querySelectorAll(".leadstory[data-gid], .hero[data-gid], .prev[data-gid], .boardlist .tile[data-gid]").forEach((h: any) => {
+      startCountdowns(); // keep the "next up" first-pitch countdown ticking
+      view.querySelectorAll(".leadstory[data-gid], .hero[data-gid], .prev[data-gid], .boardlist .tile[data-gid], .nextup[data-gid]").forEach((h: any) => {
         const open = (e: any) => {
           if (e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
           if (e.target && e.target.closest && e.target.closest("[data-nav]")) return;
