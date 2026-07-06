@@ -855,12 +855,15 @@ export default function Home() {
       if (take && c.ev != null)
         why.push(`That works out to roughly ${(c.ev >= 0 ? "+" : "")}${(c.ev * 100).toFixed(1)}% expected value per dollar at the quoted price.`);
       if (take) why.push(`Rated ${"★".repeat(Math.max(1, Math.min(5, c.stars)))} on the new five-star scale — every star requires beating the actual price.`);
+      // DECIMAL GRADE behind the stars: stars carry the conviction band, the fraction ranks
+      // WITHIN the band by +EV size (0.015 EV → x.0, 0.3+ EV → x.9). Powers the flagship pick.
+      const grade = take ? Math.min(5, c.stars + Math.max(0, Math.min(0.9, ((c.ev != null ? c.ev : 0.015) - 0.015) * 3))) : 0;
       return {
         market: mk, action: take ? "TAKE" : "PASS",
         side: take ? side : null,
         line: ln, price: c.per_side_price != null ? c.per_side_price : null,
         p: c.our_prob != null ? c.our_prob : null,
-        q, stars: c.stars, star_tier: c.star_tier, ev: c.ev,
+        q, stars: c.stars, star_tier: c.star_tier, ev: c.ev, grade,
         why, result: res, src: "v4",
         v4pass: !take ? c : null,
       };
@@ -869,6 +872,11 @@ export default function Home() {
     function pickStars(pl: any) {
       if (pl && pl.stars != null) return bStars(pl.stars);
       return qDiamonds(qualityOf(pl));
+    }
+    // The decimal grade chip ("4.3") shown beside the stars — ranks picks within a star band.
+    function pickGrade(pl: any) {
+      if (!pl || pl.grade == null || !(pl.grade > 0)) return "";
+      return `<i class="pgrade">${Number(pl.grade).toFixed(1)}</i>`;
     }
     // LOW CONFIDENCE = a Lean-tier pick, OR a spread/ML lean whose price doesn't clear break-even.
     // We still SHOW these (Leon: include the slightest picks) but flag them clearly.
@@ -981,13 +989,13 @@ export default function Home() {
           <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">No Pick — Passing</b></div></div>`;
       }
       if (teaseOnly) {
-        // Show the CONFIDENCE and tease the call (not the side/line). A weak/steep-priced lean is
-        // still shown — just clearly flagged "Low confidence".
-        const low = isLowConf(pl);
-        return `<div class="hpc hpc-${size} q-${q} tease${low ? " low" : ""}"><div class="hpc-scrim"></div>
+        // News-feed cover: STARS + GRADE + THE SELECTION — no "Lean"/"Low confidence" words,
+        // the star count IS the confidence.
+        const selTxt = pl && pl.side ? `${esc(String(pl.side))}${pl.price != null ? ` <em>${fmtOdds(pl.price)}</em>` : ""}` : "";
+        return `<div class="hpc hpc-${size} q-${q} tease"><div class="hpc-scrim"></div>
           <div class="hpc-line">
-            <span class="hpc-k">◆ ${esc(low ? "Lean" : kick)}</span>
-            <div class="hpc-pickrow"><span class="hpc-stars">${pickStars(pl)}</span>${low ? `<span class="hpc-lowconf">Low confidence</span>` : ""}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : `<span class="hpc-see">See the pick →</span>`}</div>
+            <span class="hpc-k">◆ ${esc(kick)}</span>
+            <div class="hpc-pickrow"><span class="hpc-stars">${pickStars(pl)}${pickGrade(pl)}</span>${selTxt ? `<b class="hpc-txt">${selTxt}</b>` : ""}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
           </div></div>`;
       }
       // Prefer the FROZEN display pick's full side+line+price — the served pick_headline
@@ -1011,13 +1019,69 @@ export default function Home() {
     // served article headline but strips any leading pick-lean clause ("Give us the OVER —
     // Angels chase a skid" → "Angels chase a skid"); falls back to a plain matchup framing.
     const PICK_WORDS = /\b(over|under|moneyline|money line|run ?line|spread|first ?5|f5|cover|take the|give us|back the|ride the|lay the|the pick)\b|[+-]\d{2,3}\b|\b\d+\.5\b/i;
+    // Deterministic per-game phrasing pick (varies the slate, stable per game).
+    function hVar(g: any, opts: string[]) {
+      if (!opts.length) return "";
+      let h = 0; const gid = String((g && g.game_id) || "");
+      for (let i = 0; i < gid.length; i++) h = (h * 31 + gid.charCodeAt(i)) & 0x7fffffff;
+      return opts[h % opts.length];
+    }
+    // A COMPELLING composed headline from real data — never a bare "PHI @ KC". Angles, in
+    // priority order: live score story → final result → hot/cold streak → pitching duel →
+    // an honest matchup line with texture.
+    function composedMatchupHeadline(g: any) {
+      const away = g.away_team || g.away_abbr, home = g.home_team || g.home_abbr;
+      const A = teamShort(away), H = teamShort(home);
+      const gs = gameState(g); const sc = gs.score;
+      if (gs.kind === "final" && sc && sc.split && sc.home != null) {
+        const homeWon = sc.home > sc.away;
+        const W = homeWon ? H : A, L = homeWon ? A : H;
+        const hi = Math.max(sc.home, sc.away), lo = Math.min(sc.home, sc.away);
+        if (hi === lo) return `${A} and ${H} finish level at ${hi}`;
+        return hVar(g, [`${W} put away ${L}, ${hi}–${lo}`, `${W} handle ${L} ${hi}–${lo}`, `${W} get it done ${hi}–${lo} over ${L}`, hi - lo >= 5 ? `${W} run away from ${L}, ${hi}–${lo}` : `${W} edge ${L} in a ${hi}–${lo} fight`]);
+      }
+      if (gs.kind === "live" && sc && sc.split && sc.home != null) {
+        if (sc.home === sc.away) return `${A} and ${H} all square at ${num(sc.home, 0)}`;
+        const ldr = sc.home > sc.away ? H : A, tr = sc.home > sc.away ? A : H;
+        const per = gs.label && gs.label !== "Live" ? ` — ${gs.label}` : "";
+        return hVar(g, [`${ldr} out in front of ${tr}, ${Math.max(sc.home, sc.away)}–${Math.min(sc.home, sc.away)}${per}`, `${ldr} lead ${tr} ${Math.max(sc.home, sc.away)}–${Math.min(sc.home, sc.away)}${per}`]);
+      }
+      // pre-game angles from streaks + pitchers
+      const st = g.streaks || {}; const hs = (st.home || {}) as any, as0 = (st.away || {}) as any;
+      const wsH = hs.win_streak, wsA = as0.win_streak;
+      const hotSide = wsH && wsH.result === "W" && wsH.n >= 3 ? "home" : wsA && wsA.result === "W" && wsA.n >= 3 ? "away" : null;
+      const coldSide = wsH && wsH.result === "L" && wsH.n >= 3 ? "home" : wsA && wsA.result === "L" && wsA.n >= 3 ? "away" : null;
+      const opts: string[] = [];
+      if (hotSide && coldSide && hotSide !== coldSide) {
+        const hot = hotSide === "home" ? H : A, cold = coldSide === "home" ? H : A;
+        const hn = (hotSide === "home" ? wsH : wsA).n, cn = (coldSide === "home" ? wsH : wsA).n;
+        opts.push(`Red-hot ${hot} meet a ${cold} side that's dropped ${cn} straight`, `${hot} bring ${hn} wins in a row into a date with slumping ${cold}`);
+      } else if (hotSide) {
+        const hot = hotSide === "home" ? H : A, other = hotSide === "home" ? A : H, hn = (hotSide === "home" ? wsH : wsA).n;
+        opts.push(hotSide === "home" ? `${hot} ride a ${hn}-game heater into a home date with ${other}` : `${hot} carry a ${hn}-game win streak into ${other} territory`);
+      } else if (coldSide) {
+        const cold = coldSide === "home" ? H : A, other = coldSide === "home" ? A : H, cn = (coldSide === "home" ? wsH : wsA).n;
+        opts.push(`${cold} look to stop the bleeding — ${cn} straight losses — against ${other}`, `${cold} chase a reset against ${other} after ${cn} losses running`);
+      }
+      const pit = (g.pregame_intel || {}).pitchers || {};
+      const ap = (pit.away || {}).name, hp = (pit.home || {}).name;
+      const last = (n: any) => String(n || "").trim().split(/\s+/).pop();
+      if (ap && hp) opts.push(`${last(ap)} takes on ${last(hp)} as ${A} visit ${H}`, `It's ${last(ap)} against ${last(hp)} when ${A} roll into ${H}`);
+      const recA = as0.record_l15, recH = hs.record_l15;
+      if (recA && recH) opts.push(`${A} (${recA} last 15) and ${H} (${recH}) collide`);
+      opts.push(`${A} and ${H} square up with the season series on the line`.replace(" with the season series on the line", ""), `${A} come calling on ${H}`);
+      return hVar(g, opts);
+    }
     function matchupHeadline(g: any, p: any) {
       let h = cleanBlurb((g ? (gameArticle(g)?.headline || "") : "") || "");
       if (h) {
         const parts = h.split(/\s*[—–:]\s*/);
         if (parts.length > 1 && PICK_WORDS.test(parts[0])) h = parts.slice(1).join(" — ").trim();
-        if (h && !PICK_WORDS.test(h)) return esc(h);
+        // a served headline that is JUST the matchup ("PHI @ KC") is not a headline — compose one
+        const bare = /^[A-Z]{2,4}\s*[@v]s?\.?\s*[A-Z]{2,4}$/i.test(h.trim());
+        if (h && !bare && !PICK_WORDS.test(h)) return esc(h);
       }
+      if (g) { const c = composedMatchupHeadline(g); if (c) return esc(cleanBlurb(c)); }
       const mu = (p && p.matchup) ? String(p.matchup) : (g ? `${g.away_abbr} @ ${g.home_abbr}` : "");
       return esc(cleanBlurb(mu));
     }
@@ -1997,7 +2061,7 @@ export default function Home() {
           }
           const mark = resMark(st);
           const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
-          return `<div class="lncell pick q-${q} ${st}${low ? " low" : ""}"><span class="ln-k">${low ? "Lean" : "Our call"} · ${label}</span><span class="ln-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ln-stars">${pickStars(pl)}${low ? `<i class="ln-lowc">Low conf</i>` : ""}${mark ? `<span class="ln-res ${st}">${mark}</span>` : ""}</span></div>`;
+          return `<div class="lncell pick q-${q} ${st}${low ? " low" : ""}"><span class="ln-k">Our call · ${label}</span><span class="ln-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ln-stars">${pickStars(pl)}${pickGrade(pl)}${mark ? `<span class="ln-res ${st}">${mark}</span>` : ""}</span></div>`;
         }
         return `<div class="lncell"><span class="ln-k">${label}</span><span class="ln-v">${line || "—"}</span></div>`;
       };
@@ -2347,8 +2411,11 @@ export default function Home() {
       games.forEach((g: any) => {
         const pl = displayPick(g);
         if (!isBet(pl)) return; // never feature a bet that doesn't clear its price's break-even
-        const cand = { g, pl, p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)] };
-        if (!best || convictionSort(cand.p, cand.qr, best.p, best.qr) < 0) best = cand;
+        const cand = { g, pl, p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)], gr: pl.grade != null ? Number(pl.grade) : null };
+        if (!best) { best = cand; return; }
+        // decimal grade wins when both carry one (the flagship ranking); legacy conviction otherwise
+        if (cand.gr != null && best.gr != null) { if (cand.gr > best.gr) best = cand; return; }
+        if (convictionSort(cand.p, cand.qr, best.p, best.qr) < 0) best = cand;
       });
       return best;
     }
@@ -3421,7 +3488,7 @@ export default function Home() {
             : `<span class="mt-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span>`;
           const conf = locked
             ? `<span class="mt-conf blur" aria-hidden="true">★★★</span>`
-            : `<span class="mt-conf${low ? " low" : ""}">${pickStars(pl)}<i>${esc(confWord(pl))}</i></span>`;
+            : `<span class="mt-conf">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : `<i>${esc(confWord(pl))}</i>`}</span>`;
           return `<tr class="mt-take q-${q} ${st}${low ? " low" : ""}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
         }
         // A TRUE pass — explained like a human would say it.
@@ -5555,7 +5622,7 @@ export default function Home() {
       const leadGame = (ftBest && ftBest.g) || (leadPick ? findGameLive(leadPick.game_id) : null);
       let leadStory = "";
       if (leadGame) {
-        leadStory = leadStoryCard(leadGame, "Feature Bet", dateTxt);
+        leadStory = leadStoryCard(leadGame, "Today's Flagship Pick", dateTxt);
       } else {
         leadStory = `<article class="leadstory pass">
           <div class="ls-body">

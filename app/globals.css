@@ -3164,3 +3164,8 @@ details.results-more{margin-bottom:14px}
 .gp-tabs.underline .gp-tab-ink{top:auto;bottom:-1px;height:3px;border-radius:2px;background:var(--acc2);box-shadow:none}
 /* the picks table leads the preview pane — tighten its top margin */
 .gp-pane .mkt-table{margin-top:2px}
+
+/* decimal grade chip beside the stars ("4.3") */
+.pgrade{font-style:normal;font-family:var(--mono);font-weight:700;font-size:10.5px;color:var(--golddeep);background:var(--goldbg);border-radius:999px;padding:1.5px 6px;margin-left:5px;vertical-align:1px}
+.hpc-stars .pgrade{color:#ffd75e;background:rgba(0,0,0,.32);font-size:11px}
+.oc.pick .pgrade{display:none} /* tile chips stay compact */
