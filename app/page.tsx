@@ -2263,7 +2263,6 @@ export default function Home() {
         ${pitchLine(g, gs)}
         ${pre ? "" : totOnly}
         ${pre ? (locked && isPick(pick) ? pickStrip(g, pick, st, locked, gs) : "") : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
-        ${v2 ? diamondEdgeV2Strip(g) : ""}
       </article>`;
     }
     // Per-side odds grid for a PRE-GAME tile — 2 rows (away/home) × 3 cols (Spread · Total · ML),
@@ -2813,7 +2812,7 @@ export default function Home() {
     function bindMeta() {
       const rc = $("recchip"); if (rc) rc.onclick = () => openRecordBreakdown();
       const ap = $("allpicks"); if (ap) ap.onclick = () => switchTab("beta");
-      const hl = $("howlink"); if (hl) hl.onclick = () => openRecipeSheet();
+      const hl = $("howlink"); if (hl) hl.onclick = () => switchTab("beta");
       // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
       // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
       const rgb = $("rng-back"); if (rgb) rgb.onclick = () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); };
@@ -2882,7 +2881,7 @@ export default function Home() {
     }
 
     function bindCards() {
-      const tlh = $("tl-how"); if (tlh) tlh.onclick = (e: any) => { e.stopPropagation(); openRecipeSheet(); };
+      const tlh = $("tl-how"); if (tlh) tlh.onclick = (e: any) => { e.stopPropagation(); switchTab("beta"); };
       root.querySelectorAll(".tile[data-gid], .feat[data-gid]").forEach((bx: any) => {
         const open = (e: any) => {
           if (e && e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
@@ -3423,6 +3422,19 @@ export default function Home() {
     // The core thesis, made visible: OUR number vs the MARKET's, and the gap that makes the bet.
     function deDivergence(g: any, lead: any) {
       if (!lead || lead.action !== "TAKE") return "";
+      // v4 picks: the gap IS win-prob vs the price's break-even — shown from the model's own
+      // numbers (never the legacy projections, which can disagree with the new pick).
+      if (lead.src === "v4" && lead.p != null && lead.price != null) {
+        const be = breakevenProb(lead.price);
+        if (be != null) {
+          const up = lead.p > be;
+          return `<div class="de-diverge ${up ? "over" : "under"}">
+            <div class="dd-pair"><div class="dd-cell ours"><span class="dd-k">Our win chance</span><b>${(lead.p * 100).toFixed(0)}%</b></div><div class="dd-vs">vs</div><div class="dd-cell"><span class="dd-k">Break-even at ${fmtOdds(lead.price)}</span><b>${(be * 100).toFixed(0)}%</b></div></div>
+            <div class="dd-gap">We clear the price by <b>${((lead.p - be) * 100).toFixed(1)} points</b> — that margin is the bet${lead.stars != null ? `, rated <b>${"★".repeat(Math.max(1, Math.min(5, lead.stars)))}</b>` : ""}.</div>
+          </div>`;
+        }
+      }
+      if (lead.src === "v4") return "";
       if (lead.market === "total") {
         const our = v3PredTotal(g) != null ? Number(v3PredTotal(g)) : (g.total_pick && g.total_pick.our_proj != null ? Number(g.total_pick.our_proj) : null);
         const line = lead.line != null ? Number(lead.line) : (g.total_pick && g.total_pick.line != null ? Number(g.total_pick.line) : null);
@@ -3645,11 +3657,9 @@ export default function Home() {
         <div class="more-body">
           <div class="dsec"><div class="dsec-h">Every market's number</div><div class="dsec-b shp-wrap">
             ${MARKETS.map((mk) => sheetPlay(g, P[mk])).join("")}
-            ${anyValue ? valueRecordBlock() : ""}
-            ${takes.length ? playsTrackTable() : ""}
+            
           </div></div>
           ${intelSection(g)}
-          ${reasoning}
         </div>
       </details>`;
 
@@ -3689,8 +3699,6 @@ export default function Home() {
           <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
         </div>
         ${heroPick}
-        ${transp}
-        ${bestPrice}
         ${heroTrend ? `<div class="gp-trend">${heroTrend}</div>` : ""}
       </div>`;
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
@@ -3715,8 +3723,6 @@ export default function Home() {
         ${previewBlock}
         ${linesBlock}
         ${lead || !leadLocked ? pickPayoff : ""}
-        ${challengerNote}
-        ${v2Note}
         ${passBlock}
         ${leadLocked ? "" : more}
       </div>`;
@@ -3753,7 +3759,7 @@ export default function Home() {
       const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
       const unl = $("cc-unlock");
       if (unl) unl.onclick = () => { closeDetail(); switchTab("upgrade"); };
-      const shTlh = $("tl-how"); if (shTlh) shTlh.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => openRecipeSheet(), 220); };
+      const shTlh = $("tl-how"); if (shTlh) shTlh.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => switchTab("beta"), 120); };
       const shShare = $("gp-share"); if (shShare) shShare.onclick = (e: any) => { e.stopPropagation(); shareGame(g); };
       // tab switching (no re-fetch; just show/hide + move the ink)
       $("gamepage").querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
@@ -4866,6 +4872,7 @@ export default function Home() {
     async function renderResults() {
       await loadIndex();
       await loadAnalyticsDeep();
+      try { await loadBeta(); } catch {}
       const tr = trackRecord();
       const ov = tr.overall || {};
       const hr = ov.hit_rate != null ? ov.hit_rate * 100 : null;
@@ -4911,9 +4918,13 @@ export default function Home() {
           </div>
         </div>
         ${insightsUpsell()}
+        ${betaData ? betaFrame(betaData) + betaDashboard(betaData) : `<div class="beta-skel">Loading the model record…</div>`}
+        <button class="board-all" id="ins-allpicks">Every pick, wall by wall →</button>
+        <details class="ix-more"><summary><span class="ix-more-k">Legacy record</span><span class="ix-more-sub">the previous model's graded history</span><span class="ix-more-car" aria-hidden="true">▾</span></summary><div class="ix-more-b">
         ${insightsShowcase()}
         ${equityCurveCard()}
         ${strengthBreakdownCard()}
+        </div></details>
         ${analyticsDeep && chartMonthly() ? `<section class="ins-section">
           <div class="ins-sec-h"><span class="ins-sec-k">Month by month</span><h2>The edge across the calendar</h2><p>A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.</p></div>
           ${insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "", "books", "▪", chartMonthly())}
@@ -4952,6 +4963,7 @@ export default function Home() {
       };
       const rbk = $("res-breakdown");
       if (rbk) rbk.onclick = () => openRecordBreakdown();
+      const iap = $("ins-allpicks"); if (iap) iap.onclick = () => switchTab("beta");
       const iu = $("ins-upsell");
       if (iu) iu.onclick = () => { accountMode = isSignedIn() ? "subscribe" : "signin"; switchTab("account"); };
       const sbm = $("sb-more");
@@ -5265,8 +5277,9 @@ export default function Home() {
     // Branded record line for the masthead + footer — leads with the HONEST forward expectation,
     // with the in-sample backtest labelled as such (never sold as the forward number).
     function recordStrip() {
-      const rh = recipeHistory();
-      return `Graded in the open since 2022 — a real totals edge, honestly sized: about 55% at morning prices (56.9% on 239 picks the model never trained on). Our backtest ran ${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded, but that's in-sample. Every pick freezes before first pitch and grades against the final score.`;
+      const ov = betaData && betaData.record && betaData.record.overall_takes;
+      if (ov && ov.n) return `Every DiamondEdge pick is star-rated, priced against the real line, and graded in the open — the record so far: ${ov.win}–${ov.loss}${ov.push ? `–${ov.push}` : ""} (${(ov.hit_rate * 100).toFixed(1)}%). Judge us by what accrues.`;
+      return `Every DiamondEdge pick is star-rated, priced against the real line, and graded in the open, win or lose.`;
     }
     // ── News-forward front: real top sports stories (news_feed) with a DiamondEdge betting angle,
     //    leading the Today page (ESPN/CBS-style), with the DiamondEdge Picks below.
@@ -5516,13 +5529,7 @@ export default function Home() {
       const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       const isToday = curDate === todayISO();
-      const dayRec = dayRecordFor(curDate);
-      // The News front never leads with a bare W–L — a cold day reads as "we're losing," which
-      // is both discouraging and misleading over a single slate. The full, honest record lives
-      // on Insights. We keep only a POSITIVE gold-pick chip (shown only when it's winning).
-      const goldChip = dayRec && (dayRec.gw + dayRec.gl) && (dayRec.goldGreat || (dayRec.gw && !dayRec.gl))
-        ? `<span class="nm-gold${dayRec.goldGreat ? " hot" : ""}" title="Gold (Strong) picks ${dayRec.gw}–${dayRec.gl}">★ Gold ${dayRec.gw}–${dayRec.gl}${dayRec.goldGreat ? " 🔥" : ""}</span>`
-        : "";
+      const goldChip = ""; // no champion-era chips — the model's record lives on Insights
       const picksAll = orderTopPicks((db.top_picks || []) as any[]);
       const leadPick = picksAll[0] || null;
       const railPicks = picksAll.length > 1 ? picksAll.slice(1) : [];
@@ -5562,11 +5569,13 @@ export default function Home() {
         </section>` : "";
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
       // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
-      const fullHead = cleanBlurb(db.headline || "");
-      // The masthead is a clean editorial nameplate: the brief's FIRST sentence, no ellipsis
-      // stacking (CSS clamps if needed), and never the pick/edge % (fall back to a neutral line).
-      let tightHead = (fullHead.split(/(?<=[.!?])\s+/)[0] || fullHead).replace(/[.\s]+$/, "");
-      if (!tightHead || leaksPick(tightHead)) tightHead = isToday ? "Today on the board" : "The board, recapped";
+      // The masthead nameplate is computed from the MODEL's board (never the old brief):
+      // how many starred picks are live on today's slate right now.
+      const nTakes = ftPool.filter((g0: any) => isBet(displayPick(g0))).length;
+      const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+      let tightHead = !isToday ? "The board, recapped"
+        : nTakes === 0 ? "The board fills in as game time nears"
+        : `${WORDS[Math.min(nTakes, 9)]} pick${nTakes === 1 ? "" : "s"} on the board today`;
       const headDek = ""; // the read lives in the hero + game page; the nameplate stays one clean line
       view.innerHTML = `
         <div class="news">
@@ -6017,15 +6026,12 @@ export default function Home() {
     }
     const betaTakeCount = (g: any) => (g.grid || []).filter((c: any) => c.take && c.stars > 0).length;
 
-    // ---- the honest framing banner (status:shadow, no claim, thin-slice caveat) ----
+    // ---- honest framing (no hype): the record below is young and accrues in public ----
     function betaFrame(d: any) {
       const wn = d.walk_scope_note || {};
-      const hn = (d.star_census && d.star_census.honest_note) || "";
       return `<div class="beta-frame">
-        <div class="bf-row"><span class="bf-badge">BETA</span><span class="bf-k">Shadow feed · in validation</span></div>
-        <p class="bf-lede">A brand-new model, graded honestly in the open — running <b>alongside</b> the champion, not replacing it. <b>No edge is claimed yet.</b> This is a thin first-read validation slice; watch the record accrue as the full multi-season walk lands.</p>
-        <div class="bf-note">${esc(wn.note || "")} ${wn.date_range ? `· ${esc(wn.date_range[0])}→${esc(wn.date_range[1])} · ${wn.n_games || 0} games` : ""}</div>
-        ${hn ? `<div class="bf-note dim">${esc(hn)}</div>` : ""}
+        <p class="bf-lede">Every DiamondEdge pick comes from this model — price-aware, star-rated 1–5, and graded in the open, win or lose. The record below is young and grows every day; judge it by what accrues, not by promises.</p>
+        <div class="bf-note">${wn.date_range ? `Graded ${esc(wn.date_range[0])} → ${esc(wn.date_range[1])} · ${wn.n_games || 0} games so far` : ""}</div>
       </div>`;
     }
 
@@ -6111,8 +6117,8 @@ export default function Home() {
       }).join("") || `<div class="bc-empty">No games on the live board yet — tomorrow fills in when books post their lines.</div>`;
       return `
         <div class="beta-card livehead">
-          <div class="bcard-h">Today's board — the beta model, live</div>
-          <div class="bcard-sub">Same engine and +EV gate as the sealed walk, running on live odds. Picks firm up as each decision wall arrives (odds every 10 min, picks every 30).${upd ? ` Updated ${esc(upd)}.` : ""} <b>Still shadow — no edge claimed.</b></div>
+          <div class="bcard-h">Today's board — live</div>
+          <div class="bcard-sub">Same engine and +EV gate as the sealed walk, running on live odds. Picks firm up as each decision wall arrives — a game with no pick yet may earn one closer to first pitch.${upd ? ` Updated ${esc(upd)}.` : ""}</div>
           ${recBit}
           <div class="bcard-foot">${bc.n_takes || 0} takes across ${bc.n_games || games.length} games so far · a game with no take yet may earn one at a later wall.</div>
         </div>
@@ -6124,7 +6130,7 @@ export default function Home() {
       if (!view) return;
       if (!betaData) view.innerHTML = `<div class="beta-wrap"><div class="beta-skel">Loading the beta feed…</div></div>`;
       let d: any, lv: any = null;
-      try { d = await loadBeta(); } catch { view.innerHTML = `<div class="beta-wrap"><div class="state"><div class="big">Beta feed unavailable</div><div class="sm">Couldn't load the shadow model data. It refreshes when the full walk lands.</div></div></div>`; return; }
+      try { d = await loadBeta(); } catch { view.innerHTML = `<div class="beta-wrap"><div class="state"><div class="big">Pick data unavailable</div><div class="sm">Couldn't load the model feed — it refreshes through the day; try again shortly.</div></div></div>`; return; }
       try { lv = await loadBetaLive(); } catch { lv = null; }
       const games = (d.games || []) as any[];
       const list = (betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0) : games)
@@ -6366,6 +6372,18 @@ export default function Home() {
         if (tab === "today") { renderToday(); todayFresh = true; }
         if ($("slate-body")) renderSlate(true);
       });
+      // keep the live pick feed fresh: re-fetch every 5 min while the tab is visible
+      setInterval(() => {
+        if (document.hidden) return;
+        const before = betaLiveData && betaLiveData.generated_utc;
+        loadBetaLive().then((lv: any) => {
+          if (lv && lv.generated_utc !== before) {
+            todayFresh = false;
+            if (tab === "today") { renderToday(); todayFresh = true; }
+            if ($("slate-body")) renderSlate(true);
+          }
+        }).catch(() => {});
+      }, 5 * 60 * 1000);
       try {
         await loadIndex();
         payload = await loadDay(curDate);
