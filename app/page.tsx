@@ -2686,7 +2686,9 @@ export default function Home() {
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
           // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
           const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
-          body.innerHTML = `${futureBanner}${anyPick ? tierLegend() : ""}${ft ? featuredCard(ft.g, ft.pl) : ""}${grouped}
+          // Tier legend rides at the very BOTTOM of the slate (Leon) — reference, not headline.
+          body.innerHTML = `${futureBanner}${ft ? featuredCard(ft.g, ft.pl) : ""}${grouped}
+            ${anyPick ? tierLegend() : ""}
             <div class="refnote">${games.length}${esc(lgSuffix)} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
       }
@@ -3668,10 +3670,11 @@ export default function Home() {
       // the walk covers it (matched on game_pk). Progressive: fetches the beta feed lazily and
       // annotates in place; today's games simply have no beta row until the live feed lands.
       if (g.game_id != null && !g._recipe) {
-        loadBeta().then((d: any) => {
+        Promise.all([loadBetaLive().catch(() => null), loadBeta().catch(() => null)]).then(([lv, d]: any[]) => {
           if (!$("gamepage") || !detail || String(detail.game_id) !== String(g.game_id)) return;
           const pk = String(g.game_id);
-          const bg = (d.games || []).find((x: any) => String(x.game_pk) === pk);
+          const find = (src: any) => src && (src.games || []).find((x: any) => String(x.game_pk) === pk);
+          const bg = find(lv) || find(d); // live board first (today), then the historical walk
           if (!bg) return;
           const best = bestBetaCell(bg);
           const nPass = (bg.grid || []).filter((c: any) => !c.take).length;
@@ -3682,7 +3685,7 @@ export default function Home() {
                <span class="bis-take">${bStars(best.stars)}<b>${esc(best.bet_type)} ${esc(String(best.pick_side || ""))} ${best.pick_line != null ? esc(best.bet_type === "spread" ? sgn(best.pick_line) : lineStr(best.pick_line)) : ""}</b><i>${best.per_side_price != null ? fmtOdds(best.per_side_price) : ""}</i>${best.result && best.result !== "pass" ? `<em class="bis-res ${best.result}">${best.result === "win" ? "WON" : best.result === "loss" ? "LOST" : "PUSH"}</em>` : ""}</span>
                <button class="bis-open">Full grid →</button>`
             : `<span class="bm-badge sm">Beta</span><span class="bis-k">v4 shadow model</span>
-               <span class="bis-pass">passed every market on price${nPass ? ` (${nPass} walls checked)` : ""}</span>
+               <span class="bis-pass">${(bg.final && bg.final.away_runs != null) ? `passed every market on price${nPass ? ` (${nPass} walls checked)` : ""}` : "no take yet — it may earn one at a later wall"}</span>
                <button class="bis-open">See why →</button>`;
           const body = $("gp-body");
           const mkt = body && body.querySelector(".mkt-table");
@@ -5878,7 +5881,7 @@ export default function Home() {
     // (conviction, +EV-gated), price-aware, with every PASS's "priced-out" reason. Nothing is
     // claimed as an edge — it's presented as a model in validation whose record accrues.
     let betaData: any = null;
-    let betaTab: "record" | "games" = "record";
+    let betaTab: "today" | "record" | "games" = "today";
     let betaShown = 24;        // games list pagination
     let betaOnlyTakes = true;  // default: games where the model actually took a bet
     async function loadBeta() {
@@ -5887,6 +5890,17 @@ export default function Home() {
       if (!r.ok) throw new Error("beta fetch " + r.status);
       betaData = await r.json();
       return betaData;
+    }
+    // LIVE board (today + tomorrow) — refreshes server-side every 10-30 min, so never
+    // hard-cache: keep it for 5 minutes then refetch.
+    let betaLiveData: any = null, betaLiveAt = 0;
+    async function loadBetaLive() {
+      if (betaLiveData && Date.now() - betaLiveAt < 5 * 60 * 1000) return betaLiveData;
+      const r = await fetch("/picks_v4_beta_live.json", { cache: "no-store" });
+      if (!r.ok) throw new Error("beta live fetch " + r.status);
+      betaLiveData = await r.json();
+      betaLiveAt = Date.now();
+      return betaLiveData;
     }
     const BETA_LEADS = ["T-24h", "T-12h", "T-6h", "T-3h", "T-1h"];
     const BETA_MKTS: [string, string][] = [["total", "Total"], ["spread", "Spread"], ["moneyline", "Moneyline"]];
@@ -5960,32 +5974,67 @@ export default function Home() {
         </div>`;
     }
 
-    // ---- a compact list card for one beta game ----
+    // ---- a compact list card for one beta game (historical OR live/upcoming) ----
     function betaGameListCard(g: any) {
       const best = bestBetaCell(g);
       const fin = g.final || {};
-      const scoreTxt = fin.home_runs != null && fin.away_runs != null ? `${teamShort(g.away)} ${fin.away_runs} – ${fin.home_runs} ${teamShort(g.home)}` : "—";
+      const hasFinal = fin.home_runs != null && fin.away_runs != null;
+      const fp = firstPitchTs({ start_ts: g.first_pitch_utc });
+      const when = hasFinal
+        ? `Final ${teamShort(g.away)} ${fin.away_runs} – ${fin.home_runs} ${teamShort(g.home)}`
+        : fp ? new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "upcoming";
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+      const walls = Array.isArray(g.walls_populated) && !hasFinal ? ` · ${g.walls_populated.length}/5 walls in` : "";
       const badge = best
-        ? `<span class="bg-pick ${best.result}">${bStars(best.stars)}<span class="bg-side">${esc(best.bet_type)} ${esc(best.pick_side)}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✗" : "P"}</span>` : ""}</span>`
-        : `<span class="bg-nopick">no take</span>`;
+        ? `<span class="bg-pick ${best.result || "open"}">${bStars(best.stars)}<span class="bg-side">${esc(best.bet_type)} ${esc(best.pick_side)}${best.per_side_price != null ? ` ${fmtOdds(best.per_side_price)}` : ""}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✗" : "P"}</span>` : ""}</span>`
+        : `<span class="bg-nopick">${hasFinal ? "no take" : "no take yet"}</span>`;
       return `<button class="beta-gcard" data-bgid="${esc(g.game_id)}">
         <span class="bg-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></span>
-        <span class="bg-meta">${esc(dd)} · Final ${esc(scoreTxt)}</span>
+        <span class="bg-meta">${esc(dd)} · ${esc(when)}${esc(walls)}</span>
         ${badge}
       </button>`;
+    }
+    // ---- the LIVE "Today" board: today's + tomorrow's games from the same engine + gate ----
+    function betaTodayBoard(lv: any) {
+      if (!lv) return `<div class="bc-empty">The live board didn't load — it refreshes through the day; try again shortly.</div>`;
+      const games = (lv.games || []) as any[];
+      const bc = lv.board_census || {};
+      const lr = lv.live_record || {};
+      const ov = lr.overall_takes || {};
+      const recBit = lr.n_graded_rows
+        ? `<div class="beta-liverec">Live record so far: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""} <span class="blr-n">(${lr.n_graded_rows} graded — tiny sample, graded nightly)</span></div>`
+        : `<div class="beta-liverec dim">Nothing graded live yet — picks grade as games finish (re-checked nightly).</div>`;
+      const upd = lv.generated_utc ? new Date(lv.generated_utc).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+      const byDate: any = {};
+      games.forEach((g) => { (byDate[g.date] = byDate[g.date] || []).push(g); });
+      const dates = Object.keys(byDate).sort();
+      const sections = dates.map((d0) => {
+        const dd = new Date(d0 + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        const list = byDate[d0].slice().sort((a: any, b: any) => (betaTakeCount(b) - betaTakeCount(a)) || String(a.first_pitch_utc || "").localeCompare(String(b.first_pitch_utc || "")));
+        return `<div class="beta-listhead"><span>${esc(dd)}</span></div><div class="beta-glist">${list.map(betaGameListCard).join("")}</div>`;
+      }).join("") || `<div class="bc-empty">No games on the live board yet — tomorrow fills in when books post their lines.</div>`;
+      return `
+        <div class="beta-card livehead">
+          <div class="bcard-h">Today's board — the beta model, live</div>
+          <div class="bcard-sub">Same engine and +EV gate as the sealed walk, running on live odds. Picks firm up as each decision wall arrives (odds every 10 min, picks every 30).${upd ? ` Updated ${esc(upd)}.` : ""} <b>Still shadow — no edge claimed.</b></div>
+          ${recBit}
+          <div class="bcard-foot">${bc.n_takes || 0} takes across ${bc.n_games || games.length} games so far · a game with no take yet may earn one at a later wall.</div>
+        </div>
+        ${sections}`;
     }
 
     async function renderBeta() {
       const view = $("beta-view");
       if (!view) return;
       if (!betaData) view.innerHTML = `<div class="beta-wrap"><div class="beta-skel">Loading the beta feed…</div></div>`;
-      let d: any;
+      let d: any, lv: any = null;
       try { d = await loadBeta(); } catch { view.innerHTML = `<div class="beta-wrap"><div class="state"><div class="big">Beta feed unavailable</div><div class="sm">Couldn't load the shadow model data. It refreshes when the full walk lands.</div></div></div>`; return; }
+      try { lv = await loadBetaLive(); } catch { lv = null; }
       const games = (d.games || []) as any[];
       const list = (betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0) : games)
         .slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
       const shown = list.slice(0, betaShown);
+      const liveTakes = lv ? ((lv.board_census || {}).n_takes || 0) : 0;
       view.innerHTML = `
         <div class="beta-wrap">
           <div class="beta-masthead">
@@ -5995,9 +6044,11 @@ export default function Home() {
           </div>
           ${betaFrame(d)}
           <div class="beta-tabs" role="tablist">
+            <button class="beta-tab ${betaTab === "today" ? "on" : ""}" data-btab="today">Today${liveTakes ? ` <span class="bt-count">${liveTakes}</span>` : ""}</button>
             <button class="beta-tab ${betaTab === "record" ? "on" : ""}" data-btab="record">Record</button>
             <button class="beta-tab ${betaTab === "games" ? "on" : ""}" data-btab="games">Games <span class="bt-count">${(betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0).length : games.length).toLocaleString()}</span></button>
           </div>
+          <div class="beta-pane" style="display:${betaTab === "today" ? "block" : "none"}">${betaTodayBoard(lv)}</div>
           <div class="beta-pane" style="display:${betaTab === "record" ? "block" : "none"}">${betaDashboard(d)}</div>
           <div class="beta-pane" style="display:${betaTab === "games" ? "block" : "none"}">
             <div class="beta-listhead"><span>${betaOnlyTakes ? "Games where the model took a bet" : "Every game on the walk"}</span><button class="beta-togg" id="beta-togg">${betaOnlyTakes ? "Show all games" : "Only games with picks"}</button></div>
@@ -6008,7 +6059,12 @@ export default function Home() {
       view.querySelectorAll(".beta-tab").forEach((b: any) => (b.onclick = () => { betaTab = b.dataset.btab; renderBeta(); }));
       const tg = $("beta-togg"); if (tg) tg.onclick = () => { betaOnlyTakes = !betaOnlyTakes; betaShown = 24; renderBeta(); };
       const mo = $("beta-more"); if (mo) mo.onclick = () => { betaShown += 36; renderBeta(); requestAnimationFrame(() => { const el = $("beta-more"); if (el) el.scrollIntoView({ block: "center" }); }); };
-      view.querySelectorAll(".beta-gcard[data-bgid]").forEach((b: any) => (b.onclick = () => openBetaGame(betaData.games.find((g: any) => String(g.game_id) === b.dataset.bgid))));
+      // card clicks resolve against BOTH feeds (live board first, then the historical walk)
+      view.querySelectorAll(".beta-gcard[data-bgid]").forEach((b: any) => (b.onclick = () => {
+        const gid = b.dataset.bgid;
+        const bg = (lv && (lv.games || []).find((g: any) => String(g.game_id) === gid)) || (betaData.games || []).find((g: any) => String(g.game_id) === gid);
+        openBetaGame(bg);
+      }));
       animateCounters(view);
     }
 
@@ -6043,7 +6099,9 @@ export default function Home() {
           <div class="gp-body" id="gp-body">
             <div class="bgame-hero">
               <div class="bgh-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></div>
-              <div class="bgh-fin">${fin.away_runs != null ? `Final · ${esc(teamShort(g.away))} <b>${fin.away_runs}</b> – <b>${fin.home_runs}</b> ${esc(teamShort(g.home))}` : "—"}</div>
+              <div class="bgh-fin">${fin.away_runs != null
+                ? `Final · ${esc(teamShort(g.away))} <b>${fin.away_runs}</b> – <b>${fin.home_runs}</b> ${esc(teamShort(g.home))}`
+                : (() => { const fp = firstPitchTs({ start_ts: g.first_pitch_utc }); return fp ? `First pitch ${esc(new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))} · picks firm up as walls arrive` : "Upcoming"; })()}</div>
               <div class="bgh-date">${esc(dd)} · full game</div>
             </div>
             <div class="bgrid-card">
