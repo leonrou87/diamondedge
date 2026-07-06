@@ -1234,7 +1234,17 @@ details.more .more-body{padding-top:12px}
 }
 @media(min-width:900px){.news-grid{grid-template-columns:minmax(0,1fr) 340px;gap:24px}}
 /* safety cap so a full-width lead hero can never balloon on a wide viewport */
-.ls-figure .heroimg{max-height:300px}
+.ls-figure .heroimg{max-height:250px}
+/* Top-games grid cards: smaller score + logos than the full-width hero (they were oversized). */
+.top-games .leadstory .heroimg .hi-score b{font-size:34px}
+.top-games .leadstory .heroimg .hi-score .hi-dash{font-size:21px}
+.top-games .leadstory .heroimg .hi-crest{padding:8px}
+.top-games .leadstory .heroimg .hi-crest img,.top-games .leadstory .heroimg .hi-crest .crest{width:44px;height:44px}
+.top-games .leadstory .ls-figure .heroimg{max-height:200px}
+/* No-pick (storyline) cards: no pick cover, so CENTER the matchup and shrink the figure — no
+   empty gradient band at the bottom. */
+.leadstory.nopick .ls-figure .heroimg{aspect-ratio:16/9}
+.leadstory.nopick .ls-figure .heroimg .hi-mu{align-items:center!important;padding-top:0!important;padding-bottom:0!important}
 
 /* ============ THE FRONT — Top Stories woven with Today's Board ============ */
 /* Leon's direction: keep stories (the "read") and the board (games at a glance) clearly

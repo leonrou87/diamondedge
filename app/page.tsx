@@ -5230,8 +5230,11 @@ export default function Home() {
       const startedTag = live ? "" : (started ? `<span class="ls-fig-tag started">● Started</span>` : "");
       const sport = SPORT_LABEL[g.sport] || String(g.sport || "").toUpperCase();
       const cta = locked ? "Unlock the full preview →" : "Read the full preview →";
-      return `<article class="leadstory q-${q || "lean"}" data-gid="${esc(g.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="${esc(kicker)} — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}">
-        <div class="ls-figure">${heroImage(g, tint, "lead")}${!live ? `<span class="ls-fig-kick">${esc(kicker)} · ${esc(sport)}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${heroPickCover(g, "lead", true)}</div>
+      // Only show the pick cover when there's a REAL (+EV) pick — storyline/pass games stay a
+      // clean matchup instead of a wall of "No Bet — Price Too Steep".
+      const cover = isBet(pl) ? heroPickCover(g, "lead", true) : "";
+      return `<article class="leadstory q-${q || "lean"}${cover ? "" : " nopick"}" data-gid="${esc(g.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="${esc(kicker)} — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}">
+        <div class="ls-figure">${heroImage(g, tint, "lead")}${!live ? `<span class="ls-fig-kick">${esc(kicker)} · ${esc(sport)}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${cover}</div>
         <div class="ls-body">
           <h3 class="ls-match">${headline}</h3>
           <div class="ls-byline">${esc(kicker)} · DiamondEdge${dateTxt ? ` · ${esc(dateTxt)}` : ""}</div>
