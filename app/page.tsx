@@ -3664,6 +3664,33 @@ export default function Home() {
       $("gamepage").querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
       // if opened on a live game, pull the box score right away
       if (showLive) pollLiveDetail();
+      // V4 BETA (shadow) — weave the beta model's read for THIS game into the detail whenever
+      // the walk covers it (matched on game_pk). Progressive: fetches the beta feed lazily and
+      // annotates in place; today's games simply have no beta row until the live feed lands.
+      if (g.game_id != null && !g._recipe) {
+        loadBeta().then((d: any) => {
+          if (!$("gamepage") || !detail || String(detail.game_id) !== String(g.game_id)) return;
+          const pk = String(g.game_id);
+          const bg = (d.games || []).find((x: any) => String(x.game_pk) === pk);
+          if (!bg) return;
+          const best = bestBetaCell(bg);
+          const nPass = (bg.grid || []).filter((c: any) => !c.take).length;
+          const strip = document.createElement("div");
+          strip.className = "beta-instrip";
+          strip.innerHTML = best
+            ? `<span class="bm-badge sm">Beta</span><span class="bis-k">v4 shadow model</span>
+               <span class="bis-take">${bStars(best.stars)}<b>${esc(best.bet_type)} ${esc(String(best.pick_side || ""))} ${best.pick_line != null ? esc(best.bet_type === "spread" ? sgn(best.pick_line) : lineStr(best.pick_line)) : ""}</b><i>${best.per_side_price != null ? fmtOdds(best.per_side_price) : ""}</i>${best.result && best.result !== "pass" ? `<em class="bis-res ${best.result}">${best.result === "win" ? "WON" : best.result === "loss" ? "LOST" : "PUSH"}</em>` : ""}</span>
+               <button class="bis-open">Full grid →</button>`
+            : `<span class="bm-badge sm">Beta</span><span class="bis-k">v4 shadow model</span>
+               <span class="bis-pass">passed every market on price${nPass ? ` (${nPass} walls checked)` : ""}</span>
+               <button class="bis-open">See why →</button>`;
+          const body = $("gp-body");
+          const mkt = body && body.querySelector(".mkt-table");
+          if (mkt) mkt.insertAdjacentElement("afterend", strip); else if (body) body.prepend(strip);
+          const btn = strip.querySelector(".bis-open");
+          if (btn) (btn as any).onclick = (e: any) => { e.stopPropagation(); openBetaGame(bg); };
+        }).catch(() => {});
+      }
     }
     function positionDetailInk() {
       const bar = $("gamepage") && $("gamepage").querySelector(".gp-tabs");

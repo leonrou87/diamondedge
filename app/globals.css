@@ -3083,3 +3083,15 @@ details.results-more{margin-bottom:14px}
 .bpass-row:last-child{border-bottom:0}
 .bpass-k{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);flex-shrink:0;min-width:96px}
 .bpass-why{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink2)}
+
+/* ── V4 BETA strip woven into the game detail (walk-covered games) ── */
+.beta-instrip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:10px 14px;border-radius:12px;background:linear-gradient(180deg,var(--amberbg),rgba(255,255,255,.55));border:1px solid var(--goldline);box-shadow:var(--e0);animation:rise .3s var(--ease-out) both}
+.beta-instrip .bis-k{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--golddeep)}
+.beta-instrip .bis-take{display:inline-flex;align-items:center;gap:7px;font-family:var(--disp);min-width:0;flex-wrap:wrap}
+.beta-instrip .bis-take .bstars{font-size:10px}
+.beta-instrip .bis-take b{font-weight:700;font-size:12.5px;color:var(--ink);text-transform:uppercase;letter-spacing:.02em}
+.beta-instrip .bis-take i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--ink2)}
+.beta-instrip .bis-take em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:10.5px}
+.beta-instrip .bis-res.win{color:var(--hit)}.beta-instrip .bis-res.loss{color:var(--miss)}.beta-instrip .bis-res.push{color:var(--push)}
+.beta-instrip .bis-pass{font-family:var(--sans);font-size:12px;color:var(--ink2)}
+.beta-instrip .bis-open{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--golddeep);background:transparent;border:0;cursor:pointer;flex-shrink:0}
