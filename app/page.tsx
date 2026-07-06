@@ -1251,8 +1251,8 @@ export default function Home() {
     }
 
     // ===================== STATE =====================
-    let tab = "today";              // "today" | "games" | "results" | "settings" | "upgrade" | "account"
-    const TABS = ["today", "games", "results", "settings", "upgrade", "account"];
+    let tab = "today";              // "today" | "games" | "results" | "beta" | "settings" | "upgrade" | "account"
+    const TABS = ["today", "games", "results", "beta", "settings", "upgrade", "account"];
     let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
@@ -5796,11 +5796,207 @@ export default function Home() {
       results: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>`,
       settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M18.2 5.8l-1.8 1.8M7.6 16.4l-1.8 1.8"/></svg>`,
     };
-    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", settings: "Settings" };
+    // ===================== BETA — v4 SHADOW MODEL FEED (public/picks_v4_beta.json) =====================
+    // A separate, honestly-graded shadow feed running ALONGSIDE the champion. Star-rated
+    // (conviction, +EV-gated), price-aware, with every PASS's "priced-out" reason. Nothing is
+    // claimed as an edge — it's presented as a model in validation whose record accrues.
+    let betaData: any = null;
+    let betaTab: "record" | "games" = "record";
+    let betaShown = 24;        // games list pagination
+    let betaOnlyTakes = true;  // default: games where the model actually took a bet
+    async function loadBeta() {
+      if (betaData) return betaData;
+      const r = await fetch("/picks_v4_beta.json", { cache: "force-cache" });
+      if (!r.ok) throw new Error("beta fetch " + r.status);
+      betaData = await r.json();
+      return betaData;
+    }
+    const BETA_LEADS = ["T-24h", "T-12h", "T-6h", "T-3h", "T-1h"];
+    const BETA_MKTS: [string, string][] = [["total", "Total"], ["spread", "Spread"], ["moneyline", "Moneyline"]];
+    const teamShort = (name: any) => { const s = String(name || "").trim(); const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
+    function bStars(n: any) {
+      const k = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
+      let h = ""; for (let i = 0; i < 5; i++) h += `<i class="${i < k ? "f" : "e"}">${i < k ? "★" : "☆"}</i>`;
+      return `<span class="bstars s${k}" aria-label="${k} of 5 stars">${h}</span>`;
+    }
+    const bPct = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) * 100).toFixed(d) + "%");
+    const bRoi = (v: any) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
+    const bWL = (r: any) => (r && r.n ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0");
+    // The single best (highest-star) TAKE cell on a game — used to headline the game in the list.
+    function bestBetaCell(g: any) {
+      let best: any = null;
+      (g.grid || []).forEach((c: any) => { if (c.take && c.stars > 0 && (!best || c.stars > best.stars || (c.stars === best.stars && (c.ev || 0) > (best.ev || 0)))) best = c; });
+      return best;
+    }
+    const betaTakeCount = (g: any) => (g.grid || []).filter((c: any) => c.take && c.stars > 0).length;
+
+    // ---- the honest framing banner (status:shadow, no claim, thin-slice caveat) ----
+    function betaFrame(d: any) {
+      const wn = d.walk_scope_note || {};
+      const hn = (d.star_census && d.star_census.honest_note) || "";
+      return `<div class="beta-frame">
+        <div class="bf-row"><span class="bf-badge">BETA</span><span class="bf-k">Shadow feed · in validation</span></div>
+        <p class="bf-lede">A brand-new model, graded honestly in the open — running <b>alongside</b> the champion, not replacing it. <b>No edge is claimed yet.</b> This is a thin first-read validation slice; watch the record accrue as the full multi-season walk lands.</p>
+        <div class="bf-note">${esc(wn.note || "")} ${wn.date_range ? `· ${esc(wn.date_range[0])}→${esc(wn.date_range[1])} · ${wn.n_games || 0} games` : ""}</div>
+        ${hn ? `<div class="bf-note dim">${esc(hn)}</div>` : ""}
+      </div>`;
+    }
+
+    // ---- the record dashboard (overall + per star tier / market / lead) ----
+    function betaDashboard(d: any) {
+      const rec = d.record || {};
+      const ov = rec.overall_takes || {};
+      const byStar = rec.by_star_tier || {};
+      const census = (d.star_census && d.star_census.takes_only) || {};
+      // Star-tier rows 5→1 (the validation: does higher star win more?)
+      const starRows = [5, 4, 3, 2, 1].map((s) => {
+        const r = byStar[s] || {};
+        const empty = !r.n;
+        return `<tr class="${empty ? "empty" : ""}">
+          <td class="bt-star">${bStars(s)}</td>
+          <td class="bt-n">${r.n || 0}</td>
+          <td class="bt-wl">${bWL(r)}</td>
+          <td class="bt-hit">${bPct(r.hit_rate, 1)}</td>
+          <td class="bt-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)}</td>
+        </tr>`;
+      }).join("");
+      const cut = (obj: any, order: string[], lab: (k: string) => string) => order.filter((k) => obj[k] && obj[k].n).map((k) => {
+        const r = obj[k];
+        return `<div class="bc-row"><span class="bc-k">${esc(lab(k))}</span><span class="bc-wl">${bWL(r)}</span><span class="bc-hit">${bPct(r.hit_rate, 1)}</span><span class="bc-roi ${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</span></div>`;
+      }).join("") || `<div class="bc-empty">Only one market/lead is active on this slice.</div>`;
+      const fivePlus = (census[5] || 0);
+      return `
+        <div class="beta-hero">
+          <div class="bh-k">Takes only · +EV gated · graded at the real price</div>
+          <div class="bh-rec"><b>${bWL(ov)}</b><span class="bh-hit">${bPct(ov.hit_rate, 1)} hit</span><span class="bh-roi ${ov.roi >= 0 ? "pos" : "neg"}">${bRoi(ov.roi)} ROI</span></div>
+          <div class="bh-sub">${ov.n || 0} graded picks the +EV gate let through${fivePlus ? "" : ` · <b>0 five-star picks</b> — nothing statistically proven yet (correct behavior, not missing data)`}.</div>
+        </div>
+        <div class="beta-card">
+          <div class="bcard-h">Does a higher star actually win more?</div>
+          <div class="bcard-sub">Stars = <b>conviction</b> (gate-driven). The floor for any star is +EV at the real price. If the stars are real, higher tiers should out-earn lower ones — shown honestly either way.</div>
+          <table class="beta-startbl"><thead><tr><th>Tier</th><th>Picks</th><th>W–L</th><th>Hit</th><th>ROI</th></tr></thead><tbody>${starRows}</tbody></table>
+          <div class="bcard-foot">Directional only on this thin slice — a signal to watch, not proof.</div>
+        </div>
+        <div class="beta-splitgrid">
+          <div class="beta-card"><div class="bcard-h">By market</div><div class="bcuts">${cut(rec.by_market || {}, ["total", "spread", "moneyline"], (k) => ({ total: "Totals", spread: "Spreads", moneyline: "Moneylines" } as any)[k] || k)}</div></div>
+          <div class="beta-card"><div class="bcard-h">By lead time</div><div class="bcuts">${cut(rec.by_lead_time || {}, BETA_LEADS, (k) => k)}</div></div>
+        </div>`;
+    }
+
+    // ---- a compact list card for one beta game ----
+    function betaGameListCard(g: any) {
+      const best = bestBetaCell(g);
+      const fin = g.final || {};
+      const scoreTxt = fin.home_runs != null && fin.away_runs != null ? `${teamShort(g.away)} ${fin.away_runs} – ${fin.home_runs} ${teamShort(g.home)}` : "—";
+      const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+      const badge = best
+        ? `<span class="bg-pick ${best.result}">${bStars(best.stars)}<span class="bg-side">${esc(best.bet_type)} ${esc(best.pick_side)}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✗" : "P"}</span>` : ""}</span>`
+        : `<span class="bg-nopick">no take</span>`;
+      return `<button class="beta-gcard" data-bgid="${esc(g.game_id)}">
+        <span class="bg-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></span>
+        <span class="bg-meta">${esc(dd)} · Final ${esc(scoreTxt)}</span>
+        ${badge}
+      </button>`;
+    }
+
+    async function renderBeta() {
+      const view = $("beta-view");
+      if (!view) return;
+      if (!betaData) view.innerHTML = `<div class="beta-wrap"><div class="beta-skel">Loading the beta feed…</div></div>`;
+      let d: any;
+      try { d = await loadBeta(); } catch { view.innerHTML = `<div class="beta-wrap"><div class="state"><div class="big">Beta feed unavailable</div><div class="sm">Couldn't load the shadow model data. It refreshes when the full walk lands.</div></div></div>`; return; }
+      const games = (d.games || []) as any[];
+      const list = (betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0) : games)
+        .slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      const shown = list.slice(0, betaShown);
+      view.innerHTML = `
+        <div class="beta-wrap">
+          <div class="beta-masthead">
+            <div class="bm-kick">DiamondEdge <span class="bm-badge">Beta</span></div>
+            <h2 class="bm-h">The v4 model, graded in the open</h2>
+            <p class="bm-sub">A shadow feed in validation — every pick +EV-gated and price-aware, every pass explained. The champion stays your default; this is what's coming.</p>
+          </div>
+          ${betaFrame(d)}
+          <div class="beta-tabs" role="tablist">
+            <button class="beta-tab ${betaTab === "record" ? "on" : ""}" data-btab="record">Record</button>
+            <button class="beta-tab ${betaTab === "games" ? "on" : ""}" data-btab="games">Games <span class="bt-count">${(betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0).length : games.length).toLocaleString()}</span></button>
+          </div>
+          <div class="beta-pane" style="display:${betaTab === "record" ? "block" : "none"}">${betaDashboard(d)}</div>
+          <div class="beta-pane" style="display:${betaTab === "games" ? "block" : "none"}">
+            <div class="beta-listhead"><span>${betaOnlyTakes ? "Games where the model took a bet" : "Every game on the walk"}</span><button class="beta-togg" id="beta-togg">${betaOnlyTakes ? "Show all games" : "Only games with picks"}</button></div>
+            <div class="beta-glist">${shown.map(betaGameListCard).join("")}</div>
+            ${list.length > betaShown ? `<button class="beta-more" id="beta-more">Show more (${(list.length - betaShown).toLocaleString()} left)</button>` : ""}
+          </div>
+        </div>`;
+      view.querySelectorAll(".beta-tab").forEach((b: any) => (b.onclick = () => { betaTab = b.dataset.btab; renderBeta(); }));
+      const tg = $("beta-togg"); if (tg) tg.onclick = () => { betaOnlyTakes = !betaOnlyTakes; betaShown = 24; renderBeta(); };
+      const mo = $("beta-more"); if (mo) mo.onclick = () => { betaShown += 36; renderBeta(); requestAnimationFrame(() => { const el = $("beta-more"); if (el) el.scrollIntoView({ block: "center" }); }); };
+      view.querySelectorAll(".beta-gcard[data-bgid]").forEach((b: any) => (b.onclick = () => openBetaGame(betaData.games.find((g: any) => String(g.game_id) === b.dataset.bgid))));
+      animateCounters(view);
+    }
+
+    // ---- the per-game GRID: lead_time × market, how the pick evolved + every pass reason ----
+    function openBetaGame(g: any) {
+      if (!g) return;
+      const fin = g.final || {};
+      const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
+      const byKey: any = {};
+      (g.grid || []).forEach((c: any) => { byKey[`${c.bet_type}|${c.lead_time}`] = c; });
+      const cellHtml = (c: any) => {
+        if (!c) return `<td class="bgrid-td"><div class="bcell na">—</div></td>`;
+        if (c.take && c.stars > 0) {
+          const side = String(c.pick_side || "") + (c.pick_line != null ? ` ${lineStr(c.pick_line)}` : "");
+          const res = c.result && c.result !== "pass" ? `<span class="bcell-res ${c.result}">${c.result === "win" ? "WIN" : c.result === "loss" ? "LOSS" : "PUSH"}</span>` : "";
+          return `<td class="bgrid-td"><div class="bcell take s${c.stars} ${c.result || ""}"><span class="bcell-stars">${bStars(c.stars)}</span><span class="bcell-side">${esc(side)}</span><span class="bcell-px">${c.per_side_price != null ? fmtOdds(c.per_side_price) : ""}</span>${res}</div></td>`;
+        }
+        // PASS — the reason IS the feature. tap to reveal.
+        return `<td class="bgrid-td"><div class="bcell pass" data-reason="${esc(c.pass_reason || "priced out")}"><span class="bcell-pass">PASS</span></div></td>`;
+      };
+      const rows = BETA_MKTS.map(([mk, lab]) => `<tr><th class="bgrid-mk">${lab}</th>${BETA_LEADS.map((lt) => cellHtml(byKey[`${mk}|${lt}`])).join("")}</tr>`).join("");
+      // the pass reasons, listed for transparency (the ones that carried a directional lean or a real number)
+      const passes = (g.grid || []).filter((c: any) => !c.take && c.pass_reason);
+      const passList = passes.slice(0, 8).map((c: any) => `<div class="bpass-row"><span class="bpass-k">${esc(c.bet_type)} · ${esc(c.lead_time)}</span><span class="bpass-why">${esc(c.pass_reason)}</span></div>`).join("");
+      const html = `
+        <div class="gamepage betapage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.away)} at ${esc(g.home)}">
+          <div class="gp-head">
+            <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button class="gp-brand" id="gp-brand" aria-label="DiamondEdge — home"><span class="diamond" aria-hidden="true"></span><span class="gp-brand-tx">Diamond<b>Edge</b></span></button>
+            <div class="hspacer"></div><span class="bm-badge sm">Beta</span>
+          </div>
+          <div class="gp-body" id="gp-body">
+            <div class="bgame-hero">
+              <div class="bgh-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></div>
+              <div class="bgh-fin">${fin.away_runs != null ? `Final · ${esc(teamShort(g.away))} <b>${fin.away_runs}</b> – <b>${fin.home_runs}</b> ${esc(teamShort(g.home))}` : "—"}</div>
+              <div class="bgh-date">${esc(dd)} · full game</div>
+            </div>
+            <div class="bgrid-card">
+              <div class="bgrid-h">What the model said at each wall before first pitch</div>
+              <div class="bgrid-scroll"><table class="bgrid"><thead><tr><th></th>${BETA_LEADS.map((l) => `<th class="bgrid-lt">${esc(l)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
+              <div class="bgrid-legend">Stars = conviction (+EV-gated). Tap a <b>PASS</b> for why we passed on price.</div>
+            </div>
+            ${passList ? `<div class="bpass-card"><div class="bgrid-h">Why we passed</div><div class="bpass-list">${passList}</div></div>` : ""}
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); });
+      $("gp-back").onclick = () => closeDetail();
+      const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
+      // tap a PASS cell → reveal its reason inline
+      layer.querySelectorAll(".bcell.pass").forEach((c: any) => (c.onclick = () => {
+        const open = c.classList.toggle("open");
+        if (open && !c.querySelector(".bcell-why")) { const s = document.createElement("span"); s.className = "bcell-why"; s.textContent = c.dataset.reason; c.appendChild(s); }
+      }));
+    }
+
+    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", beta: "Beta", settings: "Settings" };
     function renderShell() {
-      // Primary nav = the three destinations at EVERY width (the top bar is the nav on
-      // mobile too now — the bottom nav is retired). Settings lives in the avatar/account hub.
-      const primaryTabs = ["today", "games", "results"];
+      // Primary nav = the destinations at EVERY width (the top bar is the nav on mobile too now
+      // — the bottom nav is retired). "Beta" is the shadow v4 model feed, badged. Settings lives
+      // in the avatar/account hub.
+      const primaryTabs = ["today", "games", "results", "beta"];
       // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it (News only).
       root.innerHTML = `
         <header id="app-header">
@@ -5810,7 +6006,7 @@ export default function Home() {
               <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">News · Games · Insights</div></div>
             </div>
             <nav class="toptabs" aria-label="Primary">
-              ${primaryTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}"${tab === t ? ' aria-current="page"' : ""}>${NAV_LABEL[t]}</button>`).join("")}
+              ${primaryTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}${t === "beta" ? " isbeta" : ""}"${tab === t ? ' aria-current="page"' : ""}>${NAV_LABEL[t]}${t === "beta" ? `<span class="beta-dot" aria-hidden="true"></span>` : ""}</button>`).join("")}
             </nav>
             <div class="hspacer"></div>
             <div class="navright">
@@ -5823,6 +6019,7 @@ export default function Home() {
           <div id="today-view" style="display:${tab === "today" ? "block" : "none"}"></div>
           <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
           <div id="results-view" style="display:none"></div>
+          <div id="beta-view" style="display:none"></div>
           <div id="settings-view" style="display:none"></div>
           <div id="upgrade-view" style="display:none"></div>
           <div id="account-view" style="display:none"></div>
@@ -5912,6 +6109,7 @@ export default function Home() {
       renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
       if (t === "today" && !todayFresh) { renderToday(); todayFresh = true; }
       if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
+      if (t === "beta") renderBeta();
       if (t === "settings") renderSettings();
       if (t === "upgrade") renderUpgrade();
       if (t === "account") renderAccount();
