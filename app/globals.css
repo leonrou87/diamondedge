@@ -3130,3 +3130,18 @@ details.results-more{margin-bottom:14px}
 .subhead.subtle .sporttab.on{color:var(--ink)}
 .subhead.subtle .sporttab .cnt{font-size:9px}
 .subhead.subtle .tab-ink{top:auto;bottom:0;height:2.5px;border-radius:2px;background:var(--acc2);box-shadow:none}
+
+/* ══ V4 = DEFAULT PICK: 5-star glyphs on every pick surface ══ */
+.hpc-stars .bstars{font-size:15px}
+.hpc-stars .bstars i.f{color:#ffd75e;text-shadow:0 1px 5px rgba(0,0,0,.55)}
+.hpc-stars .bstars i.e{color:rgba(255,255,255,.34);text-shadow:none}
+.pstrip .bstars{font-size:11px}
+.mt-conf .bstars{font-size:11px}
+.ln-stars .bstars{font-size:10px}
+.ft-q .bstars{font-size:13px}
+.tm-take .bstars{font-size:10px;margin-left:4px}
+.tierlegend .bstars{font-size:11px}
+.oc .oc-st.low{color:var(--push)}
+/* the "All picks · record" entry next to the perf chip */
+.howlink.strong{color:var(--acc2);font-weight:700}
+.howlink.strong:hover{color:#045c3e}
