@@ -1,7 +1,8 @@
 {
   "model": "v4_beta_live",
-  "status": "shadow",
-  "generated_utc": "2026-07-06T22:08:41Z",
+  "status": "production",
+  "serving_mode": "star_capped",
+  "generated_utc": "2026-07-07T02:37:00Z",
   "dates": [
     "2026-07-06",
     "2026-07-07"
@@ -9,22 +10,23 @@
   "source_walk_id": "cd873786-8f51-406d-ae3e-9306de518fa9",
   "recipe_sha256": "2ac80977691b1936467bb725950187490c9817249198af1d844eecd560769873",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
-  "positioning": "LIVE upcoming-games board of the SHADOW/BETA v4 feed \u2014 same engine + EV/vig gate as the sealed walk (predict_day, labels_visible=False). NOT the champion's pregame_picks. Star tiers reuse the LATEST walk's cleared/BH cell sets; nothing here is a validated edge until a cell survives all three gates on a full walk.",
+  "positioning": "LIVE upcoming-games board of the v4 PRODUCTION feed (Leon promoted v4 on 2026-07-06 with a LOWERED EVIDENCE BAR) \u2014 same engine + EV/vig gate as the sealed walk (predict_day, labels_visible=False). NOT the champion's pregame_picks; champion continues. +EV picks emit even from statistically-unproven cells, STAR-CAPPED by the latest walk's evidence (per-pick `evidence` field says why). -EV is still a hard PASS. Render the caps ('Lean \u2014 unproven cell') and keep the honest record prominent.",
   "star_basis": {
     "walk_id": "cd873786-8f51-406d-ae3e-9306de518fa9",
-    "cleared_cells": [],
+    "beats_baselines_cells": [],
     "bh_significant_cells": [],
-    "note": "a live row can only carry >=3 stars if its cell cleared the anti-trivial gate on the last completed walk; 5 stars additionally requires BH significance. Everything else is a PASS or a 1-2 star +EV notion."
+    "min_cell_n": 100,
+    "note": "STAR CAPS from the last completed walk: a live +EV take in an unproven cell (fails baselines or thin n) emits at max 2 stars as 'Lean (unproven cell)'; a one-sided cell caps at 1 star (flagged); >=3 stars requires a baseline-beating cell; 5 stars additionally requires BH significance. -EV never emits (unchanged hard gate)."
   },
   "board_census": {
-    "n_games": 8,
-    "n_rows": 93,
-    "n_takes": 30,
-    "n_passes": 63,
+    "n_games": 19,
+    "n_rows": 150,
+    "n_takes": 50,
+    "n_passes": 100,
     "stars": {
-      "0": 63,
-      "1": 10,
-      "2": 20,
+      "0": 100,
+      "1": 25,
+      "2": 25,
       "3": 0,
       "4": 0,
       "5": 0
@@ -123,8 +125,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 49.0% >= break-even 48.8% at 105 \u2014 edge below +EV min"
         },
         {
@@ -142,8 +150,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 48.8% < break-even 51.0% at -104 \u2014 priced out (-EV)"
         },
         {
@@ -157,10 +171,16 @@
           "p_breakeven": 0.3663,
           "ev": 0.071,
           "tier": "Strong",
-          "star_tier": "Lean",
-          "stars": 2,
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": "home",
           "pick_line": null,
           "graded_line": null
@@ -180,8 +200,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.7% < break-even 51.0% at -104 \u2014 priced out (-EV)"
         },
         {
@@ -199,8 +225,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 46.7% < break-even 54.1% at -118 \u2014 priced out (-EV)"
         },
         {
@@ -214,10 +246,16 @@
           "p_breakeven": 0.3497,
           "ev": 0.0798,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": null,
           "graded_line": null
@@ -233,10 +271,16 @@
           "p_breakeven": 0.5,
           "ev": 0.015,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (one-sided cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
           "pick_side": "over",
           "pick_line": 8.5,
           "graded_line": null
@@ -256,8 +300,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 46.8% < break-even 53.5% at -115 \u2014 priced out (-EV)"
         },
         {
@@ -271,10 +321,16 @@
           "p_breakeven": 0.3571,
           "ev": 0.04,
           "tier": "Good",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": null,
           "graded_line": null
@@ -294,8 +350,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "under",
           "pass_reason": "model 49.7% < break-even 51.2% at -105 \u2014 priced out (-EV)"
         },
         {
@@ -313,8 +375,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 45.1% < break-even 55.6% at -125 \u2014 priced out (-EV)"
         },
         {
@@ -328,10 +396,16 @@
           "p_breakeven": 0.3509,
           "ev": 0.0167,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (unproven cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": null,
           "graded_line": null
@@ -365,10 +439,16 @@
           "p_breakeven": 0.505,
           "ev": 0.0651,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
           "pick_side": "over",
           "pick_line": 7.5,
           "graded_line": null
@@ -388,8 +468,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 64.0% >= break-even 36.4% at 175 \u2014 edge below +EV min"
         },
         {
@@ -407,8 +493,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 51.4% < break-even 51.7% at -107 \u2014 priced out (-EV)"
         },
         {
@@ -426,8 +518,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 48.5% < break-even 49.8% at 101 \u2014 priced out (-EV)"
         },
         {
@@ -441,10 +539,16 @@
           "p_breakeven": 0.3774,
           "ev": 0.4034,
           "tier": "Strong",
-          "star_tier": "Lean",
-          "stars": 2,
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": "away",
           "pick_line": 1.5,
           "graded_line": null
@@ -464,8 +568,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 51.0% < break-even 51.2% at -105 \u2014 priced out (-EV)"
         },
         {
@@ -483,8 +593,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 47.9% < break-even 48.8% at 105 \u2014 priced out (-EV)"
         },
         {
@@ -498,10 +614,16 @@
           "p_breakeven": 0.3448,
           "ev": 0.4137,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": 1.5,
           "graded_line": null
@@ -521,8 +643,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 51.9% >= break-even 51.5% at -106 \u2014 edge below +EV min"
         },
         {
@@ -536,10 +664,16 @@
           "p_breakeven": 0.4878,
           "ev": 0.0233,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (one-sided cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
           "pick_side": "over",
           "pick_line": 7.5,
           "graded_line": null
@@ -555,10 +689,16 @@
           "p_breakeven": 0.3448,
           "ev": 0.3884,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": 1.5,
           "graded_line": null
@@ -578,8 +718,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 51.4% >= break-even 51.2% at -105 \u2014 edge below +EV min"
         },
         {
@@ -597,8 +743,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 47.4% < break-even 47.6% at 110 \u2014 priced out (-EV)"
         },
         {
@@ -612,10 +764,16 @@
           "p_breakeven": 0.6198,
           "ev": 0.0151,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (unproven cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": 1.5,
           "graded_line": null
@@ -635,8 +793,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 48.3% >= break-even 47.9% at 109 \u2014 edge below +EV min"
         }
       ]
@@ -668,10 +832,16 @@
           "p_breakeven": 0.505,
           "ev": 0.0276,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (unproven cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
           "pick_side": "over",
           "pick_line": 9.5,
           "graded_line": null
@@ -691,8 +861,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 37.8% < break-even 62.3% at -165 \u2014 priced out (-EV)"
         },
         {
@@ -710,8 +886,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 54.0% >= break-even 45.9% at 118 \u2014 edge below +EV min"
         },
         {
@@ -729,8 +911,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.5% < break-even 51.7% at -107 \u2014 priced out (-EV)"
         },
         {
@@ -744,10 +932,16 @@
           "p_breakeven": 0.3876,
           "ev": 0.3065,
           "tier": "Strong",
-          "star_tier": "Lean",
-          "stars": 2,
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": "away",
           "pick_line": -1.5,
           "graded_line": null
@@ -767,8 +961,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 54.8% >= break-even 54.3% at -119 \u2014 edge below +EV min"
         },
         {
@@ -786,8 +986,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 49.8% >= break-even 49.3% at 103 \u2014 edge below +EV min"
         },
         {
@@ -801,10 +1007,16 @@
           "p_breakeven": 0.3922,
           "ev": 0.3121,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": "away",
           "pick_line": -1.5,
           "graded_line": null
@@ -824,8 +1036,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 53.1% < break-even 53.5% at -115 \u2014 priced out (-EV)"
         },
         {
@@ -843,8 +1061,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 49.7% >= break-even 49.5% at 102 \u2014 edge below +EV min"
         },
         {
@@ -858,10 +1082,16 @@
           "p_breakeven": 0.3846,
           "ev": 0.3163,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
           "pick_side": "away",
           "pick_line": 1.5,
           "graded_line": null
@@ -881,8 +1111,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 53.2% < break-even 53.3% at -114 \u2014 priced out (-EV)"
         },
         {
@@ -900,8 +1136,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.1% >= break-even 50.0% at 100 \u2014 edge below +EV min"
         },
         {
@@ -915,10 +1157,16 @@
           "p_breakeven": 0.3876,
           "ev": 0.3538,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
           "pick_side": "away",
           "pick_line": -1.5,
           "graded_line": null
@@ -938,8 +1186,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 52.0% < break-even 53.0% at -113 \u2014 priced out (-EV)"
         }
       ]
@@ -955,7 +1209,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -970,10 +1225,16 @@
           "p_breakeven": 0.5305,
           "ev": 0.0222,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (unproven cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
           "pick_side": "over",
           "pick_line": 8.5,
           "graded_line": null
@@ -993,8 +1254,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 35.2% < break-even 65.5% at -190 \u2014 priced out (-EV)"
         },
         {
@@ -1012,8 +1279,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 52.0% >= break-even 47.9% at 109 \u2014 edge below +EV min"
         },
         {
@@ -1027,10 +1300,16 @@
           "p_breakeven": 0.4762,
           "ev": 0.0379,
           "tier": "Good",
-          "star_tier": "Lean",
-          "stars": 2,
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": "under",
           "pick_line": 9.0,
           "graded_line": null
@@ -1050,8 +1329,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 36.9% < break-even 63.8% at -176 \u2014 priced out (-EV)"
         },
         {
@@ -1069,8 +1354,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 54.3% >= break-even 46.5% at 115 \u2014 edge below +EV min"
         },
         {
@@ -1088,8 +1379,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 51.4% >= break-even 51.2% at -105 \u2014 edge below +EV min"
         },
         {
@@ -1107,8 +1404,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 37.7% < break-even 38.5% at 160 \u2014 priced out (-EV)"
         },
         {
@@ -1126,8 +1429,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 53.8% >= break-even 46.9% at 113 \u2014 edge below +EV min"
         },
         {
@@ -1145,8 +1454,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 51.6% >= break-even 51.2% at -105 \u2014 edge below +EV min"
         },
         {
@@ -1164,8 +1479,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 37.2% < break-even 64.3% at -180 \u2014 priced out (-EV)"
         },
         {
@@ -1183,9 +1504,90 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 54.3% >= break-even 46.5% at 115 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -107,
+          "our_prob": 0.519,
+          "p_breakeven": 0.5169,
+          "ev": 0.0041,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.9% >= break-even 51.7% at -107 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": -180,
+          "our_prob": 0.3629,
+          "p_breakeven": 0.6429,
+          "ev": -0.0089,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 36.3% < break-even 64.3% at -180 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 115,
+          "our_prob": 0.5342,
+          "p_breakeven": 0.4651,
+          "ev": 0.0014,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 53.4% >= break-even 46.5% at 115 \u2014 edge below +EV min"
         }
       ]
     },
@@ -1200,7 +1602,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1215,10 +1618,16 @@
           "p_breakeven": 0.5122,
           "ev": 0.0183,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (unproven cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
           "pick_side": "over",
           "pick_line": 8.0,
           "graded_line": null
@@ -1238,8 +1647,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 61.0% >= break-even 40.0% at 150 \u2014 edge below +EV min"
         },
         {
@@ -1257,8 +1672,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 50.0% < break-even 50.2% at -101 \u2014 priced out (-EV)"
         },
         {
@@ -1276,8 +1697,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.0% < break-even 51.2% at -105 \u2014 priced out (-EV)"
         },
         {
@@ -1295,8 +1722,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 59.7% >= break-even 40.6% at 146 \u2014 edge below +EV min"
         },
         {
@@ -1310,10 +1743,16 @@
           "p_breakeven": 0.4854,
           "ev": 0.0183,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (one-sided cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": "home",
           "pick_line": null,
           "graded_line": null
@@ -1333,8 +1772,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.9% < break-even 51.7% at -107 \u2014 priced out (-EV)"
         },
         {
@@ -1348,10 +1793,16 @@
           "p_breakeven": 0.3448,
           "ev": 0.3891,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": 1.5,
           "graded_line": null
@@ -1371,8 +1822,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 50.7% < break-even 51.2% at -105 \u2014 priced out (-EV)"
         },
         {
@@ -1390,8 +1847,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 51.3% < break-even 51.9% at -108 \u2014 priced out (-EV)"
         },
         {
@@ -1409,8 +1872,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 62.8% < break-even 63.2% at -172 \u2014 priced out (-EV)"
         },
         {
@@ -1428,9 +1897,90 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 50.8% < break-even 51.2% at -105 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -107,
+          "our_prob": 0.506,
+          "p_breakeven": 0.5169,
+          "ev": -0.0211,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.6% < break-even 51.7% at -107 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": -160,
+          "our_prob": 0.6252,
+          "p_breakeven": 0.6154,
+          "ev": 0.0159,
+          "tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
+          "pick_side": "home",
+          "pick_line": 1.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 103,
+          "our_prob": 0.4885,
+          "p_breakeven": 0.4926,
+          "ev": -0.0083,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 48.9% < break-even 49.3% at 103 \u2014 priced out (-EV)"
         }
       ]
     },
@@ -1444,7 +1994,9 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1459,10 +2011,16 @@
           "p_breakeven": 0.4926,
           "ev": 0.0358,
           "tier": "Good",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
           "pick_side": "over",
           "pick_line": 9.0,
           "graded_line": null
@@ -1482,8 +2040,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 60.4% >= break-even 40.0% at 150 \u2014 edge below +EV min"
         },
         {
@@ -1501,8 +2065,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 49.9% < break-even 51.2% at -105 \u2014 priced out (-EV)"
         },
         {
@@ -1520,8 +2090,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.2% < break-even 51.5% at -106 \u2014 priced out (-EV)"
         },
         {
@@ -1535,10 +2111,16 @@
           "p_breakeven": 0.3802,
           "ev": 0.3682,
           "tier": "Strong",
-          "star_tier": "Lean",
-          "stars": 2,
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": "away",
           "pick_line": 1.5,
           "graded_line": null
@@ -1558,8 +2140,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 53.1% >= break-even 52.4% at -110 \u2014 edge below +EV min"
         },
         {
@@ -1577,8 +2165,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.3% < break-even 51.2% at -105 \u2014 priced out (-EV)"
         },
         {
@@ -1592,10 +2186,16 @@
           "p_breakeven": 0.3704,
           "ev": 0.3619,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": "away",
           "pick_line": -1.5,
           "graded_line": null
@@ -1615,9 +2215,165 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
           "pick_side": null,
           "informational_lean": null,
           "pass_reason": "model 53.8% < break-even 54.5% at -120 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -104,
+          "our_prob": 0.4983,
+          "p_breakeven": 0.5098,
+          "ev": -0.0227,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.8% < break-even 51.0% at -104 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": 177,
+          "our_prob": 0.4982,
+          "p_breakeven": 0.361,
+          "ev": 0.39,
+          "tier": "Strong",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
+          "pick_side": "away",
+          "pick_line": -1.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": -124,
+          "our_prob": 0.5497,
+          "p_breakeven": 0.5536,
+          "ev": -0.007,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 55.0% < break-even 55.4% at -124 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -107,
+          "our_prob": 0.4956,
+          "p_breakeven": 0.5169,
+          "ev": -0.0241,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.6% < break-even 51.7% at -107 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": 171,
+          "our_prob": 0.476,
+          "p_breakeven": 0.369,
+          "ev": 0.42,
+          "tier": "Strong",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
+          "pick_side": "away",
+          "pick_line": -1.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": -122,
+          "our_prob": 0.5441,
+          "p_breakeven": 0.5495,
+          "ev": -0.01,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 54.4% < break-even 54.9% at -122 \u2014 priced out (-EV)"
         }
       ]
     },
@@ -1631,7 +2387,9 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1650,8 +2408,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 50.4% < break-even 50.5% at -102 \u2014 priced out (-EV)"
         },
         {
@@ -1669,8 +2433,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 61.3% >= break-even 39.2% at 155 \u2014 edge below +EV min"
         },
         {
@@ -1688,8 +2458,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 50.4% < break-even 50.5% at -102 \u2014 priced out (-EV)"
         },
         {
@@ -1707,8 +2483,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 51.3% < break-even 52.4% at -110 \u2014 priced out (-EV)"
         },
         {
@@ -1726,8 +2508,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 61.2% >= break-even 39.1% at 156 \u2014 edge below +EV min"
         },
         {
@@ -1745,8 +2533,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 50.7% >= break-even 50.2% at -101 \u2014 edge below +EV min"
         },
         {
@@ -1764,8 +2558,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 51.6% >= break-even 51.0% at -104 \u2014 edge below +EV min"
         },
         {
@@ -1779,10 +2579,16 @@
           "p_breakeven": 0.3448,
           "ev": 0.3592,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": 1.5,
           "graded_line": null
@@ -1798,13 +2604,169 @@
           "p_breakeven": 0.505,
           "ev": 0.0278,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (unproven cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
           "pick_side": "home",
           "pick_line": null,
           "graded_line": null
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -102,
+          "our_prob": 0.5243,
+          "p_breakeven": 0.505,
+          "ev": 0.0383,
+          "tier": "Good",
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
+          "pick_side": "over",
+          "pick_line": 7.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": -170,
+          "our_prob": 0.6276,
+          "p_breakeven": 0.6296,
+          "ev": -0.0032,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 62.8% < break-even 63.0% at -170 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": -102,
+          "our_prob": 0.5052,
+          "p_breakeven": 0.505,
+          "ev": 0.0005,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 50.5% >= break-even 50.5% at -102 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -104,
+          "our_prob": 0.5261,
+          "p_breakeven": 0.5098,
+          "ev": 0.032,
+          "tier": "Good",
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
+          "pick_side": "over",
+          "pick_line": 7.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": -170,
+          "our_prob": 0.6389,
+          "p_breakeven": 0.6296,
+          "ev": 0.0148,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 63.9% >= break-even 63.0% at -170 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": -103,
+          "our_prob": 0.507,
+          "p_breakeven": 0.5074,
+          "ev": -0.0009,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 50.7% < break-even 50.7% at -103 \u2014 priced out (-EV)"
         }
       ]
     },
@@ -1818,7 +2780,9 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1833,10 +2797,16 @@
           "p_breakeven": 0.5305,
           "ev": 0.026,
           "tier": "Lean",
-          "star_tier": "Notion",
+          "star_tier": "Lean (unproven cell)",
           "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
           "pick_side": "over",
           "pick_line": 10.5,
           "graded_line": null
@@ -1856,8 +2826,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 46.4% < break-even 53.5% at -115 \u2014 priced out (-EV)"
         },
         {
@@ -1871,10 +2847,16 @@
           "p_breakeven": 0.3876,
           "ev": 0.0511,
           "tier": "Good",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": "away",
           "pick_line": null,
           "graded_line": null
@@ -1894,8 +2876,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 51.0% < break-even 52.1% at -109 \u2014 priced out (-EV)"
         },
         {
@@ -1913,8 +2901,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 471,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "away",
           "pass_reason": "model 50.0% < break-even 50.2% at -101 \u2014 priced out (-EV)"
         },
         {
@@ -1928,10 +2922,16 @@
           "p_breakeven": 0.3333,
           "ev": 0.1084,
           "tier": "Strong",
-          "star_tier": "Lean",
-          "stars": 2,
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 326,
+            "one_sided": true
+          },
           "pick_side": "away",
           "pick_line": null,
           "graded_line": null
@@ -1951,8 +2951,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 443,
+            "one_sided": true
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "over",
           "pass_reason": "model 51.6% >= break-even 51.2% at -105 \u2014 edge below +EV min"
         },
         {
@@ -1970,8 +2976,14 @@
           "stars": 0,
           "take": false,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 458,
+            "one_sided": false
+          },
           "pick_side": null,
-          "informational_lean": null,
+          "informational_lean": "home",
           "pass_reason": "model 52.6% < break-even 52.8% at -112 \u2014 priced out (-EV)"
         },
         {
@@ -1985,10 +2997,1145 @@
           "p_breakeven": 0.3322,
           "ev": 0.1146,
           "tier": "Strong",
-          "star_tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
           "stars": 2,
           "take": true,
           "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 360,
+            "one_sided": false
+          },
+          "pick_side": "away",
+          "pick_line": null,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 10.0,
+          "per_side_price": -105,
+          "our_prob": 0.5134,
+          "p_breakeven": 0.5122,
+          "ev": 0.0023,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 398,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.3% >= break-even 51.2% at -105 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": -115,
+          "our_prob": 0.5313,
+          "p_breakeven": 0.5349,
+          "ev": -0.0066,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 679,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 53.1% < break-even 53.5% at -115 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 210,
+          "our_prob": 0.6517,
+          "p_breakeven": 0.3226,
+          "ev": 0.0799,
+          "tier": "Strong",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 297,
+            "one_sided": false
+          },
+          "pick_side": "away",
+          "pick_line": null,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 10.0,
+          "per_side_price": 102,
+          "our_prob": 0.5056,
+          "p_breakeven": 0.495,
+          "ev": -0.0013,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 50.6% >= break-even 49.5% at 102 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": -115,
+          "our_prob": 0.5489,
+          "p_breakeven": 0.5349,
+          "ev": 0.0262,
+          "tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 941,
+            "one_sided": false
+          },
+          "pick_side": "home",
+          "pick_line": -1.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 210,
+          "our_prob": 0.6635,
+          "p_breakeven": 0.3226,
+          "ev": 0.0431,
+          "tier": "Good",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 332,
+            "one_sided": false
+          },
+          "pick_side": "away",
+          "pick_line": null,
+          "graded_line": null
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Chicago Cubs-Baltimore Orioles-824820",
+      "game_pk": 824820,
+      "date": "2026-07-07",
+      "away": "Chicago Cubs",
+      "home": "Baltimore Orioles",
+      "first_pitch_utc": "2026-07-07T22:35:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": 101,
+          "our_prob": 0.4921,
+          "p_breakeven": 0.4975,
+          "ev": -0.0108,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.2% < break-even 49.8% at 101 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": 142,
+          "our_prob": 0.5976,
+          "p_breakeven": 0.4132,
+          "ev": -0.0263,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 59.8% >= break-even 41.3% at 142 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 105,
+          "our_prob": 0.4888,
+          "p_breakeven": 0.4878,
+          "ev": 0.0021,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 48.9% >= break-even 48.8% at 105 \u2014 edge below +EV min"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Athletics-Detroit Tigers-824254",
+      "game_pk": 824254,
+      "date": "2026-07-07",
+      "away": "Athletics",
+      "home": "Detroit Tigers",
+      "first_pitch_utc": "2026-07-07T22:40:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -107,
+          "our_prob": 0.5166,
+          "p_breakeven": 0.5169,
+          "ev": -0.0005,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.7% < break-even 51.7% at -107 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": -130,
+          "our_prob": 0.4441,
+          "p_breakeven": 0.5652,
+          "ev": -0.0164,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 44.4% < break-even 56.5% at -130 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 160,
+          "our_prob": 0.5796,
+          "p_breakeven": 0.3846,
+          "ev": 0.0931,
+          "tier": "Strong",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": "away",
+          "pick_line": null,
+          "graded_line": null
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-New York Yankees-Tampa Bay Rays-822956",
+      "game_pk": 822956,
+      "date": "2026-07-07",
+      "away": "New York Yankees",
+      "home": "Tampa Bay Rays",
+      "first_pitch_utc": "2026-07-07T22:40:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -105,
+          "our_prob": 0.5077,
+          "p_breakeven": 0.5122,
+          "ev": -0.0088,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.8% < break-even 51.2% at -105 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 0.0,
+          "per_side_price": 164,
+          "our_prob": 0.4945,
+          "p_breakeven": 0.3788,
+          "ev": 0.3344,
+          "tier": "Strong",
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": "away",
+          "pick_line": 0.0,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 100,
+          "our_prob": 0.5122,
+          "p_breakeven": 0.5,
+          "ev": -0.0243,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 51.2% >= break-even 50.0% at 100 \u2014 edge below +EV min"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Seattle Mariners-Miami Marlins-823847",
+      "game_pk": 823847,
+      "date": "2026-07-07",
+      "away": "Seattle Mariners",
+      "home": "Miami Marlins",
+      "first_pitch_utc": "2026-07-07T22:40:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -112,
+          "our_prob": 0.5217,
+          "p_breakeven": 0.5283,
+          "ev": -0.0125,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.2% < break-even 52.8% at -112 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": 155,
+          "our_prob": 0.62,
+          "p_breakeven": 0.3922,
+          "ev": -0.031,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 62.0% >= break-even 39.2% at 155 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": -110,
+          "our_prob": 0.4904,
+          "p_breakeven": 0.5238,
+          "ev": -0.0271,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 49.0% < break-even 52.4% at -110 \u2014 priced out (-EV)"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Houston Astros-Washington Nationals-822713",
+      "game_pk": 822713,
+      "date": "2026-07-07",
+      "away": "Houston Astros",
+      "home": "Washington Nationals",
+      "first_pitch_utc": "2026-07-07T22:45:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.5152,
+          "p_breakeven": 0.5,
+          "ev": 0.0303,
+          "tier": "Good",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": "over",
+          "pick_line": 9.0,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": 162,
+          "our_prob": 0.4869,
+          "p_breakeven": 0.3817,
+          "ev": 0.3444,
+          "tier": "Strong",
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": "away",
+          "pick_line": 1.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 109,
+          "our_prob": 0.5279,
+          "p_breakeven": 0.4785,
+          "ev": -0.0134,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 52.8% >= break-even 47.9% at 109 \u2014 edge below +EV min"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Kansas City Royals-New York Mets-823607",
+      "game_pk": 823607,
+      "date": "2026-07-07",
+      "away": "Kansas City Royals",
+      "home": "New York Mets",
+      "first_pitch_utc": "2026-07-07T23:10:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -105,
+          "our_prob": 0.5129,
+          "p_breakeven": 0.5122,
+          "ev": 0.0014,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.3% >= break-even 51.2% at -105 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": -155,
+          "our_prob": 0.3803,
+          "p_breakeven": 0.6078,
+          "ev": 0.0196,
+          "tier": "Lean",
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": "away",
+          "pick_line": -1.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 128,
+          "our_prob": 0.5637,
+          "p_breakeven": 0.4386,
+          "ev": -0.0052,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 56.4% >= break-even 43.9% at 128 \u2014 edge below +EV min"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Boston Red Sox-Chicago White Sox-824579",
+      "game_pk": 824579,
+      "date": "2026-07-07",
+      "away": "Boston Red Sox",
+      "home": "Chicago White Sox",
+      "first_pitch_utc": "2026-07-07T23:40:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": 100,
+          "our_prob": 0.5157,
+          "p_breakeven": 0.5,
+          "ev": 0.0314,
+          "tier": "Good",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": "over",
+          "pick_line": 8.0,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": -160,
+          "our_prob": 0.5993,
+          "p_breakeven": 0.6154,
+          "ev": -0.0261,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 59.9% < break-even 61.5% at -160 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 113,
+          "our_prob": 0.4696,
+          "p_breakeven": 0.4695,
+          "ev": 0.0002,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 47.0% >= break-even 46.9% at 113 \u2014 edge below +EV min"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Cleveland Guardians-Minnesota Twins-823687",
+      "game_pk": 823687,
+      "date": "2026-07-07",
+      "away": "Cleveland Guardians",
+      "home": "Minnesota Twins",
+      "first_pitch_utc": "2026-07-07T23:40:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -105,
+          "our_prob": 0.52,
+          "p_breakeven": 0.5122,
+          "ev": 0.0152,
+          "tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": "over",
+          "pick_line": 8.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 0.0,
+          "per_side_price": 163,
+          "our_prob": 0.482,
+          "p_breakeven": 0.3802,
+          "ev": 0.3624,
+          "tier": "Strong",
+          "star_tier": "Lean (one-sided cell)",
+          "stars": 1,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": "away",
+          "pick_line": 0.0,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 105,
+          "our_prob": 0.5066,
+          "p_breakeven": 0.4878,
+          "ev": 0.0114,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 50.7% >= break-even 48.8% at 105 \u2014 edge below +EV min"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Los Angeles Angels-Texas Rangers-822881",
+      "game_pk": 822881,
+      "date": "2026-07-07",
+      "away": "Los Angeles Angels",
+      "home": "Texas Rangers",
+      "first_pitch_utc": "2026-07-08T00:05:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": 104,
+          "our_prob": 0.5172,
+          "p_breakeven": 0.4902,
+          "ev": 0.0551,
+          "tier": "Good",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": "over",
+          "pick_line": 7.0,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": -150,
+          "our_prob": 0.3942,
+          "p_breakeven": 0.6,
+          "ev": 0.0096,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 39.4% < break-even 60.0% at -150 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 140,
+          "our_prob": 0.5663,
+          "p_breakeven": 0.4167,
+          "ev": 0.0409,
+          "tier": "Good",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": "away",
+          "pick_line": null,
+          "graded_line": null
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Toronto Blue Jays-San Francisco Giants-823203",
+      "game_pk": 823203,
+      "date": "2026-07-07",
+      "away": "Toronto Blue Jays",
+      "home": "San Francisco Giants",
+      "first_pitch_utc": "2026-07-08T01:45:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -110,
+          "our_prob": 0.5107,
+          "p_breakeven": 0.5238,
+          "ev": -0.0251,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.1% < break-even 52.4% at -110 \u2014 priced out (-EV)"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": 1.5,
+          "per_side_price": 155,
+          "our_prob": 0.6206,
+          "p_breakeven": 0.3922,
+          "ev": -0.0326,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 62.1% >= break-even 39.2% at 155 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": -104,
+          "our_prob": 0.4973,
+          "p_breakeven": 0.5098,
+          "ev": -0.0246,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "home",
+          "pass_reason": "model 49.7% < break-even 51.0% at -104 \u2014 priced out (-EV)"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-07-Colorado Rockies-Los Angeles Dodgers-823929",
+      "game_pk": 823929,
+      "date": "2026-07-07",
+      "away": "Colorado Rockies",
+      "home": "Los Angeles Dodgers",
+      "first_pitch_utc": "2026-07-08T02:10:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": 100,
+          "our_prob": 0.5478,
+          "p_breakeven": 0.5,
+          "ev": 0.0955,
+          "tier": "Strong",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": "over",
+          "pick_line": 9.5,
+          "graded_line": null
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "spread",
+          "scope": "full_game",
+          "model": "residual_spread_v1",
+          "market_line": -1.5,
+          "per_side_price": 108,
+          "our_prob": 0.5185,
+          "p_breakeven": 0.4808,
+          "ev": 0.0015,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 436,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "away",
+          "pass_reason": "model 51.8% >= break-even 48.1% at 108 \u2014 edge below +EV min"
+        },
+        {
+          "lead_time": "T-24h",
+          "bet_type": "moneyline",
+          "scope": "full_game",
+          "model": "residual_ml_v1",
+          "market_line": null,
+          "per_side_price": 227,
+          "our_prob": 0.6711,
+          "p_breakeven": 0.3058,
+          "ev": 0.0754,
+          "tier": "Strong",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 199,
+            "one_sided": false
+          },
           "pick_side": "away",
           "pick_line": null,
           "graded_line": null

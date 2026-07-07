@@ -2421,6 +2421,20 @@ export default function Home() {
       const ap = aP != null ? Number(aP) : -1, bp = bP != null ? Number(bP) : -1;
       return bp - ap;
     }
+    // DAY-LOCKED flagship: once chosen for a calendar day, the featured game STAYS (no
+    // intraday shuffling as walls/feeds refresh). slot 1 = flagship, slot 2 = runner-up.
+    function dayLockedPick(pool: any[], slot = 1, excludeGid?: string | null) {
+      const k = `de_flag${slot}_${todayISO()}`;
+      let gid: string | null = null;
+      try { gid = localStorage.getItem(k); } catch {}
+      if (gid && gid !== excludeGid) {
+        const g = pool.find((x: any) => String(x.game_id) === gid);
+        if (g) { const pl = displayPick(g); if (isPick(pl)) return { g, pl }; }
+      }
+      const cand = featuredPick(excludeGid ? pool.filter((x: any) => String(x.game_id) !== excludeGid) : pool);
+      if (cand) { try { localStorage.setItem(k, String(cand.g.game_id)); } catch {} }
+      return cand;
+    }
     function featuredPick(games: any[]) {
       let best: any = null;
       games.forEach((g: any) => {
@@ -2855,7 +2869,8 @@ export default function Home() {
         } else {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
           // No featured pick hero on a future (no-pick) slate — it's a schedule, not a board.
-          const ft = anyPick ? featuredPick(games) : null;
+          // Today's featured game is DAY-LOCKED (no intraday shuffling).
+          const ft = anyPick ? (curDate === todayISO() ? dayLockedPick(games, 1) : featuredPick(games)) : null;
           const rest = ft ? games.filter((g: any) => g !== ft.g) : games;
           // Reference "Live & Upcoming": group the remaining cards by game phase so LIVE games
           // sit under a live subhead, upcoming below, finals last. gameState already gives phase.
@@ -5389,9 +5404,8 @@ export default function Home() {
       return `<a class="nf-story ${big ? "nf-hero" : ""}" href="#" data-nf="${esc(key)}" rel="noopener">
         ${img}
         <div class="nf-body"><div class="nf-kick">${meta}</div>
-        <h3 class="nf-title">${esc(s.headline || s.title)}</h3>
-        ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(cleanBlurb(s.dek || s.summary))}</p>` : ""}
-        ${newsAngle(s.angle)}</div></a>`;
+        <h3 class="nf-title">${esc(s.title || s.headline)}</h3>
+        ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(cleanBlurb(s.dek || s.summary))}</p>` : ""}</div></a>`;
     }
     // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
     // render and the article reader's prev/next nav so keys/order always agree.
@@ -5400,7 +5414,7 @@ export default function Home() {
       if (!nf || !nf.lead) return [];
       const keyOf = (s: any) => String((s && s.angle && typeof s.angle === "object" && s.angle.game_id) || (s && (s.headline || s.title)) || "").toLowerCase();
       const seen = new Set<string>([keyOf(nf.lead)]);
-      return ((nf.headlines || []) as any[]).filter((s) => { const k = keyOf(s); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+      return ((nf.headlines || []) as any[]).filter((s) => { const k = keyOf(s); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 9);
     }
     // Displayed story keys in order: lead ("L") then each deduped headline by its ORIGINAL index
     // (so newsStoryByKey resolves the right story even after dedup shifts positions).
@@ -5603,8 +5617,11 @@ export default function Home() {
         const d0 = gameLocalDay(g0);
         return st0 === "live" || d0 === todayISO() || (st0 === "pre" && !d0);
       });
-      const ftBest = featuredPick(ftPool);
+      const ftBest = isToday ? dayLockedPick(ftPool, 1) : featuredPick(ftPool);
       const leadGame = (ftBest && ftBest.g) || (leadPick ? findGameLive(leadPick.game_id) : null);
+      // optional SECOND flagship — only when it's a genuinely strong (3★+) call
+      const ft2 = isToday && leadGame ? dayLockedPick(ftPool, 2, String(leadGame.game_id)) : null;
+      const flag2 = ft2 && ft2.pl && (ft2.pl.stars || 0) >= 3 ? leadStoryCard(ft2.g, "Flagship Pick", dateTxt) : "";
       let leadStory = "";
       if (leadGame) {
         leadStory = leadStoryCard(leadGame, "Today's Flagship Pick", dateTxt);
@@ -5623,13 +5640,7 @@ export default function Home() {
       const leadGid = leadGame ? String(leadGame.game_id) : (leadPick ? String(leadPick.game_id) : null);
       const seen = new Set<string>(); if (leadGid) seen.add(leadGid);
       const sig = significantGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; });
-      const topGames = sig.slice(0, 6);
-      const topSection = topGames.length ? `
-        <section class="top-games">
-          <div class="sec-h"><span>Top games to watch</span></div>
-          <div class="topgames-list">${topGames.map((g: any) => leadStoryCard(g, topKicker(g), dateTxt)).join("")}</div>
-          <button class="board-all" data-nav="games">See the full slate on the board →</button>
-        </section>` : "";
+      const topSection = ""; // retired: 1-2 flagships then straight into Around the League
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
       // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
       // The masthead nameplate is computed from the MODEL's board (never the old brief):
@@ -5643,14 +5654,14 @@ export default function Home() {
       view.innerHTML = `
         <div class="news">
           <div class="masthead lead">
-            <div class="mh-kicker"><span class="lk-tag">${isToday ? "Today" : "Recap"}</span><span class="lk-dateline">${esc(dateTxt)} · DiamondEdge Desk</span>${goldChip}</div>
+            <div class="mh-kicker"><span class="lk-tag">DiamondEdge Desk</span>${goldChip}</div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
           <div class="mh-rule"></div>
           ${nextUpBanner()}
           <section class="ng-lead front-hero">${leadStory}</section>
-          ${topSection}
+          ${flag2 ? `<section class="ng-lead front-hero second">${flag2}</section>` : ""}
           ${newsFront() ? `<div class="front-wire">${newsFront()}</div>` : ""}
           ${socialShareBar()}
           <div class="news-foot">${esc(recordStrip())}</div>
@@ -6049,6 +6060,7 @@ export default function Home() {
     // (conviction, +EV-gated), price-aware, with every PASS's "priced-out" reason. Nothing is
     // claimed as an edge — it's presented as a model in validation whose record accrues.
     let betaData: any = null;
+    let betaBuiltAt = 0; // last DOM build — skip rebuilds within 60s (tab switches stay instant)
     let betaTab: "today" | "record" | "games" = "today";
     let betaShown = 24;        // games list pagination
     let betaOnlyTakes = true;  // default: games where the model actually took a bet
@@ -6231,6 +6243,7 @@ export default function Home() {
       const tg = $("beta-togg"); if (tg) tg.onclick = () => { betaOnlyTakes = !betaOnlyTakes; betaShown = 24; renderBeta(); };
       const mo = $("beta-more"); if (mo) mo.onclick = () => { betaShown += 36; renderBeta(); requestAnimationFrame(() => { const el = $("beta-more"); if (el) el.scrollIntoView({ block: "center" }); }); };
       // card clicks resolve against BOTH feeds (live board first, then the historical walk)
+      betaBuiltAt = Date.now();
       view.querySelectorAll(".beta-gcard[data-bgid]").forEach((b: any) => (b.onclick = () => {
         const gid = b.dataset.bgid;
         const bg = (lv && (lv.games || []).find((g: any) => String(g.game_id) === gid)) || (betaData.games || []).find((g: any) => String(g.game_id) === gid);
@@ -6432,16 +6445,19 @@ export default function Home() {
       tab = t;
       TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
       root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
-      renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
-      if (t === "today" && !todayFresh) { renderToday(); todayFresh = true; }
-      if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
-      if (t === "beta") renderBeta();
-      if (t === "settings") renderSettings();
-      if (t === "upgrade") renderUpgrade();
-      if (t === "account") renderAccount();
-      if (t === "games") requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
-      // Defer the scroll reset off the tab-switch path so the view flip paints immediately.
-      requestAnimationFrame(() => window.scrollTo(0, 0));
+      // PERF: the view flip + tab highlight paint IMMEDIATELY; every heavy render is deferred
+      // one frame so switching never feels laggy.
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+        renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
+        if (t === "today" && !todayFresh) { renderToday(); todayFresh = true; }
+        if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
+        if (t === "beta" && (Date.now() - betaBuiltAt > 60 * 1000 || !$("beta-view").innerHTML.trim())) renderBeta();
+        if (t === "settings") renderSettings();
+        if (t === "upgrade") renderUpgrade();
+        if (t === "account") renderAccount();
+        if (t === "games") requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
+      });
     }
 
     // ===================== INIT =====================

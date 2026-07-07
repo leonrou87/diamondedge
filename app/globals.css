@@ -3186,3 +3186,9 @@ details.results-more{margin-bottom:14px}
 /* micro star row inside odds chips — tiny, inherits the chip's ink */
 .oc.pick .oc-mst{font-style:normal;font-size:7.5px;line-height:1;letter-spacing:1.5px;opacity:.95;margin-top:1.5px;color:currentColor}
 .oc.pick{height:auto;min-height:30px;padding:5px 10px}
+
+/* sign-in pinned to the very right, vertically centered in the header bar */
+.hbar{align-items:center}
+.navright{margin-left:auto;display:flex;align-items:center;align-self:center}
+/* second flagship spacing */
+.front-hero.second{margin-top:18px}
