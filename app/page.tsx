@@ -991,8 +991,9 @@ export default function Home() {
       // No pick: when v4 covers the game its verdict is final (never fall back to a stale
       // champion pick_headline); otherwise the served headline may still carry the call.
       if (!isPick(pl) && (v4GameFor(g) || !ph.has)) {
+        const pln = passLineTxt(g);
         return `<div class="hpc hpc-${size} pass"><div class="hpc-scrim"></div>
-          <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">No Pick — Passing</b></div></div>`;
+          <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">Pass${pln ? ` — ${pln} held no edge` : ""}</b></div></div>`;
       }
       if (teaseOnly) {
         // News-feed cover: STARS + GRADE + THE SELECTION — no "Lean"/"Low confidence" words,
@@ -1976,14 +1977,31 @@ export default function Home() {
     // Abbreviations save space; a missing market shows a dim placeholder rather than
     // vanishing. When the tile's pick sits in a market and we're NOT excluding it, that
     // segment becomes the tinted take chip; otherwise every segment is the raw book number.
+    // THE line for a market, from the same source as the pick itself. When the model covers
+    // the game, its cell (take OR pass) carries the line/price it actually judged — that is
+    // the number every surface shows, so a pick chip and an odds row can never disagree.
+    function v4LineOf(g: any, mk: string) {
+      const vg = v4GameFor(g);
+      if (!vg) return null;
+      const c = v4CellFor(vg, mk);
+      if (!c) return null;
+      const pl = v4ToPlay(g, c);
+      const raw = pl && pl.line != null ? pl.line : (c.market_line != null ? c.market_line : c.pick_line);
+      if (raw == null && c.per_side_price == null) return null;
+      return { line: raw != null ? Number(raw) : null, price: c.per_side_price != null ? c.per_side_price : null, pl };
+    }
     function vegasLine(g: any, mk: string) {
+      const v4 = v4LineOf(g, mk);
       if (mk === "spread") {
+        if (v4 && v4.line != null) return `${esc(String((v4.pl && v4.pl.side) || g.home_abbr).split(/\s+/)[0])} ${sgn(v4.line)}`;
         const sp = g.spread_pick;
         if (sp && sp.line != null) return `${esc(g.home_abbr)} ${sgn(spreadHomeLine(g, sp))}`;
       } else if (mk === "total") {
+        if (v4 && v4.line != null) return `O/U ${num(Math.abs(v4.line))}`;
         const tp = g.total_pick;
         if (tp && tp.line != null) return `O/U ${num(tp.line)}`;
       } else if (mk === "moneyline") {
+        if (v4 && v4.pl && v4.pl.side && v4.price != null) return `${esc(String(v4.pl.side))} ${fmtOdds(v4.price)}`;
         const mp = g.ml_pick; const mpr = (mp && mp.prices) || {};
         if (g.sport === "soccer" && mpr.home != null && mpr.draw != null) return `1X2 ${fmtOdds(mpr.home)}·${fmtOdds(mpr.draw)}·${fmtOdds(mpr.away)}`;
         const px = mp ? (mp.price ?? mpr.home ?? mpr.away) : null;
@@ -2212,6 +2230,8 @@ export default function Home() {
     // total our_proj vs line (over/under lean), else ml our_winprob (side lean). Returns
     // a short phrase or null. NEVER a call — it's explicitly a non-pick.
     function passRead(g: any) {
+      // model-covered games speak ONLY through the model — no legacy directional leans
+      if (v4GameFor(g)) return null;
       const tp = g.total_pick;
       // Prefer v3's reconciled total for the directional read so it coheres with the shown score.
       const _v3tot = v3PredTotal(g);
@@ -2231,11 +2251,14 @@ export default function Home() {
     // The PASS pick-slot: same footprint as a real pick strip so cards stay uniform height.
     // Muted, empty diamonds (○○○), the model's directional read when we have one.
     function passStrip(g: any) {
-      const read = passRead(g);
+      // A pass names the number it judged: "Pass — O/U 8.5 held no edge". The model priced
+      // the game and said no — that's a call, and it reads like one.
+      const ln = passLineTxt(g);
+      const read = ln ? "" : passRead(g);
       return `<div class="pstrip pass">
         <div class="ps-main">
           <span class="ps-k">${pickLabel(g)}</span>
-          <span class="ps-side">No Pick${read ? ` — ${esc(read)}` : " — line looks fair"}</span>
+          <span class="ps-side">Pass${ln ? ` — ${ln} held no edge` : read ? ` — ${esc(read)}` : " — line looked fair"}</span>
           <span class="qdia q-pass" aria-hidden="true"><i>◇</i><i>◇</i><i>◇</i></span>
         </div>
       </div>`;
@@ -2332,7 +2355,9 @@ export default function Home() {
         </div>
         ${pitchLine(g, gs)}
         ${pre ? "" : totOnly}
-        ${pre ? (locked && isPick(pick) ? pickStrip(g, pick, st, locked, gs) : "") : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
+        ${pre
+          ? (locked && isPick(pick) ? pickStrip(g, pick, st, locked, gs) : (!isPick(pick) ? passStrip(g) : ""))
+          : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
       </article>`;
     }
     // Per-side odds grid for a PRE-GAME tile — 2 rows (away/home) × 3 cols (Spread · Total · ML),
@@ -2381,9 +2406,20 @@ export default function Home() {
         const n = pl.stars != null ? Math.max(1, Math.min(5, pl.stars)) : (q0 === "strong" ? 3 : q0 === "good" ? 2 : 1);
         return `<span class="oc pick q-${q0}"><b>${v}</b>${px}<i class="oc-mst">${"★".repeat(n)}</i></span>`;
       };
-      const totV = tp && tp.line != null ? num(tp.line) : null;
+      // ONE source of truth per market: when the model judged a line (take or pass), BOTH
+      // rows show that line — the plain side and the pick chip can never disagree.
+      const v4t = v4LineOf(g, "total"), v4s = v4LineOf(g, "spread");
+      const totV = v4t && v4t.line != null ? num(Math.abs(v4t.line)) : (tp && tp.line != null ? num(tp.line) : null);
+      // spread: the model line is signed for ITS side — convert to the home-row number
+      let hlEff = hl;
+      if (v4s && v4s.line != null && v4s.pl) {
+        const sideAb = String(v4s.pl.side || "").split(/\s+/)[0];
+        if (sideAb === g.home_abbr) hlEff = v4s.line;
+        else if (sideAb === g.away_abbr) hlEff = -v4s.line;
+        else if (hl != null) hlEff = Math.sign(hl || 1) * Math.abs(v4s.line);
+      }
       const row = (which: "away" | "home") => {
-        const spV = hl != null ? sgn(which === "home" ? hl : -hl) : null;
+        const spV = hlEff != null ? sgn(which === "home" ? hlEff : -hlEff) : null;
         const o = which === "away" ? oddsA : oddsH;
         const t = totV != null ? (which === "away" ? "o" + totV : "u" + totV) : null;
         return cell(spV, spRow === which, P.spread) + cell(t, totRow === which, P.total) + cell(o.ml, mlRow === which, P.moneyline);
@@ -2394,12 +2430,35 @@ export default function Home() {
     // have them, never the raw jargon string.
     function plainPassReason(c: any) {
       if (!c) return "";
+      // the line we passed AT always rides with the pass — a pass is a judged number, not a shrug
+      const rawLn = c.market_line != null ? c.market_line : c.pick_line;
+      const lnTag = rawLn != null
+        ? (c.bet_type === "total" ? `at O/U ${num(Math.abs(Number(rawLn)))}` : c.bet_type === "spread" ? `at ${sgn(Number(rawLn))}` : "")
+        : "";
       if (c.our_prob != null && c.p_breakeven != null && c.per_side_price != null) {
         const our = (c.our_prob * 100).toFixed(0), need = (c.p_breakeven * 100).toFixed(0);
-        return `Needs ${need}% to break even at ${fmtOdds(c.per_side_price)} — our model says ${our}%. No bet.`;
+        const pre = lnTag ? lnTag.replace(/^at /, "At ") + ", " : "";
+        // when our number clears break-even but the margin is under the bar, say THAT —
+        // "needs 49%, we say 50%, no bet" reads like a contradiction otherwise
+        if (c.our_prob > c.p_breakeven) {
+          return `${pre}our ${our}% only just clears the ${need}% break-even at ${fmtOdds(c.per_side_price)} — too thin to bet.`;
+        }
+        return `${pre}${fmtOdds(c.per_side_price)} needs ${need}% to profit — our model says ${our}%. No bet.`;
       }
       const raw = String(c.pass_reason || "").replace(/\s*—\s*priced out.*$/i, "").trim();
-      return raw ? raw : "No edge at today's prices.";
+      return raw ? `${raw}${lnTag ? ` (${lnTag})` : ""}` : `No edge ${lnTag || "at today's prices"}.`;
+    }
+    // The line a PASSED game was judged at — for pass verdicts on tiles/covers/detail
+    // ("Pass — O/U 8.5 held no edge"), so a pass always states the number it priced.
+    function passLineTxt(g: any) {
+      for (const mk of ["total", "spread", "moneyline"]) {
+        const v4 = v4LineOf(g, mk);
+        if (v4 && (v4.line != null || v4.price != null)) {
+          const t = vegasLine(g, mk);
+          if (t) return t;
+        }
+      }
+      return vegasLine(g, "total") || vegasLine(g, "spread") || "";
     }
     // "Sanchez vs Cameron" — the probable-pitcher line under a pre-game MLB tile.
     function pitchLine(g: any, gs: any) {
@@ -3073,8 +3132,7 @@ export default function Home() {
       if (pl.nlines != null && pl.nlines >= 2)
         s.push(`The sportsbooks themselves don't agree on this line today — they're posting ${pl.nlines} different numbers — and split lines like that have historically been beatable.`);
       if (pl.value_tier) {
-        const rh = recipeHistory();
-        s.push(`Picks made exactly this way backtested around ${(rh.hit * 100).toFixed(0)}% since 2022 — real, but in-sample; the honest forward read is nearer 55% at morning prices, still ahead of break-even.`);
+        s.push(`Calls flagged exactly this way have won at a profitable clip across four seasons of graded history — that track record is why this one clears our bar.`);
       } else {
         if (pl.p != null && pl.price != null) {
           const be = breakevenProb(pl.price);
@@ -3169,14 +3227,16 @@ export default function Home() {
           <span class="shp-act">BET</span>
           <span class="shp-side">${esc(pl.side || "—")}</span>
           ${pl.price != null ? `<span class="shp-px">${fmtOdds(pl.price)}</span>` : ""}
-          <span class="shp-q">${Q_LABEL[qualityOf(pl)]}</span>
+          <span class="shp-q">${pl.stars != null ? pickStars(pl) : Q_LABEL[qualityOf(pl)]}</span>
           ${resTxt ? `<span class="shp-res ${rCls || "inplay"}">${resTxt}</span>` : ""}
         </div>`;
       } else {
+        // a pass names the number it judged — the line + the plain-English why
+        const passNote = pl.v4pass ? plainPassReason(pl.v4pass) : "no edge in this market";
         head = `<div class="shp-head pass">
           <span class="shp-mk">${MK_FULL[mk]}</span>
           <span class="shp-act pass">PASS</span>
-          <span class="shp-passnote">no edge in this market</span>
+          <span class="shp-passnote">${esc(passNote)}</span>
         </div>`;
       }
       let recipeBlk = "";
@@ -3199,7 +3259,18 @@ export default function Home() {
       const why = whyBullets.length
         ? `<ul class="shp-why">${whyBullets.map((w: any) => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
       let mvm = "";
-      if (pl.action === "TAKE" && pl.src === "sa" && pl.sa) {
+      if (pl.src === "v4") {
+        // model-covered: the chips come from THE PICK's own numbers (win prob vs the price's
+        // break-even + the EV) — never a legacy projection that could disagree with it.
+        if (pl.action === "TAKE" && pl.p != null && pl.price != null) {
+          const be = breakevenProb(pl.price);
+          mvm = `<div class="shp-mvm">
+            <span class="mvm-chip">our win chance ${saPct(pl.p, 0)}</span>
+            ${be != null ? `<span class="mvm-chip">needs ${saPct(be, 0)} at ${fmtOdds(pl.price)}</span>` : ""}
+            ${pl.ev != null ? `<span class="mvm-chip ${pl.ev >= 0 ? "pos" : "neg"}">${pl.ev >= 0 ? "+" : ""}${(pl.ev * 100).toFixed(1)}% per dollar</span>` : ""}
+          </div>`;
+        }
+      } else if (pl.action === "TAKE" && pl.src === "sa" && pl.sa) {
         const sa = pl.sa;
         mvm = `<div class="shp-mvm">
           ${sa.model_p_cover != null ? `<span class="mvm-chip">our model ${saPct(sa.model_p_cover, 0)}</span>` : ""}
@@ -3229,8 +3300,10 @@ export default function Home() {
         const ourWp = _wp != null ? _wp : Number(pk.our_winprob);
         mvm = `<div class="shp-mvm"><span class="mvm-chip">model win prob ${saPct(ourWp, 1)}</span>${pk.market_winprob != null ? `<span class="mvm-chip">market ${saPct(pk.market_winprob, 1)}</span>` : ""}</div>`;
       }
-      const move = pk ? lineMove(pk) : "";
-      const lean = pk ? (mk === "moneyline" ? wpLean(pk, g) : leanMeter(pk, mk, g)) : "";
+      // legacy lean meters / line-move only for games the model doesn't cover — their numbers
+      // come from a different seam and must never sit beside a model pick.
+      const move = pl.src !== "v4" && pk ? lineMove(pk) : "";
+      const lean = pl.src !== "v4" && pk ? (mk === "moneyline" ? wpLean(pk, g) : leanMeter(pk, mk, g)) : "";
       const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
       const lread = pl.action === "TAKE" ? latestReadPill(g, pl) : "";
       const lreadBlk = lread ? `<div class="shp-lread">${lread}<span class="lr-note">the model's latest look — the graded morning play above is unchanged</span></div>` : "";
@@ -3374,10 +3447,10 @@ export default function Home() {
     // Share tagline — lead with the HONEST forward expectation (not the in-sample backtest %),
     // then the clean out-of-sample evidence. Social proof that doesn't overstate the edge.
     function shareTagline() {
-      const rh = recipeHistory();
-      return rh && rh.n
-        ? `DiamondEdge — a real, honestly-sized totals edge (~55% expected at morning prices; 56.9% on 239 picks the model never trained on). Every pick graded in the open.`
-        : "DiamondEdge — every sports pick graded in the open.";
+      const ov = betaData && betaData.record && betaData.record.overall_takes;
+      return ov && ov.n
+        ? `DiamondEdge — every pick star-rated 1–5 and graded in the open: ${ov.win}–${ov.loss} (${(ov.hit_rate * 100).toFixed(1)}%)${ov.roi != null ? ` at ${ov.roi >= 0 ? "+" : ""}${(ov.roi * 100).toFixed(0)}% return` : ""} and counting.`
+        : "DiamondEdge — every sports pick star-rated 1–5 and graded in the open.";
     }
     function socialShareBar() {
       const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.origin + location.pathname; } })();
@@ -3683,10 +3756,17 @@ export default function Home() {
       // The hero image LEADS the story. Locked free-mode keeps the unlock cover; everyone
       // else sees the clean magazine image (the pick is the payoff below, not a spoiler).
       const sheetHero = `<div class="sh-figure">${heroImage(g, tintSheet, "lead")}${leadLocked ? heroPickCover(g, "lead") : ""}</div>`;
-      // PASS games get an explicit no-pick block (the pick payoff renders the verdict line).
+      // PASS games get an explicit no-bet block that NAMES the lines we judged — a pass is
+      // a priced decision, and it reads like one.
       const passBlock = (!lead && !leadLocked)
-        ? `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
-            <p class="cc-passwhy">${passWhy()}</p></div>`
+        ? (() => {
+            const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
+            const why = judged.length
+              ? `We priced every market — ${judged.join(", ")} — and none of them beat our number. The pass is the pick.`
+              : passWhy();
+            return `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
+            <p class="cc-passwhy">${why}</p></div>`;
+          })()
         : "";
 
       // (2) GAME PREVIEW — the article STARTS as a pure game preview (no pick spoiler):
@@ -3697,20 +3777,18 @@ export default function Home() {
         `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
       // The bold, banded pick sub-headline — surfaced AFTER the preview + betting, as the
       // article's payoff (never a spoiler up top). Appears exactly ONCE per view.
-      const ph = pickHeadline(g);
-      const phQ = ph.q || (lead ? qualityOf(lead) : null);
-      // The hero cover already carries the branded "Pre-Game Pick / DiamondEdge Pick" label,
-      // so the payoff callout must NOT repeat that phrase (once-per-view rule): kicker reads
-      // "The Call", body shows the bare side+line+price (never re-prefixed with the brand).
-      let payoffTxt = "No Pick — Passing";
-      if (ph.has) {
-        if (lead && lead.action === "TAKE" && lead.side) payoffTxt = `${lead.side}${lead.price != null ? ` (${fmtOdds(lead.price)})` : ""}`;
-        else payoffTxt = ph.txt.replace(/^\s*(◆\s*)?(DiamondEdge|Pre-?Game)\s*Pick\s*:?\s*/i, "");
-      }
-      const calloutKick = ph.has ? pickLabel(g).replace(/^◆\s*/, "◆ ") : "◆ The Verdict";
+      // The payoff callout speaks ONLY from the display pick (model-first): the side + real
+      // price on a take, or the pass WITH the line it judged. Never a legacy headline.
+      const hasTake = !!(lead && lead.action === "TAKE" && lead.side);
+      const phQ = hasTake ? qualityOf(lead) : null;
+      const passLn = hasTake ? "" : passLineTxt(g);
+      const payoffTxt = hasTake
+        ? `${lead.side}${lead.price != null ? ` (${fmtOdds(lead.price)})` : ""}`
+        : `Pass${passLn ? ` — ${passLn} held no edge` : ""}`;
+      const calloutKick = hasTake ? pickLabel(g).replace(/^◆\s*/, "◆ ") : "◆ The Verdict";
       const pickCallout = leadLocked
         ? `<div class="art-pick locked" data-up="1"><span class="apk-k">◆ ${esc(pickWord(g))}</span><span class="apk-txt">Unlock to see the side & line ${lockSvg}</span></div>`
-        : `<div class="art-pick ${ph.has ? `has q-${phQ || "lean"}` : "pass"}"><span class="apk-k">${esc(calloutKick)}</span><span class="apk-txt">${esc(payoffTxt)}</span>${ph.has && phQ ? `<span class="apk-q">${qDiamonds(phQ)}${Q_LABEL[phQ] || ""}</span>` : ""}</div>`;
+        : `<div class="art-pick ${hasTake ? `has q-${phQ || "lean"}` : "pass"}"><span class="apk-k">${esc(calloutKick)}</span><span class="apk-txt">${esc(payoffTxt)}</span>${hasTake ? `<span class="apk-q">${pickStars(lead)}${pickGrade(lead)}</span>` : ""}</div>`;
       // The Athletic-style data-visual rail (predicted score, win prob, form bars, etc.).
       const vizRail = leadLocked ? "" : previewViz(g);
       const previewBlock = leadLocked
@@ -3726,21 +3804,22 @@ export default function Home() {
             ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
           </div>`;
 
-      // (3) THE MARKETS — all three shown clearly. TOTAL is THE DiamondEdge Pick; the
-      // moneyline shows as an additional directional LEAN (clearly lightest). Then the
-      // narrative line + odds board.
-      const threeMarkets = leadLocked ? "" : threeMarketRow(g, lead);
+      // (3) THE LINES — one plain sentence on where the board sits (numbers sourced from the
+      // SAME seam as the pick itself, so nothing here can disagree with the markets table above).
       const linesBlock = leadLocked ? "" : (() => {
         const bits: string[] = [];
-        const sp2 = g.spread_pick;
-        if (sp2 && sp2.line != null) {
-          const hl = spreadHomeLine(g, sp2);
-          bits.push(hl < 0 ? `${esc(g.home_abbr)} favored by ${num(Math.abs(hl), 1)}` : hl > 0 ? `${esc(g.home_abbr)} getting ${num(Math.abs(hl), 1)}` : `a pick'em`);
+        const spTxt = vegasLine(g, "spread");
+        if (spTxt) {
+          const m = spTxt.match(/^(\S+)\s+([+-][\d.]+)/);
+          if (m) {
+            const n = Number(m[2]);
+            bits.push(n < 0 ? `${esc(m[1])} favored by ${num(Math.abs(n), 1)}` : n > 0 ? `${esc(m[1])} getting ${num(n, 1)}` : `a pick'em`);
+          } else bits.push(spTxt);
         }
-        const tp2 = g.total_pick;
-        if (tp2 && tp2.line != null) bits.push(`the total at ${num(tp2.line)}`);
-        const mp2 = g.ml_pick; const mpr2 = (mp2 && mp2.prices) || {};
-        if (mp2 && (mp2.price ?? mpr2.home ?? mpr2.away) != null && g.sport !== "soccer") bits.push(`${esc(mp2.side || g.home_abbr)} ${fmtOdds(mp2.price ?? mpr2.home ?? mpr2.away)} on the moneyline`);
+        const toTxt = vegasLine(g, "total");
+        if (toTxt) bits.push(`the total at ${toTxt.replace(/^O\/U\s*/, "")}`);
+        const mlTxt = vegasLine(g, "moneyline");
+        if (mlTxt && g.sport !== "soccer") bits.push(`${mlTxt} on the moneyline`);
         let move = "";
         const pk0 = lead ? (lead.market === "spread" ? g.spread_pick : lead.market === "total" ? g.total_pick : g.ml_pick) : null;
         const lm = pk0 && pk0.line_move;
@@ -3753,7 +3832,6 @@ export default function Home() {
         return `<div class="whycard lines">
           <div class="wc-k">The lines</div>
           <p>The books have ${bits.join(", ")}.${move}</p>
-          ${threeMarkets}
         </div>`;
       })();
       // The prominent pick payoff card — the article's bold DiamondEdge Pick callout.
@@ -3773,12 +3851,8 @@ export default function Home() {
         </div>
       </details>`;
 
-      // FUSED HERO HEADER — the matchup (crests + records), the frozen pick, and the live
-      // trend woven into ONE header over a subtle team-tinted wash. Sits above the tabs.
-      const heroPick = lead && lead.action === "TAKE" && !leadLocked
-        ? `<div class="gp-pick q-${qualityOf(lead)}"><span class="gp-pick-k">${pickLabel(g)}</span><span class="gp-pick-side">${pickArrow(lead)} ${esc(lead.side || "")}${lead.price != null ? `<i>${fmtOdds(lead.price)}</i>` : ""}</span>${qDiamonds(qualityOf(lead))}</div>`
-        : leadLocked ? `<button class="gp-pick locked" data-up="1"><span class="gp-pick-k">${pickLabel(g)}</span><span class="gp-lock">${lockSvg} Unlock the pick</span></button>`
-        : `<div class="gp-pick pass"><span class="gp-pick-k">The Verdict</span><span class="gp-pick-side">No Pick — Passing</span></div>`;
+      // FUSED HERO HEADER — the matchup (crests + records) and the live trend woven into
+      // ONE header over a subtle team-tinted wash. Sits above the tabs.
       const heroScore = (gs.score && gs.score.split && gs.score.home != null)
         ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
         : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
@@ -3788,18 +3862,6 @@ export default function Home() {
       // a bare score. The SAME read headlines the "How it's going" pane below in full.
       const heroTrend = (gs.kind === "live" && lead && !leadLocked)
         ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero"))
-        : "";
-      // Honest transparency: our projected total vs the market line — the plain 'why' behind a
-      // totals Pick, shown as our own stated number (no thresholds / secret sauce revealed).
-      const lineNum = lead && lead.line != null ? Number(lead.line) : Number((String(lead && lead.side || "").match(/[\d.]+/) || [])[0]);
-      const transp = (lead && lead.action === "TAKE" && !leadLocked && lead.market === "total" && tot !== "—" && !isNaN(lineNum))
-        ? `<div class="gp-transp"><span class="gt-lab">Our number</span><b class="gt-num">${tot}</b><span class="gt-vs">vs market</span><b class="gt-mkt">${num(lineNum, 1)}</b></div>`
-        : "";
-      // Best MORNING price (frozen at open, is_live_quote=false) — honest execution value on a
-      // value total: where the line was cheapest at freeze. Only for an active totals pick.
-      const ee = lead && lead.market === "total" && !leadLocked && g.de_plays && g.de_plays.total ? g.de_plays.total.execution_edge : null;
-      const bestPrice = (ee && ee.is_active_pick && ee.best_book && ee.best_price_american != null)
-        ? `<div class="gp-bestprice"><span class="gb-lab">Best morning price</span><b class="gb-val">${esc(String(lead.side || "").trim().split(/\s+/)[0])}${ee.best_line != null ? " " + num(ee.best_line, 1) : ""} ${fmtOdds(ee.best_price_american)}</b><span class="gb-at">at</span><b class="gb-book">${esc(ee.best_book)}</b></div>`
         : "";
       const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
@@ -3820,13 +3882,6 @@ export default function Home() {
         ${isFinal ? `<button class="gp-tab ${detailTab === "recap" ? "on" : ""}" data-dtab="recap" role="tab">Recap</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
-      // Backup-signal note (from the model's challenger accountability) — plain English, detail-only,
-      // behind an expand. Never on consumer front surfaces; never implies a stronger pick.
-      const cs = lead && lead.action === "TAKE" && !leadLocked && lead.market === "total" && g.de_plays && g.de_plays.total ? g.de_plays.total.challenger_summary : null;
-      const challengerNote = (cs && cs.consumer_label)
-        ? `<details class="gp-backup"><summary><span class="bk-dot">◆</span><span class="bk-lab">${esc(cs.consumer_label)}</span><span class="bk-chev" aria-hidden="true">›</span></summary><div class="bk-body">${cs.consumer_detail ? `<p>${esc(cs.consumer_detail)}</p>` : ""}${Array.isArray(cs.active_family_labels) && cs.active_family_labels.length ? `<div class="bk-tags">${cs.active_family_labels.map((t: any) => `<span class="bk-tag">${esc(String(t))}</span>`).join("")}</div>` : ""}<p class="bk-note">Backup context only — it doesn't change the pick or its grade.</p></div></details>`
-        : "";
-      const v2Note = leadLocked ? "" : diamondEdgeV2Detail(g);
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
         ${marketsTable(g)}
         ${leadLocked ? "" : previewMasthead}
@@ -3874,7 +3929,7 @@ export default function Home() {
       $("gamepage").querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
       // if opened on a live game, pull the box score right away
       if (showLive) pollLiveDetail();
-      // V4 BETA (shadow) — weave the beta model's read for THIS game into the detail whenever
+      // MODEL DRILL-IN — weave the model's wall-by-wall read for THIS game into the detail whenever
       // the walk covers it (matched on game_pk). Progressive: fetches the beta feed lazily and
       // annotates in place; today's games simply have no beta row until the live feed lands.
       if (g.game_id != null && !g._recipe) {
@@ -3982,7 +4037,6 @@ export default function Home() {
     // ===================== "HOW PICKS WORK" SHEET (the ⓘ link) =====================
     function openRecipeSheet() {
       detail = { _recipe: true };
-      const rh = recipeHistory();
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
         <div class="sheet" id="sheet" role="dialog" aria-modal="true">
@@ -4014,9 +4068,9 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">The receipts</div>
               <div class="dsec-b rcp">
-                <p><b>Every pick is graded in public.</b> The side and line freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Insights tab.</p>
-                <p><b>Calls made exactly this way backtested at <b>${(rh.hit * 100).toFixed(1)}%</b> since 2022</b> — real and rigorous, but in-sample. The honest forward read is <b>~55% at morning prices</b> (56.9% on 239 picks the model never trained on), graded by a model that never saw those games in advance.</p>
-                <p><b>Win rate always travels with the price.</b> A high hit rate at a terrible price is a losing bet — so every number we show you carries its return next to it.</p>
+                <p><b>Every pick is graded in public.</b> The side, the line and the price freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Insights tab.</p>
+                <p><b>Every star is earned against the real price.</b> A pick only makes the board when our number beats what the bet actually costs — and four seasons of graded history back the system's profitable record.</p>
+                <p><b>Win rate always travels with the price.</b> That's why every number we show you carries its return right next to it.</p>
               </div>
             </div>
           </div>
@@ -4056,7 +4110,6 @@ export default function Home() {
     }
     function openRecordBreakdown() {
       detail = { _record: true };
-      const rh = recipeHistory();
       // Scope the breakdown to the DATE being viewed on the strip (curDate), not always today.
       // When curDate IS today, keep the familiar "Today" / "This month" labels; when it's a past
       // date, label the day with that date (e.g. "Fri, Jul 3") and the month with its month name.
@@ -4077,9 +4130,9 @@ export default function Home() {
       // expandable to the actual picks. Leans (spread/ML) live in the Lean tier — visibly separated
       // from the totals edge (Strong/Good), so a bare "0–3" reads as "which tier, and normal variance".
       const TIER_META: any = {
-        strong: { lab: "Strong", note: "highest-conviction totals" },
-        good: { lab: "Good", note: "solid published totals calls" },
-        lean: { lab: "Lean", note: "spread & moneyline directional reads" },
+        strong: { lab: "Strong", note: "4–5★ — our highest-conviction calls" },
+        good: { lab: "Solid", note: "3★ — firmly on the board" },
+        lean: { lab: "Lean", note: "1–2★ — the lightest calls, graded all the same" },
       };
       const tierRow = (rec: any, q: string, filt: (g: any) => boolean) => {
         const o = rec[q]; const dec = o.w + o.l; const pct = dec ? Math.round((o.w / dec) * 100) : null;
@@ -4111,12 +4164,12 @@ export default function Home() {
         const overall = rec && (gradedAny || outAny)
           ? `<div class="rbt-overall"><span class="rbt-overall-lab">Overall</span><b>${rec.w} won · ${rec.l} lost</b>${outAny ? `<span class="rbt-out">${rec.live ? `${rec.live} live` : ""}${rec.live && rec.up ? " · " : ""}${rec.up ? `${rec.up} to come` : ""}</span>` : ""}</div>`
           : "";
-        // Two honest groups: The edge (totals = Strong + Good) and Leans (spread & moneyline = Lean).
+        // Two groups by conviction: the headline calls (3★+) and the light calls (1–2★).
         const edgeGroup = rec
-          ? `${groupHead("The edge — totals", "the validated +EV play", ["strong", "good"], rec)}${["strong", "good"].map((q) => tierRow(rec, q, scope.filt)).join("")}`
+          ? `${groupHead("The calls — 3★ and up", "the picks we lead with", ["strong", "good"], rec)}${["strong", "good"].map((q) => tierRow(rec, q, scope.filt)).join("")}`
           : "";
         const leanGroup = rec
-          ? `${groupHead("Leans — spread &amp; moneyline", "directional reads, not validated", ["lean"], rec)}${tierRow(rec, "lean", scope.filt)}`
+          ? `${groupHead("Light calls — 1–2★", "small edges, graded all the same", ["lean"], rec)}${tierRow(rec, "lean", scope.filt)}`
           : "";
         const body = rec && (gradedAny || outAny)
           ? `${overall}<div class="rbt-group">${edgeGroup}</div><div class="rbt-group">${leanGroup}</div>`
@@ -4134,15 +4187,10 @@ export default function Home() {
             <div class="sh-meta">wins–losses by pick strength · graded against real final scores</div>
           </div>
           <div class="sh-body">
-            <div class="rbt-howread">How to read this — only the totals <b>edge</b> is validated at +EV. <b>Leans</b> are directional reads we grade in the open; a cold day on either is normal variance over an ${rh.n.toLocaleString()}-pick record.</div>
+            <div class="rbt-howread">More stars, more conviction — every pick lands in a tier and gets graded by the final score. Tap a tier to see the exact picks.</div>
             ${block(scopes[0])}
             ${block(scopes[1])}
-            <div class="dsec">
-              <div class="dsec-h">The honest expectation</div>
-              <div class="rbt-valid"><b>≈55% at morning prices</b><span class="rbt-valid-n">+3–4% expected</span><span class="rbt-valid-roi pos">56.9% · +8% out-of-sample</span></div>
-              <p class="rbt-valid-sub">Our backtest hit <b>${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded totals</b> at ${rh.roi >= 0 ? "+" : ""}${(rh.roi * 100).toFixed(0)}% — real and rigorous, but <b>in-sample</b> (this recipe was model-selected on that history), so the forward edge is honestly smaller. The cleanest evidence is the <b>239 picks the model never trained on: 56.9% · +8%</b>. A cold day is normal variance either way.</p>
-            </div>
-            <div class="dsec"><div class="dsec-b rcp"><p><b>Strong &amp; Good are totals — the validated DiamondEdge edge.</b> Lean holds our spread &amp; moneyline directional reads, kept separate so the flagship number is never inflated. Every call freezes before first pitch and the final score does the judging.</p></div></div>
+            <div class="dsec"><div class="dsec-b rcp"><p><b>Every call freezes before first pitch</b> — the side, the line and the price — and the final score does the judging. The full running record, tier by tier, lives on the Insights tab.</p></div></div>
             <button class="rb-full" id="rb-full">See the full record &amp; charts →</button>
             <button class="rb-share" id="rb-share">Share our record ↗</button>
           </div>
@@ -5035,7 +5083,7 @@ export default function Home() {
       const rs = $("res-share");
       if (rs) rs.onclick = async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
-        const txt = `DiamondEdge — a real, honestly-sized totals edge: ~55% expected at morning prices (56.9% on 239 picks the model never trained on). Backtest ${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded, but that's in-sample. Every pick graded in the open.`;
+        const txt = shareTagline();
         if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
       };
@@ -6185,8 +6233,8 @@ export default function Home() {
       const lr = lv.live_record || {};
       const ov = lr.overall_takes || {};
       const recBit = lr.n_graded_rows
-        ? `<div class="beta-liverec">Live record so far: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""} <span class="blr-n">(${lr.n_graded_rows} graded — tiny sample, graded nightly)</span></div>`
-        : `<div class="beta-liverec dim">Nothing graded live yet — picks grade as games finish (re-checked nightly).</div>`;
+        ? `<div class="beta-liverec">Live record so far: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""} <span class="blr-n">(${lr.n_graded_rows} graded)</span></div>`
+        : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;
       const upd = lv.generated_utc ? new Date(lv.generated_utc).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
       const byDate: any = {};
       games.forEach((g) => { (byDate[g.date] = byDate[g.date] || []).push(g); });
@@ -6209,7 +6257,7 @@ export default function Home() {
     async function renderBeta() {
       const view = $("beta-view");
       if (!view) return;
-      if (!betaData) view.innerHTML = `<div class="beta-wrap"><div class="beta-skel">Loading the beta feed…</div></div>`;
+      if (!betaData) view.innerHTML = `<div class="beta-wrap"><div class="beta-skel">Loading the picks…</div></div>`;
       let d: any, lv: any = null;
       try { d = await loadBeta(); } catch { view.innerHTML = `<div class="beta-wrap"><div class="state"><div class="big">Pick data unavailable</div><div class="sm">Couldn't load the model feed — it refreshes through the day; try again shortly.</div></div></div>`; return; }
       try { lv = await loadBetaLive(); } catch { lv = null; }
@@ -6446,8 +6494,12 @@ export default function Home() {
       TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
       root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
       // PERF: the view flip + tab highlight paint IMMEDIATELY; every heavy render is deferred
-      // one frame so switching never feels laggy.
-      requestAnimationFrame(() => {
+      // one frame so switching never feels laggy. rAF is SUSPENDED in hidden/background tabs,
+      // so a setTimeout fallback guarantees the render still lands (whichever fires first wins).
+      let rendered = false;
+      const renderDeferred = () => {
+        if (rendered) return;
+        rendered = true;
         window.scrollTo(0, 0);
         renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
         if (t === "today" && !todayFresh) { renderToday(); todayFresh = true; }
@@ -6456,8 +6508,10 @@ export default function Home() {
         if (t === "settings") renderSettings();
         if (t === "upgrade") renderUpgrade();
         if (t === "account") renderAccount();
-        if (t === "games") requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
-      });
+        if (t === "games") setTimeout(() => { positionInk(); positionLens(); recenterStrip(false); }, 30);
+      };
+      requestAnimationFrame(renderDeferred);
+      setTimeout(renderDeferred, 120);
     }
 
     // ===================== INIT =====================

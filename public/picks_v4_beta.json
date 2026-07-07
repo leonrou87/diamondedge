@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "record_basis": "sealed 2026 walk (cd873786-8f51-406d-ae3e-9306de518fa9) \u2014 star-capped take set",
-  "generated_utc": "2026-07-06T22:43:27Z",
+  "generated_utc": "2026-07-07T11:01:37Z",
   "walk_id": "cd873786-8f51-406d-ae3e-9306de518fa9",
   "recipe_sha256": "2ac80977691b1936467bb725950187490c9817249198af1d844eecd560769873",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
