@@ -1254,9 +1254,11 @@ export default function Home() {
     async function loadPitchers() {
       if (pitchersData && Date.now() - pitchersAt < 10 * 60 * 1000) return pitchersData;
       let d: any = null;
-      try { d = await snap("pitchers_v4"); } catch {}
-      if (!d) { try { const r = await fetch("/pitchers_v4.json", { cache: "no-store" }); if (r.ok) d = await r.json(); } catch {} }
-      if (d) { pitchersData = d; pitchersAt = Date.now(); }
+      // Supabase is freshest but can be slow at boot — race it against a 1.5s timeout,
+      // fall back to the bundled file, and let the next call upgrade to the fresh copy.
+      try { d = await Promise.race([snap("pitchers_v4"), new Promise((r) => setTimeout(() => r(null), 1500))]); } catch {}
+      if (!d || !d.by_game) { try { const r = await fetch("/pitchers_v4.json", { cache: "no-store" }); if (r.ok) d = await r.json(); } catch {} }
+      if (d && d.by_game) { pitchersData = d; pitchersAt = Date.now(); try { renderSlate(true); } catch {} }
       return pitchersData;
     }
     const pitcherFeedFor = (g: any, side: "away" | "home") =>
@@ -6727,7 +6729,7 @@ export default function Home() {
       document.addEventListener("visibilitychange", () => { if (!document.hidden) { pollLiveScores(); pollPregame(); if (detail) pollLiveDetail(); } });
       window.addEventListener("focus", () => { pollLiveScores(); });
       pollLiveScores();
-      loadPitchers(); // warm the pitchers feed so tiles render ERAs on first paint
+      loadPitchers().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // ERAs onto tiles once the feed lands
       // ── PULL-TO-REFRESH (mobile): drag down from the very top → full refresh ──
       // A hard reload re-fetches every feed (and any new deploy). Indicator shows pull
       // progress; fires past 70px. Desktop unaffected (touch-only).
