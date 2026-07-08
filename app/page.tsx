@@ -632,8 +632,10 @@ export default function Home() {
     function orderedTakes(g: any, P?: any) {
       const plays = P || gamePlays(g);
       const prio: any = { total: 0, spread: 1, moneyline: 2 };
+      // ALL-IN TOTALS (2026-07-07): the pick product is pregame totals only — spread/ML
+      // never surface as OUR call (they remain visible as market info elsewhere).
       return MARKETS.map((mk) => plays[mk])
-        .filter((p: any) => p.action === "TAKE")
+        .filter((p: any) => p.action === "TAKE" && p.market === "total")
         .sort((a: any, b: any) =>
           ((isGold(b) ? 1 : 0) - (isGold(a) ? 1 : 0)) ||
           ((a.value_tier === "value-a" ? 0 : 1) - (b.value_tier === "value-a" ? 0 : 1)) ||
@@ -1938,16 +1940,14 @@ export default function Home() {
       const vg = v4GameFor(g);
       if (vg) {
         const P4 = gamePlays(g);
-        let best: any = null;
-        MARKETS.forEach((mk) => {
-          const pl = P4[mk];
-          if (pl && pl.action === "TAKE" && (!best || (pl.stars || 0) > (best.stars || 0) || ((pl.stars || 0) === (best.stars || 0) && (pl.ev || 0) > (best.ev || 0)))) best = pl;
-        });
-        return best;
+        // ALL-IN TOTALS: only the totals lane can be OUR pick.
+        const pl = P4["total"];
+        return pl && pl.action === "TAKE" ? pl : null;
       }
       const dp = g && g.display_pick;
-      if (dp && typeof dp === "object" && String(dp.action || "").toUpperCase() === "TAKE" && dp.side != null) {
-        const mk = MARKETS.indexOf(String(dp.market || "").toLowerCase()) >= 0 ? String(dp.market).toLowerCase() : "total";
+      if (dp && typeof dp === "object" && String(dp.action || "").toUpperCase() === "TAKE" && dp.side != null
+          && String(dp.market || "total").toLowerCase() === "total") {
+        const mk = "total";
         // the same market's de_plays TAKE carries the richer fields (why, nlines, …) —
         // reuse it only when it IS the same pick (same side and line)
         const rich = gamePlays(g)[mk];
@@ -6114,7 +6114,8 @@ export default function Home() {
     let betaOnlyTakes = true;  // default: games where the model actually took a bet
     async function loadBeta() {
       if (betaData) return betaData;
-      const r = await fetch("/picks_v4_beta.json", { cache: "force-cache" });
+      // daily cache-buster: the file regenerates nightly — never serve yesterday's record
+      const r = await fetch(`/picks_v4_beta.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
       if (!r.ok) throw new Error("beta fetch " + r.status);
       betaData = await r.json();
       return betaData;
@@ -6137,7 +6138,8 @@ export default function Home() {
       return betaLiveData;
     }
     const BETA_LEADS = ["T-24h", "T-12h", "T-6h", "T-3h", "T-1h"];
-    const BETA_MKTS: [string, string][] = [["total", "Total"], ["spread", "Spread"], ["moneyline", "Moneyline"]];
+    // ALL-IN TOTALS (2026-07-07): the pick product is pregame totals only — spread/ML retired.
+    const BETA_MKTS: [string, string][] = [["total", "Total"]];
     const teamShort = (name: any) => { const s = String(name || "").trim(); const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
     function bStars(n: any) {
       const k = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
@@ -6159,7 +6161,7 @@ export default function Home() {
     function betaFrame(d: any) {
       const wn = d.walk_scope_note || {};
       return `<div class="beta-frame">
-        <p class="bf-lede">Every pick, star-rated 1–5 and graded in the open — win or lose.</p>
+        <p class="bf-lede">Pregame totals, star-rated and graded in the open — win or lose.</p>
         <div class="bf-note">${wn.date_range ? `Graded ${esc(wn.date_range[0])} → ${esc(wn.date_range[1])} · ${wn.n_games || 0} games so far` : ""}</div>
       </div>`;
     }
@@ -6167,9 +6169,11 @@ export default function Home() {
     // ---- the record dashboard (overall + per star tier / market / lead) ----
     function betaDashboard(d: any) {
       const rec = d.record || {};
-      const ov = rec.overall_takes || {};
-      const byStar = rec.by_star_tier || {};
-      const census = (d.star_census && d.star_census.takes_only) || {};
+      // THE product record = CHAMPION V2 (our totals engine × the price gate), not the research grid.
+      const cv = rec.headline_champion_v2 || {};
+      const ov = cv.headline || {};
+      const byStar = cv.by_star_tier || {};
+      const grid = rec.overall_takes || {}; // the wider model grid (1–2★ leans) — secondary, honest
       // Star-tier rows 5→1 (the validation: does higher star win more?)
       const starRows = [5, 4, 3, 2, 1].map((s) => {
         const r = byStar[s] || {};
@@ -6185,13 +6189,16 @@ export default function Home() {
       const cut = (obj: any, order: string[], lab: (k: string) => string) => order.filter((k) => obj[k] && obj[k].n).map((k) => {
         const r = obj[k];
         return `<div class="bc-row"><span class="bc-k">${esc(lab(k))}</span><span class="bc-wl">${bWL(r)}</span><span class="bc-hit">${bPct(r.hit_rate, 1)}</span><span class="bc-roi ${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</span></div>`;
-      }).join("") || `<div class="bc-empty">Only one market/lead is active on this slice.</div>`;
-      const fivePlus = (census[5] || 0);
+      }).join("") || `<div class="bc-empty">Splits fill in as the record grows.</div>`;
+      const gatedNote = cv.gated_out && cv.gated_out.n
+        ? `<div class="bh-gate">The price gate blocked ${cv.gated_out.n} would-be picks${cv.gated_out.would_have_record ? ` — the ${cv.gated_out.n_graded || 0} graded would have gone ${cv.gated_out.would_have_record.record || ""} (${bRoi(cv.gated_out.would_have_record.roi)})` : ""}${cv.gated_out.n_pending_or_no_result ? `; ${cv.gated_out.n_pending_or_no_result} pending` : ""}.</div>`
+        : "";
       return `
         <div class="beta-hero">
-          <div class="bh-k">The record</div>
-          <div class="bh-rec"><b>${bWL(ov)}</b><span class="bh-hit">${bPct(ov.hit_rate, 1)} hit</span><span class="bh-roi ${ov.roi >= 0 ? "pos" : "neg"}">${bRoi(ov.roi)} ROI</span></div>
-          <div class="bh-sub">${ov.n || 0} graded picks — every result public, win or lose.</div>
+          <div class="bh-k">The totals record</div>
+          <div class="bh-rec"><b>${bWL(ov)}</b><span class="bh-hit">${bPct(ov.hit_rate, 1)} hit</span><span class="bh-roi ${(ov.roi || 0) >= 0 ? "pos" : "neg"}">${bRoi(ov.roi)} ROI</span></div>
+          <div class="bh-sub">${ov.n || 0} graded picks — our totals engine at the real price, every result public, win or lose.</div>
+          ${gatedNote}
         </div>
         <div class="beta-card">
           <div class="bcard-h">Does a higher star actually win more?</div>
@@ -6200,8 +6207,8 @@ export default function Home() {
 
         </div>
         <div class="beta-splitgrid">
-          <div class="beta-card"><div class="bcard-h">By market</div><div class="bcuts">${cut(rec.by_market || {}, ["total", "spread", "moneyline"], (k) => ({ total: "Totals", spread: "Spreads", moneyline: "Moneylines" } as any)[k] || k)}</div></div>
           <div class="beta-card"><div class="bcard-h">By lead time</div><div class="bcuts">${cut(rec.by_lead_time || {}, BETA_LEADS, (k) => k)}</div></div>
+          <div class="beta-card"><div class="bcard-h">The wider lean board</div><div class="bcard-sub">Beyond the headline picks, the engine tracks every small-edge totals lean (1–2★) at its real price.</div><div class="bcuts"><div class="bc-row"><span class="bc-k">All leans</span><span class="bc-wl">${bWL(grid)}</span><span class="bc-hit">${bPct(grid.hit_rate, 1)}</span><span class="bc-roi ${(grid.roi || 0) >= 0 ? "pos" : "neg"}">${bRoi(grid.roi)}</span></div></div></div>
         </div>`;
     }
 
@@ -6230,11 +6237,21 @@ export default function Home() {
       if (!lv) return `<div class="bc-empty">The live board didn't load — it refreshes through the day; try again shortly.</div>`;
       const games = (lv.games || []) as any[];
       const bc = lv.board_census || {};
+      // headline record = CHAMPION V2 (mirrored onto the live payload); fallback to the live grid record
+      const cvRec = ((lv.record || {}).headline_champion_v2 || {}).headline || {};
       const lr = lv.live_record || {};
-      const ov = lr.overall_takes || {};
-      const recBit = lr.n_graded_rows
-        ? `<div class="beta-liverec">Live record so far: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""} <span class="blr-n">(${lr.n_graded_rows} graded)</span></div>`
+      const ov = cvRec.n ? cvRec : (lr.overall_takes || {});
+      const recBit = ov.n
+        ? `<div class="beta-liverec">Season record: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""}</div>`
         : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;
+      // CHAMPION V2 slate — the headline picks (or the honest no-play note)
+      const cv = lv.champion_v2 || {};
+      const cvPicks = (cv.picks || []) as any[];
+      const cvSlate = cvPicks.length
+        ? `<div class="beta-cvslate">${cvPicks.map((p: any) => `
+            <div class="cvp"><span class="cvp-mu">${esc(teamShort(p.away || ""))} @ ${esc(teamShort(p.home || ""))}</span>
+              ${bStars(p.stars)}<span class="cvp-side">${esc(String(p.pick_side || "").toUpperCase())} ${p.pick_line != null ? esc(lineStr(p.pick_line)) : ""}${p.per_side_price != null ? ` <i>${fmtOdds(p.per_side_price)}</i>` : ""}</span></div>`).join("")}</div>`
+        : `<div class="beta-cvslate none">No headline play today — the engine only fires when its number and the price both clear. ${esc((cv.slate_status && cv.slate_status.note) || "")}</div>`;
       const upd = lv.generated_utc ? new Date(lv.generated_utc).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
       const byDate: any = {};
       games.forEach((g) => { (byDate[g.date] = byDate[g.date] || []).push(g); });
@@ -6246,10 +6263,11 @@ export default function Home() {
       }).join("") || `<div class="bc-empty">No games on the live board yet — tomorrow fills in when books post their lines.</div>`;
       return `
         <div class="beta-card livehead">
-          <div class="bcard-h">Today's board — live</div>
+          <div class="bcard-h">Today's totals — live</div>
           <div class="bcard-sub">Picks firm up as game time nears — a game without one yet may earn one later.${upd ? ` Updated ${esc(upd)}.` : ""}</div>
+          ${cvSlate}
           ${recBit}
-          <div class="bcard-foot">${bc.n_takes || 0} picks across ${bc.n_games || games.length} games so far.</div>
+          <div class="bcard-foot">${bc.n_takes || 0} totals leans across ${bc.n_games || games.length} games so far.</div>
         </div>
         ${sections}`;
     }
@@ -6269,9 +6287,9 @@ export default function Home() {
       view.innerHTML = `
         <div class="beta-wrap">
           <div class="beta-masthead">
-            <div class="bm-kick">DiamondEdge <span class="bm-badge">The Model</span></div>
-            <h2 class="bm-h">Every pick, graded in the open</h2>
-            <p class="bm-sub">This is the model behind every DiamondEdge pick — price-aware, +EV-gated, star-rated 1–5. Every take and every pass, lead time by lead time, with the record accruing in public.</p>
+            <div class="bm-kick">DiamondEdge <span class="bm-badge">Pregame Totals</span></div>
+            <h2 class="bm-h">Totals picks, graded in the open</h2>
+            <p class="bm-sub">One market, done right: pregame over/unders — price-aware, +EV-gated, star-rated. Every take and every pass at the real price, lead time by lead time, with the record accruing in public.</p>
           </div>
           ${betaFrame(d)}
           <div class="beta-tabs" role="tablist">
@@ -6358,12 +6376,13 @@ export default function Home() {
       }));
     }
 
-    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", beta: "Beta", settings: "Settings" };
+    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", beta: "Totals", settings: "Settings" };
     function renderShell() {
       // Primary nav = the destinations at EVERY width (the top bar is the nav on mobile too now
       // — the bottom nav is retired). The v4 model is now the DEFAULT pick everywhere; its
       // deep-dive view (record + every pick) is reachable from Games, not a nav tab.
-      const primaryTabs = ["today", "games", "results"];
+      // ALL-IN TOTALS: the model's totals board is a first-class nav destination.
+      const primaryTabs = ["today", "games", "beta", "results"];
       // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it (News only).
       root.innerHTML = `
         <header id="app-header">
