@@ -2156,6 +2156,65 @@ export default function Home() {
       </div>`;
     }
 
+    // ── PICK COUNTDOWN: when does this game's next pick check arrive? ──
+    // Picks first appear when the book posts (~T-24h); they firm up at the five walls
+    // (T-24h/12h/6h/3h/1h). This renders "next check T-6h · in 1h 22m" for upcoming games,
+    // ticking live via the shared 60s clock below.
+    const WALL_ORDER: [string, number][] = [["T-24h", 864e5], ["T-12h", 432e5], ["T-6h", 216e5], ["T-3h", 108e5], ["T-1h", 36e5]];
+    function nextWallInfo(g: any) {
+      const fp = firstPitchTs(g);
+      if (fp == null) return null;
+      const now = Date.now();
+      if (now >= fp) return null; // live/final — no countdown
+      for (const [lab, ms] of WALL_ORDER) {
+        const t = fp - ms;
+        if (t > now) {
+          const dm = Math.max(1, Math.round((t - now) / 60000));
+          const h = Math.floor(dm / 60), m = dm % 60;
+          return { label: lab, inTxt: h ? `${h}h ${m}m` : `${m}m`, final: false };
+        }
+      }
+      // inside the last hour: the pick is in its final form
+      const dm = Math.max(1, Math.round((fp - now) / 60000));
+      return { label: "final form", inTxt: `${dm}m to first pitch`, final: true };
+    }
+    // Self-contained chip: carries the first-pitch ts + has-pick flag as data attributes
+    // so the 60s ticker recomputes without needing the game object.
+    function countdownChip(g: any, gs: any) {
+      if (!gs || gs.kind !== "pre") return "";
+      const fp = firstPitchTs(g);
+      const w = nextWallInfo(g);
+      if (!w || fp == null) return "";
+      const pl = displayPick(g);
+      const has = isPick(pl);
+      const lead = !has ? `first look` : w.final ? `pick locked in` : `next check ${w.label}`;
+      return `<span class="pk-count" data-fp="${fp}" data-has="${has ? 1 : 0}">⏱ ${esc(lead)} · ${esc(w.inTxt)}</span>`;
+    }
+    const wallFromFp = (fp: number) => {
+      const now = Date.now();
+      if (now >= fp) return null;
+      for (const [lab, ms] of WALL_ORDER) {
+        const t = fp - ms;
+        if (t > now) {
+          const dm = Math.max(1, Math.round((t - now) / 60000));
+          const h = Math.floor(dm / 60), m = dm % 60;
+          return { label: lab, inTxt: h ? `${h}h ${m}m` : `${m}m`, final: false };
+        }
+      }
+      return { label: "final form", inTxt: `${Math.max(1, Math.round((fp - now) / 60000))}m to first pitch`, final: true };
+    };
+    // shared 60s ticker: refresh every visible countdown chip without re-rendering views
+    setInterval(() => {
+      document.querySelectorAll(".pk-count[data-fp]").forEach((el: any) => {
+        const fp = Number(el.dataset.fp);
+        if (!fp) return;
+        const w = wallFromFp(fp);
+        if (!w) { el.remove(); return; }
+        const has = el.dataset.has === "1";
+        el.textContent = `⏱ ${!has ? "first look" : w.final ? "pick locked in" : "next check " + w.label} · ${w.inTxt}`;
+      });
+    }, 60000);
+
     // Tile status strip: "Mid 8th" / "FINAL" / "7:10 PM"; confidence diamonds right.
     function tileStatus(g: any, gs: any, q?: any) {
       let left = "";
@@ -2168,7 +2227,7 @@ export default function Home() {
       const dayTag = gs.kind === "pre" && gameLocalDay(g) && gameLocalDay(g) !== curDate ? `<span class="ts-day">${esc(gs.si.date)}</span>` : "";
       const comp = g.meta && g.meta.competition ? `<span class="ts-comp">${esc(g.meta.competition)}</span>` : "";
       const right = q ? qDiamonds(q) : (dayTag || comp);
-      return `<div class="t-status">${left}${right}</div>`;
+      return `<div class="t-status">${left}${right}</div>${gs.kind === "pre" ? countdownChip(g, gs) : ""}`;
     }
     // Reference card header: a small LEAGUE TAG (left) + a GAME-STATE CHIP pill (right):
     // live inning / start time / "Final". The chip carries the game phase at a glance.
@@ -2549,6 +2608,7 @@ export default function Home() {
         <div class="ft-top"><span class="ft-lab">◆ Featured</span><span class="ft-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span></div>
         <div class="ft-mu">${side("away")}${mid}${side("home")}</div>
         ${take}
+        ${gs.kind === "pre" ? countdownChip(g, gs) : ""}
         ${gs.kind === "live" && !locked ? liveHitOdds(g, pl, "full") : ""}
         ${gs.kind === "live" && !locked ? pickProgress(g, pl, st) : ""}
       </article>`;
@@ -2913,7 +2973,7 @@ export default function Home() {
           ? `<div class="fn-countdown"><span class="fnc-k">Picks drop in</span><b class="fnc-val" data-drop="${dropAt}">${fmtCountdown(ms)}</b></div>`
           : `<div class="fn-countdown soon"><span class="fnc-k">Picks expected soon</span></div>`;
       }
-      const body = `<div class="fn-body"><b>Picks aren't out yet for ${esc(dispDate)}</b><span>The DiamondEdge model locks each pick as first pitch approaches.${full ? "" : " Here's the schedule as it stands."}</span></div>`;
+      const body = `<div class="fn-body"><b>Picks aren't out yet for ${esc(dispDate)}</b><span>First look lands as books post — about <b>24 hours before each first pitch</b> — then every pick firms up through five checks (T-24h → T-1h) and locks about an hour out.${full ? "" : " Here's the schedule as it stands."}</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     function renderSlate(quiet = false) {

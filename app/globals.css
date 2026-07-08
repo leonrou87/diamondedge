@@ -3205,3 +3205,7 @@ details.results-more{margin-bottom:14px}
 /* 'vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)' provenance strip under pick chips */
 .pk-made{font-family:var(--sans);font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:.01em}
 .feat .pk-made{padding:0 2px}
+
+/* pick-check countdown chip on upcoming games */
+.pk-count{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10.5px;color:var(--ink3);background:rgba(0,0,0,.04);border-radius:7px;padding:3px 7px;margin-top:6px;letter-spacing:.01em}
+.feat .pk-count{margin:6px 0 0 2px}
