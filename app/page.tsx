@@ -6662,6 +6662,39 @@ export default function Home() {
       document.addEventListener("visibilitychange", () => { if (!document.hidden) { pollLiveScores(); pollPregame(); if (detail) pollLiveDetail(); } });
       window.addEventListener("focus", () => { pollLiveScores(); });
       pollLiveScores();
+      // ── PULL-TO-REFRESH (mobile): drag down from the very top → full refresh ──
+      // A hard reload re-fetches every feed (and any new deploy). Indicator shows pull
+      // progress; fires past 70px. Desktop unaffected (touch-only).
+      (() => {
+        let sy = 0, pulling = false, armed = false;
+        const bar = document.createElement("div");
+        bar.className = "ptr-bar"; bar.innerHTML = `<span class="ptr-ic">↻</span><span class="ptr-t">Pull to refresh</span>`;
+        document.body.appendChild(bar);
+        const scroller = () => document.scrollingElement || document.documentElement;
+        document.addEventListener("touchstart", (e: any) => {
+          if (scroller().scrollTop <= 0 && !detail) { sy = e.touches[0].clientY; pulling = true; armed = false; }
+        }, { passive: true });
+        document.addEventListener("touchmove", (e: any) => {
+          if (!pulling) return;
+          const dy = e.touches[0].clientY - sy;
+          if (dy <= 0 || scroller().scrollTop > 0) { bar.style.transform = ""; bar.classList.remove("show", "go"); armed = false; return; }
+          const pull = Math.min(110, dy * 0.55);
+          bar.classList.add("show");
+          bar.style.transform = `translateY(${pull}px)`;
+          armed = pull >= 70;
+          bar.classList.toggle("go", armed);
+          (bar.querySelector(".ptr-t") as any).textContent = armed ? "Release to refresh" : "Pull to refresh";
+        }, { passive: true });
+        document.addEventListener("touchend", () => {
+          if (!pulling) return;
+          pulling = false;
+          if (armed) {
+            (bar.querySelector(".ptr-t") as any).textContent = "Refreshing…";
+            bar.classList.add("spin");
+            setTimeout(() => location.reload(), 180);
+          } else { bar.style.transform = ""; bar.classList.remove("show", "go"); }
+        }, { passive: true });
+      })();
       // debug hook: inject a live_scores snapshot without waiting for the poller
       root._injectLiveScores = (ls: any) => { liveScores = ls; const ch = applyLiveScores(); if (ch) refreshLiveViews(); return ch; };
       // debug hook: attach a per-pick live_status to a live game by id, then re-render.
