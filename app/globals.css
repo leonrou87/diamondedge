@@ -3219,3 +3219,14 @@ details.results-more{margin-bottom:14px}
 .ptr-ic{font-size:14px;transition:transform .2s}
 .ptr-bar.spin .ptr-ic{animation:ptrspin .8s linear infinite}
 @keyframes ptrspin{to{transform:rotate(360deg)}}
+
+/* pitcher chips: tappable, ERA inline; pitcher sheet game-log table */
+.pit-chip.tap{cursor:pointer}
+.pit-chip.tap:active{transform:scale(.98)}
+.pit-more{color:var(--ink3);font-weight:700;margin-left:2px}
+.tp-p{cursor:pointer;text-decoration:underline dotted rgba(0,0,0,.25);text-underline-offset:2px}
+.tp-era{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--ink3)}
+.pit-hand{font-family:var(--mono);font-size:11px;color:var(--ink3);font-weight:600}
+.bgrid.pitlog td.num{text-align:right;font-family:var(--mono)}
+.bgrid.pitlog td.res.won{color:var(--green,#0a7d40);font-weight:700}
+.bgrid.pitlog td.res.lost{color:#b3261e;font-weight:700}
