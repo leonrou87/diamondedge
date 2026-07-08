@@ -865,7 +865,10 @@ export default function Home() {
         why.push(`That works out to roughly ${(c.ev >= 0 ? "+" : "")}${(c.ev * 100).toFixed(1)}% expected value per dollar at the quoted price.`);
       // DECIMAL GRADE behind the stars: stars carry the conviction band, the fraction ranks
       // WITHIN the band by +EV size (0.015 EV → x.0, 0.3+ EV → x.9). Powers the flagship pick.
-      const grade = take ? Math.min(5, c.stars + Math.max(0, Math.min(0.9, ((c.ev != null ? c.ev : 0.015) - 0.015) * 3))) : 0;
+      // Continuous scale: prefer the MODEL's own real-number score (star v3 payloads emit
+      // `score` 0-5 for EVERY row, passes included) — the fallback derives it from EV.
+      const grade = c.score != null ? Number(c.score)
+        : (take ? Math.min(5, c.stars + Math.max(0, Math.min(0.9, ((c.ev != null ? c.ev : 0.015) - 0.015) * 3))) : 0);
       return {
         market: mk, action: take ? "TAKE" : "PASS",
         side: take ? side : null,
@@ -874,7 +877,24 @@ export default function Home() {
         q, stars: c.stars, star_tier: c.star_tier, ev: c.ev, grade,
         why, result: res, src: "v4",
         v4pass: !take ? c : null,
+        // provenance for the "vs Vegas + when" strip: the exact Vegas line judged + the wall
+        vegas_line: c.market_line != null ? c.market_line : ln,
+        lead_time: c.lead_time || null,
+        fp_utc: g.first_pitch_utc || null,
       };
+    }
+    // "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)" — the Vegas number we judged, clearly
+    // stated, plus a small timestamp of when the pick was FIRST made (that wall's clock).
+    const LEAD_MS: any = { "T-24h": 864e5, "T-12h": 432e5, "T-6h": 216e5, "T-3h": 108e5, "T-1h": 36e5 };
+    function pickMadeMeta(pl: any) {
+      if (!pl || pl.src !== "v4") return "";
+      const bits: string[] = [];
+      if (pl.vegas_line != null) bits.push(`vs Vegas O/U ${lineStr(pl.vegas_line)}`);
+      if (pl.lead_time && pl.fp_utc && LEAD_MS[pl.lead_time]) {
+        const t = new Date(new Date(pl.fp_utc).getTime() - LEAD_MS[pl.lead_time]);
+        if (!isNaN(t.getTime())) bits.push(`picked ${t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} (${pl.lead_time})`);
+      } else if (pl.lead_time) bits.push(`picked at the ${pl.lead_time} check`);
+      return bits.length ? `<div class="pk-made">${esc(bits.join(" · "))}</div>` : "";
     }
     // Universal star renderer: v4 picks use the 5-star scale, champion picks keep 3.
     function pickStars(pl: any) {
@@ -1915,10 +1935,9 @@ export default function Home() {
           ${strength}
         </div>`;
       };
-      // Order: TOTAL first (it's the DiamondEdge Pick market), then spread, then the ML lean.
-      const leadLab = leadMk ? MK_FULL[leadMk] : "total";
-      return `<div class="threemk">${["total", "spread", "moneyline"].map(cell).join("")}</div>
-        <div class="tm-note">The <b>${esc(leadLab.toLowerCase())}</b> is the DiamondEdge Pick — our heaviest read. The <b>moneyline</b> is a directional lean, the lightest signal, not the edge.</div>
+      // ALL-IN TOTALS: the total IS the DiamondEdge Pick — the only market we call.
+      return `<div class="threemk one">${["total"].map(cell).join("")}</div>
+        <div class="tm-note">The <b>total</b> is the DiamondEdge Pick — the one market we call, judged against the Vegas number.</div>
         ${tierLegend(true)}`;
     }
 
@@ -2014,19 +2033,9 @@ export default function Home() {
     // spread_pick.line is the HOME run-line; away = its negation. prices are DECIMAL per side.
     // Degrades field-by-field: whatever isn't served simply doesn't render.
     function teamOdds(g: any, which: "home" | "away") {
+      // ALL-IN TOTALS: no spread/ML on the team rows — the game's number is the O/U,
+      // shown once at game level. Fields stay null so every surface degrades cleanly.
       const out: any = { spread: null, spreadPx: null, ml: null };
-      const sp = g.spread_pick;
-      if (sp && sp.line != null) {
-        const hl = spreadHomeLine(g, sp);
-        out.spread = which === "home" ? hl : -hl;
-        const pr = sp.prices || {};
-        const px = which === "home" ? (pr.home ?? sp.price) : (pr.away ?? sp.price);
-        if (px != null) out.spreadPx = fmtOdds(px);
-      }
-      const mp = g.ml_pick, mpr = (mp && mp.prices) || {};
-      const mlpx = which === "home" ? mpr.home : mpr.away;
-      if (mlpx != null) out.ml = fmtOdds(mlpx);
-      else if (mp && mp.price != null && mp.side && String(mp.side) === String(which === "home" ? g.home_abbr : g.away_abbr)) out.ml = fmtOdds(mp.price);
       return out;
     }
     // Recent form as a compact record — L15 record ("6-9") + optional hot/cold streak
@@ -2143,6 +2152,7 @@ export default function Home() {
       return `<div class="pickban q-${q} ${st}">
         <div class="pb-top"><span class="pb-brand">${pickLabel(g)}</span>${qDiamonds(q)}</div>
         <div class="pb-main"><span class="pb-side">${pickArrow(pl)} ${esc(pl.side || "—")}</span>${pl.price != null ? `<i class="pb-px">${fmtOdds(pl.price)}</i>` : ""}${state ? `<span class="pb-res ${state.cls}">${state.txt}</span>` : ""}</div>
+        ${pickMadeMeta(pl)}
       </div>`;
     }
 
@@ -2533,7 +2543,7 @@ export default function Home() {
         : `<div class="ft-mid">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "@")}</div>`;
       const take = locked
         ? `<button class="lockchip ft-lock" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
-        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">${pickLabel(g)}</span>${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : ""}</span>${res}</div>`;
+        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">${pickLabel(g)}</span>${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : ""}</span>${res}</div>${pickMadeMeta(pl)}`;
       return `<article class="feat q-${q} ${gs.kind}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id)}" role="button" tabindex="0"
         aria-label="Featured — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}${locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pl.side || "")}`} — open details">
         <div class="ft-top"><span class="ft-lab">◆ Featured</span><span class="ft-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span></div>
@@ -5043,10 +5053,9 @@ export default function Home() {
         resRow(`<span class="ql good">${qDiamonds("good")} Good</span>`, byTier.high, `The same idea with a slightly weaker signal — still a published, graded call.`),
         resRow(`<span class="ql lean">${qDiamonds("lean")} Lean</span>`, mergeRecs([byTier.medium, byTier.low]), `Thin edges we flag for completeness. Fine to skip — we grade them anyway.`),
       ].join("");
+      // ALL-IN TOTALS: the product is over/unders only — no other markets to break out.
       const mkRows = [
-        resRow("Totals", byMk.total, `Over/unders — the market where the DiamondEdge signature record lives.`),
-        resRow("Moneylines", byMk.moneyline, `Picking the winner straight up, priced against the market.`),
-        resRow("Spreads", byMk.spread, `The margin market — the hardest number to beat, so we call it least often.`),
+        resRow("Totals", byMk.total, `Over/unders — the one market we call. Every DiamondEdge pick is a totals pick.`),
       ].join("");
       const themeRows = (analyticsDeep && analyticsDeep.cuts && Array.isArray(analyticsDeep.cuts.by_theme)) ? analyticsDeep.cuts.by_theme : [];
       const themeChips = themeRows.filter((r: any) => r.hit != null && r.n).map((r: any) => {
@@ -6381,8 +6390,9 @@ export default function Home() {
       // Primary nav = the destinations at EVERY width (the top bar is the nav on mobile too now
       // — the bottom nav is retired). The v4 model is now the DEFAULT pick everywhere; its
       // deep-dive view (record + every pick) is reachable from Games, not a nav tab.
-      // ALL-IN TOTALS: the model's totals board is a first-class nav destination.
-      const primaryTabs = ["today", "games", "beta", "results"];
+      // ALL-IN TOTALS: the pick IS the product — no separate model tab. The record lives in
+      // Insights; the wall-by-wall explorer stays reachable from Insights links only.
+      const primaryTabs = ["today", "games", "results"];
       // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it (News only).
       root.innerHTML = `
         <header id="app-header">

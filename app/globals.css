@@ -3201,3 +3201,7 @@ details.results-more{margin-bottom:14px}
 .navright{margin-left:auto;display:flex;align-items:center;align-self:center}
 /* second flagship spacing */
 .front-hero.second{margin-top:18px}
+
+/* 'vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)' provenance strip under pick chips */
+.pk-made{font-family:var(--sans);font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:.01em}
+.feat .pk-made{padding:0 2px}
