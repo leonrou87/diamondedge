@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-08T03:13:18Z",
+  "generated_utc": "2026-07-08T06:28:36Z",
   "dates": [
     "2026-07-07",
     "2026-07-08"
@@ -197,14 +197,14 @@
       "coverage_gap": "2026-06-11 .. 2026-07-01 NOT reconstructable (game DB frozen 2026-06-13; forward track began 2026-07-02) \u2014 absent, not interpolated"
     },
     "slate_status": {
-      "date": "2026-07-07",
-      "available": true,
-      "frozen_at": "2026-07-07T12:20:04.517093+00:00",
-      "n_slate": 16,
-      "n_tier_a": 0,
-      "n_tier_b": 0,
+      "date": "2026-07-08",
+      "available": false,
+      "frozen_at": null,
+      "n_slate": null,
+      "n_tier_a": null,
+      "n_tier_b": null,
       "n_plays_today": 0,
-      "n_suppressed_by_champion_gates": 1,
+      "n_suppressed_by_champion_gates": 0,
       "note": "0 plays = the champion's own frozen policy found no qualifying totals divergence today (or its internal gates suppressed the candidates) \u2014 an empty board is honest, not broken"
     },
     "picks": [],
@@ -226,15 +226,15 @@
       "all_pass": false
     },
     "2026-07-08": {
-      "featured_game_id": "2026-07-08-Colorado Rockies-Los Angeles Dodgers-823928",
-      "game_pk": 823928,
-      "matchup": "Colorado Rockies @ Los Angeles Dodgers",
+      "featured_game_id": "2026-07-08-Atlanta Braves-Pittsburgh Pirates-823360",
+      "game_pk": 823360,
+      "matchup": "Atlanta Braves @ Pittsburgh Pirates",
       "source_model": "residual_total_v1",
       "stars": 2,
-      "score": 2.52,
+      "score": 2.48,
       "lean": {
         "side": "over",
-        "line": 10.0
+        "line": 8.5
       },
       "playable": true,
       "all_pass": false
@@ -3013,13 +3013,13 @@
           "model": "residual_total_v1",
           "market_line": 7.0,
           "per_side_price": 106,
-          "our_prob": 0.504,
+          "our_prob": 0.5052,
           "p_breakeven": 0.4854,
-          "ev": 0.0382,
+          "ev": 0.0407,
           "tier": "Good",
           "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.22,
+          "score": 2.26,
           "playable": true,
           "lean": {
             "side": "over",
@@ -3058,13 +3058,13 @@
           "model": "residual_total_v1",
           "market_line": 9.0,
           "per_side_price": 100,
-          "our_prob": 0.5145,
+          "our_prob": 0.5182,
           "p_breakeven": 0.5,
-          "ev": 0.029,
-          "tier": "Lean",
+          "ev": 0.0363,
+          "tier": "Good",
           "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.26,
+          "score": 2.36,
           "playable": true,
           "lean": {
             "side": "over",
@@ -3103,13 +3103,13 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": 105,
-          "our_prob": 0.511,
+          "our_prob": 0.5112,
           "p_breakeven": 0.4878,
-          "ev": 0.0476,
+          "ev": 0.0479,
           "tier": "Good",
           "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.33,
+          "score": 2.34,
           "playable": true,
           "lean": {
             "side": "over",
@@ -3148,13 +3148,13 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": -105,
-          "our_prob": 0.5266,
+          "our_prob": 0.5259,
           "p_breakeven": 0.5122,
-          "ev": 0.0282,
+          "ev": 0.0268,
           "tier": "Lean",
           "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.5,
+          "score": 2.48,
           "playable": true,
           "lean": {
             "side": "over",
@@ -3193,19 +3193,19 @@
           "model": "residual_total_v1",
           "market_line": 7.5,
           "per_side_price": -102,
-          "our_prob": 0.5129,
+          "our_prob": 0.512,
           "p_breakeven": 0.505,
-          "ev": 0.0158,
-          "tier": "Lean",
-          "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
-          "stars": 2,
-          "score": 2.33,
-          "playable": true,
+          "ev": 0.014,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.64,
+          "playable": false,
           "lean": {
             "side": "over",
             "line": 7.5
           },
-          "take": true,
+          "take": false,
           "result": null,
           "evidence": {
             "cell_cleared_baselines": false,
@@ -3213,9 +3213,10 @@
             "cell_n": 321,
             "one_sided": false
           },
-          "pick_side": "over",
-          "pick_line": 7.5,
-          "graded_line": null
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.2% >= break-even 50.5% at -102 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
         }
       ]
     },
@@ -3238,13 +3239,13 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": -110,
-          "our_prob": 0.512,
+          "our_prob": 0.5084,
           "p_breakeven": 0.5238,
-          "ev": -0.0225,
+          "ev": -0.0294,
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.42,
+          "score": 1.37,
           "playable": false,
           "lean": {
             "side": "over",
@@ -3260,7 +3261,7 @@
           },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 51.2% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_reason": "model 50.8% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
         }
       ]
@@ -3284,13 +3285,13 @@
           "model": "residual_total_v1",
           "market_line": 9.0,
           "per_side_price": -110,
-          "our_prob": 0.5248,
+          "our_prob": 0.5228,
           "p_breakeven": 0.5238,
-          "ev": 0.0019,
+          "ev": -0.002,
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.56,
+          "score": 1.53,
           "playable": false,
           "lean": {
             "side": "over",
@@ -3306,7 +3307,7 @@
           },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 52.5% >= break-even 52.4% at -110 \u2014 edge below +EV min",
+          "pass_reason": "model 52.3% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
         }
       ]
@@ -3330,13 +3331,13 @@
           "model": "residual_total_v1",
           "market_line": 8.0,
           "per_side_price": -107,
-          "our_prob": 0.5215,
+          "our_prob": 0.5217,
           "p_breakeven": 0.5169,
-          "ev": 0.0089,
+          "ev": 0.0092,
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.61,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "over",
@@ -3352,7 +3353,7 @@
           },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 52.1% >= break-even 51.7% at -107 \u2014 edge below +EV min",
+          "pass_reason": "model 52.2% >= break-even 51.7% at -107 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
         }
       ]
@@ -3376,13 +3377,13 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": 100,
-          "our_prob": 0.5035,
+          "our_prob": 0.5056,
           "p_breakeven": 0.5,
-          "ev": 0.007,
+          "ev": 0.0112,
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.61,
+          "score": 1.64,
           "playable": false,
           "lean": {
             "side": "over",
@@ -3398,7 +3399,7 @@
           },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 50.3% >= break-even 50.0% at 100 \u2014 edge below +EV min",
+          "pass_reason": "model 50.6% >= break-even 50.0% at 100 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
         }
       ]
@@ -3422,19 +3423,19 @@
           "model": "residual_total_v1",
           "market_line": 8.0,
           "per_side_price": 100,
-          "our_prob": 0.5051,
+          "our_prob": 0.5077,
           "p_breakeven": 0.5,
-          "ev": 0.0103,
-          "tier": "PASS",
-          "star_tier": "Pass (-EV / no real price)",
-          "stars": 1,
-          "score": 1.63,
-          "playable": false,
+          "ev": 0.0154,
+          "tier": "Lean",
+          "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
+          "stars": 2,
+          "score": 2.37,
+          "playable": true,
           "lean": {
             "side": "over",
             "line": 8.0
           },
-          "take": false,
+          "take": true,
           "result": null,
           "evidence": {
             "cell_cleared_baselines": false,
@@ -3442,10 +3443,9 @@
             "cell_n": 321,
             "one_sided": false
           },
-          "pick_side": null,
-          "informational_lean": "over",
-          "pass_reason": "model 50.5% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pick_side": "over",
+          "pick_line": 8.0,
+          "graded_line": null
         }
       ]
     },
@@ -3468,13 +3468,13 @@
           "model": "residual_total_v1",
           "market_line": 7.5,
           "per_side_price": 100,
-          "our_prob": 0.5137,
+          "our_prob": 0.5133,
           "p_breakeven": 0.5,
-          "ev": 0.0273,
+          "ev": 0.0266,
           "tier": "Lean",
           "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.34,
+          "score": 2.33,
           "playable": true,
           "lean": {
             "side": "over",
@@ -3513,19 +3513,19 @@
           "model": "residual_total_v1",
           "market_line": 7.75,
           "per_side_price": -105,
-          "our_prob": 0.5191,
+          "our_prob": 0.5204,
           "p_breakeven": 0.5122,
-          "ev": 0.0134,
-          "tier": "PASS",
-          "star_tier": "Pass (-EV / no real price)",
-          "stars": 1,
-          "score": 1.52,
-          "playable": false,
+          "ev": 0.0161,
+          "tier": "Lean",
+          "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
+          "stars": 2,
+          "score": 2.1,
+          "playable": true,
           "lean": {
             "side": "over",
             "line": 7.75
           },
-          "take": false,
+          "take": true,
           "result": null,
           "evidence": {
             "cell_cleared_baselines": false,
@@ -3533,10 +3533,9 @@
             "cell_n": 321,
             "one_sided": false
           },
-          "pick_side": null,
-          "informational_lean": "over",
-          "pass_reason": "model 51.9% >= break-even 51.2% at -105 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pick_side": "over",
+          "pick_line": 7.75,
+          "graded_line": null
         }
       ]
     },
@@ -3559,19 +3558,19 @@
           "model": "residual_total_v1",
           "market_line": 10.0,
           "per_side_price": -110,
-          "our_prob": 0.5385,
+          "our_prob": 0.5303,
           "p_breakeven": 0.5238,
-          "ev": 0.028,
-          "tier": "Lean",
-          "star_tier": "Playable (smallest +EV edges, |edge| < 0.03 \u2014 clears the gate, lowest playable conviction)",
-          "stars": 2,
-          "score": 2.52,
-          "playable": true,
+          "ev": 0.0125,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.63,
+          "playable": false,
           "lean": {
             "side": "over",
             "line": 10.0
           },
-          "take": true,
+          "take": false,
           "result": null,
           "evidence": {
             "cell_cleared_baselines": false,
@@ -3579,9 +3578,10 @@
             "cell_n": 321,
             "one_sided": false
           },
-          "pick_side": "over",
-          "pick_line": 10.0,
-          "graded_line": null
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 53.0% >= break-even 52.4% at -110 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
         }
       ]
     }
