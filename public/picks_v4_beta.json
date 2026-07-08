@@ -4,17 +4,18 @@
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
   "record_basis": "headline = CHAMPION V2 stream (champion picks x +EV gate at real per-side prices); v4 model grid record = sealed 2026 walk (cd873786-8f51-406d-ae3e-9306de518fa9), star-capped take set, TOTALS ONLY",
-  "generated_utc": "2026-07-07T22:50:36Z",
+  "generated_utc": "2026-07-08T01:27:41Z",
   "walk_id": "cd873786-8f51-406d-ae3e-9306de518fa9",
   "recipe_sha256": "2ac80977691b1936467bb725950187490c9817249198af1d844eecd560769873",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
   "positioning": "CHAMPION V2 / ALL-IN PREGAME TOTALS (Leon, 2026-07-07): the board's pick product is the CHAMPION V2 stream \u2014 the champion's own live totals engine (pick source, unchanged) + V4 serving discipline (the +EV/vig gate at the REAL latest per-side price, champion-edge star tiers capped at 4, nightly grading). See the `champion_v2` block. The v4 model grid below is TOTALS-ONLY (spread/ML cells removed from the pick product; their record survives under record.legacy_all_markets). The +EV/vig gate is unchanged and hard (-EV never emits). This feed still does NOT touch the champion's pregame_picks serving path; the champion engine continues to run untouched \u2014 V2 only READS its stores. The walk/backtest evaluation itself stays strict (blocking) for honest research.",
   "champion_v2": {
     "what": "CHAMPION V2 \u2014 the board's pick product: the champion's own live totals engine (unchanged) + V4 serving discipline (+EV/vig gate at the real latest per-side price, star tiers by the champion's own edge size, nightly grading). PREGAME TOTALS ONLY.",
-    "star_basis": "Stars are driven by the CHAMPION'S OWN edge size + tier: Tier A with |model-vs-market| >= 0.05 (big divergence) = 4 stars; Tier A 0.03-0.05 = 3 stars; Tier B (0.02-0.03) = 2 stars. CEILING 4 stars \u2014 the champion has a live/validated forward record (rolling-origin 2022-2026: 886 graded, hit 58.1%, ROI +10.8% at median price) but is NOT BH-certified on the v4 sealed walk, and its edge did not reproduce on the Odds-API table (the dev-null), so 5 stars stays reserved. FLOOR = the +EV/vig gate at the REAL latest per-side price: a priced-out champion pick is a PASS (0 stars), shown honestly, never a bet.",
+    "star_basis": "Stars are MEASURED, not presumed \u2014 recalibrated 2026-07-07 against the champion's own graded multi-season history (947 graded picks 2022-04-07..2026-07-06, 892 decided at recorded per-side prices, day-clustered 95% bootstrap CIs; v4/serve/STAR_CALIBRATION.md). 4 stars = Tier A with 0.04 <= |edge| < 0.065, the measured sweet spot: 248-153, hit 61.8% [57.1-66.5], ROI +17.6% [+8.6..+26.5], ROI-positive in every season 2022-2026. 3 stars = Tier A 0.03-0.04: 234-177, hit 56.9% [52.4-61.6], ROI +8.7% [-0.0..+17.8]. 1 star = the honesty band: Tier A |edge| >= 0.065 measured as an ANTI-signal (33-43, hit 43.4%, ROI -17.1%; a negative-ROI bucket never wears >= 2 stars) and Tier B (0.02-0.03) with only 4 graded decided picks ever (unproven, not negative-proven). The old edge-size-only mapping (>=0.05 = 4 stars) was WRONG at the tail \u2014 measured, the >= 0.065 slice loses money while 0.04-0.065 is the strongest slice; stars now mean measured win-rates. CEILING 4 stars \u2014 the champion is NOT BH-certified on the v4 sealed walk, and its edge did not reproduce on the Odds-API table (the dev-null), so 5 stars stays reserved. FLOOR = the +EV/vig gate at the REAL latest per-side price: a priced-out champion pick is a PASS (0 stars), shown honestly, never a bet.",
     "model_notes": [
       "DEV-NULL (2026-07-07, v4/models/UNIFIED_TOTALS.md): the champion's edge does NOT reproduce when re-derived on the Odds-API 5-DP odds table \u2014 the champion-style path graded flat (+0.1% on 283 dev picks, 2022-25) and the V4 GBM residual path was actively anti-signal at high divergence (-16.6%). CHAMPION V2 therefore uses the champion's OWN pipeline (its snapshot stack + frozen model + frozen policy) as the pick source; V4 adds serving-time discipline (+EV gate at the real latest per-side price, star tiers, nightly grading) \u2014 it does NOT re-derive the signal.",
-      "HABITAT EROSION WARNING: the champion's trigger habitat \u2014 cross-book totals dispersion \u2014 is structurally shrinking: T-3h line_std 0.126 (2023) -> 0.096 (2024) -> 0.083 (2025) -> 0.076 (2026); share of slates with >=2 distinct lines 67% -> 48% -> 43% -> 39%; books quoted 16.7 -> 11.7 -> 10.9 -> 11.0. Expect fewer qualifying picks over time. The record display is the ongoing proof either way \u2014 no edge is presumed."
+      "HABITAT EROSION WARNING: the champion's trigger habitat \u2014 cross-book totals dispersion \u2014 is structurally shrinking: T-3h line_std 0.126 (2023) -> 0.096 (2024) -> 0.083 (2025) -> 0.076 (2026); share of slates with >=2 distinct lines 67% -> 48% -> 43% -> 39%; books quoted 16.7 -> 11.7 -> 10.9 -> 11.0. Expect fewer qualifying picks over time. The record display is the ongoing proof either way \u2014 no edge is presumed.",
+      "STAR RECALIBRATION (2026-07-07, v4/serve/STAR_CALIBRATION.md): star tiers were re-fit to the champion's own measured 2022-2026 bucket win-rates (day-clustered CIs). The edge-ROI gradient is NOT monotone \u2014 it is an inverted U: 0.03-0.04 hit 56.9% ROI +8.7%; 0.04-0.065 hit 61.8% ROI +17.6%; >= 0.065 hit 43.4% ROI -17.1% (extreme divergence is where the champion is most WRONG, not most right; sweet-spot-vs-tail ROI gap +34.8pp, 95% CI +11.4..+58.1). Stars therefore peak at 0.04-0.065 and the >= 0.065 tail is demoted to 1 star. Tier B carries 1 star on insufficient history (4 graded decided picks), not on proven skill."
     ],
     "record": {
       "headline": {
@@ -29,34 +30,34 @@
       },
       "by_star_tier": {
         "4": {
-          "n": 21,
-          "win": 11,
-          "loss": 9,
-          "push": 1,
-          "record": "11-9-1",
-          "hit_rate": 0.55,
-          "roi": 0.0391,
-          "units": 0.783
+          "n": 43,
+          "win": 23,
+          "loss": 20,
+          "push": 0,
+          "record": "23-20-0",
+          "hit_rate": 0.5349,
+          "roi": 0.0082,
+          "units": 0.352
         },
         "3": {
-          "n": 60,
-          "win": 31,
-          "loss": 28,
+          "n": 34,
+          "win": 18,
+          "loss": 15,
           "push": 1,
-          "record": "31-28-1",
-          "hit_rate": 0.5254,
-          "roi": -0.0092,
-          "units": -0.542
+          "record": "18-15-1",
+          "hit_rate": 0.5455,
+          "roi": 0.0269,
+          "units": 0.888
         },
-        "2": {
-          "n": 0,
-          "win": 0,
-          "loss": 0,
-          "push": 0,
-          "record": "0-0-0",
-          "hit_rate": null,
-          "roi": null,
-          "units": 0.0
+        "1": {
+          "n": 4,
+          "win": 1,
+          "loss": 2,
+          "push": 1,
+          "record": "1-2-1",
+          "hit_rate": 0.3333,
+          "roi": -0.3333,
+          "units": -1.0
         }
       },
       "by_source": {
@@ -153,7 +154,7 @@
       },
       "basis": "Headline record = the CHAMPION V2 stream exactly: champion picks that passed the +EV gate at the stored real per-side price, graded at that same price. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, median morning per-side price) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot price they were served at."
     },
-    "record_generated_utc": "2026-07-07T22:50:36Z",
+    "record_generated_utc": "2026-07-08T01:27:41Z",
     "backfill": {
       "n_rows": 104,
       "sources": {
@@ -200,8 +201,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Strong",
-        "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "stars": 1,
+        "star_tier": "Lean (champion Tier A >=0.065 \u2014 extreme divergence, measured ANTI-signal: hit 43.4%, ROI -17.1%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -220,7 +221,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0719,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -270,7 +271,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0307,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 54.8% vs break-even 54.0% at -117.5 (ev +1.37% < +1.5% min)",
@@ -303,7 +304,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -322,7 +323,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0578,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -352,8 +353,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -372,7 +373,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0498,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8695652173913043,
@@ -402,8 +403,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -422,7 +423,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0491,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9478672985781991,
@@ -453,7 +454,7 @@
         "take": true,
         "tier": "Good",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -472,7 +473,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0394,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -502,8 +503,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -522,7 +523,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0454,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -553,7 +554,7 @@
         "take": true,
         "tier": "Good",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -572,7 +573,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0389,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9523809523809523,
@@ -603,7 +604,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -622,7 +623,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0603,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -653,7 +654,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -672,7 +673,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0328,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8403361344537815,
@@ -722,7 +723,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0315,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "under",
         "pass_reason": "champion pick priced out: model 53.3% vs break-even 52.6% at -111 (ev +1.34% < +1.5% min)",
@@ -754,8 +755,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -774,7 +775,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0434,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9523809523809523,
@@ -824,7 +825,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0304,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 52.0% vs break-even 51.2% at -105 (ev +1.44% < +1.5% min)",
@@ -857,7 +858,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -876,7 +877,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0329,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -906,8 +907,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -926,7 +927,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0458,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8695652173913043,
@@ -957,7 +958,7 @@
         "take": true,
         "tier": "Good",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -976,7 +977,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0502,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -1007,7 +1008,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1026,7 +1027,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0598,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8658008658008658,
@@ -1076,7 +1077,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0323,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 54.4% vs break-even 53.6% at -115.5 (ev +1.43% < +1.5% min)",
@@ -1128,7 +1129,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0313,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "under",
         "pass_reason": "champion pick priced out: model 54.2% vs break-even 53.5% at -115 (ev +1.36% < +1.5% min)",
@@ -1161,7 +1162,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1180,7 +1181,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0339,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8810572687224669,
@@ -1210,8 +1211,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1230,7 +1231,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0458,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8695652173913043,
@@ -1261,7 +1262,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1280,7 +1281,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0605,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.970873786407767,
@@ -1310,8 +1311,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Strong",
-        "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "stars": 1,
+        "star_tier": "Lean (champion Tier A >=0.065 \u2014 extreme divergence, measured ANTI-signal: hit 43.4%, ROI -17.1%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1330,7 +1331,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0672,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 1.0,
@@ -1360,8 +1361,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1380,7 +1381,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0438,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -1411,7 +1412,7 @@
         "take": true,
         "tier": "Good",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1430,7 +1431,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0514,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -1461,7 +1462,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1480,7 +1481,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0337,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -1510,8 +1511,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1530,7 +1531,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0471,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.847457627118644,
@@ -1560,8 +1561,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1580,7 +1581,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.041,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9389671361502347,
@@ -1610,8 +1611,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1630,7 +1631,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0495,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -1661,7 +1662,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1680,7 +1681,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0598,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -1711,7 +1712,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1730,7 +1731,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.034,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -1761,7 +1762,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1780,7 +1781,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0353,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8163265306122449,
@@ -1811,7 +1812,7 @@
         "take": true,
         "tier": "Good",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1830,7 +1831,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0391,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -1880,7 +1881,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0305,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "under",
         "pass_reason": "champion pick priced out: model 54.5% vs break-even 53.8% at -116.5 (ev +1.21% < +1.5% min)",
@@ -1913,7 +1914,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1932,7 +1933,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0363,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.819672131147541,
@@ -1963,7 +1964,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1982,7 +1983,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0342,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 1.0,
@@ -2032,7 +2033,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0313,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "under",
         "pass_reason": "champion pick priced out: model 55.5% vs break-even 54.9% at -122 (ev +0.98% < +1.5% min)",
@@ -2064,8 +2065,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2084,7 +2085,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0421,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8695652173913043,
@@ -2115,7 +2116,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2134,7 +2135,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0343,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "push",
         "pnl": 0.0,
@@ -2184,7 +2185,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0305,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 55.1% vs break-even 54.3% at -119 (ev +1.46% < +1.5% min)",
@@ -2217,7 +2218,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2236,7 +2237,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0594,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8695652173913043,
@@ -2267,7 +2268,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2286,7 +2287,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0378,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2317,7 +2318,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2336,7 +2337,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0562,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9523809523809523,
@@ -2366,8 +2367,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2386,7 +2387,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0497,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2417,7 +2418,7 @@
         "take": true,
         "tier": "Good",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2436,7 +2437,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0381,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2466,8 +2467,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2486,7 +2487,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0486,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2517,7 +2518,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2536,7 +2537,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0332,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9174311926605505,
@@ -2566,8 +2567,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Lean",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2586,7 +2587,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.04,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2617,7 +2618,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2636,7 +2637,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0545,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2666,8 +2667,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2686,7 +2687,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.04,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2717,7 +2718,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2736,7 +2737,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.032,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8,
@@ -2766,8 +2767,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2786,7 +2787,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.047,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2816,8 +2817,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2836,7 +2837,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0432,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2886,7 +2887,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0311,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 54.2% vs break-even 53.5% at -115 (ev +1.32% < +1.5% min)",
@@ -2919,7 +2920,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2938,7 +2939,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0345,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -2968,8 +2969,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2988,7 +2989,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0425,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3019,7 +3020,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3038,7 +3039,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0311,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3069,7 +3070,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3088,7 +3089,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0336,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -3118,8 +3119,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3138,7 +3139,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0461,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3169,7 +3170,7 @@
         "take": true,
         "tier": "Good",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3188,7 +3189,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0523,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9803921568627451,
@@ -3219,7 +3220,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3238,7 +3239,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0623,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -3269,7 +3270,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3288,7 +3289,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0355,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8695652173913043,
@@ -3319,7 +3320,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3338,7 +3339,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0317,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3369,7 +3370,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3388,7 +3389,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0385,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3418,8 +3419,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3438,7 +3439,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0459,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -3469,7 +3470,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3488,7 +3489,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0351,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3518,8 +3519,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3538,7 +3539,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.044,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -3569,7 +3570,7 @@
         "take": true,
         "tier": "Strong",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3588,7 +3589,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0606,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3619,7 +3620,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3638,7 +3639,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0309,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -3669,7 +3670,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3688,7 +3689,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0332,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9216589861751152,
@@ -3719,7 +3720,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3738,7 +3739,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0334,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8695652173913043,
@@ -3788,7 +3789,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0301,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 53.0% vs break-even 52.4% at -110 (ev +1.19% < +1.5% min)",
@@ -3821,7 +3822,7 @@
         "take": true,
         "tier": "Good",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3840,7 +3841,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0506,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8403361344537815,
@@ -3870,8 +3871,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3890,7 +3891,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0428,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9523809523809523,
@@ -3940,7 +3941,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0304,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "under",
         "pass_reason": "champion pick priced out: model 54.1% vs break-even 53.5% at -115 (ev +1.19% < +1.5% min)",
@@ -3972,8 +3973,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Strong",
-        "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "stars": 1,
+        "star_tier": "Lean (champion Tier A >=0.065 \u2014 extreme divergence, measured ANTI-signal: hit 43.4%, ROI -17.1%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3992,7 +3993,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0667,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -4042,7 +4043,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0306,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 54.8% vs break-even 54.1% at -118 (ev +1.23% < +1.5% min)",
@@ -4075,7 +4076,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4094,7 +4095,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0354,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -4144,7 +4145,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0303,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "under",
         "pass_reason": "champion pick priced out: model 55.8% vs break-even 54.9% at -122 (ev +1.47% < +1.5% min)",
@@ -4177,7 +4178,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4196,7 +4197,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0312,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8403361344537815,
@@ -4226,8 +4227,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4246,7 +4247,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0469,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -4277,7 +4278,7 @@
         "take": true,
         "tier": "Good",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4296,7 +4297,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0549,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8032128514056225,
@@ -4327,7 +4328,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4346,7 +4347,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0324,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8403361344537815,
@@ -4396,7 +4397,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0312,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 53.1% vs break-even 52.4% at -110 (ev +1.41% < +1.5% min)",
@@ -4448,7 +4449,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.031,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 55.3% vs break-even 54.5% at -120 (ev +1.34% < +1.5% min)",
@@ -4481,7 +4482,7 @@
         "take": true,
         "tier": "Good",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4500,7 +4501,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0522,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -4531,7 +4532,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4550,7 +4551,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0324,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9478672985781991,
@@ -4580,8 +4581,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Strong",
-        "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "stars": 1,
+        "star_tier": "Lean (champion Tier A >=0.065 \u2014 extreme divergence, measured ANTI-signal: hit 43.4%, ROI -17.1%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4600,7 +4601,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0664,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "push",
         "pnl": 0.0,
@@ -4631,7 +4632,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4650,7 +4651,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0366,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -4681,7 +4682,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4700,7 +4701,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0366,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9523809523809523,
@@ -4730,8 +4731,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4750,7 +4751,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0447,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9523809523809523,
@@ -4781,7 +4782,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4800,7 +4801,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0382,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.9523809523809523,
@@ -4830,8 +4831,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Good",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4850,7 +4851,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.041,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "win",
         "pnl": 0.8333333333333334,
@@ -4900,7 +4901,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0305,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 52.3% vs break-even 51.7% at -107 (ev +1.18% < +1.5% min)",
@@ -4933,7 +4934,7 @@
         "take": true,
         "tier": "Good",
         "stars": 4,
-        "star_tier": "Strong (champion Tier A, big divergence)",
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4952,7 +4953,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0559,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -5002,7 +5003,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.031,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 54.2% vs break-even 53.5% at -115 (ev +1.30% < +1.5% min)",
@@ -5035,7 +5036,7 @@
         "take": true,
         "tier": "Lean",
         "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "star_tier": "Good (champion Tier A 0.03-0.04 \u2014 measured hit 56.9%, ROI +8.7%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5054,7 +5055,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0383,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -5104,7 +5105,7 @@
           "one_sided": false,
           "champion_tier": "B",
           "champion_edge": 0.0217,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 51.1% vs break-even 51.2% at -105 (ev -0.25% < +1.5% min)",
@@ -5156,7 +5157,7 @@
           "one_sided": false,
           "champion_tier": "B",
           "champion_edge": 0.0291,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 51.8% vs break-even 51.2% at -105 (ev +1.19% < +1.5% min)",
@@ -5186,8 +5187,8 @@
         "ev_min": 0.015,
         "take": true,
         "tier": "Lean",
-        "stars": 3,
-        "star_tier": "Good (champion Tier A)",
+        "stars": 4,
+        "star_tier": "Strong (champion Tier A 0.04-0.065 \u2014 measured hit 61.8%, ROI +17.6%)",
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5206,7 +5207,7 @@
           "one_sided": false,
           "champion_tier": "A",
           "champion_edge": 0.0421,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "result": "loss",
         "pnl": -1.0,
@@ -5256,7 +5257,7 @@
           "one_sided": false,
           "champion_tier": "B",
           "champion_edge": 0.0276,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 51.7% vs break-even 51.2% at -105 (ev +0.90% < +1.5% min)",
@@ -5308,7 +5309,7 @@
           "one_sided": false,
           "champion_tier": "B",
           "champion_edge": 0.0233,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 50.2% vs break-even 50.0% at 100 (ev +0.32% < +1.5% min)",
@@ -5360,7 +5361,7 @@
           "one_sided": false,
           "champion_tier": "B",
           "champion_edge": 0.0215,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "over",
         "pass_reason": "champion pick priced out: model 52.9% vs break-even 53.0% at -113 (ev -0.29% < +1.5% min)",
@@ -5410,7 +5411,7 @@
           "one_sided": false,
           "champion_tier": "B",
           "champion_edge": 0.0285,
-          "note": "stars come from the champion's own edge size + tier (4-star ceiling: live record, not BH-certified); floor = +EV at the real latest per-side price"
+          "note": "stars = MEASURED 2022-2026 bucket win-rates of the champion's own graded history (recalibrated 2026-07-07 \u2014 4-star ceiling: live record, not BH-certified; the >=0.065 tail measured negative and is demoted to 1 star); floor = +EV at the real latest per-side price"
         },
         "informational_lean": "under",
         "pass_reason": "champion pick priced out: model 53.9% vs break-even 53.5% at -115 (ev +0.84% < +1.5% min)",
@@ -5502,34 +5503,34 @@
       },
       "by_star_tier": {
         "4": {
-          "n": 21,
-          "win": 11,
-          "loss": 9,
-          "push": 1,
-          "record": "11-9-1",
-          "hit_rate": 0.55,
-          "roi": 0.0391,
-          "units": 0.783
+          "n": 43,
+          "win": 23,
+          "loss": 20,
+          "push": 0,
+          "record": "23-20-0",
+          "hit_rate": 0.5349,
+          "roi": 0.0082,
+          "units": 0.352
         },
         "3": {
-          "n": 60,
-          "win": 31,
-          "loss": 28,
+          "n": 34,
+          "win": 18,
+          "loss": 15,
           "push": 1,
-          "record": "31-28-1",
-          "hit_rate": 0.5254,
-          "roi": -0.0092,
-          "units": -0.542
+          "record": "18-15-1",
+          "hit_rate": 0.5455,
+          "roi": 0.0269,
+          "units": 0.888
         },
-        "2": {
-          "n": 0,
-          "win": 0,
-          "loss": 0,
-          "push": 0,
-          "record": "0-0-0",
-          "hit_rate": null,
-          "roi": null,
-          "units": 0.0
+        "1": {
+          "n": 4,
+          "win": 1,
+          "loss": 2,
+          "push": 1,
+          "record": "1-2-1",
+          "hit_rate": 0.3333,
+          "roi": -0.3333,
+          "units": -1.0
         }
       },
       "by_source": {

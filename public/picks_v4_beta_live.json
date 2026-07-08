@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-08T01:14:47Z",
+  "generated_utc": "2026-07-08T02:24:45Z",
   "dates": [
     "2026-07-07",
     "2026-07-08"
@@ -14,10 +14,11 @@
   "positioning": "CHAMPION V2 / ALL-IN PREGAME TOTALS (Leon, 2026-07-07): the board's PICK PRODUCT is the champion_v2 stream below \u2014 the champion's own live totals engine + the +EV/vig gate at the REAL latest per-side price (a priced-out champion pick renders as PASS, never a bet), champion-edge star tiers (4-star ceiling). The v4 model grid is TOTALS-ONLY (spread/ML surfaces removed); it remains star-capped by walk evidence with -EV a hard PASS. NOT the champion's pregame_picks Supabase path; the champion engine continues untouched \u2014 V2 only reads its stores. Keep the honest record prominent.",
   "champion_v2": {
     "what": "CHAMPION V2 \u2014 the board's pick product: the champion's own live totals engine (unchanged) + V4 serving discipline (+EV/vig gate at the real latest per-side price, star tiers by the champion's own edge size, nightly grading). PREGAME TOTALS ONLY.",
-    "star_basis": "Stars are driven by the CHAMPION'S OWN edge size + tier: Tier A with |model-vs-market| >= 0.05 (big divergence) = 4 stars; Tier A 0.03-0.05 = 3 stars; Tier B (0.02-0.03) = 2 stars. CEILING 4 stars \u2014 the champion has a live/validated forward record (rolling-origin 2022-2026: 886 graded, hit 58.1%, ROI +10.8% at median price) but is NOT BH-certified on the v4 sealed walk, and its edge did not reproduce on the Odds-API table (the dev-null), so 5 stars stays reserved. FLOOR = the +EV/vig gate at the REAL latest per-side price: a priced-out champion pick is a PASS (0 stars), shown honestly, never a bet.",
+    "star_basis": "Stars are MEASURED, not presumed \u2014 recalibrated 2026-07-07 against the champion's own graded multi-season history (947 graded picks 2022-04-07..2026-07-06, 892 decided at recorded per-side prices, day-clustered 95% bootstrap CIs; v4/serve/STAR_CALIBRATION.md). 4 stars = Tier A with 0.04 <= |edge| < 0.065, the measured sweet spot: 248-153, hit 61.8% [57.1-66.5], ROI +17.6% [+8.6..+26.5], ROI-positive in every season 2022-2026. 3 stars = Tier A 0.03-0.04: 234-177, hit 56.9% [52.4-61.6], ROI +8.7% [-0.0..+17.8]. 1 star = the honesty band: Tier A |edge| >= 0.065 measured as an ANTI-signal (33-43, hit 43.4%, ROI -17.1%; a negative-ROI bucket never wears >= 2 stars) and Tier B (0.02-0.03) with only 4 graded decided picks ever (unproven, not negative-proven). The old edge-size-only mapping (>=0.05 = 4 stars) was WRONG at the tail \u2014 measured, the >= 0.065 slice loses money while 0.04-0.065 is the strongest slice; stars now mean measured win-rates. CEILING 4 stars \u2014 the champion is NOT BH-certified on the v4 sealed walk, and its edge did not reproduce on the Odds-API table (the dev-null), so 5 stars stays reserved. FLOOR = the +EV/vig gate at the REAL latest per-side price: a priced-out champion pick is a PASS (0 stars), shown honestly, never a bet.",
     "model_notes": [
       "DEV-NULL (2026-07-07, v4/models/UNIFIED_TOTALS.md): the champion's edge does NOT reproduce when re-derived on the Odds-API 5-DP odds table \u2014 the champion-style path graded flat (+0.1% on 283 dev picks, 2022-25) and the V4 GBM residual path was actively anti-signal at high divergence (-16.6%). CHAMPION V2 therefore uses the champion's OWN pipeline (its snapshot stack + frozen model + frozen policy) as the pick source; V4 adds serving-time discipline (+EV gate at the real latest per-side price, star tiers, nightly grading) \u2014 it does NOT re-derive the signal.",
-      "HABITAT EROSION WARNING: the champion's trigger habitat \u2014 cross-book totals dispersion \u2014 is structurally shrinking: T-3h line_std 0.126 (2023) -> 0.096 (2024) -> 0.083 (2025) -> 0.076 (2026); share of slates with >=2 distinct lines 67% -> 48% -> 43% -> 39%; books quoted 16.7 -> 11.7 -> 10.9 -> 11.0. Expect fewer qualifying picks over time. The record display is the ongoing proof either way \u2014 no edge is presumed."
+      "HABITAT EROSION WARNING: the champion's trigger habitat \u2014 cross-book totals dispersion \u2014 is structurally shrinking: T-3h line_std 0.126 (2023) -> 0.096 (2024) -> 0.083 (2025) -> 0.076 (2026); share of slates with >=2 distinct lines 67% -> 48% -> 43% -> 39%; books quoted 16.7 -> 11.7 -> 10.9 -> 11.0. Expect fewer qualifying picks over time. The record display is the ongoing proof either way \u2014 no edge is presumed.",
+      "STAR RECALIBRATION (2026-07-07, v4/serve/STAR_CALIBRATION.md): star tiers were re-fit to the champion's own measured 2022-2026 bucket win-rates (day-clustered CIs). The edge-ROI gradient is NOT monotone \u2014 it is an inverted U: 0.03-0.04 hit 56.9% ROI +8.7%; 0.04-0.065 hit 61.8% ROI +17.6%; >= 0.065 hit 43.4% ROI -17.1% (extreme divergence is where the champion is most WRONG, not most right; sweet-spot-vs-tail ROI gap +34.8pp, 95% CI +11.4..+58.1). Stars therefore peak at 0.04-0.065 and the >= 0.065 tail is demoted to 1 star. Tier B carries 1 star on insufficient history (4 graded decided picks), not on proven skill."
     ],
     "record": {
       "headline": {
@@ -32,34 +33,34 @@
       },
       "by_star_tier": {
         "4": {
-          "n": 21,
-          "win": 11,
-          "loss": 9,
-          "push": 1,
-          "record": "11-9-1",
-          "hit_rate": 0.55,
-          "roi": 0.0391,
-          "units": 0.783
+          "n": 43,
+          "win": 23,
+          "loss": 20,
+          "push": 0,
+          "record": "23-20-0",
+          "hit_rate": 0.5349,
+          "roi": 0.0082,
+          "units": 0.352
         },
         "3": {
-          "n": 60,
-          "win": 31,
-          "loss": 28,
+          "n": 34,
+          "win": 18,
+          "loss": 15,
           "push": 1,
-          "record": "31-28-1",
-          "hit_rate": 0.5254,
-          "roi": -0.0092,
-          "units": -0.542
+          "record": "18-15-1",
+          "hit_rate": 0.5455,
+          "roi": 0.0269,
+          "units": 0.888
         },
-        "2": {
-          "n": 0,
-          "win": 0,
-          "loss": 0,
-          "push": 0,
-          "record": "0-0-0",
-          "hit_rate": null,
-          "roi": null,
-          "units": 0.0
+        "1": {
+          "n": 4,
+          "win": 1,
+          "loss": 2,
+          "push": 1,
+          "record": "1-2-1",
+          "hit_rate": 0.3333,
+          "roi": -0.3333,
+          "units": -1.0
         }
       },
       "by_source": {
@@ -156,7 +157,7 @@
       },
       "basis": "Headline record = the CHAMPION V2 stream exactly: champion picks that passed the +EV gate at the stored real per-side price, graded at that same price. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, median morning per-side price) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot price they were served at."
     },
-    "record_generated_utc": "2026-07-07T22:50:36Z",
+    "record_generated_utc": "2026-07-08T01:27:41Z",
     "backfill": {
       "n_rows": 104,
       "sources": {
@@ -201,14 +202,14 @@
     "note": "STAR CAPS from the last completed walk: a live +EV take in an unproven cell (fails baselines or thin n) emits at max 2 stars as 'Lean (unproven cell)'; a one-sided cell caps at 1 star (flagged); >=3 stars requires a baseline-beating cell; 5 stars additionally requires BH significance. -EV never emits (unchanged hard gate)."
   },
   "board_census": {
-    "n_games": 26,
-    "n_rows": 81,
-    "n_takes": 16,
-    "n_passes": 65,
+    "n_games": 28,
+    "n_rows": 83,
+    "n_takes": 19,
+    "n_passes": 64,
     "stars": {
-      "0": 65,
-      "1": 10,
-      "2": 6,
+      "0": 64,
+      "1": 12,
+      "2": 7,
       "3": 0,
       "4": 0,
       "5": 0
@@ -301,34 +302,34 @@
       },
       "by_star_tier": {
         "4": {
-          "n": 21,
-          "win": 11,
-          "loss": 9,
-          "push": 1,
-          "record": "11-9-1",
-          "hit_rate": 0.55,
-          "roi": 0.0391,
-          "units": 0.783
+          "n": 43,
+          "win": 23,
+          "loss": 20,
+          "push": 0,
+          "record": "23-20-0",
+          "hit_rate": 0.5349,
+          "roi": 0.0082,
+          "units": 0.352
         },
         "3": {
-          "n": 60,
-          "win": 31,
-          "loss": 28,
+          "n": 34,
+          "win": 18,
+          "loss": 15,
           "push": 1,
-          "record": "31-28-1",
-          "hit_rate": 0.5254,
-          "roi": -0.0092,
-          "units": -0.542
+          "record": "18-15-1",
+          "hit_rate": 0.5455,
+          "roi": 0.0269,
+          "units": 0.888
         },
-        "2": {
-          "n": 0,
-          "win": 0,
-          "loss": 0,
-          "push": 0,
-          "record": "0-0-0",
-          "hit_rate": null,
-          "roi": null,
-          "units": 0.0
+        "1": {
+          "n": 4,
+          "win": 1,
+          "loss": 2,
+          "push": 1,
+          "record": "1-2-1",
+          "hit_rate": 0.3333,
+          "roi": -0.3333,
+          "units": -1.0
         }
       },
       "by_source": {
@@ -2462,9 +2463,9 @@
           "model": "residual_total_v1",
           "market_line": 7.0,
           "per_side_price": 106,
-          "our_prob": 0.5053,
+          "our_prob": 0.5026,
           "p_breakeven": 0.4854,
-          "ev": 0.0409,
+          "ev": 0.0353,
           "tier": "Good",
           "star_tier": "Lean (unproven cell)",
           "stars": 2,
@@ -2540,9 +2541,9 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": 105,
-          "our_prob": 0.5117,
+          "our_prob": 0.5071,
           "p_breakeven": 0.4878,
-          "ev": 0.0489,
+          "ev": 0.0395,
           "tier": "Good",
           "star_tier": "Lean (unproven cell)",
           "stars": 2,
@@ -2579,9 +2580,9 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": -105,
-          "our_prob": 0.5251,
+          "our_prob": 0.5272,
           "p_breakeven": 0.5122,
-          "ev": 0.0252,
+          "ev": 0.0293,
           "tier": "Lean",
           "star_tier": "Lean (unproven cell)",
           "stars": 1,
@@ -2618,13 +2619,13 @@
           "model": "residual_total_v1",
           "market_line": 7.5,
           "per_side_price": -102,
-          "our_prob": 0.5114,
+          "our_prob": 0.5185,
           "p_breakeven": 0.505,
-          "ev": 0.0127,
-          "tier": "PASS",
-          "star_tier": "PASS",
-          "stars": 0,
-          "take": false,
+          "ev": 0.0269,
+          "tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 1,
+          "take": true,
           "result": null,
           "evidence": {
             "cell_cleared_baselines": false,
@@ -2632,9 +2633,9 @@
             "cell_n": 321,
             "one_sided": false
           },
-          "pick_side": null,
-          "informational_lean": "over",
-          "pass_reason": "model 51.1% >= break-even 50.5% at -102 \u2014 edge below +EV min"
+          "pick_side": "over",
+          "pick_line": 7.5,
+          "graded_line": null
         }
       ]
     },
@@ -2657,9 +2658,9 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": -110,
-          "our_prob": 0.5087,
+          "our_prob": 0.5106,
           "p_breakeven": 0.5238,
-          "ev": -0.0288,
+          "ev": -0.0252,
           "tier": "PASS",
           "star_tier": "PASS",
           "stars": 0,
@@ -2673,7 +2674,7 @@
           },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 50.9% < break-even 52.4% at -110 \u2014 priced out (-EV)"
+          "pass_reason": "model 51.1% < break-even 52.4% at -110 \u2014 priced out (-EV)"
         }
       ]
     },
@@ -2696,9 +2697,9 @@
           "model": "residual_total_v1",
           "market_line": 9.0,
           "per_side_price": -110,
-          "our_prob": 0.5239,
+          "our_prob": 0.5251,
           "p_breakeven": 0.5238,
-          "ev": 0.0001,
+          "ev": 0.0025,
           "tier": "PASS",
           "star_tier": "PASS",
           "stars": 0,
@@ -2712,7 +2713,7 @@
           },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 52.4% >= break-even 52.4% at -110 \u2014 edge below +EV min"
+          "pass_reason": "model 52.5% >= break-even 52.4% at -110 \u2014 edge below +EV min"
         }
       ]
     },
@@ -2735,9 +2736,9 @@
           "model": "residual_total_v1",
           "market_line": 8.0,
           "per_side_price": -107,
-          "our_prob": 0.5197,
+          "our_prob": 0.5176,
           "p_breakeven": 0.5169,
-          "ev": 0.0054,
+          "ev": 0.0013,
           "tier": "PASS",
           "star_tier": "PASS",
           "stars": 0,
@@ -2751,7 +2752,7 @@
           },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 52.0% >= break-even 51.7% at -107 \u2014 edge below +EV min"
+          "pass_reason": "model 51.8% >= break-even 51.7% at -107 \u2014 edge below +EV min"
         }
       ]
     },
@@ -2774,9 +2775,9 @@
           "model": "residual_total_v1",
           "market_line": 8.5,
           "per_side_price": 100,
-          "our_prob": 0.5058,
+          "our_prob": 0.5065,
           "p_breakeven": 0.5,
-          "ev": 0.0117,
+          "ev": 0.013,
           "tier": "PASS",
           "star_tier": "PASS",
           "stars": 0,
@@ -2813,13 +2814,13 @@
           "model": "residual_total_v1",
           "market_line": 8.0,
           "per_side_price": 100,
-          "our_prob": 0.5025,
+          "our_prob": 0.5133,
           "p_breakeven": 0.5,
-          "ev": 0.0049,
-          "tier": "PASS",
-          "star_tier": "PASS",
-          "stars": 0,
-          "take": false,
+          "ev": 0.0266,
+          "tier": "Lean",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 1,
+          "take": true,
           "result": null,
           "evidence": {
             "cell_cleared_baselines": false,
@@ -2827,9 +2828,9 @@
             "cell_n": 321,
             "one_sided": false
           },
-          "pick_side": null,
-          "informational_lean": "over",
-          "pass_reason": "model 50.2% >= break-even 50.0% at 100 \u2014 edge below +EV min"
+          "pick_side": "over",
+          "pick_line": 8.0,
+          "graded_line": null
         }
       ]
     },
@@ -2852,9 +2853,9 @@
           "model": "residual_total_v1",
           "market_line": 7.5,
           "per_side_price": 100,
-          "our_prob": 0.5129,
+          "our_prob": 0.5126,
           "p_breakeven": 0.5,
-          "ev": 0.0258,
+          "ev": 0.0251,
           "tier": "Lean",
           "star_tier": "Lean (unproven cell)",
           "stars": 1,
@@ -2868,6 +2869,84 @@
           },
           "pick_side": "over",
           "pick_line": 7.5,
+          "graded_line": null
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-08-Arizona Diamondbacks-San Diego Padres-823279",
+      "game_pk": 823279,
+      "date": "2026-07-08",
+      "away": "Arizona Diamondbacks",
+      "home": "San Diego Padres",
+      "first_pitch_utc": "2026-07-09T02:10:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.75,
+          "per_side_price": -105,
+          "our_prob": 0.5198,
+          "p_breakeven": 0.5122,
+          "ev": 0.0149,
+          "tier": "PASS",
+          "star_tier": "PASS",
+          "stars": 0,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.0% >= break-even 51.2% at -105 \u2014 edge below +EV min"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-08-Colorado Rockies-Los Angeles Dodgers-823928",
+      "game_pk": 823928,
+      "date": "2026-07-08",
+      "away": "Colorado Rockies",
+      "home": "Los Angeles Dodgers",
+      "first_pitch_utc": "2026-07-09T02:10:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 10.0,
+          "per_side_price": -110,
+          "our_prob": 0.5428,
+          "p_breakeven": 0.5238,
+          "ev": 0.0363,
+          "tier": "Good",
+          "star_tier": "Lean (unproven cell)",
+          "stars": 2,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": "over",
+          "pick_line": 10.0,
           "graded_line": null
         }
       ]
