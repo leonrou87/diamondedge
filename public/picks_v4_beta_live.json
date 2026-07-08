@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-08T20:09:22Z",
+  "generated_utc": "2026-07-08T20:28:22Z",
   "dates": [
     "2026-07-08",
     "2026-07-09"
@@ -391,15 +391,15 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T20:08:05Z",
+          "snapshot_ts": "2026-07-08T20:28:08Z",
           "n_books_at_line": 8,
           "best_price": 105,
           "best_book": "lowvig",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.02
+          "stale_hours": 0.0
         },
-        "asof_utc": "2026-07-08T20:09:22Z"
+        "asof_utc": "2026-07-08T20:28:22Z"
       },
       {
         "model": "champion_v2",
@@ -546,7 +546,7 @@
         "away": null,
         "home": null,
         "first_pitch_utc": "2026-07-08T22:40:00Z",
-        "market_line": 9.5,
+        "market_line": 9.0,
         "pick_side": null,
         "pick_line": 9.0,
         "lean": {
@@ -586,18 +586,18 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T20:08:05Z",
-          "n_books_at_line": 5,
-          "best_price": -118,
-          "best_book": "fanduel",
+          "snapshot_ts": "2026-07-08T20:28:08Z",
+          "n_books_at_line": 6,
+          "best_price": -117,
+          "best_book": "mybookieag",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.02
+          "stale_hours": 0.0
         },
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out: model 50.2% vs break-even 54.5% at -120 (ev -8.04% < +1.5% min)",
-        "asof_utc": "2026-07-08T20:09:22Z"
+        "asof_utc": "2026-07-08T20:28:22Z"
       }
     ],
     "n_picks_on_board": 6
