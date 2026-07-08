@@ -4,7 +4,7 @@
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
   "record_basis": "headline = CHAMPION V2 stream (champion picks x +EV gate at real per-side prices); v4 model grid record = sealed 2026 walk (cd873786-8f51-406d-ae3e-9306de518fa9), star-capped take set, TOTALS ONLY",
-  "generated_utc": "2026-07-08T07:03:35Z",
+  "generated_utc": "2026-07-08T11:02:43Z",
   "walk_id": "cd873786-8f51-406d-ae3e-9306de518fa9",
   "recipe_sha256": "2ac80977691b1936467bb725950187490c9817249198af1d844eecd560769873",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
@@ -171,7 +171,7 @@
       },
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate at the stored real per-side price AND outside the measured >=0.065 anti-signal tail \u2014 graded at that same price. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, median morning per-side price) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot price they were served at."
     },
-    "record_generated_utc": "2026-07-08T07:03:35Z",
+    "record_generated_utc": "2026-07-08T11:02:43Z",
     "backfill": {
       "n_rows": 104,
       "sources": {
@@ -6159,7 +6159,7 @@
     },
     "n_playable_scores": 400,
     "walk_id": "cd873786-8f51-406d-ae3e-9306de518fa9",
-    "generated_utc": "2026-07-08T07:03:35Z",
+    "generated_utc": "2026-07-08T11:02:43Z",
     "basis": "v3.1 percentile bands of the (unchanged) continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day, so a dead slate cannot fake a 4*. The -EV floor is hard: non-playable rows stay 1* regardless of score."
   },
   "star_census": {
