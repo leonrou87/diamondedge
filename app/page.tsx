@@ -894,6 +894,8 @@ export default function Home() {
         const t = new Date(new Date(pl.fp_utc).getTime() - LEAD_MS[pl.lead_time]);
         if (!isNaN(t.getTime())) bits.push(`picked ${t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} (${pl.lead_time})`);
       } else if (pl.lead_time) bits.push(`picked at the ${pl.lead_time} check`);
+      // once first pitch passes, the pick and its judged line are FROZEN — say so.
+      if (pl.fp_utc && Date.now() >= new Date(pl.fp_utc).getTime()) bits.push("🔒 locked — judged at this line");
       return bits.length ? `<div class="pk-made">${esc(bits.join(" · "))}</div>` : "";
     }
     // Universal star renderer: v4 picks use the 5-star scale, champion picks keep 3.
