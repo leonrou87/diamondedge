@@ -2026,6 +2026,18 @@ export default function Home() {
       // the game and passes every market, the game is an honest PASS (no champion fallback).
       const vg = v4GameFor(g);
       if (vg) {
+        // CHAMPION V2 stream first — the headline picks outrank the grid's 2★ leans.
+        const cvp = (betaLiveData && betaLiveData.champion_v2 && betaLiveData.champion_v2.picks || [])
+          .filter((p: any) => String(p.game_pk) === String(g.game_id) && (p.playable != null ? p.playable : (p.stars || 0) >= 2) && p.pick_side)
+          .sort((a: any, b: any) => (b.score || b.stars || 0) - (a.score || a.stars || 0))[0];
+        if (cvp) {
+          const side = `${/over/i.test(String(cvp.pick_side)) ? "OVER" : "UNDER"} ${cvp.pick_line != null ? lineStr(cvp.pick_line) : ""}`.trim();
+          return { market: "total", action: "TAKE", side, line: cvp.pick_line, price: cvp.per_side_price ?? null,
+            p: cvp.our_prob ?? null, q: (cvp.stars || 2) >= 4 ? "strong" : (cvp.stars || 2) === 3 ? "good" : "lean",
+            stars: cvp.stars, star_tier: cvp.star_tier, ev: cvp.ev, grade: cvp.score ?? cvp.stars ?? 2,
+            why: [], result: cvp.result === "win" ? { status: "hit" } : cvp.result === "loss" ? { status: "miss" } : cvp.result === "push" ? { status: "push" } : null,
+            src: "v4", vegas_line: cvp.market_line ?? cvp.pick_line, lead_time: cvp.lead_time || null, fp_utc: vg.first_pitch_utc || null };
+        }
         const P4 = gamePlays(g);
         // ALL-IN TOTALS: only the totals lane can be OUR pick.
         const pl = P4["total"];
@@ -3068,6 +3080,16 @@ export default function Home() {
         // board (it carries upcoming fixtures) so the SCHEDULE still shows even without picks.
         let games = payload ? gamesForLeague(payload, league) : [];
         if (isFuture && !games.length && livePayload) games = gamesForLeague(livePayload, league, curDate);
+        // Still nothing? The v4 pick feed carries tomorrow's slate as soon as books post
+        // (~T-24h) — synthesize minimal tiles from it so picks show the moment they exist.
+        if (isFuture && !games.length && betaLiveData && (league === "all" || league === "mlb")) {
+          games = (betaLiveData.games || []).filter((vg: any) => vg.date === curDate).map((vg: any) => ({
+            game_id: String(vg.game_pk), sport: "mlb",
+            away_abbr: teamShort(vg.away), home_abbr: teamShort(vg.home),
+            away_name: vg.away, home_name: vg.home,
+            start_ts: vg.first_pitch_utc,
+          }));
+        }
         if (meta) meta.innerHTML = metaRow();
         if (!games.length) {
           if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); return; }
