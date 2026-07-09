@@ -2648,10 +2648,12 @@ export default function Home() {
       try { gid = localStorage.getItem(k); } catch {}
       if (gid && gid !== excludeGid) {
         const g = pool.find((x: any) => String(x.game_id) === gid);
-        if (g) { const pl = displayPick(g); if (isPick(pl)) return { g, pl }; }
+        // Keep the day-lock ONLY while the featured game hasn't started — once it's live/final
+        // we don't headline a pick you can no longer make. Re-pick if a pre-game pick exists.
+        if (g && gameState(g).kind === "pre") { const pl = displayPick(g); if (isPick(pl)) return { g, pl }; }
       }
       const cand = featuredPick(excludeGid ? pool.filter((x: any) => String(x.game_id) !== excludeGid) : pool);
-      if (cand) { try { localStorage.setItem(k, String(cand.g.game_id)); } catch {} }
+      if (cand && gameState(cand.g).kind === "pre") { try { localStorage.setItem(k, String(cand.g.game_id)); } catch {} }
       return cand;
     }
     function featuredPick(games: any[]) {
@@ -2659,8 +2661,11 @@ export default function Home() {
       games.forEach((g: any) => {
         const pl = displayPick(g);
         if (!isBet(pl)) return; // never feature a bet that doesn't clear its price's break-even
-        const cand = { g, pl, p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)], gr: pl.grade != null ? Number(pl.grade) : null };
+        // Prefer a pick you can STILL MAKE: upcoming (pre) outranks a game already started.
+        const preRank = gameState(g).kind === "pre" ? 1 : 0;
+        const cand = { g, pl, pre: preRank, p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)], gr: pl.grade != null ? Number(pl.grade) : null };
         if (!best) { best = cand; return; }
+        if (cand.pre !== best.pre) { if (cand.pre > best.pre) best = cand; return; } // upcoming first
         // decimal grade wins when both carry one (the flagship ranking); legacy conviction otherwise
         if (cand.gr != null && best.gr != null) { if (cand.gr > best.gr) best = cand; return; }
         if (convictionSort(cand.p, cand.qr, best.p, best.qr) < 0) best = cand;
