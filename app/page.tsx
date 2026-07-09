@@ -836,8 +836,11 @@ export default function Home() {
       const rows = (vg.grid || []).filter((c: any) => c.bet_type === mk && c.scope !== "first_5");
       if (!rows.length) return null;
       const freshest = (arr: any[]) => { for (const lt of V4_LEADS_FRESH) { const hit = arr.find((c: any) => c.lead_time === lt); if (hit) return hit; } return arr[0]; };
-      const takes = rows.filter((c: any) => c.take && c.stars > 0);
-      return takes.length ? freshest(takes) : freshest(rows);
+      // PLAYABLE is the authoritative pick flag (v3.1): a raw-take row demoted by the
+      // conviction floor must never outrank the wall where the pick genuinely fired.
+      const isPlay = (c: any) => (c.playable != null ? !!c.playable : !!(c.take && c.stars > 1));
+      const plays = rows.filter(isPlay);
+      return plays.length ? freshest(plays) : freshest(rows);
     }
     // Map a v4 grid cell into the app's play shape so every existing surface renders it.
     function v4ToPlay(g: any, c: any) {
@@ -856,7 +859,10 @@ export default function Home() {
       else if (mk === "spread") side = `${c.pick_side === "home" ? g.home_abbr : g.away_abbr} ${ln != null ? sgn(ln) : ""}`.trim();
       else side = `${c.pick_side === "home" ? g.home_abbr : g.away_abbr}`;
       const res = c.result === "win" ? { status: "hit" } : c.result === "loss" ? { status: "miss" } : c.result === "push" ? { status: "push" } : null;
-      const take = !!(c.take && c.stars > 0);
+      // v3.1: `playable` is the authoritative pick flag — the conviction floor demotes
+      // price-only rows to 1★ WITHOUT clearing the raw gate `take`, so raw take alone
+      // must never surface a pick. Playable (or legacy stars>=2 take) only.
+      const take = c.playable != null ? !!c.playable : !!(c.take && c.stars > 1);
       const q = c.stars >= 4 ? "strong" : c.stars === 3 ? "good" : "lean";
       const why: string[] = [];
       if (take && c.our_prob != null && c.p_breakeven != null && c.per_side_price != null)
@@ -2025,6 +2031,10 @@ export default function Home() {
         const pl = P4["total"];
         return pl && pl.action === "TAKE" ? pl : null;
       }
+      // MLB: the v4 board is the ONLY pick source. No legacy fallback — if the feed
+      // hasn't loaded or doesn't cover the game, that's a PASS, not an old champion lean.
+      // (The slate re-renders when the feed arrives, so real picks replace passes fast.)
+      if (g && g.sport === "mlb") return null;
       const dp = g && g.display_pick;
       if (dp && typeof dp === "object" && String(dp.action || "").toUpperCase() === "TAKE" && dp.side != null
           && String(dp.market || "total").toLowerCase() === "total") {
@@ -3651,8 +3661,9 @@ export default function Home() {
         // (a1) TRACKING READ — is our surfaced pick on course to cash? Computed from the live
         // score/inning fields above (no projection). The totals edge gets the rich runs-vs-line
         // read; a spread/ML lean gets a lighter scoreboard status. Context, not a new pick.
-        const Plive = gamePlays(g);
-        const plLive = (Plive.total && Plive.total.action === "TAKE") ? Plive.total : (displayPick(g) || bestPlay(g));
+        // MLB: the LOCKED v4 pick is the only pick we track live — no champion live-lean fallback.
+        const plLive = g.sport === "mlb" ? displayPick(g)
+          : (() => { const Plive = gamePlays(g); return (Plive.total && Plive.total.action === "TAKE") ? Plive.total : (displayPick(g) || bestPlay(g)); })();
         const trackCard = plLive ? liveTrackCard(g, plLive) : "";
         if (trackCard) rows.push(trackCard);
       }
@@ -6264,15 +6275,20 @@ export default function Home() {
     let betaLiveData: any = null, betaLiveAt = 0;
     async function loadBetaLive() {
       if (betaLiveData && Date.now() - betaLiveAt < 5 * 60 * 1000) return betaLiveData;
+      const hadNone = !betaLiveData;
       let fresh: any = null;
-      try { fresh = await snap("picks_v4_beta_live"); } catch {}
-      if (!fresh) {
+      // Supabase is freshest but can be slow — race a 1.5s timeout, fall back to the bundle.
+      try { fresh = await Promise.race([snap("picks_v4_beta_live"), new Promise((r) => setTimeout(() => r(null), 1500))]); } catch {}
+      if (!fresh || !fresh.games) {
         const r = await fetch("/picks_v4_beta_live.json", { cache: "no-store" });
         if (!r.ok) throw new Error("beta live fetch " + r.status);
         fresh = await r.json();
       }
       betaLiveData = fresh;
       betaLiveAt = Date.now();
+      // first arrival: tiles rendered PASS placeholders before the feed existed — swap in
+      // the real picks now (MLB has no legacy fallback anymore, so this is the only source).
+      if (hadNone) { try { renderSlate(true); } catch {} }
       return betaLiveData;
     }
     const BETA_LEADS = ["T-24h", "T-12h", "T-6h", "T-3h", "T-1h"];
@@ -6732,6 +6748,7 @@ export default function Home() {
       window.addEventListener("focus", () => { pollLiveScores(); });
       pollLiveScores();
       loadPitchers().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // ERAs onto tiles once the feed lands
+      loadBetaLive().catch(() => {}); // warm the pick feed at boot — tiles are v4-only now, this is their source
       // ── PULL-TO-REFRESH (mobile): drag down from the very top → full refresh ──
       // A hard reload re-fetches every feed (and any new deploy). Indicator shows pull
       // progress; fires past 70px. Desktop unaffected (touch-only).
