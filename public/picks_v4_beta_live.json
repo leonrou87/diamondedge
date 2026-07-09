@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-09T02:35:39Z",
+  "generated_utc": "2026-07-09T04:43:06Z",
   "dates": [
     "2026-07-08",
     "2026-07-09"
@@ -204,13 +204,13 @@
       "coverage_gap": "2026-06-11 .. 2026-07-01 NOT reconstructable (game DB frozen 2026-06-13; forward track began 2026-07-02) \u2014 absent, not interpolated"
     },
     "slate_status": {
-      "date": "2026-07-08",
-      "available": true,
-      "frozen_at": "2026-07-08T12:18:32.282469+00:00",
-      "n_slate": 15,
-      "n_tier_a": 0,
-      "n_tier_b": 2,
-      "n_plays_today": 2,
+      "date": "2026-07-09",
+      "available": false,
+      "frozen_at": null,
+      "n_slate": null,
+      "n_tier_a": null,
+      "n_tier_b": null,
+      "n_plays_today": 0,
       "n_suppressed_by_champion_gates": 0,
       "note": "0 plays = the champion's own frozen policy found no qualifying totals divergence today (or its internal gates suppressed the candidates) \u2014 an empty board is honest, not broken"
     },
@@ -864,18 +864,18 @@
     "basis": "v3.1 percentile bands of the (unchanged) continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day, so a dead slate cannot fake a 4*. The -EV floor is hard: non-playable rows stay 1* regardless of score."
   },
   "board_census": {
-    "n_games": 22,
-    "n_rows": 80,
+    "n_games": 23,
+    "n_rows": 81,
     "n_voided": 0,
     "n_playable": 6,
     "n_takes": 6,
-    "n_passes": 74,
+    "n_passes": 75,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 0,
       "2": 6,
-      "1": 74
+      "1": 75
     }
   },
   "live_record": {
@@ -4143,6 +4143,53 @@
         "label": "Locked at T-1h \u00b7 O/U 10.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
       }
+    },
+    {
+      "game_id": "2026-07-09-Atlanta Braves-Pittsburgh Pirates-823359",
+      "game_pk": 823359,
+      "date": "2026-07-09",
+      "away": "Atlanta Braves",
+      "home": "Pittsburgh Pirates",
+      "first_pitch_utc": "2026-07-09T16:35:00+00:00",
+      "walls_populated": [
+        "T-12h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.5138,
+          "p_breakeven": 0.5,
+          "ev": 0.0277,
+          "tier": "Lean",
+          "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+          "stars": 1,
+          "score": 1.57,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 401,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
+          "pass_why": "junk_cell"
+        }
+      ],
+      "locked": false
     },
     {
       "game_id": "2026-07-09-Chicago Cubs-Baltimore Orioles-824816",
