@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-09T00:27:08Z",
+  "generated_utc": "2026-07-09T02:35:39Z",
   "dates": [
     "2026-07-08",
     "2026-07-09"
@@ -66,14 +66,14 @@
           "units": 0.0
         },
         "1_pass_leans_informational": {
-          "n": 25,
+          "n": 27,
           "win": 9,
-          "loss": 13,
+          "loss": 15,
           "push": 3,
-          "record": "9-13-3",
-          "hit_rate": 0.4091,
-          "roi": -0.2279,
-          "units": -5.013
+          "record": "9-15-3",
+          "hit_rate": 0.375,
+          "roi": -0.2922,
+          "units": -7.013
         }
       },
       "by_source": {
@@ -153,10 +153,14 @@
       "n_takes": 77,
       "n_playable": 77,
       "n_pending": 0,
+      "voided_no_action": {
+        "n": 8,
+        "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
+      },
       "gated_out": {
         "n": 29,
-        "n_graded": 25,
-        "n_pending_or_no_result": 4,
+        "n_graded": 27,
+        "n_pending_or_no_result": 2,
         "by_reason": {
           "ev_gate": 25,
           "price_only": 0,
@@ -164,19 +168,19 @@
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 25,
+          "n": 27,
           "win": 9,
-          "loss": 13,
+          "loss": 15,
           "push": 3,
-          "record": "9-13-3",
-          "hit_rate": 0.4091,
-          "roi": -0.2279,
-          "units": -5.013
+          "record": "9-15-3",
+          "hit_rate": 0.375,
+          "roi": -0.2922,
+          "units": -7.013
         }
       },
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate at the stored real per-side price AND outside the measured >=0.065 anti-signal tail \u2014 graded at that same price. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, median morning per-side price) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot price they were served at."
     },
-    "record_generated_utc": "2026-07-09T00:23:20Z",
+    "record_generated_utc": "2026-07-09T02:33:39Z",
     "backfill": {
       "n_rows": 106,
       "sources": {
@@ -213,7 +217,7 @@
     "picks": [
       {
         "model": "champion_v2",
-        "source": "live",
+        "source": "reconstructed_pregame_fixed",
         "scope": "full_game",
         "bet_type": "total",
         "lead_time": "T-12h",
@@ -232,17 +236,17 @@
           "line": 9.5
         },
         "our_prob": 0.5094,
-        "per_side_price": -102,
-        "p_breakeven": 0.505,
-        "ev": 0.0088,
+        "per_side_price": -105,
+        "p_breakeven": 0.5122,
+        "ev": -0.0055,
         "ev_min": 0.015,
         "take": false,
         "playable": false,
         "tier": "PASS",
         "stars": 1,
         "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
-        "score": 1.62,
-        "gate_reason": "below_ev_min",
+        "score": 1.56,
+        "gate_reason": "negative_ev",
         "champion": {
           "tier": "B",
           "edge": 0.0203,
@@ -264,25 +268,28 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T13:29:56Z",
-          "n_books_at_line": 10,
-          "best_price": 103,
+          "snapshot_ts": "2026-07-08T12:16:56Z",
+          "n_books_at_line": 9,
+          "best_price": -101,
           "best_book": "lowvig",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.04
+          "stale_hours": 0.03
         },
         "informational_lean": "under",
         "pass_why": "ev_gate",
-        "pass_reason": "champion pick priced out: model 50.9% vs break-even 50.5% at -102 (ev +0.88% < +1.5% min)",
-        "asof_utc": "2026-07-08T13:32:23Z",
+        "pass_reason": "champion pick priced out: model 50.9% vs break-even 51.2% at -105 (ev -0.55% < +1.5% min)",
         "locked": true,
         "locked_wall": "T-12h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T12:18:32Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
       },
       {
         "model": "champion_v2",
-        "source": "live",
+        "source": "reconstructed_pregame_fixed",
         "scope": "full_game",
         "bet_type": "total",
         "lead_time": "T-6h",
@@ -294,24 +301,24 @@
         "home": null,
         "first_pitch_utc": "2026-07-08T22:45:00Z",
         "market_line": 9.5,
-        "pick_side": "under",
+        "pick_side": null,
         "pick_line": 9.5,
         "lean": {
           "side": "under",
           "line": 9.5
         },
         "our_prob": 0.5094,
-        "per_side_price": 100,
-        "p_breakeven": 0.5,
-        "ev": 0.0188,
+        "per_side_price": -104,
+        "p_breakeven": 0.5098,
+        "ev": -0.0008,
         "ev_min": 0.015,
-        "take": true,
-        "playable": true,
-        "tier": "Lean",
-        "stars": 2,
-        "star_tier": "Playable (v3.1: remaining playable scores, score < 2.49 \u2014 clears the +EV gate, lowest playable conviction)",
-        "score": 2.36,
-        "gate_reason": "take_+ev",
+        "take": false,
+        "playable": false,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.58,
+        "gate_reason": "negative_ev",
         "champion": {
           "tier": "B",
           "edge": 0.0203,
@@ -333,22 +340,28 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T17:53:12Z",
-          "n_books_at_line": 8,
+          "snapshot_ts": "2026-07-08T13:37:08Z",
+          "n_books_at_line": 9,
           "best_price": 103,
           "best_book": "lowvig",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.05
+          "stale_hours": 0.13
         },
-        "asof_utc": "2026-07-08T17:56:06Z",
+        "informational_lean": "under",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out: model 50.9% vs break-even 51.0% at -104 (ev -0.08% < +1.5% min)",
         "locked": true,
         "locked_wall": "T-6h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T13:45:00Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
       },
       {
         "model": "champion_v2",
-        "source": "live",
+        "source": "reconstructed_pregame_fixed",
         "scope": "full_game",
         "bet_type": "total",
         "lead_time": "T-3h",
@@ -375,7 +388,76 @@
         "playable": true,
         "tier": "Lean",
         "stars": 2,
-        "star_tier": "Playable (v3.1: remaining playable scores, score < 2.49 \u2014 clears the +EV gate, lowest playable conviction)",
+        "star_tier": "Playable (v3.1: remaining playable scores, score < 3.06 \u2014 clears the +EV gate, lowest playable conviction)",
+        "score": 2.36,
+        "gate_reason": "take_+ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0203,
+          "signed_edge": -0.0203,
+          "side": "under",
+          "frozen_at": "2026-07-08T12:18:32.282329+00:00",
+          "morning_price": -105,
+          "nlines": 1
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0203,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "price": {
+          "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
+          "snapshot_ts": "2026-07-08T18:07:48Z",
+          "n_books_at_line": 8,
+          "best_price": 103,
+          "best_book": "lowvig",
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.12
+        },
+        "locked": true,
+        "locked_wall": "T-3h",
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T18:15:00Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
+      },
+      {
+        "model": "champion_v2",
+        "source": "reconstructed_pregame_fixed",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-1h",
+        "date": "2026-07-08",
+        "game_pk": 822710,
+        "game_id": "2026-07-08-HOU-WSH",
+        "matchup": "HOU @ WSH",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-07-08T22:45:00Z",
+        "market_line": 9.5,
+        "pick_side": "under",
+        "pick_line": 9.5,
+        "lean": {
+          "side": "under",
+          "line": 9.5
+        },
+        "our_prob": 0.5094,
+        "per_side_price": 100,
+        "p_breakeven": 0.5,
+        "ev": 0.0188,
+        "ev_min": 0.015,
+        "take": true,
+        "playable": true,
+        "tier": "Lean",
+        "stars": 2,
+        "star_tier": "Playable (v3.1: remaining playable scores, score < 3.06 \u2014 clears the +EV gate, lowest playable conviction)",
         "score": 2.36,
         "gate_reason": "take_+ev",
         "champion": {
@@ -405,85 +487,19 @@
           "best_book": "lowvig",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.06
+          "stale_hours": 0.09
         },
-        "asof_utc": "2026-07-08T20:43:00Z",
-        "locked": true,
-        "locked_wall": "T-3h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
-      },
-      {
-        "model": "champion_v2",
-        "source": "live",
-        "scope": "full_game",
-        "bet_type": "total",
-        "lead_time": "T-1h",
-        "date": "2026-07-08",
-        "game_pk": 822710,
-        "game_id": "2026-07-08-HOU-WSH",
-        "matchup": "HOU @ WSH",
-        "away": null,
-        "home": null,
-        "first_pitch_utc": "2026-07-08T22:45:00Z",
-        "market_line": 10.0,
-        "pick_side": null,
-        "pick_line": 9.5,
-        "lean": {
-          "side": "under",
-          "line": 9.5
-        },
-        "our_prob": 0.5094,
-        "per_side_price": -102,
-        "p_breakeven": 0.505,
-        "ev": 0.0088,
-        "ev_min": 0.015,
-        "take": false,
-        "playable": false,
-        "tier": "PASS",
-        "stars": 1,
-        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
-        "score": 1.62,
-        "gate_reason": "below_ev_min",
-        "champion": {
-          "tier": "B",
-          "edge": 0.0203,
-          "signed_edge": -0.0203,
-          "side": "under",
-          "frozen_at": "2026-07-08T12:18:32.282329+00:00",
-          "morning_price": -105,
-          "nlines": 1
-        },
-        "evidence": {
-          "basis": "champion_live_engine",
-          "cell_cleared_baselines": false,
-          "bh_significant": false,
-          "cell_n": 886,
-          "one_sided": false,
-          "champion_tier": "B",
-          "champion_edge": 0.0203,
-          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
-        },
-        "price": {
-          "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T22:20:19Z",
-          "n_books_at_line": 3,
-          "best_price": 105,
-          "best_book": "williamhill_us",
-          "nearest_line": null,
-          "nearest_line_price": null,
-          "stale_hours": 0.06
-        },
-        "informational_lean": "under",
-        "pass_why": "ev_gate",
-        "pass_reason": "champion pick priced out: model 50.9% vs break-even 50.5% at -102 (ev +0.88% < +1.5% min)",
-        "asof_utc": "2026-07-08T22:24:12Z",
         "locked": true,
         "locked_wall": "T-1h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T20:45:00Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
       },
       {
         "model": "champion_v2",
-        "source": "live",
+        "source": "reconstructed_pregame_fixed",
         "scope": "full_game",
         "bet_type": "total",
         "lead_time": "T-12h",
@@ -502,17 +518,17 @@
           "line": 9.0
         },
         "our_prob": 0.5016,
-        "per_side_price": -120,
-        "p_breakeven": 0.5455,
-        "ev": -0.0804,
+        "per_side_price": 100,
+        "p_breakeven": 0.5,
+        "ev": 0.0032,
         "ev_min": 0.015,
         "take": false,
         "playable": false,
         "tier": "PASS",
         "stars": 1,
         "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
-        "score": 1.24,
-        "gate_reason": "negative_ev",
+        "score": 1.6,
+        "gate_reason": "below_ev_min",
         "champion": {
           "tier": "B",
           "edge": 0.0209,
@@ -534,25 +550,28 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T13:29:56Z",
-          "n_books_at_line": 10,
-          "best_price": -109,
-          "best_book": "betrivers",
+          "snapshot_ts": "2026-07-08T12:16:56Z",
+          "n_books_at_line": 6,
+          "best_price": 100,
+          "best_book": "fanatics",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.04
+          "stale_hours": 0.03
         },
         "informational_lean": "over",
         "pass_why": "ev_gate",
-        "pass_reason": "champion pick priced out: model 50.2% vs break-even 54.5% at -120 (ev -8.04% < +1.5% min)",
-        "asof_utc": "2026-07-08T13:32:23Z",
+        "pass_reason": "champion pick priced out: model 50.2% vs break-even 50.0% at 100 (ev +0.32% < +1.5% min)",
         "locked": true,
         "locked_wall": "T-12h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T12:18:32Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
       },
       {
         "model": "champion_v2",
-        "source": "live",
+        "source": "reconstructed_pregame_fixed",
         "scope": "full_game",
         "bet_type": "total",
         "lead_time": "T-6h",
@@ -603,10 +622,10 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T17:53:12Z",
+          "snapshot_ts": "2026-07-08T13:37:08Z",
           "n_books_at_line": 10,
-          "best_price": -118,
-          "best_book": "fanduel",
+          "best_price": -109,
+          "best_book": "betrivers",
           "nearest_line": null,
           "nearest_line_price": null,
           "stale_hours": 0.05
@@ -614,14 +633,17 @@
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out: model 50.2% vs break-even 54.5% at -120 (ev -8.04% < +1.5% min)",
-        "asof_utc": "2026-07-08T17:56:06Z",
         "locked": true,
         "locked_wall": "T-6h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T13:40:00Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
       },
       {
         "model": "champion_v2",
-        "source": "live",
+        "source": "reconstructed_pregame_fixed",
         "scope": "full_game",
         "bet_type": "total",
         "lead_time": "T-3h",
@@ -672,25 +694,28 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T20:28:08Z",
-          "n_books_at_line": 6,
-          "best_price": -117,
-          "best_book": "mybookieag",
+          "snapshot_ts": "2026-07-08T18:07:48Z",
+          "n_books_at_line": 10,
+          "best_price": -118,
+          "best_book": "fanduel",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.0
+          "stale_hours": 0.04
         },
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out: model 50.2% vs break-even 54.5% at -120 (ev -8.04% < +1.5% min)",
-        "asof_utc": "2026-07-08T20:28:22Z",
         "locked": true,
         "locked_wall": "T-3h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T18:10:00Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
       },
       {
         "model": "champion_v2",
-        "source": "live",
+        "source": "reconstructed_pregame_fixed",
         "scope": "full_game",
         "bet_type": "total",
         "lead_time": "T-1h",
@@ -701,7 +726,7 @@
         "away": null,
         "home": null,
         "first_pitch_utc": "2026-07-08T22:40:00Z",
-        "market_line": 9.5,
+        "market_line": 9.0,
         "pick_side": null,
         "pick_line": 9.0,
         "lean": {
@@ -741,32 +766,45 @@
         },
         "price": {
           "basis": "median-in-decimal-space across books quoting the pick's line at the latest pregame snapshot (v4 odds store)",
-          "snapshot_ts": "2026-07-08T22:20:19Z",
-          "n_books_at_line": 3,
-          "best_price": -120,
-          "best_book": "williamhill_us",
+          "snapshot_ts": "2026-07-08T20:39:25Z",
+          "n_books_at_line": 6,
+          "best_price": -117,
+          "best_book": "mybookieag",
           "nearest_line": null,
           "nearest_line_price": null,
-          "stale_hours": 0.06
+          "stale_hours": 0.01
         },
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out: model 50.2% vs break-even 54.5% at -120 (ev -8.04% < +1.5% min)",
-        "asof_utc": "2026-07-08T22:24:12Z",
         "locked": true,
         "locked_wall": "T-1h",
-        "locked_at_utc": "2026-07-09T00:24:49Z"
+        "locked_at_utc": "2026-07-09T02:33:00Z",
+        "reconstructed": true,
+        "reconstructed_note": "reconstructed pregame \u2014 fixed pipeline: the champion's own morning-frozen pick (side/line/edge frozen at 12Z, hours before first pitch) re-evaluated through the +EV gate + conviction floor + v3.1 stars at the per-side price as-of each wall's WINDOW START \u2014 only odds snapshots stored before that cutoff, never post-start data (leakage-asserted).",
+        "asof_wall_utc": "2026-07-08T20:40:00Z",
+        "asof_utc": "2026-07-09T02:33:00Z"
       }
     ],
-    "n_picks_on_board": 8
+    "n_picks_on_board": 8,
+    "n_voided": 0
   },
-  "board_notice": null,
+  "board_notice": {
+    "2026-07-08": {
+      "serving_bug": {
+        "n_rows_voided_no_action": 73,
+        "n_rows_reconstructed": 71,
+        "void_reason": "serving-bug day \u2014 board instability before the write-once lock + conviction floor (2026-07-08)",
+        "note": "Earlier today's picks were voided due to a serving bug (picks were unstable); the fixed board took over at 5:30 PM PT. Today's board was reconstructed pregame by the fixed pipeline \u2014 as-of each wall, using only odds snapshots stored before that wall, never post-start data. The reconstructed rows (tagged 'reconstructed pregame \u2014 fixed pipeline') are today's official picks and grade normally; the voided rows are no-action and count in no record."
+      }
+    }
+  },
   "lock_policy": {
     "hard_lock_at_first_pitch": true,
     "wall_rows_first_write_wins": true,
     "locked_this_cycle": {
       "n_locked_now": 0,
-      "n_locked_total": 65
+      "n_locked_total": 73
     },
     "note": "once now >= first_pitch_utc a game's rows are IMMUTABLE: locked:true, no re-evaluation, no side/price/line/star changes \u2014 the payload permanently carries the last PRE-START state (the judged Vegas line) and grading uses exactly that locked state. Each wall row is also first-write-wins: once written at its wall it is never overwritten by a later cycle. Game cards carry locked/locked_at (wall + utc + line) for the UI badge, e.g. 'Locked at T-1h \u00b7 O/U 8.5'."
   },
@@ -826,21 +864,23 @@
     "basis": "v3.1 percentile bands of the (unchanged) continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day, so a dead slate cannot fake a 4*. The -EV floor is hard: non-playable rows stay 1* regardless of score."
   },
   "board_census": {
-    "n_games": 20,
-    "n_rows": 76,
+    "n_games": 22,
+    "n_rows": 80,
+    "n_voided": 0,
     "n_playable": 6,
     "n_takes": 6,
-    "n_passes": 70,
+    "n_passes": 74,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 0,
       "2": 6,
-      "1": 70
+      "1": 74
     }
   },
   "live_record": {
-    "n_graded_rows": 307,
+    "n_graded_rows": 372,
+    "n_voided_no_action": 65,
     "overall_playable": {
       "n": 15,
       "win": 8,
@@ -956,14 +996,14 @@
           "units": 0.0
         },
         "1_pass_leans_informational": {
-          "n": 25,
+          "n": 27,
           "win": 9,
-          "loss": 13,
+          "loss": 15,
           "push": 3,
-          "record": "9-13-3",
-          "hit_rate": 0.4091,
-          "roi": -0.2279,
-          "units": -5.013
+          "record": "9-15-3",
+          "hit_rate": 0.375,
+          "roi": -0.2922,
+          "units": -7.013
         }
       },
       "by_source": {
@@ -1043,10 +1083,14 @@
       "n_takes": 77,
       "n_playable": 77,
       "n_pending": 0,
+      "voided_no_action": {
+        "n": 8,
+        "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
+      },
       "gated_out": {
         "n": 29,
-        "n_graded": 25,
-        "n_pending_or_no_result": 4,
+        "n_graded": 27,
+        "n_pending_or_no_result": 2,
         "by_reason": {
           "ev_gate": 25,
           "price_only": 0,
@@ -1054,14 +1098,14 @@
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 25,
+          "n": 27,
           "win": 9,
-          "loss": 13,
+          "loss": 15,
           "push": 3,
-          "record": "9-13-3",
-          "hit_rate": 0.4091,
-          "roi": -0.2279,
-          "units": -5.013
+          "record": "9-15-3",
+          "hit_rate": 0.375,
+          "roi": -0.2922,
+          "units": -7.013
         }
       },
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate at the stored real per-side price AND outside the measured >=0.065 anti-signal tail \u2014 graded at that same price. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, median morning per-side price) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot price they were served at."
@@ -1117,7 +1161,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0064 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -1151,7 +1197,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0052 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -1185,7 +1233,9 @@
           "pass_reason": "model 49.1% < break-even 50.0% at 100 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -1219,7 +1269,9 @@
           "pass_reason": "model 48.8% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -1253,13 +1305,18 @@
           "pass_reason": "model 50.8% < break-even 51.7% at -107 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 7.0,
         "label": "Locked at T-1h \u00b7 O/U 7.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -1312,7 +1369,9 @@
           "pick_line": 9.0,
           "graded_line": null,
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -1346,7 +1405,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0050 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -1380,7 +1441,9 @@
           "pass_reason": "model 51.6% >= break-even 51.0% at -104 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -1414,7 +1477,9 @@
           "pass_reason": "model 51.2% >= break-even 51.0% at -104 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -1448,13 +1513,18 @@
           "pass_reason": "model 50.4% < break-even 51.0% at -104 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 10.0,
         "label": "Locked at T-1h \u00b7 O/U 10.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -1508,7 +1578,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0087 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -1542,7 +1614,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0070 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -1576,7 +1650,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0027 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -1610,7 +1686,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0085 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -1644,13 +1722,18 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0031 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 9.0,
         "label": "Locked at T-1h \u00b7 O/U 9.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -1703,7 +1786,9 @@
           "pick_line": 8.5,
           "graded_line": null,
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -1737,7 +1822,9 @@
           "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
           "pass_why": "junk_cell",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -1771,7 +1858,9 @@
           "pass_reason": "model 50.6% >= break-even 50.0% at 100 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -1805,7 +1894,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0032 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -1839,13 +1930,18 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0025 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 9.5,
         "label": "Locked at T-1h \u00b7 O/U 9.5",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -1899,7 +1995,9 @@
           "pass_reason": "model 51.2% >= break-even 50.5% at -102 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -1933,7 +2031,9 @@
           "pass_reason": "model 50.8% < break-even 51.7% at -107 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -1967,7 +2067,9 @@
           "pass_reason": "model 50.6% < break-even 50.7% at -103 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -2001,7 +2103,9 @@
           "pass_reason": "model 48.3% < break-even 48.8% at 105 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -2035,13 +2139,18 @@
           "pass_reason": "model 48.0% < break-even 48.8% at 105 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 7.5,
         "label": "Locked at T-1h \u00b7 O/U 7.5",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -2095,7 +2204,9 @@
           "pass_reason": "model 50.8% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -2129,7 +2240,9 @@
           "pass_reason": "model 51.0% < break-even 51.7% at -107 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -2163,7 +2276,9 @@
           "pass_reason": "model 50.1% < break-even 51.0% at -104 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -2197,7 +2312,9 @@
           "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
           "pass_why": "junk_cell",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -2231,13 +2348,18 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0022 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 9.0,
         "label": "Locked at T-1h \u00b7 O/U 9.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -2291,7 +2413,9 @@
           "pass_reason": "model 52.3% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -2325,7 +2449,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0091 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -2359,7 +2485,9 @@
           "pass_reason": "model 50.9% >= break-even 50.5% at -102 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -2393,7 +2521,9 @@
           "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
           "pass_why": "junk_cell",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -2427,13 +2557,18 @@
           "pass_reason": "model 50.6% >= break-even 50.5% at -102 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 10.0,
         "label": "Locked at T-1h \u00b7 O/U 10.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -2486,7 +2621,9 @@
           "pass_reason": "model 49.5% < break-even 49.8% at 101 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -2520,7 +2657,9 @@
           "pass_reason": "model 50.5% < break-even 51.7% at -107 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -2554,7 +2693,9 @@
           "pass_reason": "model 50.2% >= break-even 50.0% at 100 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -2588,13 +2729,18 @@
           "pass_reason": "model 50.7% < break-even 51.9% at -108 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 4,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 9.5,
         "label": "Locked at T-1h \u00b7 O/U 9.5",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -2647,7 +2793,9 @@
           "pass_reason": "model 51.6% < break-even 53.0% at -113 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -2681,7 +2829,9 @@
           "pass_reason": "model 51.7% < break-even 53.0% at -113 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -2715,7 +2865,9 @@
           "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
           "pass_why": "junk_cell",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -2749,13 +2901,18 @@
           "pass_reason": "model 51.4% >= break-even 51.2% at -105 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 4,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 8.5,
         "label": "Locked at T-1h \u00b7 O/U 8.5",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -2809,7 +2966,9 @@
           "pass_reason": "model 52.2% >= break-even 51.7% at -107 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -2843,7 +3002,9 @@
           "pass_reason": "model 51.7% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -2877,7 +3038,9 @@
           "pass_reason": "model 51.4% < break-even 52.8% at -112 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -2911,7 +3074,9 @@
           "pass_reason": "model 50.7% < break-even 51.0% at -104 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -2945,13 +3110,18 @@
           "pass_reason": "model 50.9% < break-even 51.2% at -105 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 8.0,
         "label": "Locked at T-1h \u00b7 O/U 8.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -3005,7 +3175,9 @@
           "pass_reason": "model 50.6% >= break-even 50.0% at 100 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -3039,7 +3211,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0088 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -3073,7 +3247,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0026 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -3107,7 +3283,9 @@
           "pass_reason": "model 50.2% >= break-even 50.0% at 100 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -3141,13 +3319,18 @@
           "pass_reason": "model 51.7% < break-even 52.8% at -112 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 8.5,
         "label": "Locked at T-1h \u00b7 O/U 8.5",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -3200,7 +3383,9 @@
           "pick_line": 8.0,
           "graded_line": null,
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -3234,7 +3419,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0086 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -3268,7 +3455,9 @@
           "pass_reason": "model 50.8% < break-even 52.1% at -109 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -3302,7 +3491,9 @@
           "pass_reason": "model 52.1% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -3336,13 +3527,18 @@
           "pass_reason": "model 50.7% < break-even 51.0% at -104 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 8.0,
         "label": "Locked at T-1h \u00b7 O/U 8.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -3395,7 +3591,9 @@
           "pick_line": 7.5,
           "graded_line": null,
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-12h",
@@ -3429,7 +3627,9 @@
           "pass_reason": "model 51.8% < break-even 53.0% at -113 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-6h",
@@ -3463,7 +3663,9 @@
           "pass_reason": "model 51.5% < break-even 53.0% at -113 \u2014 priced out (-EV)",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-3h",
@@ -3497,7 +3699,9 @@
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0056 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         },
         {
           "lead_time": "T-1h",
@@ -3531,13 +3735,18 @@
           "pass_reason": "model 51.7% >= break-even 51.0% at -104 \u2014 edge below +EV min",
           "pass_why": "ev_gate",
           "locked": true,
-          "locked_at_utc": "2026-07-09T00:24:49Z"
+          "locked_at_utc": "2026-07-09T02:33:00Z",
+          "reconstructed": true,
+          "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline"
         }
       ],
+      "reconstructed": true,
+      "n_rows_reconstructed": 5,
+      "reconstructed_tag": "reconstructed pregame \u2014 fixed pipeline",
       "locked": true,
       "locked_at": {
         "wall": "T-1h",
-        "utc": "2026-07-09T00:24:49Z",
+        "utc": "2026-07-09T02:33:00Z",
         "line": 8.0,
         "label": "Locked at T-1h \u00b7 O/U 8.0",
         "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
@@ -3554,7 +3763,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3588,7 +3798,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0058 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_why": "price_only",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         },
         {
           "lead_time": "T-12h",
@@ -3620,7 +3832,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 50.7% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         },
         {
           "lead_time": "T-6h",
@@ -3652,7 +3866,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 50.3% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         },
         {
           "lead_time": "T-3h",
@@ -3684,10 +3900,53 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 51.2% >= break-even 50.5% at -102 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -104,
+          "our_prob": 0.5093,
+          "p_breakeven": 0.5098,
+          "ev": -0.0009,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.46,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.9% < break-even 51.0% at -104 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-07-09T02:24:10Z",
+        "line": 8.5,
+        "label": "Locked at T-1h \u00b7 O/U 8.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-07-08-Colorado Rockies-Los Angeles Dodgers-823928",
@@ -3700,7 +3959,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3734,7 +3994,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 53.0% >= break-even 52.4% at -110 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         },
         {
           "lead_time": "T-12h",
@@ -3766,7 +4028,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 50.7% >= break-even 50.5% at -102 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         },
         {
           "lead_time": "T-6h",
@@ -3798,7 +4062,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 50.0% < break-even 50.5% at -102 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         },
         {
           "lead_time": "T-3h",
@@ -3830,10 +4096,53 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 49.9% >= break-even 49.8% at 101 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 10.0,
+          "per_side_price": -103,
+          "our_prob": 0.5039,
+          "p_breakeven": 0.5074,
+          "ev": -0.0069,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.45,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 10.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 385,
+            "one_sided": true
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.4% < break-even 50.7% at -103 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-09T02:24:10Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-07-09T02:24:10Z",
+        "line": 10.0,
+        "label": "Locked at T-1h \u00b7 O/U 10.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-07-09-Chicago Cubs-Baltimore Orioles-824816",
@@ -4064,6 +4373,100 @@
           "pick_side": "over",
           "pick_line": 8.5,
           "graded_line": null
+        }
+      ],
+      "locked": false
+    },
+    {
+      "game_id": "2026-07-09-Los Angeles Angels-Texas Rangers-822877",
+      "game_pk": 822877,
+      "date": "2026-07-09",
+      "away": "Los Angeles Angels",
+      "home": "Texas Rangers",
+      "first_pitch_utc": "2026-07-10T00:05:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": -107,
+          "our_prob": 0.5236,
+          "p_breakeven": 0.5169,
+          "ev": 0.013,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.64,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.4% >= break-even 51.7% at -107 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        }
+      ],
+      "locked": false
+    },
+    {
+      "game_id": "2026-07-09-Arizona Diamondbacks-San Diego Padres-823277",
+      "game_pk": 823277,
+      "date": "2026-07-09",
+      "away": "Arizona Diamondbacks",
+      "home": "San Diego Padres",
+      "first_pitch_utc": "2026-07-10T01:40:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.5029,
+          "p_breakeven": 0.5,
+          "ev": 0.0057,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.48,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 321,
+            "one_sided": false
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.3% >= break-even 50.0% at 100 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
