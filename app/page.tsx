@@ -1571,6 +1571,11 @@ export default function Home() {
     let rangeFrom = "", rangeTo = "";
     let rangeMode = false;          // showing range results
     let rangeGames: any[] = [];     // {date,games}
+    // The games the slate ACTUALLY rendered this pass — including synthesized future tiles that
+    // exist only in the v4 live feed (not in `payload`). findGame() falls back to this so a tap on
+    // a synthesized tomorrow tile can open its detail (previously findGame only searched payload,
+    // so those tiles were dead — no detail ever opened).
+    let slateGames: any[] = [];
     let payload: any = null;        // current day's payload
     let newsFeed: any = null;       // live sports-news feed (news_feed key, ~20-min refresh)
     let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
@@ -3193,6 +3198,7 @@ export default function Home() {
             start_ts: vg.first_pitch_utc,
           }));
         }
+        slateGames = games || [];   // remember what we rendered so findGame can open any of it
         if (meta) meta.innerHTML = metaRow();
         if (!games.length) {
           if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); return; }
@@ -3337,7 +3343,10 @@ export default function Home() {
     }
     function findGame(gid: any) {
       const pool = rangeMode ? rangeGames.flatMap((d: any) => d.games) : (payload ? payload.games : []);
-      return (pool || []).find((x: any) => String(x.game_id) === String(gid));
+      const hit = (pool || []).find((x: any) => String(x.game_id) === String(gid));
+      // Fall back to the slate we actually rendered — this is the ONLY place synthesized future
+      // tiles (v4-feed-only, absent from payload) live, so without this a tomorrow tile can't open.
+      return hit || (slateGames || []).find((x: any) => String(x.game_id) === String(gid));
     }
 
     function shiftDate(iso: string, days: number) {
@@ -3984,6 +3993,12 @@ export default function Home() {
       detailTab = _gsk === "final" || _gsk === "live" ? "live" : "preview";
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
+      // Everything the detail body renders is derived FROM g (+ the live feeds by key), so it's
+      // wrapped in one closure we can re-run in place: when pitchers_v4 / teams_v4 / the v4 board
+      // land AFTER the first paint (async feeds), we rebuild #gp-body so the pitcher cards,
+      // records+form, and the pick appear — the SAME reason a bare synthesized future tile fills
+      // in once its feeds arrive. Reads detailTab live so the active tab is preserved on rebuild.
+      function buildBody() {
       const sp = g.sport;
       const ps = g.predicted_score || {};
       const homeWin = ps.winner_abbr === g.home_abbr;
@@ -4173,6 +4188,27 @@ export default function Home() {
       // Box score pane also carries the recap for a final game (folded in — no separate tab).
       const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${isFinal ? gameRecap(g) : ""}${boxScorePanel(g)}</div>` : "";
       const dePane = `<div class="gp-pane" data-pane="de" style="display:${detailTab === "de" ? "block" : "none"}">${diamondEdgeReasoning(g, lead, leadLocked)}</div>`;
+      return `${gameHero}${tabsBar}${previewPane}${dePane}${livePane}`;
+      }
+
+      // Wire the handlers that live INSIDE #gp-body (tabs). Called after every (re)build so a
+      // rebuilt body keeps its tab switching. The header handlers are wired once, below.
+      function wireBody() {
+        const page = $("gamepage"); if (!page) return;
+        page.querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
+      }
+      // Rebuild #gp-body in place when a feed lands after first paint. Guarded to the SAME game
+      // still being open. Preserves the active tab (buildBody reads detailTab), re-wires tabs,
+      // re-appends the model drill-in strip, and re-polls a live box score.
+      function rerenderDetailBody() {
+        if (!$("gamepage") || !detail || String(detail.game_id) !== String(g.game_id)) return;
+        const body = $("gp-body"); if (!body) return;
+        body.innerHTML = buildBody();
+        wireBody();
+        positionDetailInk();
+        if (gameState(g).kind === "live" || gameState(g).kind === "final") pollLiveDetail();
+        attachDrillStrip();
+      }
 
       const html = `
         <div class="gamepage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.matchup || "Game")}">
@@ -4182,13 +4218,7 @@ export default function Home() {
             <div class="hspacer"></div>
             <button class="gp-share" id="gp-share" aria-label="Share this game"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button>
           </div>
-          <div class="gp-body" id="gp-body">
-            ${gameHero}
-            ${tabsBar}
-            ${previewPane}
-            ${dePane}
-            ${livePane}
-          </div>
+          <div class="gp-body" id="gp-body">${buildBody()}</div>
         </div>`;
 
       let layer = $("sheet-layer");
@@ -4204,30 +4234,45 @@ export default function Home() {
       const shTlh = $("tl-how"); if (shTlh) shTlh.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => switchTab("beta"), 120); };
       const shShare = $("gp-share"); if (shShare) shShare.onclick = (e: any) => { e.stopPropagation(); shareGame(g); };
       // tab switching (no re-fetch; just show/hide + move the ink)
-      $("gamepage").querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
+      wireBody();
       // if opened on a live game, pull the box score right away
-      if (showLive) pollLiveDetail();
+      if (!g._recipe && (gameState(g).kind === "live" || gameState(g).kind === "final")) pollLiveDetail();
       // MODEL DRILL-IN — weave the model's wall-by-wall read for THIS game into the detail whenever
-      // the walk covers it (matched on game_pk). Progressive: fetches the beta feed lazily and
-      // annotates in place; today's games simply have no beta row until the live feed lands.
+      // the walk covers it (matched on game_pk). Idempotent: appends the strip once (skips if the
+      // current body already carries it), so re-running after a body rebuild never double-adds.
+      function attachDrillStrip() {
+        if (g.game_id == null || g._recipe) return;
+        if (!$("gp-body") || $("gp-body").querySelector(".beta-instrip")) return;
+        const pk = String(g.game_id);
+        const find = (src: any) => src && (src.games || []).find((x: any) => String(x.game_pk) === pk);
+        const bg = find(betaLiveData) || find(betaData); // live board first (today), then the historical walk
+        if (!bg) return;
+        const strip = document.createElement("div");
+        strip.className = "beta-instrip";
+        strip.innerHTML = `<span class="bm-badge sm">Model</span><span class="bis-k">wall by wall</span>
+             <span class="bis-pass">how this game's picks formed from T-24h to first pitch — every take and every pass, priced.</span>
+             <button class="bis-open">Full grid →</button>`;
+        const deP = $("gp-body") && $("gp-body").querySelector('.gp-pane[data-pane="de"] .de-pane');
+        if (deP) deP.appendChild(strip); else { const body = $("gp-body"); if (body) body.appendChild(strip); }
+        const btn = strip.querySelector(".bis-open");
+        if (btn) (btn as any).onclick = (e: any) => { e.stopPropagation(); openBetaGame(bg); };
+      }
+      // ASYNC FEEDS → RE-RENDER. The pitcher cards (pitchers_v4), records+form (teams_v4), and
+      // the totals pick (the v4 board) all key off game_pk / abbr and load async — a game opened
+      // before they land would paint a bare preview and never fill in. We load all four here, and
+      // once ANY of them arrives we rebuild #gp-body in place (guarded to the same open game) so
+      // pitchers/records/pick appear. This is exactly what makes a SYNTHESIZED future tile — which
+      // ships with only ids/abbrs/start time and no pregame_intel — render a rich preview.
       if (g.game_id != null && !g._recipe) {
-        Promise.all([loadBetaLive().catch(() => null), loadBeta().catch(() => null)]).then(([lv, d]: any[]) => {
+        Promise.all([
+          loadBetaLive().catch(() => null),
+          loadBeta().catch(() => null),
+          loadPitchers().catch(() => null),
+          loadTeams().catch(() => null),
+        ]).then(() => {
           if (!$("gamepage") || !detail || String(detail.game_id) !== String(g.game_id)) return;
-          const pk = String(g.game_id);
-          const find = (src: any) => src && (src.games || []).find((x: any) => String(x.game_pk) === pk);
-          const bg = find(lv) || find(d); // live board first (today), then the historical walk
-          if (!bg) return;
-          // The v4 model IS the pick now (shown in the markets table above) — this strip is
-          // purely the drill-in to the wall-by-wall grid: how the pick formed T-24h → first pitch.
-          const strip = document.createElement("div");
-          strip.className = "beta-instrip";
-          strip.innerHTML = `<span class="bm-badge sm">Model</span><span class="bis-k">wall by wall</span>
-               <span class="bis-pass">how this game's picks formed from T-24h to first pitch — every take and every pass, priced.</span>
-               <button class="bis-open">Full grid →</button>`;
-          const deP = $("gp-body") && $("gp-body").querySelector('.gp-pane[data-pane="de"] .de-pane');
-          if (deP) deP.appendChild(strip); else { const body = $("gp-body"); if (body) body.appendChild(strip); }
-          const btn = strip.querySelector(".bis-open");
-          if (btn) (btn as any).onclick = (e: any) => { e.stopPropagation(); openBetaGame(bg); };
+          // Rebuild the body so the freshly-arrived feeds surface, then (re)attach the drill strip.
+          rerenderDetailBody();
         }).catch(() => {});
       }
     }
