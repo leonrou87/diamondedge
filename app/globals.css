@@ -282,8 +282,9 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 
 /* ============ STICKY SUBHEAD: league rail + meta row ============ */
 .subhead{position:sticky;top:calc(var(--hdr-h,0px) - 2px);z-index:60;padding:6px 0 6px;margin:0 -4px;background:linear-gradient(180deg,rgba(238,241,247,.94) 74%,rgba(238,241,247,0));-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
-.sporttabs{position:relative;display:flex;gap:4px;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:16px;padding:3px;box-shadow:var(--glass-shadow);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sporttabs{position:relative;display:flex;gap:4px;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:16px;padding:3px;box-shadow:var(--glass-shadow);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
 .sporttabs::-webkit-scrollbar{display:none}
+.sporttabs .sporttab{scroll-snap-align:start}
 /* slimmer chips — reclaim vertical space (min-height 42→34, tighter icon) */
 .sporttab{position:relative;z-index:1;flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:0;background:transparent;color:var(--ink2);padding:6px 10px;border-radius:13px;cursor:pointer;transition:color .25s ease;white-space:nowrap}
 .sporttab::before{content:attr(data-ic);display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.7);box-shadow:0 1px 3px rgba(43,64,105,.12);font-size:9px;letter-spacing:0;flex-shrink:0}
@@ -453,8 +454,9 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* COMPACT inline date strip — weekday + day number on ONE line per cell (reclaims vertical
    space vs the stacked "weekday-above-number" layout), a sliding emerald lens under the
    active day, a Today dot marker. Slimmer capsule to match. */
-.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px;border-radius:var(--r-sm);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--e0)}
+.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px;border-radius:var(--r-sm);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--e0);scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain}
 .datestrip::-webkit-scrollbar{display:none}
+.datestrip .dcell{scroll-snap-align:center}
 .dlens{position:absolute;left:0;top:4px;bottom:4px;width:0;border-radius:var(--r-sm);background:linear-gradient(150deg,rgba(46,229,164,.34),rgba(10,157,106,.20));box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.25),0 6px 16px rgba(10,157,106,.24);opacity:0;pointer-events:none;transition:transform .42s var(--spring),width .42s var(--spring),opacity .25s ease;will-change:transform}
 .dcell{position:relative;z-index:1;flex-shrink:0;display:inline-flex;flex-direction:row;align-items:baseline;justify-content:center;gap:4px;min-width:0;border:0;background:transparent;border-radius:var(--r-sm);padding:6px 11px;cursor:pointer;transition:transform .22s var(--spring)}
 .dcell:hover:not(.on){background:rgba(22,36,60,.04)}
@@ -3178,6 +3180,78 @@ details.results-more{margin-bottom:14px}
 .pgrade{font-style:normal;font-family:var(--mono);font-weight:700;font-size:10.5px;color:var(--golddeep);background:var(--goldbg);border-radius:999px;padding:1.5px 6px;margin-left:5px;vertical-align:1px}
 .hpc-stars .pgrade{color:#ffd75e;background:rgba(0,0,0,.32);font-size:11px}
 .oc.pick .pgrade{display:none} /* tile chips stay compact */
+/* muted score chip for passes (sub-2.00) — the model rates every row, we show it dimly */
+.pgrade.muted{color:var(--ink3);background:rgba(22,36,60,.06)}
+
+/* ═════════════ BOLD PICK PRESENTATION (tiles + featured) ═════════════ */
+/* The side + line reads big; stars + the 2-decimal score sit right; a small vs-Vegas +
+   timestamp line grounds it. Over = green, Under = red (the product's real direction). */
+.pstrip.bold .ps-main{gap:7px}
+.pstrip.bold .ps-side{font-size:15.5px;font-weight:800}
+.pstrip.bold .ps-side b{font-weight:800}
+.pstrip.bold .ps-side .ps-px{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink2);background:rgba(22,36,60,.05);border-radius:5px;padding:1px 5px}
+.pstrip.bold .ps-side.ou-over{color:var(--over)}
+.pstrip.bold .ps-side.ou-under{color:var(--under)}
+.pstrip.bold .ps-q{display:inline-flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+.pstrip.bold .ps-q .pgrade{margin-left:2px}
+.pstrip.bold .ps-side.ou-over .ps-px,.pstrip.bold .ps-side.ou-under .ps-px{color:var(--ink2)}
+.pstrip.bold .ps-res{margin-left:6px}
+.pstrip.bold .pk-made{margin-top:2px;font-size:10.5px}
+/* pass strip: stars + muted score share the row, pushed right */
+.pstrip.pass .ps-q{display:inline-flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+.pstrip.pass .ps-q .bstars{font-size:10px}
+
+/* featured selection: the side/line block reads as one bold unit with directional color */
+.ft-take .ft-sel{display:inline-flex;align-items:baseline;gap:6px}
+.ft-take .ft-sel.ou-over b{color:var(--over)}
+.ft-take .ft-sel.ou-under b{color:var(--under)}
+
+/* ═════════════ TEAM RECORDS viz (game preview) ═════════════ */
+.pvz .tr-rows{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.pvz .tr-row{display:flex;align-items:center;gap:8px}
+.pvz .tr-ab{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.03em;color:var(--ink);min-width:38px}
+.pvz .tr-rec{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.pvz .tr-rec.dim{color:var(--ink4)}
+.pvz .tr-rec .tr-tag{font-style:normal;font-size:8px;opacity:.7;margin-left:1px}
+.pvz .tr-strk{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.03em;border-radius:999px;padding:1.5px 7px;white-space:nowrap}
+.pvz .tr-strk.hot{color:#06714f;background:rgba(11,158,109,.13)}
+.pvz .tr-strk.cold{color:var(--ink3);background:rgba(22,36,60,.06)}
+
+/* ═════════════ INSIGHTS — SIMPLIFIED record hero + by-star-tier ═════════════ */
+.strec-hero{text-align:center;border-radius:var(--r-md);padding:26px 20px 22px;margin:14px auto 16px;max-width:640px;background:linear-gradient(160deg,rgba(255,255,255,.7),rgba(255,255,255,.42));box-shadow:var(--e2);position:relative;overflow:hidden}
+.strec-hero.pos{background:linear-gradient(160deg,rgba(11,158,109,.14),rgba(255,255,255,.5) 72%)}
+.strec-hero.neg{background:linear-gradient(160deg,rgba(217,44,71,.10),rgba(255,255,255,.5) 72%)}
+.strec-hero .strec-k{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.strec-hero .strec-big{font-family:var(--disp);font-weight:800;font-size:52px;line-height:1;letter-spacing:.01em;color:var(--ink);margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.strec-hero .strec-big i{font-style:normal;color:var(--ink4);font-weight:600;font-size:34px}
+.strec-hero .strec-stats{display:flex;justify-content:center;gap:26px;margin:12px 0 10px;flex-wrap:wrap}
+.strec-hero .strec-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+.strec-hero .strec-stat i{font-style:normal;font-family:var(--mono);font-weight:700;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums}
+.strec-hero .strec-stat i.pos{color:var(--green)}
+.strec-hero .strec-stat i.neg{color:var(--red)}
+.strec-hero .strec-stat em{font-style:normal;font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.strec-hero .strec-sub{font-family:var(--sans);font-size:12.5px;color:var(--ink3);line-height:1.5;max-width:440px;margin:0 auto}
+.strec-card{border-radius:var(--r-md);padding:18px 18px 16px;margin:0 auto 14px;max-width:640px;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--e1)}
+.strec-card .strec-ch{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.01em;color:var(--ink)}
+.strec-card .strec-csub{font-family:var(--sans);font-size:12px;color:var(--ink3);line-height:1.5;margin:3px 0 12px}
+.strec-rows{display:flex;flex-direction:column;gap:2px}
+.strec-row{display:flex;align-items:center;gap:10px;padding:11px 4px;border-top:1px solid var(--line3)}
+.strec-row:first-child{border-top:0}
+.strec-row.empty{opacity:.42}
+.strec-row .strec-star{flex-shrink:0}
+.strec-row .strec-star .bstars{font-size:14px}
+.strec-row .strec-n{font-family:var(--sans);font-size:11.5px;color:var(--ink3);min-width:60px}
+.strec-row .strec-wl{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums;margin-left:auto}
+.strec-row .strec-hit{font-family:var(--mono);font-weight:600;font-size:11px;color:var(--ink2);min-width:62px;text-align:right}
+.strec-row .strec-roi{font-family:var(--mono);font-weight:700;font-size:11.5px;min-width:74px;text-align:right;color:var(--ink3)}
+.strec-row .strec-roi.pos{color:var(--green)}
+.strec-row .strec-roi.neg{color:var(--red)}
+.strec-gate{margin-top:12px;padding-top:11px;border-top:1px solid var(--line3);font-family:var(--sans);font-size:11.5px;color:var(--ink3);line-height:1.55}
+@media(max-width:520px){
+  .strec-hero .strec-big{font-size:42px}
+  .strec-row .strec-hit{display:none}
+  .strec-row .strec-n{min-width:0}
+}
 
 /* ══ ODDS CHIP REDESIGN: compact two-line (value / small price), never overlaps ══ */
 .t-oddsgrid{grid-auto-rows:auto;gap:7px 6px;align-items:stretch}

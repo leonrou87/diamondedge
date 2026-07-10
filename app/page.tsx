@@ -14,6 +14,22 @@ export default function Home() {
     const NBA_SLUG: any = { ATL: "atl", BOS: "bos", BKN: "bkn", BRK: "bkn", CHA: "cha", CHI: "chi", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GSW: "gs", GS: "gs", HOU: "hou", IND: "ind", LAC: "lac", LAL: "lal", MEM: "mem", MIA: "mia", MIL: "mil", MIN: "min", NOP: "no", NO: "no", NYK: "ny", NY: "ny", OKC: "okc", ORL: "orl", PHI: "phi", PHX: "phx", PHO: "phx", POR: "por", SAC: "sac", SAS: "sa", SA: "sa", TOR: "tor", UTA: "utah", UTAH: "utah", WAS: "wsh", WSH: "wsh" };
     const NHL_SLUG: any = { ANA: "ana", ARI: "ari", BOS: "bos", BUF: "buf", CGY: "cgy", CAR: "car", CHI: "chi", COL: "col", CBJ: "cbj", DAL: "dal", DET: "det", EDM: "edm", FLA: "fla", LA: "la", LAK: "la", MIN: "min", MTL: "mtl", NSH: "nsh", NJ: "nj", NJD: "nj", NYI: "nyi", NYR: "nyr", OTT: "ott", PHI: "phi", PIT: "pit", SJ: "sj", SJS: "sj", SEA: "sea", STL: "stl", TB: "tb", TBL: "tb", TOR: "tor", UTA: "utah", UTAH: "utah", VAN: "van", VGK: "vgk", WSH: "wsh", WPG: "wpg" };
     const NFL_SLUG: any = { ARI: "ari", ATL: "atl", BAL: "bal", BUF: "buf", CAR: "car", CHI: "chi", CIN: "cin", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GB: "gb", GBP: "gb", HOU: "hou", IND: "ind", JAX: "jax", KC: "kc", LAC: "lac", LAR: "lar", LV: "lv", MIA: "mia", MIN: "min", NE: "ne", NO: "no", NYG: "nyg", NYJ: "nyj", PHI: "phi", PIT: "pit", SEA: "sea", SF: "sf", TB: "tb", TEN: "ten", WSH: "wsh", OAK: "lv", SD: "lac", STL: "lar" };
+    // Full MLB team name → abbr, so synthesized future tiles (which carry only the full
+    // team name from the pick feed) resolve to a real crest instead of the text fallback.
+    // Keyed on the LAST word (nickname) since that's what teamShort() extracts.
+    const MLB_NICK: any = { "Diamondbacks": "ARI", "Braves": "ATL", "Orioles": "BAL", "Sox": "BOS", "Cubs": "CHC", "Guardians": "CLE", "Rockies": "COL", "Tigers": "DET", "Astros": "HOU", "Royals": "KC", "Angels": "LAA", "Dodgers": "LAD", "Marlins": "MIA", "Brewers": "MIL", "Twins": "MIN", "Mets": "NYM", "Yankees": "NYY", "Athletics": "ATH", "Phillies": "PHI", "Pirates": "PIT", "Padres": "SD", "Giants": "SF", "Mariners": "SEA", "Cardinals": "STL", "Rays": "TB", "Rangers": "TEX", "Blue Jays": "TOR", "Jays": "TOR", "Nationals": "WSH", "Reds": "CIN" };
+    // Full team name ("Atlanta Braves", "Chicago White Sox") → abbr. Disambiguate the two
+    // "Sox" clubs by city, everything else by nickname; fall back to teamShort's last word.
+    const mlbAbbr = (name: any) => {
+      const s = String(name || "").trim();
+      if (!s) return "";
+      if (/white sox/i.test(s)) return "CWS";
+      if (/red sox/i.test(s)) return "BOS";
+      const w = s.split(/\s+/);
+      const last = w[w.length - 1];
+      const last2 = w.length >= 2 ? w.slice(-2).join(" ") : last;
+      return MLB_NICK[last2] || MLB_NICK[last] || (TEAM_ID[last] ? last : last);
+    };
     const mlbLogo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nhlLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nhl/500/${NHL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
@@ -909,10 +925,29 @@ export default function Home() {
       if (pl && pl.stars != null) return bStars(pl.stars);
       return qDiamonds(qualityOf(pl));
     }
-    // The decimal grade chip ("4.3") shown beside the stars — ranks picks within a star band.
+    // The decimal CONFIDENCE SCORE chip ("3.72") shown beside the stars everywhere a pick
+    // renders — the model's continuous 0–5 grade (payload `score`), formatted to 2 decimals.
+    // Ranks every pick against every other, across and within star tiers.
     function pickGrade(pl: any) {
       if (!pl || pl.grade == null || !(pl.grade > 0)) return "";
-      return `<i class="pgrade">${Number(pl.grade).toFixed(1)}</i>`;
+      return `<i class="pgrade">${Number(pl.grade).toFixed(2)}</i>`;
+    }
+    // A pass's sub-2.00 score, muted — passes carry a score too (the model rates every row).
+    function passGrade(scoreVal: any) {
+      if (scoreVal == null || isNaN(Number(scoreVal)) || !(Number(scoreVal) > 0)) return "";
+      return `<i class="pgrade muted">${Number(scoreVal).toFixed(2)}</i>`;
+    }
+    // The score for a v4 grid game whether or not it's a playable pick — reads the freshest
+    // cell (champion pick if any, else grid) so passes can show their muted score on tiles.
+    function gameScore(g: any) {
+      const vg = v4GameFor(g);
+      if (!vg) return null;
+      const cvp = (betaLiveData && betaLiveData.champion_v2 && betaLiveData.champion_v2.picks || [])
+        .filter((p: any) => String(p.game_pk) === String(g.game_id))
+        .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))[0];
+      if (cvp && cvp.score != null) return Number(cvp.score);
+      const c = v4CellFor(vg, "total");
+      return c && c.score != null ? Number(c.score) : null;
     }
     // LOW CONFIDENCE = a Lean-tier pick, OR a spread/ML lean whose price doesn't clear break-even.
     // We still SHOW these (Leon: include the slightest picks) but flag them clearly.
@@ -1224,6 +1259,19 @@ export default function Home() {
       }).join("");
     }
 
+    // (b2) Team records + streaks card: each side's season record + streak from teams_v4
+    // (or the served form). "NYY 52-38 · W3". Degrades to nothing if neither side has data.
+    function vizTeamRecords(g: any) {
+      if (g.sport !== "mlb") return "";
+      const fa = teamRecordFor(g, "away"), fh = teamRecordFor(g, "home");
+      if ((!fa || (!fa.rec && !fa.streak)) && (!fh || (!fh.rec && !fh.streak))) return "";
+      const row = (ab: any, f: any) => {
+        if (!f || (!f.rec && !f.streak)) return `<div class="tr-row"><span class="tr-ab">${esc(ab)}</span><span class="tr-rec dim">—</span></div>`;
+        return `<div class="tr-row"><span class="tr-ab">${esc(ab)}</span><span class="tr-rec">${f.rec ? esc(f.rec) : ""}${f.rec && f.recIsL15 ? ` <i class="tr-tag">L15</i>` : ""}</span>${f.streak ? `<span class="tr-strk ${f.hot ? "hot" : "cold"}">${esc(f.streak)}</span>` : ""}</div>`;
+      };
+      return `<div class="pvz"><div class="pvz-h">${icon("trend", "sm")}Records &amp; form</div>
+        <div class="tr-rows">${row(g.away_abbr, fa)}${row(g.home_abbr, fh)}</div></div>`;
+    }
     // (c) Win-probability meter: model vs market implied, from ml_pick.
     function vizWinProb(g: any) {
       const mp = g.ml_pick || {};
@@ -1271,6 +1319,34 @@ export default function Home() {
     }
     const pitcherFeedFor = (g: any, side: "away" | "home") =>
       (pitchersData && pitchersData.by_game && pitchersData.by_game[String(g.game_id)] || {})[side] || null;
+
+    // ---- TEAM RECORDS feed (teams_v4) — season record + streak per team abbr ----
+    // Schema: { by_team: { ABBR: { record:"52-38", pct, last10:"6-4", streak:"W3", ... } } }.
+    // Loaded at boot like pitchers (Supabase race → static fallback → re-render on arrival).
+    // The file may not exist yet on disk — every read degrades to null, so tiles simply fall
+    // back to the served g.streaks form. No error when absent.
+    let teamsData: any = null, teamsAt = 0;
+    async function loadTeams() {
+      if (teamsData && Date.now() - teamsAt < 10 * 60 * 1000) return teamsData;
+      let d: any = null;
+      try { d = await Promise.race([snap("teams_v4"), new Promise((r) => setTimeout(() => r(null), 1500))]); } catch {}
+      if (!d || !d.by_team) { try { const r = await fetch("/teams_v4.json", { cache: "no-store" }); if (r.ok) d = await r.json(); } catch {} }
+      if (d && d.by_team) { teamsData = d; teamsAt = Date.now(); try { renderSlate(true); } catch {} }
+      return teamsData;
+    }
+    // Season record + streak for a team, from teams_v4 when present, else the served streaks
+    // form. Returns { rec, recIsL15, streak, hot } | null (same shape teamForm returns) so the
+    // tile renderer can consume either source uniformly.
+    function teamRecordFor(g: any, which: "home" | "away") {
+      const ab = which === "away" ? g.away_abbr : g.home_abbr;
+      const t = teamsData && teamsData.by_team ? (teamsData.by_team[ab] || teamsData.by_team[String(ab || "").toUpperCase()]) : null;
+      if (t && typeof t === "object") {
+        const rec = typeof t.record === "string" && /^\d+-\d+$/.test(t.record) ? t.record : null;
+        const streak = typeof t.streak === "string" && /^[WL]\d+$/.test(t.streak) ? t.streak : null;
+        if (rec || streak) return { rec, recIsL15: false, streak, hot: !!(streak && streak[0] === "W") };
+      }
+      return teamForm(g, which);
+    }
     // The pitcher sheet: header (name/team/hand + season line) + the recent-starts table.
     function openPitcherSheet(P: any) {
       if (!P) return;
@@ -1329,9 +1405,9 @@ export default function Home() {
 
     // The full data-visual rail for a preview: assemble whichever visuals have data.
     function previewViz(g: any) {
-      const parts = [vizPredScore(g), vizWinProb(g), vizFormStrip(g), vizPitchers(g), vizH2H(g)].filter(Boolean);
+      const parts = [vizPredScore(g), vizTeamRecords(g), vizWinProb(g), vizFormStrip(g), vizPitchers(g), vizH2H(g)].filter(Boolean);
       if (!parts.length) return "";
-      return `<div class="pvz-grid">${parts.slice(0, 5).join("")}</div>`;
+      return `<div class="pvz-grid">${parts.slice(0, 6).join("")}</div>`;
     }
 
     // ===================== EDITORIAL COPY GUARD =====================
@@ -2362,8 +2438,8 @@ export default function Home() {
         // score is suppressed here when the big score line above already shows it
         if (!hideScore) scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}">${num(mine, 0)}</span>`;
       }
-      // recent form (MLB-only, degrades to nothing)
-      const fm = teamForm(g, which);
+      // team record + streak — teams_v4 feed when present ("NYY 52-38 W3"), else served form
+      const fm = teamRecordFor(g, which);
       const formHtml = fm
         ? `<span class="t-form">${fm.rec ? `<span class="tf-rec">${esc(fm.rec)}${fm.recIsL15 ? `<i class="tf-tag">L15</i>` : ""}</span>` : ""}${fm.streak ? `<span class="tf-strk ${fm.hot ? "hot" : "cold"}">${esc(fm.streak)}</span>` : ""}</span>`
         : "";
@@ -2408,11 +2484,12 @@ export default function Home() {
       // the game and said no — that's a call, and it reads like one.
       const ln = passLineTxt(g);
       const read = ln ? "" : passRead(g);
+      const sc = gameScore(g);
       return `<div class="pstrip pass">
         <div class="ps-main">
           <span class="ps-k">${pickLabel(g)}</span>
           <span class="ps-side">Pass${ln ? ` — ${ln} held no edge` : read ? ` — ${esc(read)}` : " — line looked fair"}</span>
-          <span class="qdia q-pass" aria-hidden="true"><i>◇</i><i>◇</i><i>◇</i></span>
+          <span class="ps-q">${bStars(1)}${passGrade(sc)}</span>
         </div>
       </div>`;
     }
@@ -2461,13 +2538,20 @@ export default function Home() {
           verdictRow = `<div class="ps-verdict ${vcls}">${esc(tr.head)}</div>`;
         }
       }
-      return `<div class="pstrip q-${q} ${st}">
+      // BOLD pick presentation: the side + line reads big (▲ OVER 8.5), the price sits
+      // beside it, stars + the 2-decimal confidence score sit to the right, and a small
+      // "vs Vegas · picked 9:14 AM · T-3h" line grounds it. Over/under keeps its real side.
+      const over = /(^|\s)over/i.test(String(pl.side || ""));
+      const under = /(^|\s)under/i.test(String(pl.side || ""));
+      const dirCls = over ? "ou-over" : under ? "ou-under" : "";
+      return `<div class="pstrip bold q-${q} ${st}">
         <div class="ps-main">
           <span class="ps-k">${pickLabel(g)}</span>
-          <span class="ps-side">${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</span>
-          ${pickStars(pl)}
+          <span class="ps-side ${dirCls}">${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i class="ps-px">${fmtOdds(pl.price)}</i>` : ""}</span>
+          <span class="ps-q">${pickStars(pl)}${pickGrade(pl)}</span>
           ${state ? `<span class="ps-res ${state.cls}">${state.txt}</span>` : ""}
         </div>
+        ${pickMadeMeta(pl)}
         ${verdictRow}
         ${liveRow}
       </div>`;
@@ -2617,7 +2701,10 @@ export default function Home() {
     function pitchLine(g: any, gs: any) {
       if (g.sport !== "mlb" || gs.kind !== "pre") return "";
       const p = (g.pregame_intel || {}).pitchers || {};
-      const a = (p.away || {}).name, h = (p.home || {}).name;
+      // Prefer the served pregame_intel name; fall back to the pitchers_v4 feed name so
+      // synthesized future/tomorrow tiles (no pregame_intel) still show the probables + ERA.
+      const fdA = pitcherFeedFor(g, "away"), fdH = pitcherFeedFor(g, "home");
+      const a = (p.away || {}).name || (fdA && fdA.name), h = (p.home || {}).name || (fdH && fdH.name);
       if (!a && !h) return "";
       const last = (n: any) => esc(String(n || "").trim().split(/\s+/).pop() || "TBD");
       // ERA from the pitchers feed when loaded; each name taps through to the game log.
@@ -2658,14 +2745,20 @@ export default function Home() {
     }
     function featuredPick(games: any[]) {
       let best: any = null;
+      // Actionability rank: upcoming-today (3) > upcoming-future (2) > live (1) > final (0).
+      // Within a rank, highest score/conviction wins (Leon: featured = highest score).
+      const actRank = (g: any) => {
+        const k = gameState(g).kind;
+        if (k === "pre") return gameLocalDay(g) === todayISO() ? 3 : 2;
+        if (k === "live") return 1;
+        return 0;
+      };
       games.forEach((g: any) => {
         const pl = displayPick(g);
         if (!isBet(pl)) return; // never feature a bet that doesn't clear its price's break-even
-        // Prefer a pick you can STILL MAKE: upcoming (pre) outranks a game already started.
-        const preRank = gameState(g).kind === "pre" ? 1 : 0;
-        const cand = { g, pl, pre: preRank, p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)], gr: pl.grade != null ? Number(pl.grade) : null };
+        const cand = { g, pl, act: actRank(g), p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)], gr: pl.grade != null ? Number(pl.grade) : null };
         if (!best) { best = cand; return; }
-        if (cand.pre !== best.pre) { if (cand.pre > best.pre) best = cand; return; } // upcoming first
+        if (cand.act !== best.act) { if (cand.act > best.act) best = cand; return; } // more actionable first
         // decimal grade wins when both carry one (the flagship ranking); legacy conviction otherwise
         if (cand.gr != null && best.gr != null) { if (cand.gr > best.gr) best = cand; return; }
         if (convictionSort(cand.p, cand.qr, best.p, best.qr) < 0) best = cand;
@@ -2696,9 +2789,12 @@ export default function Home() {
         ? `<div class="ft-mid live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</div>`
         : gs.kind === "final" ? `<div class="ft-mid">FINAL</div>`
         : `<div class="ft-mid">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "@")}</div>`;
+      const ftOver = /(^|\s)over/i.test(String(pl.side || ""));
+      const ftUnder = /(^|\s)under/i.test(String(pl.side || ""));
+      const ftDir = ftOver ? "ou-over" : ftUnder ? "ou-under" : "";
       const take = locked
         ? `<button class="lockchip ft-lock" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
-        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">${pickLabel(g)}</span>${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}<span class="ft-q">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : ""}</span>${res}</div>${pickMadeMeta(pl)}`;
+        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">${pickLabel(g)}</span><span class="ft-sel ${ftDir}">${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ft-q">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : ""}</span>${res}</div>${pickMadeMeta(pl)}`;
       return `<article class="feat q-${q} ${gs.kind}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id)}" role="button" tabindex="0"
         aria-label="Featured — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}${locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pl.side || "")}`} — open details">
         <div class="ft-top"><span class="ft-lab">◆ Featured</span><span class="ft-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span></div>
@@ -3090,7 +3186,9 @@ export default function Home() {
         if (isFuture && !games.length && betaLiveData && (league === "all" || league === "mlb")) {
           games = (betaLiveData.games || []).filter((vg: any) => vg.date === curDate).map((vg: any) => ({
             game_id: String(vg.game_pk), sport: "mlb",
-            away_abbr: teamShort(vg.away), home_abbr: teamShort(vg.home),
+            // Resolve the FULL team name → abbr so the crest renderer (keyed on abbr) shows a
+            // real logo on future/tomorrow tiles, not just today's snapshot games.
+            away_abbr: mlbAbbr(vg.away), home_abbr: mlbAbbr(vg.home),
             away_name: vg.away, home_name: vg.home,
             start_ts: vg.first_pitch_utc,
           }));
@@ -3881,7 +3979,8 @@ export default function Home() {
       // Live & finished games open straight to "How it's going" (box score); only pre-game
       // games default to the Preview narrative.
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
-      detailTab = _gsk === "final" ? "recap" : _gsk === "live" ? "live" : "preview";
+      // final + live → Box score (recap folds into it); pre-game → Preview narrative.
+      detailTab = _gsk === "final" || _gsk === "live" ? "live" : "preview";
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       const sp = g.sport;
@@ -4052,11 +4151,12 @@ export default function Home() {
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
       const showLive = gs.kind === "live" || gs.kind === "final";
       const isFinal = gs.kind === "final";
+      // Exactly THREE tabs: Preview (matchup, pitchers, records, our pick + why) ·
+      // Odds (the pick + the wall-by-wall grid + prices) · Box score (line score + scoring).
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
-        <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">DiamondEdge</button>
-        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box Score</button>` : ""}
-        ${isFinal ? `<button class="gp-tab ${detailTab === "recap" ? "on" : ""}" data-dtab="recap" role="tab">Recap</button>` : ""}
+        <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">Odds</button>
+        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box score</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
@@ -4068,8 +4168,8 @@ export default function Home() {
         ${passBlock}
         ${leadLocked ? "" : more}
       </div>`;
-      const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${boxScorePanel(g)}</div>` : "";
-      const recapPane = isFinal ? `<div class="gp-pane" data-pane="recap" style="display:${detailTab === "recap" ? "block" : "none"}">${gameRecap(g)}</div>` : "";
+      // Box score pane also carries the recap for a final game (folded in — no separate tab).
+      const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${isFinal ? gameRecap(g) : ""}${boxScorePanel(g)}</div>` : "";
       const dePane = `<div class="gp-pane" data-pane="de" style="display:${detailTab === "de" ? "block" : "none"}">${diamondEdgeReasoning(g, lead, leadLocked)}</div>`;
 
       const html = `
@@ -4083,10 +4183,9 @@ export default function Home() {
           <div class="gp-body" id="gp-body">
             ${gameHero}
             ${tabsBar}
-            ${recapPane}
             ${previewPane}
-            ${livePane}
             ${dePane}
+            ${livePane}
           </div>
         </div>`;
 
@@ -5239,18 +5338,18 @@ export default function Home() {
       //   (A) "How often our picks win" = the published DiamondEdge signature record (58%+, profitable)
       //   (B) "Everything we track"     = the raw all-graded universe (leans + experiments; ~break-even)
       // Each gets its own labelled card, and (B) explains WHY it differs from (A).
+      // SIMPLE + HONEST: a masthead, the overall record hero, and the by-star-tier table.
+      // No by-market / by-lead / themes / upsell — just the record and what the stars mean.
       view.innerHTML = `
         <div class="ix-masthead">
           <div class="ix-eyebrow">DiamondEdge · Insights</div>
-          <h2 class="ix-mast-h">How well the model actually works</h2>
-          <p class="ix-mast-sub">Every pick we make, graded in public — wins, losses, and the record they add up to. No cherry-picking, no screenshots of lucky weeks.</p>
+          <h2 class="ix-mast-h">The record, graded in public</h2>
+          <p class="ix-mast-sub">Every pregame totals pick we publish, graded against the final at the real price. Wins, losses, and the record they add up to — no cherry-picking.</p>
           <div class="ix-mast-act">
-            <button class="ix-btn primary" id="res-breakdown">See every pick by strength →</button>
             <button class="ix-btn" id="res-share">Share the record ↗</button>
           </div>
         </div>
-        ${insightsUpsell()}
-        ${betaData ? betaFrame(betaData) + betaDashboard(betaData) : `<div class="beta-skel">Loading the model record…</div>`}
+        ${betaData ? betaDashboard(betaData) : `<div class="beta-skel">Loading the record…</div>`}
         <button class="board-all" id="ins-allpicks">Every pick, wall by wall →</button>
         <div class="refnote">${esc(recordStrip())}</div>`;
 
@@ -5836,10 +5935,12 @@ export default function Home() {
       const railPicks = picksAll.length > 1 ? picksAll.slice(1) : [];
       // LEAD STORY — the day's feature bet = the BEST pick on today's slate under the
       // (v4-first) displayPick, falling back to the served brief's top pick.
+      // Hero pool = today + live + ANY upcoming (incl. tomorrow) so once today's slate is
+      // final the headline reaches to the next actionable pick instead of stranding a loser.
       const ftPool = (((livePayload || payload) || {}).games || []).filter((g0: any) => {
-        const st0 = String(g0.status || "pre").toLowerCase();
+        const k = gameState(g0).kind;
         const d0 = gameLocalDay(g0);
-        return st0 === "live" || d0 === todayISO() || (st0 === "pre" && !d0);
+        return k === "live" || k === "pre" || d0 === todayISO();
       });
       const ftBest = isToday ? dayLockedPick(ftPool, 1) : featuredPick(ftPool);
       const leadGame = (ftBest && ftBest.g) || (leadPick ? findGameLive(leadPick.game_id) : null);
@@ -6313,9 +6414,12 @@ export default function Home() {
       }
       betaLiveData = fresh;
       betaLiveAt = Date.now();
-      // first arrival: tiles rendered PASS placeholders before the feed existed — swap in
-      // the real picks now (MLB has no legacy fallback anymore, so this is the only source).
-      if (hadNone) { try { renderSlate(true); } catch {} }
+      // first arrival: views rendered before the feed existed (tiles as PASS placeholders,
+      // the news flagship off the today-only champion feed) — re-render the ACTIVE view so
+      // the real picks + tomorrow's upcoming games (the flagship pool) swap in.
+      if (hadNone) {
+        try { if (tab === "today") renderToday(); else renderSlate(true); } catch {}
+      }
       return betaLiveData;
     }
     const BETA_LEADS = ["T-24h", "T-12h", "T-6h", "T-3h", "T-1h"];
@@ -6347,49 +6451,46 @@ export default function Home() {
       </div>`;
     }
 
-    // ---- the record dashboard (overall + per star tier / market / lead) ----
+    // ---- the record dashboard — SIMPLIFIED to two honest things: (a) the overall picks
+    // record as a big hero, (b) the record BY STAR TIER. No by-market/by-lead/theme clutter.
+    // Source = record.headline_champion_v2 (our totals engine × the real-price gate).
     function betaDashboard(d: any) {
       const rec = d.record || {};
-      // THE product record = CHAMPION V2 (our totals engine × the price gate), not the research grid.
       const cv = rec.headline_champion_v2 || {};
       const ov = cv.headline || {};
       const byStar = cv.by_star_tier || {};
-      const grid = rec.overall_takes || {}; // the wider model grid (1–2★ leans) — secondary, honest
-      // Star-tier rows 5→1 (the validation: does higher star win more?)
-      const starRows = [5, 4, 3, 2, 1].map((s) => {
+      // Star-tier rows 4→2 (the PLAYABLE bet set — the validation: does a higher star win more?)
+      const tierRow = (s: number) => {
         const r = byStar[s] || {};
         const empty = !r.n;
-        return `<tr class="${empty ? "empty" : ""}">
-          <td class="bt-star">${bStars(s)}</td>
-          <td class="bt-n">${r.n || 0}</td>
-          <td class="bt-wl">${bWL(r)}</td>
-          <td class="bt-hit">${bPct(r.hit_rate, 1)}</td>
-          <td class="bt-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)}</td>
-        </tr>`;
-      }).join("");
-      const cut = (obj: any, order: string[], lab: (k: string) => string) => order.filter((k) => obj[k] && obj[k].n).map((k) => {
-        const r = obj[k];
-        return `<div class="bc-row"><span class="bc-k">${esc(lab(k))}</span><span class="bc-wl">${bWL(r)}</span><span class="bc-hit">${bPct(r.hit_rate, 1)}</span><span class="bc-roi ${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</span></div>`;
-      }).join("") || `<div class="bc-empty">Splits fill in as the record grows.</div>`;
+        return `<div class="strec-row${empty ? " empty" : ""}">
+          <span class="strec-star">${bStars(s)}</span>
+          <span class="strec-n">${r.n || 0} pick${r.n === 1 ? "" : "s"}</span>
+          <span class="strec-wl">${bWL(r)}</span>
+          <span class="strec-hit">${r.hit_rate != null ? bPct(r.hit_rate, 1) + " hit" : "—"}</span>
+          <span class="strec-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)} ROI</span>
+        </div>`;
+      };
       const gatedNote = cv.gated_out && cv.gated_out.n
-        ? `<div class="bh-gate">The price gate blocked ${cv.gated_out.n} would-be picks${cv.gated_out.would_have_record ? ` — the ${cv.gated_out.n_graded || 0} graded would have gone ${cv.gated_out.would_have_record.record || ""} (${bRoi(cv.gated_out.would_have_record.roi)})` : ""}${cv.gated_out.n_pending_or_no_result ? `; ${cv.gated_out.n_pending_or_no_result} pending` : ""}.</div>`
-        : "";
+        ? `<div class="strec-gate">The +EV price gate held ${cv.gated_out.n} would-be picks back${cv.gated_out.would_have_record ? ` — the ${cv.gated_out.n_graded || 0} graded went ${cv.gated_out.would_have_record.record || ""} (${bRoi(cv.gated_out.would_have_record.roi)})` : ""}. A pick has to beat its real price, not just the number.</div>`
+        : `<div class="strec-gate">Every pick has to beat the actual per-side price it's judged at — a lean that's on the right side of the number but priced out is an honest pass, not a bet.</div>`;
+      const roiPos = (ov.roi || 0) >= 0;
       return `
-        <div class="beta-hero">
-          <div class="bh-k">The totals record</div>
-          <div class="bh-rec"><b>${bWL(ov)}</b><span class="bh-hit">${bPct(ov.hit_rate, 1)} hit</span><span class="bh-roi ${(ov.roi || 0) >= 0 ? "pos" : "neg"}">${bRoi(ov.roi)} ROI</span></div>
-          <div class="bh-sub">${ov.n || 0} graded picks — our totals engine at the real price, every result public, win or lose.</div>
+        <div class="strec-hero ${roiPos ? "pos" : "neg"}">
+          <div class="strec-k">The picks record</div>
+          <div class="strec-big"><b>${bWL(ov)}</b></div>
+          <div class="strec-stats">
+            <span class="strec-stat"><i>${bPct(ov.hit_rate, 1)}</i><em>hit rate</em></span>
+            <span class="strec-stat"><i class="${roiPos ? "pos" : "neg"}">${bRoi(ov.roi)}</i><em>ROI</em></span>
+            <span class="strec-stat"><i>${ov.n || 0}</i><em>graded</em></span>
+          </div>
+          <div class="strec-sub">Pregame totals, graded in public at the real price — win or lose, nothing hidden.</div>
+        </div>
+        <div class="strec-card">
+          <div class="strec-ch">Record by star tier</div>
+          <div class="strec-csub">A star is a conviction band. It only means something if the higher tiers win more — so here's each tier, graded.</div>
+          <div class="strec-rows">${tierRow(4)}${tierRow(3)}${tierRow(2)}</div>
           ${gatedNote}
-        </div>
-        <div class="beta-card">
-          <div class="bcard-h">Does a higher star actually win more?</div>
-          <div class="bcard-sub">More stars should mean more wins — here's the live proof.</div>
-          <table class="beta-startbl"><thead><tr><th>Tier</th><th>Picks</th><th>W–L</th><th>Hit</th><th>ROI</th></tr></thead><tbody>${starRows}</tbody></table>
-
-        </div>
-        <div class="beta-splitgrid">
-          <div class="beta-card"><div class="bcard-h">By lead time</div><div class="bcuts">${cut(rec.by_lead_time || {}, BETA_LEADS, (k) => k)}</div></div>
-          <div class="beta-card"><div class="bcard-h">The wider lean board</div><div class="bcard-sub">Beyond the headline picks, the engine tracks every small-edge totals lean (1–2★) at its real price.</div><div class="bcuts"><div class="bc-row"><span class="bc-k">All leans</span><span class="bc-wl">${bWL(grid)}</span><span class="bc-hit">${bPct(grid.hit_rate, 1)}</span><span class="bc-roi ${(grid.roi || 0) >= 0 ? "pos" : "neg"}">${bRoi(grid.roi)}</span></div></div></div>
         </div>`;
     }
 
@@ -6775,6 +6876,7 @@ export default function Home() {
       window.addEventListener("focus", () => { pollLiveScores(); });
       pollLiveScores();
       loadPitchers().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // ERAs onto tiles once the feed lands
+      loadTeams().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // team records + streaks onto tiles (degrades if the feed is absent)
       loadBetaLive().catch(() => {}); // warm the pick feed at boot — tiles are v4-only now, this is their source
       // ── PULL-TO-REFRESH (mobile): drag down from the very top → full refresh ──
       // A hard reload re-fetches every feed (and any new deploy). Indicator shows pull
