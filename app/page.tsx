@@ -1390,17 +1390,20 @@ export default function Home() {
 
     // (e) Pitcher line chips (MLB): starter + ERA as compact chips — tap for the game log.
     function vizPitchers(g: any) {
-      const pit = g.pregame_intel && g.pregame_intel.pitchers;
-      if (!pit) return "";
-      const chip = (ab: any, p: any, side: string) => {
-        if (!p || !p.name) return "";
-        const fd = pitcherFeedFor(g, side as any);
-        const era = p.era != null ? p.era : (fd ? fd.era : null);
-        return `<div class="pit-chip tap" data-pitcher="${esc(String(g.game_id))}|${side}" role="button" tabindex="0"><span class="pit-ab">${esc(ab)}</span><span class="pit-nm">${esc(p.name)}</span>${era != null ? `<span class="pit-era">${num(era, 2)} ERA</span>` : ""}<span class="pit-more">›</span></div>`;
+      const pit = (g.pregame_intel && g.pregame_intel.pitchers) || {};
+      // Source each side from the served intel OR the pitchers_v4 feed — either alone is enough.
+      const chip = (ab: any, side: "away" | "home") => {
+        const p = pit[side] || {};
+        const fd = pitcherFeedFor(g, side);
+        const name = p.name || (fd && fd.name);
+        if (!name) return "";
+        const era = p.era != null ? p.era : (fd && fd.era != null ? fd.era : null);
+        const line = fd && (fd.wl || fd.whip != null) ? `${fd.wl ? esc(fd.wl) : ""}${fd.whip != null ? ` · ${num(fd.whip, 2)} WHIP` : ""}` : "";
+        return `<div class="pit-chip tap" data-pitcher="${esc(String(g.game_id))}|${side}" role="button" tabindex="0"><span class="pit-ab">${esc(ab)}</span><span class="pit-nm">${esc(name)}</span>${era != null ? `<span class="pit-era">${num(era, 2)} ERA</span>` : ""}${line ? `<span class="pit-sub">${line}</span>` : ""}<span class="pit-more">›</span></div>`;
       };
-      const a = chip(g.away_abbr, pit.away, "away"), h = chip(g.home_abbr, pit.home, "home");
+      const a = chip(g.away_abbr, "away"), h = chip(g.home_abbr, "home");
       if (!a && !h) return "";
-      return `<div class="pvz"><div class="pvz-h">${icon("pitcher", "sm")}On the mound</div><div class="pit-row">${a}${h}</div></div>`;
+      return `<div class="pvz"><div class="pvz-h">${icon("pitcher", "sm")}On the mound — tap for recent starts</div><div class="pit-row">${a}${h}</div></div>`;
     }
 
     // The full data-visual rail for a preview: assemble whichever visuals have data.
@@ -2588,13 +2591,10 @@ export default function Home() {
         <div class="t-head">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="t-body">
           <div class="t-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
-          ${pre ? tileOddsGrid(g) : ""}
         </div>
         ${pitchLine(g, gs)}
         ${pre ? "" : totOnly}
-        ${pre
-          ? (locked && isPick(pick) ? pickStrip(g, pick, st, locked, gs) : (!isPick(pick) ? passStrip(g) : ""))
-          : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
+        ${isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
       </article>`;
     }
     // Per-side odds grid for a PRE-GAME tile — 2 rows (away/home) × 3 cols (Spread · Total · ML),
@@ -3873,9 +3873,10 @@ export default function Home() {
         const pr = pl && pl.v4pass ? plainPassReason(pl.v4pass) : "";
         return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call"><span class="mt-passlab">Pass</span>${pr ? `<span class="mt-passwhy">${esc(pr)}</span>` : ""}</td><td class="mt-c">—</td></tr>`;
       };
-      return `<div class="mkt-table"><div class="mt-h">Our lean · every market</div>
+      // TOTALS-ONLY product: only the over/under is our call — no spread/ML rows.
+      return `<div class="mkt-table"><div class="mt-h">The DiamondEdge call</div>
         <table class="mt-tbl"><thead><tr><th>Market</th><th>Line</th><th>Our call</th><th>Confidence</th></tr></thead>
-        <tbody>${row("total", "Total (O/U)")}${row("spread", "Spread")}${row("moneyline", "Moneyline")}</tbody></table></div>`;
+        <tbody>${row("total", "Total (O/U)")}</tbody></table></div>`;
     }
     // The core thesis, made visible: OUR number vs the MARKET's, and the gap that makes the bet.
     function deDivergence(g: any, lead: any) {
@@ -4066,16 +4067,17 @@ export default function Home() {
         ? `<div class="art-pick locked" data-up="1"><span class="apk-k">◆ ${esc(pickWord(g))}</span><span class="apk-txt">Unlock to see the side & line ${lockSvg}</span></div>`
         : `<div class="art-pick ${hasTake ? `has q-${phQ || "lean"}` : "pass"}"><span class="apk-k">${esc(calloutKick)}</span><span class="apk-txt">${esc(payoffTxt)}</span>${hasTake ? `<span class="apk-q">${pickStars(lead)}${pickGrade(lead)}</span>` : ""}</div>`;
       // The Athletic-style data-visual rail (predicted score, win prob, form bars, etc.).
-      const vizRail = leadLocked ? "" : previewViz(g);
+      // Context (pitchers w/ ERA, team records+form, matchup viz) is FREE — always shown,
+      // even when the PICK itself is premium-locked. Only the narrative read is gated.
+      const vizRail = previewViz(g);
       const previewBlock = leadLocked
-        ? `<div class="whycard">
+        ? `${vizRail}<div class="whycard">
             <div class="wc-k">Game preview</div>
             <p>The full read behind this pick — the model number, the line it beats, and the history of calls made exactly this way — is part of DiamondEdge Premium. The quality rating above is the real one.</p>
           </div>`
-        : `<div class="whycard preview">
+        : `${vizRail}<div class="whycard preview">
             <div class="wc-k">The setup</div>
             ${bodyParas.map((w) => `<p>${mdBold(w)}</p>`).join("")}
-            ${vizRail}
             ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
             ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
           </div>`;

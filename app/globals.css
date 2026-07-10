@@ -715,8 +715,8 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* SMALL SCREENS (≤819px): ONE full-width compact row per game (the scores-app reference) —
    teams left, per-side odds grid right, side by side. Slimmer chrome so nothing crowds. */
 @media(max-width:819px){
-  .slate{grid-template-columns:1fr}
-  .tile{padding:11px 12px 12px;gap:7px}
+  .slate{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .tile{padding:10px 11px 11px;gap:6px}
   .tile .t-league .tl-comp{display:none}
   .tile .t-league{overflow:hidden;text-overflow:ellipsis}
   .tile .t-head .statechip{font-size:8.5px;padding:3px 7px;letter-spacing:.03em}
@@ -3304,3 +3304,5 @@ details.results-more{margin-bottom:14px}
 .bgrid.pitlog td.num{text-align:right;font-family:var(--mono)}
 .bgrid.pitlog td.res.won{color:var(--green,#0a7d40);font-weight:700}
 .bgrid.pitlog td.res.lost{color:#b3261e;font-weight:700}
+
+.pit-chip .pit-sub{font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-left:4px}
