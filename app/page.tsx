@@ -6449,10 +6449,18 @@ export default function Home() {
     let betaOnlyTakes = true;  // default: games where the model actually took a bet
     async function loadBeta() {
       if (betaData) return betaData;
-      // daily cache-buster: the file regenerates nightly — never serve yesterday's record
-      const r = await fetch(`/picks_v4_beta.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
-      if (!r.ok) throw new Error("beta fetch " + r.status);
-      betaData = await r.json();
+      // FRESH source = Supabase (slate_snapshots key 'picks_v4_beta'), synced every cycle from
+      // the model box — so prior-day picks/results update with NO deploy. The bundled static
+      // file is only a fallback for the deep archive. (Fixes the recurring "yesterday shows
+      // all-PASS" bug: the static file only updated on git push, so recent days went missing.)
+      let fresh: any = null;
+      try { fresh = await Promise.race([snap("picks_v4_beta"), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
+      if (!fresh || !fresh.games) {
+        const r = await fetch(`/picks_v4_beta.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
+        if (!r.ok) throw new Error("beta fetch " + r.status);
+        fresh = await r.json();
+      }
+      betaData = fresh;
       return betaData;
     }
     // LIVE picks (today + tomorrow) — the freshest copy lives in Supabase (slate_snapshots

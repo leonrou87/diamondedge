@@ -4,7 +4,7 @@
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
   "record_basis": "headline = CHAMPION V2 stream (champion picks x +EV gate at real per-side prices); v4 model grid record = sealed 2026 walk (42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f), star-capped take set, TOTALS ONLY",
-  "generated_utc": "2026-07-19T02:46:08Z",
+  "generated_utc": "2026-07-19T11:04:58Z",
   "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
   "recipe_sha256": "ecac66ecf0bc6b198550786b38930c345d7d20669f7f32719fe075407adc9b48",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
@@ -24,11 +24,11 @@
     ],
     "record": {
       "headline": {
-        "n": 83,
+        "n": 84,
         "win": 44,
         "loss": 38,
-        "push": 1,
-        "record": "44-38-1",
+        "push": 2,
+        "record": "44-38-2",
         "hit_rate": 0.5366,
         "roi": 0.0276,
         "units": 2.267,
@@ -41,11 +41,11 @@
       },
       "by_star_tier": {
         "4": {
-          "n": 69,
+          "n": 70,
           "win": 36,
           "loss": 32,
-          "push": 1,
-          "record": "36-32-1",
+          "push": 2,
+          "record": "36-32-2",
           "hit_rate": 0.5294,
           "roi": 0.0152,
           "units": 1.036,
@@ -89,11 +89,11 @@
           }
         },
         "1_pass_leans_informational": {
-          "n": 43,
+          "n": 45,
           "win": 18,
           "loss": 21,
-          "push": 4,
-          "record": "18-21-4",
+          "push": 6,
+          "record": "18-21-6",
           "hit_rate": 0.4615,
           "roi": -0.1546,
           "units": -6.03,
@@ -107,11 +107,11 @@
       },
       "by_source": {
         "forward_paper_ledger": {
-          "n": 5,
+          "n": 6,
           "win": 2,
           "loss": 3,
-          "push": 0,
-          "record": "2-3-0",
+          "push": 1,
+          "record": "2-3-1",
           "hit_rate": 0.4,
           "roi": -0.2261,
           "units": -1.13,
@@ -173,11 +173,11 @@
       },
       "by_lead_time": {
         "T-12h": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.042,
           "units": 3.314,
@@ -271,11 +271,11 @@
           }
         },
         "2026-07": {
-          "n": 8,
+          "n": 9,
           "win": 3,
           "loss": 5,
-          "push": 0,
-          "record": "3-5-0",
+          "push": 1,
+          "record": "3-5-1",
           "hit_rate": 0.375,
           "roi": -0.2722,
           "units": -2.178,
@@ -289,9 +289,9 @@
       },
       "n_takes": 84,
       "n_playable": 84,
-      "n_pending": 1,
+      "n_pending": 0,
       "headline_dedup": {
-        "n_rows_dropped": 25,
+        "n_rows_dropped": 30,
         "note": "HEADLINE DEDUP: a game emits multiple graded rows per stream (a reconstructed/live game grades one row PER WALL). Every rollup here counts ONE result per (game x stream): the canonical row = the locked/frozen decision wall (latest lead_time, nearest first pitch), else the priced ledger entry. n_rows_dropped = the duplicate per-wall rows collapsed away before counting."
       },
       "voided_no_action": {
@@ -299,21 +299,21 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 45,
-        "n_graded": 43,
+        "n": 47,
+        "n_graded": 45,
         "n_pending_or_no_result": 2,
         "by_reason": {
-          "ev_gate": 41,
+          "ev_gate": 43,
           "price_only": 0,
           "toxic_tail": 4
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 43,
+          "n": 45,
           "win": 18,
           "loss": 21,
-          "push": 4,
-          "record": "18-21-4",
+          "push": 6,
+          "record": "18-21-6",
           "hit_rate": 0.4615,
           "roi": -0.1546,
           "units": -6.03,
@@ -330,11 +330,11 @@
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
         "n_rows_each": 118,
         "median": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.0262,
           "units": 2.071,
@@ -363,11 +363,11 @@
               }
             },
             "3": {
-              "n": 32,
+              "n": 33,
               "win": 18,
               "loss": 13,
-              "push": 1,
-              "record": "18-13-1",
+              "push": 2,
+              "record": "18-13-2",
               "hit_rate": 0.5806,
               "roi": 0.0908,
               "units": 2.814,
@@ -397,11 +397,11 @@
           }
         },
         "median_gate_best": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.042,
           "units": 3.314,
@@ -414,11 +414,11 @@
           "n_playable": 81,
           "by_star_tier": {
             "4": {
-              "n": 67,
+              "n": 68,
               "win": 35,
               "loss": 31,
-              "push": 1,
-              "record": "35-31-1",
+              "push": 2,
+              "record": "35-31-2",
               "hit_rate": 0.5303,
               "roi": 0.0164,
               "units": 1.084,
@@ -464,11 +464,11 @@
           }
         },
         "best": {
-          "n": 101,
+          "n": 102,
           "win": 51,
           "loss": 47,
-          "push": 3,
-          "record": "51-47-3",
+          "push": 4,
+          "record": "51-47-4",
           "hit_rate": 0.5204,
           "roi": -0.0032,
           "units": -0.318,
@@ -481,11 +481,11 @@
           "n_playable": 103,
           "by_star_tier": {
             "4": {
-              "n": 77,
+              "n": 78,
               "win": 38,
               "loss": 37,
-              "push": 2,
-              "record": "38-37-2",
+              "push": 3,
+              "record": "38-37-3",
               "hit_rate": 0.5067,
               "roi": -0.0281,
               "units": -2.108,
@@ -531,11 +531,11 @@
           }
         },
         "same_pick_set_at_best": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.042,
           "units": 3.314,
@@ -817,7 +817,7 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-07-19T02:46:08Z",
+    "record_generated_utc": "2026-07-19T11:04:58Z",
     "backfill": {
       "n_rows": 118,
       "sources": {
@@ -1314,7 +1314,7 @@
         "tier": "Good",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.52,
+        "score": 4.51,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2066,7 +2066,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.41,
+        "score": 4.4,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2750,7 +2750,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.3,
+        "score": 4.31,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3438,7 +3438,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.59,
+        "score": 4.58,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3934,7 +3934,7 @@
         "tier": "Good",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.74,
+        "score": 4.75,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3996,7 +3996,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.11,
+        "score": 4.1,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4370,7 +4370,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
-        "score": 3.86,
+        "score": 3.87,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4742,7 +4742,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
-        "score": 3.27,
+        "score": 3.28,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5426,7 +5426,7 @@
         "tier": "Good",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.36,
+        "score": 4.37,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5680,7 +5680,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-        "score": 4.42,
+        "score": 4.41,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5806,7 +5806,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
-        "score": 3.45,
+        "score": 3.46,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -8158,7 +8158,9 @@
           "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
         },
         "suggested_units": 2.0,
-        "result": null,
+        "result": "push",
+        "pnl": 0.0,
+        "graded_line": 7.0,
         "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
       },
       {
@@ -8253,11 +8255,11 @@
     "models": [
       "residual_total_v1"
     ],
-    "n_games": 1453,
+    "n_games": 1468,
     "n_days": 105,
     "date_range": [
       "2026-03-25",
-      "2026-07-17"
+      "2026-07-18"
     ],
     "note": "This first-read walk is full_game only (no first_5), residual_* models only. F5 grid + finals will populate when the 4-season walk emits first_5 rows."
   },
@@ -8284,10 +8286,10 @@
     "cutoff_4": 4.0,
     "cutoff_3": 3.0,
     "bands": "floor bands of the continuous v3.2 score: 2.00-2.99 -> 2*, 3.00-3.99 -> 3*, 4.00-4.99 -> 4*; 1* = non-playable; 5* = BH-reserved",
-    "n_playable_scores": 528,
-    "n_nonplayable_scores": 6095,
+    "n_playable_scores": 529,
+    "n_nonplayable_scores": 6096,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-07-19T02:46:08Z",
+    "generated_utc": "2026-07-19T11:04:58Z",
     "basis": "v3.2: the percentile normalization moved INTO the score (2.0 + 3.0 * season strength percentile, frozen reference in `score_reference`), so the star cutoffs are plain floor bands \u2014 each playable tier is ~a third of the season playable percentile, and a mid-strength pick CAN land 3* (the v3.1 band-quantization gap is fixed). The -EV floor is hard: non-playable rows stay 1* regardless of score."
   },
   "score_reference": {
@@ -8296,13 +8298,13 @@
       "w_edge": 0.5,
       "w_ev": 0.5
     },
-    "n_playable": 528,
-    "n_nonplayable": 6095,
+    "n_playable": 529,
+    "n_nonplayable": 6096,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-07-19T02:46:08Z",
+    "generated_utc": "2026-07-19T11:04:58Z",
     "basis": "v3.2 frozen season reference: percentile ranks of |model divergence| and EV (0.5/0.5 blend) over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill); non-playable rows rank in their own frozen distribution (tail-inverted edge measure + pass EV position). Frozen for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: no score promotes a non-playable row.",
     "playable": {
-      "n": 528,
+      "n": 529,
       "edge_percentiles": {
         "0": 0.01,
         "5": 0.0105,
@@ -8319,8 +8321,8 @@
         "60": 0.0184,
         "65": 0.0196,
         "70": 0.0224,
-        "75": 0.0249,
-        "80": 0.0314,
+        "75": 0.025,
+        "80": 0.0313,
         "85": 0.0339,
         "90": 0.0395,
         "95": 0.047,
@@ -8334,47 +8336,47 @@
         "20": 0.0233,
         "25": 0.0254,
         "30": 0.0273,
-        "35": 0.0294,
+        "35": 0.0297,
         "40": 0.0318,
-        "45": 0.034,
+        "45": 0.0341,
         "50": 0.0366,
         "55": 0.0391,
-        "60": 0.0417,
+        "60": 0.0418,
         "65": 0.0444,
-        "70": 0.0466,
-        "75": 0.0499,
+        "70": 0.0469,
+        "75": 0.05,
         "80": 0.0533,
-        "85": 0.0581,
+        "85": 0.0583,
         "90": 0.0642,
         "95": 0.0751,
         "100": 0.1224
       },
       "strength_percentiles": {
         "0": 0.0142,
-        "5": 0.1027,
-        "10": 0.1776,
-        "15": 0.2382,
-        "20": 0.2779,
-        "25": 0.3158,
-        "30": 0.3513,
-        "35": 0.383,
-        "40": 0.411,
-        "45": 0.4318,
-        "50": 0.465,
-        "55": 0.509,
-        "60": 0.5563,
-        "65": 0.5985,
-        "70": 0.6364,
-        "75": 0.6856,
-        "80": 0.7344,
-        "85": 0.7992,
-        "90": 0.8513,
-        "95": 0.9347,
+        "5": 0.1026,
+        "10": 0.1772,
+        "15": 0.2377,
+        "20": 0.2807,
+        "25": 0.3152,
+        "30": 0.3507,
+        "35": 0.3852,
+        "40": 0.4102,
+        "45": 0.4319,
+        "50": 0.4641,
+        "55": 0.508,
+        "60": 0.5614,
+        "65": 0.5974,
+        "70": 0.6385,
+        "75": 0.6857,
+        "80": 0.7339,
+        "85": 0.7991,
+        "90": 0.8507,
+        "95": 0.9348,
         "100": 0.9953
       }
     },
     "nonplayable": {
-      "n": 6095,
+      "n": 6096,
       "edge_percentiles": {
         "0": 0.0,
         "5": 0.0092,
@@ -8386,7 +8388,7 @@
         "35": 0.0831,
         "40": 0.0969,
         "45": 0.1108,
-        "50": 0.1215,
+        "50": 0.1231,
         "55": 0.1354,
         "60": 0.1446,
         "65": 0.1569,
@@ -8408,7 +8410,7 @@
         "30": 0.7757,
         "35": 0.7974,
         "40": 0.82,
-        "45": 0.8417,
+        "45": 0.8426,
         "50": 0.867,
         "55": 0.8939,
         "60": 0.9191,
@@ -8429,20 +8431,20 @@
         "20": 0.2582,
         "25": 0.3057,
         "30": 0.3473,
-        "35": 0.3918,
-        "40": 0.4347,
+        "35": 0.3919,
+        "40": 0.4346,
         "45": 0.4775,
-        "50": 0.5139,
-        "55": 0.5514,
-        "60": 0.5893,
+        "50": 0.5138,
+        "55": 0.5513,
+        "60": 0.5894,
         "65": 0.6231,
         "70": 0.6616,
-        "75": 0.6966,
+        "75": 0.697,
         "80": 0.7372,
         "85": 0.7801,
-        "90": 0.8296,
-        "95": 0.8947,
-        "100": 0.9347
+        "90": 0.8295,
+        "95": 0.8946,
+        "100": 0.9348
       }
     },
     "frozen_file": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/output/score_reference_v32.json"
@@ -8459,15 +8461,15 @@
   "star_census": {
     "all_rows": {
       "5": 0,
-      "4": 110,
-      "3": 163,
+      "4": 109,
+      "3": 164,
       "2": 175,
       "1": 6059
     },
     "playable_only": {
       "5": 0,
-      "4": 110,
-      "3": 163,
+      "4": 109,
+      "3": 164,
       "2": 175
     },
     "n_playable": 448,
@@ -8512,7 +8514,7 @@
       "matchup": "Detroit Tigers @ San Diego Padres",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.5,
+      "score": 4.49,
       "lean": {
         "side": "under",
         "line": 7.5
@@ -8526,7 +8528,7 @@
       "matchup": "Pittsburgh Pirates @ New York Mets",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.89,
+      "score": 4.9,
       "lean": {
         "side": "under",
         "line": 8.0
@@ -8540,7 +8542,7 @@
       "matchup": "Athletics @ Toronto Blue Jays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.58,
+      "score": 4.57,
       "lean": {
         "side": "under",
         "line": 8.5
@@ -8750,7 +8752,7 @@
       "matchup": "Chicago Cubs @ Philadelphia Phillies",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.98,
+      "score": 4.99,
       "lean": {
         "side": "over",
         "line": 8.0
@@ -8904,7 +8906,7 @@
       "matchup": "Cleveland Guardians @ Toronto Blue Jays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.68,
+      "score": 4.69,
       "lean": {
         "side": "under",
         "line": 8.0
@@ -8946,7 +8948,7 @@
       "matchup": "Boston Red Sox @ Toronto Blue Jays",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.42,
+      "score": 3.41,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -9044,7 +9046,7 @@
       "matchup": "Los Angeles Dodgers @ Houston Astros",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.74,
+      "score": 3.73,
       "lean": {
         "side": "under",
         "line": 9.0
@@ -9072,7 +9074,7 @@
       "matchup": "Texas Rangers @ New York Yankees",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.17,
+      "score": 4.16,
       "lean": {
         "side": "under",
         "line": 8.0
@@ -9100,7 +9102,7 @@
       "matchup": "Colorado Rockies @ Philadelphia Phillies",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.32,
+      "score": 4.31,
       "lean": {
         "side": "over",
         "line": 8.0
@@ -9114,7 +9116,7 @@
       "matchup": "Atlanta Braves @ Los Angeles Dodgers",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.63,
+      "score": 3.62,
       "lean": {
         "side": "under",
         "line": 8.5
@@ -9255,7 +9257,7 @@
       "matchup": "Texas Rangers @ Colorado Rockies",
       "source_model": "champion_v2",
       "stars": 4,
-      "score": 4.42,
+      "score": 4.41,
       "lean": {
         "side": "under",
         "line": 10.0
@@ -9355,7 +9357,7 @@
       "matchup": "Houston Astros @ Texas Rangers",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.08,
+      "score": 4.07,
       "lean": {
         "side": "under",
         "line": 8.5
@@ -9688,7 +9690,7 @@
       "matchup": "New York Mets @ Philadelphia Phillies",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.01,
+      "score": 4.0,
       "lean": {
         "side": "over",
         "line": 9.5
@@ -9715,8 +9717,8 @@
       "game_pk": 823126,
       "matchup": "Boston Red Sox @ Seattle Mariners",
       "source_model": "residual_total_v1",
-      "stars": 4,
-      "score": 4.0,
+      "stars": 3,
+      "score": 3.99,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -9758,7 +9760,7 @@
       "matchup": "Seattle Mariners @ Pittsburgh Pirates",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.71,
+      "score": 3.7,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -9772,7 +9774,7 @@
       "matchup": "Kansas City Royals @ Tampa Bay Rays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.55,
+      "score": 4.54,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -9786,7 +9788,7 @@
       "matchup": "Kansas City Royals @ Tampa Bay Rays",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.82,
+      "score": 3.81,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -9800,7 +9802,7 @@
       "matchup": "Colorado Rockies @ Minnesota Twins",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.6,
+      "score": 4.59,
       "lean": {
         "side": "over",
         "line": 9.0
@@ -9941,7 +9943,7 @@
       "matchup": "New York Yankees @ Tampa Bay Rays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.45,
+      "score": 4.44,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -9955,7 +9957,7 @@
       "matchup": "Colorado Rockies @ Los Angeles Dodgers",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.93,
+      "score": 3.92,
       "lean": {
         "side": "over",
         "line": 9.5
@@ -10039,7 +10041,7 @@
       "matchup": "Los Angeles Dodgers @ New York Yankees",
       "source_model": "residual_total_v1",
       "stars": 2,
-      "score": 2.85,
+      "score": 2.84,
       "lean": {
         "side": "over",
         "line": 9.0
@@ -10924,7 +10926,7 @@
       "hit_rate": 0.3333,
       "roi": -0.3333,
       "units": -1.0,
-      "units_weighted": -2.0,
+      "units_weighted": -1.0,
       "source": "walk"
     },
     "2026-06-21": {
@@ -11191,6 +11193,18 @@
       "units_weighted": -0.024,
       "source": "live_archive"
     },
+    "2026-07-18": {
+      "n_picks": 8,
+      "n_graded": 8,
+      "wins": 1,
+      "losses": 4,
+      "pushes": 3,
+      "hit_rate": 0.2,
+      "roi": -0.6148,
+      "units": -3.074,
+      "units_weighted": -2.074,
+      "source": "live_archive"
+    },
     "2026-03-25": {
       "n_picks": 0,
       "n_graded": 0,
@@ -11399,10 +11413,10 @@
   "coverage": {
     "date_range": [
       "2026-03-25",
-      "2026-07-17"
+      "2026-07-18"
     ],
-    "n_dates": 111,
-    "n_games": 1453,
+    "n_dates": 112,
+    "n_games": 1468,
     "walk_dates": {
       "n": 105,
       "n_games": 1380,
@@ -11412,14 +11426,15 @@
       ]
     },
     "archive_dates": {
-      "n": 6,
+      "n": 7,
       "dates": [
         "2026-07-09",
         "2026-07-10",
         "2026-07-11",
         "2026-07-12",
         "2026-07-16",
-        "2026-07-17"
+        "2026-07-17",
+        "2026-07-18"
       ]
     },
     "gaps": [
@@ -11434,11 +11449,11 @@
   "record": {
     "headline_champion_v2": {
       "headline": {
-        "n": 83,
+        "n": 84,
         "win": 44,
         "loss": 38,
-        "push": 1,
-        "record": "44-38-1",
+        "push": 2,
+        "record": "44-38-2",
         "hit_rate": 0.5366,
         "roi": 0.0276,
         "units": 2.267,
@@ -11451,11 +11466,11 @@
       },
       "by_star_tier": {
         "4": {
-          "n": 69,
+          "n": 70,
           "win": 36,
           "loss": 32,
-          "push": 1,
-          "record": "36-32-1",
+          "push": 2,
+          "record": "36-32-2",
           "hit_rate": 0.5294,
           "roi": 0.0152,
           "units": 1.036,
@@ -11499,11 +11514,11 @@
           }
         },
         "1_pass_leans_informational": {
-          "n": 43,
+          "n": 45,
           "win": 18,
           "loss": 21,
-          "push": 4,
-          "record": "18-21-4",
+          "push": 6,
+          "record": "18-21-6",
           "hit_rate": 0.4615,
           "roi": -0.1546,
           "units": -6.03,
@@ -11517,11 +11532,11 @@
       },
       "by_source": {
         "forward_paper_ledger": {
-          "n": 5,
+          "n": 6,
           "win": 2,
           "loss": 3,
-          "push": 0,
-          "record": "2-3-0",
+          "push": 1,
+          "record": "2-3-1",
           "hit_rate": 0.4,
           "roi": -0.2261,
           "units": -1.13,
@@ -11583,11 +11598,11 @@
       },
       "by_lead_time": {
         "T-12h": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.042,
           "units": 3.314,
@@ -11681,11 +11696,11 @@
           }
         },
         "2026-07": {
-          "n": 8,
+          "n": 9,
           "win": 3,
           "loss": 5,
-          "push": 0,
-          "record": "3-5-0",
+          "push": 1,
+          "record": "3-5-1",
           "hit_rate": 0.375,
           "roi": -0.2722,
           "units": -2.178,
@@ -11699,9 +11714,9 @@
       },
       "n_takes": 84,
       "n_playable": 84,
-      "n_pending": 1,
+      "n_pending": 0,
       "headline_dedup": {
-        "n_rows_dropped": 25,
+        "n_rows_dropped": 30,
         "note": "HEADLINE DEDUP: a game emits multiple graded rows per stream (a reconstructed/live game grades one row PER WALL). Every rollup here counts ONE result per (game x stream): the canonical row = the locked/frozen decision wall (latest lead_time, nearest first pitch), else the priced ledger entry. n_rows_dropped = the duplicate per-wall rows collapsed away before counting."
       },
       "voided_no_action": {
@@ -11709,21 +11724,21 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 45,
-        "n_graded": 43,
+        "n": 47,
+        "n_graded": 45,
         "n_pending_or_no_result": 2,
         "by_reason": {
-          "ev_gate": 41,
+          "ev_gate": 43,
           "price_only": 0,
           "toxic_tail": 4
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 43,
+          "n": 45,
           "win": 18,
           "loss": 21,
-          "push": 4,
-          "record": "18-21-4",
+          "push": 6,
+          "record": "18-21-6",
           "hit_rate": 0.4615,
           "roi": -0.1546,
           "units": -6.03,
@@ -11740,11 +11755,11 @@
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
         "n_rows_each": 118,
         "median": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.0262,
           "units": 2.071,
@@ -11773,11 +11788,11 @@
               }
             },
             "3": {
-              "n": 32,
+              "n": 33,
               "win": 18,
               "loss": 13,
-              "push": 1,
-              "record": "18-13-1",
+              "push": 2,
+              "record": "18-13-2",
               "hit_rate": 0.5806,
               "roi": 0.0908,
               "units": 2.814,
@@ -11807,11 +11822,11 @@
           }
         },
         "median_gate_best": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.042,
           "units": 3.314,
@@ -11824,11 +11839,11 @@
           "n_playable": 81,
           "by_star_tier": {
             "4": {
-              "n": 67,
+              "n": 68,
               "win": 35,
               "loss": 31,
-              "push": 1,
-              "record": "35-31-1",
+              "push": 2,
+              "record": "35-31-2",
               "hit_rate": 0.5303,
               "roi": 0.0164,
               "units": 1.084,
@@ -11874,11 +11889,11 @@
           }
         },
         "best": {
-          "n": 101,
+          "n": 102,
           "win": 51,
           "loss": 47,
-          "push": 3,
-          "record": "51-47-3",
+          "push": 4,
+          "record": "51-47-4",
           "hit_rate": 0.5204,
           "roi": -0.0032,
           "units": -0.318,
@@ -11891,11 +11906,11 @@
           "n_playable": 103,
           "by_star_tier": {
             "4": {
-              "n": 77,
+              "n": 78,
               "win": 38,
               "loss": 37,
-              "push": 2,
-              "record": "38-37-2",
+              "push": 3,
+              "record": "38-37-3",
               "hit_rate": 0.5067,
               "roi": -0.0281,
               "units": -2.108,
@@ -11941,11 +11956,11 @@
           }
         },
         "same_pick_set_at_best": {
-          "n": 80,
+          "n": 81,
           "win": 43,
           "loss": 36,
-          "push": 1,
-          "record": "43-36-1",
+          "push": 2,
+          "record": "43-36-2",
           "hit_rate": 0.5443,
           "roi": 0.042,
           "units": 3.314,
@@ -12237,9 +12252,9 @@
       "hit_rate": 0.487,
       "units_flat": -11.558,
       "units_weighted": {
-        "units": -29.133,
-        "staked": 443.5,
-        "roi": -0.0657,
+        "units": -28.133,
+        "staked": 442.5,
+        "roi": -0.0636,
         "n_offladder_flat_1u": 0
       }
     },
@@ -12252,9 +12267,9 @@
       "hit_rate": 0.487,
       "units_flat": -11.558,
       "units_weighted": {
-        "units": -29.133,
-        "staked": 443.5,
-        "roi": -0.0657,
+        "units": -28.133,
+        "staked": 442.5,
+        "roi": -0.0636,
         "n_offladder_flat_1u": 0
       }
     },
@@ -12267,9 +12282,9 @@
       "hit_rate": 0.495,
       "units_flat": -8.416,
       "units_weighted": {
-        "units": -25.99,
-        "staked": 1919.5,
-        "roi": -0.0135,
+        "units": -24.99,
+        "staked": 1918.5,
+        "roi": -0.013,
         "n_offladder_flat_1u": 1476
       }
     },
@@ -12290,32 +12305,32 @@
         }
       },
       "4": {
-        "n": 110,
+        "n": 109,
         "win": 46,
-        "loss": 57,
+        "loss": 56,
         "push": 7,
-        "roi": -0.1019,
-        "hit_rate": 0.4466,
-        "units_flat": -10.498,
+        "roi": -0.0931,
+        "hit_rate": 0.451,
+        "units_flat": -9.498,
         "units_weighted": {
-          "units": -20.997,
-          "staked": 206.0,
-          "roi": -0.1019,
+          "units": -18.997,
+          "staked": 204.0,
+          "roi": -0.0931,
           "n_offladder_flat_1u": 0
         }
       },
       "3": {
-        "n": 163,
+        "n": 164,
         "win": 70,
-        "loss": 85,
+        "loss": 86,
         "push": 8,
-        "roi": -0.0981,
-        "hit_rate": 0.4516,
-        "units_flat": -15.212,
+        "roi": -0.1039,
+        "hit_rate": 0.4487,
+        "units_flat": -16.212,
         "units_weighted": {
-          "units": -15.212,
-          "staked": 155.0,
-          "roi": -0.0981,
+          "units": -16.212,
+          "staked": 156.0,
+          "roi": -0.1039,
           "n_offladder_flat_1u": 0
         }
       },
@@ -12366,9 +12381,9 @@
         "hit_rate": 0.487,
         "units_flat": -11.558,
         "units_weighted": {
-          "units": -29.133,
-          "staked": 443.5,
-          "roi": -0.0657,
+          "units": -28.133,
+          "staked": 442.5,
+          "roi": -0.0636,
           "n_offladder_flat_1u": 0
         }
       }
@@ -12383,9 +12398,9 @@
         "hit_rate": 0.4862,
         "units_flat": -6.096,
         "units_weighted": {
-          "units": -11.759,
-          "staked": 237.0,
-          "roi": -0.0496,
+          "units": -10.759,
+          "staked": 236.0,
+          "roi": -0.0456,
           "n_offladder_flat_1u": 0
         }
       },
@@ -12460,37 +12475,38 @@
         "hit_rate": 0.487,
         "units_flat": -11.558,
         "units_weighted": {
-          "units": -29.133,
-          "staked": 443.5,
-          "roi": -0.0657,
+          "units": -28.133,
+          "staked": 442.5,
+          "roi": -0.0636,
           "n_offladder_flat_1u": 0
         }
       }
     },
     "archive_live_days": {
       "record": {
-        "n": 24,
-        "win": 11,
-        "loss": 12,
-        "push": 1,
-        "roi": -0.0459,
-        "hit_rate": 0.4783,
-        "units_flat": -1.056,
+        "n": 32,
+        "win": 12,
+        "loss": 16,
+        "push": 4,
+        "roi": -0.1475,
+        "hit_rate": 0.4286,
+        "units_flat": -4.131,
         "units_weighted": {
-          "units": -2.503,
-          "staked": 18.5,
-          "roi": -0.1353,
+          "units": -4.577,
+          "staked": 22.5,
+          "roi": -0.2034,
           "n_offladder_flat_1u": 0
         }
       },
-      "n_dates": 6,
+      "n_dates": 7,
       "dates": [
         "2026-07-09",
         "2026-07-10",
         "2026-07-11",
         "2026-07-12",
         "2026-07-16",
-        "2026-07-17"
+        "2026-07-17",
+        "2026-07-18"
       ],
       "note": "reconstructed as-of each wall (leak-safe two-pass: predict with labels-before-D, then grade the settled final, prediction hash-asserted unchanged) and stamped under the SAME frozen v3.2 reference as the walk."
     },
@@ -13388,7 +13404,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.35,
+          "score": 4.34,
           "playable": true,
           "lean": {
             "side": "under",
@@ -13940,7 +13956,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.49,
+          "score": 3.48,
           "playable": true,
           "lean": {
             "side": "under",
@@ -14492,7 +14508,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.74,
+          "score": 2.73,
           "playable": true,
           "lean": {
             "side": "under",
@@ -14676,7 +14692,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.97,
+          "score": 2.96,
           "playable": true,
           "lean": {
             "side": "under",
@@ -14860,7 +14876,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.8,
+          "score": 2.79,
           "playable": true,
           "lean": {
             "side": "under",
@@ -15195,7 +15211,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.37,
+          "score": 4.36,
           "playable": true,
           "lean": {
             "side": "under",
@@ -15563,7 +15579,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.5,
+          "score": 4.49,
           "playable": true,
           "lean": {
             "side": "under",
@@ -15747,7 +15763,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.86,
+          "score": 0.85,
           "playable": false,
           "lean": {
             "side": "over",
@@ -16884,7 +16900,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.26,
+          "score": 4.25,
           "playable": true,
           "lean": {
             "side": "under",
@@ -17587,7 +17603,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.87,
+          "score": 2.86,
           "playable": true,
           "lean": {
             "side": "under",
@@ -17620,7 +17636,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.83,
+          "score": 3.82,
           "playable": true,
           "lean": {
             "side": "under",
@@ -17955,7 +17971,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.2,
+          "score": 4.19,
           "playable": true,
           "lean": {
             "side": "under",
@@ -18323,7 +18339,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.89,
+          "score": 4.9,
           "playable": true,
           "lean": {
             "side": "under",
@@ -18356,7 +18372,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.33,
+          "score": 4.32,
           "playable": true,
           "lean": {
             "side": "under",
@@ -18691,7 +18707,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.11,
+          "score": 4.1,
           "playable": true,
           "lean": {
             "side": "under",
@@ -19092,7 +19108,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.58,
+          "score": 4.57,
           "playable": true,
           "lean": {
             "side": "under",
@@ -19460,7 +19476,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.05,
+          "score": 4.04,
           "playable": true,
           "lean": {
             "side": "under",
@@ -19828,7 +19844,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.13,
+          "score": 4.12,
           "playable": true,
           "lean": {
             "side": "under",
@@ -20380,7 +20396,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.1,
+          "score": 4.09,
           "playable": true,
           "lean": {
             "side": "under",
@@ -20564,7 +20580,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.88,
+          "score": 3.87,
           "playable": true,
           "lean": {
             "side": "under",
@@ -20715,7 +20731,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.44,
+          "score": 4.43,
           "playable": true,
           "lean": {
             "side": "under",
@@ -20748,7 +20764,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.87,
+          "score": 3.86,
           "playable": true,
           "lean": {
             "side": "under",
@@ -20932,7 +20948,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.24,
+          "score": 3.23,
           "playable": true,
           "lean": {
             "side": "under",
@@ -21116,7 +21132,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.09,
+          "score": 1.08,
           "playable": false,
           "lean": {
             "side": "under",
@@ -21819,7 +21835,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.36,
+          "score": 4.35,
           "playable": true,
           "lean": {
             "side": "under",
@@ -22003,7 +22019,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.42,
+          "score": 4.41,
           "playable": true,
           "lean": {
             "side": "under",
@@ -23324,7 +23340,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.91,
+          "score": 2.9,
           "playable": true,
           "lean": {
             "side": "under",
@@ -26872,7 +26888,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.95,
+          "score": 3.94,
           "playable": true,
           "lean": {
             "side": "under",
@@ -27844,7 +27860,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.46,
+          "score": 3.45,
           "playable": true,
           "lean": {
             "side": "under",
@@ -28028,7 +28044,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.39,
+          "score": 4.38,
           "playable": true,
           "lean": {
             "side": "under",
@@ -28363,7 +28379,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.7,
+          "score": 3.69,
           "playable": true,
           "lean": {
             "side": "under",
@@ -28514,7 +28530,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.29,
+          "score": 4.28,
           "playable": true,
           "lean": {
             "side": "under",
@@ -29151,7 +29167,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.25,
+          "score": 3.24,
           "playable": true,
           "lean": {
             "side": "under",
@@ -29486,7 +29502,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.18,
+          "score": 4.17,
           "playable": true,
           "lean": {
             "side": "under",
@@ -30156,7 +30172,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.79,
+          "score": 3.78,
           "playable": true,
           "lean": {
             "side": "under",
@@ -30859,7 +30875,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.28,
+          "score": 4.27,
           "playable": true,
           "lean": {
             "side": "under",
@@ -31562,7 +31578,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.54,
+          "score": 4.53,
           "playable": true,
           "lean": {
             "side": "under",
@@ -33067,7 +33083,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.47,
+          "score": 4.46,
           "playable": true,
           "lean": {
             "side": "under",
@@ -33619,7 +33635,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.44,
+          "score": 2.45,
           "playable": true,
           "lean": {
             "side": "under",
@@ -35176,7 +35192,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.99,
+          "score": 2.98,
           "playable": true,
           "lean": {
             "side": "under",
@@ -35695,7 +35711,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.09,
+          "score": 4.08,
           "playable": true,
           "lean": {
             "side": "under",
@@ -36030,7 +36046,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.61,
+          "score": 3.6,
           "playable": true,
           "lean": {
             "side": "under",
@@ -37384,7 +37400,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.1,
+          "score": 0.09,
           "playable": false,
           "lean": {
             "side": "over",
@@ -38106,7 +38122,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.11,
+          "score": 3.1,
           "playable": true,
           "lean": {
             "side": "under",
@@ -38389,7 +38405,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.34,
+          "score": 1.33,
           "playable": false,
           "lean": {
             "side": "under",
@@ -39243,7 +39259,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.36,
+          "score": 3.35,
           "playable": true,
           "lean": {
             "side": "under",
@@ -39611,7 +39627,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.19,
+          "score": 3.2,
           "playable": true,
           "lean": {
             "side": "under",
@@ -40314,7 +40330,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.43,
+          "score": 4.42,
           "playable": true,
           "lean": {
             "side": "under",
@@ -40347,7 +40363,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.22,
+          "score": 4.21,
           "playable": true,
           "lean": {
             "side": "under",
@@ -40899,7 +40915,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.78,
+          "score": 3.77,
           "playable": true,
           "lean": {
             "side": "under",
@@ -41602,7 +41618,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.8,
+          "score": 3.79,
           "playable": true,
           "lean": {
             "side": "under",
@@ -43461,7 +43477,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.28,
+          "score": 1.27,
           "playable": false,
           "lean": {
             "side": "under",
@@ -44551,7 +44567,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.49,
+          "score": 2.48,
           "playable": true,
           "lean": {
             "side": "under",
@@ -46443,7 +46459,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.73,
+          "score": 3.72,
           "playable": true,
           "lean": {
             "side": "under",
@@ -47146,7 +47162,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.84,
+          "score": 3.83,
           "playable": true,
           "lean": {
             "side": "over",
@@ -48349,7 +48365,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.62,
+          "score": 0.61,
           "playable": false,
           "lean": {
             "side": "under",
@@ -48651,7 +48667,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.44,
           "playable": false,
           "lean": {
             "side": "under",
@@ -48986,7 +49002,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.62,
+          "score": 3.61,
           "playable": true,
           "lean": {
             "side": "under",
@@ -49906,7 +49922,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.4,
+          "score": 4.39,
           "playable": true,
           "lean": {
             "side": "under",
@@ -50057,7 +50073,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.21,
+          "score": 4.2,
           "playable": true,
           "lean": {
             "side": "over",
@@ -51680,7 +51696,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.3,
+          "score": 1.29,
           "playable": false,
           "lean": {
             "side": "under",
@@ -52770,7 +52786,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.29,
+          "score": 0.28,
           "playable": false,
           "lean": {
             "side": "under",
@@ -53288,7 +53304,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.75,
+          "score": 3.74,
           "playable": true,
           "lean": {
             "side": "under",
@@ -53958,7 +53974,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.28,
+          "score": 3.27,
           "playable": true,
           "lean": {
             "side": "under",
@@ -54109,7 +54125,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.98,
+          "score": 4.99,
           "playable": true,
           "lean": {
             "side": "over",
@@ -54293,7 +54309,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.1,
+          "score": 4.09,
           "playable": true,
           "lean": {
             "side": "under",
@@ -55430,7 +55446,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.3,
+          "score": 2.29,
           "playable": true,
           "lean": {
             "side": "under",
@@ -55765,7 +55781,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.49,
+          "score": 0.48,
           "playable": false,
           "lean": {
             "side": "over",
@@ -55831,7 +55847,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.04,
+          "score": 1.03,
           "playable": false,
           "lean": {
             "side": "under",
@@ -57204,7 +57220,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.33,
+          "score": 3.32,
           "playable": true,
           "lean": {
             "side": "under",
@@ -57539,7 +57555,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.61,
+          "score": 2.6,
           "playable": true,
           "lean": {
             "side": "under",
@@ -58091,7 +58107,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.17,
+          "score": 3.18,
           "playable": true,
           "lean": {
             "side": "under",
@@ -60134,7 +60150,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.83,
+          "score": 3.82,
           "playable": true,
           "lean": {
             "side": "under",
@@ -60167,7 +60183,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.42,
+          "score": 2.41,
           "playable": true,
           "lean": {
             "side": "under",
@@ -60318,7 +60334,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.92,
+          "score": 3.91,
           "playable": true,
           "lean": {
             "side": "under",
@@ -60601,7 +60617,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -60903,7 +60919,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.08,
+          "score": 1.07,
           "playable": false,
           "lean": {
             "side": "under",
@@ -62729,7 +62745,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.11,
+          "score": 1.1,
           "playable": false,
           "lean": {
             "side": "under",
@@ -63399,7 +63415,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.04,
+          "score": 3.03,
           "playable": true,
           "lean": {
             "side": "over",
@@ -63432,7 +63448,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "under",
@@ -64739,7 +64755,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.16,
+          "score": 3.15,
           "playable": true,
           "lean": {
             "side": "under",
@@ -64923,7 +64939,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.29,
+          "score": 3.28,
           "playable": true,
           "lean": {
             "side": "over",
@@ -66027,7 +66043,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.91,
+          "score": 3.9,
           "playable": true,
           "lean": {
             "side": "under",
@@ -66211,7 +66227,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.24,
+          "score": 4.23,
           "playable": true,
           "lean": {
             "side": "under",
@@ -66678,7 +66694,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.88,
+          "score": 0.87,
           "playable": false,
           "lean": {
             "side": "under",
@@ -67098,7 +67114,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.53,
+          "score": 2.52,
           "playable": true,
           "lean": {
             "side": "under",
@@ -67197,7 +67213,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.88,
+          "score": 0.87,
           "playable": false,
           "lean": {
             "side": "under",
@@ -67282,7 +67298,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.85,
+          "score": 0.84,
           "playable": false,
           "lean": {
             "side": "under",
@@ -67782,7 +67798,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.54,
+          "score": 1.53,
           "playable": false,
           "lean": {
             "side": "under",
@@ -70028,7 +70044,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.21,
+          "score": 1.2,
           "playable": false,
           "lean": {
             "side": "under",
@@ -71217,7 +71233,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.72,
+          "score": 2.71,
           "playable": true,
           "lean": {
             "side": "under",
@@ -77544,7 +77560,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.38,
+          "score": 1.37,
           "playable": false,
           "lean": {
             "side": "under",
@@ -79403,7 +79419,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.68,
+          "score": 4.69,
           "playable": true,
           "lean": {
             "side": "under",
@@ -81559,7 +81575,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.88,
+          "score": 0.89,
           "playable": false,
           "lean": {
             "side": "under",
@@ -84272,7 +84288,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.36,
+          "score": 2.35,
           "playable": true,
           "lean": {
             "side": "under",
@@ -85126,7 +85142,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.52,
+          "score": 0.51,
           "playable": false,
           "lean": {
             "side": "under",
@@ -85579,7 +85595,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.53,
+          "score": 4.52,
           "playable": true,
           "lean": {
             "side": "under",
@@ -86518,7 +86534,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.42,
+          "score": 3.41,
           "playable": true,
           "lean": {
             "side": "over",
@@ -87037,7 +87053,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.59,
+          "score": 0.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -93836,7 +93852,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.41,
+          "score": 0.4,
           "playable": false,
           "lean": {
             "side": "under",
@@ -94657,7 +94673,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.82,
+          "score": 2.81,
           "playable": true,
           "lean": {
             "side": "over",
@@ -96077,7 +96093,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.76,
+          "score": 0.77,
           "playable": false,
           "lean": {
             "side": "over",
@@ -97719,7 +97735,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.54,
+          "score": 3.53,
           "playable": true,
           "lean": {
             "side": "over",
@@ -98455,7 +98471,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.31,
+          "score": 3.3,
           "playable": true,
           "lean": {
             "side": "over",
@@ -99342,7 +99358,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.38,
+          "score": 4.37,
           "playable": true,
           "lean": {
             "side": "under",
@@ -100045,7 +100061,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.99,
+          "score": 3.98,
           "playable": true,
           "lean": {
             "side": "over",
@@ -102357,7 +102373,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.6,
+          "score": 0.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -103428,7 +103444,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.74,
+          "score": 3.73,
           "playable": true,
           "lean": {
             "side": "under",
@@ -104381,7 +104397,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.21,
+          "score": 1.2,
           "playable": false,
           "lean": {
             "side": "under",
@@ -109203,7 +109219,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.17,
+          "score": 4.16,
           "playable": true,
           "lean": {
             "side": "under",
@@ -110793,7 +110809,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.95,
+          "score": 2.94,
           "playable": true,
           "lean": {
             "side": "over",
@@ -110977,7 +110993,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.53,
+          "score": 1.52,
           "playable": false,
           "lean": {
             "side": "over",
@@ -111345,7 +111361,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.39,
+          "score": 1.38,
           "playable": false,
           "lean": {
             "side": "under",
@@ -111798,7 +111814,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.32,
+          "score": 4.31,
           "playable": true,
           "lean": {
             "side": "over",
@@ -114006,7 +114022,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.83,
+          "score": 0.82,
           "playable": false,
           "lean": {
             "side": "under",
@@ -114157,7 +114173,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.63,
+          "score": 3.62,
           "playable": true,
           "lean": {
             "side": "under",
@@ -115077,7 +115093,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.32,
+          "score": 2.31,
           "playable": true,
           "lean": {
             "side": "over",
@@ -115261,7 +115277,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.6,
+          "score": 2.59,
           "playable": true,
           "lean": {
             "side": "under",
@@ -120154,7 +120170,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.02,
+          "score": 4.01,
           "playable": true,
           "lean": {
             "side": "under",
@@ -120522,7 +120538,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.73,
+          "score": 3.72,
           "playable": true,
           "lean": {
             "side": "under",
@@ -120923,7 +120939,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.19,
+          "score": 1.18,
           "playable": false,
           "lean": {
             "side": "under",
@@ -121744,7 +121760,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.49,
+          "score": 4.48,
           "playable": true,
           "lean": {
             "side": "under",
@@ -123032,7 +123048,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.7,
+          "score": 2.69,
           "playable": true,
           "lean": {
             "side": "under",
@@ -125141,7 +125157,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.41,
+          "score": 2.42,
           "playable": true,
           "lean": {
             "side": "over",
@@ -125391,7 +125407,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.06,
+          "score": 1.05,
           "playable": false,
           "lean": {
             "side": "under",
@@ -126816,7 +126832,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.04,
+          "score": 4.03,
           "playable": true,
           "lean": {
             "side": "over",
@@ -127151,7 +127167,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.76,
+          "score": 0.75,
           "playable": false,
           "lean": {
             "side": "over",
@@ -127368,7 +127384,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.64,
+          "score": 4.65,
           "playable": true,
           "lean": {
             "side": "under",
@@ -127769,7 +127785,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.0,
+          "score": 0.99,
           "playable": false,
           "lean": {
             "side": "under",
@@ -127854,7 +127870,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.8,
+          "score": 0.79,
           "playable": false,
           "lean": {
             "side": "over",
@@ -129444,7 +129460,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.86,
+          "score": 0.85,
           "playable": false,
           "lean": {
             "side": "over",
@@ -130883,7 +130899,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.22,
+          "score": 1.21,
           "playable": false,
           "lean": {
             "side": "under",
@@ -132171,7 +132187,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.34,
+          "score": 4.33,
           "playable": true,
           "lean": {
             "side": "under",
@@ -134101,7 +134117,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.71,
+          "score": 0.7,
           "playable": false,
           "lean": {
             "side": "under",
@@ -134535,7 +134551,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.42,
+          "score": 1.41,
           "playable": false,
           "lean": {
             "side": "under",
@@ -141178,7 +141194,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.82,
+          "score": 0.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -147538,7 +147554,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.05,
+          "score": 1.04,
           "playable": false,
           "lean": {
             "side": "under",
@@ -151709,7 +151725,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.27,
+          "score": 1.26,
           "playable": false,
           "lean": {
             "side": "under",
@@ -154757,7 +154773,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.08,
+          "score": 4.07,
           "playable": true,
           "lean": {
             "side": "under",
@@ -156196,7 +156212,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.03,
+          "score": 4.02,
           "playable": true,
           "lean": {
             "side": "under",
@@ -156479,7 +156495,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.35,
+          "score": 1.34,
           "playable": false,
           "lean": {
             "side": "under",
@@ -158890,7 +158906,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.58,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -160532,7 +160548,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.7,
+          "score": 0.69,
           "playable": false,
           "lean": {
             "side": "over",
@@ -162589,7 +162605,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.3,
+          "score": 2.29,
           "playable": true,
           "lean": {
             "side": "under",
@@ -164613,7 +164629,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.31,
+          "score": 1.3,
           "playable": false,
           "lean": {
             "side": "under",
@@ -166571,7 +166587,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -166656,7 +166672,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.1,
+          "score": 0.09,
           "playable": false,
           "lean": {
             "side": "under",
@@ -168430,7 +168446,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.55,
+          "score": 0.54,
           "playable": false,
           "lean": {
             "side": "over",
@@ -172294,7 +172310,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.86,
+          "score": 0.85,
           "playable": false,
           "lean": {
             "side": "over",
@@ -174134,7 +174150,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.98,
+          "score": 0.97,
           "playable": false,
           "lean": {
             "side": "under",
@@ -175540,7 +175556,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.8,
+          "score": 0.79,
           "playable": false,
           "lean": {
             "side": "under",
@@ -178871,7 +178887,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.57,
+          "score": 0.56,
           "playable": false,
           "lean": {
             "side": "over",
@@ -181867,7 +181883,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.22,
+          "score": 0.21,
           "playable": false,
           "lean": {
             "side": "under",
@@ -183778,7 +183794,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.86,
+          "score": 0.85,
           "playable": false,
           "lean": {
             "side": "under",
@@ -187109,7 +187125,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.17,
+          "score": 2.18,
           "playable": true,
           "lean": {
             "side": "over",
@@ -187661,7 +187677,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.12,
+          "score": 1.11,
           "playable": false,
           "lean": {
             "side": "over",
@@ -196866,7 +196882,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.11,
+          "score": 2.1,
           "playable": true,
           "lean": {
             "side": "over",
@@ -198305,7 +198321,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.82,
+          "score": 0.81,
           "playable": false,
           "lean": {
             "side": "over",
@@ -200603,7 +200619,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.63,
+          "score": 0.62,
           "playable": false,
           "lean": {
             "side": "over",
@@ -202896,7 +202912,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.66,
+          "score": 0.65,
           "playable": false,
           "lean": {
             "side": "under",
@@ -204604,7 +204620,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.1,
+          "score": 1.09,
           "playable": false,
           "lean": {
             "side": "over",
@@ -207534,7 +207550,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.96,
+          "score": 3.95,
           "playable": true,
           "lean": {
             "side": "over",
@@ -208086,7 +208102,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.01,
+          "score": 4.0,
           "playable": true,
           "lean": {
             "side": "over",
@@ -208454,7 +208470,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.41,
+          "score": 3.4,
           "playable": true,
           "lean": {
             "side": "over",
@@ -209525,7 +209541,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.79,
+          "score": 0.78,
           "playable": false,
           "lean": {
             "side": "over",
@@ -210478,7 +210494,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.04,
+          "score": 1.03,
           "playable": false,
           "lean": {
             "side": "over",
@@ -211115,7 +211131,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.29,
+          "score": 0.28,
           "playable": false,
           "lean": {
             "side": "over",
@@ -211415,9 +211431,9 @@
           "p_breakeven": 0.4878,
           "ev": 0.06,
           "tier": "Strong",
-          "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
-          "stars": 4,
-          "score": 4.0,
+          "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+          "stars": 3,
+          "score": 3.99,
           "playable": true,
           "lean": {
             "side": "over",
@@ -211435,7 +211451,7 @@
           "pick_side": "over",
           "pick_line": 7.5,
           "graded_line": 7.5,
-          "suggested_units": 2.0
+          "suggested_units": 1.0
         },
         {
           "lead_time": "T-12h",
@@ -212205,7 +212221,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.18,
+          "score": 3.17,
           "playable": true,
           "lean": {
             "side": "over",
@@ -215168,7 +215184,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.06,
+          "score": 0.07,
           "playable": false,
           "lean": {
             "side": "over",
@@ -217381,7 +217397,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.19,
+          "score": 3.2,
           "playable": true,
           "lean": {
             "side": "over",
@@ -218938,7 +218954,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.56,
+          "score": 3.57,
           "playable": true,
           "lean": {
             "side": "over",
@@ -219641,7 +219657,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.57,
+          "score": 2.56,
           "playable": true,
           "lean": {
             "side": "over",
@@ -219858,7 +219874,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.7,
+          "score": 0.69,
           "playable": false,
           "lean": {
             "side": "over",
@@ -220377,7 +220393,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.71,
+          "score": 3.7,
           "playable": true,
           "lean": {
             "side": "over",
@@ -221415,7 +221431,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.58,
+          "score": 3.57,
           "playable": true,
           "lean": {
             "side": "over",
@@ -222085,7 +222101,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.06,
+          "score": 3.05,
           "playable": true,
           "lean": {
             "side": "over",
@@ -222269,7 +222285,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.55,
+          "score": 4.54,
           "playable": true,
           "lean": {
             "side": "over",
@@ -223590,7 +223606,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.48,
+          "score": 0.47,
           "playable": false,
           "lean": {
             "side": "under",
@@ -224260,7 +224276,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.82,
+          "score": 3.81,
           "playable": true,
           "lean": {
             "side": "over",
@@ -225633,7 +225649,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.82,
+          "score": 0.81,
           "playable": false,
           "lean": {
             "side": "over",
@@ -225968,7 +225984,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.6,
+          "score": 4.59,
           "playable": true,
           "lean": {
             "side": "over",
@@ -226336,7 +226352,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.86,
+          "score": 2.85,
           "playable": true,
           "lean": {
             "side": "over",
@@ -226520,7 +226536,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.67,
+          "score": 3.66,
           "playable": true,
           "lean": {
             "side": "over",
@@ -229799,7 +229815,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.68,
+          "score": 0.67,
           "playable": false,
           "lean": {
             "side": "under",
@@ -234121,7 +234137,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.48,
+          "score": 0.47,
           "playable": false,
           "lean": {
             "side": "over",
@@ -236296,7 +236312,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.61,
+          "score": 0.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -241000,7 +241016,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.6,
+          "score": 0.61,
           "playable": false,
           "lean": {
             "side": "over",
@@ -242826,7 +242842,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.01,
+          "score": 4.0,
           "playable": true,
           "lean": {
             "side": "over",
@@ -243076,7 +243092,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.0,
+          "score": 0.99,
           "playable": false,
           "lean": {
             "side": "over",
@@ -243142,7 +243158,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.61,
+          "score": 0.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -247361,7 +247377,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.32,
+          "score": 3.31,
           "playable": true,
           "lean": {
             "side": "over",
@@ -247713,7 +247729,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
           "stars": 4,
-          "score": 4.45,
+          "score": 4.44,
           "playable": true,
           "lean": {
             "side": "over",
@@ -249198,7 +249214,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.93,
+          "score": 3.92,
           "playable": true,
           "lean": {
             "side": "over",
@@ -249726,7 +249742,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.61,
+          "score": 3.6,
           "playable": true,
           "lean": {
             "side": "over",
@@ -250078,7 +250094,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.17,
+          "score": 1.16,
           "playable": false,
           "lean": {
             "side": "over",
@@ -252685,7 +252701,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.25,
+          "score": 0.24,
           "playable": false,
           "lean": {
             "side": "under",
@@ -252971,7 +252987,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.15,
+          "score": 1.14,
           "playable": false,
           "lean": {
             "side": "over",
@@ -254503,7 +254519,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.53,
+          "score": 0.52,
           "playable": false,
           "lean": {
             "side": "under",
@@ -255334,7 +255350,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.0,
+          "score": 0.99,
           "playable": false,
           "lean": {
             "side": "over",
@@ -255739,7 +255755,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.49,
+          "score": 0.48,
           "playable": false,
           "lean": {
             "side": "over",
@@ -256789,7 +256805,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.96,
+          "score": 0.95,
           "playable": false,
           "lean": {
             "side": "over",
@@ -257161,7 +257177,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.95,
+          "score": 2.94,
           "playable": true,
           "lean": {
             "side": "over",
@@ -259166,7 +259182,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.59,
+          "score": 2.58,
           "playable": true,
           "lean": {
             "side": "over",
@@ -263168,7 +263184,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
           "stars": 3,
-          "score": 3.84,
+          "score": 3.83,
           "playable": true,
           "lean": {
             "side": "over",
@@ -264284,7 +264300,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.85,
+          "score": 2.84,
           "playable": true,
           "lean": {
             "side": "over",
@@ -264569,7 +264585,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.31,
+          "score": 1.3,
           "playable": false,
           "lean": {
             "side": "over",
@@ -266067,6 +266083,2722 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 51.0% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Baltimore Orioles-Houston Astros-824169",
+      "game_pk": 824169,
+      "date": "2026-07-18",
+      "away": "Baltimore Orioles",
+      "home": "Houston Astros",
+      "first_pitch_utc": "2026-07-18T20:10:00+00:00",
+      "final": {
+        "home_runs": 2,
+        "away_runs": 4,
+        "total_runs": 6,
+        "home_margin": -2,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -105,
+          "our_prob": 0.5122,
+          "p_breakeven": 0.5122,
+          "ev": 0.0001,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.33,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "draftkings",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.2% >= break-even 51.2% at -105 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 103,
+          "our_prob": 0.4976,
+          "p_breakeven": 0.4926,
+          "ev": 0.0199,
+          "tier": "Lean",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.31,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": true,
+          "result": "win",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0061 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.4864,
+          "p_breakeven": 0.5,
+          "ev": -0.0273,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.12,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "fanduel",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 48.6% < break-even 50.0% at 100 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.4928,
+          "p_breakeven": 0.5,
+          "ev": 0.0144,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.73,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "fanatics",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.3% < break-even 50.0% at 100 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.4998,
+          "p_breakeven": 0.5,
+          "ev": 0.0005,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.41,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "bovada",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 50.0% < break-even 50.0% at 100 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Chicago White Sox-Toronto Blue Jays-822790",
+      "game_pk": 822790,
+      "date": "2026-07-18",
+      "away": "Chicago White Sox",
+      "home": "Toronto Blue Jays",
+      "first_pitch_utc": "2026-07-18T19:07:00+00:00",
+      "final": {
+        "home_runs": 1,
+        "away_runs": 0,
+        "total_runs": 1,
+        "home_margin": 1,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -109,
+          "our_prob": 0.5166,
+          "p_breakeven": 0.5215,
+          "ev": -0.0095,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.08,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.7% < break-even 52.1% at -109 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -109,
+          "our_prob": 0.5211,
+          "p_breakeven": 0.5215,
+          "ev": -0.0008,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.28,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "betrivers",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.1% < break-even 52.1% at -109 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -110,
+          "our_prob": 0.5215,
+          "p_breakeven": 0.5238,
+          "ev": -0.0044,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.58,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "betrivers",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.1% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": 102,
+          "our_prob": 0.5117,
+          "p_breakeven": 0.495,
+          "ev": 0.0337,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.27,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.5
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "betrivers",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0056 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": -113,
+          "our_prob": 0.4844,
+          "p_breakeven": 0.5305,
+          "ev": -0.028,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.04,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 48.4% < break-even 53.0% at -113 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Cincinnati Reds-Colorado Rockies-824331",
+      "game_pk": 824331,
+      "date": "2026-07-18",
+      "away": "Cincinnati Reds",
+      "home": "Colorado Rockies",
+      "first_pitch_utc": "2026-07-18T19:10:00+00:00",
+      "final": {
+        "home_runs": 10,
+        "away_runs": 3,
+        "total_runs": 13,
+        "home_margin": 7,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 13.0,
+          "per_side_price": 100,
+          "our_prob": 0.5044,
+          "p_breakeven": 0.5,
+          "ev": 0.0088,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.48,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 13.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "bovada",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.4% >= break-even 50.0% at 100 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 13.0,
+          "per_side_price": 107,
+          "our_prob": 0.4934,
+          "p_breakeven": 0.4831,
+          "ev": 0.0213,
+          "tier": "Lean",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 0.98,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 13.0
+          },
+          "take": true,
+          "result": "push",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0020 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 12.5,
+          "per_side_price": -105,
+          "our_prob": 0.5142,
+          "p_breakeven": 0.5122,
+          "ev": 0.0039,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.46,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 12.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.4% >= break-even 51.2% at -105 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 12.5,
+          "per_side_price": -104,
+          "our_prob": 0.4975,
+          "p_breakeven": 0.5098,
+          "ev": -0.0143,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.3,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 12.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "betrivers",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.8% < break-even 51.0% at -104 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Detroit Tigers-Los Angeles Angels-824008",
+      "game_pk": 824008,
+      "date": "2026-07-18",
+      "away": "Detroit Tigers",
+      "home": "Los Angeles Angels",
+      "first_pitch_utc": "2026-07-19T02:07:00+00:00",
+      "final": {
+        "home_runs": 0,
+        "away_runs": 7,
+        "total_runs": 7,
+        "home_margin": -7,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": 102,
+          "our_prob": 0.5071,
+          "p_breakeven": 0.495,
+          "ev": 0.0244,
+          "tier": "Lean",
+          "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
+          "stars": 2,
+          "score": 2.36,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "fanduel",
+          "pick_side": "over",
+          "pick_line": 8.0,
+          "graded_line": 8.0,
+          "suggested_units": 0.5
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -110,
+          "our_prob": 0.529,
+          "p_breakeven": 0.5238,
+          "ev": 0.0098,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.75,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "bovada",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.9% >= break-even 52.4% at -110 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -110,
+          "our_prob": 0.5127,
+          "p_breakeven": 0.5238,
+          "ev": -0.0213,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.26,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "bovada",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.3% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -110,
+          "our_prob": 0.5157,
+          "p_breakeven": 0.5238,
+          "ev": -0.0154,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.51,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "bovada",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.6% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -102,
+          "our_prob": 0.511,
+          "p_breakeven": 0.505,
+          "ev": -0.0316,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.06,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 51.1% >= break-even 50.5% at -102 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Los Angeles Dodgers-New York Yankees-823523",
+      "game_pk": 823523,
+      "date": "2026-07-18",
+      "away": "Los Angeles Dodgers",
+      "home": "New York Yankees",
+      "first_pitch_utc": "2026-07-19T00:08:00+00:00",
+      "final": null,
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -104,
+          "our_prob": 0.5121,
+          "p_breakeven": 0.5098,
+          "ev": 0.0044,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.42,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "fanduel",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.2% >= break-even 51.0% at -104 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 106,
+          "our_prob": 0.4986,
+          "p_breakeven": 0.4854,
+          "ev": 0.0329,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.32,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": true,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0063 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.5049,
+          "p_breakeven": 0.5,
+          "ev": 0.0099,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.75,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.5% >= break-even 50.0% at 100 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -113,
+          "our_prob": 0.4847,
+          "p_breakeven": 0.5305,
+          "ev": -0.0286,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.03,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 48.5% < break-even 53.0% at -113 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.4863,
+          "p_breakeven": 0.5,
+          "ev": -0.0273,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.07,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 48.6% < break-even 50.0% at 100 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Miami Marlins-Milwaukee Brewers-823763",
+      "game_pk": 823763,
+      "date": "2026-07-18",
+      "away": "Miami Marlins",
+      "home": "Milwaukee Brewers",
+      "first_pitch_utc": "2026-07-18T20:10:00+00:00",
+      "final": {
+        "home_runs": 8,
+        "away_runs": 6,
+        "total_runs": 14,
+        "home_margin": 2,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -109,
+          "our_prob": 0.5226,
+          "p_breakeven": 0.5215,
+          "ev": 0.002,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.36,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "draftkings",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.3% >= break-even 52.1% at -109 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -108,
+          "our_prob": 0.5294,
+          "p_breakeven": 0.5192,
+          "ev": 0.0197,
+          "tier": "Lean",
+          "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+          "stars": 3,
+          "score": 3.39,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": true,
+          "result": "win",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "fanduel",
+          "pick_side": "over",
+          "pick_line": 8.0,
+          "graded_line": 8.0,
+          "suggested_units": 1.0
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -107,
+          "our_prob": 0.5036,
+          "p_breakeven": 0.5169,
+          "ev": -0.0258,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.22,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.4% < break-even 51.7% at -107 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -107,
+          "our_prob": 0.5085,
+          "p_breakeven": 0.5169,
+          "ev": -0.0163,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.63,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.8% < break-even 51.7% at -107 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -107,
+          "our_prob": 0.4981,
+          "p_breakeven": 0.5169,
+          "ev": -0.029,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.8% < break-even 51.7% at -107 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Minnesota Twins-Chicago Cubs-824657",
+      "game_pk": 824657,
+      "date": "2026-07-18",
+      "away": "Minnesota Twins",
+      "home": "Chicago Cubs",
+      "first_pitch_utc": "2026-07-18T18:20:00+00:00",
+      "final": {
+        "home_runs": 6,
+        "away_runs": 2,
+        "total_runs": 8,
+        "home_margin": 4,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.5121,
+          "p_breakeven": 0.5,
+          "ev": 0.0242,
+          "tier": "Lean",
+          "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
+          "stars": 2,
+          "score": 2.34,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "fanatics",
+          "pick_side": "over",
+          "pick_line": 9.0,
+          "graded_line": 9.0,
+          "suggested_units": 0.5
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -102,
+          "our_prob": 0.523,
+          "p_breakeven": 0.505,
+          "ev": 0.0357,
+          "tier": "Good",
+          "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+          "stars": 3,
+          "score": 3.87,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": "over",
+          "pick_line": 9.0,
+          "graded_line": 9.0,
+          "suggested_units": 1.0
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -102,
+          "our_prob": 0.4969,
+          "p_breakeven": 0.505,
+          "ev": -0.0159,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.3,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "betmgm",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.7% < break-even 50.5% at -102 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 105,
+          "our_prob": 0.5029,
+          "p_breakeven": 0.4878,
+          "ev": 0.031,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.45,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0079 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -105,
+          "our_prob": 0.4994,
+          "p_breakeven": 0.5122,
+          "ev": -0.0225,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.08,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "bovada",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.9% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-New York Mets-Philadelphia Phillies-823441",
+      "game_pk": 823441,
+      "date": "2026-07-18",
+      "away": "New York Mets",
+      "home": "Philadelphia Phillies",
+      "first_pitch_utc": "2026-07-18T20:05:00+00:00",
+      "final": {
+        "home_runs": 6,
+        "away_runs": 1,
+        "total_runs": 7,
+        "home_margin": 5,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 107,
+          "our_prob": 0.5035,
+          "p_breakeven": 0.4831,
+          "ev": 0.0423,
+          "tier": "Good",
+          "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+          "stars": 3,
+          "score": 3.05,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": "over",
+          "pick_line": 9.0,
+          "graded_line": 9.0,
+          "suggested_units": 1.0
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -102,
+          "our_prob": 0.4836,
+          "p_breakeven": 0.505,
+          "ev": 0.0227,
+          "tier": "Lean",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.24,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": true,
+          "result": "win",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "draftkings",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0053 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -110,
+          "our_prob": 0.5134,
+          "p_breakeven": 0.5238,
+          "ev": -0.0199,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.18,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "betmgm",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.3% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -113,
+          "our_prob": 0.518,
+          "p_breakeven": 0.5305,
+          "ev": -0.0236,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.14,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "mybookieag",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.8% < break-even 53.0% at -113 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -102,
+          "our_prob": 0.5044,
+          "p_breakeven": 0.505,
+          "ev": -0.0012,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.51,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.4% < break-even 50.5% at -102 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Pittsburgh Pirates-Cleveland Guardians-824412",
+      "game_pk": 824412,
+      "date": "2026-07-18",
+      "away": "Pittsburgh Pirates",
+      "home": "Cleveland Guardians",
+      "first_pitch_utc": "2026-07-18T20:10:00+00:00",
+      "final": {
+        "home_runs": 5,
+        "away_runs": 3,
+        "total_runs": 8,
+        "home_margin": 2,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": 103,
+          "our_prob": 0.5059,
+          "p_breakeven": 0.4926,
+          "ev": 0.027,
+          "tier": "Lean",
+          "star_tier": "Playable (v3.2: score 2.00-2.99 \u2014 the bottom ~third of the season playable strength percentile; clears the +EV gate, lowest playable conviction)",
+          "stars": 2,
+          "score": 2.42,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": true,
+          "result": "push",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": "over",
+          "pick_line": 8.0,
+          "graded_line": 8.0,
+          "suggested_units": 0.5
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -105,
+          "our_prob": 0.5109,
+          "p_breakeven": 0.5122,
+          "ev": -0.0025,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.41,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.1% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -102,
+          "our_prob": 0.4917,
+          "p_breakeven": 0.505,
+          "ev": -0.0263,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.17,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.2% < break-even 50.5% at -102 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -103,
+          "our_prob": 0.4988,
+          "p_breakeven": 0.5074,
+          "ev": -0.017,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.37,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "betrivers",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.9% < break-even 50.7% at -103 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 110,
+          "our_prob": 0.5311,
+          "p_breakeven": 0.4762,
+          "ev": -0.0153,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.19,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "draftkings",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 53.1% >= break-even 47.6% at 110 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-San Diego Padres-Kansas City Royals-824088",
+      "game_pk": 824088,
+      "date": "2026-07-18",
+      "away": "San Diego Padres",
+      "home": "Kansas City Royals",
+      "first_pitch_utc": "2026-07-18T20:10:00+00:00",
+      "final": {
+        "home_runs": 6,
+        "away_runs": 1,
+        "total_runs": 7,
+        "home_margin": 5,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 10.5,
+          "per_side_price": 100,
+          "our_prob": 0.5055,
+          "p_breakeven": 0.5,
+          "ev": 0.011,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.73,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 10.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "bovada",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.5% >= break-even 50.0% at 100 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.0,
+          "per_side_price": 100,
+          "our_prob": 0.5116,
+          "p_breakeven": 0.5,
+          "ev": 0.0232,
+          "tier": "Lean",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.07,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 11.0
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "betmgm",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0030 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.0,
+          "per_side_price": -105,
+          "our_prob": 0.5072,
+          "p_breakeven": 0.5122,
+          "ev": -0.0097,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.68,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 11.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "fanduel",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.7% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.0,
+          "per_side_price": -105,
+          "our_prob": 0.4948,
+          "p_breakeven": 0.5122,
+          "ev": -0.0136,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.33,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 11.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.5% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-San Francisco Giants-Seattle Mariners-823116",
+      "game_pk": 823116,
+      "date": "2026-07-18",
+      "away": "San Francisco Giants",
+      "home": "Seattle Mariners",
+      "first_pitch_utc": "2026-07-19T00:08:00+00:00",
+      "final": {
+        "home_runs": 4,
+        "away_runs": 3,
+        "total_runs": 7,
+        "home_margin": 1,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": 110,
+          "our_prob": 0.5023,
+          "p_breakeven": 0.4762,
+          "ev": 0.0548,
+          "tier": "Good",
+          "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+          "stars": 3,
+          "score": 3.55,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 7.0
+          },
+          "take": true,
+          "result": "push",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": "over",
+          "pick_line": 7.0,
+          "graded_line": 7.0,
+          "suggested_units": 1.0
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": 110,
+          "our_prob": 0.5101,
+          "p_breakeven": 0.4762,
+          "ev": 0.0712,
+          "tier": "Strong",
+          "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
+          "stars": 4,
+          "score": 4.26,
+          "playable": true,
+          "lean": {
+            "side": "over",
+            "line": 7.0
+          },
+          "take": true,
+          "result": "push",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": "over",
+          "pick_line": 7.0,
+          "graded_line": 7.0,
+          "suggested_units": 2.0
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": -115,
+          "our_prob": 0.5206,
+          "p_breakeven": 0.5349,
+          "ev": -0.0267,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.21,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.1% < break-even 53.5% at -115 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": 105,
+          "our_prob": 0.509,
+          "p_breakeven": 0.4878,
+          "ev": 0.0435,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.55,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.0
+          },
+          "take": true,
+          "result": "push",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "fanatics",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0090 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": 105,
+          "our_prob": 0.4957,
+          "p_breakeven": 0.4878,
+          "ev": 0.0338,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.17,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 7.0
+          },
+          "take": true,
+          "result": "push",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "betrivers",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0043 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-St. Louis Cardinals-Arizona Diamondbacks-825059",
+      "game_pk": 825059,
+      "date": "2026-07-18",
+      "away": "St. Louis Cardinals",
+      "home": "Arizona Diamondbacks",
+      "first_pitch_utc": "2026-07-18T20:10:00+00:00",
+      "final": {
+        "home_runs": 5,
+        "away_runs": 3,
+        "total_runs": 8,
+        "home_margin": 2,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -103,
+          "our_prob": 0.5098,
+          "p_breakeven": 0.5074,
+          "ev": 0.0047,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.42,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "mybookieag",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.0% >= break-even 50.7% at -103 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -104,
+          "our_prob": 0.4934,
+          "p_breakeven": 0.5098,
+          "ev": -0.0321,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.01,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.3% < break-even 51.0% at -104 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 107,
+          "our_prob": 0.4936,
+          "p_breakeven": 0.4831,
+          "ev": 0.0218,
+          "tier": "Lean",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 0.99,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": true,
+          "result": "loss",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0022 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 100,
+          "our_prob": 0.5063,
+          "p_breakeven": 0.5,
+          "ev": 0.0126,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.73,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "fanduel",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.6% >= break-even 50.0% at 100 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 101,
+          "our_prob": 0.5037,
+          "p_breakeven": 0.4975,
+          "ev": 0.0124,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.71,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "draftkings",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.4% >= break-even 49.8% at 101 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Tampa Bay Rays-Boston Red Sox-824738",
+      "game_pk": 824738,
+      "date": "2026-07-18",
+      "away": "Tampa Bay Rays",
+      "home": "Boston Red Sox",
+      "first_pitch_utc": "2026-07-18T20:10:00+00:00",
+      "final": {
+        "home_runs": 7,
+        "away_runs": 6,
+        "total_runs": 13,
+        "home_margin": 1,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": -105,
+          "our_prob": 0.5076,
+          "p_breakeven": 0.5122,
+          "ev": -0.009,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.09,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.8% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": -102,
+          "our_prob": 0.4997,
+          "p_breakeven": 0.505,
+          "ev": -0.0104,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.42,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.0% < break-even 50.5% at -102 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": -105,
+          "our_prob": 0.5031,
+          "p_breakeven": 0.5122,
+          "ev": -0.0177,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.28,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.3% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": -110,
+          "our_prob": 0.5157,
+          "p_breakeven": 0.5238,
+          "ev": -0.0154,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.51,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "fanatics",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.6% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.5,
+          "per_side_price": -110,
+          "our_prob": 0.5098,
+          "p_breakeven": 0.5238,
+          "ev": -0.0268,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.04,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "fanatics",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.0% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Texas Rangers-Atlanta Braves-824899",
+      "game_pk": 824899,
+      "date": "2026-07-18",
+      "away": "Texas Rangers",
+      "home": "Atlanta Braves",
+      "first_pitch_utc": "2026-07-18T20:10:00+00:00",
+      "final": {
+        "home_runs": 6,
+        "away_runs": 7,
+        "total_runs": 13,
+        "home_margin": -1,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -109,
+          "our_prob": 0.5166,
+          "p_breakeven": 0.5215,
+          "ev": -0.0094,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.08,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.7% < break-even 52.1% at -109 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -107,
+          "our_prob": 0.5109,
+          "p_breakeven": 0.5169,
+          "ev": -0.0116,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.93,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.1% < break-even 51.7% at -107 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.489,
+          "p_breakeven": 0.5,
+          "ev": -0.0221,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.27,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 48.9% < break-even 50.0% at 100 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -105,
+          "our_prob": 0.5087,
+          "p_breakeven": 0.5122,
+          "ev": -0.0068,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.07,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "fanduel",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.9% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -105,
+          "our_prob": 0.5001,
+          "p_breakeven": 0.5122,
+          "ev": -0.0241,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.14,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "fanduel",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 50.0% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        }
+      ]
+    },
+    {
+      "game_id": "2026-07-18-Washington Nationals-Athletics-824979",
+      "game_pk": 824979,
+      "date": "2026-07-18",
+      "away": "Washington Nationals",
+      "home": "Athletics",
+      "first_pitch_utc": "2026-07-19T02:05:00+00:00",
+      "final": {
+        "home_runs": 15,
+        "away_runs": 1,
+        "total_runs": 16,
+        "home_margin": 14,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      },
+      "archived": true,
+      "archive_source": "reconstructed_asof_wall_graded",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 10.5,
+          "per_side_price": -107,
+          "our_prob": 0.5132,
+          "p_breakeven": 0.5169,
+          "ev": -0.0071,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.14,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 10.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.3% < break-even 51.7% at -107 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.0,
+          "per_side_price": -110,
+          "our_prob": 0.5132,
+          "p_breakeven": 0.5238,
+          "ev": -0.0202,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.17,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 11.0
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "betmgm",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.3% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.5,
+          "per_side_price": -105,
+          "our_prob": 0.5102,
+          "p_breakeven": 0.5122,
+          "ev": -0.004,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.62,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 11.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "draftkings",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.0% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.5,
+          "per_side_price": -102,
+          "our_prob": 0.4944,
+          "p_breakeven": 0.505,
+          "ev": -0.0209,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.43,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 11.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.4% < break-even 50.5% at -102 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.5,
+          "per_side_price": -109,
+          "our_prob": 0.4926,
+          "p_breakeven": 0.5215,
+          "ev": -0.0272,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.03,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 11.5
+          },
+          "take": false,
+          "result": "pass",
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.3% < break-even 52.1% at -109 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
         }
       ]
