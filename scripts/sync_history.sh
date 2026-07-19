@@ -12,6 +12,12 @@ trap 'rm -f "$TMP"' EXIT
 [ -f "$FILE" ] || exit 0
 set -a; source "$HOME/.kytepush-platform.env"; set +a
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
+# FRESHNESS GUARD — warn loudly if the history is missing recent days (archive may be broken)
+LATEST=$(python3 -c "import json,collections; d=json.load(open('$FILE')); ds=sorted(g.get('date') for g in d.get('games',[])); print(ds[-1] if ds else '')" 2>/dev/null)
+YEST=$(date -v-1d '+%Y-%m-%d' 2>/dev/null || date -d yesterday '+%Y-%m-%d' 2>/dev/null)
+if [ -n "$LATEST" ] && [ -n "$YEST" ] && [ "$LATEST" \< "$YEST" ]; then
+  echo "$(date '+%F %T') WARN: history latest=$LATEST < yesterday=$YEST — archive may be stale (self-heal runs overnight)" >&2
+fi
 [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ] && exit 0
 python3 - "$FILE" "$TMP" <<'PY'
 import json,sys
