@@ -2971,6 +2971,15 @@ export default function Home() {
     // Overall pick record for the VIEWED date/league — across ALL markets (spread + total + ML),
     // plus a separate "top picks" (Strong ★★★) tally. Drives the small performance banner.
     function dayPicksTally() {
+      // ANY day (incl. prior days): prefer the model payload's per-day record — it's the
+      // backfilled + nightly-archived truth for every date, so looking back always shows
+      // that day's pick record. Champion-payload tally is only a fallback for today.
+      if ((league === "all" || league === "mlb") && betaData && betaData.by_date_record) {
+        const r = betaData.by_date_record[curDate];
+        if (r && r.n_picks != null) {
+          return { w: r.wins || 0, l: r.losses || 0, p: r.pushes || 0, sw: 0, sl: 0, n: r.n_picks || 0, roi: r.roi != null ? r.roi : null, hit: r.hit_rate != null ? r.hit_rate : null };
+        }
+      }
       const games = payload ? gamesForLeague(payload, league) : [];
       let w = 0, l = 0, p = 0, sw = 0, sl = 0;
       games.forEach((g: any) => {
@@ -2996,10 +3005,12 @@ export default function Home() {
       const t = dayPicksTally();
       let inner: string;
       if (!t.n) {
-        inner = `<span class="pf-k">${esc(dayLab)}'s picks</span><span class="pf-v pending">graded as games finish</span>`;
+        inner = `<span class="pf-k">${esc(dayLab)}'s picks</span><span class="pf-v pending">${isToday ? "graded as games finish" : "no picks this day"}</span>`;
       } else {
-        const strongTxt = (t.sw + t.sl) ? `<span class="pf-top">★ Top picks ${t.sw}–${t.sl}</span>` : "";
-        inner = `<span class="pf-k">${esc(dayLab)}'s picks</span><span class="pf-v">${t.w}–${t.l}${t.p ? ` · ${t.p}P` : ""}</span>${strongTxt}`;
+        // per-day record: W–L(–P) + hit% / ROI when we have it (historical days carry both)
+        const roiTxt = (t as any).roi != null ? `<span class="pf-roi ${(t as any).roi >= 0 ? "pos" : "neg"}">${((t as any).roi >= 0 ? "+" : "") + ((t as any).roi * 100).toFixed(0)}%</span>` : "";
+        const extra = (t.sw + t.sl) ? `<span class="pf-top">★ Top ${t.sw}–${t.sl}</span>` : roiTxt;
+        inner = `<span class="pf-k">${esc(dayLab)}'s record</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${extra}`;
       }
       const chip = `<button class="recchip perf" id="recchip" aria-label="See the full pick record, broken down by confidence level">${inner}<span class="rc-arw">→</span></button>`;
       // "All picks →" opens the model's deep-dive view (record + every pick, lead-by-lead).
@@ -6925,6 +6936,8 @@ export default function Home() {
       loadPitchers().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // ERAs onto tiles once the feed lands
       loadTeams().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // team records + streaks onto tiles (degrades if the feed is absent)
       loadBetaLive().catch(() => {}); // warm the pick feed at boot — tiles are v4-only now, this is their source
+      // warm the historical payload too so any prior day's record chip (by_date_record) populates
+      loadBeta().then(() => { try { const m = $("meta-area"); if (m) m.innerHTML = metaRow(); } catch {} }).catch(() => {});
       // ── PULL-TO-REFRESH (mobile): drag down from the very top → full refresh ──
       // A hard reload re-fetches every feed (and any new deploy). Indicator shows pull
       // progress; fires past 70px. Desktop unaffected (touch-only).

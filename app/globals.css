@@ -3306,3 +3306,7 @@ details.results-more{margin-bottom:14px}
 .bgrid.pitlog td.res.lost{color:#b3261e;font-weight:700}
 
 .pit-chip .pit-sub{font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-left:4px}
+
+.metarow .pf-roi{font-family:var(--mono);font-weight:700;font-size:11px;margin-left:6px}
+.metarow .pf-roi.pos{color:var(--green,#0a7d40)}
+.metarow .pf-roi.neg{color:#b3261e}
