@@ -6955,7 +6955,13 @@ export default function Home() {
       setInterval(() => { if (detail && detail.game_id != null) pollLiveDetail(); }, 40 * 1000);
       setInterval(pollPregame, 4 * 60 * 1000);
       // resume with one immediate fetch on focus; pausing is handled inside each poller.
-      document.addEventListener("visibilitychange", () => { if (!document.hidden) { pollLiveScores(); pollPregame(); if (detail) pollLiveDetail(); } });
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) {
+        pollLiveScores(); pollPregame(); if (detail) pollLiveDetail();
+        // Reopening the app after it sat in the background is the #1 way people saw a stale
+        // board ("no picks / old news"). Force the pick + history feeds fresh and re-render.
+        betaLiveAt = 0; betaData = null;
+        loadBetaLive().then(() => { try { if (tab === "today") renderToday(); else if (tab === "games") renderSlate(true); else if (tab === "beta") renderBeta(); } catch {} }).catch(() => {});
+      } });
       window.addEventListener("focus", () => { pollLiveScores(); });
       pollLiveScores();
       loadPitchers().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // ERAs onto tiles once the feed lands
