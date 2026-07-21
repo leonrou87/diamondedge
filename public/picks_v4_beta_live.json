@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-21T00:46:35Z",
+  "generated_utc": "2026-07-21T02:31:14Z",
   "dates": [
     "2026-07-20",
     "2026-07-21"
@@ -1195,8 +1195,8 @@
     "hard_lock_at_first_pitch": true,
     "wall_rows_first_write_wins": true,
     "locked_this_cycle": {
-      "n_locked_now": 5,
-      "n_locked_total": 144
+      "n_locked_now": 0,
+      "n_locked_total": 159
     },
     "note": "once now >= first_pitch_utc a game's rows are IMMUTABLE: locked:true, no re-evaluation, no side/price/line/star changes \u2014 the payload permanently carries the last PRE-START state (the judged Vegas line) and grading uses exactly that locked state. Each wall row is also first-write-wins: once written at its wall it is never overwritten by a later cycle. Game cards carry locked/locked_at (wall + utc + line) for the UI badge, e.g. 'Locked at T-1h \u00b7 O/U 8.5'."
   },
@@ -1433,18 +1433,18 @@
     "note": "price_improved={now, was, book, ts} appears on UNLOCKED playable rows whose CURRENT best per-side price at the pick's line beats the entry price ('price improved \u2014 now +112 at X'). Refreshed every intraday cycle; drops when no longer better. The pick/side/line/price/stars stay frozen to their wall and locked rows are never touched \u2014 grading uses the stored entry price."
   },
   "board_census": {
-    "n_games": 25,
-    "n_rows": 84,
+    "n_games": 27,
+    "n_rows": 87,
     "n_voided": 0,
     "n_playable": 13,
     "n_takes": 13,
-    "n_passes": 71,
+    "n_passes": 74,
     "stars": {
       "5": 0,
       "4": 3,
       "3": 3,
       "2": 7,
-      "1": 71
+      "1": 74
     }
   },
   "live_record": {
@@ -4857,7 +4857,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0056 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_why": "price_only",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-12h",
@@ -4890,7 +4892,9 @@
           "pick_side": "under",
           "pick_line": 9.0,
           "graded_line": null,
-          "suggested_units": 1.0
+          "suggested_units": 1.0,
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-6h",
@@ -4923,7 +4927,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0013 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_why": "price_only",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-3h",
@@ -4956,7 +4962,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 50.6% >= break-even 48.8% at 105 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-1h",
@@ -4989,10 +4997,19 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0005 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_why": "price_only",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-07-21T01:56:06Z",
+        "line": 9.0,
+        "label": "Locked at T-1h \u00b7 O/U 9.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-07-20-Cincinnati Reds-Seattle Mariners-823112",
@@ -5041,7 +5058,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 53.4% >= break-even 53.0% at -113 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-12h",
@@ -5074,7 +5093,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 51.3% < break-even 52.4% at -110 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-6h",
@@ -5107,7 +5128,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 51.3% < break-even 53.0% at -113 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-3h",
@@ -5140,7 +5163,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 51.3% < break-even 53.0% at -113 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         },
         {
           "lead_time": "T-1h",
@@ -5173,10 +5198,19 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 50.9% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T01:56:06Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-07-21T01:56:06Z",
+        "line": 7.5,
+        "label": "Locked at T-1h \u00b7 O/U 7.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-07-20-St. Louis Cardinals-Los Angeles Angels-824006",
@@ -5189,7 +5223,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5224,7 +5259,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 52.9% < break-even 54.1% at -118 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T02:13:05Z"
         },
         {
           "lead_time": "T-12h",
@@ -5257,7 +5294,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 48.9% < break-even 50.0% at 100 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T02:13:05Z"
         },
         {
           "lead_time": "T-6h",
@@ -5290,7 +5329,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 49.5% < break-even 50.7% at -103 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T02:13:05Z"
         },
         {
           "lead_time": "T-3h",
@@ -5323,10 +5364,54 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 49.2% < break-even 52.1% at -109 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T02:13:05Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -105,
+          "our_prob": 0.4991,
+          "p_breakeven": 0.5122,
+          "ev": -0.0256,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.03,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.9% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-21T02:13:05Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-07-21T02:13:05Z",
+        "line": 9.0,
+        "label": "Locked at T-1h \u00b7 O/U 9.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-07-21-Los Angeles Dodgers-Philadelphia Phillies-823437",
@@ -5804,6 +5889,102 @@
           "pick_line": 12.5,
           "graded_line": null,
           "suggested_units": 2.0
+        }
+      ],
+      "locked": false
+    },
+    {
+      "game_id": "2026-07-21-St. Louis Cardinals-Los Angeles Angels-824005",
+      "game_pk": 824005,
+      "date": "2026-07-21",
+      "away": "St. Louis Cardinals",
+      "home": "Los Angeles Angels",
+      "first_pitch_utc": "2026-07-22T01:38:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -107,
+          "our_prob": 0.5194,
+          "p_breakeven": 0.5169,
+          "ev": 0.0047,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 1.34,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 51.9% >= break-even 51.7% at -107 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        }
+      ],
+      "locked": false
+    },
+    {
+      "game_id": "2026-07-21-Cincinnati Reds-Seattle Mariners-823114",
+      "game_pk": 823114,
+      "date": "2026-07-21",
+      "away": "Cincinnati Reds",
+      "home": "Seattle Mariners",
+      "first_pitch_utc": "2026-07-22T01:40:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -104,
+          "our_prob": 0.5044,
+          "p_breakeven": 0.5098,
+          "ev": -0.0106,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.98,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 50.4% < break-even 51.0% at -104 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false

@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-07-21T00:46:39Z",
+ "generated_utc": "2026-07-21T02:31:20Z",
  "by_game": {
   "822786": {
    "away": {
@@ -3685,7 +3685,8 @@
       "res": "ND"
      }
     ],
-    "team": "CIN"
+    "team": "CIN",
+    "actual_starter": true
    },
    "home": {
     "id": 669923,
@@ -3802,7 +3803,8 @@
       "res": "L"
      }
     ],
-    "team": "SEA"
+    "team": "SEA",
+    "actual_starter": true
    }
   },
   "823436": {
@@ -4635,7 +4637,8 @@
       "res": "ND"
      }
     ],
-    "team": "STL"
+    "team": "STL",
+    "actual_starter": true
    },
    "home": {
     "id": 667755,
@@ -4752,7 +4755,8 @@
       "res": "ND"
      }
     ],
-    "team": "LAA"
+    "team": "LAA",
+    "actual_starter": true
    }
   },
   "824087": {
@@ -6354,7 +6358,8 @@
       "res": "L"
      }
     ],
-    "team": "ATH"
+    "team": "ATH",
+    "actual_starter": true
    },
    "home": {
     "id": 683352,
@@ -6393,7 +6398,8 @@
       "res": "ND"
      }
     ],
-    "team": "ARI"
+    "team": "ARI",
+    "actual_starter": true
    }
   },
   "822787": {
@@ -8575,6 +8581,45 @@
    }
   },
   "824409": {
+   "away": {
+    "id": 696070,
+    "name": "Kendry Rojas",
+    "throws": "L",
+    "era": 2.79,
+    "wl": "1-1",
+    "ip": 19.1,
+    "k9": 10.24,
+    "whip": 1.6,
+    "starts": [
+     {
+      "date": "2026-06-23",
+      "opp": "LAD",
+      "at": "H",
+      "ip": 2.0,
+      "h": 1,
+      "r": 1,
+      "er": 1,
+      "bb": 3,
+      "k": 4,
+      "p": 50,
+      "res": "ND"
+     },
+     {
+      "date": "2026-05-18",
+      "opp": "HOU",
+      "at": "H",
+      "ip": 4.0,
+      "h": 2,
+      "r": 0,
+      "er": 0,
+      "bb": 1,
+      "k": 3,
+      "p": 46,
+      "res": "ND"
+     }
+    ],
+    "team": "MIN"
+   },
    "home": {
     "id": 800048,
     "name": "Parker Messick",
@@ -9046,6 +9091,123 @@
      }
     ],
     "team": "BAL"
+   },
+   "home": {
+    "id": 624133,
+    "name": "Ranger Suarez",
+    "throws": "L",
+    "era": 3.15,
+    "wl": "4-3",
+    "ip": 91.1,
+    "k9": 9.56,
+    "whip": 1.16,
+    "starts": [
+     {
+      "date": "2026-07-05",
+      "opp": "LAA",
+      "at": "A",
+      "ip": 2.2,
+      "h": 6,
+      "r": 3,
+      "er": 3,
+      "bb": 0,
+      "k": 5,
+      "p": 53,
+      "res": "ND"
+     },
+     {
+      "date": "2026-06-29",
+      "opp": "WSH",
+      "at": "H",
+      "ip": 6.0,
+      "h": 5,
+      "r": 3,
+      "er": 3,
+      "bb": 1,
+      "k": 8,
+      "p": 95,
+      "res": "W"
+     },
+     {
+      "date": "2026-06-24",
+      "opp": "COL",
+      "at": "A",
+      "ip": 6.0,
+      "h": 7,
+      "r": 3,
+      "er": 1,
+      "bb": 1,
+      "k": 9,
+      "p": 102,
+      "res": "ND"
+     },
+     {
+      "date": "2026-06-19",
+      "opp": "SEA",
+      "at": "A",
+      "ip": 6.2,
+      "h": 1,
+      "r": 0,
+      "er": 0,
+      "bb": 3,
+      "k": 5,
+      "p": 94,
+      "res": "W"
+     },
+     {
+      "date": "2026-06-13",
+      "opp": "TEX",
+      "at": "H",
+      "ip": 5.0,
+      "h": 6,
+      "r": 2,
+      "er": 2,
+      "bb": 2,
+      "k": 7,
+      "p": 97,
+      "res": "ND"
+     },
+     {
+      "date": "2026-06-07",
+      "opp": "NYY",
+      "at": "A",
+      "ip": 6.1,
+      "h": 6,
+      "r": 1,
+      "er": 1,
+      "bb": 0,
+      "k": 6,
+      "p": 90,
+      "res": "ND"
+     },
+     {
+      "date": "2026-05-31",
+      "opp": "CLE",
+      "at": "A",
+      "ip": 5.0,
+      "h": 8,
+      "r": 4,
+      "er": 4,
+      "bb": 2,
+      "k": 10,
+      "p": 93,
+      "res": "ND"
+     },
+     {
+      "date": "2026-05-26",
+      "opp": "ATL",
+      "at": "H",
+      "ip": 5.0,
+      "h": 6,
+      "r": 5,
+      "er": 5,
+      "bb": 3,
+      "k": 4,
+      "p": 91,
+      "res": "L"
+     }
+    ],
+    "team": "BOS"
    }
   },
   "824895": {
