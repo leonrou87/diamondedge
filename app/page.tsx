@@ -6470,21 +6470,38 @@ export default function Home() {
     async function loadBetaLive() {
       if (betaLiveData && Date.now() - betaLiveAt < 5 * 60 * 1000) return betaLiveData;
       const hadNone = !betaLiveData;
+      const reRender = () => { try { if (tab === "today") renderToday(); else renderSlate(true); } catch {} };
+      // Supabase is the FRESH source (synced every ~5 min). The bundled static file is a
+      // stale-by-design deploy artifact — only a last resort. Give Supabase a real chance.
       let fresh: any = null;
-      // Supabase is freshest but can be slow — race a 1.5s timeout, fall back to the bundle.
-      try { fresh = await Promise.race([snap("picks_v4_beta_live"), new Promise((r) => setTimeout(() => r(null), 1500))]); } catch {}
+      for (let a = 0; a < 2 && (!fresh || !fresh.games); a++) {
+        try { fresh = await Promise.race([snap("picks_v4_beta_live"), new Promise((r) => setTimeout(() => r(null), 4000))]); } catch {}
+      }
+      let usedFallback = false;
       if (!fresh || !fresh.games) {
+        usedFallback = true;
         const r = await fetch("/picks_v4_beta_live.json", { cache: "no-store" });
         if (!r.ok) throw new Error("beta live fetch " + r.status);
         fresh = await r.json();
       }
       betaLiveData = fresh;
       betaLiveAt = Date.now();
-      // first arrival: views rendered before the feed existed (tiles as PASS placeholders,
-      // the news flagship off the today-only champion feed) — re-render the ACTIVE view so
-      // the real picks + tomorrow's upcoming games (the flagship pool) swap in.
-      if (hadNone) {
-        try { if (tab === "today") renderToday(); else renderSlate(true); } catch {}
+      if (hadNone) reRender(); // swap in the real picks / flagship once the feed lands
+      // SELF-HEAL: if we had to fall back to the bundled static file (Supabase was slow), it
+      // can be days old (deploy gap) — keep retrying Supabase in the background and swap +
+      // re-render the moment the fresh copy arrives, so the board NEVER stays stale.
+      if (usedFallback) {
+        (async () => {
+          for (let a = 0; a < 6; a++) {
+            await new Promise((r) => setTimeout(r, 3000));
+            try {
+              const sb: any = await snap("picks_v4_beta_live");
+              if (sb && sb.games && sb.generated_utc !== fresh.generated_utc) {
+                betaLiveData = sb; betaLiveAt = Date.now(); reRender(); return;
+              }
+            } catch {}
+          }
+        })();
       }
       return betaLiveData;
     }
