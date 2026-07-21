@@ -317,7 +317,7 @@ export default function Home() {
     }
     function gamePlays(g: any) {
       // V4 FIRST: when the new model covers this game, its cells ARE the plays —
-      // takes and priced-out passes alike. Champion pipeline only when uncovered.
+      // takes and priced-out passes alike. Legacy de_plays only when uncovered.
       const vg = v4GameFor(g);
       if (vg) {
         const out4: any = {};
@@ -690,56 +690,6 @@ export default function Home() {
       return `<span class="lread ${cls}" title="Latest model read — the graded morning play is unchanged."><i>latest read</i><b class="lr-x">${arrow} ${esc(word)}${esc(toGo)}</b></span>`;
     }
 
-    function diamondEdgeV2(g: any) {
-      const P = gamePlays(g);
-      const lr = P && P.total && P.total.latest_read;
-      const v2 = lr && lr.diamondedge_v2;
-      if (!v2 || typeof v2 !== "object") return null;
-      if (String(v2.action || "").toUpperCase() !== "TAKE") return null;
-      return v2;
-    }
-    function v2SideLine(v2: any) {
-      const side = String(v2.side || "").toUpperCase();
-      const line = v2.line != null && !isNaN(Number(v2.line)) ? ` ${num(Number(v2.line))}` : "";
-      return `${side || "TOTAL"}${line}`;
-    }
-    function v2EdgeText(v2: any) {
-      const edge = v2.edge != null && !isNaN(Number(v2.edge)) ? Math.abs(Number(v2.edge)) * 100 : null;
-      const ev = v2.ev != null && !isNaN(Number(v2.ev)) ? Number(v2.ev) * 100 : null;
-      if (edge != null && ev != null) return `+${edge.toFixed(1)} pts · ${ev >= 0 ? "+" : ""}${ev.toFixed(1)}% EV`;
-      if (edge != null) return `+${edge.toFixed(1)} pts`;
-      return "new model read";
-    }
-    function diamondEdgeV2Strip(g: any) {
-      const v2 = diamondEdgeV2(g);
-      if (!v2) return "";
-      const price = v2.side_odds != null && !isNaN(Number(v2.side_odds)) ? `<i>${fmtOdds(Number(v2.side_odds))}</i>` : "";
-      return `<div class="v2strip" title="DiamondEdge v2 is a challenger model displayed separately from the official graded pick.">
-        <span class="v2-k">DiamondEdge v2</span>
-        <span class="v2-side">${esc(v2SideLine(v2))}${price}</span>
-        <span class="v2-meta">${esc(v2EdgeText(v2))}</span>
-        <span class="v2-pill">challenger</span>
-      </div>`;
-    }
-    function diamondEdgeV2Detail(g: any) {
-      const v2 = diamondEdgeV2(g);
-      if (!v2) return "";
-      const pSide = v2.p_side != null && !isNaN(Number(v2.p_side)) ? `${(Number(v2.p_side) * 100).toFixed(1)}%` : "";
-      const pMkt = v2.p_mkt_now != null && !isNaN(Number(v2.p_mkt_now)) ? `${(Number(v2.p_mkt_now) * 100).toFixed(1)}%` : "";
-      const hash = v2.model_hash ? ` · model ${String(v2.model_hash).slice(0, 8)}` : "";
-      return `<details class="gp-v2" open>
-        <summary><span class="v2-dot">◆</span><span class="v2-lab">DiamondEdge v2 pick: ${esc(v2SideLine(v2))}</span><span class="v2-chev" aria-hidden="true">›</span></summary>
-        <div class="v2-body">
-          <p>New blend-offset model read shown as a separate challenger lane. It does not replace the official graded DiamondEdge pick yet.</p>
-          <div class="v2-tags">
-            <span class="v2-tag">${esc(v2EdgeText(v2))}</span>
-            ${pSide ? `<span class="v2-tag">model ${esc(pSide)}</span>` : ""}
-            ${pMkt ? `<span class="v2-tag">market ${esc(pMkt)}</span>` : ""}
-            <span class="v2-tag">shadow grade${esc(hash)}</span>
-          </div>
-        </div>
-      </details>`;
-    }
 
     // ===================== PREMIUM / FREEMIUM (design-complete; payments stubbed) =====================
     // Entitlement is one localStorage flag `de_premium` — DEFAULT true (premium-assumed).
@@ -821,7 +771,7 @@ export default function Home() {
       return { be, p, ev: p * dec - 1, ok: p > be };
     }
     // True unless we can prove the pick is below break-even (then it's not a bet — it's a pass).
-    // TOTALS are the champion's validated, value-selected edge (priced ~-110) — their `p` field is
+    // TOTALS are the validated, value-selected edge (priced ~-110) — their `p` field is
     // a tier proxy, not a calibrated win prob, so we DON'T re-gate them here. The vig gate targets
     // the SPREAD/MONEYLINE "leans", which are the ones surfaced at heavy juice (e.g. -196 run-lines).
     function pickPlusEV(pl: any) {
@@ -835,74 +785,71 @@ export default function Home() {
     const isBet = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side && pickPlusEV(pl));
     // A real pick of ANY strength (shown on every game — even the slightest lean).
     const isPick = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side);
-    // ===================== V4 MODEL — THE DEFAULT DIAMONDEDGE PICK =====================
-    // The new star-rated, +EV-gated model is now THE pick everywhere (Leon, 2026-07-06).
-    // Live board covers today/tomorrow; the season walk covers past games; the champion
-    // pipeline remains the FALLBACK for anything v4 doesn't cover (soccer, feed not loaded).
+    // ===================== THE DIAMONDEDGE PICK — ONE PER GAME =====================
+    // The unified feed carries exactly ONE pick per game (pregame totals, star-rated, +EV-gated).
+    // Live feed covers today/tomorrow; history covers all prior days. There is no other source.
     function v4GameFor(g: any) {
-      const pk = String((g && g.game_id) || "");
-      if (!pk) return null;
-      const find = (d: any) => d && (d.games || []).find((x: any) => String(x.game_pk) === pk);
+      const gid = String((g && g.game_id) || "");
+      if (!gid) return null;
+      // Day-payload game ids may be the bare pk OR a composite ending in "-<pk>". Match either.
+      const m = gid.match(/(\d+)$/);
+      const pk = m ? m[1] : gid;
+      const find = (d: any) => d && (d.games || []).find((x: any) =>
+        String(x.game_pk) === gid || String(x.game_pk) === pk || String(x.game_id) === gid);
       return find(betaLiveData) || find(betaData) || null;
     }
-    const V4_LEADS_FRESH = ["T-1h", "T-3h", "T-6h", "T-12h", "T-24h"]; // freshest wall first
-    // The current cell per market: the freshest TAKE if any wall produced one, else the
-    // freshest row (a PASS with its priced-out reason).
+    // The single pick lives on the game as `pick`. Only the totals lane carries it; spread/ML
+    // are retired, so every other market resolves to null (→ an honest PASS downstream).
     function v4CellFor(vg: any, mk: string) {
-      const rows = (vg.grid || []).filter((c: any) => c.bet_type === mk && c.scope !== "first_5");
-      if (!rows.length) return null;
-      const freshest = (arr: any[]) => { for (const lt of V4_LEADS_FRESH) { const hit = arr.find((c: any) => c.lead_time === lt); if (hit) return hit; } return arr[0]; };
-      // PLAYABLE is the authoritative pick flag (v3.1): a raw-take row demoted by the
-      // conviction floor must never outrank the wall where the pick genuinely fired.
-      const isPlay = (c: any) => (c.playable != null ? !!c.playable : !!(c.take && c.stars > 1));
-      const plays = rows.filter(isPlay);
-      return plays.length ? freshest(plays) : freshest(rows);
+      if (mk !== "total") return null;
+      return vg && vg.pick ? vg.pick : null;
     }
-    // Map a v4 grid cell into the app's play shape so every existing surface renders it.
-    function v4ToPlay(g: any, c: any) {
-      if (!c) return null;
-      const mk = c.bet_type;
-      let ln = c.pick_line != null ? c.pick_line : c.market_line;
-      // LIVE-feed guard: spread lines can arrive UNSIGNED (walk payload signs them). The price
-      // gives the truth away — a run line paying plus money IS the −1.5 side ("+1.5 +190" is
-      // free-money impossible). Flip until the feed emits signed lines (flagged to modeling).
-      if (mk === "spread" && ln != null && ln > 0 && c.per_side_price != null) {
-        const px0 = Number(c.per_side_price);
-        if (px0 >= 120) ln = -ln;
-      }
-      let side = "";
-      if (mk === "total") side = `${/over/i.test(String(c.pick_side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim();
-      else if (mk === "spread") side = `${c.pick_side === "home" ? g.home_abbr : g.away_abbr} ${ln != null ? sgn(ln) : ""}`.trim();
-      else side = `${c.pick_side === "home" ? g.home_abbr : g.away_abbr}`;
-      const res = c.result === "win" ? { status: "hit" } : c.result === "loss" ? { status: "miss" } : c.result === "push" ? { status: "push" } : null;
-      // v3.1: `playable` is the authoritative pick flag — the conviction floor demotes
-      // price-only rows to 1★ WITHOUT clearing the raw gate `take`, so raw take alone
-      // must never surface a pick. Playable (or legacy stars>=2 take) only.
-      const take = c.playable != null ? !!c.playable : !!(c.take && c.stars > 1);
-      const q = c.stars >= 4 ? "strong" : c.stars === 3 ? "good" : "lean";
+    // Break-even win prob implied by an American price (for a pass's plain-English reason).
+    function beFromAmerican(px: any) {
+      if (px == null || isNaN(Number(px))) return null;
+      const a = Number(px);
+      const dec = a > 0 ? 1 + a / 100 : 1 + 100 / -a;
+      return dec > 0 ? 1 / dec : null;
+    }
+    // Map the unified pick object into the app's play shape so every existing surface renders it.
+    function v4ToPlay(g: any, pk: any) {
+      if (!pk) return null;
+      const mk = "total";
+      const ln = pk.line != null ? pk.line : pk.vegas_line;
+      const take = String(pk.status || "").toUpperCase() === "PICK";
+      const side = take ? `${/over/i.test(String(pk.side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim() : null;
+      const res = pk.result === "win" ? { status: "hit" } : pk.result === "loss" ? { status: "miss" } : pk.result === "push" ? { status: "push" } : null;
+      const stars = pk.stars != null ? Number(pk.stars) : 0;
+      const q = stars >= 4 ? "strong" : stars === 3 ? "good" : "lean";
+      const be = pk.price != null ? beFromAmerican(pk.price) : null;
       const why: string[] = [];
-      if (take && c.our_prob != null && c.p_breakeven != null && c.per_side_price != null)
-        why.push(`Our model gives this side about a ${(c.our_prob * 100).toFixed(0)}% chance, and at ${fmtOdds(c.per_side_price)} it only needs ${(c.p_breakeven * 100).toFixed(0)}% to profit — a real edge after the price.`);
-      if (take && c.ev != null)
-        why.push(`That works out to roughly ${(c.ev >= 0 ? "+" : "")}${(c.ev * 100).toFixed(1)}% expected value per dollar at the quoted price.`);
-      // DECIMAL GRADE behind the stars: stars carry the conviction band, the fraction ranks
-      // WITHIN the band by +EV size (0.015 EV → x.0, 0.3+ EV → x.9). Powers the flagship pick.
-      // Continuous scale: prefer the MODEL's own real-number score (star v3 payloads emit
-      // `score` 0-5 for EVERY row, passes included) — the fallback derives it from EV.
-      const grade = c.score != null ? Number(c.score)
-        : (take ? Math.min(5, c.stars + Math.max(0, Math.min(0.9, ((c.ev != null ? c.ev : 0.015) - 0.015) * 3))) : 0);
+      if (take && pk.our_prob != null && be != null && pk.price != null)
+        why.push(`Our number gives this side about a ${(pk.our_prob * 100).toFixed(0)}% chance, and at ${fmtOdds(pk.price)} it only needs ${(be * 100).toFixed(0)}% to profit — a real edge after the price.`);
+      if (take && pk.ev != null)
+        why.push(`That works out to roughly ${(pk.ev >= 0 ? "+" : "")}${(pk.ev * 100).toFixed(1)}% expected value per dollar at the quoted price.`);
+      // DECIMAL GRADE behind the stars = the model's own continuous 0–5 `score`, rendered to 2dp
+      // on every pick; passes carry their sub-2.00 score too.
+      const grade = pk.score != null ? Number(pk.score) : (take ? stars : 0);
+      // A pass shim carrying the fields plainPassReason() reads (it was built for grid cells).
+      const passShim = take ? null : {
+        bet_type: "total", market_line: pk.vegas_line != null ? pk.vegas_line : ln, pick_line: ln,
+        our_prob: pk.our_prob != null ? pk.our_prob : null, p_breakeven: be,
+        per_side_price: pk.price != null ? pk.price : null, pass_reason: pk.pass_reason || "",
+      };
       return {
         market: mk, action: take ? "TAKE" : "PASS",
         side: take ? side : null,
-        line: ln, price: c.per_side_price != null ? c.per_side_price : null,
-        p: c.our_prob != null ? c.our_prob : null,
-        q, stars: c.stars, star_tier: c.star_tier, ev: c.ev, grade,
+        line: ln, price: pk.price != null ? pk.price : null,
+        p: pk.our_prob != null ? pk.our_prob : null,
+        q, stars, star_tier: pk.star_tier, ev: pk.ev, grade,
         why, result: res, src: "v4",
-        v4pass: !take ? c : null,
-        // provenance for the "vs Vegas + when" strip: the exact Vegas line judged + the wall
-        vegas_line: c.market_line != null ? c.market_line : ln,
-        lead_time: c.lead_time || null,
+        v4pass: passShim,
+        // provenance for the "vs Vegas + when" strip: the exact Vegas line judged + when
+        vegas_line: pk.vegas_line != null ? pk.vegas_line : ln,
+        lead_time: pk.lead_time || null,
         fp_utc: g.first_pitch_utc || null,
+        locked: !!pk.locked, locked_at_utc: pk.locked_at_utc || null,
+        suggested_units: pk.suggested_units != null ? pk.suggested_units : null,
       };
     }
     // "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)" — the Vegas number we judged, clearly
@@ -920,7 +867,7 @@ export default function Home() {
       if (pl.fp_utc && Date.now() >= new Date(pl.fp_utc).getTime()) bits.push("🔒 locked — judged at this line");
       return bits.length ? `<div class="pk-made">${esc(bits.join(" · "))}</div>` : "";
     }
-    // Universal star renderer: v4 picks use the 5-star scale, champion picks keep 3.
+    // Universal star renderer: unified picks use the 5-star scale; any legacy pick keeps 3.
     function pickStars(pl: any) {
       if (pl && pl.stars != null) return bStars(pl.stars);
       return qDiamonds(qualityOf(pl));
@@ -937,17 +884,12 @@ export default function Home() {
       if (scoreVal == null || isNaN(Number(scoreVal)) || !(Number(scoreVal) > 0)) return "";
       return `<i class="pgrade muted">${Number(scoreVal).toFixed(2)}</i>`;
     }
-    // The score for a v4 grid game whether or not it's a playable pick — reads the freshest
-    // cell (champion pick if any, else grid) so passes can show their muted score on tiles.
+    // The score for a game whether or not it's a playable pick — the model rates every game, so
+    // passes can show their muted score on tiles too.
     function gameScore(g: any) {
       const vg = v4GameFor(g);
-      if (!vg) return null;
-      const cvp = (betaLiveData && betaLiveData.champion_v2 && betaLiveData.champion_v2.picks || [])
-        .filter((p: any) => String(p.game_pk) === String(g.game_id))
-        .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))[0];
-      if (cvp && cvp.score != null) return Number(cvp.score);
-      const c = v4CellFor(vg, "total");
-      return c && c.score != null ? Number(c.score) : null;
+      if (!vg || !vg.pick) return null;
+      return vg.pick.score != null ? Number(vg.pick.score) : null;
     }
     // LOW CONFIDENCE = a Lean-tier pick, OR a spread/ML lean whose price doesn't clear break-even.
     // We still SHOW these (Leon: include the slightest picks) but flag them clearly.
@@ -1054,7 +996,7 @@ export default function Home() {
           <div class="hpc-line"><span class="hpc-k">◆ ${esc(kick)}</span><span class="hpc-conf blur" aria-hidden="true">●●●●●</span><span class="hpc-lock">${lockSvg} Unlock</span></div></div>`;
       }
       // No pick: when v4 covers the game its verdict is final (never fall back to a stale
-      // champion pick_headline); otherwise the served headline may still carry the call.
+      // stale served headline); otherwise the served headline may still carry the call.
       if (!isPick(pl) && (v4GameFor(g) || !ph.has)) {
         const pln = passLineTxt(g);
         return `<div class="hpc hpc-${size} pass"><div class="hpc-scrim"></div>
@@ -2106,29 +2048,15 @@ export default function Home() {
     // once the game starts — the box is the honest record of what we said pre-game.
     const lineStr = (v: any) => (Number(v) % 1 ? num(v, 1) : num(v, 0));
     function displayPick(g: any) {
-      // V4 FIRST: the new model's best starred take is THE DiamondEdge pick. If it covers
-      // the game and passes every market, the game is an honest PASS (no champion fallback).
+      // ONE pick per game: the unified feed's single pick IS the DiamondEdge Pick. If it covers
+      // the game and the pick is a PASS, the game is an honest PASS.
       const vg = v4GameFor(g);
       if (vg) {
-        // CHAMPION V2 stream first — the headline picks outrank the grid's 2★ leans.
-        const cvp = (betaLiveData && betaLiveData.champion_v2 && betaLiveData.champion_v2.picks || [])
-          .filter((p: any) => String(p.game_pk) === String(g.game_id) && (p.playable != null ? p.playable : (p.stars || 0) >= 2) && p.pick_side)
-          .sort((a: any, b: any) => (b.score || b.stars || 0) - (a.score || a.stars || 0))[0];
-        if (cvp) {
-          const side = `${/over/i.test(String(cvp.pick_side)) ? "OVER" : "UNDER"} ${cvp.pick_line != null ? lineStr(cvp.pick_line) : ""}`.trim();
-          return { market: "total", action: "TAKE", side, line: cvp.pick_line, price: cvp.per_side_price ?? null,
-            p: cvp.our_prob ?? null, q: (cvp.stars || 2) >= 4 ? "strong" : (cvp.stars || 2) === 3 ? "good" : "lean",
-            stars: cvp.stars, star_tier: cvp.star_tier, ev: cvp.ev, grade: cvp.score ?? cvp.stars ?? 2,
-            why: [], result: cvp.result === "win" ? { status: "hit" } : cvp.result === "loss" ? { status: "miss" } : cvp.result === "push" ? { status: "push" } : null,
-            src: "v4", vegas_line: cvp.market_line ?? cvp.pick_line, lead_time: cvp.lead_time || null, fp_utc: vg.first_pitch_utc || null };
-        }
-        const P4 = gamePlays(g);
-        // ALL-IN TOTALS: only the totals lane can be OUR pick.
-        const pl = P4["total"];
+        const pl = gamePlays(g)["total"];
         return pl && pl.action === "TAKE" ? pl : null;
       }
-      // MLB: the v4 board is the ONLY pick source. No legacy fallback — if the feed
-      // hasn't loaded or doesn't cover the game, that's a PASS, not an old champion lean.
+      // MLB: the unified feed is the ONLY pick source. No legacy fallback — if the feed
+      // hasn't loaded or doesn't cover the game, that's a PASS.
       // (The slate re-renders when the feed arrives, so real picks replace passes fast.)
       if (g && g.sport === "mlb") return null;
       const dp = g && g.display_pick;
@@ -2568,7 +2496,6 @@ export default function Home() {
     function gameCard(g: any, idx: number) {
       const gs = gameState(g);
       const pick = displayPick(g);
-      const v2 = diamondEdgeV2(g);
       const q = pick ? qualityOf(pick) : null;
       const st = pick ? playState(g, pick) : "open";
       const locked = pick ? pickLocked(pick, st) : false;
@@ -2632,7 +2559,7 @@ export default function Home() {
       };
       // Reference style (theScore): odds are PLAIN TEXT — no boxes. Only OUR pick becomes an
       // unmistakable solid chip (► side + real price + stars). The picked side shows the REAL
-      // per-side price from the model feed (never a champion −110 placeholder).
+      // per-side price from the pick feed (never a −110 placeholder).
       const cell = (val: any, on: boolean, pl: any) => {
         if (!on) return `<span class="oc${val == null || val === "" ? " none" : ""}">${val == null || val === "" ? "–" : val}</span>`;
         const q0 = qualityOf(pl);
@@ -2748,8 +2675,25 @@ export default function Home() {
       if (cand && gameState(cand.g).kind === "pre") { try { localStorage.setItem(k, String(cand.g.game_id)); } catch {} }
       return cand;
     }
+    // The day's featured game per the feed = `featured_game_id` (its highest-score pick). Resolve
+    // it against the games we're rendering, keyed on game_pk (the trailing id).
+    function feedFeaturedGame(games: any[]) {
+      if (!games || !games.length) return null;
+      const date = gameLocalDay(games[0]);
+      const src = betaLiveData || betaData;
+      let pk: string | null = null;
+      const fmap = (src && src.featured) || (betaData && betaData.featured);
+      if (fmap && date && fmap[date] && fmap[date].game_pk != null) pk = String(fmap[date].game_pk);
+      if (!pk) { const fid = String((src && src.featured_game_id) || (betaData && betaData.featured_game_id) || ""); const m = fid.match(/(\d+)$/); if (m) pk = m[1]; }
+      if (!pk) return null;
+      return games.find((g: any) => { const gm = String(g.game_id || "").match(/(\d+)$/); return (gm ? gm[1] : String(g.game_id)) === pk; }) || null;
+    }
     function featuredPick(games: any[]) {
       let best: any = null;
+      // Prefer the feed's featured game when it's an actionable upcoming pick — otherwise fall
+      // through to the score ranking below (so a started/finished featured game never strands).
+      const fg = feedFeaturedGame(games);
+      if (fg && gameState(fg).kind === "pre") { const fpl = displayPick(fg); if (isBet(fpl)) return { g: fg, pl: fpl }; }
       // Actionability rank: upcoming-today (3) > upcoming-future (2) > live (1) > final (0).
       // Within a rank, highest score/conviction wins (Leon: featured = highest score).
       const actRank = (g: any) => {
@@ -2973,7 +2917,7 @@ export default function Home() {
     function dayPicksTally() {
       // ANY day (incl. prior days): prefer the model payload's per-day record — it's the
       // backfilled + nightly-archived truth for every date, so looking back always shows
-      // that day's pick record. Champion-payload tally is only a fallback for today.
+      // that day's pick record. The live tally is only a fallback for today.
       if ((league === "all" || league === "mlb") && betaData && betaData.by_date_record) {
         const r = betaData.by_date_record[curDate];
         if (r && r.n_picks != null) {
@@ -3741,7 +3685,7 @@ export default function Home() {
     // Share tagline — lead with the HONEST forward expectation (not the in-sample backtest %),
     // then the clean out-of-sample evidence. Social proof that doesn't overstate the edge.
     function shareTagline() {
-      const ov = betaData && betaData.record && betaData.record.overall_takes;
+      const ov = betaData && betaData.record && betaData.record.overall;
       return ov && ov.n
         ? `DiamondEdge — every pick star-rated 1–5 and graded in the open: ${ov.win}–${ov.loss} (${(ov.hit_rate * 100).toFixed(1)}%)${ov.roi != null ? ` at ${ov.roi >= 0 ? "+" : ""}${(ov.roi * 100).toFixed(0)}% return` : ""} and counting.`
         : "DiamondEdge — every sports pick star-rated 1–5 and graded in the open.";
@@ -3806,7 +3750,7 @@ export default function Home() {
         // (a1) TRACKING READ — is our surfaced pick on course to cash? Computed from the live
         // score/inning fields above (no projection). The totals edge gets the rich runs-vs-line
         // read; a spread/ML lean gets a lighter scoreboard status. Context, not a new pick.
-        // MLB: the LOCKED v4 pick is the only pick we track live — no champion live-lean fallback.
+        // MLB: the LOCKED unified pick is the only pick we track live — no legacy fallback.
         const plLive = g.sport === "mlb" ? displayPick(g)
           : (() => { const Plive = gamePlays(g); return (Plive.total && Plive.total.action === "TAKE") ? Plive.total : (displayPick(g) || bestPlay(g)); })();
         const trackCard = plLive ? liveTrackCard(g, plLive) : "";
@@ -4248,26 +4192,9 @@ export default function Home() {
       wireBody();
       // if opened on a live game, pull the box score right away
       if (!g._recipe && (gameState(g).kind === "live" || gameState(g).kind === "final")) pollLiveDetail();
-      // MODEL DRILL-IN — weave the model's wall-by-wall read for THIS game into the detail whenever
-      // the walk covers it (matched on game_pk). Idempotent: appends the strip once (skips if the
-      // current body already carries it), so re-running after a body rebuild never double-adds.
-      function attachDrillStrip() {
-        if (g.game_id == null || g._recipe) return;
-        if (!$("gp-body") || $("gp-body").querySelector(".beta-instrip")) return;
-        const pk = String(g.game_id);
-        const find = (src: any) => src && (src.games || []).find((x: any) => String(x.game_pk) === pk);
-        const bg = find(betaLiveData) || find(betaData); // live board first (today), then the historical walk
-        if (!bg) return;
-        const strip = document.createElement("div");
-        strip.className = "beta-instrip";
-        strip.innerHTML = `<span class="bm-badge sm">Model</span><span class="bis-k">wall by wall</span>
-             <span class="bis-pass">how this game's picks formed from T-24h to first pitch — every take and every pass, priced.</span>
-             <button class="bis-open">Full grid →</button>`;
-        const deP = $("gp-body") && $("gp-body").querySelector('.gp-pane[data-pane="de"] .de-pane');
-        if (deP) deP.appendChild(strip); else { const body = $("gp-body"); if (body) body.appendChild(strip); }
-        const btn = strip.querySelector(".bis-open");
-        if (btn) (btn as any).onclick = (e: any) => { e.stopPropagation(); openBetaGame(bg); };
-      }
+      // The game detail carries the single DiamondEdge Pick inline; there's no separate model
+      // drill-in surface. Kept as a no-op so the re-render path stays intact.
+      function attachDrillStrip() { return; }
       // ASYNC FEEDS → RE-RENDER. The pitcher cards (pitchers_v4), records+form (teams_v4), and
       // the totals pick (the v4 board) all key off game_pk / abbr and load async — a game opened
       // before they land would paint a bare preview and never fill in. We load all four here, and
@@ -5408,7 +5335,7 @@ export default function Home() {
           </div>
         </div>
         ${betaData ? betaDashboard(betaData) : `<div class="beta-skel">Loading the record…</div>`}
-        <button class="board-all" id="ins-allpicks">Every pick, wall by wall →</button>
+        <button class="board-all" id="ins-allpicks">Browse every graded pick →</button>
         <div class="refnote">${esc(recordStrip())}</div>`;
 
       animateCounters(view);
@@ -5736,7 +5663,7 @@ export default function Home() {
     // Branded record line for the masthead + footer — leads with the HONEST forward expectation,
     // with the in-sample backtest labelled as such (never sold as the forward number).
     function recordStrip() {
-      const ov = betaData && betaData.record && betaData.record.overall_takes;
+      const ov = betaData && betaData.record && betaData.record.overall;
       if (ov && ov.n) return `Every pick graded in the open — ${ov.win}–${ov.loss}${ov.push ? `–${ov.push}` : ""} (${(ov.hit_rate * 100).toFixed(1)}%) so far.`;
       return `Every pick graded in the open, win or lose.`;
     }
@@ -5987,7 +5914,7 @@ export default function Home() {
       const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       const isToday = curDate === todayISO();
-      const goldChip = ""; // no champion-era chips — the model's record lives on Insights
+      const goldChip = ""; // no legacy chips — the pick record lives on Insights
       const picksAll = orderTopPicks((db.top_picks || []) as any[]);
       const leadPick = picksAll[0] || null;
       const railPicks = picksAll.length > 1 ? picksAll.slice(1) : [];
@@ -6438,33 +6365,33 @@ export default function Home() {
       results: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>`,
       settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M18.2 5.8l-1.8 1.8M7.6 16.4l-1.8 1.8"/></svg>`,
     };
-    // ===================== BETA — v4 SHADOW MODEL FEED (public/picks_v4_beta.json) =====================
-    // A separate, honestly-graded shadow feed running ALONGSIDE the champion. Star-rated
-    // (conviction, +EV-gated), price-aware, with every PASS's "priced-out" reason. Nothing is
-    // claimed as an edge — it's presented as a model in validation whose record accrues.
+    // ===================== UNIFIED PICK FEED (public/picks_unified{,_live}.json) =====================
+    // ONE DiamondEdge Pick per game — pregame totals, star-rated, +EV-gated, price-aware, with
+    // every PASS's priced-out reason. Graded in the open; the record accrues in public. History
+    // key 'picks_unified' (all days) + live key 'picks_unified_live' (today + tomorrow).
     let betaData: any = null;
     let betaBuiltAt = 0; // last DOM build — skip rebuilds within 60s (tab switches stay instant)
     let betaTab: "today" | "record" | "games" = "today";
     let betaShown = 24;        // games list pagination
-    let betaOnlyTakes = true;  // default: games where the model actually took a bet
+    let betaOnlyTakes = true;  // default: games where the model actually made a pick
     async function loadBeta() {
       if (betaData) return betaData;
-      // FRESH source = Supabase (slate_snapshots key 'picks_v4_beta'), synced every cycle from
-      // the model box — so prior-day picks/results update with NO deploy. The bundled static
+      // FRESH source = Supabase (slate_snapshots key 'picks_unified'), synced every cycle from
+      // the pick box — so prior-day picks/results update with NO deploy. The bundled static
       // file is only a fallback for the deep archive. (Fixes the recurring "yesterday shows
       // all-PASS" bug: the static file only updated on git push, so recent days went missing.)
       let fresh: any = null;
-      try { fresh = await Promise.race([snap("picks_v4_beta"), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
+      try { fresh = await Promise.race([snap("picks_unified"), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
       if (!fresh || !fresh.games) {
-        const r = await fetch(`/picks_v4_beta.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
-        if (!r.ok) throw new Error("beta fetch " + r.status);
+        const r = await fetch(`/picks_unified.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
+        if (!r.ok) throw new Error("history fetch " + r.status);
         fresh = await r.json();
       }
       betaData = fresh;
       return betaData;
     }
     // LIVE picks (today + tomorrow) — the freshest copy lives in Supabase (slate_snapshots
-    // key 'picks_v4_beta_live', synced from the model box every few minutes), so PRODUCTION
+    // key 'picks_unified_live', synced from the pick box every few minutes), so PRODUCTION
     // updates intraday with no deploy. The bundled static file is the fallback. 5-min cache.
     let betaLiveData: any = null, betaLiveAt = 0;
     async function loadBetaLive() {
@@ -6475,13 +6402,13 @@ export default function Home() {
       // stale-by-design deploy artifact — only a last resort. Give Supabase a real chance.
       let fresh: any = null;
       for (let a = 0; a < 2 && (!fresh || !fresh.games); a++) {
-        try { fresh = await Promise.race([snap("picks_v4_beta_live"), new Promise((r) => setTimeout(() => r(null), 4000))]); } catch {}
+        try { fresh = await Promise.race([snap("picks_unified_live"), new Promise((r) => setTimeout(() => r(null), 4000))]); } catch {}
       }
       let usedFallback = false;
       if (!fresh || !fresh.games) {
         usedFallback = true;
-        const r = await fetch("/picks_v4_beta_live.json", { cache: "no-store" });
-        if (!r.ok) throw new Error("beta live fetch " + r.status);
+        const r = await fetch("/picks_unified_live.json", { cache: "no-store" });
+        if (!r.ok) throw new Error("live fetch " + r.status);
         fresh = await r.json();
       }
       betaLiveData = fresh;
@@ -6495,7 +6422,7 @@ export default function Home() {
           for (let a = 0; a < 6; a++) {
             await new Promise((r) => setTimeout(r, 3000));
             try {
-              const sb: any = await snap("picks_v4_beta_live");
+              const sb: any = await snap("picks_unified_live");
               if (sb && sb.games && sb.generated_utc !== fresh.generated_utc) {
                 betaLiveData = sb; betaLiveAt = Date.now(); reRender(); return;
               }
@@ -6505,9 +6432,6 @@ export default function Home() {
       }
       return betaLiveData;
     }
-    const BETA_LEADS = ["T-24h", "T-12h", "T-6h", "T-3h", "T-1h"];
-    // ALL-IN TOTALS (2026-07-07): the pick product is pregame totals only — spread/ML retired.
-    const BETA_MKTS: [string, string][] = [["total", "Total"]];
     const teamShort = (name: any) => { const s = String(name || "").trim(); const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
     function bStars(n: any) {
       const k = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
@@ -6517,36 +6441,35 @@ export default function Home() {
     const bPct = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) * 100).toFixed(d) + "%");
     const bRoi = (v: any) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
     const bWL = (r: any) => (r && r.n ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0");
-    // The single best (highest-star) TAKE cell on a game — used to headline the game in the list.
+    // The game's single pick when it's an actionable PICK — used to headline it in the list.
     function bestBetaCell(g: any) {
-      let best: any = null;
-      (g.grid || []).forEach((c: any) => { if (c.take && c.stars > 0 && (!best || c.stars > best.stars || (c.stars === best.stars && (c.ev || 0) > (best.ev || 0)))) best = c; });
-      return best;
+      const p = g && g.pick;
+      return p && String(p.status || "").toUpperCase() === "PICK" ? p : null;
     }
-    const betaTakeCount = (g: any) => (g.grid || []).filter((c: any) => c.take && c.stars > 0).length;
+    const betaTakeCount = (g: any) => (g && g.pick && String(g.pick.status || "").toUpperCase() === "PICK" ? 1 : 0);
 
-    // ---- honest framing (no hype): the record below is young and accrues in public ----
+    // ---- honest framing (no hype): the record accrues in public ----
     function betaFrame(d: any) {
-      const wn = d.walk_scope_note || {};
+      const dates = Array.isArray(d && d.dates) ? d.dates : [];
+      const n = d && d.record && d.record.overall ? d.record.overall.n : 0;
+      const range = dates.length ? `Graded ${esc(dates[0])} → ${esc(dates[dates.length - 1])}${n ? ` · ${n} picks so far` : ""}` : "";
       return `<div class="beta-frame">
         <p class="bf-lede">Pregame totals, star-rated and graded in the open — win or lose.</p>
-        <div class="bf-note">${wn.date_range ? `Graded ${esc(wn.date_range[0])} → ${esc(wn.date_range[1])} · ${wn.n_games || 0} games so far` : ""}</div>
+        <div class="bf-note">${range}</div>
       </div>`;
     }
 
-    // ---- the record dashboard — SIMPLIFIED to two honest things: (a) the overall picks
-    // record as a big hero, (b) the record BY STAR TIER. No by-market/by-lead/theme clutter.
-    // Source = record.headline_champion_v2 (our totals engine × the real-price gate).
+    // ---- the record dashboard — two honest things: (a) the overall picks record as a big hero,
+    // (b) the record BY STAR TIER. One record, one scale. Source = record.overall + by_star_tier.
     function betaDashboard(d: any) {
       const rec = d.record || {};
-      const cv = rec.headline_champion_v2 || {};
-      const ov = cv.headline || {};
-      const byStar = cv.by_star_tier || {};
-      // Star-tier rows 4→2 (the PLAYABLE bet set — the validation: does a higher star win more?)
+      const ov = rec.overall || {};
+      const byStar = rec.by_star_tier || {};
+      // Star-tier rows 5→1 — the validation: does a higher star win more? Only render tiers with picks.
       const tierRow = (s: number) => {
-        const r = byStar[s] || {};
-        const empty = !r.n;
-        return `<div class="strec-row${empty ? " empty" : ""}">
+        const r = byStar[s] || byStar[String(s)] || {};
+        if (!r.n) return "";
+        return `<div class="strec-row">
           <span class="strec-star">${bStars(s)}</span>
           <span class="strec-n">${r.n || 0} pick${r.n === 1 ? "" : "s"}</span>
           <span class="strec-wl">${bWL(r)}</span>
@@ -6554,9 +6477,8 @@ export default function Home() {
           <span class="strec-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)} ROI</span>
         </div>`;
       };
-      const gatedNote = cv.gated_out && cv.gated_out.n
-        ? `<div class="strec-gate">The +EV price gate held ${cv.gated_out.n} would-be picks back${cv.gated_out.would_have_record ? ` — the ${cv.gated_out.n_graded || 0} graded went ${cv.gated_out.would_have_record.record || ""} (${bRoi(cv.gated_out.would_have_record.roi)})` : ""}. A pick has to beat its real price, not just the number.</div>`
-        : `<div class="strec-gate">Every pick has to beat the actual per-side price it's judged at — a lean that's on the right side of the number but priced out is an honest pass, not a bet.</div>`;
+      const rows = [5, 4, 3, 2, 1].map(tierRow).join("") || `<div class="strec-row empty"><span class="strec-n">Grading as games finish.</span></div>`;
+      const gatedNote = `<div class="strec-gate">Every pick has to beat the actual price it's judged at — a call that's on the right side of the number but priced out is an honest pass, not a bet.</div>`;
       const roiPos = (ov.roi || 0) >= 0;
       return `
         <div class="strec-hero ${roiPos ? "pos" : "neg"}">
@@ -6572,12 +6494,12 @@ export default function Home() {
         <div class="strec-card">
           <div class="strec-ch">Record by star tier</div>
           <div class="strec-csub">A star is a conviction band. It only means something if the higher tiers win more — so here's each tier, graded.</div>
-          <div class="strec-rows">${tierRow(4)}${tierRow(3)}${tierRow(2)}</div>
+          <div class="strec-rows">${rows}</div>
           ${gatedNote}
         </div>`;
     }
 
-    // ---- a compact list card for one beta game (historical OR live/upcoming) ----
+    // ---- a compact list card for one game (historical OR live/upcoming) ----
     function betaGameListCard(g: any) {
       const best = bestBetaCell(g);
       const fin = g.final || {};
@@ -6587,36 +6509,32 @@ export default function Home() {
         ? `Final ${teamShort(g.away)} ${fin.away_runs} – ${fin.home_runs} ${teamShort(g.home)}`
         : fp ? new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "upcoming";
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-      const walls = Array.isArray(g.walls_populated) && !hasFinal ? ` · ${g.walls_populated.length}/5 walls in` : "";
+      const sideTxt = best ? `${/over/i.test(String(best.side)) ? "OVER" : "UNDER"} ${best.line != null ? lineStr(best.line) : ""}`.trim() : "";
       const badge = best
-        ? `<span class="bg-pick ${best.result || "open"}">${bStars(best.stars)}<span class="bg-side">${esc(best.bet_type)} ${esc(best.pick_side)}${best.per_side_price != null ? ` ${fmtOdds(best.per_side_price)}` : ""}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✗" : "P"}</span>` : ""}</span>`
-        : `<span class="bg-nopick">${hasFinal ? "no take" : "no take yet"}</span>`;
+        ? `<span class="bg-pick ${best.result || "open"}">${bStars(best.stars)}<span class="bg-side">${esc(sideTxt)}${best.price != null ? ` ${fmtOdds(best.price)}` : ""}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✗" : "P"}</span>` : ""}</span>`
+        : `<span class="bg-nopick">${hasFinal ? "pass" : "no pick"}</span>`;
       return `<button class="beta-gcard" data-bgid="${esc(g.game_id)}">
         <span class="bg-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></span>
-        <span class="bg-meta">${esc(dd)} · ${esc(when)}${esc(walls)}</span>
+        <span class="bg-meta">${esc(dd)} · ${esc(when)}</span>
         ${badge}
       </button>`;
     }
-    // ---- the LIVE "Today" board: today's + tomorrow's games from the same engine + gate ----
+    // ---- the LIVE "Today" board: today's + tomorrow's games, each with its single pick ----
     function betaTodayBoard(lv: any) {
       if (!lv) return `<div class="bc-empty">The live board didn't load — it refreshes through the day; try again shortly.</div>`;
       const games = (lv.games || []) as any[];
       const bc = lv.board_census || {};
-      // headline record = CHAMPION V2 (mirrored onto the live payload); fallback to the live grid record
-      const cvRec = ((lv.record || {}).headline_champion_v2 || {}).headline || {};
-      const lr = lv.live_record || {};
-      const ov = cvRec.n ? cvRec : (lr.overall_takes || {});
+      const ov = (lv.record || {}).overall || {};
       const recBit = ov.n
         ? `<div class="beta-liverec">Season record: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""}</div>`
         : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;
-      // CHAMPION V2 slate — the headline picks (or the honest no-play note)
-      const cv = lv.champion_v2 || {};
-      const cvPicks = (cv.picks || []) as any[];
-      const cvSlate = cvPicks.length
-        ? `<div class="beta-cvslate">${cvPicks.map((p: any) => `
-            <div class="cvp"><span class="cvp-mu">${esc(teamShort(p.away || ""))} @ ${esc(teamShort(p.home || ""))}</span>
-              ${bStars(p.stars)}<span class="cvp-side">${esc(String(p.pick_side || "").toUpperCase())} ${p.pick_line != null ? esc(lineStr(p.pick_line)) : ""}${p.per_side_price != null ? ` <i>${fmtOdds(p.per_side_price)}</i>` : ""}</span></div>`).join("")}</div>`
-        : `<div class="beta-cvslate none">No headline play today — the engine only fires when its number and the price both clear. ${esc((cv.slate_status && cv.slate_status.note) || "")}</div>`;
+      // Today's picks (the actionable ones), or an honest no-play note.
+      const todayPicks = games.filter((g: any) => bestBetaCell(g)).sort((a: any, b: any) => ((bestBetaCell(b) || {}).score || 0) - ((bestBetaCell(a) || {}).score || 0));
+      const cvSlate = todayPicks.length
+        ? `<div class="beta-cvslate">${todayPicks.slice(0, 12).map((g: any) => { const p = bestBetaCell(g); const side = `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim(); return `
+            <div class="cvp"><span class="cvp-mu">${esc(teamShort(g.away || ""))} @ ${esc(teamShort(g.home || ""))}</span>
+              ${bStars(p.stars)}<span class="cvp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span></div>`; }).join("")}</div>`
+        : `<div class="beta-cvslate none">No pick today — the board only fires when our number and the price both clear.</div>`;
       const upd = lv.generated_utc ? new Date(lv.generated_utc).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
       const byDate: any = {};
       games.forEach((g) => { (byDate[g.date] = byDate[g.date] || []).push(g); });
@@ -6632,7 +6550,7 @@ export default function Home() {
           <div class="bcard-sub">Picks firm up as game time nears — a game without one yet may earn one later.${upd ? ` Updated ${esc(upd)}.` : ""}</div>
           ${cvSlate}
           ${recBit}
-          <div class="bcard-foot">${bc.n_takes || 0} totals leans across ${bc.n_games || games.length} games so far.</div>
+          <div class="bcard-foot">${bc.n_picks || 0} pick${(bc.n_picks || 0) === 1 ? "" : "s"} across ${bc.n_games || games.length} games so far.</div>
         </div>
         ${sections}`;
     }
@@ -6654,7 +6572,7 @@ export default function Home() {
           <div class="beta-masthead">
             <div class="bm-kick">DiamondEdge <span class="bm-badge">Pregame Totals</span></div>
             <h2 class="bm-h">Totals picks, graded in the open</h2>
-            <p class="bm-sub">One market, done right: pregame over/unders — price-aware, +EV-gated, star-rated. Every take and every pass at the real price, lead time by lead time, with the record accruing in public.</p>
+            <p class="bm-sub">One market, done right: pregame over/unders — price-aware, +EV-gated, star-rated. One DiamondEdge Pick per game, graded at the real price, with the record accruing in public.</p>
           </div>
           ${betaFrame(d)}
           <div class="beta-tabs" role="tablist">
@@ -6665,7 +6583,7 @@ export default function Home() {
           <div class="beta-pane" style="display:${betaTab === "today" ? "block" : "none"}">${betaTodayBoard(lv)}</div>
           <div class="beta-pane" style="display:${betaTab === "record" ? "block" : "none"}">${betaDashboard(d)}</div>
           <div class="beta-pane" style="display:${betaTab === "games" ? "block" : "none"}">
-            <div class="beta-listhead"><span>${betaOnlyTakes ? "Games where the model took a bet" : "Every game on the walk"}</span><button class="beta-togg" id="beta-togg">${betaOnlyTakes ? "Show all games" : "Only games with picks"}</button></div>
+            <div class="beta-listhead"><span>${betaOnlyTakes ? "Games with a DiamondEdge Pick" : "Every graded game"}</span><button class="beta-togg" id="beta-togg">${betaOnlyTakes ? "Show all games" : "Only games with picks"}</button></div>
             <div class="beta-glist">${shown.map(betaGameListCard).join("")}</div>
             ${list.length > betaShown ? `<button class="beta-more" id="beta-more">Show more (${(list.length - betaShown).toLocaleString()} left)</button>` : ""}
           </div>
@@ -6683,62 +6601,53 @@ export default function Home() {
       animateCounters(view);
     }
 
-    // ---- the per-game GRID: lead_time × market, how the pick evolved + every pass reason ----
+    // ---- the per-game pick card: the one DiamondEdge Pick (or the honest pass + its reason) ----
     function openBetaGame(g: any) {
       if (!g) return;
       const fin = g.final || {};
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
-      const byKey: any = {};
-      (g.grid || []).forEach((c: any) => { byKey[`${c.bet_type}|${c.lead_time}`] = c; });
-      const cellHtml = (c: any) => {
-        if (!c) return `<td class="bgrid-td"><div class="bcell na">—</div></td>`;
-        if (c.take && c.stars > 0) {
-          const side = String(c.pick_side || "") + (c.pick_line != null ? ` ${lineStr(c.pick_line)}` : "");
-          const res = c.result && c.result !== "pass" ? `<span class="bcell-res ${c.result}">${c.result === "win" ? "WIN" : c.result === "loss" ? "LOSS" : "PUSH"}</span>` : "";
-          return `<td class="bgrid-td"><div class="bcell take s${c.stars} ${c.result || ""}"><span class="bcell-stars">${bStars(c.stars)}</span><span class="bcell-side">${esc(side)}</span><span class="bcell-px">${c.per_side_price != null ? fmtOdds(c.per_side_price) : ""}</span>${res}</div></td>`;
-        }
-        // PASS — the reason IS the feature. tap to reveal.
-        return `<td class="bgrid-td"><div class="bcell pass" data-reason="${esc(plainPassReason(c))}"><span class="bcell-pass">PASS</span></div></td>`;
-      };
-      const rows = BETA_MKTS.map(([mk, lab]) => `<tr><th class="bgrid-mk">${lab}</th>${BETA_LEADS.map((lt) => cellHtml(byKey[`${mk}|${lt}`])).join("")}</tr>`).join("");
-      // the pass reasons, listed for transparency (the ones that carried a directional lean or a real number)
-      const passes = (g.grid || []).filter((c: any) => !c.take && c.pass_reason);
-      const passList = passes.slice(0, 8).map((c: any) => `<div class="bpass-row"><span class="bpass-k">${esc(c.bet_type)} · ${esc(c.lead_time)}</span><span class="bpass-why">${esc(plainPassReason(c))}</span></div>`).join("");
+      const p = g.pick || null;
+      const isPick = p && String(p.status || "").toUpperCase() === "PICK";
+      const side = isPick ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
+      const resTag = isPick && p.result && p.result !== "push"
+        ? `<span class="bcell-res ${p.result}">${p.result === "win" ? "WIN" : "LOSS"}</span>`
+        : isPick && p.result === "push" ? `<span class="bcell-res push">PUSH</span>` : "";
+      const scoreChip = p && p.score != null ? `<i class="pgrade">${Number(p.score).toFixed(2)}</i>` : "";
+      const pickCard = isPick
+        ? `<div class="bcell take s${p.stars} ${p.result || ""}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
+             <span class="bcell-stars">${bStars(p.stars)}</span>${scoreChip}
+             <span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>${resTag}
+           </div>
+           ${p.vegas_line != null ? `<div class="bgrid-legend">vs Vegas O/U ${esc(lineStr(p.vegas_line))}${p.lead_time ? ` · locked at ${esc(p.lead_time)}` : ""}.</div>` : ""}`
+        : `<div class="bcell pass" style="padding:14px 16px"><span class="bcell-pass">PASS</span> <span class="bpass-why">${esc(p ? plainPassReason(v4ToPlay(g, p).v4pass) : "No pick on this game.")}</span></div>`;
       const html = `
         <div class="gamepage betapage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.away)} at ${esc(g.home)}">
           <div class="gp-head">
             <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
             <button class="gp-brand" id="gp-brand" aria-label="DiamondEdge — home"><span class="diamond" aria-hidden="true"></span><span class="gp-brand-tx">Diamond<b>Edge</b></span></button>
-            <div class="hspacer"></div><span class="bm-badge sm">Beta</span>
+            <div class="hspacer"></div>
           </div>
           <div class="gp-body" id="gp-body">
             <div class="bgame-hero">
               <div class="bgh-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></div>
               <div class="bgh-fin">${fin.away_runs != null
                 ? `Final · ${esc(teamShort(g.away))} <b>${fin.away_runs}</b> – <b>${fin.home_runs}</b> ${esc(teamShort(g.home))}`
-                : (() => { const fp = firstPitchTs({ start_ts: g.first_pitch_utc }); return fp ? `First pitch ${esc(new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))} · picks firm up as walls arrive` : "Upcoming"; })()}</div>
+                : (() => { const fp = firstPitchTs({ start_ts: g.first_pitch_utc }); return fp ? `First pitch ${esc(new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))} · the pick firms up as game time nears` : "Upcoming"; })()}</div>
               <div class="bgh-date">${esc(dd)} · full game</div>
             </div>
             <div class="bgrid-card">
-              <div class="bgrid-h">What the model said at each wall before first pitch</div>
-              <div class="bgrid-scroll"><table class="bgrid"><thead><tr><th></th>${BETA_LEADS.map((l) => `<th class="bgrid-lt">${esc(l)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
-              <div class="bgrid-legend">Tap a <b>PASS</b> to see why.</div>
+              <div class="bgrid-h">The DiamondEdge Pick</div>
+              ${pickCard}
             </div>
-            ${passList ? `<div class="bpass-card"><div class="bgrid-h">Why we passed</div><div class="bpass-list">${passList}</div></div>` : ""}
           </div>
         </div>`;
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
-      requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); });
+      requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
       $("gp-back").onclick = () => closeDetail();
       const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
-      // tap a PASS cell → reveal its reason inline
-      layer.querySelectorAll(".bcell.pass").forEach((c: any) => (c.onclick = () => {
-        const open = c.classList.toggle("open");
-        if (open && !c.querySelector(".bcell-why")) { const s = document.createElement("span"); s.className = "bcell-why"; s.textContent = c.dataset.reason; c.appendChild(s); }
-      }));
     }
 
     const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", beta: "Totals", settings: "Settings" };
@@ -6910,7 +6819,7 @@ export default function Home() {
       renderScoresChrome();
       renderToday(); // skeleton until the payload lands
       // V4 = the default pick source: start both feeds NOW; re-render the pick surfaces
-      // the moment they land so every game flips from champion-fallback to the new model.
+      // the moment they land so every game flips from a placeholder PASS to its real pick.
       Promise.allSettled([loadBetaLive(), loadBeta()]).then(() => {
         todayFresh = false;
         if (tab === "today") { renderToday(); todayFresh = true; }
