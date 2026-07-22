@@ -126,7 +126,6 @@ export default function Home() {
     const gCrest = (g: any, which: "home" | "away", cls = "") =>
       crestImg(g.sport, which === "home" ? g.home_abbr : g.away_abbr, cls, which === "home" ? g.home_logo : g.away_logo);
 
-    const resOf = (pk: any) => (pk && pk.result && pk.result.status ? pk.result.status : null); // hit|miss|push|null
     // Graded result for a game's surfaced pick — handles result as an object {status} (de_plays)
     // OR a bare string (raw display_pick, which normPlay can drop). Returns hit|miss|push|null.
     const pickResult = (g: any, pl: any) => {
@@ -135,7 +134,6 @@ export default function Home() {
       if (!r && g && g.display_pick && typeof g.display_pick.result === "string") r = g.display_pick.result;
       return r;
     };
-    const tierCls = (t: any) => "tier-" + (t || "low");
 
     // ===================== SUGGESTED ACTIONS (fallback source for plays) =====================
     // A game carries `suggested_action` only on the live MLB slate. status SUGGEST → surfaced;
@@ -145,26 +143,7 @@ export default function Home() {
       return sa && sa.status === "SUGGEST" ? sa : null;
     };
     const saPct = (p: any, d = 0) => (p == null || isNaN(Number(p)) ? "—" : (Number(p) * 100).toFixed(d) + "%");
-    const saAm = (p: any) => (p == null || isNaN(Number(p)) ? "—" : (Number(p) > 0 ? "+" + Number(p) : "" + Number(p)));
-    function saTrack() {
-      const t = (payload && payload.suggested_actions_track_record) || {};
-      return {
-        v24: t.val_2024 || { n: 590, hit: 0.641, roi: -0.013 },
-        t25: t.test_2025 || { n: 605, hit: 0.617, roi: -0.047 },
-        g26: t.gate_2026 || { n: 299, hit: 0.602, hit_ci95: [0.545, 0.656], roi: -0.069 },
-        fwd: t.forward || null,
-        base: t.baseline_blind_dog15_2026 || { hit: 0.582, roi: -0.043 },
-      };
-    }
     const saRecStr = (sa: any) => (sa && sa.record_3yr) || "64.1% / 61.7% / 60.2% (2024/2025/2026)";
-    function saBreakeven(sa: any) {
-      const h = sa && sa.honesty;
-      if (h && h.breakeven_at_price != null) return Number(h.breakeven_at_price);
-      const am = sa && sa.price != null ? Number(sa.price) : null;
-      if (am == null || isNaN(am) || Math.abs(am) < 100) return 0.648;
-      const net = am > 0 ? am / 100 : 100 / Math.abs(am);
-      return 1 / (1 + net);
-    }
 
     // ===================== V3 RECONCILED SURFACES (shadow, additive) =====================
     // The backend serves a per-game `g.v3` block (MLB only today; absent elsewhere). It carries
@@ -256,18 +235,10 @@ export default function Home() {
       if (po == null && pu == null && pp == null) return null;
       return { p_over: po, p_under: pu, p_push: pp };
     }
-    // Unified v3 confidence label ("Strong" | "Good" | "Lean"), defensively read. Null if absent.
-    function v3Conf(g: any): string | null {
-      const v = v3Of(g);
-      if (!v) return null;
-      const c = v.confidence != null ? v.confidence : (v.totals_pick && v.totals_pick.confidence);
-      return c != null && String(c).trim() !== "" ? String(c) : null;
-    }
 
     // ===================== PLAYS (normalized per game, per market) =====================
     const MARKETS = ["spread", "total", "moneyline"];
     const MK_FULL: any = { spread: "Spread", total: "Total", moneyline: "Moneyline" };
-    const M_ABBR: any = { spread: "ATS", total: "O/U", moneyline: "ML" };
 
     function normPlayResult(r: any) {
       if (!r) return null;
@@ -622,11 +593,6 @@ export default function Home() {
       let h = "";
       for (let i = 0; i < 3; i++) h += `<i class="${i < n ? "f" : "e"}">${i < n ? "★" : "☆"}</i>`;
       return `<span class="qdia q-${q}" aria-hidden="true">${h}</span>`;
-    };
-    // The tier as a self-explaining chip: the meter + the WORD together, always legible.
-    const qBadge = (q: any, size = "") => {
-      if (q !== "strong" && q !== "good" && q !== "lean") return "";
-      return `<span class="qbadge q-${q}${size ? " " + size : ""}">${qDiamonds(q)}<b>${Q_LABEL[q]}</b></span>`;
     };
     // A small, always-legible tier legend — states what each word means so "Good vs Lean"
     // is never ambiguous. Rendered on the board and inside the detail sheet.
@@ -1395,7 +1361,6 @@ export default function Home() {
       const keep = parts.filter((x) => !/paper|experimental|caveat|not (?:a|real)\b/i.test(x));
       return cleanCopy((keep.length ? keep : parts).join(" "));
     }
-    const DE_PICK = `<span class="de-k">◆ DiamondEdge Pick</span>`;
     // Once a game is live or final, the pick label must make clear it was FROZEN before
     // first pitch — never made mid-game. Pre-game it's the branded "DiamondEdge Pick".
     const isStarted = (g: any) => { const s = String((g && g.status) || "pre").toLowerCase(); return s === "live" || s === "final"; };
@@ -1527,8 +1492,6 @@ export default function Home() {
     let liveScores: any = null;     // latest live_scores snapshot (fresh score overlay)
     let liveDetail: any = null;     // latest live_detail snapshot (box scores) — polled while live
     let liveDetailTried = false;    // avoid hammering a missing live_detail key
-    let analyticsDeep: any = null;  // analytics_deep block (deep results cuts) when served
-    let adTried = false;            // analytics_deep lookup attempted this session
 
     let minDate = "2020-09-11";
     let maxDate = todayISO();
@@ -1868,20 +1831,6 @@ export default function Home() {
     // (Pull-to-refresh removed — replaced by smart silent tiered auto-refresh in init.)
 
     // ===================== POWER-USER VISUALS (sheet "More detail" only) =====================
-    function confRing(pk: any) {
-      if (!pk || pk.confidence == null) return "";
-      const tier = pk.tier || "low";
-      const c = Math.max(0, Math.min(100, Number(pk.confidence)));
-      const R = 13, C = 2 * Math.PI * R;
-      const dash = (c / 100) * C;
-      return `<span class="cring ${tierCls(tier)}" title="${esc(tier)} confidence · ${c.toFixed(0)}%">
-        <svg viewBox="0 0 32 32" width="30" height="30">
-          <circle class="cr-bg" cx="16" cy="16" r="${R}"></circle>
-          <circle class="cr-fg" cx="16" cy="16" r="${R}" stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 16 16)"></circle>
-        </svg>
-        <span class="cr-num">${c.toFixed(0)}</span>
-      </span>`;
-    }
     function lineMove(pk: any) {
       const lm = pk && pk.line_move;
       if (!lm || lm.open_line == null || lm.current_line == null) return "";
@@ -1963,86 +1912,8 @@ export default function Home() {
       if (backedHome) return backedLine;
       return -backedLine;
     }
-    // Compact sportsbook odds row (sheet "More detail").
-    function oddsRow(g: any) {
-      const cells: string[] = [];
-      const sp = g.spread_pick;
-      if (sp && sp.line != null) {
-        const pr = sp.prices || {};
-        const hl = spreadHomeLine(g, sp);
-        const px = pr.home ?? sp.price;
-        cells.push(`<div class="oc"><span class="oc-k">Spread</span><span class="oc-v">${esc(g.home_abbr)} ${sgn(hl)}</span><span class="oc-p">${fmtOdds(px)}</span></div>`);
-      } else cells.push(`<div class="oc dim"><span class="oc-k">Spread</span><span class="oc-v">—</span></div>`);
-      const tp = g.total_pick;
-      if (tp && tp.line != null) {
-        const pr = tp.prices || {};
-        const both = pr.over != null || pr.under != null;
-        cells.push(`<div class="oc"><span class="oc-k">Total</span><span class="oc-v">O/U ${num(tp.line)}</span><span class="oc-p">${both ? `o${fmtOdds(pr.over)} · u${fmtOdds(pr.under)}` : fmtOdds(tp.price)}</span></div>`);
-      } else cells.push(`<div class="oc dim"><span class="oc-k">Total</span><span class="oc-v">—</span></div>`);
-      const mp = g.ml_pick;
-      if (mp && (mp.price != null || (mp.prices && (mp.prices.home != null || mp.prices.away != null)))) {
-        const pr = mp.prices || {};
-        if (g.sport === "soccer" && (pr.home != null || pr.draw != null || pr.away != null)) {
-          cells.push(`<div class="oc"><span class="oc-k">1 · X · 2</span><span class="oc-v">${fmtOdds(pr.home)} · ${fmtOdds(pr.draw)} · ${fmtOdds(pr.away)}</span></div>`);
-        } else {
-          cells.push(`<div class="oc"><span class="oc-k">ML</span><span class="oc-v">${esc(mp.side || "")}</span><span class="oc-p">${fmtOdds(mp.price ?? pr.home ?? pr.away)}</span></div>`);
-        }
-      } else cells.push(`<div class="oc dim"><span class="oc-k">ML</span><span class="oc-v">—</span></div>`);
-      return `<div class="gc-odds">${cells.join("")}</div>`;
-    }
-    // THREE-MARKET ROW — Total, Spread, Moneyline shown together. The TOTAL is THE
-    // DiamondEdge Pick (heaviest treatment when it's the taken market); the MONEYLINE
-    // surfaces as an additional directional LEAN read (clearly lightest), never the
-    // headline edge. Each cell shows the market's number and, if it's a TAKE, its side.
-    function threeMarketRow(g: any, lead: any) {
-      const P = gamePlays(g);
-      const leadMk = lead && lead.action === "TAKE" ? lead.market : null;
-      // The moneyline "lean": the de_plays TAKE if present, else the directional ml_pick read.
-      const mlPlay = P.moneyline && P.moneyline.action === "TAKE" ? P.moneyline : null;
-      const mlRead = g.ml_pick && g.ml_pick.side ? g.ml_pick : null;
-      const cell = (mk: string) => {
-        const pl = P[mk];
-        const pk = mk === "spread" ? g.spread_pick : mk === "total" ? g.total_pick : g.ml_pick;
-        const isLead = mk === leadMk;
-        const isTake = pl && pl.action === "TAKE";
-        // number line
-        let numTxt = "—";
-        if (mk === "spread" && g.spread_pick && g.spread_pick.line != null) numTxt = `${esc(g.home_abbr)} ${sgn(spreadHomeLine(g, g.spread_pick))}`;
-        else if (mk === "total" && g.total_pick && g.total_pick.line != null) numTxt = `O/U ${num(g.total_pick.line)}`;
-        else if (mk === "moneyline") {
-          const mpr = (g.ml_pick && g.ml_pick.prices) || {};
-          const px = g.ml_pick ? (g.ml_pick.price ?? mpr.home ?? mpr.away) : null;
-          if (g.sport === "soccer" && mpr.home != null) numTxt = `1X2 ${fmtOdds(mpr.home)}·${fmtOdds(mpr.draw)}·${fmtOdds(mpr.away)}`;
-          else if (px != null) numTxt = `${esc((g.ml_pick && g.ml_pick.side) || "ML")} ${fmtOdds(px)}`;
-        }
-        // label + strength
-        const isML = mk === "moneyline";
-        const q = isTake ? qualityOf(pl) : null;
-        let strength = "";
-        if (isTake) strength = `<span class="tm-take q-${q}">${pickArrow(pl)} ${esc(pl.side || "")}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}${pickStars(pl)}</span>`;
-        else if (isML && mlRead) strength = `<span class="tm-lean">◆ lean ${esc(mlRead.side)}${mlRead.our_winprob != null ? ` · ${(Number(mlRead.our_winprob) * 100).toFixed(0)}%` : ""}</span>`;
-        else strength = `<span class="tm-pass">no edge</span>`;
-        const cls = isLead ? "tm-cell is-pick" : isML ? "tm-cell is-ml" : "tm-cell";
-        return `<div class="${cls}">
-          <span class="tm-k">${MK_FULL[mk]}${isLead ? ` <b class="tm-badge">◆ The Pick</b>` : isML ? ` <b class="tm-badge lean">lean</b>` : ""}</span>
-          <span class="tm-num">${numTxt}</span>
-          ${strength}
-        </div>`;
-      };
-      // ALL-IN TOTALS: the total IS the DiamondEdge Pick — the only market we call.
-      return `<div class="threemk one">${["total"].map(cell).join("")}</div>
-        <div class="tm-note">The <b>total</b> is the DiamondEdge Pick — the one market we call, judged against the Vegas number.</div>
-        ${tierLegend(true)}`;
-    }
 
     // ===================== GAME TILE (the whole slate story) =====================
-    const resMark = (st: string) =>
-      st === "won" || st === "clinched"
-        ? `<span class="tb-res won">${condCheck}</span>`
-        : st === "lost" || st === "cooked" ? `<span class="tb-res lost">✗</span>`
-        : st === "pushed" ? `<span class="tb-res pushed">P</span>`
-        : st === "inplay" ? `<span class="tb-res inplay"><span class="ip-dot"></span></span>` : "";
-
     // The FROZEN pick a game box shows: prefer the served display_pick (frozen ~1h
     // before start), fall back to the morning de_plays best TAKE. Never re-derived
     // once the game starts — the box is the honest record of what we said pre-game.
@@ -2125,15 +1996,6 @@ export default function Home() {
       return "";
     }
     // ===================== PER-TEAM ODDS + FORM (the team rows do the work) =====================
-    // Scores-app line: each side carries its OWN spread(price) + moneyline next to the abbr.
-    // spread_pick.line is the HOME run-line; away = its negation. prices are DECIMAL per side.
-    // Degrades field-by-field: whatever isn't served simply doesn't render.
-    function teamOdds(g: any, which: "home" | "away") {
-      // ALL-IN TOTALS: no spread/ML on the team rows — the game's number is the O/U,
-      // shown once at game level. Fields stay null so every surface degrades cleanly.
-      const out: any = { spread: null, spreadPx: null, ml: null };
-      return out;
-    }
     // Recent form as a compact record — L15 record ("6-9") + optional hot/cold streak
     // ("W3"/"L3"). Served for MLB only via streaks.{away,home}; absent → "".
     function teamForm(g: any, which: "home" | "away") {
@@ -2150,52 +2012,6 @@ export default function Home() {
       return { rec, recIsL15, streak: ws, hot: ws && ws[0] === "W" };
     }
 
-    function marketStrip(g: any, pick: any, st: string, locked = false, excludePick = false) {
-      const q = pick ? qualityOf(pick) : null;
-      const mk = pick ? pick.market : null;
-      const mark = pick ? resMark(st) : "";
-      const started = isStarted(g);
-      const seg = (m: string) => {
-        const v = vegasLine(g, m);
-        if (pick && mk === m && !excludePick) {
-          // FREE MODE: the pick exists and its quality shows, but the side/line is locked.
-          if (locked) return `<span class="ms take q-${q} locked"><span class="ms-lk">${lockSvg}</span><span class="ms-dots" aria-hidden="true">●●●● ●</span>${qDiamonds(q)}</span>`;
-          return `<span class="ms take q-${q} ${st}">${pickArrow(pick)} ${esc(pick.side || v)}${pick.price != null ? ` <i>${fmtOdds(pick.price)}</i>` : ""}${qDiamonds(q)}${mark}</span>`;
-        }
-        if (pick && mk === m && excludePick) return ""; // the banner carries the pick
-        // pre-game: always show the market (dim placeholder if no number). live/final:
-        // only the numbers we still have, to keep the tile tight.
-        if (!v) return started ? "" : `<span class="ms dim">${M_ABBR[m]} —</span>`;
-        return `<span class="ms">${v}</span>`;
-      };
-      const parts = [seg("spread"), seg("total"), seg("moneyline")].filter(Boolean);
-      if (!parts.length) return "";
-      return `<div class="mline">${parts.join(`<span class="msep">·</span>`)}</div>`;
-    }
-    // ALL THREE Vegas markets woven onto a card — Spread · Total · Moneyline — with any market
-    // we'd actually bet CALLED OUT (our side + star rating). Markets we pass show the plain line.
-    // A clean 3-column grid so labels never stack/overlap on small screens.
-    function allLinesRow(g: any) {
-      const P = gamePlays(g);
-      const cell = (m: string, label: string) => {
-        const pl = P[m];
-        const line = vegasLine(g, m); // pre-escaped safe HTML ("BOS -1.5" / "O/U 8.5" / "LAA +120")
-        if (isPick(pl)) {
-          const q = qualityOf(pl);
-          const low = isLowConf(pl);
-          const st = playState(g, pl);
-          const locked = pickLocked(pl, st);
-          if (locked) {
-            return `<button class="lncell pick locked q-${q}" data-up="1" aria-label="${label} pick — unlock"><span class="ln-k">${label}</span><span class="ln-lock">${lockSvg}<span class="ln-dots" aria-hidden="true">★★★</span></span></button>`;
-          }
-          const mark = resMark(st);
-          const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
-          return `<div class="lncell pick q-${q} ${st}${low ? " low" : ""}"><span class="ln-k">Our call · ${label}</span><span class="ln-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ln-stars">${pickStars(pl)}${pickGrade(pl)}${mark ? `<span class="ln-res ${st}">${mark}</span>` : ""}</span></div>`;
-        }
-        return `<div class="lncell"><span class="ln-k">${label}</span><span class="ln-v">${line || "—"}</span></div>`;
-      };
-      return `<div class="lnrow">${cell("spread", "Spread")}${cell("total", "Total")}${cell("moneyline", "Moneyline")}</div>`;
-    }
     // Live progress for a frozen total pick: the current total filling toward the line.
     function pickProgress(g: any, pl: any, st: string) {
       if (!pl || pl.market !== "total") return "";
@@ -2311,20 +2127,6 @@ export default function Home() {
       });
     }, 60000);
 
-    // Tile status strip: "Mid 8th" / "FINAL" / "7:10 PM"; confidence diamonds right.
-    function tileStatus(g: any, gs: any, q?: any) {
-      let left = "";
-      if (gs.kind === "live") left = `<span class="ts-live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</span>`;
-      else if (gs.kind === "final") left = `<span class="ts-final">FINAL</span>`;
-      else {
-        const t = gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : (gs.si.date || "TBD");
-        left = `<span class="ts-time">${esc(t)}</span>`;
-      }
-      const dayTag = gs.kind === "pre" && gameLocalDay(g) && gameLocalDay(g) !== curDate ? `<span class="ts-day">${esc(gs.si.date)}</span>` : "";
-      const comp = g.meta && g.meta.competition ? `<span class="ts-comp">${esc(g.meta.competition)}</span>` : "";
-      const right = q ? qDiamonds(q) : (dayTag || comp);
-      return `<div class="t-status">${left}${right}</div>${gs.kind === "pre" ? countdownChip(g, gs) : ""}`;
-    }
     // Reference card header: a small LEAGUE TAG (left) + a GAME-STATE CHIP pill (right):
     // live inning / start time / "Final". The chip carries the game phase at a glance.
     function leagueTag(g: any) {
@@ -2342,21 +2144,6 @@ export default function Home() {
       const t = gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : (gs.si.date || "TBD");
       const dayTag = gameLocalDay(g) && gameLocalDay(g) !== curDate && gs.si.date ? `${esc(gs.si.date)} · ` : "";
       return `<span class="statechip pre">${dayTag}${esc(t)}</span>`;
-    }
-    // The O/U (shared total) + SPREAD (home run-line) columns on the right of a card.
-    // Pre-game shows the lines; once the game matters (live/final) the score carries it, so
-    // the odds columns quiet down. Each cell degrades independently if the market isn't served.
-    function oddsCols(g: any) {
-      const tp = g.total_pick;
-      const ouVal = tp && tp.line != null ? num(tp.line) : null;
-      let spVal: string | null = null;
-      const sp = g.spread_pick;
-      if (sp && sp.line != null) { const hl = spreadHomeLine(g, sp); spVal = `${esc(g.home_abbr)} ${sgn(hl)}`; }
-      if (ouVal == null && spVal == null) return "";
-      return `<div class="t-cols">
-        <div class="t-col"><span class="tc-k">O/U</span><span class="tc-v">${ouVal != null ? ouVal : "—"}</span></div>
-        <div class="t-col"><span class="tc-k">Spread</span><span class="tc-v${spVal ? "" : " none"}">${spVal || "—"}</span></div>
-      </div>`;
     }
     // A scores-app team line: logo · ABBR · form(L15 + streak) · this side's spread(px) + ML · SCORE.
     // The odds live WITH the team so the card needs no separate stacked market strip.
@@ -2528,72 +2315,6 @@ export default function Home() {
         ${pre ? "" : totOnly}
         ${isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
       </article>`;
-    }
-    // Per-side odds grid for a PRE-GAME tile — 2 rows (away/home) × 3 cols (Spread · Total · ML),
-    // the scores-app convention. Our pick's cell is tinted by tier + carries tiny stars; a
-    // low-confidence lean reads slate. Empty cells keep the grid aligned.
-    function tileOddsGrid(g: any) {
-      const P = gamePlays(g);
-      const sp = g.spread_pick, tp = g.total_pick;
-      const hl = sp && sp.line != null ? spreadHomeLine(g, sp) : null;
-      const oddsA = teamOdds(g, "away"), oddsH = teamOdds(g, "home");
-      // which row (away=top / home=bottom) each market's pick highlights; over=top, under=bottom
-      const rowOf = (pl: any) => {
-        if (!isPick(pl) || pickLocked(pl, playState(g, pl))) return null;
-        const s = String(pl.side || "");
-        if (/over/i.test(s)) return "away";
-        if (/under/i.test(s)) return "home";
-        if (g.away_abbr && s.indexOf(g.away_abbr) >= 0) return "away";
-        if (g.home_abbr && s.indexOf(g.home_abbr) >= 0) return "home";
-        return /^away$/i.test(s) ? "away" : /^home$/i.test(s) ? "home" : null;
-      };
-      const spRow = rowOf(P.spread), totRow = rowOf(P.total), mlRow = rowOf(P.moneyline);
-      const starsFor = (pl: any) => {
-        if (pl.stars != null) { // v4: the real 0-5 star count, dimmed when it's a light 1-2★
-          const n = Math.max(1, Math.min(5, pl.stars));
-          return `<i class="oc-st${pl.stars <= 2 ? " low" : ""}">${"★".repeat(n)}</i>`;
-        }
-        if (isLowConf(pl)) return `<i class="oc-st low">☆</i>`;
-        const n = qualityOf(pl) === "strong" ? 3 : qualityOf(pl) === "good" ? 2 : 1;
-        return `<i class="oc-st">${"★".repeat(n)}</i>`;
-      };
-      // Reference style (theScore): odds are PLAIN TEXT — no boxes. Only OUR pick becomes an
-      // unmistakable solid chip (► side + real price + stars). The picked side shows the REAL
-      // per-side price from the pick feed (never a −110 placeholder).
-      const cell = (val: any, on: boolean, pl: any) => {
-        if (!on) return `<span class="oc${val == null || val === "" ? " none" : ""}">${val == null || val === "" ? "–" : val}</span>`;
-        const q0 = qualityOf(pl);
-        // the chip shows THE PICK's own numbers (side-signed line), never a mixed source
-        let v: string;
-        if (pl.market === "spread" && pl.line != null) v = sgn(pl.line);
-        else if (pl.market === "total" && pl.line != null) v = (/over/i.test(String(pl.side || "")) ? "o" : "u") + num(pl.line);
-        else if (pl.market === "moneyline" && pl.price != null) v = fmtOdds(pl.price); // ML value IS the model's real price
-        else v = val != null && val !== "" ? String(val) : esc(String(pl.side || ""));
-        // compact chip: the value, the REAL price small beneath (when different), and a
-        // micro star-count row — small enough that it can never overflow the cell.
-        const px = pl.price != null && fmtOdds(pl.price) !== v ? `<em>${fmtOdds(pl.price)}</em>` : "";
-        const n = pl.stars != null ? Math.max(1, Math.min(5, pl.stars)) : (q0 === "strong" ? 3 : q0 === "good" ? 2 : 1);
-        return `<span class="oc pick q-${q0}"><b>${v}</b>${px}<i class="oc-mst">${"★".repeat(n)}</i></span>`;
-      };
-      // ONE source of truth per market: when the model judged a line (take or pass), BOTH
-      // rows show that line — the plain side and the pick chip can never disagree.
-      const v4t = v4LineOf(g, "total"), v4s = v4LineOf(g, "spread");
-      const totV = v4t && v4t.line != null ? num(Math.abs(v4t.line)) : (tp && tp.line != null ? num(tp.line) : null);
-      // spread: the model line is signed for ITS side — convert to the home-row number
-      let hlEff = hl;
-      if (v4s && v4s.line != null && v4s.pl) {
-        const sideAb = String(v4s.pl.side || "").split(/\s+/)[0];
-        if (sideAb === g.home_abbr) hlEff = v4s.line;
-        else if (sideAb === g.away_abbr) hlEff = -v4s.line;
-        else if (hl != null) hlEff = Math.sign(hl || 1) * Math.abs(v4s.line);
-      }
-      const row = (which: "away" | "home") => {
-        const spV = hlEff != null ? sgn(which === "home" ? hlEff : -hlEff) : null;
-        const o = which === "away" ? oddsA : oddsH;
-        const t = totV != null ? (which === "away" ? "o" + totV : "u" + totV) : null;
-        return cell(spV, spRow === which, P.spread) + cell(t, totRow === which, P.total) + cell(o.ml, mlRow === which, P.moneyline);
-      };
-      return `<div class="t-oddsgrid" aria-label="Odds — spread, total, moneyline">${row("away")}${row("home")}</div>`;
     }
     // A human sentence for WHY the model passed a market — built from the numbers when we
     // have them, never the raw jargon string.
@@ -2775,53 +2496,6 @@ export default function Home() {
       });
       return w + l ? { w, l } : null;
     }
-    // Record for ONE specific date (updates when you navigate the date strip): overall totals-pick
-    // W-L plus the GOLD (Strong) subset, so a great gold day gets its own little flex.
-    function dayRecordFor(dateISO: string) {
-      const src = livePayload || payload;
-      if (!src) return null;
-      let w = 0, l = 0, gw = 0, gl = 0, live = 0, up = 0;
-      ((src.games || []) as any[]).forEach((g: any) => {
-        if (String(g.date || "").slice(0, 10) !== dateISO) return;
-        const pl = gamePlays(g)["total"];
-        if (pl && pl.action === "TAKE") {
-          if (pl.result) { if (pl.result.status === "hit") w++; else if (pl.result.status === "miss") l++; }
-          else { const gs = gameState(g); if (gs.kind === "live") live++; else if (gs.kind !== "final") up++; }
-        }
-        const dp = displayPick(g);
-        const dr = resOf(dp);
-        if (dp && dp.quality === "strong" && dr) { if (dr === "hit") gw++; else if (dr === "miss") gl++; }
-      });
-      // "great gold day" = at least 2 gold wins and a clearly winning slate
-      const goldGreat = gw >= 2 && gw >= gl * 2;
-      return { w, l, gw, gl, live, up, goldGreat, graded: w + l };
-    }
-    // Full record tally over a set of games (filter fn): graded W-L-push + still-outstanding
-    // (live now / yet to start), broken out per market. Powers the record-breakdown sheet.
-    function recordFor(filterFn: (g: any) => boolean) {
-      const src = livePayload || payload;
-      if (!src) return null;
-      let w = 0, l = 0, push = 0, live = 0, upcoming = 0;
-      const byMk: any = { total: { w: 0, l: 0 }, spread: { w: 0, l: 0 }, moneyline: { w: 0, l: 0 } };
-      ((src.games || []) as any[]).forEach((g: any) => {
-        if (!filterFn(g)) return;
-        const P = gamePlays(g);
-        const gs = gameState(g);
-        MARKETS.forEach((mk) => {
-          const pl = P[mk];
-          if (!pl || pl.action !== "TAKE") return;
-          if (pl.result) {
-            if (pl.result.status === "hit") { w++; byMk[mk].w++; }
-            else if (pl.result.status === "miss") { l++; byMk[mk].l++; }
-            else push++;
-          } else if (gs.kind === "live") live++;
-          else if (gs.kind !== "final") upcoming++;
-        });
-      });
-      return { w, l, push, live, upcoming, byMk };
-    }
-    const todayRec = () => recordFor((g: any) => String(g.date || "").slice(0, 10) === todayISO());
-    const monthRec = () => recordFor((g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7));
     // Per STRENGTH-TIER tally over a set of games. Every TAKE across all markets is bucketed by
     // qualityOf() → strong / good / lean, using the SAME grading path as the rest of the record
     // (pickResult on each market's play). This is what makes a bare "0–3" self-explanatory:
@@ -2861,8 +2535,6 @@ export default function Home() {
         up: T.strong.up + T.good.up + T.lean.up,
       };
     }
-    const todayTierRec = () => tierRecordFor((g: any) => String(g.date || "").slice(0, 10) === todayISO());
-    const monthTierRec = () => tierRecordFor((g: any) => String(g.date || "").slice(0, 7) === todayISO().slice(0, 7));
     // ===================== THE RECORD LADDER (one mental model everywhere) =====================
     // The whole app tells ONE story about how the picks are doing: long-run we're 58% (the nav
     // anchor / validated signature) → this window the EDGE (totals, the validated play) is X–Y
@@ -2884,33 +2556,6 @@ export default function Home() {
         anyGraded: edge.w + edge.l + lean.w + lean.l,
         anyOut: edge.live + edge.up + lean.live + lean.up,
       };
-    }
-    const longRunPct = () => Math.round(recipeHistory().hit * 100); // the 58% anchor
-    // The two-part glance chip body: "Edge W–L · Leans W–L" with a muted "long-run 58%" anchor
-    // appended on a cold EDGE window so a 0–2 edge day never reads as a broken model. Both W–L
-    // parts are always shown when either side has graded picks, visibly distinct (edge vs lean).
-    function edgeLeanGlance(tr: any, scopeLab: string, isToday: boolean) {
-      const s = edgeLeanSplit(tr);
-      if (!s || (!s.anyGraded && !s.anyOut)) return "";
-      const wl = (o: any, kind: string, cls: string) => {
-        const dec = o.w + o.l;
-        const out = o.live + o.up;
-        if (!dec && !out) return "";
-        const rec = dec
-          ? `<b>${o.w}–${o.l}</b>`
-          : `<span class="glp-out">${out} ${isToday ? (o.live ? "live" : "to come") : "to come"}</span>`;
-        const outTail = dec && out ? `<span class="glp-out">+${out}</span>` : "";
-        return `<span class="glp ${cls}"><span class="glp-k">${kind}</span>${rec}${outTail}</span>`;
-      };
-      const edgeTxt = wl(s.edge, "Edge", "glp-edge");
-      const leanTxt = wl(s.lean, "Leans", "glp-lean");
-      const parts = [edgeTxt, leanTxt].filter(Boolean);
-      if (!parts.length) return "";
-      // Cold EDGE = the validated play is under water this window (a graded losing edge record).
-      // That's exactly when a user reads "0–2" as broken — so anchor it to the long-run 58%.
-      const coldEdge = s.edgeGraded > 0 && s.edge.l > s.edge.w;
-      const anchor = coldEdge ? `<span class="glp-anchor">long-run ${longRunPct()}%</span>` : "";
-      return `<span class="rc-today rc-split"><span class="glp-scope">${scopeLab}</span>${parts.join(`<span class="glp-sep">·</span>`)}${anchor}</span>`;
     }
     // Overall pick record for the VIEWED date/league — across ALL markets (spread + total + ML),
     // plus a separate "top picks" (Strong ★★★) tally. Drives the small performance banner.
@@ -3386,28 +3031,8 @@ export default function Home() {
     const passWhy = () =>
       `We checked the spread, the total and the moneyline for this game, and none of them offered a real advantage over the books' numbers. Passing is part of the strategy — most games don't have a bet worth taking.`;
 
-    // A TIGHT masthead headline from the full daily_brief sentence: take the lead phrase
-    // before the first ':' or '—'; if that's still long (or there's no break), cap to ~7
-    // words. The full sentence rides as a small dek beneath. Never a giant paragraph.
-    function shortHeadline(full: string) {
-      const s = cleanBlurb(String(full || "")).trim();
-      if (!s) return "";
-      let lead = s;
-      const m = s.match(/^(.{4,64}?)\s*[:—–-]\s+/);
-      if (m) lead = m[1];
-      const words = lead.split(/\s+/);
-      if (words.length > 8) lead = words.slice(0, 7).join(" ") + "…";
-      // strip a trailing comma/semicolon
-      return lead.replace(/[,;]\s*$/, "");
-    }
 
     // ---- power-user blocks kept under "More detail" ----
-    function modelsVsMarket(g: any) {
-      const models = (g.why && g.why.models) || [];
-      if (!models.length) return "";
-      const rows = models.map((m: any) => `<tr><td class="mname">${esc(m.name)}<div class="mnote">${esc(m.note || "")}</div></td><td class="num">${m.proj != null ? num(m.proj, 2) : "—"}</td></tr>`).join("");
-      return `<div class="dsec"><div class="dsec-h">Model vs. Market</div><div class="dsec-b"><table class="mtab"><thead><tr><th>Source</th><th style="text-align:right">Projection</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
-    }
 
     function intelSection(g: any) {
       const pi = g.pregame_intel;
@@ -3550,83 +3175,12 @@ export default function Home() {
       </div>`;
     }
 
-    // Recipe (VALUE) record table — power-user detail.
-    function valueRecordBlock() {
-      const vr = payload && payload.value_record;
-      if (!vr) return "";
-      const fwd = vr.forward || {};
-      const fRow = (lab: string, o: any) => {
-        if (!o || !o.n_settled) return `<tr><td>${esc(lab)}</td><td class="num">0</td><td class="num">—</td><td class="num">—</td></tr>`;
-        const hit = o.hit != null ? saPct(o.hit, 1) : "—";
-        const roi = o.roi != null ? `<span class="${o.roi >= 0 ? "pos" : "neg"}">${(o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1)}%</span>` : "—";
-        return `<tr><td>${esc(lab)} <span class="vr-rec">${esc(o.record || "")}</span></td><td class="num">${o.n_settled}</td><td class="num">${hit}</td><td class="num">${roi}</td></tr>`;
-      };
-      const rh = recipeHistory();
-      return `<div class="shp-vrec">
-        <div class="vr-h"><span class="pl-vdia">◆</span> Signature-play record</div>
-        <div class="vr-line">Calls made exactly this way won ${(rh.hit * 100).toFixed(1)}% since 2022 in backtest — real, but in-sample, so we plan around a more honest ~55% at morning prices (56.9% out-of-sample).</div>
-        <table class="dsa-tab vr-tab">
-          <thead><tr><th>Since going live</th><th>n</th><th>Win rate</th><th>Return</th></tr></thead>
-          <tbody>${fRow("Strong", fwd.tier_a)}${fRow("Strong + Good", fwd.tier_ab)}</tbody>
-        </table>
-      </div>`;
-    }
-
-    function playsTrackTable() {
-      const T = saTrack();
-      const row = (lab: string, o: any) => o ? `<tr><td>${esc(lab)}</td><td class="num">${(o.n || 0).toLocaleString()}</td><td class="num">${o.hit != null ? saPct(o.hit, 1) : "—"}</td><td class="num ${o.roi != null && o.roi >= 0 ? "pos" : "neg"}">${o.roi != null ? (o.roi >= 0 ? "+" : "") + (o.roi * 100).toFixed(1) + "%" : "—"}</td></tr>` : "";
-      const fwdRow = T.fwd && T.fwd.n_settled ? row("Live (forward)", { n: T.fwd.n_settled, hit: T.fwd.hit, roi: T.fwd.roi }) : "";
-      return `<div class="shp-track">
-        <div class="shp-track-h">Pick track record</div>
-        <table class="dsa-tab">
-          <thead><tr><th>Window</th><th>n</th><th>Win rate</th><th>Return</th></tr></thead>
-          <tbody>${row("2024", T.v24)}${row("2025", T.t25)}${row("2026", T.g26)}${fwdRow}</tbody>
-        </table>
-      </div>`;
-    }
-
-    function detailBet(pk: any, label: string, kind: string, g: any) {
-      if (!pk || pk.side == null) return "";
-      const st = resOf(pk);
-      const tier = pk.tier || "low";
-      let line = "";
-      if (kind === "spread") line = `line <b>${sgn(pk.line)}</b> · model margin <b>${pk.our_proj != null ? sgn(pk.our_proj) : "—"}</b>${pk.interval && pk.interval.lo != null ? ` · likely range ${num(pk.interval.lo)} to ${num(pk.interval.hi)}` : ""}`;
-      else if (kind === "total") {
-        // Prefer v3's reconciled total so "model X" agrees with the pick side; else legacy our_proj.
-        const _v3tot = v3PredTotal(g);
-        const modelTot = _v3tot != null ? num(_v3tot) : (pk.our_proj != null ? num(pk.our_proj) : "—");
-        line = `line <b>${num(pk.line)}</b> · model <b>${modelTot}</b>${pk.interval && pk.interval.lo != null ? ` · likely range ${num(pk.interval.lo)} to ${num(pk.interval.hi)}` : ""}`;
-      }
-      else {
-        // Prefer v3's reconciled win prob for the picked side; else the pick's own our_winprob.
-        const _which: "home" | "away" = pk.side === (g && g.away_abbr) ? "away" : "home";
-        const _v3wp = v3WinProb(g, _which);
-        const ourWp = _v3wp != null ? _v3wp : (pk.our_winprob != null ? Number(pk.our_winprob) : null);
-        line = `price <b>${fmtOdds(pk.price)}</b>${ourWp != null ? ` · model win chance <b>${(ourWp * 100).toFixed(1)}%</b>` : ""}${pk.market_winprob != null ? ` · market <b>${(pk.market_winprob * 100).toFixed(1)}%</b>` : ""}`;
-      }
-      const resTxt = st === "hit" ? `WON` : st === "miss" ? `LOST` : st === "push" ? "PUSH" : "";
-      return `<div class="dbet">
-        <div class="dbet-top">
-          <div class="dmk">${esc(label)}</div>
-          <div class="dmid"><div class="dside">${esc(pk.side)}</div><div class="dline">${line}</div></div>
-          <div class="dright">${confRing(pk)}${resTxt ? `<div class="dres ${st}">${resTxt}</div>` : ""}</div>
-        </div>
-      </div>`;
-    }
 
     // ===================== SHAREABLE GAME URLS + SOCIAL =====================
     // Real per-game routing: ?g=<game_id> via history.pushState so a game sheet is
     // deep-linkable, shareable, and back/forward/refresh restores it. (OG preview images
     // need SSR, which this client app lacks — so link previews stay generic for now; the
     // shareable URL + native share work today.)
-    let suppressPop = false; // set while WE drive history, so popstate doesn't double-fire
-    function gameUrl(gid: any) {
-      try {
-        const u = new URL(location.href);
-        u.searchParams.set("g", String(gid));
-        return u.toString();
-      } catch { return location.origin + location.pathname + "?g=" + encodeURIComponent(String(gid)); }
-    }
     // SHARE url uses the /g/<id> route so a shared link unfurls to that game's OG card; the route
     // redirects humans into the app (?g=<id>). Internal navigation keeps the lightweight ?g= form.
     function shareGameUrl(gid: any) {
@@ -3794,24 +3348,6 @@ export default function Home() {
       return `<div class="livepanel">${rows.join("")}</div>`;
     }
 
-    // A LARGE score to sit beside a headline for live/final games. "" for pre-game / no split score.
-    function bigScore(g: any) {
-      const gs = gameState(g);
-      if (gs.kind !== "live" && gs.kind !== "final") return "";
-      const sc = gs.score;
-      if (!sc || !sc.split || sc.home == null) return "";
-      const aw = num(sc.away, 0), hm = num(sc.home, 0);
-      const awWin = gs.kind === "final" && sc.away > sc.home, hmWin = gs.kind === "final" && sc.home > sc.away;
-      const tag = gs.kind === "live"
-        ? `<span class="bsc-tag live"><span class="livedot"></span>${esc(gs.label && gs.label !== "Live" ? gs.label : "LIVE")}</span>`
-        : `<span class="bsc-tag final">Final</span>`;
-      return `<div class="bigscore ${gs.kind}">
-        <span class="bsc-team ${awWin ? "win" : ""}"><span class="bsc-ab">${esc(g.away_abbr)}</span><b>${aw}</b></span>
-        <span class="bsc-dash">–</span>
-        <span class="bsc-team ${hmWin ? "win" : ""}"><b>${hm}</b><span class="bsc-ab">${esc(g.home_abbr)}</span></span>
-        ${tag}
-      </div>`;
-    }
     // A compact TABLE of the model's lean on every market — side + line + confidence (or Pass) —
     // shown at the top of the game detail; the narrative below explains WHY.
     function marketsTable(g: any) {
@@ -3956,7 +3492,6 @@ export default function Home() {
       function buildBody() {
       const sp = g.sport;
       const ps = g.predicted_score || {};
-      const homeWin = ps.winner_abbr === g.home_abbr;
       const dispDate = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
       const gs = gameState(g);
       const startTxt = gs.si.hasTime ? gs.si.time : gs.si.date;
@@ -4000,9 +3535,6 @@ export default function Home() {
         ${mastDek ? `<p class="sh-mast-dek">${mastDek}</p>` : ""}
         <div class="sh-mast-byline">DiamondEdge Preview${dispDate ? ` · ${esc(dispDate)}` : ""}${startTxt ? ` · ${esc(startTxt)}` : ""}</div>
       </div>`;
-      // The hero image LEADS the story. Locked free-mode keeps the unlock cover; everyone
-      // else sees the clean magazine image (the pick is the payoff below, not a spoiler).
-      const sheetHero = `<div class="sh-figure">${heroImage(g, tintSheet, "lead")}${leadLocked ? heroPickCover(g, "lead") : ""}</div>`;
       // PASS games get an explicit no-bet block that NAMES the lines we judged — a pass is
       // a priced decision, and it reads like one.
       const passBlock = (!lead && !leadLocked)
@@ -4088,7 +3620,6 @@ export default function Home() {
       // (3) Power-user detail — the PICK is already surfaced above (narrative + callout),
       // so this is odds, the signature-play record, matchup intel and model notes only.
       const reasoning = g.why && g.why.reasoning ? `<div class="dsec"><div class="dsec-h">Model Notes</div><div class="dsec-b reasoning">${esc(g.why.reasoning)}${g.why.chosen_rationale ? `<div class="rr2">${esc(g.why.chosen_rationale)}</div>` : ""}</div></div>` : "";
-      const anyValue = takes.some((p: any) => p.value_tier);
       const more = `<details class="more"><summary>Odds &amp; model detail<span class="more-sub">every market's number, the record, matchup intel</span></summary>
         <div class="more-body">
           <div class="dsec"><div class="dsec-h">Every market's number</div><div class="dsec-b shp-wrap">
@@ -4162,7 +3693,6 @@ export default function Home() {
         wireBody();
         positionDetailInk();
         if (gameState(g).kind === "live" || gameState(g).kind === "final") pollLiveDetail();
-        attachDrillStrip();
       }
 
       const html = `
@@ -4192,9 +3722,6 @@ export default function Home() {
       wireBody();
       // if opened on a live game, pull the box score right away
       if (!g._recipe && (gameState(g).kind === "live" || gameState(g).kind === "final")) pollLiveDetail();
-      // The game detail carries the single DiamondEdge Pick inline; there's no separate model
-      // drill-in surface. Kept as a no-op so the re-render path stays intact.
-      function attachDrillStrip() { return; }
       // ASYNC FEEDS → RE-RENDER. The pitcher cards (pitchers_v4), records+form (teams_v4), and
       // the totals pick (the v4 board) all key off game_pk / abbr and load async — a game opened
       // before they land would paint a bare preview and never fill in. We load all four here, and
@@ -4494,826 +4021,16 @@ export default function Home() {
     window.addEventListener("popstate", () => syncFromUrl(true));
 
     // ===================== RESULTS TAB =====================
-    const recCell = (o: any) => (o ? `${o.wins}-${o.losses}${o.pushes ? "-" + o.pushes : ""}` : "—");
-    const roiCell = (v: any) => (v == null ? "—" : `<span class="roi ${v >= 0 ? "pos" : "neg"}">${(v >= 0 ? "+" : "") + (v * 100).toFixed(1)}%</span>`);
 
-    function mergeRecs(list: any[]) {
-      const out: any = { n: 0, wins: 0, losses: 0, pushes: 0, units_net: 0, _staked: 0, _roiN: 0, _roiSum: 0 };
-      list.forEach((o: any) => {
-        if (!o) return;
-        out.n += o.n || 0; out.wins += o.wins || 0; out.losses += o.losses || 0; out.pushes += o.pushes || 0;
-        if (o.units_net != null) out.units_net += o.units_net;
-        if (o.units_staked != null) out._staked += o.units_staked;
-        if (o.roi != null && o.n) { out._roiSum += o.roi * o.n; out._roiN += o.n; }
-      });
-      if (!out.n) return null;
-      out.hit_rate = out.wins + out.losses ? out.wins / (out.wins + out.losses) : null;
-      out.roi = out._staked ? out.units_net / out._staked : (out._roiN ? out._roiSum / out._roiN : null);
-      return out;
-    }
-
-    // ---- DEEP ANALYTICS (analytics_deep block; graceful fallback to the classic page) ----
-    async function loadAnalyticsDeep() {
-      if (analyticsDeep || adTried) return analyticsDeep;
-      adTried = true;
-      analyticsDeep = (livePayload && livePayload.analytics_deep) || (payload && payload.analytics_deep) || (indexData && indexData.analytics_deep) || null;
-      if (!analyticsDeep) { try { analyticsDeep = await snap("analytics_deep"); } catch {} }
-      if (analyticsDeep && !analyticsDeep.cuts) analyticsDeep = null; // malformed → fallback
-      return analyticsDeep;
-    }
-    // Jargon-free section labels for each cut.
-    const CUT_META: any = {
-      by_quality: "By pick quality",
-      by_sport: "By league",
-      by_market: "By pick type",
-      by_price_band: "By price range",
-      by_side: "Overs vs. unders",
-      by_theme: "By theme",
-      by_month: "By month",
-      by_day_of_week: "By day of week",
-      by_line_level: "By total line",
-    };
-    const CUT_ORDER = ["by_quality", "by_sport", "by_market", "by_price_band", "by_side", "by_theme", "by_month", "by_day_of_week", "by_line_level"];
-    // Plain product labels — internal signal names, thresholds and book-count mechanics
-    // never reach the page (house rule: the story sells, the kitchen stays closed).
-    function prettyKey(k: any) {
-      let s = String(k == null || k === "" ? "—" : k);
-      s = s.replace(/\s*\([^)]*\)\s*/g, " ").trim(); // strip "(5%+ gap)"-style mechanics
-      s = s.replace(/\s*[—–-]\s*live\s+paper\b/gi, " — live").replace(/\bpaper\b/gi, "").replace(/\s{2,}/g, " ").trim();
-      const map: any = { over: "Overs", under: "Unders", OVER: "Overs", UNDER: "Unders", heat_day: "Heat-day picks", heat: "Heat-day picks", split_books: "Split-book picks", mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer", total: "Totals", spread: "Spreads", moneyline: "Moneylines", strong: "◆◆◆ Strong", good: "◆◆ Good", lean: "◆ Lean", "Strong signal": "◆◆◆ Strong", "Solid signal": "◆◆ Good", "Baseline signal": "◆ Lean" };
-      if (map[s] != null) return map[s];
-      s = s.replace(/books? split across \d\+? (different )?lines?/i, (m0) => /3\+|three/i.test(m0) ? "Books strongly split on the line" : "Books split on the line")
-        .replace(/game total\s*[—–-]\s*live.*$/i, "Game totals — since going live");
-      return s.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
-    }
-    // Plain-English explanation for a cut where the win% looks good but the return is
-    // negative — served string wins; else a clear house sentence. NEVER show a bare win%
-    // next to a negative return without this context.
-    function returnNote(r: any, hit: any, roi: any) {
-      const served = r.explanation || r.note || r.plain || null;
-      if (served) return cleanCopy(served);
-      if (hit != null && roi != null && roi < 0 && hit > 0.5)
-        return "Wins often, but the odds here are too short to profit — that's why these aren't DiamondEdge Picks.";
-      return "";
-    }
-    // One cut → a compact module: a win% bar (with a plain "break-even" tick) always
-    // paired with the return; a high-win/negative-return row carries its explanation inline.
-    function adCutModule(cutKey: string, rows: any[]) {
-      if (!Array.isArray(rows) || !rows.length) return "";
-      const body = rows.map((r: any) => {
-        const hit = r.hit != null && !isNaN(Number(r.hit)) ? Number(r.hit) : null;
-        const roi = r.roi != null && !isNaN(Number(r.roi)) ? Number(r.roi) : null;
-        const w = hit != null ? Math.max(4, Math.min(100, hit * 100)) : 0;
-        const note = returnNote(r, hit, roi);
-        return `<div class="ad-row">
-          <span class="ad-k">${prettyKey(r.key)}<span class="ad-n">${(r.n || 0).toLocaleString()} picks</span></span>
-          <span class="ad-rec">${esc(r.record || "")}</span>
-          <span class="ad-barwrap" title="won ${hit != null ? (hit * 100).toFixed(1) + "%" : "—"} · needs about 52% to profit at typical prices">
-            ${hit != null ? `<span class="ad-bar ${roi != null && roi < 0 ? "neg" : ""}" style="width:${w.toFixed(1)}%"></span>` : ""}
-            <span class="ad-be" style="left:52.4%"></span>
-            ${hit != null ? `<span class="ad-hit">${(hit * 100).toFixed(1)}%</span>` : ""}
-          </span>
-          <span class="ad-roi ${roi == null ? "dim" : roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + (roi * 100).toFixed(1) + "%"}</span>
-        </div>${note ? `<div class="ad-note">${esc(note)}</div>` : ""}`;
-      }).join("");
-      return `<div class="anz-card"><div class="anz-card-h">${CUT_META[cutKey] || prettyKey(cutKey)}</div><div class="ad-rows">${body}</div></div>`;
-    }
-    // Edge descriptions are rewritten client-side: the proof (record, sample, return)
-    // shows in full — the trigger mechanics stay the house blend.
-    const EDGE_COPY: any = [
-      [/core recipe|signature/i, "The signature DiamondEdge play — our model and the market's own behavior both have to agree a number is soft before we publish. This record is the product's evidence base: strictly-future games, graded on final scores, 2022–2026."],
-      [/shopping the price/i, "The exact same picks, taken at the best available price instead of the typical one. Costs nothing and has historically added profit on every dollar."],
-      [/hot[- ]day/i, "Over calls on days far hotter than that ballpark's norm — the single best profile in the graded history."],
-      [/getaway|travel/i, "Games where a team travels immediately after — a scheduling profile the record says the market underprices."],
-    ];
-    function edgeCopy(e: any) {
-      const name = String(e.name || "");
-      const hit = EDGE_COPY.find(([re]: any) => re.test(name));
-      if (hit) return hit[1];
-      const d = String(e.description || "");
-      // fall back to the served description with trigger numbers redacted
-      return cleanCopy(d.replace(/\d+(\.\d+)?%\+?/g, "a meaningful amount").replace(/\bAND\b/g, "and"));
-    }
-    // A self-contained editorial figure for a results article — theme-tinted wash + a big
-    // watermark glyph + an overlaid symbol. No external images (same discipline as heroImage).
-    function resFigure(tint: string, glyph: string) {
-      const t = HERO_TINT[tint] || HERO_TINT.record;
-      const ic = IC[tint] ? tint : "record";
-      return `<div class="resfig" style="--t1:${t[0]};--t2:${t[1]}" aria-hidden="true">
-        <span class="rf-wm"><svg viewBox="0 0 24 24">${IC[ic] ? IC[ic].replace(/^<svg[^>]*>|<\/svg>$/g, "") : ""}</svg></span>
-        <span class="rf-glyph">${esc(glyph)}</span>
-      </div>`;
-    }
-    function adEdgesModule(list: any[]) {
-      if (!Array.isArray(list) || !list.length) return "";
-      const stLabel: any = { validated: "Proven", live: "Live", paper: "Live", experimental: "Emerging" };
-      const cards = list.map((e: any) => {
-        const roi = e.roi != null && !isNaN(Number(e.roi)) ? Number(e.roi) : null;
-        const st = String(e.status || "").toLowerCase();
-        const desc = edgeCopy(e);
-        const name = cleanCopy(e.name || "");
-        return `<div class="edge ${esc(st)}">
-          <div class="edge-h"><b>${esc(name)}</b>${st ? `<span class="edge-st">${esc(stLabel[st] || prettyKey(st))}</span>` : ""}
-            <span class="edge-nums">${(e.n || 0).toLocaleString()} picks · ${e.hit != null ? (Number(e.hit) * 100).toFixed(1) + "%" : "—"} · <span class="${roi != null && roi >= 0 ? "pos" : "neg"}">${roi == null ? "—" : (roi >= 0 ? "+" : "") + (roi * 100).toFixed(1) + "%"}</span></span></div>
-          ${desc ? `<p>${esc(desc)}</p>` : ""}
-        </div>`;
-      }).join("");
-      return `<div class="anz-card" style="margin-bottom:14px"><div class="anz-card-h">★ Where the edges live</div><div class="edge-list">${cards}</div></div>`;
-    }
-
-    // ===================== INSIGHTS CHARTS (self-contained SVG — no external libs) =====================
-    // Every chart reads REAL analytics_deep fields and degrades to "" when absent. Light
-    // liquid-glass palette, tabular-nums, reduced-motion honored (animations are CSS-gated).
-    // A served section's narrative + title accompany each so the page reads editorial.
-    const adSection = (key: string) => {
-      const s = analyticsDeep && Array.isArray(analyticsDeep.sections) ? analyticsDeep.sections.find((x: any) => x.key === key) : null;
-      return s || null;
-    };
-    const adNarr = (key: string) => { const s = adSection(key); return s && s.narrative ? cleanCopy(s.narrative) : ""; };
-    // Wrap a chart in the editorial article shell: figure glyph + kicker + title + narrative + chart.
-    function insightArticle(kick: string, title: string, narrative: string, tint: string, glyph: string, chart: string, note = "") {
-      if (!chart) return "";
-      return `<article class="ins-art">
-        <div class="ins-fig">${resFigure(tint, glyph)}</div>
-        <div class="ins-b">
-          <div class="ins-kick">${esc(kick)}</div>
-          <h3 class="ins-h">${esc(title)}</h3>
-          ${narrative ? `<p class="ins-narr">${esc(narrative)}</p>` : ""}
-          <div class="ins-chart">${chart}</div>
-          ${note ? `<p class="ins-note">${esc(note)}</p>` : ""}
-        </div>
-      </article>`;
-    }
-
-    // VALIDATED EQUITY CURVE — cumulative units (profit) over the validated graded record,
-    // built from the ONE honest source that's always in the payload:
-    //   value_record.validated_history.by_year  [{n, roi, hit, avg_odds}]
-    // This is the same parquet ledger behind the 886 / 58.1% / +11% headline. There is no
-    // per-pick time series in the payload (the history:DATE keys are a partial live-board
-    // archive, not the validated ledger), so we anchor the curve on the real per-YEAR points:
-    //   units staked in a year = n (1u/pick); profit that year = n * roi; cumulative = running sum.
-    // Endpoint reconciles exactly: Σn = 886, Σ(n*roi)/Σn = blended ROI = +10.78% (the headline).
-    // The line is drawn as a smooth monotone curve THROUGH the real year anchors — every marked
-    // point is a genuine data point; no fabricated intermediate values are labeled.
-    function validatedEquitySeries() {
-      const vh = payload && payload.value_record && payload.value_record.validated_history;
-      const by = vh && vh.by_year;
-      if (!by || typeof by !== "object") return null;
-      const years = Object.keys(by).filter((y) => /^\d{4}$/.test(y) && by[y] && by[y].n != null).sort();
-      if (years.length < 2) return null;
-      let cumN = 0, cumU = 0;
-      // Origin anchor: start of the record, zero units staked / zero profit.
-      const pts: any[] = [{ label: years[0], year: years[0], n: 0, cumN: 0, units: 0, roi: 0, origin: true }];
-      years.forEach((y) => {
-        const r = by[y] || {};
-        const n = Number(r.n) || 0;
-        const roi = Number(r.roi) || 0;      // return per unit staked, at median price
-        cumN += n; cumU += n * roi;
-        pts.push({ label: y, year: y, n, cumN, units: cumU, roi: Number(r.roi), hit: Number(r.hit) });
-      });
-      const last = pts[pts.length - 1];
-      return { pts, totalN: cumN, totalUnits: cumU, blendedRoi: cumN ? cumU / cumN : 0, last };
-    }
-
-    // The equity curve itself: rising cumulative-units line on a light liquid-glass panel.
-    // Inline SVG, no chart library. Zero baseline, start/end labels, year ticks under the axis,
-    // aria-label summarizing the trend, responsive (scales to container width).
-    function chartValidatedEquity() {
-      const s = validatedEquitySeries();
-      if (!s || s.pts.length < 3) return "";
-      const { pts, totalN, totalUnits, last } = s;
-      // Wider, flatter web aspect (was 340×176 ≈ 1.93:1, which — capped at 520px in a full-width
-      // card — left a big dead band on desktop and read as "off" while scrolling). A 720×230
-      // viewBox (≈3.1:1) fills the card cleanly at every width via width:100%.
-      const W = 720, H = 200, PL = 34, PR = 18, PT = 18, PB = 32;
-      const iw = W - PL - PR, ih = H - PT - PB;
-      const us = pts.map((p: any) => p.units);
-      let yMin = Math.min(0, ...us), yMax = Math.max(0, ...us);
-      const ypad = (yMax - yMin) * 0.12 || 1; yMax += ypad; if (yMin < 0) yMin -= ypad;
-      const n = pts.length;
-      const sx = (i: number) => PL + (i / (n - 1)) * iw;
-      const sy = (v: number) => PT + (1 - (v - yMin) / (yMax - yMin || 1)) * ih;
-      const y0 = sy(0);
-      // Monotone-cubic path through the real anchors — smooth, never overshoots the data.
-      const X = pts.map((_: any, i: number) => sx(i));
-      const Y = pts.map((p: any) => sy(p.units));
-      const dxs: number[] = [], slopes: number[] = [];
-      for (let i = 0; i < n - 1; i++) { const dx = X[i + 1] - X[i]; dxs.push(dx); slopes.push((Y[i + 1] - Y[i]) / (dx || 1)); }
-      const m: number[] = new Array(n);
-      m[0] = slopes[0]; m[n - 1] = slopes[n - 2];
-      for (let i = 1; i < n - 1; i++) {
-        if (slopes[i - 1] * slopes[i] <= 0) m[i] = 0;
-        else m[i] = (slopes[i - 1] + slopes[i]) / 2;
-      }
-      let line = `M${X[0].toFixed(1)} ${Y[0].toFixed(1)}`;
-      for (let i = 0; i < n - 1; i++) {
-        const dx = dxs[i];
-        line += ` C${(X[i] + dx / 3).toFixed(1)} ${(Y[i] + (m[i] * dx) / 3).toFixed(1)} ${(X[i + 1] - dx / 3).toFixed(1)} ${(Y[i + 1] - (m[i + 1] * dx) / 3).toFixed(1)} ${X[i + 1].toFixed(1)} ${Y[i + 1].toFixed(1)}`;
-      }
-      const area = `${line} L${X[n - 1].toFixed(1)} ${y0.toFixed(1)} L${X[0].toFixed(1)} ${y0.toFixed(1)} Z`;
-      // Year ticks: first + last + interior year labels (skip the origin duplicate).
-      const ticks = pts.map((p: any, i: number) => {
-        if (p.origin) return "";
-        return `<text class="eqv-tick" x="${sx(i).toFixed(1)}" y="${H - 10}" text-anchor="${i === n - 1 ? "end" : i === 1 ? "start" : "middle"}">${esc(p.year)}</text>`;
-      }).join("");
-      // Start / end value labels.
-      const endLab = `${sgn(last.units, 0)}u`;
-      const dotX = sx(n - 1), dotY = sy(last.units);
-      const yr0 = pts[1] ? pts[1].year : "", yr1 = last.year;
-      const aria = `Cumulative profit rose to ${sgn(last.units, 0)} units over ${totalN.toLocaleString()} graded totals picks from ${yr0} to ${yr1}, a steadily rising equity curve.`;
-      return `<div class="eqv-wrap"><svg viewBox="0 0 ${W} ${H}" class="eqv-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(aria)}">
-        <defs><linearGradient id="eqvfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--green)" stop-opacity=".22"/><stop offset="1" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
-        <line class="eqv-zero" x1="${PL}" y1="${y0.toFixed(1)}" x2="${W - PR}" y2="${y0.toFixed(1)}"/>
-        <text class="eqv-zlab" x="${PL - 4}" y="${(y0 + 3).toFixed(1)}" text-anchor="end">0</text>
-        <path class="eqv-area" d="${area}" fill="url(#eqvfill)"/>
-        <path class="eqv-line" d="${line}"/>
-        ${pts.map((p: any, i: number) => p.origin ? "" : `<circle class="eqv-node" cx="${sx(i).toFixed(1)}" cy="${sy(p.units).toFixed(1)}" r="3.4"><title>Through ${esc(p.year)}: ${sgn(p.units, 1)}u on ${p.cumN.toLocaleString()} picks</title></circle>`).join("")}
-        <circle class="eqv-dot" cx="${dotX.toFixed(1)}" cy="${dotY.toFixed(1)}" r="5.6"/>
-        <text class="eqv-endlab" x="${(dotX - 9).toFixed(1)}" y="${(dotY - 11).toFixed(1)}" text-anchor="end">${esc(endLab)}</text>
-        ${ticks}
-      </svg></div>`;
-    }
-
-    // The full equity-curve card for the Results view — honest caption with the real numbers.
-    function equityCurveCard() {
-      const s = validatedEquitySeries();
-      const chart = chartValidatedEquity();
-      if (!s || !chart) return "";
-      const { totalN, totalUnits, blendedRoi } = s;
-      return `<section class="eqv-card" aria-label="Equity curve — validated record">
-        <div class="eqv-head">
-          <div class="eqv-kick">The equity curve</div>
-          <h3 class="eqv-h">A dollar riding every pick, since ${esc(s.pts[1] ? s.pts[1].year : "2022")}</h3>
-          <p class="eqv-sub">Each year of the validated record adds to this running total. The line only measures the <b>totals</b> edge — the calls we actually publish — graded at real closing prices.</p>
-        </div>
-        ${chart}
-        <div class="eqv-foot">
-          <span class="eqv-stat"><i>Ended at</i><b class="pos">${sgn(totalUnits, 0)}u</b></span>
-          <span class="eqv-stat"><i>Graded picks</i><b>${totalN.toLocaleString()}</b></span>
-          <span class="eqv-stat"><i>Return</i><b class="pos">${sgn(blendedRoi * 100, 0)}%</b></span>
-        </div>
-        <p class="eqv-cap">Historical validated record · totals · ${totalN.toLocaleString()} graded picks · ${sgn(totalUnits, 0)} units at median price</p>
-      </section>`;
-    }
-
-    // (H1) EQUITY CURVE — cumulative return over the graded history as a smooth area+line.
-    // Reads analytics_deep.equity_curve [{n,date,cum_units,cum_return_pct}]. The y-axis is
-    // cumulative return %; the x-axis is graded-pick order (time). Zero line marked.
-    function chartEquityCurve() {
-      const raw = (analyticsDeep && Array.isArray(analyticsDeep.equity_curve)) ? analyticsDeep.equity_curve : [];
-      const pts = raw.map((p: any) => ({ x: Number(p.n), y: Number(p.cum_return_pct), date: p.date })).filter((p: any) => !isNaN(p.x) && !isNaN(p.y));
-      if (pts.length < 3) return "";
-      const W = 320, H = 150, PL = 34, PR = 10, PT = 12, PB = 20;
-      const iw = W - PL - PR, ih = H - PT - PB;
-      const xs = pts.map((p: any) => p.x), ys = pts.map((p: any) => p.y);
-      const xMin = Math.min(...xs), xMax = Math.max(...xs);
-      let yMin = Math.min(0, ...ys), yMax = Math.max(...ys);
-      const pad = (yMax - yMin) * 0.08 || 1; yMax += pad; yMin -= pad;
-      const sx = (x: number) => PL + ((x - xMin) / (xMax - xMin || 1)) * iw;
-      const sy = (y: number) => PT + (1 - (y - yMin) / (yMax - yMin || 1)) * ih;
-      const y0 = sy(0);
-      const line = pts.map((p: any, i: number) => `${i ? "L" : "M"}${sx(p.x).toFixed(1)} ${sy(p.y).toFixed(1)}`).join(" ");
-      const area = `${line} L${sx(xMax).toFixed(1)} ${y0.toFixed(1)} L${sx(xMin).toFixed(1)} ${y0.toFixed(1)} Z`;
-      const last = pts[pts.length - 1];
-      // y gridlines at 0 and yMax
-      const yticks = [0, Math.round(yMax)].filter((v, i, a) => a.indexOf(v) === i);
-      const grid = yticks.map((v) => `<line class="ins-grid" x1="${PL}" y1="${sy(v).toFixed(1)}" x2="${W - PR}" y2="${sy(v).toFixed(1)}"/><text class="ins-axis" x="${PL - 5}" y="${(sy(v) + 3).toFixed(1)}" text-anchor="end">${v}%</text>`).join("");
-      const yr0 = String(pts[0].date || "").slice(0, 4), yr1 = String(last.date || "").slice(0, 4);
-      return `<div class="ins-svgwrap"><svg viewBox="0 0 ${W} ${H}" class="ins-svg equity" preserveAspectRatio="none" role="img" aria-label="Cumulative return grew to ${num(last.y, 0)}% over ${last.x} graded picks">
-        <defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--green)" stop-opacity=".26"/><stop offset="1" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
-        ${grid}
-        <line class="ins-zero" x1="${PL}" y1="${y0.toFixed(1)}" x2="${W - PR}" y2="${y0.toFixed(1)}"/>
-        <path class="eq-area" d="${area}" fill="url(#eqfill)"/>
-        <path class="eq-line" d="${line}"/>
-        <circle class="eq-dot" cx="${sx(last.x).toFixed(1)}" cy="${sy(last.y).toFixed(1)}" r="3.4"/>
-        <text class="ins-axis" x="${PL}" y="${H - 5}" text-anchor="start">${esc(yr0)}</text>
-        <text class="ins-axis" x="${W - PR}" y="${H - 5}" text-anchor="end">${esc(yr1)}</text>
-      </svg></div>
-      <div class="ins-legend"><span class="il-item wide"><span class="il-sw green"></span><span>A dollar riding every pick returned <b>+${num(last.y, 0)}%</b> across ${last.x.toLocaleString()} graded picks.</span></span></div>`;
-    }
-
-    // (H2) CALIBRATION — the trust chart: predicted vs actual with a diagonal reference.
-    // Reads analytics_deep.calibration [{predicted,actual,n,bucket_label}]. If our dots sit
-    // ON the diagonal, "when we say ~58% we hit ~58%". Dot size ∝ how many picks.
-    function chartCalibration() {
-      const raw = (analyticsDeep && Array.isArray(analyticsDeep.calibration)) ? analyticsDeep.calibration : [];
-      const pts = raw.map((p: any) => ({ px: Number(p.predicted), ay: Number(p.actual), n: Number(p.n || 0), lab: p.bucket_label })).filter((p: any) => !isNaN(p.px) && !isNaN(p.ay));
-      if (pts.length < 2) return "";
-      const W = 300, H = 220, P = 34;
-      const allv = pts.flatMap((p: any) => [p.px, p.ay]);
-      let lo = Math.min(...allv, 0.5), hi = Math.max(...allv, 0.6);
-      const pad = (hi - lo) * 0.12 || 0.04; lo = Math.max(0, lo - pad); hi = Math.min(1, hi + pad);
-      const sx = (v: number) => P + ((v - lo) / (hi - lo || 1)) * (W - P - 12);
-      const sy = (v: number) => (H - P) - ((v - lo) / (hi - lo || 1)) * (H - P - 12);
-      const nMax = Math.max(...pts.map((p: any) => p.n), 1);
-      const ticks = [lo, (lo + hi) / 2, hi].map((v) => Math.round(v * 100) / 100);
-      const gx = ticks.map((v) => `<line class="ins-grid" x1="${sx(v).toFixed(1)}" y1="12" x2="${sx(v).toFixed(1)}" y2="${(H - P).toFixed(1)}"/><text class="ins-axis" x="${sx(v).toFixed(1)}" y="${H - P + 14}" text-anchor="middle">${(v * 100).toFixed(0)}%</text>`).join("");
-      const gy = ticks.map((v) => `<line class="ins-grid" x1="${P}" y1="${sy(v).toFixed(1)}" x2="${W - 12}" y2="${sy(v).toFixed(1)}"/><text class="ins-axis" x="${P - 5}" y="${(sy(v) + 3).toFixed(1)}" text-anchor="end">${(v * 100).toFixed(0)}%</text>`).join("");
-      const diag = `M${sx(lo).toFixed(1)} ${sy(lo).toFixed(1)} L${sx(hi).toFixed(1)} ${sy(hi).toFixed(1)}`;
-      const dots = pts.map((p: any) => {
-        const r = 4 + (p.n / nMax) * 7;
-        const above = p.ay >= p.px; // hit MORE than predicted = good (above diagonal)
-        return `<circle class="cal-dot ${above ? "good" : "under"}" cx="${sx(p.px).toFixed(1)}" cy="${sy(p.ay).toFixed(1)}" r="${r.toFixed(1)}"><title>Said about ${(p.px * 100).toFixed(0)}% → actually won ${(p.ay * 100).toFixed(0)}% (${p.n} picks)</title></circle>`;
-      }).join("");
-      return `<div class="ins-svgwrap"><svg viewBox="0 0 ${W} ${H + 4}" class="ins-svg calib" role="img" aria-label="Calibration: predicted win chance versus how often those picks actually won">
-        ${gx}${gy}
-        <path class="cal-diag" d="${diag}"/>
-        ${dots}
-        <text class="ins-axtitle" x="${((W + P) / 2).toFixed(0)}" y="${H + 1}" text-anchor="middle">What we said</text>
-        <text class="ins-axtitle" x="12" y="${((H - P) / 2).toFixed(0)}" text-anchor="middle" transform="rotate(-90 12 ${((H - P) / 2).toFixed(0)})">What happened</text>
-      </svg></div>
-      <div class="ins-legend"><span class="il-item"><span class="il-sw diag"></span>Perfect line</span><span class="il-item"><span class="il-sw dot"></span>Bigger dot = more picks · on or above the line means we hit at least as often as we said</span></div>`;
-    }
-
-    // (H3) MONTHLY — win% and return per month, twin bars. Reads analytics_deep.monthly
-    // [{month,n,hit,roi,avg_odds,profit_note}]. Break-even tick on the win% bars. Caps to
-    // the most recent ~14 months so the strip stays legible on mobile.
-    function chartMonthly() {
-      const raw = (analyticsDeep && Array.isArray(analyticsDeep.monthly)) ? analyticsDeep.monthly : [];
-      const rows = raw.filter((m: any) => m && m.hit != null).slice(-14);
-      if (rows.length < 2) return "";
-      const maxRoi = Math.max(0.02, ...rows.map((m: any) => Math.abs(Number(m.roi || 0))));
-      const bars = rows.map((m: any) => {
-        const hit = Number(m.hit), roi = Number(m.roi);
-        const hpct = Math.max(0, Math.min(100, hit * 100));
-        const rH = Math.min(100, (Math.abs(roi) / maxRoi) * 100);
-        const mlab = (() => { const d = new Date(String(m.month) + "-15T12:00:00"); return isNaN(d.getTime()) ? String(m.month).slice(5) : d.toLocaleDateString("en-US", { month: "short" }); })();
-        const yr = String(m.month).slice(2, 4);
-        return `<div class="mo-col" title="${esc(mlab)} 20${yr}: won ${(hit * 100).toFixed(0)}% · ${roi >= 0 ? "+" : ""}${(roi * 100).toFixed(0)}% return · ${m.n} picks">
-          <div class="mo-hit"><span class="mo-hbar ${hit >= 0.524 ? "up" : "dn"}" style="height:${hpct.toFixed(0)}%"></span><span class="mo-be"></span></div>
-          <div class="mo-roi"><span class="mo-rbar ${roi >= 0 ? "pos" : "neg"}" style="height:${rH.toFixed(0)}%"></span></div>
-          <span class="mo-lab">${esc(mlab)}<i>${esc(yr)}</i></span>
-        </div>`;
-      }).join("");
-      return `<div class="mo-chart"><div class="mo-yhead"><span>Win %</span><span class="mo-be-key">— break-even</span></div>
-        <div class="mo-bars">${bars}</div>
-        <div class="mo-yhead roi"><span>Return per dollar</span></div></div>
-      <div class="ins-legend"><span class="il-item"><span class="il-sw green"></span>Above the dashed line = a winning month</span><span class="il-item"><span class="il-sw red"></span>Down bars = months that finished behind</span></div>`;
-    }
-
-    // (H4) BY-CONFIDENCE — Strong / Good / Lean as grouped win% + return bars. Reads
-    // analytics_deep.by_confidence [{key,tier,hit,roi,record,n,profit_note}]. The per-row
-    // profit_note renders inline so a strong win% next to a modest return always reads clearly.
-    function chartByConfidence() {
-      const raw = (analyticsDeep && Array.isArray(analyticsDeep.by_confidence)) ? analyticsDeep.by_confidence : [];
-      const rows = raw.filter((r: any) => r && r.hit != null);
-      if (!rows.length) return "";
-      const qKey = (t: any) => { const s = String(t || "").toLowerCase(); return s === "strong" ? "strong" : s === "good" ? "good" : "lean"; };
-      const body = rows.map((r: any) => {
-        const q = qKey(r.tier || r.key);
-        const hit = Number(r.hit), roi = Number(r.roi);
-        const hpct = Math.max(4, Math.min(100, hit * 100));
-        const note = r.profit_note ? cleanCopy(r.profit_note) : returnNote(r, hit, roi);
-        return `<div class="bc-row q-${q}">
-          <div class="bc-head"><span class="bc-lab">${qDiamonds(q)}<b>${esc(Q_LABEL[q] || r.key)}</b></span><span class="bc-rec">${esc(r.record || "")}</span></div>
-          <div class="bc-bars">
-            <div class="bc-metric"><span class="bc-k">Win rate</span><span class="bc-track"><span class="bc-fill hit" style="width:${hpct.toFixed(0)}%"></span><span class="bc-be" style="left:52.4%"></span></span><b class="bc-v">${(hit * 100).toFixed(0)}%</b></div>
-            <div class="bc-metric"><span class="bc-k">Return</span><span class="bc-track"><span class="bc-fill ${roi >= 0 ? "roi" : "roineg"}" style="width:${Math.max(4, Math.min(100, Math.abs(roi) * 100 * 3)).toFixed(0)}%"></span></span><b class="bc-v ${roi >= 0 ? "pos" : "neg"}">${roi >= 0 ? "+" : ""}${(roi * 100).toFixed(0)}%</b></div>
-          </div>
-          ${note ? `<p class="bc-note">${esc(note)}</p>` : ""}
-        </div>`;
-      }).join("");
-      return `<div class="bc-chart">${body}</div>`;
-    }
-
-    // The whole §H insights block: profit_primer up top, then the four keystone charts,
-    // then the existing cuts as clean bar modules with their served narratives.
-    function insightsBlock() {
-      if (!analyticsDeep) return "";
-      const primer = analyticsDeep.profit_primer ? cleanCopy(analyticsDeep.profit_primer) : "";
-      const primerCard = primer
-        ? `<div class="ins-primer"><span class="ip-k">◆ Reading these numbers</span><p>${esc(primer)}</p></div>`
-        : "";
-      // NOTE: the equity curve is now the prominent hero card (equityCurveCard) above this block,
-      // so the redundant second equity chart that used to lead here has been removed.
-      const cal = insightArticle("The trust chart", "When we say ~58%, do we hit ~58%?", adNarr("calibration") || "This is the chart that keeps us honest. The horizontal is what our model claimed; the vertical is what actually happened. Dots sitting on — or above — the diagonal mean our confidence is real, not marketing.", "record", "◎", chartCalibration());
-      const mo = insightArticle("Month by month", "The edge shows up across the calendar", adNarr("by_month") || "A real edge shouldn't need a lucky month. Win rate on top, the money it made below — most months clear the bar, a few don't, and we show them all.", "books", "▪", chartMonthly());
-      return `${primerCard}${cal}${mo}`;
-    }
-
-    // ===================== RESULTS — STRENGTH BREAKDOWN (Edge vs Leans) =====================
-    // The at-a-glance strength story, right on the Results page (not just one click deep in the
-    // record sheet). Reuses tierRecordFor() over the WHOLE served slate + edgeLeanSplit() — the
-    // exact same grading path as everywhere else, no new tally. Edge (Strong+Good totals, the
-    // validated play) sits above Leans (spread/ML directional reads), each with its own W–L, and
-    // the three tiers listed with diamonds. Honest by construction: only the edge is +EV.
-    function strengthBreakdownCard() {
-      const tr = tierRecordFor(() => true);
-      const els = edgeLeanSplit(tr);
-      if (!tr || !els || els.anyGraded < 1) return "";
-      const pct = (o: any) => { const g = o.w + o.l; return g ? Math.round((o.w / g) * 100) : null; };
-      const wl = (o: any) => `${o.w}<i>–</i>${o.l}`;
-      const bar = (o: any, cls: string) => {
-        const g = o.w + o.l; const p = g ? (o.w / g) * 100 : 0;
-        return `<span class="sb-track"><span class="sb-fill ${cls}" style="width:${p.toFixed(0)}%"></span></span>`;
-      };
-      const outNote = (o: any) => { const out = (o.live || 0) + (o.up || 0); return out ? `<span class="sb-out">${out} still live / to come</span>` : ""; };
-      const tierRow = (q: "strong" | "good" | "lean", o: any) => {
-        if (!(o.w + o.l + o.live + o.up)) return "";
-        const p = pct(o);
-        return `<div class="sb-tier q-${q}">
-          <span class="sb-tlab">${qDiamonds(q)}<b>${Q_LABEL[q]}</b></span>
-          <span class="sb-twl">${wl(o)}</span>
-          <span class="sb-tpct">${p != null ? p + "%" : "—"}</span>
-        </div>`;
-      };
-      const grp = (title: string, sub: string, o: any, cls: string, tiers: string) => {
-        const p = pct(o);
-        return `<div class="sb-grp ${cls}">
-          <div class="sb-ghead">
-            <div class="sb-gtitle"><b>${title}</b><i>${sub}</i></div>
-            <div class="sb-grec"><span class="sb-gwl">${wl(o)}</span><span class="sb-gpct">${p != null ? p + "%" : "—"}</span></div>
-          </div>
-          ${bar(o, cls)}
-          ${outNote(o)}
-          <div class="sb-tiers">${tiers}</div>
-        </div>`;
-      };
-      return `<section class="sb-card" aria-label="Record by pick strength — edge vs leans">
-        <div class="sb-head">
-          <div class="sb-kick">By pick strength</div>
-          <h3 class="sb-h">Where the record comes from</h3>
-          <p class="sb-sub">Our <b>edge</b> is the totals play — the calls we validate at a real price. <b>Leans</b> are spread &amp; moneyline reads we grade in the open. They're shown apart on purpose: only the edge is proven +EV.</p>
-        </div>
-        ${grp("The edge", "Totals · Strong + Good", els.edge, "edge", tierRow("strong", tr.strong) + tierRow("good", tr.good))}
-        ${grp("The leans", "Spread &amp; moneyline", els.lean, "lean", tierRow("lean", tr.lean))}
-        <button class="sb-more" id="sb-more">See every graded pick by strength →</button>
-      </section>`;
-    }
-
-    // ===================== RESULTS — RECENT GRADED SCORES =====================
-    // A scannable, date-grouped ledger of recently GRADED DiamondEdge picks — the "scores" a user
-    // scrolls through. Sourced from the SAME served slate (payload.games) + the SAME grading path
-    // (displayPick / finalScore / gameState / pickResult) used everywhere; NOTHING re-graded here.
-    // Each row: matchup + final score + our pick + Won/Lost, grouped under a date header.
-    function recentGradedGames(cap = 40) {
-      const src = livePayload || payload;
-      if (!src || !src.games) return [];
-      const out: any[] = [];
-      ((src.games || []) as any[]).forEach((g: any) => {
-        const gs = gameState(g);
-        if (gs.kind !== "final") return;            // graded ledger = finished games only
-        const pl = displayPick(g);
-        if (!pl || pl.action !== "TAKE" || !pl.side) return;
-        const r = pickResult(g, pl);
-        if (r !== "hit" && r !== "miss" && r !== "push") return; // must be graded
-        const day = String(g.date || gameLocalDay(g) || "").slice(0, 10);
-        if (!day) return;
-        out.push({ g, pl, r, day, q: qualityOf(pl), fsc: finalScore(g) });
-      });
-      // newest first; within a day, wins/strong first for a tidy scan
-      out.sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
-      return out.slice(0, cap);
-    }
-    function gradedScoreRow(item: any) {
-      const { g, pl, r, q, fsc } = item;
-      const resCls = r === "hit" ? "won" : r === "miss" ? "lost" : "push";
-      const resLab = r === "hit" ? `${condCheck} WON` : r === "miss" ? "✗ LOST" : "PUSH";
-      const sc = fsc && fsc.home != null ? fsc : null;
-      const awayWin = sc && sc.away > sc.home, homeWin = sc && sc.home > sc.away;
-      const teamCol = (which: "away" | "home", win: boolean) => `<span class="gs-tm ${win ? "win" : ""}">${gCrest(g, which, "gs-crest")}<b>${esc(which === "away" ? g.away_abbr : g.home_abbr)}</b>${sc ? `<em>${num(which === "away" ? sc.away : sc.home, 0)}</em>` : ""}</span>`;
-      const pick = `${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}`;
-      return `<article class="gs-row ${resCls}" data-gid="${esc(g.game_id)}" role="button" tabindex="0" aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)} — our pick ${esc(pl.side || "")} ${r === "hit" ? "won" : r === "miss" ? "lost" : "pushed"} — open details">
-        <span class="gs-lg">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>
-        <span class="gs-mu">${teamCol("away", !!awayWin)}<span class="gs-at">@</span>${teamCol("home", !!homeWin)}</span>
-        <span class="gs-pick q-${q}">${qDiamonds(q)}${pick}</span>
-        <span class="gs-res ${resCls}">${resLab}</span>
-      </article>`;
-    }
-    function gradedScoresList() {
-      const items = recentGradedGames(40);
-      if (!items.length) return "";
-      // group by day (already sorted newest-first)
-      const groups: any[] = [];
-      let cur: any = null;
-      items.forEach((it) => {
-        if (!cur || cur.day !== it.day) { cur = { day: it.day, rows: [] }; groups.push(cur); }
-        cur.rows.push(it);
-      });
-      const dayLabel = (iso: string) => {
-        const d = new Date(iso + "T12:00:00");
-        if (isNaN(d.getTime())) return iso;
-        const t = todayISO();
-        if (iso === t) return "Today";
-        const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-        if (iso === y) return "Yesterday";
-        return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-      };
-      const body = groups.map((grp) => {
-        let w = 0, l = 0; grp.rows.forEach((it: any) => { if (it.r === "hit") w++; else if (it.r === "miss") l++; });
-        const dayRec = w + l ? `<span class="gsd-rec ${w > l ? "up" : w < l ? "dn" : ""}">${w}–${l}</span>` : "";
-        return `<div class="gs-day">
-          <div class="gs-dhead"><span class="gsd-date">${esc(dayLabel(grp.day))}</span>${dayRec}</div>
-          <div class="gs-rows">${grp.rows.map(gradedScoreRow).join("")}</div>
-        </div>`;
-      }).join("");
-      return `<section class="gs-card" aria-label="Recent graded scores">
-        <div class="gs-head">
-          <div class="gs-kick">The ledger</div>
-          <h3 class="gs-h">Recent picks, graded against the final</h3>
-          <p class="gs-subx">Every published DiamondEdge Pick that has finished, most recent first — the matchup, the final score, our call and how it landed. Tap any row for the full breakdown.</p>
-        </div>
-        ${body}
-      </section>`;
-    }
-
-    // ===================== INSIGHTS SHOWCASE (the premium effectiveness surface) =====================
-    // A bold, editorial cut of the validated record — the confident hero, the by-confidence
-    // reconciliation, the year ladder, and an honest calibration read. Every number is REAL and
-    // sourced from what's already in the payload; nothing is re-graded and no series is invented:
-    //   • hero record      → value_record.validated_history.median_price (58.1% · 886 · +11%)
-    //   • by confidence     → analytics_deep.by_confidence [{tier,record,hit,roi,n}] — Σn=886, reconciles
-    //   • year ladder       → value_record.validated_history.by_year [{n,hit,roi}]
-    //   • calibration read  → analytics_deep.calibration [{predicted,actual,n}]
-    //   • honesty framing   → validated_history.stability_verdict / selection_clean_split / shopped_modal
-    // Where a series doesn't exist (e.g. a real per-DATE validated equity ledger, or a monthly
-    // validated split), we DON'T fake it — the equity curve is the honest per-year aggregate and
-    // the monthly chart only renders if analytics_deep.monthly is actually served.
-    function adBy(key: string) {
-      const ad = analyticsDeep || (payload && payload.analytics_deep) || null;
-      return ad && Array.isArray(ad[key]) ? ad[key] : null;
-    }
-    function valHist() { return payload && payload.value_record && payload.value_record.validated_history; }
-
-    // The reconciliation is the whole point of transparency: the three confidence tiers must add
-    // back up to the headline 886 / 58.1%. We compute the sum client-side and SHOW it, so the
-    // user can check our arithmetic instead of taking the hero number on faith.
-    function confReconcile() {
-      const rows = adBy("by_confidence");
-      if (!rows || !rows.length) return null;
-      const norm = (t: any) => { const s = String(t || "").toLowerCase(); return s === "strong" ? "strong" : s === "good" ? "good" : "lean"; };
-      const tiers = rows.map((r: any) => {
-        const rec = String(r.record || "").match(/(\d+)\D+(\d+)/);
-        const w = rec ? Number(rec[1]) : null, l = rec ? Number(rec[2]) : null;
-        return { q: norm(r.tier || r.key), n: Number(r.n) || 0, hit: Number(r.hit), roi: Number(r.roi), w, l, note: r.profit_note ? cleanCopy(r.profit_note) : "" };
-      });
-      const order: any = { strong: 0, good: 1, lean: 2 };
-      tiers.sort((a: any, b: any) => order[a.q] - order[b.q]);
-      const sumN = tiers.reduce((s: number, t: any) => s + t.n, 0);
-      const sumW = tiers.reduce((s: number, t: any) => s + (t.w || 0), 0);
-      const sumL = tiers.reduce((s: number, t: any) => s + (t.l || 0), 0);
-      const blendHit = sumW + sumL ? sumW / (sumW + sumL) : null;
-      return { tiers, sumN, sumW, sumL, blendHit };
-    }
-
-    // Calibration → one honest sentence + a compact reliability strip. "When we said ~X%, we hit
-    // ~Y%." We read the served buckets, weight the average gap by sample size, and state plainly
-    // whether the picks land at or above their billing (and flag the one bucket that ran cold).
-    function calibrationRead() {
-      const raw = adBy("calibration");
-      if (!raw || raw.length < 2) return null;
-      const pts = raw.map((p: any) => ({ p: Number(p.predicted), a: Number(p.actual), n: Number(p.n || 0), lab: p.bucket_label }))
-        .filter((p: any) => !isNaN(p.p) && !isNaN(p.a));
-      if (pts.length < 2) return null;
-      const totN = pts.reduce((s: number, p: any) => s + p.n, 0) || 1;
-      const wGap = pts.reduce((s: number, p: any) => s + (p.a - p.p) * p.n, 0) / totN; // + = beat the billing
-      const wPred = pts.reduce((s: number, p: any) => s + p.p * p.n, 0) / totN;
-      const wAct = pts.reduce((s: number, p: any) => s + p.a * p.n, 0) / totN;
-      return { pts, totN, wGap, wPred, wAct };
-    }
-
-    // The hero: the HONEST forward expectation, stated confidently but not overstated.
-    // We deliberately do NOT headline the 58.1%/886/+11% backtest — that number is real and
-    // rigorous but IN-SAMPLE (the winning policy was the best of ~29 recipes mined on the same
-    // data), so it overstates the forward edge. The hero leads with:
-    //   • the honest forward expectation (~55% at morning prices, +3–4%), and
-    //   • the clean OUT-OF-SAMPLE slice (56.9% / +8% on 239 picks the model never trained on),
-    // and the 58.1% backtest is shown BELOW, clearly relabelled as "backtested (in-sample)".
-    function insHero() {
-      const rh = recipeHistory();
-      const vh = valHist();
-      const sm = vh && vh.shopped_modal;
-      const by = vh && vh.by_year;
-      const yrs = by ? Object.keys(by).filter((y) => /^\d{4}$/.test(y)).sort() : [];
-      const span = yrs.length ? `${yrs[0]}–${yrs[yrs.length - 1]}` : "2022–2026";
-      // The clean out-of-sample slice — the strongest honest evidence (never used to pick the recipe).
-      const scs = vh && vh.selection_clean_split;
-      const clean = scs && scs["2022_23_never_used_to_select_recipe"];
-      const cleanN = clean && clean.n != null ? Number(clean.n) : 239;
-      const cleanHit = clean && clean.hit != null ? Number(clean.hit) : 0.569;
-      const cleanRoi = clean && clean.roi != null ? Number(clean.roi) : 0.084;
-      return `<section class="ix-hero" aria-label="Honest forward expectation">
-        <div class="ix-hero-glow" aria-hidden="true"></div>
-        <div class="ix-hero-top">
-          <span class="ix-badge">◆ Totals edge · honest expectation</span>
-          <span class="ix-live">Every pick graded in the open</span>
-        </div>
-        <div class="ix-hero-num">
-          <div class="ix-big"><span class="ix-pct">≈55</span><span class="ix-pctsym">%</span></div>
-          <div class="ix-big-cap">
-            <div class="ix-big-lab">win rate we expect at morning prices</div>
-            <div class="ix-big-sub">A real, priced-in edge on totals — roughly <b>+3–4% return</b> going forward, once we honestly discount for the fact that the winning recipe was chosen on past data. Break-even is 52.5%.</div>
-          </div>
-        </div>
-        <div class="ix-hero-stats">
-          <div class="ix-stat"><b class="pos">${(cleanHit * 100).toFixed(1)}%</b><i>Out-of-sample · ${cleanN} picks</i></div>
-          <div class="ix-stat"><b class="pos">${sgn(cleanRoi * 100, 0)}%</b><i>OOS return</i></div>
-          <div class="ix-stat"><b>${(rh.hit * 100).toFixed(1)}%</b><i>Backtest (in-sample)</i></div>
-          <div class="ix-stat"><b>${rh.n.toLocaleString()}</b><i>Backtested picks</i></div>
-        </div>
-        <p class="ix-hero-line"><b>Why ~55% and not 58%?</b> Our full backtest hit <b>${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} graded totals</b> at ${sgn(rh.roi * 100, 0)}% — real and rigorously produced, but <b>in-sample</b>: this recipe was the best of ~29 we mined on that same history, so it flatters the forward number. The honest floor is the <b>${cleanN} picks the model never trained on: ${(cleanHit * 100).toFixed(1)}% · ${sgn(cleanRoi * 100, 0)}%</b> (directionally confirming, not yet independently significant). Our live forward sample is still tiny and proves nothing on its own — so we lead with the honest expectation, and show every real number below.</p>
-      </section>`;
-    }
-
-    // BY CONFIDENCE — the reconciliation grid. Strong / Good / Lean, each with W–L, hit%, ROI and
-    // sample, plus the served plain-English profit note. A reconcile bar shows the three add back
-    // to the headline 886 / 58.1% — the transparency proof, computed live.
-    function insByConfidence() {
-      const rc = confReconcile();
-      if (!rc) return "";
-      const rh = recipeHistory();
-      const maxRoi = Math.max(0.02, ...rc.tiers.map((t: any) => Math.abs(t.roi || 0)));
-      const card = (t: any) => {
-        const hpct = Math.max(3, Math.min(100, (t.hit || 0) * 100));
-        const roiW = Math.max(3, Math.min(100, (Math.abs(t.roi || 0) / maxRoi) * 100));
-        const wl = t.w != null ? `${t.w}<i>–</i>${t.l}` : "—";
-        return `<div class="ix-tier q-${t.q}">
-          <div class="ix-tier-h">
-            <span class="ix-tier-name">${qDiamonds(t.q)}<b>${Q_LABEL[t.q]}</b></span>
-            <span class="ix-tier-n">${(t.n || 0).toLocaleString()} picks</span>
-          </div>
-          <div class="ix-tier-big"><span class="ix-tier-pct pos">${(t.hit * 100).toFixed(1)}%</span><span class="ix-tier-wl">${wl}</span></div>
-          <div class="ix-metric"><span class="ix-mk">Hit rate</span><span class="ix-track"><span class="ix-fill hit" style="width:${hpct.toFixed(0)}%"></span><span class="ix-be" style="left:52.5%"></span></span></div>
-          <div class="ix-metric"><span class="ix-mk">Return</span><span class="ix-track"><span class="ix-fill ${t.roi >= 0 ? "roi" : "roineg"}" style="width:${roiW.toFixed(0)}%"></span></span><b class="ix-mv ${t.roi >= 0 ? "pos" : "neg"}">${sgn(t.roi * 100, 0)}%</b></div>
-          ${t.note ? `<p class="ix-tier-note">${esc(t.note)}</p>` : ""}
-        </div>`;
-      };
-      // Live reconciliation: the three tiers sum back to the headline.
-      const recPct = rc.blendHit != null ? (rc.blendHit * 100).toFixed(1) : "—";
-      const headlinePct = (rh.hit * 100).toFixed(1);
-      const matches = rc.sumN === rh.n && Math.abs((rc.blendHit || 0) - rh.hit) < 0.006;
-      return `<section class="ix-sec" aria-label="Record by confidence tier">
-        <div class="ix-sec-h">
-          <span class="ix-kick">Inside the backtest</span>
-          <h3 class="ix-h">Where the backtested edge lives</h3>
-          <p class="ix-sub">These are the tiers <b>within the ${headlinePct}% in-sample backtest</b> — real, rigorous, but model-selected on this same history, so read them as structure, not the forward number. Each published totals pick carries one honest word for how hard the signal fired; here's win rate, the money it made, and the sample behind it. The dashed line on each bar is roughly break-even at typical prices.</p>
-        </div>
-        <div class="ix-tiers">${rc.tiers.map(card).join("")}</div>
-        <div class="ix-reconcile ${matches ? "ok" : ""}">
-          <span class="ix-rec-k">Reconciles</span>
-          <span class="ix-rec-body">${rc.tiers.map((t: any) => `${t.n}`).join(" + ")} = <b>${rc.sumN.toLocaleString()}</b> picks · ${rc.sumW}–${rc.sumL} blends to <b>${recPct}%</b> ${matches ? "=" : "≈"} the ${headlinePct}% backtest${matches ? " ✓" : ""}</span>
-        </div>
-      </section>`;
-    }
-
-    // THE YEAR LADDER — the record standing on its own in every calendar year (2022→2026). This is
-    // the honest counterpoint to a single blended number: a real edge shouldn't need a lucky season.
-    // Reads validated_history.by_year; the served stability_verdict is surfaced plainly beneath.
-    function insYearLadder() {
-      const vh = valHist();
-      const by = vh && vh.by_year;
-      if (!by) return "";
-      const yrs = Object.keys(by).filter((y) => /^\d{4}$/.test(y) && by[y] && by[y].n != null).sort();
-      if (yrs.length < 2) return "";
-      const rows = yrs.map((y) => ({ y, n: Number(by[y].n) || 0, hit: Number(by[y].hit), roi: Number(by[y].roi) }));
-      const be = 0.525;
-      const rowHtml = (r: any) => {
-        const win = r.hit >= be;
-        const hpct = Math.max(4, Math.min(100, (r.hit || 0) * 100));
-        return `<div class="ix-yr">
-          <span class="ix-yr-lab">${esc(r.y)}</span>
-          <span class="ix-yr-track"><span class="ix-yr-fill ${win ? "up" : "dn"}" style="width:${hpct.toFixed(0)}%"></span><span class="ix-yr-be" style="left:52.5%"></span></span>
-          <span class="ix-yr-hit ${win ? "pos" : "neg"}">${(r.hit * 100).toFixed(0)}%</span>
-          <span class="ix-yr-roi ${r.roi >= 0 ? "pos" : "neg"}">${sgn(r.roi * 100, 0)}%</span>
-          <span class="ix-yr-n">${r.n}</span>
-        </div>`;
-      };
-      // Pull the human-readable stability line if served (freshness caveat), kept short + honest.
-      const sv = vh.stability_verdict ? String(vh.stability_verdict).split("(")[0].replace(/^STABLE:\s*/i, "").trim() : "";
-      return `<section class="ix-sec" aria-label="Record by year">
-        <div class="ix-sec-h">
-          <span class="ix-kick">Year by year</span>
-          <h3 class="ix-h">Green in every season it has run</h3>
-          <p class="ix-sub">A real edge shouldn't need a lucky year. Win rate on the bar, return on the right — the break-even mark sits at the dashed line. ${sv ? `Our own read: <b>${esc(sv.charAt(0).toUpperCase() + sv.slice(1))}</b>.` : ""}</p>
-        </div>
-        <div class="ix-yr-head"><span class="ix-yr-lab">Year</span><span class="ix-yr-track"></span><span class="ix-yr-hit">Hit</span><span class="ix-yr-roi">Return</span><span class="ix-yr-n">Picks</span></div>
-        <div class="ix-yrs">${rows.map(rowHtml).join("")}</div>
-      </section>`;
-    }
-
-    // CALIBRATION — the trust read. One plain sentence backed by the served buckets, then the
-    // existing calibration scatter (predicted vs actual with the perfect-line diagonal). Only
-    // renders if analytics_deep.calibration is actually present — never faked.
-    function insCalibration() {
-      const cr = calibrationRead();
-      const chart = chartCalibration();
-      if (!cr || !chart) return "";
-      const beat = cr.wGap >= -0.005;
-      const gapTxt = `${cr.wGap >= 0 ? "+" : ""}${(cr.wGap * 100).toFixed(1)} pts`;
-      const verdict = beat
-        ? `When we billed a pick at about <b>${(cr.wPred * 100).toFixed(0)}%</b>, it actually won <b>${(cr.wAct * 100).toFixed(0)}%</b> of the time — our confidence is real, not marketing.`
-        : `When we billed a pick at about <b>${(cr.wPred * 100).toFixed(0)}%</b>, it landed near <b>${(cr.wAct * 100).toFixed(0)}%</b> — a touch under the billing, and we show it rather than round it away.`;
-      return `<section class="ix-sec ix-calib-sec" aria-label="Calibration — do our picks hit their billing">
-        <div class="ix-sec-h">
-          <span class="ix-kick">The trust chart</span>
-          <h3 class="ix-h">Do our ~58% picks actually hit ~58%?</h3>
-          <p class="ix-sub">${verdict} Across the graded buckets the sample-weighted gap between what we said and what happened is <b class="${beat ? "pos" : "neg"}">${gapTxt}</b>. Every dot below is a confidence band; on or above the diagonal means we hit at least as often as we claimed.</p>
-        </div>
-        <div class="ix-calib">${chart}</div>
-      </section>`;
-    }
-
-    // TRANSPARENCY — what's validated vs supporting context, stated plainly. Uses the served
-    // selection_clean_split (the out-of-sample slice that was never used to pick the recipe) as
-    // the honest backbone: it's the strongest evidence we're not curve-fitting.
-    function insTransparency() {
-      const vh = valHist();
-      const scs = vh && vh.selection_clean_split;
-      const clean = scs && (scs["2022_23_never_used_to_select_recipe"] || null);
-      const era = scs && (scs["2024_26_selection_era_regraded_fresh"] || null);
-      const cleanTxt = clean
-        ? `<div class="ix-tp-row"><span class="ix-tp-k">Never used to build the model</span><span class="ix-tp-v">${clean.n} picks · ${(clean.hit * 100).toFixed(1)}% · ${sgn((clean.roi != null ? clean.roi : 0) * 100, 0)}%</span></div>`
-        : "";
-      const eraTxt = era
-        ? `<div class="ix-tp-row"><span class="ix-tp-k">The selection era, regraded fresh</span><span class="ix-tp-v">${era.n} picks · ${(era.hit * 100).toFixed(1)}% · ${sgn((era.roi != null ? era.roi : 0) * 100, 0)}%</span></div>`
-        : "";
-      return `<section class="ix-sec ix-tp" aria-label="What is validated versus supporting context">
-        <div class="ix-sec-h">
-          <span class="ix-kick">Straight talk</span>
-          <h3 class="ix-h">What's proven, and what isn't</h3>
-        </div>
-        <div class="ix-tp-grid">
-          <div class="ix-tp-card validated">
-            <div class="ix-tp-tag">Real edge, honestly sized</div>
-            <h4>The totals betting record</h4>
-            <p>Our backtest hit <b>${(recipeHistory().hit * 100).toFixed(1)}% over ${recipeHistory().n.toLocaleString()} graded totals</b> — real and rigorous, but <b>in-sample</b> (this recipe was model-selected on that history), so we don't sell it as the forward number. The honest read is <b>≈55% at morning prices, +3–4%</b>; the strongest clean evidence is the out-of-sample slice below. Over/unders only — the one market with a priced, graded edge, and what the gold ★ picks are built on.</p>
-            ${cleanTxt}${eraTxt}
-          </div>
-          <div class="ix-tp-card context">
-            <div class="ix-tp-tag muted">Supporting context</div>
-            <h4>Everything else on the board</h4>
-            <p>Spread &amp; moneyline reads are <b>leans</b> — directional calls we grade in the open for completeness, not validated +EV. Scores, live tracking and previews are context around the play. We label them apart on purpose so a lean never borrows the totals edge's credibility.</p>
-          </div>
-        </div>
-      </section>`;
-    }
-
-    // The whole premium showcase, in editorial order: hero → where the edge lives (by tier,
-    // reconciled) → year ladder → equity curve → calibration → transparency.
-    function insightsShowcase() {
-      const rc = confReconcile();
-      // The showcase leads with what we can prove. If the deep analytics aren't in the payload,
-      // it still shows the hero + year ladder from value_record; charts self-hide honestly.
-      return `${insHero()}${insByConfidence()}${insYearLadder()}${insCalibration()}${insTransparency()}`;
-    }
-
-    // One expandable results row: record + win rate + return on the summary line,
-    // a plain-English one-liner behind the tap.
-    function resRow(label: string, o: any, liner: string) {
-      if (!o || !o.n) return "";
-      const hr = o.hit_rate != null ? (o.hit_rate * 100).toFixed(1) + "%" : "—";
-      return `<details class="rrow">
-        <summary><span class="rr-l">${label}</span><span class="rr-rec">${recCell(o)}</span><span class="rr-hr">${hr}</span><span class="rr-roi">${roiCell(o.roi)}</span><span class="rr-car" aria-hidden="true">▾</span></summary>
-        <div class="rr-b"><p>${liner}</p><span class="rr-n">${(o.n || 0).toLocaleString()} graded picks</span></div>
-      </details>`;
-    }
-    // The aggressive premium upsell card on Insights — the record is the proof, this is the ask.
-    function insightsUpsell() {
-      const rh = recipeHistory();
-      if (isPremium()) {
-        return `<div class="ix-upsell owned"><span class="ixu-k">◆ You're Premium</span><span class="ixu-owned-b">Every Strong and Good pick is unlocked — you're backing the record above.</span></div>`;
-      }
-      return `<div class="ix-upsell">
-        <div class="ixu-glow" aria-hidden="true"></div>
-        <div class="ixu-k">◆ DiamondEdge Premium</div>
-        <h3 class="ixu-h">The record is free. The picks are premium.</h3>
-        <p class="ixu-b">You've seen the receipts — every result above is public. Premium gets you every pick the moment it drops: the side, the real price, and the <b>1–5 star rating</b> that tells you exactly how much we like it.</p>
-        <div class="ixu-perks">
-          <span class="ixu-perk">✓ Every pick, the moment it drops</span>
-          <span class="ixu-perk">✓ Stars + the why, in plain English</span>
-          <span class="ixu-perk">✓ Live tracking while games run</span>
-        </div>
-        <div class="ixu-cta-row"><button class="ixu-cta" id="ins-upsell">Unlock DiamondEdge — $9.99/mo</button><span class="ixu-fine">Cancel anytime · the record stays free</span></div>
-      </div>`;
-    }
     async function renderResults() {
       await loadIndex();
-      await loadAnalyticsDeep();
       try { await loadBeta(); } catch {}
       const tr = trackRecord();
       const ov = tr.overall || {};
-      const hr = ov.hit_rate != null ? ov.hit_rate * 100 : null;
       const roi = ov.roi != null ? ov.roi * 100 : null;
-      const byTier = tr.by_tier || {};
-      const byMk = tr.by_market || {};
       const rh = recipeHistory();
       const mr = monthRecord();
       const fwd = forwardRecord();
-      const confRows = [
-        resRow(`<span class="ql strong">${qDiamonds("strong")} Strong</span>`, byTier.featured, `Our surest calls — every signal we track fired at full strength. Rare by design.`),
-        resRow(`<span class="ql good">${qDiamonds("good")} Good</span>`, byTier.high, `The same idea with a slightly weaker signal — still a published, graded call.`),
-        resRow(`<span class="ql lean">${qDiamonds("lean")} Lean</span>`, mergeRecs([byTier.medium, byTier.low]), `Thin edges we flag for completeness. Fine to skip — we grade them anyway.`),
-      ].join("");
-      // ALL-IN TOTALS: the product is over/unders only — no other markets to break out.
-      const mkRows = [
-        resRow("Totals", byMk.total, `Over/unders — the one market we call. Every DiamondEdge pick is a totals pick.`),
-      ].join("");
-      const themeRows = (analyticsDeep && analyticsDeep.cuts && Array.isArray(analyticsDeep.cuts.by_theme)) ? analyticsDeep.cuts.by_theme : [];
-      const themeChips = themeRows.filter((r: any) => r.hit != null && r.n).map((r: any) => {
-        const roi2 = r.roi != null ? Number(r.roi) : null;
-        return `<span class="proof big ${roi2 != null && roi2 < 0 ? "neg" : ""}">${icon(iconForText(r.key))}<b>${prettyKey(r.key)}</b><span class="pf-n">${(Number(r.hit) * 100).toFixed(0)}% · ${(r.n || 0).toLocaleString()} games${roi2 != null ? ` · ${(roi2 >= 0 ? "+" : "") + (roi2 * 100).toFixed(0)}%` : ""}</span></span>`;
-      }).join("");
-      const deepKeys = CUT_ORDER.filter((k) => k !== "by_quality" && k !== "by_market" && k !== "by_theme");
       const view = root.querySelector("#results-view");
       // ONE clear headline record: the DiamondEdge Pick signature (positive — hit% AND
       // return both good). The full all-graded universe (which includes Leans and tracked
@@ -5406,48 +4123,6 @@ export default function Home() {
         _fallback: true,
       };
     }
-    // The frozen pick's live/graded state for a brief entry (falls back to result field).
-    function briefPickState(p: any) {
-      const g = findGameLive(p.game_id);
-      const pl = g ? displayPick(g) : null;
-      if (g && pl && pl.action === "TAKE") {
-        const st = playState(g, pl);
-        return pickStateTxt(g, pl, st);
-      }
-      if (p.result === "hit") return { txt: `${condCheck} WON`, cls: "won" };
-      if (p.result === "miss") return { txt: "✗ LOST", cls: "lost" };
-      if (p.result === "push") return { txt: "PUSH", cls: "pushed" };
-      return null;
-    }
-    // One carousel card — a compact news story: thumbnail hero (logo composite over a
-    // theme gradient), quality kicker, matchup headline, bold pick chip, teaser dek.
-    function heroCard(p: any, i: number) {
-      const g = findGameLive(p.game_id);
-      const locked = !isPremium() && (p.quality === "strong" || p.quality === "good") && !p.result;
-      const state = briefPickState(p);
-      const pl = g ? displayPick(g) : null;
-      const tint = g ? heroTintFor(g, pl) : (p.quality === "strong" ? "gold" : p.quality === "good" ? "green" : "pick");
-      const fig = g ? `<div class="hero-figure">${heroImage(g, tint, "card")}<span class="hero-fig-q">${qDiamonds(p.quality)}${Q_LABEL[p.quality] || ""}</span></div>` : "";
-      const bet = locked
-        ? `<button class="lockchip" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●●</span><span class="lk-badge">${lockSvg}Unlock today's picks</span></button>`
-        : `<div class="hero-bet ${state ? state.cls : ""}"><span class="hb-brand">${g ? pickLabel(g) : "◆ DiamondEdge Pick"}</span><span class="hb-side">${esc(p.bet || "")}</span>${state ? `<span class="pb-res ${state.cls}">${state.txt}</span>` : ""}</div>`;
-      const blurbTxt = cleanBlurb(p.blurb || "");
-      const teaser = p._fb ? "There's a DiamondEdge Pick on this game." : blurbTxt.split(". ")[0].slice(0, 130);
-      const blurb = blurbTxt
-        ? (locked
-          ? `<p class="hero-blurb">${esc(teaser)}… <button class="lk-more" data-up="1">unlock the full read</button></p>`
-          : `<p class="hero-blurb clamp2">${esc(teaser)}${teaser.length >= 130 ? "…" : ""}</p>`)
-        : "";
-      return `<article class="hero q-${p.quality}${p.result === "hit" ? " hit" : p.result === "miss" ? " miss" : ""}" data-gid="${esc(p.game_id)}"${locked ? ' data-locked="1"' : ""} style="--i:${i}" role="button" tabindex="0" aria-label="${esc(p.matchup)} — ${locked ? "pick locked" : "DiamondEdge Pick " + esc(p.bet || "")}">
-        ${fig}
-        <div class="hero-body">
-          <div class="hero-sport">${esc(SPORT_LABEL[p.sport] || p.sport || "")}</div>
-          <h4 class="hero-match">${esc(p.matchup || "")}</h4>
-          ${bet}${blurb}
-          <span class="hero-cta">Full story →</span>
-        </div>
-      </article>`;
-    }
     // Carousel order: exact p_correct behind the scenes (full precision, never shown),
     // quality rank as the stand-in — the featured game rides first.
     function orderTopPicks(list: any[]) {
@@ -5458,207 +4133,6 @@ export default function Home() {
       });
       withKey.sort((a: any, b: any) => convictionSort(a.exp, a.qr, b.exp, b.qr) || (a.i - b.i));
       return withKey.map((w: any) => w.p);
-    }
-    // ---- proof chips: match a storyline to the graded record's theme cuts ----
-    function themeProof(name: any) {
-      const src = (livePayload && livePayload.analytics_deep) || (payload && payload.analytics_deep) || analyticsDeep;
-      const rows = src && src.cuts && Array.isArray(src.cuts.by_theme) ? src.cuts.by_theme : [];
-      const n = String(name || "").toLowerCase();
-      let hitRow: any = null;
-      if (/heat|hot|°f|temperature/.test(n)) hitRow = rows.find((r: any) => /hot day/i.test(r.key));
-      else if (/book|split|agree/.test(n)) hitRow = rows.filter((r: any) => /split/i.test(r.key)).sort((a: any, b: any) => (b.n || 0) - (a.n || 0))[0];
-      else if (/getaway|travel/.test(n)) hitRow = rows.find((r: any) => /getaway|travel/i.test(r.key));
-      if (!hitRow || hitRow.hit == null || !hitRow.n) return "";
-      const word = /over/i.test(String(hitRow.key)) ? "overs" : "winners";
-      return `<span class="proof">${icon("record")}${(Number(hitRow.hit) * 100).toFixed(0)}% ${word} · ${(hitRow.n || 0).toLocaleString()} games</span>`;
-    }
-    // A theme's own graded proof (its served `history` block) as a chip — independent of
-    // analytics_deep. Falls back to the analytics-derived themeProof when history is absent.
-    function themeProofChip(t: any) {
-      const h = t && t.history;
-      if (h && h.hit != null && h.n) {
-        const word = /over/i.test(String(h.condition || t.name || "")) ? "overs" : "winners";
-        const roi = h.roi != null ? Number(h.roi) : null;
-        return `<span class="proof">${icon("record")}${(Number(h.hit) * 100).toFixed(0)}% ${word} · ${(h.n || 0).toLocaleString()} games${roi != null && roi > 0 ? ` · +${(roi * 100).toFixed(0)}%` : ""}</span>`;
-      }
-      return themeProof(t.name);
-    }
-    // A theme kicker — a short editorial label from the theme's icon family.
-    const THEME_KICKER: any = { fire: "Weather", weather: "Weather", streak: "Form", books: "The Market", travel: "Scheduling", rest: "Scheduling", record: "The Record", trend: "Trend" };
-    // Pull a hero image for a storyline from its first affected game (magazine imagery).
-    function storyHero(t: any, size: string) {
-      const src = livePayload || payload;
-      const gid = (t.affected_games || [])[0];
-      const g = gid ? ((src && src.games) || []).find((x: any) => String(x.game_id) === String(gid)) : null;
-      const ic = iconForText(t.name + " " + (t.text || ""));
-      const tint = ic === "fire" || ic === "weather" ? "fire" : ic === "streak" ? "streak" : ic === "books" ? "books" : "pick";
-      if (!g) return `<div class="st-figph hi-${size}" style="--t1:${(HERO_TINT[tint] || HERO_TINT.pick)[0]};--t2:${(HERO_TINT[tint] || HERO_TINT.pick)[1]}"><span class="st-figic">${icon(ic)}</span></div>`;
-      return heroImage(g, tint, size);
-    }
-    // ---- storyline article card (theme) — editorial, THREE variants ----
-    //   variant "lead"   → the day's biggest storyline: hero image, kicker, headline, dek, proof
-    //   variant "second" → a compact editorial card with a small figure
-    //   variant "brief"  → a text-forward one-liner in a stacked list
-    function storyCard(t: any, i: number, variant = "second") {
-      const ic = iconForText(t.name + " " + (t.text || ""));
-      const kicker = THEME_KICKER[ic] || "Storyline";
-      const gids = (t.affected_games || []) as any[];
-      const proof = themeProofChip(t);
-      const games = gids.length ? `<button class="st-games" data-th-g="${esc(gids.join(","))}">${gids.length} game${gids.length > 1 ? "s" : ""} →</button>` : "";
-      const body = esc(cleanBlurb(t.text || ""));
-      const common = `data-th="${i}" style="--i:${i}" role="button" tabindex="0" aria-expanded="false" aria-label="${esc(t.name)} — expand"`;
-      if (variant === "lead") {
-        return `<article class="story story-lead" ${common}>
-          <div class="st-figure">${storyHero(t, "card")}<span class="st-kick lead">${esc(kicker)}</span></div>
-          <div class="st-b">
-            <h3 class="st-h lead">${esc(t.name)}</h3>
-            <p class="st-t clamp3">${body}</p>
-            <div class="st-foot">${proof}${games}</div>
-          </div>
-        </article>`;
-      }
-      if (variant === "brief") {
-        return `<article class="story story-brief" ${common}>
-          <span class="st-ic sm">${icon(ic)}</span>
-          <div class="st-b">
-            <div class="st-kickrow"><span class="st-kick">${esc(kicker)}</span>${proof}</div>
-            <h4 class="st-h">${esc(t.name)}</h4>
-            <p class="st-t clamp2">${body}</p>
-            ${games ? `<div class="st-foot">${games}</div>` : ""}
-          </div>
-        </article>`;
-      }
-      return `<article class="story story-2" ${common}>
-        <div class="st-figure sm">${storyHero(t, "card")}<span class="st-kick">${esc(kicker)}</span></div>
-        <div class="st-b">
-          <h4 class="st-h">${esc(t.name)}</h4>
-          <p class="st-t clamp2">${body}</p>
-          <div class="st-foot">${proof}${games}</div>
-        </div>
-      </article>`;
-    }
-    // Assemble the storyline section as a true magazine block: one lead, then secondaries.
-    function storylinesBlock(themes: any[], excludeGid?: string | null) {
-      // DEDUPE: a theme "belongs" to its first affected game. Drop themes whose only game
-      // is the lead story's game, and drop repeats so no game headlines twice on the page.
-      const seen = new Set<string>(); if (excludeGid) seen.add(String(excludeGid));
-      const uniq = (themes || []).filter((t: any) => {
-        const gids = ((t && t.affected_games) || []).map((id: any) => String(id));
-        const primary = gids.length ? gids[0] : null;
-        // Drop a theme whose headline game already appeared (the hero, or an earlier
-        // storyline). Claim ALL of a kept theme's games so none can headline twice.
-        if (primary && seen.has(primary)) return false;
-        if (primary) gids.forEach((id: string) => seen.add(id));
-        return true;
-      });
-      if (!uniq.length) return "";
-      const lead = storyCard(uniq[0], 0, "lead");
-      const rest = uniq.slice(1);
-      const secondaries = rest.map((t: any, k: number) => storyCard(t, k + 1, rest.length > 2 ? "brief" : "second")).join("");
-      return `<section class="ng-rail">
-        <div class="sec-h"><span>Today's Storylines</span></div>
-        <div class="stories-mag">
-          ${lead}
-          ${secondaries ? `<div class="stories-sub">${secondaries}</div>` : ""}
-        </div>
-      </section>`;
-    }
-    // ---- game-preview article ROW (news-site styling: thumbnail + headline + dek + pick) ----
-    // Reads like a story on a sports front page: an image area (team-logo composite over a
-    // theme-tinted gradient hero), a kicker/byline, a headline, a standfirst dek, and a
-    // BOLD pick chip so it's instantly clear whether the game has a DiamondEdge Pick.
-    function previewCard(g: any, i: number, feature = false) {
-      const gs = gameState(g);
-      const art = gameArticle(g) || composedPreview(g);
-      const pl = displayPick(g);
-      const st = pl ? playState(g, pl) : "open";
-      const locked = pl ? pickLocked(pl, st) : false;
-      const q = pl ? qualityOf(pl) : null;
-      const hasPick = !!(pl && pl.action === "TAKE");
-      const status = gs.kind === "live" ? `<span class="pv-live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</span>`
-        : gs.kind === "final" ? `<span class="pv-final">FINAL</span>`
-        : `<span class="pv-time">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "")}</span>`;
-      const sc = gs.score && gs.score.split && gs.score.home != null ? gs.score : null;
-      // Hype the MATCHUP, never the pick — strips served "A small lean to TOR +1.5 — …" prefixes.
-      const head = matchupHeadline(g, pl);
-      const dek = art.dek || art.paras[0] || "";
-      const tint = heroTintFor(g, pl);
-      // Live/final team score rides in the TOP cluster (the bottom carries the pick cover).
-      const scoreBadge = sc ? `<span class="pv-topscore">${esc(g.away_abbr)} ${num(sc.away, 0)}–${num(sc.home, 0)} ${esc(g.home_abbr)}</span>` : "";
-      // The pick rides ON the image (magazine cover line) so every card reads like a story.
-      const coverSize = feature ? "lead" : "card";
-      const isLive = gs.kind === "live";
-      return `<article class="prev ${feature ? "feature " : ""}${hasPick ? "haspick q-" + q : "nopick"}" data-gid="${esc(g.game_id)}" style="--i:${Math.min(i, 8)}" role="button" tabindex="0" aria-label="${esc(g.matchup || "game preview")}${hasPick ? " — DiamondEdge Pick " + esc(pl.side || "") : " — no pick"} — open">
-        <div class="pv-figure">${heroImage(g, tint, coverSize)}<div class="pv-fig-top"><span class="pv-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span>${isLive ? "" : scoreBadge}${isLive ? "" : status}</div>${isLive ? heroLiveBadge(g, feature ? "lead" : "card") : ""}${heroPickCover(g, coverSize)}</div>
-        <div class="pv-body">
-          <h4 class="pv-head">${head}</h4>
-          ${dek && gs.kind !== "final" ? `<p class="pv-dek clamp2">${mdBold(String(dek))}</p>` : ""}
-          <div class="pv-byline">DiamondEdge · ${esc(gs.kind === "final" ? "Final" : gs.kind === "live" ? "Live now" : (gs.si.hasTime && gs.si.time ? gs.si.time : "Today"))}</div>
-        </div>
-      </article>`;
-    }
-    // Today's preview pool: pick games first (by quality), then served articles, then intel-rich games.
-    function previewGames() {
-      const src = livePayload || payload;
-      if (!src) return [];
-      const t = todayISO();
-      const pool = ((src.games || []) as any[]).filter((g: any) => {
-        const st0 = String(g.status || "pre").toLowerCase();
-        const d = gameLocalDay(g);
-        // Only TODAY's games belong on the News front. "live" is trusted only when plausibly still
-        // live — the payload carries stale cross-day "live" zombies (incl. other sports, e.g. a
-        // days-old USA vs BEL) that must not surface here.
-        if (st0 === "live") {
-          const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
-          if (ts) { const age = Date.now() - new Date(ts).getTime(); return isNaN(age) || (age > -12 * 3600 * 1000 && age < 12 * 3600 * 1000); }
-          return !d || d >= shiftDate(t, -1);
-        }
-        return d === t || (st0 === "pre" && !d);
-      });
-      const scored = pool.map((g: any) => {
-        const pl = displayPick(g);
-        const hasPick = pl && pl.action === "TAKE";
-        const qr = hasPick ? Q_RANK[qualityOf(pl)] : 9;
-        const rank = hasPick ? qr : gameArticle(g) ? 4 : g.pregame_intel ? 5 : 9;
-        return { g, rank, p: hasPick && pl.p != null ? Number(pl.p) : -1 };
-      }).filter((x: any) => x.rank < 9);
-      scored.sort((a: any, b: any) => a.rank - b.rank || b.p - a.p);
-      return scored.map((x: any) => x.g);
-    }
-    // The HOMEPAGE is CURATED — not the full board. Significance, from the data we have:
-    //  • games where we have an actual DiamondEdge Pick (a TAKE — Strong/Good/Lean), our best
-    //    call first (that game is also the featured lead story above);
-    //  • marquee LIVE games (something is happening right now).
-    // Everything else (no-pick, intel-only, upcoming filler) stays on the Games tab's full board.
-    // Returns the curated significant games in significance order (pick-quality, then live).
-    function significantGames() {
-      const src = livePayload || payload;
-      if (!src) return [];
-      const t = todayISO();
-      const pool = ((src.games || []) as any[]).filter((g: any) => {
-        const st0 = String(g.status || "pre").toLowerCase();
-        const d = gameLocalDay(g);
-        // Only TODAY's games belong on the News front. "live" is trusted only when plausibly still
-        // live — the payload carries stale cross-day "live" zombies (incl. other sports, e.g. a
-        // days-old USA vs BEL) that must not surface here.
-        if (st0 === "live") {
-          const ts = isTS(g.start_ts) ? g.start_ts : (isTS(g.start_time) ? g.start_time : null);
-          if (ts) { const age = Date.now() - new Date(ts).getTime(); return isNaN(age) || (age > -12 * 3600 * 1000 && age < 12 * 3600 * 1000); }
-          return !d || d >= shiftDate(t, -1);
-        }
-        return d === t || (st0 === "pre" && !d);
-      });
-      const scored = pool.map((g: any) => {
-        const pl = displayPick(g);
-        const hasPick = !!(pl && pl.action === "TAKE");
-        const live = String(g.status || "pre").toLowerCase() === "live";
-        // rank: pick-quality (0=strong,1=good,2=lean) beats a live-but-no-pick game (3).
-        const rank = hasPick ? (Q_RANK[qualityOf(pl)] != null ? Q_RANK[qualityOf(pl)] : 2) : (live ? 3 : 9);
-        return { g, rank, live, p: hasPick && pl.p != null ? Number(pl.p) : -1 };
-      }).filter((x: any) => x.rank < 9); // significant only: a pick OR live
-      // picks (by conviction) first, live-no-pick after; live rises within its band.
-      scored.sort((a: any, b: any) => a.rank - b.rank || (b.live ? 1 : 0) - (a.live ? 1 : 0) || b.p - a.p);
-      return scored.map((x: any) => x.g);
     }
     // Branded record line for the masthead + footer — leads with the HONEST forward expectation,
     // with the in-sample backtest labelled as such (never sold as the forward number).
@@ -5891,15 +4365,6 @@ export default function Home() {
         <span class="nu-cd">first pitch in <b class="fnc-val" data-drop="${next.ts}">${fmtCountdown(next.ts - now)}</b></span>
       </button>`;
     }
-    // The kicker label for a top game: a real +EV pick → "Top Pick"; live → "Live Now"; else a
-    // storyline to watch.
-    function topKicker(g: any) {
-      const pl = displayPick(g);
-      if (isBet(pl)) return "Top Pick";
-      if (isPick(pl)) return "Lean";
-      if (gameState(g).kind === "live") return "Live Now";
-      return "Storyline";
-    }
     // A News-shaped loading skeleton — a lead-story card + a 2-up grid of them — so the loading
     // state matches the actual content format (not a stack of compact-card shims).
     function skeletonNews() {
@@ -5914,10 +4379,8 @@ export default function Home() {
       const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
       const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       const isToday = curDate === todayISO();
-      const goldChip = ""; // no legacy chips — the pick record lives on Insights
       const picksAll = orderTopPicks((db.top_picks || []) as any[]);
       const leadPick = picksAll[0] || null;
-      const railPicks = picksAll.length > 1 ? picksAll.slice(1) : [];
       // LEAD STORY — the day's feature bet = the BEST pick on today's slate under the
       // (v4-first) displayPick, falling back to the served brief's top pick.
       // Hero pool = today + live + ANY upcoming (incl. tomorrow) so once today's slate is
@@ -5945,12 +4408,6 @@ export default function Home() {
           </div>
         </article>`;
       }
-      // TOP GAMES TO WATCH — up to 6 significant games (top picks OR interesting storylines),
-      // each in the SAME lead-story format. Replaces the old preview-card stories + storylines.
-      const leadGid = leadGame ? String(leadGame.game_id) : (leadPick ? String(leadPick.game_id) : null);
-      const seen = new Set<string>(); if (leadGid) seen.add(leadGid);
-      const sig = significantGames().filter((g: any) => { const id = String(g.game_id); if (seen.has(id)) return false; seen.add(id); return true; });
-      const topSection = ""; // retired: 1-2 flagships then straight into Around the League
       // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
       // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
       // The masthead nameplate is computed from the MODEL's board (never the old brief):
@@ -5964,7 +4421,7 @@ export default function Home() {
       view.innerHTML = `
         <div class="news">
           <div class="masthead lead">
-            <div class="mh-kicker"><span class="lk-tag">DiamondEdge Desk</span>${goldChip}</div>
+            <div class="mh-kicker"><span class="lk-tag">DiamondEdge Desk</span></div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
@@ -6359,12 +4816,6 @@ export default function Home() {
     }
 
     // ===================== HEADER / SHELL =====================
-    const NAV_ICONS: any = {
-      today: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.2 5.6L20 10.8l-5.8 2.2L12 19l-2.2-6L4 10.8l5.8-2.2z"/></svg>`,
-      games: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/></svg>`,
-      results: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>`,
-      settings: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.1"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.8 5.8l1.8 1.8M16.4 16.4l1.8 1.8M18.2 5.8l-1.8 1.8M7.6 16.4l-1.8 1.8"/></svg>`,
-    };
     // ===================== UNIFIED PICK FEED (public/picks_unified{,_live}.json) =====================
     // ONE DiamondEdge Pick per game — pregame totals, star-rated, +EV-gated, price-aware, with
     // every PASS's priced-out reason. Graded in the open; the record accrues in public. History
@@ -6478,6 +4929,25 @@ export default function Home() {
         </div>`;
       };
       const rows = [5, 4, 3, 2, 1].map(tierRow).join("") || `<div class="strec-row empty"><span class="strec-n">Grading as games finish.</span></div>`;
+      // LAST 7 DAYS — a compact day-by-day strip under the hero (most recent first), from the
+      // same by_date_record that powers the per-day chips. Only days with graded picks count;
+      // each day is W-L(-P) tinted by that day's ROI, with the ROI itself as a small trailer.
+      const bdr = d.by_date_record || {};
+      const l7dates = Object.keys(bdr)
+        .filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && bdr[k] && bdr[k].n_graded)
+        .sort().reverse().slice(0, 7);
+      const l7 = l7dates.map((k) => {
+        const r = bdr[k];
+        const day = new Date(k + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
+        const wl = `${r.wins || 0}-${r.losses || 0}${r.pushes ? "-" + r.pushes : ""}`;
+        const dir = r.roi != null ? (r.roi > 0 ? "up" : r.roi < 0 ? "down" : "flat") : "flat";
+        const rv = r.roi != null ? Math.round(r.roi * 100) : null;
+        const roiTxt = rv != null ? (rv > 0 ? `+${rv}%` : rv < 0 ? `${rv}%` : "0%") : "";
+        return `<span class="l7d ${dir}" title="${esc(k)} · ${r.n_graded} graded${roiTxt ? ` · ${roiTxt} ROI` : ""}"><i>${esc(day)}</i><b>${wl}</b>${roiTxt ? `<em>${roiTxt}</em>` : ""}</span>`;
+      }).join("");
+      const last7Strip = l7dates.length
+        ? `<div class="strec-l7"><span class="l7k">Last 7 days</span><div class="l7row">${l7}</div></div>`
+        : "";
       const gatedNote = `<div class="strec-gate">Every pick has to beat the actual price it's judged at — a call that's on the right side of the number but priced out is an honest pass, not a bet.</div>`;
       const roiPos = (ov.roi || 0) >= 0;
       return `
@@ -6491,6 +4961,7 @@ export default function Home() {
           </div>
           <div class="strec-sub">Pregame totals, graded in public at the real price — win or lose, nothing hidden.</div>
         </div>
+        ${last7Strip}
         <div class="strec-card">
           <div class="strec-ch">Record by star tier</div>
           <div class="strec-csub">A star is a conviction band. It only means something if the higher tiers win more — so here's each tier, graded.</div>
