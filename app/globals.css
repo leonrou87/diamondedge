@@ -2185,3 +2185,11 @@ details.more .more-body{padding-top:12px}
 .metarow .pf-roi{font-family:var(--mono);font-weight:700;font-size:11px;margin-left:6px}
 .metarow .pf-roi.pos{color:var(--green,#0a7d40)}
 .metarow .pf-roi.neg{color:#b3261e}
+
+/* every game shows a prediction: low-confidence lean styling (not an official pick) */
+.pstrip.pass.lean{opacity:.92}
+.ps-lowconf{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);background:rgba(22,36,60,.06);border-radius:999px;padding:2px 8px}
+.ps-side.dim b{font-weight:700}
+.pstrip.pass.lean .ps-side.ou-over{color:rgba(10,125,64,.65)}
+.pstrip.pass.lean .ps-side.ou-under{color:rgba(179,38,30,.6)}
+.pk-made.dim{color:var(--ink3);opacity:.8}

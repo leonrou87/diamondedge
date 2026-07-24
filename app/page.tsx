@@ -2203,11 +2203,32 @@ export default function Home() {
     // The PASS pick-slot: same footprint as a real pick strip so cards stay uniform height.
     // Muted, empty diamonds (○○○), the model's directional read when we have one.
     function passStrip(g: any) {
-      // A pass names the number it judged: "Pass — O/U 8.5 held no edge". The model priced
-      // the game and said no — that's a call, and it reads like one.
+      // EVERY game shows a prediction (Leon, 2026-07-24): even when the model wouldn't BET,
+      // it always has a read — lead with the side + line, clearly labeled low-confidence.
+      // Only 2★+ picks grade into the record; this is the model's lean, not an official pick.
+      const vg = v4GameFor(g);
+      const pk = vg && vg.pick;
+      const side = pk && pk.side ? String(pk.side).toUpperCase() : null;
+      const line = pk && pk.line != null ? lineStr(pk.line) : null;
+      const sc = gameScore(g);
+      // only surface human-readable reasons (skip machine codes like "ev_gate"/"junk_cell")
+      const whyRaw = pk ? String(pk.pass_why || pk.pass_reason || "") : "";
+      const why = /\s/.test(whyRaw) && whyRaw.length > 12 ? esc(whyRaw.slice(0, 60)) : "";
+      if (side && line != null) {
+        const dir = /over/i.test(side) ? "ou-over" : "ou-under";
+        return `<div class="pstrip pass lean">
+          <div class="ps-main">
+            <span class="ps-k">${pickLabel(g)}</span>
+            <span class="ps-side ${dir} dim">${/over/i.test(side) ? "▲" : "▼"} <b>${esc(side)} ${esc(line)}</b></span>
+            <span class="ps-lowconf">Low confidence</span>
+            <span class="ps-q">${bStars(pk.stars != null ? pk.stars : 1)}${passGrade(sc)}</span>
+          </div>
+          <div class="pk-made dim">model lean — not an official pick${why ? ` · ${why}` : ""}</div>
+        </div>`;
+      }
+      // no lean at all (market never posted): the old honest pass line
       const ln = passLineTxt(g);
       const read = ln ? "" : passRead(g);
-      const sc = gameScore(g);
       return `<div class="pstrip pass">
         <div class="ps-main">
           <span class="ps-k">${pickLabel(g)}</span>
