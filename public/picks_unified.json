@@ -4,7 +4,7 @@
   "status": "production",
   "board": "history",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-07-25T11:14:59Z",
+  "generated_utc": "2026-07-25T19:04:19Z",
   "dates": [
     "2026-03-27",
     "2026-03-28",
@@ -74,7 +74,8 @@
     "2026-07-21",
     "2026-07-22",
     "2026-07-23",
-    "2026-07-24"
+    "2026-07-24",
+    "2026-07-25"
   ],
   "unified_rule": "ONE pick per game: (1) if the champion has a qualifying PLAY on the game (clears its +EV gate) that IS the pick; (2) else if the v4 model grid has a playable lean (clears the +EV gate + 0.01 conviction floor) that is the pick; (3) else if the grid has an EXPANDED-band lean (2026-07-24 on: full +EV gate + conviction 0.0075-0.010 \u2014 the measured near-miss band, 104-78-4 / +15.7% ROI walk-forward backtest) that is the pick, labelled expanded_band, 2-star clamped, 0.5u, graded separately under by_star_tier['2_expanded']; (4) else the game shows its best lean as a PASS (never a bet). One 0-5 score + star ladder (frozen v3.2 percentile, shared by both sources); one record, graded once per game against finals. `source` is diagnostic only \u2014 the UI renders champion- and model-sourced picks identically.",
   "score_reference_version": "v3.2 (Leon, 2026-07-09: TRUE continuous percentile score \u2014 no band quantization; stars = floor bands of the score)",
@@ -89,6 +90,73 @@
     "generated_utc": "2026-07-25T11:12:39Z",
     "basis": "v3.2: the percentile normalization moved INTO the score (2.0 + 3.0 * season strength percentile, frozen reference in `score_reference`), so the star cutoffs are plain floor bands \u2014 each playable tier is ~a third of the season playable percentile, and a mid-strength pick CAN land 3* (the v3.1 band-quantization gap is fixed). The -EV floor is hard: non-playable rows stay 1* regardless of score."
   },
+  "signals_note": "signals are contextual factors aligned with the lean, not causal attribution \u2014 the model is market-anchored and its number is not derived from these factors",
+  "signals_library": [
+    {
+      "id": "sp_both_hit_hard",
+      "dir": "over"
+    },
+    {
+      "id": "sp_one_shelled",
+      "dir": "over"
+    },
+    {
+      "id": "sp_both_wild",
+      "dir": "over"
+    },
+    {
+      "id": "ump_over",
+      "dir": "over"
+    },
+    {
+      "id": "ump_runs_high",
+      "dir": "over"
+    },
+    {
+      "id": "pens_worked",
+      "dir": "over"
+    },
+    {
+      "id": "park_hitter",
+      "dir": "over"
+    },
+    {
+      "id": "lineups_hot",
+      "dir": "over"
+    },
+    {
+      "id": "sp_both_dealing",
+      "dir": "under"
+    },
+    {
+      "id": "sp_one_dominant",
+      "dir": "under"
+    },
+    {
+      "id": "sp_strikeouts",
+      "dir": "under"
+    },
+    {
+      "id": "ump_under",
+      "dir": "under"
+    },
+    {
+      "id": "ump_runs_low",
+      "dir": "under"
+    },
+    {
+      "id": "pens_fresh",
+      "dir": "under"
+    },
+    {
+      "id": "park_pitcher",
+      "dir": "under"
+    },
+    {
+      "id": "lineups_cold",
+      "dir": "under"
+    }
+  ],
   "expanded_band": {
     "active_from": "2026-07-24",
     "rule": "model-grid rows with the FULL +EV gate (ev >= 0.015, unchanged) and conviction 0.0075 <= |our_prob - market_devig| < 0.010 are playable 2* fills from the activation date forward \u2014 the exact measured near-miss band; every adjacent band (conviction 0.0050-0.0075, any EV-gate relaxation) measured as a loser and stays PASS",
@@ -1144,6 +1212,18 @@
       "units": 0.0,
       "units_weighted": 0.0,
       "source": "all_pass"
+    },
+    "2026-07-25": {
+      "n_picks": 0,
+      "n_graded": 0,
+      "wins": 0,
+      "losses": 0,
+      "pushes": 0,
+      "hit_rate": null,
+      "roi": null,
+      "units": 0.0,
+      "units_weighted": 0.0,
+      "source": "all_pass"
     }
   },
   "featured": {
@@ -1921,19 +2001,30 @@
       "side": "over",
       "line": 9.0,
       "all_pass": false
+    },
+    "2026-07-25": {
+      "featured_game_id": "2026-07-25-ATH-MIN",
+      "game_pk": 823679,
+      "matchup": "ATH @ MIN",
+      "source": "champion",
+      "stars": 3,
+      "score": 3.93,
+      "side": "over",
+      "line": 10.5,
+      "all_pass": false
     }
   },
   "board_census": {
-    "n_games": 273,
-    "n_picks": 138,
-    "n_passes": 135,
-    "n_champion_sourced": 84,
+    "n_games": 276,
+    "n_picks": 140,
+    "n_passes": 136,
+    "n_champion_sourced": 86,
     "n_model_sourced": 54,
     "n_expanded_band": 1,
     "stars": {
       "5": 0,
       "4": 82,
-      "3": 33,
+      "3": 35,
       "2": 22,
       "2_expanded": 1
     }
@@ -1967,7 +2058,17 @@
         "ev": 0.1232,
         "expanded_band": false,
         "pass_reason": "+EV at the price but |edge| 0.072 sits in the measured anti-signal tail (>=0.065: hit 43.4%, ROI -17.1% on 2022-2026) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "toxic_tail"
+        "pass_why": "toxic_tail",
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters walk-prone lately (11%/10% BB)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -1998,7 +2099,8 @@
         "ev": 0.028,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.8% vs median break-even 54.0% at -117.5 (median ev +1.37% < +1.5% min); +EV at best -114 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -2027,7 +2129,8 @@
         "source": "champion",
         "our_prob": 0.5621,
         "ev": 0.0731,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2056,7 +2159,8 @@
         "source": "champion",
         "our_prob": 0.5399,
         "ev": 0.0542,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2085,7 +2189,17 @@
         "source": "champion",
         "our_prob": 0.5394,
         "ev": 0.0681,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.6 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2114,7 +2228,8 @@
         "source": "champion",
         "our_prob": 0.5672,
         "ev": 0.0519,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2143,7 +2258,13 @@
         "source": "champion",
         "our_prob": 0.5606,
         "ev": 0.0482,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.361 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2174,7 +2295,17 @@
         "ev": 0.0547,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.0% vs median break-even 51.2% at -105 (median ev +1.44% < +1.5% min); +EV at best 103 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.8 R/G vs league)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2203,7 +2334,13 @@
         "source": "champion",
         "our_prob": 0.5281,
         "ev": 0.0458,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2234,7 +2371,13 @@
         "ev": 0.0134,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 53.3% vs median break-even 52.6% at -111 (median ev +1.34% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Hamari trends under (40% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2263,7 +2406,17 @@
         "source": "champion",
         "our_prob": 0.5603,
         "ev": 0.089,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.89x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2292,7 +2445,17 @@
         "source": "champion",
         "our_prob": 0.5326,
         "ev": 0.0652,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Fletcher trends over (60% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2321,7 +2484,13 @@
         "source": "champion",
         "our_prob": 0.5536,
         "ev": 0.0189,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Additon trends over (62% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2350,7 +2519,21 @@
         "source": "champion",
         "our_prob": 0.572,
         "ev": 0.0694,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.09x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Plate ump Moore trends over (62% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2379,7 +2562,17 @@
         "source": "champion",
         "our_prob": 0.5712,
         "ev": 0.0722,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.5 R/G vs league)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2408,7 +2601,13 @@
         "source": "champion",
         "our_prob": 0.5566,
         "ev": 0.0492,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2437,7 +2636,13 @@
         "source": "champion",
         "our_prob": 0.5546,
         "ev": 0.0168,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Ceja trends over (59% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2468,7 +2673,8 @@
         "ev": 0.029,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.4% vs median break-even 53.6% at -115.5 (median ev +1.43% < +1.5% min); +EV at best -112 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -2497,7 +2703,17 @@
         "source": "champion",
         "our_prob": 0.5415,
         "ev": 0.0429,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters dealing lately (.218/.239 xwOBA)",
+            "dir": "under"
+          },
+          {
+            "text": "Both starters missing bats (35%/28% K)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2528,7 +2744,13 @@
         "ev": 0.0441,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.2% vs median break-even 53.5% at -115 (median ev +1.36% < +1.5% min); +EV at best -108 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.84x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2557,7 +2779,8 @@
         "source": "champion",
         "our_prob": 0.5454,
         "ev": 0.0907,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2586,7 +2809,17 @@
         "source": "champion",
         "our_prob": 0.5544,
         "ev": 0.0583,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Hudson trends under (37% overs L2)",
+            "dir": "under"
+          },
+          {
+            "text": "Home starter dominant lately (.204 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2617,7 +2850,17 @@
         "ev": 0.1134,
         "expanded_band": false,
         "pass_reason": "+EV at the price but |edge| 0.067 sits in the measured anti-signal tail (>=0.065: hit 43.4%, ROI -17.1% on 2022-2026) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "toxic_tail"
+        "pass_why": "toxic_tail",
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.93x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Both starters missing bats (39%/27% K)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2646,7 +2889,8 @@
         "source": "champion",
         "our_prob": 0.5514,
         "ev": 0.0526,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2675,7 +2919,17 @@
         "source": "champion",
         "our_prob": 0.5679,
         "ev": 0.0617,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Mahrley trends under (38% overs L2)",
+            "dir": "under"
+          },
+          {
+            "text": "Pitcher-friendly park in day games (0.91x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2704,7 +2958,8 @@
         "source": "champion",
         "our_prob": 0.5609,
         "ev": 0.0486,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2733,7 +2988,13 @@
         "source": "champion",
         "our_prob": 0.5445,
         "ev": 0.018,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.5 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2762,7 +3023,13 @@
         "source": "champion",
         "our_prob": 0.5843,
         "ev": 0.0711,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Wills trends over (60% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2791,7 +3058,13 @@
         "source": "champion",
         "our_prob": 0.5324,
         "ev": 0.0649,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.8 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2820,7 +3093,17 @@
         "source": "champion",
         "our_prob": 0.5448,
         "ev": 0.0401,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters hit hard lately (.336/.333 xwOBA)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters walk-prone lately (14%/11% BB)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2849,7 +3132,17 @@
         "source": "champion",
         "our_prob": 0.5815,
         "ev": 0.0872,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters hit hard lately (.347/.422 xwOBA)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters walk-prone lately (12%/14% BB)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -2878,7 +3171,21 @@
         "source": "champion",
         "our_prob": 0.5625,
         "ev": 0.0313,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.84x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Plate ump Jones trends under (37% overs L2)",
+            "dir": "under"
+          },
+          {
+            "text": "Both lineups weak vs these arms lately",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -2907,7 +3214,8 @@
         "source": "champion",
         "our_prob": 0.5283,
         "ev": 0.0315,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2938,7 +3246,8 @@
         "ev": 0.0397,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.5% vs median break-even 53.8% at -116.5 (median ev +1.21% < +1.5% min); +EV at best -110 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -2967,7 +3276,8 @@
         "source": "champion",
         "our_prob": 0.5124,
         "ev": 0.03,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -2996,7 +3306,21 @@
         "source": "champion",
         "our_prob": 0.5611,
         "ev": 0.0449,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.8 R/G vs league)",
+            "dir": "over"
+          },
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -3027,7 +3351,8 @@
         "ev": 0.0174,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 55.5% vs median break-even 54.9% at -122 (median ev +0.98% < +1.5% min); +EV at best -120 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -3056,7 +3381,13 @@
         "source": "champion",
         "our_prob": 0.5529,
         "ev": 0.0422,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.89x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3085,7 +3416,13 @@
         "source": "champion",
         "our_prob": 0.5451,
         "ev": 0.0407,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters hit hard lately (.329/.359 xwOBA)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -3116,7 +3453,8 @@
         "ev": 0.0307,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 55.1% vs median break-even 54.3% at -119 (median ev +1.46% < +1.5% min); +EV at best -115 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -3145,7 +3483,13 @@
         "source": "champion",
         "our_prob": 0.5702,
         "ev": 0.0748,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Jones trends under (35% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3174,7 +3518,8 @@
         "source": "champion",
         "our_prob": 0.5378,
         "ev": 0.05,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3203,7 +3548,13 @@
         "source": "champion",
         "our_prob": 0.5454,
         "ev": 0.08,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3232,7 +3583,8 @@
         "source": "champion",
         "our_prob": 0.5714,
         "ev": 0.0476,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3261,7 +3613,13 @@
         "source": "champion",
         "our_prob": 0.5163,
         "ev": 0.0481,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.84x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3290,7 +3648,8 @@
         "source": "champion",
         "our_prob": 0.5492,
         "ev": 0.0484,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3319,7 +3678,17 @@
         "source": "champion",
         "our_prob": 0.531,
         "ev": 0.0466,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.84x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Both lineups weak vs these arms lately",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3348,7 +3717,17 @@
         "source": "champion",
         "our_prob": 0.5509,
         "ev": 0.0517,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Merzel trends under (35% overs L2)",
+            "dir": "under"
+          },
+          {
+            "text": "Pitcher-friendly park at night (0.90x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3377,7 +3756,8 @@
         "source": "champion",
         "our_prob": 0.5328,
         "ev": 0.0655,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3406,7 +3786,8 @@
         "source": "champion",
         "our_prob": 0.5292,
         "ev": 0.0584,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3435,7 +3816,21 @@
         "source": "champion",
         "our_prob": 0.5645,
         "ev": 0.0349,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters missing bats (31%/30% K)",
+            "dir": "under"
+          },
+          {
+            "text": "Away starter dominant lately (.223 xwOBA L5)",
+            "dir": "under"
+          },
+          {
+            "text": "Pitcher-friendly park in day games (0.93x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3464,7 +3859,17 @@
         "source": "champion",
         "our_prob": 0.5362,
         "ev": 0.0724,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both lineups weak vs these arms lately",
+            "dir": "under"
+          },
+          {
+            "text": "Ump's games run low (-0.3 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3495,7 +3900,13 @@
         "ev": 0.0132,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.2% vs median break-even 53.5% at -115 (median ev +1.32% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.09x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -3524,7 +3935,21 @@
         "source": "champion",
         "our_prob": 0.5698,
         "ev": 0.0527,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Home starter dominant lately (.185 xwOBA L5)",
+            "dir": "under"
+          },
+          {
+            "text": "Pitcher-friendly park in day games (0.91x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3553,7 +3978,8 @@
         "source": "champion",
         "our_prob": 0.5128,
         "ev": 0.0409,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3582,7 +4008,8 @@
         "source": "champion",
         "our_prob": 0.5555,
         "ev": 0.0386,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3611,7 +4038,13 @@
         "source": "champion",
         "our_prob": 0.5202,
         "ev": 0.0303,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Blakney trends under (36% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3640,7 +4073,17 @@
         "source": "champion",
         "our_prob": 0.5553,
         "ev": 0.0602,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.89x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Home starter dominant lately (.223 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3669,7 +4112,13 @@
         "source": "champion",
         "our_prob": 0.5396,
         "ev": 0.0791,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.89x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3698,7 +4147,13 @@
         "source": "champion",
         "our_prob": 0.584,
         "ev": 0.0919,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Moore trends over (60% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -3727,7 +4182,13 @@
         "source": "champion",
         "our_prob": 0.533,
         "ev": 0.0661,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.5 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3756,7 +4217,8 @@
         "source": "champion",
         "our_prob": 0.5452,
         "ev": 0.0644,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3785,7 +4247,17 @@
         "source": "champion",
         "our_prob": 0.5208,
         "ev": 0.0169,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Additon trends over (64% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters hit hard lately (.343/.337 xwOBA)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -3814,7 +4286,13 @@
         "source": "champion",
         "our_prob": 0.5332,
         "ev": 0.0509,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.06x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -3843,7 +4321,8 @@
         "source": "champion",
         "our_prob": 0.5677,
         "ev": 0.0613,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -3872,7 +4351,17 @@
         "source": "champion",
         "our_prob": 0.5568,
         "ev": 0.0871,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park at night (0.91x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Both lineups weak vs these arms lately",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3901,7 +4390,13 @@
         "source": "champion",
         "our_prob": 0.5657,
         "ev": 0.0451,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Merzel trends under (39% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3930,7 +4425,13 @@
         "source": "champion",
         "our_prob": 0.5221,
         "ev": 0.0339,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Jean trends over (68% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -3959,7 +4460,13 @@
         "source": "champion",
         "our_prob": 0.5497,
         "ev": 0.0994,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Home starter dominant lately (.217 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -3988,7 +4495,13 @@
         "source": "champion",
         "our_prob": 0.5316,
         "ev": 0.0632,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4019,7 +4532,21 @@
         "ev": 0.0119,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 53.0% vs median break-even 52.4% at -110 (median ev +1.19% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "High-altitude park in day games (1.24x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Plate ump Jean trends over (66% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters hit hard lately (.404/.347 xwOBA)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4048,7 +4575,13 @@
         "source": "champion",
         "our_prob": 0.569,
         "ev": 0.0637,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4077,7 +4610,8 @@
         "source": "champion",
         "our_prob": 0.5319,
         "ev": 0.0385,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -4106,7 +4640,13 @@
         "source": "champion",
         "our_prob": 0.5442,
         "ev": 0.0259,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Merzel trends under (38% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4137,7 +4677,8 @@
         "ev": 0.0203,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.1% vs median break-even 53.5% at -115 (median ev +1.19% < +1.5% min); +EV at best -113 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -4168,7 +4709,13 @@
         "ev": 0.1123,
         "expanded_band": false,
         "pass_reason": "+EV at the price but |edge| 0.067 sits in the measured anti-signal tail (>=0.065: hit 43.4%, ROI -17.1% on 2022-2026) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "toxic_tail"
+        "pass_why": "toxic_tail",
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.379 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4199,7 +4746,13 @@
         "ev": 0.0329,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.8% vs median break-even 54.1% at -118 (median ev +1.23% < +1.5% min); +EV at best -113 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4228,7 +4781,13 @@
         "source": "champion",
         "our_prob": 0.5462,
         "ev": 0.0428,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both lineups weak vs these arms lately",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4259,7 +4818,13 @@
         "ev": 0.0426,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 55.8% vs median break-even 54.9% at -122 (median ev +1.47% < +1.5% min); +EV at best -115 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Home starter dominant lately (.224 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4288,7 +4853,13 @@
         "source": "champion",
         "our_prob": 0.552,
         "ev": 0.0197,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4317,7 +4888,13 @@
         "source": "champion",
         "our_prob": 0.5794,
         "ev": 0.0623,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.89x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4346,7 +4923,8 @@
         "source": "champion",
         "our_prob": 0.5532,
         "ev": 0.0301,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -4375,7 +4953,8 @@
         "source": "champion",
         "our_prob": 0.5869,
         "ev": 0.0842,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -4406,7 +4985,8 @@
         "ev": 0.0371,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 53.1% vs median break-even 52.4% at -110 (median ev +1.41% < +1.5% min); +EV at best -105 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -4437,7 +5017,13 @@
         "ev": 0.0334,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 55.3% vs median break-even 54.5% at -120 (median ev +1.34% < +1.5% min); +EV at best -115 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4466,7 +5052,13 @@
         "source": "champion",
         "our_prob": 0.5231,
         "ev": 0.0463,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Jones trends under (33% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4495,7 +5087,13 @@
         "source": "champion",
         "our_prob": 0.5739,
         "ev": 0.0773,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.93x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4526,7 +5124,17 @@
         "ev": 0.088,
         "expanded_band": false,
         "pass_reason": "+EV at the price but |edge| 0.066 sits in the measured anti-signal tail (>=0.065: hit 43.4%, ROI -17.1% on 2022-2026) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "toxic_tail"
+        "pass_why": "toxic_tail",
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.84x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Home starter dominant lately (.218 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4555,7 +5163,13 @@
         "source": "champion",
         "our_prob": 0.529,
         "ev": 0.058,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.84x runs)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4584,7 +5198,13 @@
         "source": "champion",
         "our_prob": 0.5257,
         "ev": 0.0264,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters hit hard lately (.326/.356 xwOBA)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4613,7 +5233,13 @@
         "source": "champion",
         "our_prob": 0.5339,
         "ev": 0.0423,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters walk-prone lately (12%/14% BB)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4642,7 +5268,13 @@
         "source": "champion",
         "our_prob": 0.5274,
         "ev": 0.0445,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters missing bats (27%/28% K)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4671,7 +5303,8 @@
         "source": "champion",
         "our_prob": 0.5628,
         "ev": 0.0522,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -4702,7 +5335,17 @@
         "ev": 0.0118,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.3% vs median break-even 51.7% at -107 (median ev +1.18% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "High-altitude park in day games (1.24x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Home starter getting shelled (.390 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4731,7 +5374,17 @@
         "source": "champion",
         "our_prob": 0.5776,
         "ev": 0.0671,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Jean trends over (62% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4762,7 +5415,13 @@
         "ev": 0.039,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.2% vs median break-even 53.5% at -115 (median ev +1.30% < +1.5% min); +EV at best -109 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.413 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4793,7 +5452,13 @@
         "ev": 0.0218,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 51.1% vs median break-even 51.2% at -105 (median ev -0.25% < +1.5% min); +EV at best 100 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Carapazza trends over (57% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4822,7 +5487,13 @@
         "source": "champion",
         "our_prob": 0.5438,
         "ev": 0.0617,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Jesus trends under (40% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -4853,7 +5524,13 @@
         "ev": 0.0491,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 51.7% vs median break-even 51.2% at -105 (median ev +0.90% < +1.5% min); +EV at best 103 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4884,7 +5561,8 @@
         "ev": 0.0366,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 51.8% vs median break-even 51.2% at -105 (median ev +1.19% < +1.5% min); +EV at best 100 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -4913,7 +5591,8 @@
         "source": "champion",
         "our_prob": 0.5495,
         "ev": 0.0273,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -4944,7 +5623,13 @@
         "ev": 0.0383,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 50.2% vs median break-even 50.0% at 100 (median ev +0.32% < +1.5% min); +EV at best 107 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Moore trends over (65% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -4975,7 +5660,8 @@
         "ev": 0.0099,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.9% vs median break-even 53.0% at -113 (median ev -0.29% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -5006,7 +5692,8 @@
         "ev": 0.0084,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 53.9% vs median break-even 53.5% at -115 (median ev +0.84% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -5037,7 +5724,8 @@
         "ev": 0.0032,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 50.2% vs median break-even 50.5% at -102 (median ev -0.66% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -5066,7 +5754,13 @@
         "source": "champion",
         "our_prob": 0.5094,
         "ev": 0.0188,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Ripperger trends under (43% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -5095,7 +5789,17 @@
         "source": "champion",
         "our_prob": 0.5397,
         "ev": 0.0537,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.91x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Plate ump Lentz trends under (43% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -5135,7 +5839,8 @@
         "ev": 0.0296,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 50.7% vs median break-even 50.0% at 100 (median ev +1.44% < +1.5% min); +EV at best 103 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 7,
@@ -5175,7 +5880,13 @@
         "ev": -0.0122,
         "expanded_band": false,
         "pass_reason": "model 51.7% < break-even 52.4% at -110 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.6 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -5215,7 +5926,8 @@
         "ev": 0.0031,
         "expanded_band": false,
         "pass_reason": "model 53.0% >= break-even 52.8% at -112 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -5255,7 +5967,13 @@
         "ev": 0.0276,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Plate ump Guccione trends over (56% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 1,
@@ -5295,7 +6013,13 @@
         "ev": 0.0497,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 51.7% vs median break-even 51.2% at -105 (median ev +0.96% < +1.5% min); +EV at best 103 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.5 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -5335,7 +6059,8 @@
         "ev": -0.007,
         "expanded_band": false,
         "pass_reason": "model 49.6% < break-even 50.0% at 100 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 4,
@@ -5375,7 +6100,8 @@
         "ev": 0.001,
         "expanded_band": false,
         "pass_reason": "model 52.4% >= break-even 52.4% at -110 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 8,
@@ -5415,7 +6141,17 @@
         "ev": 0.0183,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0054 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Plate ump Estabrook trends over (57% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 0,
@@ -5455,7 +6191,13 @@
         "ev": -0.0071,
         "expanded_band": false,
         "pass_reason": "model 49.6% < break-even 50.0% at 100 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -5495,7 +6237,8 @@
         "ev": 0.0121,
         "expanded_band": false,
         "pass_reason": "model 52.3% >= break-even 51.7% at -107 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 7,
@@ -5535,7 +6278,17 @@
         "ev": 0.0483,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Both starters hit hard lately (.342/.385 xwOBA)",
+            "dir": "over"
+          },
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 1,
@@ -5573,7 +6326,17 @@
         "source": "model",
         "our_prob": 0.5035,
         "ev": 0.0322,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.371 xwOBA L5)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 8,
@@ -5611,7 +6374,13 @@
         "source": "model",
         "our_prob": 0.5107,
         "ev": 0.0367,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Barrett trends over (62% L2 szn)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -5642,7 +6411,8 @@
         "ev": 0.0373,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": []
       },
       "final": {
         "home_runs": 10,
@@ -5680,7 +6450,13 @@
         "source": "model",
         "our_prob": 0.5184,
         "ev": 0.0169,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -5718,7 +6494,13 @@
         "source": "model",
         "our_prob": 0.5189,
         "ev": 0.0276,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters walk-prone lately (11%/13% BB)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -5756,7 +6538,17 @@
         "source": "model",
         "our_prob": 0.5267,
         "ev": 0.0535,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Plate ump Wolf trends over (59% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -5794,7 +6586,13 @@
         "source": "model",
         "our_prob": 0.5206,
         "ev": 0.031,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.7 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -5832,7 +6630,17 @@
         "source": "model",
         "our_prob": 0.5206,
         "ev": 0.031,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Hanahan trends over (64% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 7,
@@ -5872,7 +6680,8 @@
         "ev": 0.0061,
         "expanded_band": false,
         "pass_reason": "model 52.0% >= break-even 51.7% at -107 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -5912,7 +6721,8 @@
         "ev": -0.0012,
         "expanded_band": false,
         "pass_reason": "model 49.9% < break-even 50.0% at 100 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 14,
@@ -5952,7 +6762,8 @@
         "ev": 0.0284,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0062 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": []
       },
       "final": {
         "home_runs": 7,
@@ -5990,7 +6801,13 @@
         "source": "model",
         "our_prob": 0.5148,
         "ev": 0.0296,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Away starter getting shelled (.360 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -6030,7 +6847,13 @@
         "ev": 0.0135,
         "expanded_band": false,
         "pass_reason": "model 49.9% >= break-even 49.3% at 103 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -6070,7 +6893,17 @@
         "ev": 0.0026,
         "expanded_band": false,
         "pass_reason": "model 50.1% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Away starter getting shelled (.409 xwOBA L5)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -6110,7 +6943,8 @@
         "ev": 0.0264,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": []
       },
       "final": {
         "home_runs": 3,
@@ -6150,7 +6984,8 @@
         "ev": 0.0455,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": []
       },
       "final": {
         "home_runs": 3,
@@ -6190,7 +7025,8 @@
         "ev": -0.0042,
         "expanded_band": false,
         "pass_reason": "model 52.6% < break-even 52.8% at -112 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -6230,7 +7066,8 @@
         "ev": -0.0189,
         "expanded_band": false,
         "pass_reason": "model 50.0% < break-even 51.0% at -104 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 5,
@@ -6268,7 +7105,8 @@
         "source": "model",
         "our_prob": 0.5132,
         "ev": 0.0264,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 4,
@@ -6308,7 +7146,13 @@
         "ev": -0.0049,
         "expanded_band": false,
         "pass_reason": "model 52.8% < break-even 53.0% at -113 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Moore trends over (64% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -6348,7 +7192,13 @@
         "ev": 0.0485,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0097 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -6388,7 +7238,8 @@
         "ev": 0.0028,
         "expanded_band": false,
         "pass_reason": "model 51.1% >= break-even 51.0% at -104 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 0,
@@ -6426,7 +7277,8 @@
         "source": "model",
         "our_prob": 0.5301,
         "ev": 0.0497,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -6466,7 +7318,8 @@
         "ev": 0.0112,
         "expanded_band": false,
         "pass_reason": "model 51.5% >= break-even 51.0% at -104 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 6,
@@ -6506,7 +7359,13 @@
         "ev": 0.0169,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0059 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Plate ump Carapazza trends over (58% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -6544,7 +7403,8 @@
         "source": "model",
         "our_prob": 0.5218,
         "ev": 0.0436,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 3,
@@ -6584,7 +7444,13 @@
         "ev": -0.0193,
         "expanded_band": false,
         "pass_reason": "model 50.7% < break-even 51.7% at -107 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Away starter getting shelled (.382 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -6624,7 +7490,13 @@
         "ev": -0.0124,
         "expanded_band": false,
         "pass_reason": "model 50.6% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -6664,7 +7536,17 @@
         "ev": 0.0096,
         "expanded_band": false,
         "pass_reason": "model 49.7% >= break-even 49.3% at 103 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.6 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -6702,7 +7584,8 @@
         "source": "model",
         "our_prob": 0.5172,
         "ev": 0.0242,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 8,
@@ -6742,7 +7625,8 @@
         "ev": 0.0128,
         "expanded_band": false,
         "pass_reason": "model 49.9% >= break-even 49.3% at 103 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -6782,7 +7666,17 @@
         "ev": 0.0131,
         "expanded_band": false,
         "pass_reason": "model 53.3% >= break-even 52.6% at -111 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump M\u00e1rquez trends over (73% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 14,
@@ -6822,7 +7716,17 @@
         "ev": -0.0243,
         "expanded_band": false,
         "pass_reason": "model 49.3% < break-even 50.5% at -102 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Additon trends over (60% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park in day games (1.06x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 8,
@@ -6860,7 +7764,13 @@
         "source": "champion",
         "our_prob": 0.5118,
         "ev": 0.0236,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -6900,7 +7810,13 @@
         "ev": 0.0285,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Plate ump Livensparger trends over (61% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -6940,7 +7856,13 @@
         "ev": -0.0191,
         "expanded_band": false,
         "pass_reason": "model 47.5% < break-even 53.5% at -115 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump MacKay trends under (41% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -6980,7 +7902,13 @@
         "ev": 0.0123,
         "expanded_band": false,
         "pass_reason": "model 50.6% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.385 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -7020,7 +7948,8 @@
         "ev": 0.0272,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0048 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": []
       },
       "final": {
         "home_runs": 0,
@@ -7058,7 +7987,13 @@
         "source": "model",
         "our_prob": 0.5162,
         "ev": 0.0324,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -7098,7 +8033,21 @@
         "ev": -0.0201,
         "expanded_band": false,
         "pass_reason": "model 52.0% < break-even 53.0% at -113 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.397 xwOBA L5)",
+            "dir": "over"
+          },
+          {
+            "text": "Plate ump Eddings trends over (64% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters walk-prone lately (12%/11% BB)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 9,
@@ -7138,7 +8087,8 @@
         "ev": 0.0364,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0032 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": []
       },
       "final": {
         "home_runs": 4,
@@ -7176,7 +8126,8 @@
         "source": "champion",
         "our_prob": 0.5519,
         "ev": 0.0318,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 3,
@@ -7214,7 +8165,17 @@
         "source": "model",
         "our_prob": 0.5141,
         "ev": 0.0181,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Away starter getting shelled (.408 xwOBA L5)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.8 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -7252,7 +8213,17 @@
         "source": "model",
         "our_prob": 0.5261,
         "ev": 0.0272,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters hit hard lately (.326/.324 xwOBA)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -7292,7 +8263,8 @@
         "ev": -0.0068,
         "expanded_band": false,
         "pass_reason": "model 48.4% < break-even 48.8% at 105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 3,
@@ -7330,7 +8302,13 @@
         "source": "champion",
         "our_prob": 0.5446,
         "ev": 0.0182,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.95x runs)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -7370,7 +8348,13 @@
         "ev": 0.0037,
         "expanded_band": false,
         "pass_reason": "model 51.9% >= break-even 51.7% at -107 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.6 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 1,
@@ -7408,7 +8392,8 @@
         "source": "model",
         "our_prob": 0.5168,
         "ev": 0.0336,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -7448,7 +8433,8 @@
         "ev": -0.0047,
         "expanded_band": false,
         "pass_reason": "model 51.4% < break-even 51.7% at -107 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -7479,7 +8465,17 @@
         "ev": -0.0172,
         "expanded_band": false,
         "pass_reason": "model 51.5% < break-even 52.4% at -110 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Barrett trends over (62% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -7519,7 +8515,13 @@
         "ev": 0.0043,
         "expanded_band": false,
         "pass_reason": "model 51.9% >= break-even 51.7% at -107 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -7559,7 +8561,8 @@
         "ev": 0.0195,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.7% vs median break-even 52.4% at -110 (median ev +0.61% < +1.5% min); +EV at best -107 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 15,
@@ -7599,7 +8602,13 @@
         "ev": -0.0029,
         "expanded_band": false,
         "pass_reason": "model 51.1% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -7637,7 +8646,13 @@
         "source": "model",
         "our_prob": 0.5197,
         "ev": 0.0292,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -7677,7 +8692,8 @@
         "ev": -0.0077,
         "expanded_band": false,
         "pass_reason": "model 49.6% < break-even 50.0% at 100 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -7715,7 +8731,13 @@
         "source": "champion",
         "our_prob": 0.5322,
         "ev": 0.0391,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 7,
@@ -7755,7 +8777,13 @@
         "ev": 0.0103,
         "expanded_band": false,
         "pass_reason": "model 49.8% >= break-even 49.3% at 103 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "High-altitude park at night (1.29x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -7795,7 +8823,8 @@
         "ev": 0.0259,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0092 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -7833,7 +8862,17 @@
         "source": "model",
         "our_prob": 0.5131,
         "ev": 0.0262,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.09x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Home starter getting shelled (.377 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -7871,7 +8910,13 @@
         "source": "model",
         "our_prob": 0.5221,
         "ev": 0.0194,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.09x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -7911,7 +8956,8 @@
         "ev": 0.0008,
         "expanded_band": false,
         "pass_reason": "model 53.5% >= break-even 53.5% at -115 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 0,
@@ -7949,7 +8995,13 @@
         "source": "model",
         "our_prob": 0.523,
         "ev": 0.0357,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Tomlinson trends over (58% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -7989,7 +9041,17 @@
         "ev": -0.0008,
         "expanded_band": false,
         "pass_reason": "model 52.1% < break-even 52.1% at -109 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both starters hit hard lately (.427/.372 xwOBA)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters walk-prone lately (11%/13% BB)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 1,
@@ -8029,7 +9091,13 @@
         "ev": -0.0002,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 53.5% vs median break-even 53.7% at -116 (median ev -0.42% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens fresh (light use last 3 days)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 10,
@@ -8067,7 +9135,13 @@
         "source": "model",
         "our_prob": 0.5035,
         "ev": 0.0423,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.06x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -8107,7 +9181,13 @@
         "ev": 0.0001,
         "expanded_band": false,
         "pass_reason": "model 51.2% >= break-even 51.2% at -105 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -8145,7 +9225,13 @@
         "source": "model",
         "our_prob": 0.5294,
         "ev": 0.0197,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 8,
@@ -8183,7 +9269,13 @@
         "source": "model",
         "our_prob": 0.5059,
         "ev": 0.027,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Wolf trends over (59% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -8223,7 +9315,8 @@
         "ev": 0.0232,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0030 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": []
       },
       "final": {
         "home_runs": 6,
@@ -8263,7 +9356,17 @@
         "ev": 0.0047,
         "expanded_band": false,
         "pass_reason": "model 51.0% >= break-even 50.7% at -103 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.11x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.7 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -8303,7 +9406,13 @@
         "ev": -0.009,
         "expanded_band": false,
         "pass_reason": "model 50.8% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Moore trends over (64% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 7,
@@ -8343,7 +9452,17 @@
         "ev": -0.0094,
         "expanded_band": false,
         "pass_reason": "model 51.7% < break-even 52.1% at -109 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump May trends over (62% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park in day games (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -8383,7 +9502,13 @@
         "ev": 0.0369,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.4% vs median break-even 52.4% at -110 (median ev -0.04% < +1.5% min); +EV at best -102 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -8412,7 +9537,13 @@
         "source": "champion",
         "our_prob": 0.504,
         "ev": 0.0584,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Bellino trends over (57% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -8452,7 +9583,13 @@
         "ev": -0.0071,
         "expanded_band": false,
         "pass_reason": "model 51.3% < break-even 51.7% at -107 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.09x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 15,
@@ -8490,7 +9627,13 @@
         "source": "model",
         "our_prob": 0.5071,
         "ev": 0.0244,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.364 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 0,
@@ -8530,7 +9673,13 @@
         "ev": 0.0083,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 51.2% vs median break-even 51.2% at -105 (median ev -0.12% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Away starter dominant lately (.213 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 0,
@@ -8570,7 +9719,13 @@
         "ev": 0.0215,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0046 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.06x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 1,
@@ -8608,7 +9763,13 @@
         "source": "model",
         "our_prob": 0.5211,
         "ev": 0.0321,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump M\u00e1rquez trends over (73% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -8648,7 +9809,13 @@
         "ev": 0.0354,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0077 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 8,
@@ -8688,7 +9855,8 @@
         "ev": 0.0114,
         "expanded_band": false,
         "pass_reason": "model 53.0% >= break-even 52.4% at -110 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -8726,7 +9894,17 @@
         "source": "model",
         "our_prob": 0.4868,
         "ev": 0.0263,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Pitcher-friendly park in day games (0.82x runs)",
+            "dir": "under"
+          },
+          {
+            "text": "Plate ump Segal trends under (42% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -8764,7 +9942,8 @@
         "source": "model",
         "our_prob": 0.5311,
         "ev": 0.0322,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 3,
@@ -8802,7 +9981,17 @@
         "source": "model",
         "our_prob": 0.5116,
         "ev": 0.0232,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both starters hit hard lately (.360/.362 xwOBA)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters walk-prone lately (12%/14% BB)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -8840,7 +10029,17 @@
         "source": "model",
         "our_prob": 0.5137,
         "ev": 0.0274,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Jean trends over (58% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 10,
@@ -8880,7 +10079,13 @@
         "ev": 0.0063,
         "expanded_band": false,
         "pass_reason": "model 48.7% < break-even 51.0% at -104 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens fresh (light use last 3 days)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -8920,7 +10125,13 @@
         "ev": -0.0145,
         "expanded_band": false,
         "pass_reason": "model 51.6% < break-even 52.4% at -110 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.23x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -8960,7 +10171,13 @@
         "ev": 0.0372,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0097 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Both bullpens fresh (light use last 3 days)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -8998,7 +10215,8 @@
         "source": "model",
         "our_prob": 0.5213,
         "ev": 0.0479,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 6,
@@ -9038,7 +10256,13 @@
         "ev": 0.0127,
         "expanded_band": false,
         "pass_reason": "model 51.9% >= break-even 51.2% at -105 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.11x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 8,
@@ -9076,7 +10300,13 @@
         "source": "model",
         "our_prob": 0.513,
         "ev": 0.0259,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -9116,7 +10346,13 @@
         "ev": 0.0091,
         "expanded_band": false,
         "pass_reason": "model 50.4% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Rackley trends over (57% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 13,
@@ -9154,7 +10390,8 @@
         "source": "model",
         "our_prob": 0.5292,
         "ev": 0.0429,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 8,
@@ -9192,7 +10429,8 @@
         "source": "model",
         "our_prob": 0.5183,
         "ev": 0.0264,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -9232,7 +10470,17 @@
         "ev": 0.0192,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0010 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -9270,7 +10518,13 @@
         "source": "model",
         "our_prob": 0.4857,
         "ev": 0.044,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 10,
@@ -9310,7 +10564,17 @@
         "ev": 0.0194,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0047 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Ump's games run high (+0.6 R/G vs league)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters hit hard lately (.343/.324 xwOBA)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -9348,7 +10612,13 @@
         "source": "model",
         "our_prob": 0.5169,
         "ev": 0.0546,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 8,
@@ -9388,7 +10658,17 @@
         "ev": 0.0034,
         "expanded_band": false,
         "pass_reason": "model 51.1% >= break-even 51.0% at -104 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Estabrook trends over (57% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -9428,7 +10708,13 @@
         "ev": 0.0136,
         "expanded_band": false,
         "pass_reason": "model 52.4% >= break-even 51.7% at -107 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Additon trends over (60% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -9468,7 +10754,21 @@
         "ev": 0.0319,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0071 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Home starter getting shelled (.368 xwOBA L5)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -9508,7 +10808,8 @@
         "ev": 0.0048,
         "expanded_band": false,
         "pass_reason": "model 50.7% >= break-even 50.5% at -102 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 8,
@@ -9546,7 +10847,13 @@
         "source": "model",
         "our_prob": 0.4918,
         "ev": 0.0519,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Tichenor trends under (42% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -9584,7 +10891,13 @@
         "source": "model",
         "our_prob": 0.4881,
         "ev": 0.0391,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Lentz trends under (43% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -9624,7 +10937,8 @@
         "ev": 0.0037,
         "expanded_band": false,
         "pass_reason": "model 53.2% >= break-even 53.0% at -113 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 8,
@@ -9664,7 +10978,13 @@
         "ev": -0.022,
         "expanded_band": false,
         "pass_reason": "model 52.9% < break-even 54.1% at -118 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Livensparger trends over (61% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -9704,7 +11024,8 @@
         "ev": 0.0039,
         "expanded_band": false,
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 53.5% vs median break-even 53.3% at -114 (median ev +0.39% < +1.5% min)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -9742,7 +11063,13 @@
         "source": "model",
         "our_prob": 0.531,
         "ev": 0.062,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -9782,7 +11109,13 @@
         "ev": 0.0076,
         "expanded_band": false,
         "pass_reason": "model 51.6% >= break-even 51.2% at -105 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -9813,7 +11146,13 @@
         "ev": 0.0424,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0054 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.6 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -9851,7 +11190,17 @@
         "source": "model",
         "our_prob": 0.5225,
         "ev": 0.0712,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -9880,7 +11229,13 @@
         "source": "model",
         "our_prob": 0.526,
         "ev": 0.0269,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -9918,7 +11273,8 @@
         "source": "model",
         "our_prob": 0.4589,
         "ev": 0.0822,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 0,
@@ -9956,7 +11312,21 @@
         "source": "model",
         "our_prob": 0.5108,
         "ev": 0.0217,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Plate ump Barrett trends over (62% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters walk-prone lately (12%/10% BB)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -9996,7 +11366,13 @@
         "ev": 0.01,
         "expanded_band": false,
         "pass_reason": "model 50.2% >= break-even 49.3% at 103 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Pitcher-friendly park at night (0.93x runs)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 10,
@@ -10036,7 +11412,21 @@
         "ev": 0.005,
         "expanded_band": false,
         "pass_reason": "model 51.2% >= break-even 51.0% at -104 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Home starter getting shelled (.380 xwOBA L5)",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 11,
@@ -10074,7 +11464,8 @@
         "source": "model",
         "our_prob": 0.4704,
         "ev": 0.0962,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 5,
@@ -10112,7 +11503,13 @@
         "source": "model",
         "our_prob": 0.5329,
         "ev": 0.0404,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "High-altitude park at night (1.29x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 8,
@@ -10152,7 +11549,8 @@
         "ev": 0.0091,
         "expanded_band": false,
         "pass_reason": "model 52.2% >= break-even 51.7% at -107 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 5,
@@ -10190,7 +11588,8 @@
         "source": "model",
         "our_prob": 0.4731,
         "ev": 0.0538,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 6,
@@ -10230,7 +11629,8 @@
         "ev": 0.0066,
         "expanded_band": false,
         "pass_reason": "model 50.8% >= break-even 50.5% at -102 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -10270,7 +11670,17 @@
         "ev": 0.0012,
         "expanded_band": false,
         "pass_reason": "model 50.6% >= break-even 50.5% at -102 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park in day games (1.06x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -10310,7 +11720,13 @@
         "ev": 0.0107,
         "expanded_band": false,
         "pass_reason": "model 51.8% >= break-even 51.2% at -105 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Fletcher trends over (60% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -10350,7 +11766,17 @@
         "ev": 0.0146,
         "expanded_band": false,
         "pass_reason": "model 52.0% >= break-even 51.2% at -105 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Moore trends over (64% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -10388,7 +11814,17 @@
         "source": "model",
         "our_prob": 0.5094,
         "ev": 0.0188,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "High-altitude park in day games (1.24x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 0,
@@ -10426,7 +11862,8 @@
         "source": "model",
         "our_prob": 0.469,
         "ev": 0.0619,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 15,
@@ -10464,7 +11901,8 @@
         "source": "model",
         "our_prob": 0.5407,
         "ev": 0.0192,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 3,
@@ -10504,7 +11942,17 @@
         "ev": 0.0109,
         "expanded_band": false,
         "pass_reason": "model 50.0% >= break-even 49.5% at 102 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park in day games (1.06x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Plate ump Bellino trends over (57% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 0,
@@ -10544,7 +11992,13 @@
         "ev": 0.0184,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Ump's games run low (-0.3 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -10584,7 +12038,13 @@
         "ev": -0.0056,
         "expanded_band": false,
         "pass_reason": "model 50.2% < break-even 50.5% at -102 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -10624,7 +12084,13 @@
         "ev": -0.0019,
         "expanded_band": false,
         "pass_reason": "model 51.1% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump May trends over (62% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -10662,7 +12128,13 @@
         "source": "model",
         "our_prob": 0.5195,
         "ev": 0.0649,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 1,
@@ -10700,7 +12172,13 @@
         "source": "model",
         "our_prob": 0.5335,
         "ev": 0.0671,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 7,
@@ -10738,7 +12216,8 @@
         "source": "model",
         "our_prob": 0.5214,
         "ev": 0.0428,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -10778,7 +12257,17 @@
         "ev": -0.002,
         "expanded_band": false,
         "pass_reason": "model 49.9% < break-even 50.0% at 100 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Hitter-friendly park at night (1.07x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 1,
@@ -10818,7 +12307,13 @@
         "ev": 0.0118,
         "expanded_band": false,
         "pass_reason": "model 49.7% < break-even 49.8% at 101 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Libka trends under (30% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -10858,7 +12353,21 @@
         "ev": 0.0075,
         "expanded_band": false,
         "pass_reason": "model 50.4% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Eddings trends over (64% L2 szn)",
+            "dir": "over"
+          },
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park in day games (1.05x runs)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 6,
@@ -10898,7 +12407,8 @@
         "ev": -0.0051,
         "expanded_band": false,
         "pass_reason": "model 51.4% < break-even 51.7% at -107 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 1,
@@ -10938,7 +12448,13 @@
         "ev": 0.0199,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Plate ump Miller trends under (41% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 3,
@@ -10978,7 +12494,17 @@
         "ev": 0.0587,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Home starter dominant lately (.200 xwOBA L5)",
+            "dir": "under"
+          },
+          {
+            "text": "Plate ump Segal trends under (42% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 4,
@@ -11018,7 +12544,17 @@
         "ev": 0.0132,
         "expanded_band": false,
         "pass_reason": "model 50.7% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          },
+          {
+            "text": "Plate ump Rackley trends over (57% L2 szn)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -11058,7 +12594,13 @@
         "ev": 0.0276,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Home starter dominant lately (.190 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -11098,7 +12640,17 @@
         "ev": -0.0015,
         "expanded_band": false,
         "pass_reason": "model 47.0% < break-even 53.0% at -113 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Home starter dominant lately (.180 xwOBA L5)",
+            "dir": "under"
+          },
+          {
+            "text": "Ump's games run low (-0.4 R/G vs league)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -11138,7 +12690,21 @@
         "ev": -0.0211,
         "expanded_band": false,
         "pass_reason": "model 50.1% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          },
+          {
+            "text": "Hitter-friendly park at night (1.05x runs)",
+            "dir": "over"
+          },
+          {
+            "text": "Ump's games run high (+0.4 R/G vs league)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -11176,7 +12742,8 @@
         "source": "model",
         "our_prob": 0.5089,
         "ev": 0.0179,
-        "expanded_band": true
+        "expanded_band": true,
+        "signals": []
       },
       "final": {
         "home_runs": 0,
@@ -11216,7 +12783,8 @@
         "ev": 0.0052,
         "expanded_band": false,
         "pass_reason": "model 50.0% >= break-even 49.8% at 101 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 6,
@@ -11256,7 +12824,13 @@
         "ev": 0.0307,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0016 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 11,
@@ -11296,7 +12870,8 @@
         "ev": 0.0106,
         "expanded_band": false,
         "pass_reason": "model 47.3% < break-even 52.1% at -109 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -11334,7 +12909,17 @@
         "source": "model",
         "our_prob": 0.5172,
         "ev": 0.0194,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Away starter getting shelled (.379 xwOBA L5)",
+            "dir": "over"
+          },
+          {
+            "text": "Both lineups match up well vs these arms",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 2,
@@ -11374,7 +12959,8 @@
         "ev": 0.053,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": []
       },
       "final": {
         "home_runs": 6,
@@ -11414,7 +13000,17 @@
         "ev": 0.0349,
         "expanded_band": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
-        "pass_why": "junk_cell"
+        "pass_why": "junk_cell",
+        "signals": [
+          {
+            "text": "Both starters walk-prone lately (12%/15% BB)",
+            "dir": "over"
+          },
+          {
+            "text": "Both starters hit hard lately (.344/.347 xwOBA)",
+            "dir": "over"
+          }
+        ]
       },
       "final": {
         "home_runs": 5,
@@ -11454,7 +13050,8 @@
         "ev": -0.0007,
         "expanded_band": false,
         "pass_reason": "model 52.1% < break-even 52.1% at -109 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 5,
@@ -11492,7 +13089,8 @@
         "source": "model",
         "our_prob": 0.4883,
         "ev": 0.0235,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       },
       "final": {
         "home_runs": 0,
@@ -11532,7 +13130,8 @@
         "ev": -0.0009,
         "expanded_band": false,
         "pass_reason": "model 48.6% < break-even 51.5% at -106 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       },
       "final": {
         "home_runs": 2,
@@ -11572,7 +13171,13 @@
         "ev": -0.0193,
         "expanded_band": false,
         "pass_reason": "model 48.6% < break-even 52.4% at -110 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Pitcher-friendly park at night (0.86x runs)",
+            "dir": "under"
+          }
+        ]
       },
       "final": {
         "home_runs": 7,
@@ -11582,6 +13187,98 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      }
+    },
+    {
+      "game_id": "2026-07-25-ATH-MIN",
+      "game_pk": 823679,
+      "date": "2026-07-25",
+      "away": null,
+      "home": null,
+      "matchup": "ATH @ MIN",
+      "first_pitch_utc": null,
+      "pick": {
+        "status": "PICK",
+        "side": "over",
+        "line": 10.5,
+        "vegas_line": 10.5,
+        "stars": 3,
+        "score": 3.93,
+        "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+        "price": -102,
+        "suggested_units": 1.0,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "timestamp": null,
+        "lead_time": "T-12h",
+        "source": "champion",
+        "our_prob": 0.5208,
+        "ev": 0.0314,
+        "expanded_band": false,
+        "signals": []
+      }
+    },
+    {
+      "game_id": "2026-07-25-CHC-PIT",
+      "game_pk": 823355,
+      "date": "2026-07-25",
+      "away": null,
+      "home": null,
+      "matchup": "CHC @ PIT",
+      "first_pitch_utc": null,
+      "pick": {
+        "status": "PICK",
+        "side": "over",
+        "line": 7.5,
+        "vegas_line": 7.5,
+        "stars": 3,
+        "score": 3.74,
+        "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+        "price": -113,
+        "suggested_units": 1.0,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "timestamp": null,
+        "lead_time": "T-12h",
+        "source": "champion",
+        "our_prob": 0.5438,
+        "ev": 0.025,
+        "expanded_band": false,
+        "signals": []
+      }
+    },
+    {
+      "game_id": "2026-07-25-CIN-STL",
+      "game_pk": 823027,
+      "date": "2026-07-25",
+      "away": null,
+      "home": null,
+      "matchup": "CIN @ STL",
+      "first_pitch_utc": null,
+      "pick": {
+        "status": "PASS",
+        "side": "over",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "stars": 1,
+        "score": 1.97,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "price": -102,
+        "suggested_units": null,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "timestamp": null,
+        "lead_time": "T-12h",
+        "source": "champion",
+        "our_prob": 0.5175,
+        "ev": 0.0249,
+        "expanded_band": false,
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 51.7% vs median break-even 51.2% at -105 (median ev +1.04% < +1.5% min); +EV at best -102 but gate-expansion picks measured -25% ROI \u2014 not a bet",
+        "pass_why": "ev_gate",
+        "signals": []
       }
     }
   ]

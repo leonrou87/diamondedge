@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-07-25T18:10:23Z",
+  "generated_utc": "2026-07-25T19:04:19Z",
   "dates": [
     "2026-07-25",
     "2026-07-26"
@@ -22,6 +22,73 @@
     "generated_utc": "2026-07-25T11:12:39Z",
     "basis": "v3.2: the percentile normalization moved INTO the score (2.0 + 3.0 * season strength percentile, frozen reference in `score_reference`), so the star cutoffs are plain floor bands \u2014 each playable tier is ~a third of the season playable percentile, and a mid-strength pick CAN land 3* (the v3.1 band-quantization gap is fixed). The -EV floor is hard: non-playable rows stay 1* regardless of score."
   },
+  "signals_note": "signals are contextual factors aligned with the lean, not causal attribution \u2014 the model is market-anchored and its number is not derived from these factors",
+  "signals_library": [
+    {
+      "id": "sp_both_hit_hard",
+      "dir": "over"
+    },
+    {
+      "id": "sp_one_shelled",
+      "dir": "over"
+    },
+    {
+      "id": "sp_both_wild",
+      "dir": "over"
+    },
+    {
+      "id": "ump_over",
+      "dir": "over"
+    },
+    {
+      "id": "ump_runs_high",
+      "dir": "over"
+    },
+    {
+      "id": "pens_worked",
+      "dir": "over"
+    },
+    {
+      "id": "park_hitter",
+      "dir": "over"
+    },
+    {
+      "id": "lineups_hot",
+      "dir": "over"
+    },
+    {
+      "id": "sp_both_dealing",
+      "dir": "under"
+    },
+    {
+      "id": "sp_one_dominant",
+      "dir": "under"
+    },
+    {
+      "id": "sp_strikeouts",
+      "dir": "under"
+    },
+    {
+      "id": "ump_under",
+      "dir": "under"
+    },
+    {
+      "id": "ump_runs_low",
+      "dir": "under"
+    },
+    {
+      "id": "pens_fresh",
+      "dir": "under"
+    },
+    {
+      "id": "park_pitcher",
+      "dir": "under"
+    },
+    {
+      "id": "lineups_cold",
+      "dir": "under"
+    }
+  ],
   "expanded_band": {
     "active_from": "2026-07-24",
     "rule": "model-grid rows with the FULL +EV gate (ev >= 0.015, unchanged) and conviction 0.0075 <= |our_prob - market_devig| < 0.010 are playable 2* fills from the activation date forward \u2014 the exact measured near-miss band; every adjacent band (conviction 0.0050-0.0075, any EV-gate relaxation) measured as a loser and stays PASS",
@@ -957,7 +1024,8 @@
         "ev": 0.0123,
         "expanded_band": false,
         "pass_reason": "model 47.7% < break-even 51.7% at -107 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -988,7 +1056,17 @@
         "ev": 0.011,
         "expanded_band": false,
         "pass_reason": "model 48.9% < break-even 50.5% at -102 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": [
+          {
+            "text": "Plate ump Scheurwater trends under (39% overs L2)",
+            "dir": "under"
+          },
+          {
+            "text": "Home starter dominant lately (.215 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -1019,7 +1097,13 @@
         "ev": 0.015,
         "expanded_band": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0050 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-        "pass_why": "price_only"
+        "pass_why": "price_only",
+        "signals": [
+          {
+            "text": "Plate ump Lentz trends under (43% overs L2)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -1048,7 +1132,13 @@
         "source": "model",
         "our_prob": 0.4673,
         "ev": 0.0401,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Home starter dominant lately (.213 xwOBA L5)",
+            "dir": "under"
+          }
+        ]
       }
     },
     {
@@ -1077,7 +1167,13 @@
         "source": "model",
         "our_prob": 0.5199,
         "ev": 0.0151,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -1108,7 +1204,8 @@
         "ev": -0.0102,
         "expanded_band": false,
         "pass_reason": "model 50.5% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -1137,7 +1234,13 @@
         "source": "model",
         "our_prob": 0.5519,
         "ev": 0.0775,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Both bullpens heavily worked last 3 days",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -1166,7 +1269,8 @@
         "source": "champion",
         "our_prob": 0.5438,
         "ev": 0.025,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -1197,7 +1301,8 @@
         "ev": -0.0135,
         "expanded_band": false,
         "pass_reason": "model 50.5% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -1226,7 +1331,8 @@
         "source": "champion",
         "our_prob": 0.5208,
         "ev": 0.0314,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -1257,7 +1363,8 @@
         "ev": -0.0266,
         "expanded_band": false,
         "pass_reason": "model 51.3% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -1286,7 +1393,13 @@
         "source": "model",
         "our_prob": 0.5242,
         "ev": 0.0485,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": [
+          {
+            "text": "Away starter getting shelled (.362 xwOBA L5)",
+            "dir": "over"
+          }
+        ]
       }
     },
     {
@@ -1315,7 +1428,8 @@
         "source": "champion",
         "our_prob": 0.5175,
         "ev": 0.035,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     },
     {
@@ -1346,7 +1460,8 @@
         "ev": 0.0011,
         "expanded_band": false,
         "pass_reason": "model 48.7% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate"
+        "pass_why": "ev_gate",
+        "signals": []
       }
     },
     {
@@ -1375,7 +1490,8 @@
         "source": "model",
         "our_prob": 0.5337,
         "ev": 0.0325,
-        "expanded_band": false
+        "expanded_band": false,
+        "signals": []
       }
     }
   ]

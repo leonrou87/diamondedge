@@ -2293,3 +2293,106 @@ main{padding-bottom:calc(env(safe-area-inset-bottom) + 96px) !important}
 .dockwrap{transition:opacity .24s ease,transform .28s var(--ease-out)}
 body.sheet-open .dockwrap{opacity:0;transform:translateY(18px);pointer-events:none}
 @media (prefers-reduced-motion:reduce){.dockwrap{transition:none}}
+
+/* ══ STICKY GAMES CHROME — date strip + league rail pinned under the app header ══
+   One sticky wrapper (frosted glass backing) so tiles scroll UNDER both control rows.
+   z 55 = below the header (65), sheets (90+) and the dock (340); above the tiles. */
+.games-chrome{position:sticky;top:calc(var(--hdr-h,0px) - 2px);z-index:55;margin:0 -6px;padding:7px 6px 0;
+  background:linear-gradient(180deg,rgba(241,243,247,.97) 88%,rgba(241,243,247,.72));
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:0 12px 18px -16px rgba(43,64,105,.22)}
+.games-chrome .datebar.lead{margin:0 0 8px}
+.games-chrome .subhead.subtle{margin-bottom:0}
+/* breathing room for the first row that scrolls under the pinned chrome */
+.games-chrome + .meta-area{margin-top:10px}
+
+/* ══ "WHAT'S LIGHTING UP" — plain-English context signals (render only when served) ══ */
+/* tile: one muted · separated line at the foot of the pick strip, dir-tinted subtly */
+.pstrip .ps-signals{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 6px;padding-top:5px;border-top:1px dashed rgba(22,36,60,.10);
+  font-family:var(--sans);font-size:10.5px;line-height:1.45;color:var(--ink3);letter-spacing:.005em}
+.ps-signals .sg{min-width:0}
+.ps-signals .sg.up{color:#22705a}
+.ps-signals .sg.down{color:#9c4150}
+.ps-signals .sg-sep{font-style:normal;color:var(--ink4);opacity:.7;flex-shrink:0}
+/* detail Preview: the slightly fuller list, one quiet glass card + honest microcopy */
+.sigcard{background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e0);padding:13px 16px 11px;margin:0 0 12px}
+.sigcard .sig-k{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:4px}
+.sigcard .sig-row{display:flex;align-items:baseline;gap:9px;font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink);padding:6px 0;border-top:1px solid var(--line3)}
+.sigcard .sig-k + .sig-row{border-top:0}
+.sigcard .sig-dot{width:6px;height:6px;border-radius:50%;background:var(--slate);flex-shrink:0;align-self:center}
+.sigcard .sig-row.up .sig-dot{background:var(--green)}
+.sigcard .sig-row.down .sig-dot{background:var(--red)}
+.sigcard .sig-t{min-width:0}
+.sigcard .sig-note{margin-top:6px;padding:8px 0 2px;border-top:1px dashed var(--line3);font-family:var(--mono);font-size:9.5px;color:var(--ink4)}
+
+/* ══ STRONG PICKS POP — 3★+ unmistakable, scaled by tier (4★ gold > 3★ green > 2★ quiet) ══ */
+/* card wash: richer tint + a hairline tier ring + a wider ambient glow */
+.tile.q-strong{background:linear-gradient(140deg,rgba(255,233,170,.62),rgba(255,255,255,.72) 58%);
+  box-shadow:var(--e0),inset 0 0 0 1.5px rgba(207,154,18,.32),0 10px 34px rgba(215,164,21,.24)}
+.tile.q-strong:hover{box-shadow:var(--e1),inset 0 0 0 1.5px rgba(207,154,18,.4),0 12px 40px rgba(215,164,21,.3)}
+.tile.q-good{background:linear-gradient(140deg,rgba(200,244,226,.56),rgba(255,255,255,.72) 58%);
+  box-shadow:var(--e0),inset 0 0 0 1.5px rgba(7,150,105,.24),0 9px 30px rgba(11,158,109,.18)}
+.tile.q-good:hover{box-shadow:var(--e1),inset 0 0 0 1.5px rgba(7,150,105,.3),0 11px 34px rgba(11,158,109,.22)}
+/* the PICK strip itself glows with the tier */
+.pstrip.bold.q-strong{background:linear-gradient(135deg,rgba(224,172,32,.3),rgba(255,250,236,.55) 78%);
+  box-shadow:inset 0 0 0 1px rgba(207,154,18,.38),0 3px 14px rgba(215,164,21,.2)}
+.pstrip.bold.q-good{background:linear-gradient(135deg,rgba(11,158,109,.22),rgba(243,252,248,.55) 78%);
+  box-shadow:inset 0 0 0 1px rgba(7,150,105,.3),0 3px 12px rgba(11,158,109,.15)}
+/* 3★+ side + line reads a step larger; star glyphs brighter */
+.pstrip.bold.q-strong .ps-side,.pstrip.bold.q-good .ps-side{font-size:20px}
+@media(max-width:699px){.pstrip.bold.q-strong .ps-side,.pstrip.bold.q-good .ps-side{font-size:21px}}
+.pstrip.q-strong .bstars i.f{color:#eaa70b;text-shadow:0 1px 7px rgba(224,164,20,.55)}
+.pstrip.q-good .bstars i.f{color:#e0a812;text-shadow:0 1px 5px rgba(215,164,21,.4)}
+/* RESULT LIGHT STILL WINS: re-assert the graded washes over the new tier glows so a
+   finished 4★ reads as its outcome, not its pre-game gold (cascade order fix). */
+.tile.q-strong.res-won,.tile.q-good.res-won{background:linear-gradient(140deg,rgba(206,244,228,.5),rgba(255,255,255,.66) 55%);box-shadow:var(--e0),0 8px 26px rgba(11,158,109,.16)}
+.tile.q-strong.res-lost,.tile.q-good.res-lost{background:linear-gradient(140deg,rgba(250,222,228,.4),rgba(255,255,255,.66) 55%);box-shadow:var(--e0),0 6px 20px rgba(217,44,71,.09)}
+.tile.q-strong.res-push,.tile.q-good.res-push{background:var(--glass-hi);box-shadow:var(--e0)}
+.pstrip.bold.won,.pstrip.bold.clinched{background:linear-gradient(135deg,rgba(11,158,109,.18),rgba(255,255,255,.32) 78%);box-shadow:none}
+.pstrip.bold.lost,.pstrip.bold.cooked{background:linear-gradient(135deg,rgba(217,44,71,.13),rgba(255,255,255,.32) 78%);box-shadow:none}
+.pstrip.bold.pushed{background:var(--pushbg);box-shadow:none}
+
+/* ══ TOP PICKS TODAY — dark glass rail (replaces the featured hero; echoes the dock) ══ */
+.toppicks{margin:2px 0 14px}
+.tp-head{display:flex;align-items:baseline;gap:9px;margin:0 2px 8px}
+.tp-head .tp-lab{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--golddeep)}
+.tp-head .tp-sub{font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink3)}
+.tp-rail{display:flex;align-items:stretch;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding:2px 2px 8px;margin:0 -2px}
+.tp-rail::-webkit-scrollbar{display:none}
+.tpk{position:relative;overflow:hidden;flex:0 0 auto;width:min(76vw,254px);scroll-snap-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:12px 14px 11px;cursor:pointer;
+  color:#eef2f8;background:rgba(16,24,40,.92);
+  background-image:linear-gradient(180deg,rgba(30,42,66,.6),rgba(16,24,40,0) 62%);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);
+  box-shadow:0 14px 32px -12px rgba(7,12,24,.5),inset 0 1px 0 rgba(255,255,255,.08);
+  transition:transform .22s var(--spring),box-shadow .25s ease;animation:cardIn .4s var(--ease) both;animation-delay:calc(var(--i,0)*50ms)}
+.tpk:hover{transform:translateY(-2px);box-shadow:0 18px 40px -12px rgba(7,12,24,.6),inset 0 1px 0 rgba(255,255,255,.1)}
+.tpk:active{transform:scale(.97)}
+.tpk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* tier ring + inner bloom on the dark card: gold for 4★+, emerald for 3★ */
+.tpk::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0}
+.tpk.s4::before,.tpk.s5::before{box-shadow:inset 0 0 0 1px rgba(215,164,21,.4);background:radial-gradient(120% 90% at 85% -10%,rgba(215,164,21,.22),transparent 55%)}
+.tpk.s3::before{box-shadow:inset 0 0 0 1px rgba(10,168,118,.32);background:radial-gradient(120% 90% at 85% -10%,rgba(10,168,118,.18),transparent 55%)}
+.tpk>*{position:relative;z-index:1}
+.tpk-top{display:flex;align-items:center;gap:7px;width:100%;min-width:0}
+.tpk-rank{font-family:var(--mono);font-weight:700;font-size:9px;color:rgba(238,242,248,.55);background:rgba(255,255,255,.08);border-radius:6px;padding:1.5px 6px;flex-shrink:0}
+.tpk-mu{font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.04em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tpk-when{margin-left:auto;font-family:var(--mono);font-weight:600;font-size:9px;color:rgba(238,242,248,.55);white-space:nowrap;flex-shrink:0}
+.tpk-live{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:#ff8fa2;white-space:nowrap;flex-shrink:0}
+.tpk-live .livedot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.tpk-side{font-family:var(--disp);font-weight:800;font-size:21px;line-height:1.05;letter-spacing:.005em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tpk-side i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:11px;color:rgba(238,242,248,.62);margin-left:6px}
+.tpk-side.ou-over{color:#3ee6a8}
+.tpk-side.ou-under{color:#ff7d93}
+.tpk-foot{display:flex;align-items:center;gap:6px;width:100%;min-width:0}
+.tpk-foot .bstars{font-size:12px}
+.tpk-foot .bstars i.f{color:#f4c84a;text-shadow:0 1px 6px rgba(215,164,21,.5)}
+.tpk-foot .bstars i.e{color:rgba(255,255,255,.22)}
+.tpk-foot .pgrade{color:#f4c84a;background:rgba(255,255,255,.09);margin-left:2px}
+.tpk-res{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.05em;border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
+.tpk-res.won{color:#fff;background:var(--green)}
+.tpk-res.won .chk{stroke:#fff}
+.tpk-res.lost{color:#fff;background:var(--red)}
+.tpk-res.pushed{color:#d7deea;background:rgba(255,255,255,.14)}
+.tpk-res.inplay{color:#6fe0b4;background:rgba(11,158,109,.2);font-family:var(--mono);font-weight:700;font-size:8px}
+/* the countdown chip flips to the dark palette inside a rail card */
+.tpk .pk-count{margin:0 0 0 auto;background:rgba(255,255,255,.07);color:rgba(238,242,248,.6);font-size:9px;padding:2.5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}

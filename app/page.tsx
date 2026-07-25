@@ -281,6 +281,7 @@ export default function Home() {
         shop: raw.shop || null,
         latest_read: raw.latest_read && typeof raw.latest_read === "object" ? raw.latest_read : null,
         why: Array.isArray(raw.why) ? raw.why : [],
+        signals: Array.isArray(raw.signals) ? raw.signals : null,
         result: normPlayResult(raw.result),
         live_status: raw.live_status && typeof raw.live_status === "object" ? raw.live_status : null,
         src: "de",
@@ -809,6 +810,9 @@ export default function Home() {
         p: pk.our_prob != null ? pk.our_prob : null,
         q, stars, star_tier: pk.star_tier, ev: pk.ev, grade,
         why, result: res, src: "v4",
+        // "WHAT'S LIGHTING UP" context chips (served pick.signals) — carried through
+        // defensively; may not be in the payload yet, every renderer degrades to nothing.
+        signals: Array.isArray(pk.signals) ? pk.signals : null,
         v4pass: passShim,
         // provenance for the "vs Vegas + when" strip: the exact Vegas line judged + when
         vegas_line: pk.vegas_line != null ? pk.vegas_line : ln,
@@ -832,6 +836,39 @@ export default function Home() {
       // once first pitch passes, the pick and its judged line are FROZEN — say so.
       if (pl.fp_utc && Date.now() >= new Date(pl.fp_utc).getTime()) bits.push("🔒 locked — judged at this line");
       return bits.length ? `<div class="pk-made">${esc(bits.join(" · "))}</div>` : "";
+    }
+    // ===================== "WHAT'S LIGHTING UP" — context signals on a pick =====================
+    // The payload carries pick.signals = [{text, dir}] — 1-3 short plain-English context
+    // chips ("Both starters getting hit hard"). PURELY contextual, never causal. Read
+    // DEFENSIVELY: the field may not be served yet — absent/malformed ⇒ nothing renders.
+    function pickSignalList(pl: any): { text: string; dir: string }[] {
+      const raw = pl && Array.isArray(pl.signals) ? pl.signals : [];
+      const out: { text: string; dir: string }[] = [];
+      raw.forEach((s: any) => {
+        if (out.length >= 3 || s == null) return;
+        const text = String(typeof s === "string" ? s : (s.text != null ? s.text : "")).trim();
+        if (!text) return;
+        const d = String((s && s.dir) || "").toLowerCase();
+        const dir = /over|up|hot|pos/.test(d) ? "up" : /under|down|cold|neg/.test(d) ? "down" : "flat";
+        out.push({ text, dir });
+      });
+      return out;
+    }
+    // Tile row: ONE compact muted line under the pick, · separated, dir-tinted subtly.
+    function signalRow(pl: any) {
+      const sigs = pickSignalList(pl);
+      if (!sigs.length) return "";
+      return `<div class="ps-signals">${sigs.map((s) => `<span class="sg ${s.dir}">${esc(s.text)}</span>`).join(`<i class="sg-sep" aria-hidden="true">·</i>`)}</div>`;
+    }
+    // Detail Preview: the slightly fuller list + the honest microcopy.
+    function signalBlock(pl: any) {
+      const sigs = pickSignalList(pl);
+      if (!sigs.length) return "";
+      return `<div class="sigcard">
+        <div class="sig-k">What's lighting up</div>
+        ${sigs.map((s) => `<div class="sig-row ${s.dir}"><span class="sig-dot" aria-hidden="true"></span><span class="sig-t">${esc(s.text)}</span></div>`).join("")}
+        <div class="sig-note">Context signals, not causal attribution.</div>
+      </div>`;
     }
     // Universal star renderer: unified picks use the 5-star scale; any legacy pick keeps 3.
     function pickStars(pl: any) {
@@ -1472,7 +1509,9 @@ export default function Home() {
     }
 
     // ===================== STATE =====================
-    let tab = "today";              // "today" | "games" | "results" | "beta" | "settings" | "upgrade" | "account"
+    // DEFAULT = GAMES (Leon, 2026-07-25): the app opens on the Games board — the product IS
+    // the picks. The brand logo (and the dock's News tab) still goes to the News front.
+    let tab = "games";              // "today" | "games" | "results" | "beta" | "settings" | "upgrade" | "account"
     const TABS = ["today", "games", "results", "beta", "settings", "upgrade", "account"];
     let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
@@ -2301,6 +2340,7 @@ export default function Home() {
         ${pickMadeMeta(pl)}
         ${verdictRow}
         ${liveRow}
+        ${signalRow(pl)}
       </div>`;
     }
 
@@ -2498,6 +2538,47 @@ export default function Home() {
         ${gs.kind === "live" && !locked ? liveHitOdds(g, pl, "full") : ""}
         ${gs.kind === "live" && !locked ? pickProgress(g, pl, st) : ""}
       </article>`;
+    }
+
+    // ===================== TOP PICKS TODAY (dark glass rail — replaces the featured hero) =====================
+    // The slate's best 3-5 picks by the model's continuous score, in a deliberately DISTINCT
+    // dark/compact style (echoes the dock) so it never reads as a duplicate of the light game
+    // tiles below. Tap → the same game detail. Only +EV picks qualify; nothing ⇒ no rail.
+    function topPicksRail(games: any[]) {
+      const rows = games
+        .map((g: any) => ({ g, pl: displayPick(g) }))
+        .filter((r: any) => isBet(r.pl))
+        .sort((a: any, b: any) =>
+          ((b.pl.grade != null ? Number(b.pl.grade) : 0) - (a.pl.grade != null ? Number(a.pl.grade) : 0)) ||
+          ((b.pl.stars || 0) - (a.pl.stars || 0)) ||
+          ((b.pl.p || 0) - (a.pl.p || 0)))
+        .slice(0, 5);
+      if (!rows.length) return "";
+      const isToday = curDate === todayISO();
+      const cards = rows.map((r: any, i: number) => {
+        const { g, pl } = r;
+        const gs = gameState(g);
+        const st = playState(g, pl);
+        const state = pickStateTxt(g, pl, st);
+        const over = /(^|\s)over/i.test(String(pl.side || ""));
+        const under = /(^|\s)under/i.test(String(pl.side || ""));
+        const dir = over ? "ou-over" : under ? "ou-under" : "";
+        const stars = pl.stars != null ? Math.max(0, Math.min(5, Math.round(Number(pl.stars)))) : 0;
+        const when = gs.kind === "live"
+          ? `<span class="tpk-live"><span class="livedot"></span>${esc(gs.label && gs.label !== "Live" ? gs.label : "LIVE")}</span>`
+          : gs.kind === "final" ? `<span class="tpk-when">Final</span>`
+          : `<span class="tpk-when">${esc(gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : "", "") : (gs.si.date || ""))}</span>`;
+        return `<button class="tpk s${stars}" data-gid="${esc(g.game_id)}" style="--i:${i}"
+          aria-label="Top pick ${i + 1} — ${esc(g.away_abbr)} at ${esc(g.home_abbr)} — ${esc(pl.side || "")} — open details">
+          <span class="tpk-top"><span class="tpk-rank">#${i + 1}</span><span class="tpk-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${when}</span>
+          <span class="tpk-side ${dir}">${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</span>
+          <span class="tpk-foot">${pickStars(pl)}${pickGrade(pl)}${state ? `<span class="tpk-res ${state.cls}">${state.txt}</span>` : `${gs.kind === "pre" ? countdownChip(g, gs) : ""}`}</span>
+        </button>`;
+      }).join("");
+      return `<div class="toppicks">
+        <div class="tp-head"><span class="tp-lab">◆ Top Picks${isToday ? " Today" : ""}</span><span class="tp-sub">ranked by model score</span></div>
+        <div class="tp-rail">${cards}</div>
+      </div>`;
     }
 
     // This month's DiamondEdge Picks = TOTALS only (the validated edge). Spread/ML leans are
@@ -2714,7 +2795,11 @@ export default function Home() {
         const live = lgGames.some((g: any) => gameState(g).kind === "live");
         return `<button class="sporttab ${lg === league ? "on" : ""}${live ? " haslive" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}${live ? `<span class="livedot" aria-label="live games"></span>` : ""}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
+      // STICKY GAMES CHROME: the date strip + league rail live in ONE sticky wrapper pinned
+      // under the app header (glass backing, tiles scroll beneath). Snap-scroll + fade masks
+      // on the strip are untouched; z-index sits below sheets (90+) and the dock (340).
       root.querySelector("#games-view").innerHTML = `
+        <div class="games-chrome" id="games-chrome">
         <div class="datebar lead">
           <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
           <div class="datetools">
@@ -2724,6 +2809,7 @@ export default function Home() {
         </div>
         <div class="subhead compact subtle">
           <div class="sporttabs" id="sporttabs">${tabsHtml}<span class="tab-ink" id="tab-ink"></span></div>
+        </div>
         </div>
         <div id="meta-area" class="meta-area">${metaRow()}</div>
         <div id="hist-area">${histOpen ? histPanel() : ""}</div>
@@ -2833,24 +2919,23 @@ export default function Home() {
           body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Insights tab.</div></div>`;
         } else {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
-          // No featured pick hero on a future (no-pick) slate — it's a schedule, not a board.
-          // Today's featured game is DAY-LOCKED (no intraday shuffling).
-          const ft = anyPick ? (curDate === todayISO() ? dayLockedPick(games, 1) : featuredPick(games)) : null;
-          const rest = ft ? games.filter((g: any) => g !== ft.g) : games;
-          // Reference "Live & Upcoming": group the remaining cards by game phase so LIVE games
+          // TOP PICKS rail (replaces the single featured hero): the day's best picks by score,
+          // in a distinct dark style. No rail on a future (no-pick) slate — it's a schedule.
+          const rail = anyPick ? topPicksRail(games) : "";
+          // Reference "Live & Upcoming": group the cards by game phase so LIVE games
           // sit under a live subhead, upcoming below, finals last. gameState already gives phase.
           const grp: any = { live: [], pre: [], final: [] };
-          rest.forEach((g: any) => { const k = gameState(g).kind; (grp[k] || grp.pre).push(g); });
+          games.forEach((g: any) => { const k = gameState(g).kind; (grp[k] || grp.pre).push(g); });
           let n = 0;
           const section = (label: string, arr: any[], cls = "") => arr.length
             ? `<div class="slate-sec ${cls}"><div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div><div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
             : "";
-          const grouped = `${section("Live", grp.live, "live")}${section(ft ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}`;
+          const grouped = `${section("Live", grp.live, "live")}${section(grp.live.length ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
           // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
           const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
           // Tier legend rides at the very BOTTOM of the slate (Leon) — reference, not headline.
-          body.innerHTML = `${futureBanner}${ft ? featuredCard(ft.g, ft.pl) : ""}${grouped}
+          body.innerHTML = `${futureBanner}${rail}${grouped}
             ${anyPick ? tierLegend() : ""}
             <div class="refnote">${games.length}${esc(lgSuffix)} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
         }
@@ -2958,7 +3043,7 @@ export default function Home() {
 
     function bindCards() {
       const tlh = $("tl-how"); if (tlh) tlh.onclick = (e: any) => { e.stopPropagation(); switchTab("beta"); };
-      root.querySelectorAll(".tile[data-gid], .feat[data-gid]").forEach((bx: any) => {
+      root.querySelectorAll(".tile[data-gid], .feat[data-gid], .tpk[data-gid]").forEach((bx: any) => {
         const open = (e: any) => {
           if (e && e.target && e.target.closest && e.target.closest("[data-up]")) { switchTab("upgrade"); return; }
           const g = findGame(bx.dataset.gid); if (g) openDetail(g);
@@ -3694,6 +3779,7 @@ export default function Home() {
         ${previewBlock}
         ${linesBlock}
         ${lead || !leadLocked ? pickPayoff : ""}
+        ${lead && !leadLocked ? signalBlock(lead) : ""}
         ${passBlock}
         ${leadLocked ? "" : more}
       </div>`;
