@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-25T18:10:23Z",
+  "generated_utc": "2026-07-25T18:44:37Z",
   "dates": [
     "2026-07-25",
     "2026-07-26"
@@ -1368,9 +1368,81 @@
           "stale_hours": 0.04
         },
         "asof_utc": "2026-07-25T14:19:23Z"
+      },
+      {
+        "model": "champion_v2",
+        "source": "live",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-3h",
+        "date": "2026-07-25",
+        "game_pk": 823679,
+        "game_id": "2026-07-25-ATH-MIN",
+        "matchup": "ATH @ MIN",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-07-25T23:10:00Z",
+        "market_line": 10.5,
+        "pick_side": null,
+        "pick_line": 10.5,
+        "lean": {
+          "side": "over",
+          "line": 10.5
+        },
+        "our_prob": 0.5208,
+        "per_side_price": -104,
+        "best_book": "lowvig",
+        "median_price": -110,
+        "p_breakeven": 0.5098,
+        "ev": 0.0216,
+        "ev_min": 0.015,
+        "take": false,
+        "playable": false,
+        "gate_price": -110,
+        "gate_ev": -0.0057,
+        "gate_p_breakeven": 0.5238,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.98,
+        "gate_reason": "negative_ev",
+        "champion": {
+          "tier": "A",
+          "edge": 0.0316,
+          "signed_edge": 0.0316,
+          "side": "over",
+          "frozen_at": "2026-07-25T12:21:50.425574+00:00",
+          "morning_price": -105,
+          "nlines": 2
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "A",
+          "champion_edge": 0.0316,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "price": {
+          "basis": "served/graded at the BEST executable per-side price across books quoting the pick's line at the latest pregame snapshot (v4 odds store); the +EV GATE evaluates at the MEDIAN-in-decimal price at the same line (EXECUTION LAYER, Leon 2026-07-09 \u2014 gate at MEDIAN, price/grade at BEST: the proven config)",
+          "snapshot_ts": "2026-07-25T18:41:01Z",
+          "n_books_at_line": 11,
+          "best_price": -104,
+          "best_book": "lowvig",
+          "median_price": -110,
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.06
+        },
+        "informational_lean": "over",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.1% vs median break-even 52.4% at -110 (median ev -0.57% < +1.5% min); +EV at best -104 but gate-expansion picks measured -25% ROI \u2014 not a bet",
+        "asof_utc": "2026-07-25T18:44:37Z"
       }
     ],
-    "n_picks_on_board": 7,
+    "n_picks_on_board": 8,
     "n_voided": 0
   },
   "board_notice": {
@@ -1605,7 +1677,7 @@
       },
       "champion_v2": {
         "n_flagged": 0,
-        "n_cleared": 2
+        "n_cleared": 0
       }
     },
     "note": "price_improved={now, was, book, ts} appears on UNLOCKED playable rows whose CURRENT best per-side price at the pick's line beats the entry price ('price improved \u2014 now +112 at X'). Refreshed every intraday cycle; drops when no longer better. The pick/side/line/price/stars stay frozen to their wall and locked rows are never touched \u2014 grading uses the stored entry price."
