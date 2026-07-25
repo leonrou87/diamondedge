@@ -4949,7 +4949,20 @@ export default function Home() {
           <span class="strec-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)} ROI</span>
         </div>`;
       };
-      const rows = [5, 4, 3, 2, 1].map(tierRow).join("") || `<div class="strec-row empty"><span class="strec-n">Grading as games finish.</span></div>`;
+      // The EXPANDED 2★ band (activated 7/24) grades separately so the core record stays
+      // pure — shown as its own labeled row once it has graded picks.
+      const exRow = (() => {
+        const r = byStar["2_expanded"] || {};
+        if (!r.n) return "";
+        return `<div class="strec-row expanded">
+          <span class="strec-star">${bStars(2)}<i class="strec-newtag">new band</i></span>
+          <span class="strec-n">${r.n} pick${r.n === 1 ? "" : "s"}</span>
+          <span class="strec-wl">${bWL(r)}</span>
+          <span class="strec-hit">${r.hit_rate != null ? bPct(r.hit_rate, 1) + " hit" : "—"}</span>
+          <span class="strec-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)} ROI</span>
+        </div>`;
+      })();
+      const rows = ([5, 4, 3, 2].map(tierRow).join("") + exRow + tierRow(1)) || `<div class="strec-row empty"><span class="strec-n">Grading as games finish.</span></div>`;
       // LAST 7 DAYS — a compact day-by-day strip under the hero (most recent first), from the
       // same by_date_record that powers the per-day chips. Only days with graded picks count;
       // each day is W-L(-P) tinted by that day's ROI, with the ROI itself as a small trailer.
