@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-07-25T01:05:19Z",
+  "generated_utc": "2026-07-25T06:11:14Z",
   "dates": [
     "2026-07-24",
     "2026-07-25"
@@ -925,9 +925,9 @@
   },
   "featured_game_id": "2026-07-24-San Diego Padres-Miami Marlins-823843",
   "board_census": {
-    "n_games": 29,
+    "n_games": 30,
     "n_picks": 6,
-    "n_passes": 23,
+    "n_passes": 24,
     "n_champion_sourced": 0,
     "n_model_sourced": 6,
     "n_expanded_band": 0,
@@ -1389,9 +1389,9 @@
         "price": -110,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T02:43:25Z",
+        "timestamp": "2026-07-25T02:43:25Z",
         "lead_time": "T-12h",
         "source": "model",
         "our_prob": 0.4863,
@@ -1399,6 +1399,37 @@
         "expanded_band": false,
         "pass_reason": "model 48.6% < break-even 52.4% at -110 \u2014 priced out (-EV)",
         "pass_why": "ev_gate"
+      }
+    },
+    {
+      "game_id": "2026-07-25-Kansas City Royals-Detroit Tigers-824244",
+      "game_pk": 824244,
+      "date": "2026-07-25",
+      "away": "Kansas City Royals",
+      "home": "Detroit Tigers",
+      "matchup": "Kansas City Royals @ Detroit Tigers",
+      "first_pitch_utc": "2026-07-25T17:10:00+00:00",
+      "pick": {
+        "status": "PASS",
+        "side": "under",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "stars": 1,
+        "score": 1.29,
+        "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+        "price": 107,
+        "suggested_units": null,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "timestamp": null,
+        "lead_time": "T-12h",
+        "source": "model",
+        "our_prob": 0.5052,
+        "ev": 0.0242,
+        "expanded_band": false,
+        "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0059 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+        "pass_why": "price_only"
       }
     },
     {

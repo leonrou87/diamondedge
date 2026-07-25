@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-07-25T01:04:35Z",
+ "generated_utc": "2026-07-25T06:11:18Z",
  "by_game": {
   "822785": {
    "away": {
@@ -1830,7 +1830,8 @@
       "res": "L"
      }
     ],
-    "team": "LAA"
+    "team": "LAA",
+    "actual_starter": true
    },
    "home": {
     "id": 657277,
@@ -1947,7 +1948,8 @@
       "res": "W"
      }
     ],
-    "team": "SF"
+    "team": "SF",
+    "actual_starter": true
    }
   },
   "823352": {
@@ -5734,6 +5736,20 @@
      }
     ],
     "team": "NYM"
+   }
+  },
+  "823679": {
+   "away": {
+    "id": 686930,
+    "name": "Mason Barnett",
+    "throws": "R",
+    "era": 4.64,
+    "wl": "1-0",
+    "ip": 21.1,
+    "k9": 8.86,
+    "whip": 1.36,
+    "starts": [],
+    "team": "ATH"
    }
   },
   "823758": {
