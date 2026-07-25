@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-25T18:44:37Z",
+  "generated_utc": "2026-07-25T19:53:23Z",
   "dates": [
     "2026-07-25",
     "2026-07-26"
@@ -1017,7 +1017,83 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-07-25T14:19:23Z"
+        "asof_utc": "2026-07-25T14:19:23Z",
+        "price_improved": {
+          "now": 112,
+          "was": 100,
+          "book": "matchbook",
+          "ts": "2026-07-25T19:49:36Z"
+        }
+      },
+      {
+        "model": "champion_v2",
+        "source": "live",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-3h",
+        "date": "2026-07-25",
+        "game_pk": 823027,
+        "game_id": "2026-07-25-CIN-STL",
+        "matchup": "CIN @ STL",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-07-25T23:15:00Z",
+        "market_line": 8.0,
+        "pick_side": "over",
+        "pick_line": 8.5,
+        "lean": {
+          "side": "over",
+          "line": 8.5
+        },
+        "our_prob": 0.5175,
+        "per_side_price": 112,
+        "best_book": "matchbook",
+        "median_price": 104,
+        "p_breakeven": 0.4717,
+        "ev": 0.0971,
+        "ev_min": 0.015,
+        "take": true,
+        "playable": true,
+        "gate_price": 104,
+        "gate_ev": 0.0557,
+        "gate_p_breakeven": 0.4902,
+        "tier": "Good",
+        "stars": 4,
+        "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
+        "score": 4.75,
+        "gate_reason": "take_+ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0283,
+          "signed_edge": 0.0283,
+          "side": "over",
+          "frozen_at": "2026-07-25T12:21:50.426384+00:00",
+          "morning_price": -105,
+          "nlines": 2
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0283,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "suggested_units": 2.0,
+        "price": {
+          "basis": "served/graded at the BEST executable per-side price across books quoting the pick's line at the latest pregame snapshot (v4 odds store); the +EV GATE evaluates at the MEDIAN-in-decimal price at the same line (EXECUTION LAYER, Leon 2026-07-09 \u2014 gate at MEDIAN, price/grade at BEST: the proven config)",
+          "snapshot_ts": "2026-07-25T19:15:17Z",
+          "n_books_at_line": 4,
+          "best_price": 112,
+          "best_book": "matchbook",
+          "median_price": 104,
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.06
+        },
+        "asof_utc": "2026-07-25T19:18:59Z"
       },
       {
         "model": "champion_v2",
@@ -1087,7 +1163,13 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-07-25T12:41:13Z"
+        "asof_utc": "2026-07-25T12:41:13Z",
+        "price_improved": {
+          "now": -111,
+          "was": -113,
+          "book": "onexbet",
+          "ts": "2026-07-25T19:49:36Z"
+        }
       },
       {
         "model": "champion_v2",
@@ -1157,7 +1239,13 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-07-25T13:46:34Z"
+        "asof_utc": "2026-07-25T13:46:34Z",
+        "price_improved": {
+          "now": -111,
+          "was": -113,
+          "book": "onexbet",
+          "ts": "2026-07-25T19:49:36Z"
+        }
       },
       {
         "model": "champion_v2",
@@ -1227,7 +1315,13 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-07-25T18:10:23Z"
+        "asof_utc": "2026-07-25T18:10:23Z",
+        "price_improved": {
+          "now": -111,
+          "was": -113,
+          "book": "onexbet",
+          "ts": "2026-07-25T19:49:36Z"
+        }
       },
       {
         "model": "champion_v2",
@@ -1297,7 +1391,13 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-07-25T12:41:13Z"
+        "asof_utc": "2026-07-25T12:41:13Z",
+        "price_improved": {
+          "now": 102,
+          "was": -102,
+          "book": "matchbook",
+          "ts": "2026-07-25T19:49:36Z"
+        }
       },
       {
         "model": "champion_v2",
@@ -1367,7 +1467,13 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-07-25T14:19:23Z"
+        "asof_utc": "2026-07-25T14:19:23Z",
+        "price_improved": {
+          "now": 102,
+          "was": -102,
+          "book": "matchbook",
+          "ts": "2026-07-25T19:49:36Z"
+        }
       },
       {
         "model": "champion_v2",
@@ -1442,17 +1548,17 @@
         "asof_utc": "2026-07-25T18:44:37Z"
       }
     ],
-    "n_picks_on_board": 8,
+    "n_picks_on_board": 9,
     "n_voided": 0
   },
   "board_notice": {
     "2026-07-25": {
       "one_sided": true,
       "side": "over",
-      "n_playable": 16,
-      "n_on_side": 15,
-      "share": 0.938,
-      "note": "one-sided board: 15 of 16 playable picks today are OVERs. That is correlated exposure to a single day-level model-vs-market disagreement (e.g. a global scoring-environment view), NOT 16 independent edges \u2014 treat it as roughly one position, not a slate of them. Shown honestly, not suppressed."
+      "n_playable": 17,
+      "n_on_side": 16,
+      "share": 0.941,
+      "note": "one-sided board: 16 of 17 playable picks today are OVERs. That is correlated exposure to a single day-level model-vs-market disagreement (e.g. a global scoring-environment view), NOT 17 independent edges \u2014 treat it as roughly one position, not a slate of them. Shown honestly, not suppressed."
     }
   },
   "lock_policy": {
@@ -1676,7 +1782,7 @@
         "n_cleared": 0
       },
       "champion_v2": {
-        "n_flagged": 0,
+        "n_flagged": 6,
         "n_cleared": 0
       }
     },
@@ -1684,17 +1790,17 @@
   },
   "board_census": {
     "n_games": 15,
-    "n_rows": 50,
+    "n_rows": 57,
     "n_voided": 0,
     "n_playable": 10,
     "n_takes": 10,
-    "n_passes": 40,
+    "n_passes": 47,
     "stars": {
       "5": 0,
       "4": 5,
       "3": 4,
       "2": 1,
-      "1": 40
+      "1": 47
     }
   },
   "live_record": {
@@ -2832,7 +2938,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -2975,6 +3082,41 @@
           "informational_lean": "under",
           "pass_reason": "model 48.9% < break-even 50.5% at -102 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 115,
+          "our_prob": 0.4835,
+          "p_breakeven": 0.4651,
+          "ev": 0.0395,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 0.95,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": true,
+          "result": null,
+          "edge": 0.0016,
+          "expanded_band": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0016 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
         }
       ],
       "locked": false
@@ -2990,7 +3132,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3133,6 +3276,41 @@
           "informational_lean": "under",
           "pass_reason": "model 51.2% >= break-even 49.5% at 102 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 118,
+          "our_prob": 0.5039,
+          "p_breakeven": 0.4587,
+          "ev": 0.0816,
+          "tier": "Strong",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 0.87,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": true,
+          "result": null,
+          "edge": -0.0008,
+          "expanded_band": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0008 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
         }
       ],
       "locked": false
@@ -3148,7 +3326,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3291,6 +3470,41 @@
           "informational_lean": "under",
           "pass_reason": "model 48.6% < break-even 51.7% at -107 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": 100,
+          "our_prob": 0.5137,
+          "p_breakeven": 0.5,
+          "ev": 0.0274,
+          "tier": "Lean",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 0.94,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": true,
+          "result": null,
+          "edge": 0.0015,
+          "expanded_band": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "tipico_de",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0015 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
         }
       ],
       "locked": false
@@ -3306,7 +3520,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3449,6 +3664,41 @@
           "informational_lean": "over",
           "pass_reason": "model 49.8% < break-even 50.2% at -101 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "per_side_price": 102,
+          "our_prob": 0.4758,
+          "p_breakeven": 0.495,
+          "ev": 0.059,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 0.86,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 7.0
+          },
+          "take": true,
+          "result": null,
+          "edge": -0.0007,
+          "expanded_band": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "draftkings",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0007 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
         }
       ],
       "locked": false
@@ -3463,7 +3713,8 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3571,6 +3822,41 @@
           "informational_lean": "under",
           "pass_reason": "model 49.3% < break-even 51.7% at -107 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 111,
+          "our_prob": 0.4547,
+          "p_breakeven": 0.4739,
+          "ev": 0.1506,
+          "tier": "Strong",
+          "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+          "stars": 1,
+          "score": 1.99,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": true,
+          "result": null,
+          "edge": -0.0383,
+          "expanded_band": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "nordicbet",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
+          "pass_why": "junk_cell"
         }
       ],
       "locked": false
@@ -3585,7 +3871,8 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3693,6 +3980,41 @@
           "informational_lean": "over",
           "pass_reason": "model 50.9% < break-even 51.2% at -105 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -104,
+          "our_prob": 0.5525,
+          "p_breakeven": 0.5098,
+          "ev": 0.0838,
+          "tier": "Strong",
+          "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+          "stars": 1,
+          "score": 1.98,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": true,
+          "result": null,
+          "edge": 0.0331,
+          "expanded_band": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "pinnacle",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
+          "pass_why": "junk_cell"
         }
       ],
       "locked": false
@@ -3707,7 +4029,8 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -3815,6 +4138,41 @@
           "informational_lean": "over",
           "pass_reason": "model 50.5% < break-even 50.5% at -102 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": 100,
+          "our_prob": 0.5272,
+          "p_breakeven": 0.5,
+          "ev": 0.0544,
+          "tier": "Good",
+          "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+          "stars": 1,
+          "score": 1.95,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.5
+          },
+          "take": true,
+          "result": null,
+          "edge": 0.0247,
+          "expanded_band": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "betrivers",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
+          "pass_why": "junk_cell"
         }
       ],
       "locked": false
