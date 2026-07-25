@@ -5163,7 +5163,9 @@ export default function Home() {
       // ALL-IN TOTALS: the pick IS the product — no separate model tab. The record lives in
       // Insights; the wall-by-wall explorer stays reachable from Insights links only.
       const primaryTabs = ["today", "games", "results"];
-      // ONE unified STICKY header (logo appears once) + a slim live TICKER beneath it (News only).
+      // ONE unified STICKY header (brand + account + ticker) — primary nav is now the
+      // iOS-style FLOATING GLASS DOCK at the bottom (the golf-app pattern): a dark pill
+      // bar, icons per tab, the active tab expands to show its label behind a gold pill.
       root.innerHTML = `
         <header id="app-header">
           <div class="hbar">
@@ -5171,9 +5173,6 @@ export default function Home() {
               <div class="diamond"></div>
               <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">News · Games · Insights</div></div>
             </div>
-            <nav class="toptabs" aria-label="Primary">
-              ${primaryTabs.map((t) => `<button data-tab="${t}" class="${tab === t ? "on" : ""}${t === "beta" ? " isbeta" : ""}"${tab === t ? ' aria-current="page"' : ""}>${NAV_LABEL[t]}${t === "beta" ? `<span class="beta-dot" aria-hidden="true"></span>` : ""}</button>`).join("")}
-            </nav>
             <div class="hspacer"></div>
             <div class="navright">
               ${accountButton()}
@@ -5189,14 +5188,37 @@ export default function Home() {
           <div id="settings-view" style="display:none"></div>
           <div id="upgrade-view" style="display:none"></div>
           <div id="account-view" style="display:none"></div>
-        </main>`;
-      root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
+        </main>
+        <nav class="dockwrap" aria-label="Primary"><div class="dock" id="dock"></div></nav>`;
+      renderDock();
       $("brand").onclick = () => switchTab("today");
       const ab = $("acctbtn"); if (ab) ab.onclick = () => switchTab("account");
+      // (dock item clicks are wired inside renderDock)
       const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
       bindHeaderScroll();
       renderTicker();
     }
+    // ---- FLOATING GLASS DOCK (iOS-style, the golf-app pattern) ----
+    // Dark glass pill fixed above the safe area; icons per tab; the ACTIVE tab expands to
+    // show its label behind a glowing gold pill. Re-rendered on every switchTab.
+    const DOCK_ICONS: any = {
+      today: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M19 9h1.5v9.5a1.5 1.5 0 0 1-3 0"/><path d="M8 9h5M8 13h7M8 17h4"/></svg>`,
+      games: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="5.5" y="5.5" width="13" height="13" rx="2.5" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>`,
+      results: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V13M12 20V6M19 20v-9"/></svg>`,
+    };
+    function renderDock() {
+      const el = $("dock"); if (!el) return;
+      el.innerHTML = ["today", "games", "results"].map((t) => {
+        const on = tab === t;
+        return `<button class="dock-item${on ? " on" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
+          ${on ? `<span class="dock-pill" aria-hidden="true"></span>` : ""}
+          <span class="dock-ic">${DOCK_ICONS[t] || ""}</span>
+          ${on ? `<span class="dock-lab">${NAV_LABEL[t]}</span>` : ""}
+        </button>`;
+      }).join("");
+      el.querySelectorAll("[data-tab]").forEach((b: any) => (b.onclick = () => switchTab(b.dataset.tab)));
+    }
+
     // ---- TOP TICKER: today's slate at a glance (live scores + each game's pick + trend) ----
     function tickerItems() {
       const src = livePayload || payload;
@@ -5291,7 +5313,7 @@ export default function Home() {
       if (t === tab) return;
       tab = t;
       TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
-      root.querySelectorAll(".toptabs [data-tab]").forEach((b: any) => b.classList.toggle("on", b.dataset.tab === t));
+      renderDock(); // the floating dock is the primary nav — re-render so the gold pill moves
       // PERF: the view flip + tab highlight paint IMMEDIATELY; every heavy render is deferred
       // one frame so switching never feels laggy. rAF is SUSPENDED in hidden/background tabs,
       // so a setTimeout fallback guarantees the render still lands (whichever fires first wins).
