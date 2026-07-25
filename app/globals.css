@@ -240,7 +240,8 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 
 /* ---- slim meta row (record chip + "how picks work"), sits just above the board ---- */
 .meta-area{margin:2px 0 0}
-.metarow{display:flex;align-items:center;gap:8px;margin:0 0 6px;padding:0 2px}
+.metarow{display:flex;align-items:center;gap:6px 8px;margin:0 0 6px;padding:0 2px;flex-wrap:wrap}
+.metarow .howlink,.metarow .howlink.strong{white-space:nowrap}
 .mr-sp{flex:1}
 .recchip{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--ink2);background:var(--glass-hi);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--glass-brd);border-radius:999px;padding:5px 11px;cursor:pointer;box-shadow:var(--shadow);transition:.2s ease}
 .recchip b{color:var(--acc2);font-weight:700}
@@ -265,7 +266,8 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .rbt-item.q-strong .rbt-badge b{color:var(--golddeep)}
 .rbt-item.q-good .rbt-badge b{color:#06714f}
 .rbt-item.q-lean .rbt-badge b{color:#2c5cb8}
-.rbt-note{font-family:var(--sans);font-size:10.5px;color:var(--ink3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* tier note clamps to two lines instead of ellipsing mid-word ("3★ — fir…") */
+.rbt-note{font-family:var(--sans);font-size:10.5px;line-height:1.35;color:var(--ink3);flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rbt-rec{display:flex;align-items:baseline;gap:7px;flex-shrink:0;font-family:var(--mono);text-align:right}
 .rbt-wl{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap}
 .rbt-pct{font-size:11px;font-weight:600;color:var(--ink3)}
@@ -334,15 +336,17 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .subhead.subtle .sporttab.on{color:#04543a}
 .subhead.subtle .sporttab.haslive{color:var(--ink2)}
 /* Small performance banner (overall picks + top-picks standing) */
-.recchip.perf{gap:8px}
-.recchip.perf .pf-k{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
-.recchip.perf .pf-v{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink);letter-spacing:-.01em}
+.recchip.perf{gap:8px;flex-shrink:0}
+.recchip.perf .pf-k{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+/* the W–L value NEVER wraps mid-number ("1–" / "2" on past days) */
+.recchip.perf .pf-v{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
 .recchip.perf .pf-v.pending{font-family:var(--sans);font-weight:500;font-size:10.5px;color:var(--ink3);letter-spacing:0}
 .recchip.perf .pf-top{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.02em;color:var(--golddeep);background:var(--goldbg);border-radius:999px;padding:2px 8px}
 /* COMPACT inline date strip — weekday + day number on ONE line per cell (reclaims vertical
    space vs the stacked "weekday-above-number" layout), a sliding emerald lens under the
    active day, a Today dot marker. Slimmer capsule to match. */
-.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px;border-radius:var(--r-sm);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--e0);scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain}
+.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px;border-radius:var(--r-sm);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--e0);scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 20px),transparent);mask:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 20px),transparent)}
 .datestrip::-webkit-scrollbar{display:none}
 .datestrip .dcell{scroll-snap-align:center}
 .dlens{position:absolute;left:0;top:4px;bottom:4px;width:0;border-radius:var(--r-sm);background:linear-gradient(150deg,rgba(46,229,164,.34),rgba(10,157,106,.20));box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.25),0 6px 16px rgba(10,157,106,.24);opacity:0;pointer-events:none;transition:transform .42s var(--spring),width .42s var(--spring),opacity .25s ease;will-change:transform}
@@ -372,8 +376,11 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .future-note .fn-ic{flex-shrink:0;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--goldbg);color:var(--golddeep);font-size:16px}
 .future-note.full .fn-ic{width:46px;height:46px;font-size:22px}
 .future-note .fn-body{display:flex;flex-direction:column;gap:3px;min-width:0}
-.future-note .fn-body b{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+/* headline <b> only — inline bolds inside the copy stay sans (they were inheriting the
+   16px serif and reading as a different typeface mid-sentence) */
+.future-note .fn-body>b{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
 .future-note .fn-body span{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink2)}
+.future-note .fn-body span b{font-weight:700;color:var(--ink)}
 .datetools{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative}
 .dtool{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:var(--ink2);min-width:40px;height:38px;padding:0 9px;border-radius:13px;cursor:pointer;transition:.2s var(--spring);box-shadow:var(--shadow);display:inline-grid;place-items:center}
 .dtool svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -464,11 +471,11 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .slate-sec .sec-n{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink3);background:rgba(22,36,60,.06);border-radius:999px;padding:1px 8px;line-height:1.5}
 .slate-sec.live .sec-n{color:#a32036;background:rgba(217,44,71,.1)}
 .slate-sec .sec-hd::after{content:"";flex:1;height:1px;background:var(--line3)}
-/* GRID layout: 2-up (2x2) at every width DOWN to ~360px, so the board reads as a grid on
-   mobile; below 360px it falls back to a single column so the cards don't crush. */
-.slate{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-@media(max-width:359px){.slate{grid-template-columns:minmax(0,1fr);gap:10px}}
-@media(min-width:820px){.slate{gap:12px}}
+/* GRID layout: ONE clean full-width schedule column on phones (the theScore pattern —
+   a 2-up grid at 375px left ~166px per card and clipped form chips, pick sides and the
+   lean sub-line). Two-up returns at ≥700px where each card gets a real ~330px+. */
+.slate{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:699px){.slate{grid-template-columns:minmax(0,1fr);gap:10px}}
 
 /* ---- WIDE GAME CARD: a calm flat resting card (--e0). Header (league tag + state chip),
    body (team rows | O/U + Spread columns), then the DiamondEdge pick strip. ---- */
@@ -512,10 +519,10 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .t-ab{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.02em;color:var(--ink);flex-shrink:0}
 .t-rsp{flex:1;min-width:1px}
 /* recent form: L15/season record + hot/cold streak chip — right after the abbr */
-.t-form{display:inline-flex;align-items:center;gap:4px;flex-shrink:1;min-width:0;overflow:hidden}
-.t-form .tf-rec{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3);letter-spacing:-.02em;white-space:nowrap}
+.t-form{display:inline-flex;align-items:center;gap:5px;flex-shrink:1;min-width:0;overflow:hidden}
+.t-form .tf-rec{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink3);letter-spacing:-.02em;white-space:nowrap}
 .t-form .tf-rec .tf-tag{font-style:normal;font-size:7px;opacity:.7;margin-left:1px}
-.t-form .tf-strk{font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.02em;border-radius:999px;padding:1px 5px;line-height:1.35;white-space:nowrap;flex-shrink:0}
+.t-form .tf-strk{font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.02em;border-radius:999px;padding:1.5px 6px;line-height:1.35;white-space:nowrap;flex-shrink:0}
 .t-form .tf-strk.hot{color:#06714f;background:rgba(11,158,109,.12)}
 .t-form .tf-strk.cold{color:var(--ink3);background:rgba(22,36,60,.06)}
 .t-score{margin-left:2px;font-family:var(--disp);font-weight:700;font-size:20px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;flex-shrink:0;min-width:20px;text-align:right}
@@ -529,27 +536,26 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .oc.pick.q-strong{background:var(--goldbg);box-shadow:inset 0 0 0 1px var(--goldline)}
 .oc.pick.q-good{background:var(--greenbg);box-shadow:inset 0 0 0 1px var(--greenline)}
 .oc.pick.low{background:var(--slatebg);box-shadow:inset 0 0 0 1px var(--pushline)}
-/* probable pitchers under a pre-game tile — "Sanchez vs Cameron" */
-.t-pitch{font-family:var(--sans);font-size:11px;color:var(--ink3);margin-top:1px}
-/* SMALL SCREENS (≤819px): ONE full-width compact row per game (the scores-app reference) —
-   teams left, per-side odds grid right, side by side. Slimmer chrome so nothing crowds. */
+/* probable pitchers under a pre-game tile — "Sanchez 2.67 vs Cameron 3.20" */
+.t-pitch{font-family:var(--sans);font-size:11.5px;color:var(--ink3);margin-top:1px;line-height:1.45}
+/* SMALL SCREENS (≤819px): slimmer card chrome — the grid itself is handled above
+   (1-col <700px), so nothing needs to crowd or clip. */
 @media(max-width:819px){
-  .slate{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .tile{padding:10px 11px 11px;gap:6px}
+  .tile{padding:11px 13px 12px;gap:7px}
   .tile .t-league .tl-comp{display:none}
   .tile .t-league{overflow:hidden;text-overflow:ellipsis}
-  .tile .t-head .statechip{font-size:8.5px;padding:3px 7px;letter-spacing:.03em}
-  .t-ab{font-size:15px}
-  .t-score{font-size:19px}
+  .tile .t-head .statechip{font-size:9px;padding:3px 8px;letter-spacing:.03em}
 }
 /* total-only score note (no home/away split served) */
 .t-note{font-family:var(--mono);font-size:9px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 
-/* ---- THE PICK STRIP: one compact block. Brand kicker + side + price + ONE quality
-   mark on line 1; when live, ONE inline hit read + ONE slim meter on line 2. ---- */
-.pstrip{display:flex;flex-direction:column;gap:5px;margin-top:1px;border-radius:11px;padding:6px 9px 7px;background:rgba(22,36,60,.05)}
-.pstrip .ps-main{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
-.pstrip .ps-k{font-family:var(--disp);font-weight:700;font-size:7.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--golddeep);white-space:nowrap;flex-shrink:0}
+/* ---- THE PICK STRIP: the tile's payoff. Tiny kicker row (label + result) → THE PICK
+   (side + line big, stars right) → quiet provenance; when live, ONE inline hit read +
+   ONE slim meter. Pinned to the card bottom so a whole row of cards lines up. ---- */
+.pstrip{display:flex;flex-direction:column;gap:5px;margin-top:auto;border-radius:var(--r-xs);padding:8px 10px 9px;background:rgba(22,36,60,.05);min-height:54px;justify-content:center}
+.pstrip .ps-kickrow{display:flex;align-items:center;gap:6px;min-width:0}
+.pstrip .ps-main{display:flex;align-items:center;gap:6px 8px;min-width:0;flex-wrap:wrap}
+.pstrip .ps-k{font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--golddeep);white-space:nowrap;flex-shrink:0}
 .pstrip .ps-side{display:inline-flex;align-items:baseline;gap:4px;font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pstrip .ps-side i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink2)}
 .pstrip .ps-main .qdia{font-size:7.5px;flex-shrink:0}
@@ -852,8 +858,11 @@ details.more .more-body{padding-top:12px}
 @media(min-width:760px){
   .ng-lead{grid-area:lead}
 }
-/* safety cap so a full-width lead hero can never balloon on a wide viewport */
-.ls-figure .heroimg{max-height:250px}
+/* safety cap so a full-width lead hero can never balloon on a wide viewport.
+   width:100% + explicit height (aspect-ratio released) — with aspect-ratio:2/1 alone,
+   max-height:250px resolved the WIDTH to 500px inside a ~1050px figure on desktop,
+   leaving a hard scrim edge and a dead right half. */
+.ls-figure .heroimg{width:100%;aspect-ratio:auto;height:clamp(180px,44vw,250px)}
 /* CENTER the matchup (logos + woven score) in EVERY lead-story figure — hero + top games all
    use the identical full-width format, games/logos dead-centered. */
 .leadstory .ls-figure .heroimg .hi-mu{align-items:center!important;padding-top:0!important;padding-bottom:0!important}
@@ -1058,10 +1067,13 @@ details.more .more-body{padding-top:12px}
 .h2-side.away{background:linear-gradient(135deg,var(--navy2),var(--navy))}
 .h2-side.home{background:linear-gradient(135deg,#3fae87,var(--green))}
 .pit-row{display:flex;flex-direction:column;gap:7px}
-.pit-chip{display:flex;align-items:baseline;gap:7px;font-size:11.5px;color:var(--ink)}
+.pit-chip{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 7px;font-size:11.5px;color:var(--ink)}
 .pit-ab{font-family:var(--disp);font-weight:700;font-size:10px;color:var(--ink3);width:34px;flex-shrink:0}
-.pit-nm{font-weight:600;min-width:0}
-.pit-era{margin-left:auto;font-family:var(--mono);font-weight:600;font-size:10px;color:var(--navy);flex-shrink:0}
+.pit-nm{font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.pit-era{margin-left:auto;font-family:var(--mono);font-weight:600;font-size:10px;color:var(--navy);flex-shrink:0;white-space:nowrap}
+/* season line drops to its own quiet second line under the name (was wrapping mid-stat);
+   order:10 keeps the › tap-affordance up on the name row */
+.pit-chip .pit-sub{flex-basis:100%;margin-left:41px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;order:10}
 .hero-cta{display:inline-block;font-family:var(--mono);font-weight:600;font-size:10px;color:var(--acc2);margin-top:8px;cursor:pointer}
 .hero-cta:hover{text-decoration:underline;text-underline-offset:2px}
 /* ---- DiamondEdge branding kicker on every pick surface ---- */
@@ -1488,7 +1500,7 @@ details.more .more-body{padding-top:12px}
   content:"";position:absolute;left:-8%;right:40%;top:-20%;height:120%;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse at 20% 30%,rgba(224,172,32,.16),transparent 70%);filter:blur(4px)}
 .leadstory.q-good .ls-body::before {
-  content:"";position:absolute;left:-8%;right:40%;top:-20%;height:120%;z:-1;z-index:-1;pointer-events:none;
+  content:"";position:absolute;left:-8%;right:40%;top:-20%;height:120%;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse at 20% 30%,rgba(11,158,109,.14),transparent 70%);filter:blur(4px)}
 
 /* ---- TACTILE PRESS STATES: every interactive glass surface dips + softens on press
@@ -1579,7 +1591,7 @@ details.more .more-body{padding-top:12px}
 .gp-form{font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink3)}
 .gp-form i{font-style:normal;font-weight:700}.gp-form i.hot{color:#06714f}
 /* recent-form tag — makes clear a fallback record is last-15, not season */
-.gp-rec-tag{font-family:var(--ui);font-weight:700;font-size:7.5px;letter-spacing:.08em;color:var(--ink3);opacity:.7;vertical-align:1px}
+.gp-rec-tag{font-family:var(--disp);font-weight:700;font-size:7.5px;letter-spacing:.08em;color:var(--ink3);opacity:.7;vertical-align:1px}
 .t-form .tf-rec .tf-tag{font-style:normal;font-size:6.5px;font-weight:700;letter-spacing:.06em;color:var(--ink3);opacity:.65;margin-left:2px;vertical-align:1px}
 /* upgrade/gated controls always read as tappable */
 [data-up]{cursor:pointer}
@@ -1663,7 +1675,9 @@ details.more .more-body{padding-top:12px}
 .lp-live .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
 .lp-state{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.03em;color:var(--ink2)}
 .lp-box{border-radius:var(--r-md);background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);box-shadow:var(--glass-shadow);overflow:hidden}
-.lp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.lp-scroll::-webkit-scrollbar{height:5px}
+.lp-scroll::-webkit-scrollbar-thumb{background:rgba(22,36,60,.18);border-radius:3px}
 .linescore{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
 .linescore th{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.04em;color:var(--ink3);padding:9px 7px;text-align:center;border-bottom:1px solid var(--line3);min-width:22px}
 .linescore td{padding:9px 7px;text-align:center;color:var(--ink2);border-bottom:1px solid var(--line3);font-variant-numeric:tabular-nums}
@@ -1898,6 +1912,10 @@ details.more .more-body{padding-top:12px}
 .ix-btn:hover{transform:translateY(-1px);box-shadow:var(--e1)}
 .ix-btn.primary{color:#fff;background:linear-gradient(135deg,#0f2233,#0b1a29);border-color:rgba(255,255,255,.14);box-shadow:0 8px 24px rgba(11,26,41,.28)}
 .ix-btn.primary:hover{box-shadow:0 12px 30px rgba(11,26,41,.34)}
+/* "Browse every graded pick →" — was a raw unstyled <button> on the Insights page */
+.board-all{display:block;width:100%;max-width:640px;margin:2px auto 0;border:1px solid var(--glass-brd);border-radius:14px;padding:13px 16px;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--e0);cursor:pointer;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);transition:transform .2s var(--spring),box-shadow .2s ease}
+.board-all:hover{transform:translateY(-1px);box-shadow:var(--e1)}
+.board-all:active{transform:scale(.98)}
 
 /* ═══════════════════ BETA — v4 SHADOW MODEL FEED ═══════════════════ */
 /* nav badge dot on the Beta tab */
@@ -1944,6 +1962,13 @@ details.more .more-body{padding-top:12px}
 .bg-mu{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink);flex-shrink:0}
 .bg-mu b{font-weight:700}
 .bg-meta{font-family:var(--sans);font-size:11.5px;color:var(--ink3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* phones: the date · final-score meta drops to its own full line instead of ellipsing away
+   the score ("Jul 25 · 1:10 …") — matchup + pick stay on line 1 */
+@media(max-width:560px){
+  .beta-gcard{flex-wrap:wrap;gap:5px 10px}
+  .bg-meta{order:3;flex-basis:100%;white-space:normal;overflow:visible;line-height:1.4}
+  .bg-pick{margin-left:auto}
+}
 .bg-pick{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;font-family:var(--disp)}
 .bg-pick .bstars{font-size:11px}
 .bg-side{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink2)}
@@ -2011,7 +2036,10 @@ details.more .more-body{padding-top:12px}
 .datebar.lead .datetools .calwrap input{color-scheme:dark}
 /* leagues: kill the chip look entirely — quiet uppercase text + a sliding underline ink */
 .subhead.subtle{border-bottom:1px solid var(--line3);padding-bottom:0;margin-bottom:12px}
-.subhead.subtle .sporttabs{padding:0;gap:0}
+.subhead.subtle .sporttabs{padding:0;gap:0;
+  /* soft right-edge fade so an off-screen league (NFL at 375px) reads as "more to scroll",
+     not a hard mid-word clip */
+  -webkit-mask:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
 .subhead.subtle .sporttab{border-radius:0;padding:8px 12px 10px;min-height:34px;background:transparent!important}
 .subhead.subtle .sporttab::before{display:none}
 .subhead.subtle .sporttab.on{color:var(--ink)}
@@ -2055,19 +2083,21 @@ details.more .more-body{padding-top:12px}
 .pgrade.muted{color:var(--ink3);background:rgba(22,36,60,.06)}
 
 /* ═════════════ BOLD PICK PRESENTATION (tiles + featured) ═════════════ */
-/* The side + line reads big; stars + the 2-decimal score sit right; a small vs-Vegas +
-   timestamp line grounds it. Over = green, Under = red (the product's real direction). */
-.pstrip.bold .ps-main{gap:7px}
-.pstrip.bold .ps-side{font-size:15.5px;font-weight:800}
+/* ONE hierarchy: a glance reads "OVER 8.5 · ★★★★". The side + line is the loudest text
+   on the card; price rides small beside it; stars + score sit right; the vs-Vegas
+   provenance is a quiet single footnote. Over = green, Under = red. */
+.pstrip.bold .ps-main{gap:6px 10px}
+.pstrip.bold .ps-side{font-size:18px;font-weight:800}
 .pstrip.bold .ps-side b{font-weight:800}
-.pstrip.bold .ps-side .ps-px{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink2);background:rgba(22,36,60,.05);border-radius:5px;padding:1px 5px}
+.pstrip.bold .ps-side .ps-px{font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--ink2);background:rgba(22,36,60,.06);border-radius:6px;padding:1.5px 6px}
 .pstrip.bold .ps-side.ou-over{color:var(--over)}
 .pstrip.bold .ps-side.ou-under{color:var(--under)}
 .pstrip.bold .ps-q{display:inline-flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
 .pstrip.bold .ps-q .pgrade{margin-left:2px}
 .pstrip.bold .ps-side.ou-over .ps-px,.pstrip.bold .ps-side.ou-under .ps-px{color:var(--ink2)}
-.pstrip.bold .ps-res{margin-left:6px}
-.pstrip.bold .pk-made{margin-top:2px;font-size:10.5px}
+.pstrip.bold .ps-res{margin-left:auto}
+.pstrip.bold .pk-made{margin-top:1px;font-size:10.5px;line-height:1.4}
+@media(max-width:699px){.pstrip.bold .ps-side{font-size:19px}}
 /* pass strip: stars + muted score share the row, pushed right */
 .pstrip.pass .ps-q{display:inline-flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
 .pstrip.pass .ps-q .bstars{font-size:10px}
@@ -2102,8 +2132,15 @@ details.more .more-body{padding-top:12px}
 .strec-hero .strec-stat i.neg{color:var(--red)}
 .strec-hero .strec-stat em{font-style:normal;font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
 .strec-hero .strec-sub{font-family:var(--sans);font-size:12.5px;color:var(--ink3);line-height:1.5;max-width:440px;margin:0 auto}
-/* LAST 7 DAYS — compact day-by-day strip under the record hero (W-L tinted by the day's ROI) */
-.strec-l7{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto 16px;padding:10px 14px;border-radius:var(--r-md);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--e1);overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* LAST 7 DAYS — compact day-by-day strip under the record hero (W-L tinted by the day's ROI).
+   Hidden scrollbar (was a raw gray bar), and on narrow phones the days WRAP onto a second
+   row instead of clipping mid-glyph at the card edge — every day stays readable. */
+.strec-l7{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto 16px;padding:10px 14px;border-radius:var(--r-md);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--e1);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.strec-l7::-webkit-scrollbar{display:none}
+@media(max-width:640px){
+  .strec-l7{flex-direction:column;align-items:flex-start;gap:8px;overflow:visible}
+  .strec-l7 .l7row{margin-left:0;flex-wrap:wrap;gap:10px 14px;justify-content:flex-start}
+}
 .strec-l7 .l7k{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);flex-shrink:0}
 .strec-l7 .l7row{display:flex;align-items:center;gap:14px;margin-left:auto}
 .strec-l7 .l7d{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0}
@@ -2130,8 +2167,13 @@ details.more .more-body{padding-top:12px}
 .strec-gate{margin-top:12px;padding-top:11px;border-top:1px solid var(--line3);font-family:var(--sans);font-size:11.5px;color:var(--ink3);line-height:1.55}
 @media(max-width:520px){
   .strec-hero .strec-big{font-size:42px}
-  .strec-row .strec-hit{display:none}
-  .strec-row .strec-n{min-width:0}
+  /* keep the hit rate VISIBLE on phones (was display:none) — tighten instead of hiding */
+  .strec-row{gap:6px;flex-wrap:wrap}
+  .strec-row .strec-star .bstars{font-size:11.5px}
+  .strec-row .strec-n{min-width:0;font-size:10.5px}
+  .strec-row .strec-wl{font-size:12px}
+  .strec-row .strec-hit{min-width:0;font-size:10px}
+  .strec-row .strec-roi{min-width:0;font-size:10.5px}
 }
 .oc{overflow:hidden}
 .oc.pick{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.15;padding:4px 10px;min-width:52px;border-radius:10px;white-space:nowrap}
@@ -2169,6 +2211,23 @@ details.more .more-body{padding-top:12px}
 .ptr-bar.spin .ptr-ic{animation:ptrspin .8s linear infinite}
 @keyframes ptrspin{to{transform:rotate(360deg)}}
 
+/* pitcher page: styled top bar (was an unstyled div) + editorial game-log table */
+.pitcherpage .gp-bar{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-shrink:0;
+  padding:calc(10px + var(--sat)) max(14px,var(--sar)) 11px max(14px,var(--sal));
+  background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(244,248,254,.6));
+  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  box-shadow:0 1px 0 rgba(255,255,255,.7),0 6px 20px rgba(43,64,105,.06)}
+.pitcherpage .gp-bar .gp-back{display:inline-grid;place-items:center;width:38px;height:38px;border:0;border-radius:13px;background:rgba(22,36,60,.06);color:var(--ink);cursor:pointer;font-size:18px}
+.pitcherpage .gp-t{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.02em;color:var(--ink)}
+.pitcherpage .gp-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px max(14px,var(--sar)) calc(34px + var(--sab)) max(14px,var(--sal))}
+/* the game-log table reads like the rest of the app: disp headers, mono figures */
+.bgrid th{font-family:var(--disp);font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:7px 8px;border-bottom:1px solid var(--line2)}
+.bgrid td{font-family:var(--sans);font-size:12.5px;color:var(--ink);padding:8px;border-top:1px solid var(--line3)}
+.bgrid.pitlog{min-width:440px}
+.bgrid-scroll{scrollbar-width:thin}
+.bgrid-scroll::-webkit-scrollbar{height:5px}
+.bgrid-scroll::-webkit-scrollbar-thumb{background:rgba(22,36,60,.18);border-radius:3px}
+
 /* pitcher chips: tappable, ERA inline; pitcher sheet game-log table */
 .pit-chip.tap{cursor:pointer}
 .pit-chip.tap:active{transform:scale(.98)}
@@ -2180,18 +2239,23 @@ details.more .more-body{padding-top:12px}
 .bgrid.pitlog td.res.won{color:var(--green,#0a7d40);font-weight:700}
 .bgrid.pitlog td.res.lost{color:#b3261e;font-weight:700}
 
-.pit-chip .pit-sub{font-family:var(--mono);font-size:9.5px;color:var(--ink3);margin-left:4px}
+.pit-chip .pit-sub{font-family:var(--mono);font-size:9.5px;color:var(--ink3)}
 
 .metarow .pf-roi{font-family:var(--mono);font-weight:700;font-size:11px;margin-left:6px}
 .metarow .pf-roi.pos{color:var(--green,#0a7d40)}
 .metarow .pf-roi.neg{color:#b3261e}
 
-/* every game shows a prediction: low-confidence lean styling (not an official pick) */
-.pstrip.pass.lean{opacity:.92}
-.ps-lowconf{font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);background:rgba(22,36,60,.06);border-radius:999px;padding:2px 8px}
+/* every game shows a prediction: low-confidence lean styling (not an official pick).
+   VISIBLY QUIETER than a real pick — smaller type, muted direction color, no tinted wash —
+   and honestly labeled (Low confidence chip + "Model lean" footnote). */
+.pstrip.pass.is-lean{opacity:.95}
+.pstrip.pass.is-lean .ps-side{font-family:var(--disp);font-weight:700;font-size:14px;white-space:nowrap;line-height:1.2}
+.ps-lowconf{font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);background:rgba(22,36,60,.06);border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
 .ps-side.dim b{font-weight:700}
-.pstrip.pass.lean .ps-side.ou-over{color:rgba(10,125,64,.65)}
-.pstrip.pass.lean .ps-side.ou-under{color:rgba(179,38,30,.6)}
+.pstrip.pass.is-lean .ps-side.ou-over{color:rgba(10,125,64,.6)}
+.pstrip.pass.is-lean .ps-side.ou-under{color:rgba(179,38,30,.55)}
+.pstrip.pass.is-lean .ps-q{margin-left:auto}
+.pstrip.pass.is-lean .ps-q .bstars{font-size:10px;opacity:.75}
 .pk-made.dim{color:var(--ink3);opacity:.8}
 
 /* expanded 2-star band row (graded separately, activated 7/24) */
@@ -2223,3 +2287,9 @@ details.more .more-body{padding-top:12px}
 /* content must clear the dock */
 main{padding-bottom:calc(env(safe-area-inset-bottom) + 96px) !important}
 /* pull-to-refresh indicator sits above the dock's z-index already (400) */
+/* MODALS OWN THE SCREEN: when a game page / sheet is open (body.sheet-open), the dock
+   glides away — it was floating OVER sheet + game-page content (z 340 vs 91/95), hiding
+   the last rows of the box score and record sheets with no way to scroll clear. */
+.dockwrap{transition:opacity .24s ease,transform .28s var(--ease-out)}
+body.sheet-open .dockwrap{opacity:0;transform:translateY(18px);pointer-events:none}
+@media (prefers-reduced-motion:reduce){.dockwrap{transition:none}}

@@ -1365,6 +1365,9 @@ export default function Home() {
     // first pitch — never made mid-game. Pre-game it's the branded "DiamondEdge Pick".
     const isStarted = (g: any) => { const s = String((g && g.status) || "pre").toLowerCase(); return s === "live" || s === "final"; };
     const pickLabel = (g: any) => (isStarted(g) ? "◆ Pre-Game Pick" : "◆ DiamondEdge Pick");
+    // Short tile kicker — the board is already branded (section headers + featured card), so
+    // per-tile strips carry a compact orienting label instead of the full brand line.
+    const pickLabelShort = (g: any) => (isStarted(g) ? "◆ Pre-Game Pick" : "◆ The Pick");
     const pickWord = (g: any) => (isStarted(g) ? "Pre-Game Pick" : "DiamondEdge Pick");
     // The pick sub-headline for a preview: served article.pick_headline wins, else composed
     // from the display pick. Always names the side/line; passes read "No Pick — Passing".
@@ -2216,14 +2219,15 @@ export default function Home() {
       const why = /\s/.test(whyRaw) && whyRaw.length > 12 ? esc(whyRaw.slice(0, 60)) : "";
       if (side && line != null) {
         const dir = /over/i.test(side) ? "ou-over" : "ou-under";
-        return `<div class="pstrip pass lean">
+        // NOTE: modifier class is "is-lean" — never bare "lean", which is the lean-METER
+        // component class (74×16 inline-block) and collapses the whole strip if reused here.
+        return `<div class="pstrip pass is-lean">
           <div class="ps-main">
-            <span class="ps-k">${pickLabel(g)}</span>
             <span class="ps-side ${dir} dim">${/over/i.test(side) ? "▲" : "▼"} <b>${esc(side)} ${esc(line)}</b></span>
             <span class="ps-lowconf">Low confidence</span>
             <span class="ps-q">${bStars(pk.stars != null ? pk.stars : 1)}${passGrade(sc)}</span>
           </div>
-          <div class="pk-made dim">model lean — not an official pick${why ? ` · ${why}` : ""}</div>
+          <div class="pk-made dim">Model lean — not an official pick${why ? ` · ${why}` : ""}</div>
         </div>`;
       }
       // no lean at all (market never posted): the old honest pass line
@@ -2233,7 +2237,7 @@ export default function Home() {
         <div class="ps-main">
           <span class="ps-k">${pickLabel(g)}</span>
           <span class="ps-side">Pass${ln ? ` — ${ln} held no edge` : read ? ` — ${esc(read)}` : " — line looked fair"}</span>
-          <span class="ps-q">${bStars(1)}${passGrade(sc)}</span>
+          <span class="ps-q">${passGrade(sc)}</span>
         </div>
       </div>`;
     }
@@ -2289,11 +2293,10 @@ export default function Home() {
       const under = /(^|\s)under/i.test(String(pl.side || ""));
       const dirCls = over ? "ou-over" : under ? "ou-under" : "";
       return `<div class="pstrip bold q-${q} ${st}">
+        <div class="ps-kickrow"><span class="ps-k">${pickLabelShort(g)}</span>${state ? `<span class="ps-res ${state.cls}">${state.txt}</span>` : ""}</div>
         <div class="ps-main">
-          <span class="ps-k">${pickLabel(g)}</span>
           <span class="ps-side ${dirCls}">${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i class="ps-px">${fmtOdds(pl.price)}</i>` : ""}</span>
           <span class="ps-q">${pickStars(pl)}${pickGrade(pl)}</span>
-          ${state ? `<span class="ps-res ${state.cls}">${state.txt}</span>` : ""}
         </div>
         ${pickMadeMeta(pl)}
         ${verdictRow}
@@ -2822,8 +2825,10 @@ export default function Home() {
         slateGames = games || [];   // remember what we rendered so findGame can open any of it
         if (meta) meta.innerHTML = metaRow();
         if (!games.length) {
-          if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); return; }
-          if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Insights tab.</div></div>`; return; }
+          // Early-return states still need their chrome bound (record chip / All picks /
+          // How-picks-work went DEAD on future+empty dates before this).
+          if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); bindMeta(); return; }
+          if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Insights tab.</div></div>`; bindMeta(); return; }
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
           body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Insights tab.</div></div>`;
         } else {
