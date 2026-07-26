@@ -2684,3 +2684,81 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .tp-grid .tpk .pk-count{max-width:100%;margin-left:0}
 .tp-grid .tpk-res{margin-left:0}
 .tp-grid .tpk-dots{font-size:13px;letter-spacing:3px}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE LAB (Research tab) — the public roadmap: every idea from first spark to
+   graded verdict. Groups: IN THE FIRE · SHIPPED · ACCRUING · ON DECK · GRAVEYARD.
+   Same glass recipe as Insights cards; gold = alive, emerald = earned, dim = dead.
+   ══════════════════════════════════════════════════════════════════════════ */
+.lab-wrap{max-width:760px;margin:0 auto}
+/* hero count chips — the whole story in one line */
+.lab-counts{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.lab-count{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:999px;padding:5px 11px;border:1px solid var(--glass-brd2);background:var(--glass);color:var(--ink2)}
+.lab-count.shipped{color:#3ee6a8;border-color:rgba(25,197,138,.32);background:rgba(25,197,138,.1)}
+.lab-count.fire{color:var(--golddeep);border-color:rgba(224,172,32,.36);background:rgba(224,172,32,.1)}
+.lab-count.accruing{color:#9fb6dd;border-color:rgba(110,161,255,.26);background:rgba(110,161,255,.08)}
+.lab-count.queued{color:var(--ink3)}
+.lab-count.grave{color:var(--ink3);border-color:var(--line3);background:rgba(147,161,184,.07)}
+/* section chrome */
+.lab-sect{margin:26px 0 0}
+.lab-sect:first-of-type{margin-top:8px}
+.lab-sect-head{display:flex;align-items:baseline;gap:9px}
+.lab-sect-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
+.lab-sect.fire .lab-sect-k{color:var(--golddeep)}
+.lab-sect.shipped .lab-sect-k{color:#3ee6a8}
+.lab-sect.grave .lab-sect-k{color:var(--ink3)}
+.lab-sect-n{font-family:var(--mono);font-weight:700;font-size:10.5px;color:var(--ink4);background:rgba(210,224,247,.07);border-radius:999px;padding:2px 8px}
+.lab-sect-sub{font-family:var(--sans);font-size:12px;line-height:1.55;color:var(--ink3);margin:4px 0 12px;max-width:560px}
+.lab-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:768px){.lab-grid{grid-template-columns:1fr 1fr;gap:12px;align-items:start}}
+/* the card — glass, tap-to-expand (details/summary) */
+.lab-card{background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e0);overflow:hidden;min-width:0}
+.lab-card.fire{background-image:linear-gradient(150deg,rgba(224,172,32,.09),rgba(255,255,255,0) 58%)}
+.lab-card.shipped{background-image:linear-gradient(150deg,rgba(25,197,138,.08),rgba(255,255,255,0) 58%)}
+.lab-card.grave{opacity:.68;border-color:var(--line3);box-shadow:none;background:rgba(16,23,38,.5)}
+.lab-card.grave:hover,.lab-card.grave[open]{opacity:.92}
+.lab-card summary{list-style:none;cursor:pointer;padding:13px 14px 12px;min-width:0}
+.lab-card summary::-webkit-details-marker{display:none}
+.lab-top{display:flex;align-items:center;gap:7px;min-width:0}
+.lab-chip{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;font-family:var(--disp);font-weight:700;font-size:9px;
+  letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:3.5px 9px;border:1px solid var(--line3);color:var(--ink2);background:rgba(210,224,247,.05)}
+.lab-chip.fire{color:var(--golddeep);border-color:rgba(224,172,32,.36);background:rgba(224,172,32,.1)}
+.lab-chip.shipped{color:#3ee6a8;border-color:rgba(25,197,138,.34);background:rgba(25,197,138,.11)}
+.lab-chip.accruing{color:#9fb6dd;border-color:rgba(110,161,255,.28);background:rgba(110,161,255,.09)}
+.lab-chip.grave{color:var(--ink3);border-color:var(--line3);background:rgba(147,161,184,.08)}
+.lab-chip svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+/* the pulsing gold "alive" dot */
+.lab-dot{width:6px;height:6px;border-radius:50%;background:var(--golddeep);box-shadow:0 0 0 0 rgba(224,172,32,.55);animation:labPulse 1.9s ease-out infinite;flex-shrink:0}
+@keyframes labPulse{0%{box-shadow:0 0 0 0 rgba(224,172,32,.55)}70%{box-shadow:0 0 0 7px rgba(224,172,32,0)}100%{box-shadow:0 0 0 0 rgba(224,172,32,0)}}
+@media(prefers-reduced-motion:reduce){.lab-dot{animation:none}}
+.lab-cat{font-family:var(--mono);font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink4);flex-shrink:0}
+.lab-eta{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:9px;letter-spacing:.04em;color:var(--ink3);
+  border:1px solid var(--line3);border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
+.lab-caret{margin-left:auto;color:var(--ink4);font-size:15px;line-height:1;transition:transform .2s ease;flex-shrink:0}
+.lab-eta + .lab-caret,.lab-eta ~ .lab-caret{margin-left:0}
+.lab-card[open] .lab-caret{transform:rotate(90deg)}
+.lab-title{font-family:var(--disp);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.2;color:var(--ink);margin-top:9px}
+.lab-tagline{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink2);margin-top:4px}
+.lab-card.grave .lab-tagline{color:var(--ink3)}
+/* shipped's earned line / the graveyard's killing number */
+.lab-result{font-family:var(--mono);font-weight:600;font-size:10.5px;line-height:1.5;margin-top:7px}
+.lab-result.shipped{color:#3ee6a8}
+.lab-result.grave{color:#d9909e}
+.lab-latest{font-family:var(--sans);font-size:11px;line-height:1.5;color:var(--ink3);margin-top:8px;padding-top:7px;border-top:1px dashed rgba(210,224,247,.1)}
+/* timeline: started → eta on one thin line; the fill doubles as progress */
+.lab-time{display:flex;align-items:center;gap:8px;margin-top:10px}
+.lab-t0,.lab-t1{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink4);white-space:nowrap;flex-shrink:0}
+.lab-track{flex:1;height:3px;border-radius:999px;background:rgba(210,224,247,.1);overflow:hidden}
+.lab-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(224,172,32,.55),#eec258);transition:width .5s var(--ease)}
+.lab-card.shipped .lab-track i{background:linear-gradient(90deg,rgba(25,197,138,.5),#2bd695)}
+.lab-card.accruing .lab-track i{background:linear-gradient(90deg,rgba(110,161,255,.4),#8fb4ff)}
+.lab-card.grave .lab-track i{background:rgba(147,161,184,.4)}
+/* the expanded detail */
+.lab-detail{font-family:var(--sans);font-size:12.5px;line-height:1.6;color:var(--ink2);padding:11px 14px 13px;border-top:1px solid var(--line3);
+  background:rgba(8,13,24,.32);animation:rise .3s var(--ease) both}
+.lab-detail.dim{color:var(--ink4)}
+@media(prefers-reduced-motion:reduce){.lab-detail{animation:none}}
+/* 4-icon dock still overflow-clean on the narrowest phones */
+@media(max-width:392px){.dock-item{padding:10px 11.5px}.dock-lab{font-size:12px}}

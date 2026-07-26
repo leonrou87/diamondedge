@@ -1522,8 +1522,8 @@ export default function Home() {
     // ===================== STATE =====================
     // DEFAULT = GAMES (Leon, 2026-07-25): the app opens on the Games board — the product IS
     // the picks. The brand logo (and the dock's News tab) still goes to the News front.
-    let tab = "games";              // "today" | "games" | "results" | "beta" | "settings" | "upgrade" | "account"
-    const TABS = ["today", "games", "results", "beta", "settings", "upgrade", "account"];
+    let tab = "games";              // "today" | "games" | "results" | "research" | "beta" | "settings" | "upgrade" | "account"
+    const TABS = ["today", "games", "results", "research", "beta", "settings", "upgrade", "account"];
     let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
@@ -5854,7 +5854,151 @@ export default function Home() {
       const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
     }
 
-    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", beta: "Totals", settings: "Settings" };
+    // ===================== RESEARCH — "THE LAB" (public roadmap of every idea we test) =====================
+    // Every idea gets a card: what it looks to do, latest progress, timeline, status. Most die.
+    // The survivors earn their stars. Nulls are published on purpose — that's the trust story.
+    // Feed: Supabase slate_snapshots key 'research_roadmap' (fresh) → bundled static
+    // /research_roadmap.json (fallback) → background self-heal (same recipe as loadBeta).
+    let roadmapData: any = null;
+    async function loadRoadmap() {
+      if (roadmapData) return roadmapData;
+      let fresh: any = null;
+      try { fresh = await Promise.race([snap("research_roadmap"), new Promise((r) => setTimeout(() => r(null), 4000))]); } catch {}
+      let usedFallback = false;
+      if (!fresh || !Array.isArray(fresh.items)) {
+        usedFallback = true;
+        const r = await fetch(`/research_roadmap.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
+        if (!r.ok) throw new Error("roadmap fetch " + r.status);
+        fresh = await r.json();
+      }
+      if (!fresh || !Array.isArray(fresh.items)) throw new Error("roadmap payload malformed");
+      roadmapData = fresh;
+      // SELF-HEAL: if we had to fall back to the bundled static file (Supabase slow/missing),
+      // keep retrying in the background and swap + re-render the moment the fresh copy lands.
+      if (usedFallback) {
+        (async () => {
+          for (let a = 0; a < 6; a++) {
+            await new Promise((r) => setTimeout(r, 3000));
+            try {
+              const sb: any = await snap("research_roadmap");
+              if (sb && Array.isArray(sb.items) && sb.generated_utc !== fresh.generated_utc) {
+                roadmapData = sb;
+                if (tab === "research") { try { renderResearch(); } catch {} }
+                return;
+              }
+            } catch {}
+          }
+        })();
+      }
+      return roadmapData;
+    }
+    // status → group. Unknowns land in "queued" so a new backend status can never crash the page.
+    const LAB_GROUP: any = { live_testing: "fire", building: "fire", piloting: "fire", shipped: "shipped", accruing: "accruing", queued: "queued", closed_null: "grave" };
+    const LAB_STATUS_LABEL: any = { live_testing: "Live testing", building: "Building", piloting: "Piloting", shipped: "Shipped", accruing: "Accruing data", queued: "Queued", closed_null: "Door closed" };
+    const labDate = (s: any) => {
+      const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return String(s || "");
+      const d = new Date(`${m[0]}T12:00:00`);
+      return isNaN(d.getTime()) ? String(s) : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    };
+    const labEta = (e: any) => {
+      const s = String(e || "").trim();
+      if (!s || s === "done" || s === "closed") return "";
+      return /^eta/i.test(s) ? s : `ETA ${s}`;
+    };
+    const labPct = (v: any) => { const n = Number(v); return isFinite(n) ? Math.max(0, Math.min(100, n)) : null; };
+    // one expandable card — the face carries status/tagline/progress/latest; `detail` opens on tap
+    function labCard(it: any) {
+      const st = String(it.status || "queued");
+      const grp = LAB_GROUP[st] || "queued";
+      const pct = labPct(it.progress_pct);
+      const eta = labEta(it.eta);
+      const started = it.started ? labDate(it.started) : "";
+      const endLab = grp === "shipped" ? (it.eta === "done" ? "shipped" : labDate(it.eta) || "shipped")
+        : grp === "grave" ? "closed"
+        : eta ? eta.replace(/^ETA /, "") : "in progress";
+      const chip = grp === "shipped" ? `<span class="lab-chip shipped">✓ Shipped</span>`
+        : grp === "accruing" ? `<span class="lab-chip accruing"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 3 5.2 4 6 1-.8 4-2 4-6M8 21c0-4 3-5.2 4-6 1 .8 4 2 4 6"/></svg>Accruing</span>`
+        : grp === "grave" ? `<span class="lab-chip grave">Door closed</span>`
+        : grp === "queued" ? `<span class="lab-chip queued">Queued</span>`
+        : `<span class="lab-chip fire"><i class="lab-dot" aria-hidden="true"></i>${esc(LAB_STATUS_LABEL[st] || "In the fire")}</span>`;
+      // timeline: started → eta on one thin line; the fill doubles as the progress bar
+      const track = started || endLab ? `
+        <div class="lab-time">
+          <span class="lab-t0">${esc(started || "—")}</span>
+          <span class="lab-track"><i style="width:${pct != null ? pct : (grp === "shipped" || grp === "grave" ? 100 : 8)}%"></i></span>
+          <span class="lab-t1">${esc(endLab)}</span>
+        </div>` : "";
+      const latest = it.latest ? `<div class="lab-latest">${esc(it.latest)}</div>` : "";
+      // shipped's earned line / the graveyard's killing number — the honest one-liner up front
+      const result = it.result && (grp === "shipped" || grp === "grave")
+        ? `<div class="lab-result ${grp}">${esc(it.result)}</div>` : "";
+      const detail = it.detail ? `<div class="lab-detail">${esc(it.detail)}</div>` : `<div class="lab-detail dim">More detail lands as this one progresses.</div>`;
+      return `<details class="lab-card ${grp}">
+        <summary>
+          <div class="lab-top">${chip}${it.category ? `<span class="lab-cat">${esc(it.category)}</span>` : ""}${eta && grp === "fire" ? `<span class="lab-eta">${esc(eta)}</span>` : ""}<span class="lab-caret" aria-hidden="true">›</span></div>
+          <div class="lab-title">${esc(it.title || it.id || "Untitled")}</div>
+          ${it.tagline ? `<div class="lab-tagline">${esc(it.tagline)}</div>` : ""}
+          ${result}
+          ${latest}
+          ${track}
+        </summary>
+        ${detail}
+      </details>`;
+    }
+    function labSection(kicker: string, sub: string, cards: string[], cls = "") {
+      if (!cards.length) return "";
+      return `<section class="lab-sect ${cls}">
+        <div class="lab-sect-head"><span class="lab-sect-k">${esc(kicker)}</span><span class="lab-sect-n">${cards.length}</span></div>
+        ${sub ? `<p class="lab-sect-sub">${esc(sub)}</p>` : ""}
+        <div class="lab-grid">${cards.join("")}</div>
+      </section>`;
+    }
+    async function renderResearch() {
+      const view = $("research-view");
+      if (!view) return;
+      if (!roadmapData) view.innerHTML = `<div class="lab-wrap"><div class="beta-skel">Loading the lab…</div></div>`;
+      let d: any;
+      try { d = await loadRoadmap(); } catch {
+        view.innerHTML = `<div class="lab-wrap"><div class="state"><div class="big">The lab is dark</div><div class="sm">Couldn't load the research roadmap — try again shortly.</div></div></div>`;
+        return;
+      }
+      const items = (Array.isArray(d.items) ? d.items : []) as any[];
+      const by = (grp: string) => items.filter((it: any) => (LAB_GROUP[String(it && it.status)] || "queued") === grp);
+      const fire = by("fire"), shipped = by("shipped"), accruing = by("accruing"), queued = by("queued"), grave = by("grave");
+      // count chips — derived from the items themselves; the served summary is only a fallback
+      const sum = (d.summary && typeof d.summary === "object") ? d.summary : {};
+      const nShip = shipped.length || Number(sum.shipped) || 0;
+      const nFire = fire.length || Number(sum.testing) || 0;
+      const nAcc = accruing.length || Number(sum.accruing) || 0;
+      const nGrave = grave.length || Number(sum.closed) || 0;
+      const chips = [
+        nShip ? `<span class="lab-count shipped">${nShip} shipped</span>` : "",
+        nFire ? `<span class="lab-count fire">${nFire} in the fire</span>` : "",
+        nAcc ? `<span class="lab-count accruing">${nAcc} accruing</span>` : "",
+        queued.length ? `<span class="lab-count queued">${queued.length} queued</span>` : "",
+        nGrave ? `<span class="lab-count grave">${nGrave} closed honest</span>` : "",
+      ].filter(Boolean).join("");
+      const upd = d.generated_utc ? new Date(d.generated_utc).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+      view.innerHTML = `
+        <div class="lab-wrap">
+          <div class="ix-masthead">
+            <div class="ix-eyebrow">DiamondEdge · The Lab</div>
+            <h2 class="ix-mast-h">Every idea we test, in public</h2>
+            <p class="ix-mast-sub">This is the whole roadmap — every model, data build and experiment, from first spark to graded verdict. Most die. The survivors earn their stars.</p>
+            ${chips ? `<div class="lab-counts">${chips}</div>` : ""}
+          </div>
+          ${items.length ? "" : `<div class="state"><div class="big">Nothing on the bench yet</div><div class="sm">The roadmap fills in as experiments launch.</div></div>`}
+          ${labSection("In the fire", "Being built or tested right now — the ideas fighting for a spot on the board.", fire.map(labCard), "fire")}
+          ${labSection("Shipped", "Survived testing and live on the site — each with the result that earned it.", shipped.map(labCard), "shipped")}
+          ${labSection("Accruing data", "Nothing to test yet — these are quietly banking the history they need first.", accruing.map(labCard), "accruing")}
+          ${labSection("On deck", "Queued behind the current burn — next into the fire.", queued.map(labCard), "queued")}
+          ${labSection("The graveyard", "Ideas we killed with our own numbers. We publish our nulls — that's why you can trust the picks.", grave.map(labCard), "grave")}
+          ${upd ? `<div class="refnote">Roadmap updated ${esc(upd)} · statuses move as experiments run.</div>` : ""}
+        </div>`;
+    }
+
+    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", research: "The Lab", beta: "Totals", settings: "Settings" };
     function renderShell() {
       // Primary nav = the destinations at EVERY width (the top bar is the nav on mobile too now
       // — the bottom nav is retired). The v4 model is now the DEFAULT pick everywhere; its
@@ -5883,6 +6027,7 @@ export default function Home() {
           <div id="today-view" style="display:${tab === "today" ? "block" : "none"}"></div>
           <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
           <div id="results-view" style="display:none"></div>
+          <div id="research-view" style="display:none"></div>
           <div id="beta-view" style="display:none"></div>
           <div id="settings-view" style="display:none"></div>
           <div id="upgrade-view" style="display:none"></div>
@@ -5904,10 +6049,11 @@ export default function Home() {
       today: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M19 9h1.5v9.5a1.5 1.5 0 0 1-3 0"/><path d="M8 9h5M8 13h7M8 17h4"/></svg>`,
       games: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="5.5" y="5.5" width="13" height="13" rx="2.5" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>`,
       results: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V13M12 20V6M19 20v-9"/></svg>`,
+      research: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5M10.2 3v6.2l-5.3 9A1.9 1.9 0 0 0 6.5 21h11a1.9 1.9 0 0 0 1.6-2.8l-5.3-9V3"/><path d="M7.2 15.4h9.6"/></svg>`,
     };
     function renderDock() {
       const el = $("dock"); if (!el) return;
-      el.innerHTML = ["today", "games", "results"].map((t) => {
+      el.innerHTML = ["today", "games", "results", "research"].map((t) => {
         const on = tab === t;
         return `<button class="dock-item${on ? " on" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
           ${on ? `<span class="dock-pill" aria-hidden="true"></span>` : ""}
@@ -6027,6 +6173,7 @@ export default function Home() {
           else if (newsMode === "stories" && $("stories")) startStoryTimer(); // resume the deck on return
         }
         if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
+        if (t === "research" && !$("research-view").innerHTML.trim()) renderResearch();
         if (t === "beta" && (Date.now() - betaBuiltAt > 60 * 1000 || !$("beta-view").innerHTML.trim())) renderBeta();
         if (t === "settings") renderSettings();
         if (t === "upgrade") renderUpgrade();
