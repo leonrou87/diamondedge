@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 // ── MODERN TYPE SYSTEM (self-hosted via next/font — zero runtime requests) ──
-// Space Grotesk = display/headers/UI chrome · Inter = body/UI text ·
+// Bricolage Grotesque = display/headers/UI chrome (characterful, contemporary —
+// replaces Space Grotesk, which read too neutral) · Inter = body/UI text ·
 // JetBrains Mono = tabular figures (lines, odds, records, scores).
-const grotesk = Space_Grotesk({
+const grotesk = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-disp",
   display: "swap",

@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-07-25T19:53:26Z",
+ "generated_utc": "2026-07-26T03:58:32Z",
  "by_game": {
   "822707": {
    "away": {
@@ -3023,7 +3023,8 @@
       "res": "ND"
      }
     ],
-    "team": "ARI"
+    "team": "ARI",
+    "actual_starter": true
    },
    "home": {
     "id": 656492,
@@ -3140,7 +3141,8 @@
       "res": "W"
      }
     ],
-    "team": "WSH"
+    "team": "WSH",
+    "actual_starter": true
    }
   },
   "822869": {
@@ -3259,7 +3261,8 @@
       "res": "W"
      }
     ],
-    "team": "SEA"
+    "team": "SEA",
+    "actual_starter": true
    },
    "home": {
     "id": 543135,
@@ -3376,7 +3379,8 @@
       "res": "ND"
      }
     ],
-    "team": "TEX"
+    "team": "TEX",
+    "actual_starter": true
    }
   },
   "822948": {
@@ -3495,7 +3499,8 @@
       "res": "W"
      }
     ],
-    "team": "CLE"
+    "team": "CLE",
+    "actual_starter": true
    },
    "home": {
     "id": 607259,
@@ -3612,7 +3617,8 @@
       "res": "L"
      }
     ],
-    "team": "TB"
+    "team": "TB",
+    "actual_starter": true
    }
   },
   "823027": {
@@ -3666,7 +3672,8 @@
       "res": "L"
      }
     ],
-    "team": "CIN"
+    "team": "CIN",
+    "actual_starter": true
    },
    "home": {
     "id": 669467,
@@ -3783,7 +3790,8 @@
       "res": "W"
      }
     ],
-    "team": "STL"
+    "team": "STL",
+    "actual_starter": true
    }
   },
   "823197": {
@@ -3889,7 +3897,8 @@
       "res": "L"
      }
     ],
-    "team": "LAA"
+    "team": "LAA",
+    "actual_starter": true
    },
    "home": {
     "id": 592662,
@@ -4006,7 +4015,8 @@
       "res": "ND"
      }
     ],
-    "team": "SF"
+    "team": "SF",
+    "actual_starter": true
    }
   },
   "823355": {
@@ -4125,7 +4135,8 @@
       "res": "ND"
      }
     ],
-    "team": "CHC"
+    "team": "CHC",
+    "actual_starter": true
    },
    "home": {
     "id": 694973,
@@ -4242,7 +4253,8 @@
       "res": "ND"
      }
     ],
-    "team": "PIT"
+    "team": "PIT",
+    "actual_starter": true
    }
   },
   "823435": {
@@ -4361,7 +4373,8 @@
       "res": "L"
      }
     ],
-    "team": "NYY"
+    "team": "NYY",
+    "actual_starter": true
    },
    "home": {
     "id": 641835,
@@ -4413,7 +4426,8 @@
       "res": "ND"
      }
     ],
-    "team": "PHI"
+    "team": "PHI",
+    "actual_starter": true
    }
   },
   "823600": {
@@ -4532,7 +4546,8 @@
       "res": "W"
      }
     ],
-    "team": "LAD"
+    "team": "LAD",
+    "actual_starter": true
    },
    "home": {
     "id": 690997,
@@ -4649,7 +4664,8 @@
       "res": "ND"
      }
     ],
-    "team": "NYM"
+    "team": "NYM",
+    "actual_starter": true
    }
   },
   "823679": {
@@ -4663,85 +4679,61 @@
     "k9": 7.56,
     "whip": 1.92,
     "starts": [],
-    "team": "ATH"
+    "team": "ATH",
+    "actual_starter": true
    },
    "home": {
-    "id": 702474,
-    "name": "Mike Paredes",
-    "throws": "R",
-    "era": 4.72,
-    "wl": "0-3",
-    "ip": 34.1,
-    "k9": 4.98,
-    "whip": 1.43,
+    "id": 696070,
+    "name": "Kendry Rojas",
+    "throws": "L",
+    "era": 3.32,
+    "wl": "1-1",
+    "ip": 21.2,
+    "k9": 9.97,
+    "whip": 1.57,
     "starts": [
      {
-      "date": "2026-07-03",
-      "opp": "NYY",
+      "date": "2026-07-21",
+      "opp": "CLE",
       "at": "A",
-      "ip": 4.0,
-      "h": 4,
-      "r": 3,
-      "er": 3,
+      "ip": 2.1,
+      "h": 1,
+      "r": 2,
+      "er": 2,
       "bb": 2,
       "k": 2,
-      "p": 81,
-      "res": "L"
+      "p": 47,
+      "res": "ND"
      },
      {
-      "date": "2026-06-27",
-      "opp": "COL",
+      "date": "2026-06-23",
+      "opp": "LAD",
       "at": "H",
-      "ip": 5.1,
-      "h": 8,
-      "r": 3,
-      "er": 3,
-      "bb": 0,
-      "k": 2,
-      "p": 74,
-      "res": "L"
-     },
-     {
-      "date": "2026-06-21",
-      "opp": "ARI",
-      "at": "A",
-      "ip": 5.0,
-      "h": 6,
-      "r": 2,
-      "er": 2,
-      "bb": 3,
-      "k": 1,
-      "p": 75,
-      "res": "ND"
-     },
-     {
-      "date": "2026-06-15",
-      "opp": "TEX",
-      "at": "A",
-      "ip": 4.2,
-      "h": 4,
-      "r": 2,
-      "er": 2,
-      "bb": 0,
-      "k": 2,
-      "p": 59,
-      "res": "ND"
-     },
-     {
-      "date": "2026-06-10",
-      "opp": "DET",
-      "at": "A",
-      "ip": 3.0,
+      "ip": 2.0,
       "h": 1,
       "r": 1,
       "er": 1,
-      "bb": 2,
+      "bb": 3,
       "k": 4,
-      "p": 58,
+      "p": 50,
+      "res": "ND"
+     },
+     {
+      "date": "2026-05-18",
+      "opp": "HOU",
+      "at": "H",
+      "ip": 4.0,
+      "h": 2,
+      "r": 0,
+      "er": 0,
+      "bb": 1,
+      "k": 3,
+      "p": 46,
       "res": "ND"
      }
     ],
-    "team": "MIN"
+    "team": "MIN",
+    "actual_starter": true
    }
   },
   "823758": {
@@ -4860,7 +4852,8 @@
       "res": "ND"
      }
     ],
-    "team": "COL"
+    "team": "COL",
+    "actual_starter": true
    },
    "home": {
     "id": 688107,
@@ -4977,7 +4970,8 @@
       "res": "L"
      }
     ],
-    "team": "MIL"
+    "team": "MIL",
+    "actual_starter": true
    }
   },
   "823841": {
@@ -5096,7 +5090,8 @@
       "res": "W"
      }
     ],
-    "team": "SD"
+    "team": "SD",
+    "actual_starter": true
    },
    "home": {
     "id": 691587,
@@ -5213,7 +5208,8 @@
       "res": "L"
      }
     ],
-    "team": "MIA"
+    "team": "MIA",
+    "actual_starter": true
    }
   },
   "824244": {
@@ -5570,7 +5566,8 @@
       "res": "ND"
      }
     ],
-    "team": "HOU"
+    "team": "HOU",
+    "actual_starter": true
    },
    "home": {
     "id": 680732,
@@ -5687,7 +5684,8 @@
       "res": "ND"
      }
     ],
-    "team": "CHW"
+    "team": "CHW",
+    "actual_starter": true
    }
   },
   "824734": {
@@ -5806,7 +5804,8 @@
       "res": "L"
      }
     ],
-    "team": "TOR"
+    "team": "TOR",
+    "actual_starter": true
    },
    "home": {
     "id": 543243,
@@ -5923,7 +5922,8 @@
       "res": "W"
      }
     ],
-    "team": "BOS"
+    "team": "BOS",
+    "actual_starter": true
    }
   },
   "824811": {
@@ -6042,7 +6042,8 @@
       "res": "L"
      }
     ],
-    "team": "ATL"
+    "team": "ATL",
+    "actual_starter": true
    },
    "home": {
     "id": 687064,
@@ -6159,7 +6160,8 @@
       "res": "W"
      }
     ],
-    "team": "BAL"
+    "team": "BAL",
+    "actual_starter": true
    }
   },
   "822706": {
@@ -8000,117 +8002,117 @@
     "team": "ATH"
    },
    "home": {
-    "id": 657746,
-    "name": "Joe Ryan",
-    "throws": "R",
-    "era": 3.38,
-    "wl": "6-6",
-    "ip": 114.1,
-    "k9": 10.31,
-    "whip": 1.1,
+    "id": 687570,
+    "name": "Connor Prielipp",
+    "throws": "L",
+    "era": 5.0,
+    "wl": "2-5",
+    "ip": 66.2,
+    "k9": 9.59,
+    "whip": 1.37,
     "starts": [
      {
-      "date": "2026-07-20",
+      "date": "2026-07-08",
       "opp": "CLE",
-      "at": "A",
-      "ip": 4.0,
-      "h": 10,
-      "r": 8,
-      "er": 8,
-      "bb": 0,
-      "k": 3,
-      "p": 78,
-      "res": "L"
+      "at": "H",
+      "ip": 5.0,
+      "h": 4,
+      "r": 3,
+      "er": 3,
+      "bb": 2,
+      "k": 6,
+      "p": 83,
+      "res": "ND"
      },
      {
-      "date": "2026-07-11",
-      "opp": "LAA",
+      "date": "2026-06-28",
+      "opp": "COL",
       "at": "H",
       "ip": 6.0,
       "h": 6,
       "r": 2,
       "er": 2,
-      "bb": 2,
-      "k": 6,
-      "p": 94,
+      "bb": 0,
+      "k": 10,
+      "p": 93,
       "res": "ND"
      },
      {
-      "date": "2026-07-05",
-      "opp": "NYY",
+      "date": "2026-06-19",
+      "opp": "ARI",
       "at": "A",
-      "ip": 7.0,
-      "h": 3,
-      "r": 0,
-      "er": 0,
-      "bb": 1,
-      "k": 9,
-      "p": 106,
-      "res": "W"
-     },
-     {
-      "date": "2026-06-30",
-      "opp": "HOU",
-      "at": "A",
-      "ip": 4.0,
-      "h": 5,
-      "r": 6,
-      "er": 0,
-      "bb": 3,
-      "k": 5,
-      "p": 91,
-      "res": "L"
-     },
-     {
-      "date": "2026-06-24",
-      "opp": "LAD",
-      "at": "H",
       "ip": 6.0,
-      "h": 8,
-      "r": 4,
-      "er": 4,
-      "bb": 1,
-      "k": 9,
-      "p": 98,
+      "h": 9,
+      "r": 6,
+      "er": 3,
+      "bb": 3,
+      "k": 4,
+      "p": 97,
       "res": "L"
      },
      {
-      "date": "2026-06-18",
-      "opp": "TEX",
-      "at": "A",
-      "ip": 5.0,
-      "h": 3,
-      "r": 0,
-      "er": 0,
-      "bb": 2,
-      "k": 7,
-      "p": 97,
-      "res": "W"
-     },
-     {
-      "date": "2026-06-12",
+      "date": "2026-06-13",
       "opp": "STL",
       "at": "H",
       "ip": 6.0,
-      "h": 6,
-      "r": 3,
-      "er": 3,
-      "bb": 0,
-      "k": 8,
-      "p": 102,
+      "h": 7,
+      "r": 4,
+      "er": 4,
+      "bb": 2,
+      "k": 2,
+      "p": 98,
       "res": "ND"
      },
      {
-      "date": "2026-06-06",
+      "date": "2026-06-07",
       "opp": "KC",
+      "at": "H",
+      "ip": 4.1,
+      "h": 4,
+      "r": 2,
+      "er": 2,
+      "bb": 1,
+      "k": 7,
+      "p": 77,
+      "res": "L"
+     },
+     {
+      "date": "2026-06-02",
+      "opp": "CHW",
       "at": "H",
       "ip": 6.0,
       "h": 6,
-      "r": 1,
-      "er": 1,
+      "r": 4,
+      "er": 4,
       "bb": 2,
+      "k": 7,
+      "p": 94,
+      "res": "W"
+     },
+     {
+      "date": "2026-05-27",
+      "opp": "CHW",
+      "at": "A",
+      "ip": 4.1,
+      "h": 8,
+      "r": 6,
+      "er": 6,
+      "bb": 3,
       "k": 5,
-      "p": 102,
+      "p": 93,
+      "res": "L"
+     },
+     {
+      "date": "2026-05-22",
+      "opp": "BOS",
+      "at": "A",
+      "ip": 4.0,
+      "h": 7,
+      "r": 6,
+      "er": 5,
+      "bb": 3,
+      "k": 1,
+      "p": 85,
       "res": "ND"
      }
     ],
@@ -8590,6 +8592,123 @@
    }
   },
   "824246": {
+   "away": {
+    "id": 679883,
+    "name": "Luinder Avila",
+    "throws": "R",
+    "era": 4.86,
+    "wl": "5-3",
+    "ip": 63.0,
+    "k9": 8.14,
+    "whip": 1.56,
+    "starts": [
+     {
+      "date": "2026-07-21",
+      "opp": "SF",
+      "at": "H",
+      "ip": 6.1,
+      "h": 5,
+      "r": 2,
+      "er": 2,
+      "bb": 1,
+      "k": 7,
+      "p": 87,
+      "res": "W"
+     },
+     {
+      "date": "2026-07-10",
+      "opp": "BAL",
+      "at": "A",
+      "ip": 5.0,
+      "h": 7,
+      "r": 3,
+      "er": 3,
+      "bb": 3,
+      "k": 3,
+      "p": 96,
+      "res": "ND"
+     },
+     {
+      "date": "2026-07-05",
+      "opp": "PHI",
+      "at": "H",
+      "ip": 5.0,
+      "h": 3,
+      "r": 1,
+      "er": 1,
+      "bb": 1,
+      "k": 4,
+      "p": 69,
+      "res": "W"
+     },
+     {
+      "date": "2026-06-28",
+      "opp": "CHW",
+      "at": "A",
+      "ip": 4.0,
+      "h": 6,
+      "r": 4,
+      "er": 4,
+      "bb": 3,
+      "k": 4,
+      "p": 86,
+      "res": "ND"
+     },
+     {
+      "date": "2026-06-23",
+      "opp": "TB",
+      "at": "A",
+      "ip": 5.0,
+      "h": 3,
+      "r": 1,
+      "er": 1,
+      "bb": 4,
+      "k": 6,
+      "p": 87,
+      "res": "W"
+     },
+     {
+      "date": "2026-06-17",
+      "opp": "WSH",
+      "at": "A",
+      "ip": 5.2,
+      "h": 3,
+      "r": 1,
+      "er": 1,
+      "bb": 1,
+      "k": 5,
+      "p": 91,
+      "res": "W"
+     },
+     {
+      "date": "2026-06-12",
+      "opp": "HOU",
+      "at": "H",
+      "ip": 0.2,
+      "h": 5,
+      "r": 8,
+      "er": 8,
+      "bb": 3,
+      "k": 0,
+      "p": 49,
+      "res": "L"
+     },
+     {
+      "date": "2026-06-06",
+      "opp": "MIN",
+      "at": "A",
+      "ip": 5.0,
+      "h": 2,
+      "r": 1,
+      "er": 1,
+      "bb": 3,
+      "k": 3,
+      "p": 70,
+      "res": "ND"
+     }
+    ],
+    "team": "KC"
+   },
    "home": {
     "id": 664285,
     "name": "Framber Valdez",

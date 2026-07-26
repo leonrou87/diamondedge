@@ -4,23 +4,29 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-07-25T19:53:23Z",
+  "generated_utc": "2026-07-26T03:58:19Z",
   "dates": [
     "2026-07-25",
     "2026-07-26"
   ],
-  "unified_rule": "ONE pick per game: (1) if the champion has a qualifying PLAY on the game (clears its +EV gate) that IS the pick; (2) else if the v4 model grid has a playable lean (clears the +EV gate + 0.01 conviction floor) that is the pick; (3) else if the grid has an EXPANDED-band lean (2026-07-24 on: full +EV gate + conviction 0.0075-0.010 \u2014 the measured near-miss band, 104-78-4 / +15.7% ROI walk-forward backtest) that is the pick, labelled expanded_band, 2-star clamped, 0.5u, graded separately under by_star_tier['2_expanded']; (4) else the game shows its best lean as a PASS (never a bet). One 0-5 score + star ladder (frozen v3.2 percentile, shared by both sources); one record, graded once per game against finals. `source` is diagnostic only \u2014 the UI renders champion- and model-sourced picks identically.",
-  "score_reference_version": "v3.2 (Leon, 2026-07-09: TRUE continuous percentile score \u2014 no band quantization; stars = floor bands of the score)",
+  "unified_rule": "ONE pick per game: (1) if the champion has a qualifying PLAY on the game (clears its +EV gate) that IS the pick; (2) else if the v4 model grid has a playable lean (clears the +EV gate + 0.01 conviction floor) that is the pick; (3) else if the grid has an EXPANDED-band lean (2026-07-24 on: full +EV gate + conviction 0.0075-0.010 \u2014 the measured near-miss band, 104-78-4 / +15.7% ROI walk-forward backtest) that is the pick, flagged expanded_band with REGULAR display stars from the one ladder (mostly 2*), 0.5u stake rail, graded separately under record.expanded_band and folded into by_star_tier with includes_expanded_n; (4) else the game shows its best lean as a PASS (never a bet). One 0-5 score + star ladder (frozen v3.2 percentile score; v3.3 full 1-5 display bands \u2014 top ~10% of playable scores -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest -> 2*, non-playable -> 1*; `certified` is a separate boolean, false everywhere today), shared by both sources; one record, graded once per game against finals. `source` is diagnostic only \u2014 the UI renders champion- and model-sourced picks identically.",
+  "score_reference_version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
   "star_cutoffs": {
-    "version": "v3.2 (Leon, 2026-07-09: TRUE continuous percentile score \u2014 no band quantization; stars = floor bands of the score)",
-    "cutoff_4": 4.0,
-    "cutoff_3": 3.0,
-    "bands": "floor bands of the continuous v3.2 score: 2.00-2.99 -> 2*, 3.00-3.99 -> 3*, 4.00-4.99 -> 4*; 1* = non-playable; 5* = BH-reserved",
-    "n_playable_scores": 529,
-    "n_nonplayable_scores": 6102,
+    "version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
+    "cutoff_5": 4.7,
+    "cutoff_4": 3.95,
+    "cutoff_3": 2.9,
+    "target_fracs": {
+      "5": 0.1,
+      "4": 0.25,
+      "3": 0.35
+    },
+    "n_playable_scores": 531,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-07-25T11:12:39Z",
-    "basis": "v3.2: the percentile normalization moved INTO the score (2.0 + 3.0 * season strength percentile, frozen reference in `score_reference`), so the star cutoffs are plain floor bands \u2014 each playable tier is ~a third of the season playable percentile, and a mid-strength pick CAN land 3* (the v3.1 band-quantization gap is fixed). The -EV floor is hard: non-playable rows stay 1* regardless of score."
+    "generated_utc": "2026-07-25T20:40:57Z",
+    "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
+    "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
+    "n_nonplayable_scores": 6103
   },
   "signals_note": "signals are contextual factors aligned with the lean, not causal attribution \u2014 the model is market-anchored and its number is not derived from these factors",
   "signals_library": [
@@ -122,116 +128,105 @@
       },
       "note": "BACKTEST (would-have) record \u2014 NOT a served record. The served expanded-band record accrues from EXPANDED_BAND_START under record.by_star_tier['2_expanded'], separately from core 2*."
     },
-    "rails": "2*-clamped (score <= 2.99), 0.5u stake cap, expanded_band=true on the pick, graded separately (record.by_star_tier['2_expanded']); a core playable row always beats an expanded row on the same game; history is never retroactively promoted"
+    "rails": "expanded_band=true on the pick; REGULAR display stars from the one v3.3 ladder (mostly 2* \u2014 no separate display row; record.by_star_tier carries includes_expanded_n per tier); 0.5u stake regardless of display stars; graded separately (record.expanded_band.served_record); a core playable row always beats an expanded row on the same game; history is never retroactively promoted"
   },
   "performance_claim": "NONE \u2014 the champion stream carries the only live record; the model fills are rated honestly lower. No edge is claimed.",
   "positioning": "THE DIAMONDEDGE PICK (Leon, 2026-07-20): one pick per game, one score, one star ladder, one record. The champion's qualifying plays lead; the v4 model fills quiet-champion games so the board is never empty. champion_v2 and the sealed research walk are untouched.",
   "record": {
     "overall": {
-      "n": 144,
-      "win": 72,
-      "loss": 67,
+      "n": 146,
+      "win": 73,
+      "loss": 68,
       "push": 5,
-      "roi": 0.0082,
-      "hit_rate": 0.518,
-      "units_flat": 1.136,
+      "roi": 0.0072,
+      "hit_rate": 0.5177,
+      "units_flat": 1.021,
       "units_weighted": {
-        "units": 0.903,
-        "staked": 204.5,
-        "roi": 0.0044,
+        "units": 1.288,
+        "staked": 209.0,
+        "roi": 0.0062,
         "n_offladder_flat_1u": 0
       }
     },
     "by_star_tier": {
       "5": {
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 42,
+        "win": 21,
+        "loss": 21,
         "push": 0,
-        "roi": null,
-        "hit_rate": null,
-        "units_flat": 0.0,
+        "roi": -0.0294,
+        "hit_rate": 0.5,
+        "units_flat": -1.234,
         "units_weighted": {
-          "units": 0.0,
-          "staked": 0.0,
-          "roi": null,
+          "units": -2.467,
+          "staked": 84.0,
+          "roi": -0.0294,
           "n_offladder_flat_1u": 0
-        }
+        },
+        "includes_expanded_n": 0
       },
       "4": {
-        "n": 81,
-        "win": 41,
-        "loss": 38,
+        "n": 41,
+        "win": 21,
+        "loss": 18,
         "push": 2,
-        "roi": 0.0022,
-        "hit_rate": 0.519,
-        "units_flat": 0.175,
+        "roi": 0.0364,
+        "hit_rate": 0.5385,
+        "units_flat": 1.419,
         "units_weighted": {
-          "units": 0.351,
-          "staked": 158.0,
-          "roi": 0.0022,
+          "units": 2.838,
+          "staked": 78.0,
+          "roi": 0.0364,
           "n_offladder_flat_1u": 0
-        }
+        },
+        "includes_expanded_n": 0
       },
       "3": {
-        "n": 33,
-        "win": 17,
+        "n": 34,
+        "win": 18,
         "loss": 16,
         "push": 0,
-        "roi": 0.0043,
-        "hit_rate": 0.5152,
-        "units_flat": 0.142,
+        "roi": 0.0293,
+        "hit_rate": 0.5294,
+        "units_flat": 0.998,
         "units_weighted": {
-          "units": 0.142,
-          "staked": 33.0,
-          "roi": 0.0043,
+          "units": 0.998,
+          "staked": 34.0,
+          "roi": 0.0293,
           "n_offladder_flat_1u": 0
-        }
+        },
+        "includes_expanded_n": 0
       },
       "2": {
         "n": 29,
-        "win": 14,
-        "loss": 12,
+        "win": 13,
+        "loss": 13,
         "push": 3,
-        "roi": 0.0699,
-        "hit_rate": 0.5385,
-        "units_flat": 1.819,
+        "roi": -0.0062,
+        "hit_rate": 0.5,
+        "units_flat": -0.162,
         "units_weighted": {
-          "units": 0.909,
+          "units": -0.081,
           "staked": 13.0,
-          "roi": 0.0699,
+          "roi": -0.0062,
           "n_offladder_flat_1u": 0
-        }
-      },
-      "2_expanded": {
-        "n": 1,
-        "win": 0,
-        "loss": 1,
-        "push": 0,
-        "roi": -1.0,
-        "hit_rate": 0.0,
-        "units_flat": -1.0,
-        "units_weighted": {
-          "units": -0.5,
-          "staked": 0.5,
-          "roi": -1.0,
-          "n_offladder_flat_1u": 0
-        }
+        },
+        "includes_expanded_n": 1
       }
     },
     "by_source": {
       "champion": {
-        "n": 84,
-        "win": 44,
-        "loss": 38,
+        "n": 86,
+        "win": 45,
+        "loss": 39,
         "push": 2,
-        "roi": 0.0276,
-        "hit_rate": 0.5366,
-        "units_flat": 2.266,
+        "roi": 0.0256,
+        "hit_rate": 0.5357,
+        "units_flat": 2.151,
         "units_weighted": {
-          "units": 3.802,
-          "staked": 149.5,
-          "roi": 0.0254,
+          "units": 3.696,
+          "staked": 153.5,
+          "roi": 0.0241,
           "n_offladder_flat_1u": 0
         }
       },
@@ -244,14 +239,14 @@
         "hit_rate": 0.4912,
         "units_flat": -1.13,
         "units_weighted": {
-          "units": -2.899,
-          "staked": 55.0,
-          "roi": -0.0527,
+          "units": -2.409,
+          "staked": 55.5,
+          "roi": -0.0434,
           "n_offladder_flat_1u": 0
         }
       }
     },
-    "n_unified_picks": 144,
+    "n_unified_picks": 146,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -300,9 +295,447 @@
         },
         "note": "BACKTEST (would-have) record \u2014 NOT a served record. The served expanded-band record accrues from EXPANDED_BAND_START under record.by_star_tier['2_expanded'], separately from core 2*."
       },
-      "note": "served_record is the ONLY record the expanded band has earned live (starts 0-0-0 at activation); `backtest` is the labeled would-have measurement that justified the band. The two are never merged."
+      "note": "served_record is the ONLY record the expanded band has earned live (starts 0-0-0 at activation); `backtest` is the labeled would-have measurement that justified the band. The two are never merged. DISPLAY (2026-07-25): expanded picks carry regular stars on the one ladder and are counted inside by_star_tier (each tier's includes_expanded_n says how many) \u2014 this block is the band's own separate grading, unchanged."
     },
-    "note": "ONE record over the unified product: exactly one graded pick per (date, game_pk) \u2014 champion-sourced picks have priority, model leans fill games the champion did not play; expanded-band fills (2026-07-24 on) are graded separately under by_star_tier['2_expanded']. by_source is DIAGNOSTIC ONLY; the champion subset equals the champion headline exactly, the model subset is the honest fill, and the two sum to overall. No pick is counted twice."
+    "insights": {
+      "equity_curve": [
+        {
+          "date": "2026-03-30",
+          "units_flat": -1.0,
+          "units_weighted": -2.0,
+          "n": 1
+        },
+        {
+          "date": "2026-03-31",
+          "units_flat": -1.15,
+          "units_weighted": -2.3,
+          "n": 5
+        },
+        {
+          "date": "2026-04-01",
+          "units_flat": 0.671,
+          "units_weighted": 0.501,
+          "n": 9
+        },
+        {
+          "date": "2026-04-03",
+          "units_flat": 4.136,
+          "units_weighted": 6.598,
+          "n": 13
+        },
+        {
+          "date": "2026-04-04",
+          "units_flat": 5.062,
+          "units_weighted": 8.45,
+          "n": 14
+        },
+        {
+          "date": "2026-04-05",
+          "units_flat": 6.971,
+          "units_weighted": 12.268,
+          "n": 16
+        },
+        {
+          "date": "2026-04-08",
+          "units_flat": 4.971,
+          "units_weighted": 8.268,
+          "n": 18
+        },
+        {
+          "date": "2026-04-12",
+          "units_flat": 4.84,
+          "units_weighted": 9.007,
+          "n": 20
+        },
+        {
+          "date": "2026-04-14",
+          "units_flat": 4.84,
+          "units_weighted": 9.007,
+          "n": 22
+        },
+        {
+          "date": "2026-04-15",
+          "units_flat": 2.84,
+          "units_weighted": 5.007,
+          "n": 24
+        },
+        {
+          "date": "2026-04-16",
+          "units_flat": 2.674,
+          "units_weighted": 4.674,
+          "n": 26
+        },
+        {
+          "date": "2026-04-18",
+          "units_flat": 4.546,
+          "units_weighted": 8.418,
+          "n": 28
+        },
+        {
+          "date": "2026-04-19",
+          "units_flat": 5.431,
+          "units_weighted": 10.188,
+          "n": 29
+        },
+        {
+          "date": "2026-04-20",
+          "units_flat": 5.431,
+          "units_weighted": 10.188,
+          "n": 30
+        },
+        {
+          "date": "2026-04-21",
+          "units_flat": 6.316,
+          "units_weighted": 11.958,
+          "n": 31
+        },
+        {
+          "date": "2026-04-22",
+          "units_flat": 5.296,
+          "units_weighted": 9.918,
+          "n": 34
+        },
+        {
+          "date": "2026-04-25",
+          "units_flat": 4.296,
+          "units_weighted": 7.918,
+          "n": 35
+        },
+        {
+          "date": "2026-04-26",
+          "units_flat": 4.267,
+          "units_weighted": 7.86,
+          "n": 37
+        },
+        {
+          "date": "2026-04-28",
+          "units_flat": 3.267,
+          "units_weighted": 5.86,
+          "n": 38
+        },
+        {
+          "date": "2026-04-29",
+          "units_flat": 1.1,
+          "units_weighted": 1.527,
+          "n": 42
+        },
+        {
+          "date": "2026-04-30",
+          "units_flat": -0.9,
+          "units_weighted": -2.473,
+          "n": 44
+        },
+        {
+          "date": "2026-05-01",
+          "units_flat": -2.9,
+          "units_weighted": -5.473,
+          "n": 46
+        },
+        {
+          "date": "2026-05-02",
+          "units_flat": -1.991,
+          "units_weighted": -3.655,
+          "n": 47
+        },
+        {
+          "date": "2026-05-03",
+          "units_flat": -2.991,
+          "units_weighted": -5.655,
+          "n": 48
+        },
+        {
+          "date": "2026-05-05",
+          "units_flat": -0.169,
+          "units_weighted": -0.011,
+          "n": 51
+        },
+        {
+          "date": "2026-05-06",
+          "units_flat": -1.169,
+          "units_weighted": -1.011,
+          "n": 52
+        },
+        {
+          "date": "2026-05-10",
+          "units_flat": -1.299,
+          "units_weighted": -1.272,
+          "n": 54
+        },
+        {
+          "date": "2026-05-11",
+          "units_flat": -2.299,
+          "units_weighted": -3.272,
+          "n": 55
+        },
+        {
+          "date": "2026-05-12",
+          "units_flat": -1.452,
+          "units_weighted": -1.577,
+          "n": 56
+        },
+        {
+          "date": "2026-05-14",
+          "units_flat": -3.452,
+          "units_weighted": -5.577,
+          "n": 58
+        },
+        {
+          "date": "2026-05-15",
+          "units_flat": -2.452,
+          "units_weighted": -3.577,
+          "n": 59
+        },
+        {
+          "date": "2026-05-16",
+          "units_flat": 0.255,
+          "units_weighted": 0.952,
+          "n": 62
+        },
+        {
+          "date": "2026-05-19",
+          "units_flat": -0.745,
+          "units_weighted": -1.048,
+          "n": 63
+        },
+        {
+          "date": "2026-05-24",
+          "units_flat": 0.812,
+          "units_weighted": 0.356,
+          "n": 67
+        },
+        {
+          "date": "2026-05-27",
+          "units_flat": 2.689,
+          "units_weighted": 4.111,
+          "n": 69
+        },
+        {
+          "date": "2026-05-30",
+          "units_flat": 3.594,
+          "units_weighted": 4.968,
+          "n": 72
+        },
+        {
+          "date": "2026-06-03",
+          "units_flat": 4.575,
+          "units_weighted": 6.929,
+          "n": 73
+        },
+        {
+          "date": "2026-06-05",
+          "units_flat": 5.444,
+          "units_weighted": 8.668,
+          "n": 74
+        },
+        {
+          "date": "2026-06-09",
+          "units_flat": 4.444,
+          "units_weighted": 6.668,
+          "n": 75
+        },
+        {
+          "date": "2026-07-02",
+          "units_flat": 3.444,
+          "units_weighted": 4.668,
+          "n": 76
+        },
+        {
+          "date": "2026-07-03",
+          "units_flat": 2.444,
+          "units_weighted": 2.668,
+          "n": 77
+        },
+        {
+          "date": "2026-07-07",
+          "units_flat": 3.484,
+          "units_weighted": 3.188,
+          "n": 81
+        },
+        {
+          "date": "2026-07-08",
+          "units_flat": 2.484,
+          "units_weighted": 2.688,
+          "n": 86
+        },
+        {
+          "date": "2026-07-09",
+          "units_flat": 2.534,
+          "units_weighted": 1.738,
+          "n": 88
+        },
+        {
+          "date": "2026-07-10",
+          "units_flat": -1.486,
+          "units_weighted": -1.782,
+          "n": 94
+        },
+        {
+          "date": "2026-07-11",
+          "units_flat": -1.505,
+          "units_weighted": -2.292,
+          "n": 98
+        },
+        {
+          "date": "2026-07-12",
+          "units_flat": 0.345,
+          "units_weighted": -0.562,
+          "n": 104
+        },
+        {
+          "date": "2026-07-17",
+          "units_flat": 0.25,
+          "units_weighted": 0.819,
+          "n": 109
+        },
+        {
+          "date": "2026-07-18",
+          "units_flat": -1.824,
+          "units_weighted": -0.756,
+          "n": 115
+        },
+        {
+          "date": "2026-07-19",
+          "units_flat": -0.814,
+          "units_weighted": -0.246,
+          "n": 122
+        },
+        {
+          "date": "2026-07-20",
+          "units_flat": 3.277,
+          "units_weighted": 3.916,
+          "n": 128
+        },
+        {
+          "date": "2026-07-21",
+          "units_flat": 4.252,
+          "units_weighted": 5.46,
+          "n": 135
+        },
+        {
+          "date": "2026-07-22",
+          "units_flat": 2.136,
+          "units_weighted": 2.403,
+          "n": 141
+        },
+        {
+          "date": "2026-07-24",
+          "units_flat": 1.136,
+          "units_weighted": 1.403,
+          "n": 144
+        },
+        {
+          "date": "2026-07-25",
+          "units_flat": 1.021,
+          "units_weighted": 1.288,
+          "n": 146
+        }
+      ],
+      "by_star_perf": {
+        "5": {
+          "n": 42,
+          "hit": 0.5,
+          "roi": -0.0294
+        },
+        "4": {
+          "n": 41,
+          "hit": 0.5385,
+          "roi": 0.0364
+        },
+        "3": {
+          "n": 34,
+          "hit": 0.5294,
+          "roi": 0.0293
+        },
+        "2": {
+          "n": 29,
+          "hit": 0.5,
+          "roi": -0.0062
+        }
+      },
+      "calibration_buckets": [
+        {
+          "bucket_mid": 0.475,
+          "n": 9,
+          "predicted": 0.4791,
+          "realized": 0.6667
+        },
+        {
+          "bucket_mid": 0.525,
+          "n": 94,
+          "predicted": 0.5264,
+          "realized": 0.4574
+        },
+        {
+          "bucket_mid": 0.575,
+          "n": 38,
+          "predicted": 0.5646,
+          "realized": 0.6316
+        }
+      ],
+      "monthly": [
+        {
+          "month": "2026-03",
+          "n": 5,
+          "win": 2,
+          "loss": 3,
+          "push": 0,
+          "hit": 0.4,
+          "roi": -0.23,
+          "units_flat": -1.15
+        },
+        {
+          "month": "2026-04",
+          "n": 39,
+          "win": 20,
+          "loss": 18,
+          "push": 1,
+          "hit": 0.5263,
+          "roi": 0.0066,
+          "units_flat": 0.25
+        },
+        {
+          "month": "2026-05",
+          "n": 28,
+          "win": 17,
+          "loss": 11,
+          "push": 0,
+          "hit": 0.6071,
+          "roi": 0.1605,
+          "units_flat": 4.494
+        },
+        {
+          "month": "2026-06",
+          "n": 3,
+          "win": 2,
+          "loss": 1,
+          "push": 0,
+          "hit": 0.6667,
+          "roi": 0.2833,
+          "units_flat": 0.85
+        },
+        {
+          "month": "2026-07",
+          "n": 71,
+          "win": 32,
+          "loss": 35,
+          "push": 4,
+          "hit": 0.4776,
+          "roi": -0.0511,
+          "units_flat": -3.423
+        }
+      ],
+      "streaks": {
+        "current": {
+          "type": "loss",
+          "length": 1
+        },
+        "max_win_streak": 7,
+        "max_loss_streak": 5,
+        "note": "pushes are neutral \u2014 they neither extend nor break a streak"
+      },
+      "basis": "honest aggregates over the SAME one-per-game graded unified picks as record.overall \u2014 nothing re-graded, no new claims. equity_curve is CUMULATIVE (units_flat = 1u per pick at the row's own executable price; units_weighted = tier-ladder staked, expanded fills 0.5u); by_star_perf uses the current v3.3 display bands over all history; calibration_buckets compare the served side's model probability to the realized win rate (pushes excluded); streaks treat pushes as neutral."
+    },
+    "note": "ONE record over the unified product: exactly one graded pick per (date, game_pk) \u2014 champion-sourced picks have priority, model leans fill games the champion did not play; expanded-band fills (2026-07-24 on) are graded separately under expanded_band.served_record and fold into by_star_tier with includes_expanded_n. by_source is DIAGNOSTIC ONLY; the champion subset equals the champion headline exactly, the model subset is the honest fill, and the two sum to overall. No pick is counted twice. by_star_tier buckets ALL history under the CURRENT frozen v3.3 display bands (re-derived from each row's stored score; ledgers on disk untouched)."
   },
   "by_date_record": {
     "2026-03-30": {
@@ -446,7 +879,7 @@
       "hit_rate": 1.0,
       "roi": 0.936,
       "units": 1.872,
-      "units_weighted": 2.734,
+      "units_weighted": 3.744,
       "source": "champion"
     },
     "2026-04-19": {
@@ -794,7 +1227,7 @@
       "hit_rate": 0.0,
       "roi": -1.0,
       "units": -1.0,
-      "units_weighted": -1.0,
+      "units_weighted": -2.0,
       "source": "champion"
     },
     "2026-07-07": {
@@ -806,7 +1239,7 @@
       "hit_rate": 0.6667,
       "roi": 0.3467,
       "units": 1.04,
-      "units_weighted": 0.02,
+      "units_weighted": 0.52,
       "source": "model"
     },
     "2026-07-08": {
@@ -842,7 +1275,7 @@
       "hit_rate": 0.1667,
       "roi": -0.6699,
       "units": -4.02,
-      "units_weighted": -3.51,
+      "units_weighted": -3.52,
       "source": "model"
     },
     "2026-07-11": {
@@ -954,6 +1387,18 @@
       "source": "model"
     },
     "2026-07-25": {
+      "n_picks": 2,
+      "n_graded": 2,
+      "wins": 1,
+      "losses": 1,
+      "pushes": 0,
+      "hit_rate": 0.5,
+      "roi": -0.0575,
+      "units": -0.115,
+      "units_weighted": -0.115,
+      "source": "champion"
+    },
+    "2026-07-26": {
       "n_picks": 0,
       "n_graded": 0,
       "wins": 0,
@@ -972,27 +1417,38 @@
       "game_pk": 822948,
       "matchup": "Cleveland Guardians @ Tampa Bay Rays",
       "source": "model",
-      "stars": 4,
+      "stars": 5,
       "score": 4.86,
       "side": "over",
       "line": 7.5,
       "all_pass": false
+    },
+    "2026-07-26": {
+      "featured_game_id": "2026-07-26-Los Angeles Angels-San Francisco Giants-823194",
+      "game_pk": 823194,
+      "matchup": "Los Angeles Angels @ San Francisco Giants",
+      "source": "model",
+      "stars": 1,
+      "score": 1.07,
+      "side": "under",
+      "line": 8.0,
+      "all_pass": true,
+      "note": "nothing playable today \u2014 featured is the highest-score PASS lean, shown for interest; it is NOT a bet"
     }
   },
   "featured_game_id": "2026-07-25-Cleveland Guardians-Tampa Bay Rays-822948",
   "board_census": {
-    "n_games": 15,
+    "n_games": 17,
     "n_picks": 8,
-    "n_passes": 7,
+    "n_passes": 9,
     "n_champion_sourced": 3,
     "n_model_sourced": 5,
     "n_expanded_band": 0,
     "stars": {
-      "5": 0,
-      "4": 4,
-      "3": 3,
-      "2": 1,
-      "2_expanded": 0
+      "5": 1,
+      "4": 5,
+      "3": 1,
+      "2": 1
     }
   },
   "games": [
@@ -1023,6 +1479,7 @@
         "our_prob": 0.4767,
         "ev": 0.0123,
         "expanded_band": false,
+        "certified": false,
         "pass_reason": "model 47.7% < break-even 51.7% at -107 \u2014 priced out (-EV)",
         "pass_why": "ev_gate",
         "signals": []
@@ -1047,14 +1504,15 @@
         "price": -102,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T20:28:45Z",
+        "timestamp": "2026-07-25T20:28:45Z",
         "lead_time": "T-3h",
         "source": "model",
         "our_prob": 0.4895,
         "ev": 0.011,
         "expanded_band": false,
+        "certified": false,
         "pass_reason": "model 48.9% < break-even 50.5% at -102 \u2014 priced out (-EV)",
         "pass_why": "ev_gate",
         "signals": [
@@ -1088,14 +1546,15 @@
         "price": 107,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T20:28:45Z",
+        "timestamp": "2026-07-25T20:28:45Z",
         "lead_time": "T-24h",
         "source": "model",
         "our_prob": 0.5097,
         "ev": 0.015,
         "expanded_band": false,
+        "certified": false,
         "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0050 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
         "pass_why": "price_only",
         "signals": [
@@ -1125,14 +1584,15 @@
         "price": -105,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T20:28:45Z",
+        "timestamp": "2026-07-25T20:28:45Z",
         "lead_time": "T-12h",
         "source": "model",
         "our_prob": 0.4673,
         "ev": 0.0401,
         "expanded_band": false,
+        "certified": false,
         "signals": [
           {
             "text": "Home starter dominant lately (.213 xwOBA L5)",
@@ -1160,14 +1620,15 @@
         "price": -105,
         "suggested_units": 0.5,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T20:28:45Z",
+        "timestamp": "2026-07-25T20:28:45Z",
         "lead_time": "T-24h",
         "source": "model",
         "our_prob": 0.5199,
         "ev": 0.0151,
         "expanded_band": false,
+        "certified": false,
         "signals": [
           {
             "text": "Both bullpens heavily worked last 3 days",
@@ -1195,14 +1656,15 @@
         "price": 111,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T22:11:28Z",
+        "timestamp": "2026-07-25T22:11:28Z",
         "lead_time": "T-3h",
         "source": "model",
         "our_prob": 0.4547,
         "ev": 0.1506,
         "expanded_band": false,
+        "certified": false,
         "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
         "pass_why": "junk_cell",
         "signals": []
@@ -1221,20 +1683,21 @@
         "side": "over",
         "line": 7.5,
         "vegas_line": 7.5,
-        "stars": 4,
+        "stars": 5,
         "score": 4.86,
-        "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
+        "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
         "price": -105,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T22:11:28Z",
+        "timestamp": "2026-07-25T22:11:28Z",
         "lead_time": "T-12h",
         "source": "model",
         "our_prob": 0.5519,
         "ev": 0.0775,
         "expanded_band": false,
+        "certified": false,
         "signals": [
           {
             "text": "Both bullpens heavily worked last 3 days",
@@ -1256,20 +1719,21 @@
         "side": "over",
         "line": 7.5,
         "vegas_line": 7.5,
-        "stars": 3,
-        "score": 3.74,
-        "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
-        "price": -113,
-        "suggested_units": 1.0,
+        "stars": 4,
+        "score": 4.1,
+        "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
+        "price": -111,
+        "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": "2026-07-25T12:41:13Z",
-        "lead_time": "T-12h",
+        "locked": true,
+        "locked_at_utc": "2026-07-25T22:45:41Z",
+        "timestamp": "2026-07-25T22:45:41Z",
+        "lead_time": "T-1h",
         "source": "champion",
         "our_prob": 0.5438,
-        "ev": 0.025,
+        "ev": 0.0337,
         "expanded_band": false,
+        "certified": false,
         "signals": []
       }
     },
@@ -1283,25 +1747,26 @@
       "first_pitch_utc": "2026-07-25T23:05:00+00:00",
       "pick": {
         "status": "PASS",
-        "side": "over",
+        "side": "under",
         "line": 9.0,
         "vegas_line": 9.0,
         "stars": 1,
-        "score": 0.62,
-        "star_tier": "Pass (-EV / no real price)",
-        "price": -105,
+        "score": 1.04,
+        "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+        "price": 118,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
-        "lead_time": "T-12h",
+        "locked": true,
+        "locked_at_utc": "2026-07-25T23:19:59Z",
+        "timestamp": "2026-07-25T23:19:59Z",
+        "lead_time": "T-3h",
         "source": "model",
-        "our_prob": 0.5053,
-        "ev": -0.0135,
+        "our_prob": 0.5008,
+        "ev": 0.0883,
         "expanded_band": false,
-        "pass_reason": "model 50.5% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate",
+        "certified": false,
+        "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0027 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+        "pass_why": "price_only",
         "signals": []
       }
     },
@@ -1317,21 +1782,22 @@
         "status": "PICK",
         "side": "over",
         "line": 10.5,
-        "vegas_line": 10.5,
-        "stars": 3,
-        "score": 3.93,
-        "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
-        "price": -102,
-        "suggested_units": 1.0,
+        "vegas_line": 10.0,
+        "stars": 4,
+        "score": 4.27,
+        "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
+        "price": 100,
+        "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": "2026-07-25T12:41:13Z",
-        "lead_time": "T-12h",
+        "locked": true,
+        "locked_at_utc": "2026-07-25T23:19:59Z",
+        "timestamp": "2026-07-25T23:19:59Z",
+        "lead_time": "T-1h",
         "source": "champion",
         "our_prob": 0.5208,
-        "ev": 0.0314,
+        "ev": 0.0416,
         "expanded_band": false,
+        "certified": false,
         "signals": []
       }
     },
@@ -1345,25 +1811,26 @@
       "first_pitch_utc": "2026-07-25T23:10:00+00:00",
       "pick": {
         "status": "PASS",
-        "side": "under",
-        "line": 8.5,
-        "vegas_line": 8.5,
+        "side": "over",
+        "line": 9.0,
+        "vegas_line": 9.0,
         "stars": 1,
-        "score": 0.14,
-        "star_tier": "Pass (-EV / no real price)",
-        "price": 100,
+        "score": 1.27,
+        "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+        "price": 116,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
-        "lead_time": "T-12h",
+        "locked": true,
+        "locked_at_utc": "2026-07-25T23:19:59Z",
+        "timestamp": "2026-07-25T23:19:59Z",
+        "lead_time": "T-3h",
         "source": "model",
-        "our_prob": 0.5133,
-        "ev": -0.0266,
+        "our_prob": 0.5056,
+        "ev": 0.0921,
         "expanded_band": false,
-        "pass_reason": "model 51.3% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-        "pass_why": "ev_gate",
+        "certified": false,
+        "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0056 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+        "pass_why": "price_only",
         "signals": []
       }
     },
@@ -1382,18 +1849,19 @@
         "vegas_line": 8.0,
         "stars": 4,
         "score": 4.28,
-        "star_tier": "Strong (v3.2: score 4.00-4.99 \u2014 the top ~third of the season playable strength percentile)",
+        "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
         "price": 100,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T23:19:59Z",
+        "timestamp": "2026-07-25T23:19:59Z",
         "lead_time": "T-12h",
         "source": "model",
         "our_prob": 0.5242,
         "ev": 0.0485,
         "expanded_band": false,
+        "certified": false,
         "signals": [
           {
             "text": "Away starter getting shelled (.362 xwOBA L5)",
@@ -1421,14 +1889,15 @@
         "price": 112,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": "2026-07-25T19:18:59Z",
+        "locked": true,
+        "locked_at_utc": "2026-07-25T23:19:59Z",
+        "timestamp": "2026-07-25T23:19:59Z",
         "lead_time": "T-3h",
         "source": "champion",
         "our_prob": 0.5175,
         "ev": 0.0971,
         "expanded_band": false,
+        "certified": false,
         "signals": []
       }
     },
@@ -1443,24 +1912,25 @@
       "pick": {
         "status": "PASS",
         "side": "under",
-        "line": 8.0,
-        "vegas_line": 8.0,
+        "line": 7.5,
+        "vegas_line": 7.5,
         "stars": 1,
-        "score": 1.38,
-        "star_tier": "Pass (-EV / no real price)",
-        "price": -105,
+        "score": 1.73,
+        "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+        "price": 100,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
-        "lead_time": "T-24h",
+        "locked": true,
+        "locked_at_utc": "2026-07-25T23:19:59Z",
+        "timestamp": "2026-07-25T23:19:59Z",
+        "lead_time": "T-3h",
         "source": "model",
-        "our_prob": 0.4872,
-        "ev": 0.0011,
+        "our_prob": 0.4729,
+        "ev": 0.0542,
         "expanded_band": false,
-        "pass_reason": "model 48.7% < break-even 51.2% at -105 \u2014 priced out (-EV)",
-        "pass_why": "ev_gate",
+        "certified": false,
+        "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
+        "pass_why": "junk_cell",
         "signals": []
       }
     },
@@ -1479,18 +1949,85 @@
         "vegas_line": 7.5,
         "stars": 3,
         "score": 3.89,
-        "star_tier": "Good (v3.2: score 3.00-3.99 \u2014 the middle ~third of the season playable strength percentile)",
+        "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
         "price": -107,
         "suggested_units": 1.0,
+        "result": null,
+        "locked": true,
+        "locked_at_utc": "2026-07-25T23:19:59Z",
+        "timestamp": "2026-07-25T23:19:59Z",
+        "lead_time": "T-24h",
+        "source": "model",
+        "our_prob": 0.5337,
+        "ev": 0.0325,
+        "expanded_band": false,
+        "certified": false,
+        "signals": []
+      }
+    },
+    {
+      "game_id": "2026-07-26-Los Angeles Angels-San Francisco Giants-823194",
+      "game_pk": 823194,
+      "date": "2026-07-26",
+      "away": "Los Angeles Angels",
+      "home": "San Francisco Giants",
+      "matchup": "Los Angeles Angels @ San Francisco Giants",
+      "first_pitch_utc": "2026-07-26T20:05:00+00:00",
+      "pick": {
+        "status": "PASS",
+        "side": "under",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "stars": 1,
+        "score": 1.07,
+        "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+        "price": 107,
+        "suggested_units": null,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
         "timestamp": null,
         "lead_time": "T-24h",
         "source": "model",
-        "our_prob": 0.5337,
-        "ev": 0.0325,
+        "our_prob": 0.508,
+        "ev": 0.0185,
         "expanded_band": false,
+        "certified": false,
+        "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0031 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+        "pass_why": "price_only",
+        "signals": []
+      }
+    },
+    {
+      "game_id": "2026-07-26-New York Yankees-Philadelphia Phillies-823433",
+      "game_pk": 823433,
+      "date": "2026-07-26",
+      "away": "New York Yankees",
+      "home": "Philadelphia Phillies",
+      "matchup": "New York Yankees @ Philadelphia Phillies",
+      "first_pitch_utc": "2026-07-26T23:20:00+00:00",
+      "pick": {
+        "status": "PASS",
+        "side": "under",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "stars": 1,
+        "score": 0.84,
+        "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+        "price": 110,
+        "suggested_units": null,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "timestamp": null,
+        "lead_time": "T-24h",
+        "source": "model",
+        "our_prob": 0.5118,
+        "ev": 0.0251,
+        "expanded_band": false,
+        "certified": false,
+        "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0004 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+        "pass_why": "price_only",
         "signals": []
       }
     }
