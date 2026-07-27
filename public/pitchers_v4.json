@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-07-27T22:08:28Z",
+ "generated_utc": "2026-07-27T22:42:37Z",
  "by_game": {
   "822706": {
    "away": {
@@ -4285,7 +4285,8 @@
       "res": "ND"
      }
     ],
-    "team": "PHI"
+    "team": "PHI",
+    "actual_starter": true
    },
    "home": {
     "id": 663969,
@@ -4402,7 +4403,8 @@
       "res": "W"
      }
     ],
-    "team": "MIA"
+    "team": "MIA",
+    "actual_starter": true
    }
   },
   "824001": {
@@ -4757,7 +4759,8 @@
       "res": "L"
      }
     ],
-    "team": "BAL"
+    "team": "BAL",
+    "actual_starter": true
    },
    "home": {
     "id": 672456,
@@ -4874,7 +4877,8 @@
       "res": "ND"
      }
     ],
-    "team": "DET"
+    "team": "DET",
+    "actual_starter": true
    }
   },
   "824490": {

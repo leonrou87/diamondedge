@@ -2703,10 +2703,22 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .lab-count.accruing{color:#9fb6dd;border-color:rgba(110,161,255,.26);background:rgba(110,161,255,.08)}
 .lab-count.queued{color:var(--ink3)}
 .lab-count.grave{color:var(--ink3);border-color:var(--line3);background:rgba(147,161,184,.07)}
+/* masthead freshness line — the status board's heartbeat ("Live status · updated 12m ago").
+   Ticks client-side; past 2h the .stale class mutes it to a quiet warn amber. */
+.lab-fresh{display:flex;align-items:center;gap:7px;margin-top:12px;font-family:var(--mono);font-weight:600;font-size:10.5px;letter-spacing:.04em;color:var(--ink3)}
+.lab-fresh-dot{width:6px;height:6px;border-radius:50%;background:#3ee6a8;box-shadow:0 0 0 0 rgba(62,230,168,.5);animation:labFreshPulse 2.2s ease-out infinite;flex-shrink:0}
+@keyframes labFreshPulse{0%{box-shadow:0 0 0 0 rgba(62,230,168,.5)}70%{box-shadow:0 0 0 6px rgba(62,230,168,0)}100%{box-shadow:0 0 0 0 rgba(62,230,168,0)}}
+.lab-fresh.stale{color:#c99a5b}
+.lab-fresh.stale .lab-fresh-dot{background:#c99a5b;animation:none;box-shadow:none}
+@media(prefers-reduced-motion:reduce){.lab-fresh-dot{animation:none}}
 /* section chrome */
 .lab-sect{margin:26px 0 0}
 .lab-sect:first-of-type{margin-top:8px}
 .lab-sect-head{display:flex;align-items:baseline;gap:9px}
+/* the "running right now" heartbeat on the In-the-fire group header — deliberately slower
+   and softer than the per-card dot so the section hums rather than blinks */
+.lab-sect-dot{width:7px;height:7px;border-radius:50%;background:var(--golddeep);box-shadow:0 0 0 0 rgba(224,172,32,.4);animation:labPulse 2.8s ease-out infinite;flex-shrink:0;align-self:center}
+@media(prefers-reduced-motion:reduce){.lab-sect-dot{animation:none}}
 .lab-sect-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
 .lab-sect.fire .lab-sect-k{color:var(--golddeep)}
 .lab-sect.shipped .lab-sect-k{color:#3ee6a8}
@@ -2722,9 +2734,11 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .lab-card.shipped{background-image:linear-gradient(150deg,rgba(25,197,138,.08),rgba(255,255,255,0) 58%)}
 .lab-card.grave{opacity:.68;border-color:var(--line3);box-shadow:none;background:rgba(16,23,38,.5)}
 .lab-card.grave:hover,.lab-card.grave[open]{opacity:.92}
-.lab-card summary{list-style:none;cursor:pointer;padding:13px 14px 12px;min-width:0}
+.lab-card summary{list-style:none;cursor:pointer;padding:13px 14px 12px;min-width:0;position:relative}
 .lab-card summary::-webkit-details-marker{display:none}
-.lab-top{display:flex;align-items:center;gap:7px;min-width:0}
+/* wrap-friendly top row: status chip + ETA sit paired on the left; the caret is pinned
+   top-right OUT of the flex flow so a long ETA can wrap without dragging it around */
+.lab-top{display:flex;align-items:center;flex-wrap:wrap;gap:6px 7px;min-width:0;padding-right:20px}
 .lab-chip{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;font-family:var(--disp);font-weight:700;font-size:9px;
   letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:3.5px 9px;border:1px solid var(--line3);color:var(--ink2);background:rgba(210,224,247,.05)}
 .lab-chip.fire{color:var(--golddeep);border-color:rgba(224,172,32,.36);background:rgba(224,172,32,.1)}
@@ -2736,11 +2750,12 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .lab-dot{width:6px;height:6px;border-radius:50%;background:var(--golddeep);box-shadow:0 0 0 0 rgba(224,172,32,.55);animation:labPulse 1.9s ease-out infinite;flex-shrink:0}
 @keyframes labPulse{0%{box-shadow:0 0 0 0 rgba(224,172,32,.55)}70%{box-shadow:0 0 0 7px rgba(224,172,32,0)}100%{box-shadow:0 0 0 0 rgba(224,172,32,0)}}
 @media(prefers-reduced-motion:reduce){.lab-dot{animation:none}}
-.lab-cat{font-family:var(--mono);font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink4);flex-shrink:0}
-.lab-eta{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:9px;letter-spacing:.04em;color:var(--ink3);
-  border:1px solid var(--line3);border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
-.lab-caret{margin-left:auto;color:var(--ink4);font-size:15px;line-height:1;transition:transform .2s ease;flex-shrink:0}
-.lab-eta + .lab-caret,.lab-eta ~ .lab-caret{margin-left:0}
+.lab-cat{font-family:var(--mono);font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink4);flex-shrink:0;margin-left:auto}
+/* ETA is first-class on in-the-fire cards: gold like the pulsing status dot it sits beside,
+   and allowed to wrap (long strings like "first graded results tonight" stay graceful at 375) */
+.lab-eta{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.04em;line-height:1.35;color:var(--golddeep);
+  border:1px solid rgba(224,172,32,.3);background:rgba(224,172,32,.08);border-radius:999px;padding:2.5px 9px;white-space:normal;min-width:0}
+.lab-caret{position:absolute;top:14px;right:13px;color:var(--ink4);font-size:15px;line-height:1;transition:transform .2s ease;flex-shrink:0}
 .lab-card[open] .lab-caret{transform:rotate(90deg)}
 .lab-title{font-family:var(--disp);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.2;color:var(--ink);margin-top:9px}
 .lab-tagline{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink2);margin-top:4px}
@@ -2749,7 +2764,11 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .lab-result{font-family:var(--mono);font-weight:600;font-size:10.5px;line-height:1.5;margin-top:7px}
 .lab-result.shipped{color:#3ee6a8}
 .lab-result.grave{color:#d9909e}
-.lab-latest{font-family:var(--sans);font-size:11px;line-height:1.5;color:var(--ink3);margin-top:8px;padding-top:7px;border-top:1px dashed rgba(210,224,247,.1)}
+/* "Latest" IS the status update — a shade heavier than before so it can't be skimmed past;
+   one-line clamp on the closed face, full text once the card is open */
+.lab-latest{font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink2);margin-top:8px;padding-top:7px;border-top:1px dashed rgba(210,224,247,.12)}
+.lab-latest-k{font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc2);margin-right:2px}
+.lab-card:not([open]) .lab-latest{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 /* timeline: started → eta on one thin line; the fill doubles as progress */
 .lab-time{display:flex;align-items:center;gap:8px;margin-top:10px}
 .lab-t0,.lab-t1{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink4);white-space:nowrap;flex-shrink:0}

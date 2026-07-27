@@ -1,23 +1,23 @@
 {
- "generated_utc": "2026-07-27T21:04:20Z",
+ "generated_utc": "2026-07-27T22:50:52Z",
  "summary": {
   "shipped": 13,
-  "testing": 0,
-  "accruing": 6,
+  "testing": 4,
+  "accruing": 5,
   "queued": 0,
-  "closed": 21
+  "closed": 29
  },
  "items": [
   {
    "id": "spreads_return",
    "title": "Spreads return (run lines)",
    "tagline": "Run-line calls are back on every game tile \u2014 as a brand-new stream that starts 0-0-0 and gets graded in public from day one.",
-   "status": "accruing",
+   "status": "live_testing",
    "category": "model",
-   "progress_pct": 25,
+   "progress_pct": 60,
    "started": "2026-07-27",
-   "eta": "accruing live",
-   "latest": "07-27: engine verdict landed \u2014 BLOCKED (margin fitness gate failed; the run-line market beat every arm tested, including the no-sim control). Spreads stay honest leans \u2014 no bet path opens.",
+   "eta": "first graded results tonight",
+   "latest": "2026-07-27: 11 run-line leans served today; the first graded results land tonight \u2014 record starts honest at 0-0-0",
    "detail": "Spreads were removed from the product on 07-07 and return on Leon's call as a NEW, separately-graded, activation-dated stream: the record starts 0-0-0 on 07-27, every stated side is locked at first pitch and graded at the real locked price, and nothing is retro-credited or blended with a backtest. Honesty posture: the stream is UNPROVEN and serves clearly-labeled LEANS only \u2014 never a bet. The run-line engine test that could have opened a bet path reported the same day: BLOCKED \u2014 the simulator (validated on totals) fails its margin fitness gate (it carries no home-field advantage), and even set aside, the de-vigged run-line market beat every declared arm on Brier, including the moneyline-only control. So the market's run-line price is genuinely informative and our leans are exactly that: leans, graded in public until something real is earned. The pre-pivot spread machinery was adjudicated a research null and is never revived as credit.",
    "result": null
   },
@@ -428,9 +428,9 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "done",
-   "latest": "2026-07-26: verified by actually running the installer \u2014 it now safely skips healthy jobs",
+   "latest": "2026-07-27: picks-history architecture rebuilt \u2014 locked picks now provably immutable, hourly served-vs-displayed alarm, honest markers on thin days",
    "detail": "Config files in the repo had drifted from what actually runs. Reinstalling would have broken six jobs two different ways: three crash on startup, three more write logs somewhere background jobs are not allowed. Separately, a failing record check turned out not to be a grading bug \u2014 two ledgers were counting different populations \u2014 so it was replaced with five sharper checks that name the offending game if a real gap ever appears.",
-   "result": "Installer safe and idempotent; record selftests 48 pass/1 fail -> 56 pass/0 fail"
+   "result": "Yesterday fully restored (15 games, 4 picks); 3 silently-dropped locked picks recovered; 20/20 byte-stability proof"
   },
   {
    "id": "lineups-answered",
@@ -522,6 +522,146 @@
    "latest": "2026-07-27: all four calibration fixes worked; the certified engine now TIES the live market at the flagged instant \u2014 and loses at any price you could actually get",
    "detail": "This was the one corner never tested, with zero peeks: late innings, high-scoring environments, hot games. The calibration round genuinely fixed the engine (the 0.9-run under-projection closed to near zero). The result: our simulator now knows exactly as much as the live late-inning market \u2014 and nothing more. At executable prices the book is decisively ahead in every bucket, season, side, and book. The map of our markets is complete.",
    "result": "NULL in all three certified buckets; frictionless LATE is a genuine tie (zero edge); executable -4.5% over 26,320 bets. The keepers: a certified conditional engine and a fitness harness."
+  },
+  {
+   "id": "moon-llm-forecaster",
+   "title": "LLM as forecaster",
+   "tagline": "Ask a frontier AI to price every game from pregame facts \u2014 on 2026 games it provably cannot have memorized.",
+   "status": "building",
+   "category": "model",
+   "progress_pct": 70,
+   "started": "2026-07-27",
+   "eta": "needs 1 login",
+   "latest": "2026-07-27: BLOCKED on a one-time login \u2014 fully built and frozen; one command from Leon grades 437 games end to end",
+   "detail": "Ask a frontier AI to price every game from pregame facts \u2014 on 2026 games it provably cannot have memorized. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed."
+  },
+  {
+   "id": "moon-llm-news",
+   "title": "LLM as news reader",
+   "tagline": "Mine injury whispers, bullpen notes and manager quotes from timestamped news \u2014 the one information channel never tested.",
+   "status": "building",
+   "category": "model",
+   "progress_pct": 70,
+   "started": "2026-07-27",
+   "eta": "auto-resume",
+   "latest": "2026-07-27: on standby waiting for the news-archive probe; resumes automatically",
+   "detail": "Mine injury whispers, bullpen notes and manager quotes from timestamped news \u2014 the one information channel never tested. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed."
+  },
+  {
+   "id": "moon-close-forecast",
+   "title": "Predict the closing line",
+   "tagline": "Stop predicting the game; predict where the LINE will move. Getting a better number than close is profit even if close is unbeatable.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: the current number forecasts its own close better than our model; betting predicted drift loses 3.5-4.8 cents to the vig",
+   "detail": "Stop predicting the game; predict where the LINE will move. Getting a better number than close is profit even if close is unbeatable. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "the current number forecasts its own close better than our model; betting predicted drift loses 3.5-4.8 cents to the vig"
+  },
+  {
+   "id": "moon-sun-shadow",
+   "title": "Sun & shadow geometry",
+   "tagline": "Pure astronomy: computed sun angles per park per first pitch \u2014 the batter-blinding shadow bands nobody prices per game.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: exact sun-position engine built and verified \u2014 the shadow effect is smaller than the lore and already priced at the close",
+   "detail": "Pure astronomy: computed sun angles per park per first pitch \u2014 the batter-blinding shadow bands nobody prices per game. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "exact sun-position engine built and verified \u2014 the shadow effect is smaller than the lore and already priced at the close"
+  },
+  {
+   "id": "moon-sequence-motifs",
+   "title": "Scoring-sequence patterns",
+   "tagline": "Treat games as sequences and mine burstiness/predictability traits the aggregate stats cannot see.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: pitch-mix predictability and scoring burstiness know nothing the closing line does not",
+   "detail": "Treat games as sequences and mine burstiness/predictability traits the aggregate stats cannot see. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "pitch-mix predictability and scoring burstiness know nothing the closing line does not"
+  },
+  {
+   "id": "moon-graph",
+   "title": "Matchup network cycles",
+   "tagline": "Books rate teams transitively; graph cycles are where transitive pricing breaks. Never tried here.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: the who-beats-whom network is real (0.46 correlation with the line) but fully priced; the cycle pockets are noise",
+   "detail": "Books rate teams transitively; graph cycles are where transitive pricing breaks. Never tried here. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "the who-beats-whom network is real (0.46 correlation with the line) but fully priced; the cycle pockets are noise"
+  },
+  {
+   "id": "moon-stacked",
+   "title": "Stack of all our models",
+   "tagline": "Our models disagree with each other \u2014 does the disagreement structure itself carry information? One tiny meta-model.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: our models genuinely disagree with each other \u2014 and the disagreement carries zero information about when the market is wrong",
+   "detail": "Our models disagree with each other \u2014 does the disagreement structure itself carry information? One tiny meta-model. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "our models genuinely disagree with each other \u2014 and the disagreement carries zero information about when the market is wrong"
+  },
+  {
+   "id": "moon-biology",
+   "title": "Circadian & workload kernels",
+   "tagline": "Acclimatization curves from sleep science applied as decaying travel/workload kernels \u2014 constants from literature, not fit to outcomes.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: literature-locked jet-lag and workload kernels: 0 of 6 effects survive, no dose-response",
+   "detail": "Acclimatization curves from sleep science applied as decaying travel/workload kernels \u2014 constants from literature, not fit to outcomes. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "literature-locked jet-lag and workload kernels: 0 of 6 effects survive, no dose-response"
+  },
+  {
+   "id": "moon-quote-tape",
+   "title": "Learned market tape reader",
+   "tagline": "Hand-crafted staleness rules all died; let a small model read the raw 33-book quote tape itself.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: a neural net reading the raw 33-book quote tape called drift direction worse than a coin",
+   "detail": "Hand-crafted staleness rules all died; let a small model read the raw 33-book quote tape itself. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "a neural net reading the raw 33-book quote tape called drift direction worse than a coin"
+  },
+  {
+   "id": "moon-archaeologist",
+   "title": "LLM pattern archaeologist",
+   "tagline": "Feed an AI all seventy null reports and ask: what mechanism survives every one of these constraints?",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: its best idea (line hysteresis) is REAL and sign-perfect \u2014 the market breaks lines with juice pressure 23.8% vs 0% \u2014 but the book charges more for it than it is worth",
+   "detail": "Feed an AI all seventy null reports and ask: what mechanism survives every one of these constraints? Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "its best idea (line hysteresis) is REAL and sign-perfect \u2014 the market breaks lines with juice pressure 23.8% vs 0% \u2014 but the book charges more for it than it is worth"
+  },
+  {
+   "id": "gamepk-audit",
+   "title": "Odds-store integrity audit",
+   "tagline": "Auditing the 19-million-row odds archive for mislabeled games before anything else trusts it.",
+   "status": "building",
+   "category": "data",
+   "progress_pct": 60,
+   "started": "2026-07-27",
+   "eta": "~hours",
+   "latest": "2026-07-27: the moonshot round independently found ~45-47% of 2021-2023 games in the big odds archive carry the WRONG game's pregame odds \u2014 fixes shipped; the deep audit is confirming scope and which past results need re-checking",
+   "detail": "A routine check flagged possible game-ID contamination in the big historical odds store. Several past results lean on it, so it gets audited properly. If contamination is real, affected results get re-checked."
   }
  ]
 }

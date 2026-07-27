@@ -6484,6 +6484,27 @@ export default function Home() {
       return /^eta/i.test(s) ? s : `ETA ${s}`;
     };
     const labPct = (v: any) => { const n = Number(v); return isFinite(n) ? Math.max(0, Math.min(100, n)) : null; };
+    // ---- Masthead freshness line: "Live status · updated Xm ago" from payload.generated_utc
+    // (NOT slate_snapshots.updated_at — that column is unreliable). Ticks client-side every
+    // 60s; past 2h it flips to hours in a muted warn tone (.stale).
+    const labAgoMin = (iso: any) => { const t = new Date(String(iso || "")).getTime(); return isFinite(t) ? Math.max(0, Math.round((Date.now() - t) / 60000)) : null; };
+    function labFreshText(iso: any) {
+      const m = labAgoMin(iso);
+      if (m == null) return "Live status";
+      if (m < 1) return "Live status · updated just now";
+      if (m < 120) return `Live status · updated ${m}m ago`;
+      return `Live status · updated ${Math.round(m / 60)}h ago`;
+    }
+    let labFreshTimer: any = null;
+    function tickLabFresh() {
+      const el = $("lab-fresh");
+      if (!el) return; // Lab not mounted — cheap no-op, the interval just idles
+      const iso = el.getAttribute("data-ts");
+      const m = labAgoMin(iso);
+      el.classList.toggle("stale", m != null && m >= 120);
+      const tx = el.querySelector(".lab-fresh-tx");
+      if (tx) tx.textContent = labFreshText(iso);
+    }
     // one expandable card — the face carries status/tagline/progress/latest; `detail` opens on tap
     function labCard(it: any) {
       const st = String(it.status || "queued");
@@ -6506,14 +6527,14 @@ export default function Home() {
           <span class="lab-track"><i style="width:${pct != null ? pct : (grp === "shipped" || grp === "grave" ? 100 : 8)}%"></i></span>
           <span class="lab-t1">${esc(endLab)}</span>
         </div>` : "";
-      const latest = it.latest ? `<div class="lab-latest">${esc(it.latest)}</div>` : "";
+      const latest = it.latest ? `<div class="lab-latest"><b class="lab-latest-k">Latest</b> <span class="lab-latest-tx">${esc(it.latest)}</span></div>` : "";
       // shipped's earned line / the graveyard's killing number — the honest one-liner up front
       const result = it.result && (grp === "shipped" || grp === "grave")
         ? `<div class="lab-result ${grp}">${esc(it.result)}</div>` : "";
       const detail = it.detail ? `<div class="lab-detail">${esc(it.detail)}</div>` : `<div class="lab-detail dim">More detail lands as this one progresses.</div>`;
       return `<details class="lab-card ${grp}">
         <summary>
-          <div class="lab-top">${chip}${it.category ? `<span class="lab-cat">${esc(it.category)}</span>` : ""}${eta && grp === "fire" ? `<span class="lab-eta">${esc(eta)}</span>` : ""}<span class="lab-caret" aria-hidden="true">›</span></div>
+          <div class="lab-top">${chip}${eta && grp === "fire" ? `<span class="lab-eta">${esc(eta)}</span>` : ""}${it.category ? `<span class="lab-cat">${esc(it.category)}</span>` : ""}<span class="lab-caret" aria-hidden="true">›</span></div>
           <div class="lab-title">${esc(it.title || it.id || "Untitled")}</div>
           ${it.tagline ? `<div class="lab-tagline">${esc(it.tagline)}</div>` : ""}
           ${result}
@@ -6526,7 +6547,7 @@ export default function Home() {
     function labSection(kicker: string, sub: string, cards: string[], cls = "") {
       if (!cards.length) return "";
       return `<section class="lab-sect ${cls}">
-        <div class="lab-sect-head"><span class="lab-sect-k">${esc(kicker)}</span><span class="lab-sect-n">${cards.length}</span></div>
+        <div class="lab-sect-head">${cls === "fire" ? `<i class="lab-sect-dot" aria-hidden="true"></i>` : ""}<span class="lab-sect-k">${esc(kicker)}</span><span class="lab-sect-n">${cards.length}</span></div>
         ${sub ? `<p class="lab-sect-sub">${esc(sub)}</p>` : ""}
         <div class="lab-grid">${cards.join("")}</div>
       </section>`;
@@ -6557,6 +6578,10 @@ export default function Home() {
         nGrave ? `<span class="lab-count grave">${nGrave} closed honest</span>` : "",
       ].filter(Boolean).join("");
       const upd = d.generated_utc ? new Date(d.generated_utc).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+      const stale0 = (() => { const m = labAgoMin(d.generated_utc); return m != null && m >= 120; })();
+      const fresh = d.generated_utc
+        ? `<div class="lab-fresh${stale0 ? " stale" : ""}" id="lab-fresh" data-ts="${esc(d.generated_utc)}"><i class="lab-fresh-dot" aria-hidden="true"></i><span class="lab-fresh-tx">${esc(labFreshText(d.generated_utc))}</span></div>`
+        : "";
       view.innerHTML = `
         <div class="lab-wrap">
           <div class="ix-masthead">
@@ -6564,6 +6589,7 @@ export default function Home() {
             <h2 class="ix-mast-h">Every idea we test, in public</h2>
             <p class="ix-mast-sub">This is the whole roadmap — every model, data build and experiment, from first spark to graded verdict. Most die. The survivors earn their stars.</p>
             ${chips ? `<div class="lab-counts">${chips}</div>` : ""}
+            ${fresh}
           </div>
           ${items.length ? "" : `<div class="state"><div class="big">Nothing on the bench yet</div><div class="sm">The roadmap fills in as experiments launch.</div></div>`}
           ${labSection("In the fire", "Being built or tested right now — the ideas fighting for a spot on the board.", fire.map(labCard), "fire")}
@@ -6573,6 +6599,9 @@ export default function Home() {
           ${labSection("The graveyard", "Ideas we killed with our own numbers. We publish our nulls — that's why you can trust the picks.", grave.map(labCard), "grave")}
           ${upd ? `<div class="refnote">Roadmap updated ${esc(upd)} · statuses move as experiments run.</div>` : ""}
         </div>`;
+      // Freshness heartbeat: one shared 60s interval, re-used across re-renders (data-ts is
+      // read from the DOM each tick, so a self-healed payload swap keeps it honest).
+      if (!labFreshTimer) labFreshTimer = setInterval(() => { try { tickLabFresh(); } catch {} }, 60000);
     }
 
     const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", research: "The Lab", beta: "Totals", settings: "Settings" };
