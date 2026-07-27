@@ -4904,13 +4904,19 @@ export default function Home() {
     function pastPicksSection(d: any) {
       const games = ((d && d.games) || []) as any[];
       const bdr = (d && d.by_date_record) || {};
+      // HONEST DAY NOTES (2026-07-27): the payload flags every empty or thin
+      // day in the served range (days_incomplete) — All-Star break, light
+      // slates, genuine outage-partial days. They render as labeled rows so a
+      // missing day is never silent (silence was the recurring bug).
+      const dayNotes = (d && d.days_incomplete) || {};
       const byDate: any = {};
       games.forEach((g: any) => {
         if (!g || !g.pick || String(g.pick.status || "").toUpperCase() !== "PICK") return;
         (byDate[g.date] = byDate[g.date] || []).push(g);
       });
       // PAST picks — prior days only (today's board lives on Games/News until it grades)
-      const dates = Object.keys(byDate).filter((k) => k && k < todayISO()).sort().reverse();
+      const dates = Array.from(new Set([...Object.keys(byDate), ...Object.keys(dayNotes)]))
+        .filter((k) => k && k < todayISO()).sort().reverse();
       if (!dates.length) return "";
       const shown = dates.slice(0, ppShown);
       // matchup names read defensively across payload generations (away / away_team / abbr)
@@ -4921,6 +4927,14 @@ export default function Home() {
       const dayBlock = (k: string, open: boolean) => {
         const r = bdr[k] || {};
         const dd = new Date(k + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        const note = dayNotes[k];
+        const noteTag = note ? (note.records_incomplete ? "records incomplete" : note.kind === "no_games_scheduled" ? "no games" : "small slate") : "";
+        // a flagged day with NO picks renders as an honest note row — a gap in
+        // the archive is stated out loud, never left as a silent hole
+        if (!byDate[k]) {
+          return `<div class="pp-day pp-noteonly"><div class="pp-notehead"><span class="pp-date">${esc(dd)}</span><span class="pp-wl dim">${esc(noteTag || "no picks")}</span></div><div class="pp-notetext">${esc((note && note.note) || "No picks survive for this day.")}</div></div>`;
+        }
+        const noteLine = note ? `<div class="pp-notetext inday">${esc(note.note)}</div>` : "";
         const wl = r.n_graded ? `${r.wins || 0}–${r.losses || 0}${r.pushes ? `–${r.pushes}` : ""}` : "";
         const roi = r.roi != null ? `${r.roi >= 0 ? "+" : ""}${(r.roi * 100).toFixed(0)}%` : "";
         const list = byDate[k].slice().sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
@@ -4930,7 +4944,7 @@ export default function Home() {
           const res = p.result === "win" ? `<span class="ppres won">W</span>` : p.result === "loss" ? `<span class="ppres lost">L</span>` : p.result === "push" ? `<span class="ppres pushed">P</span>` : `<span class="ppres open">—</span>`;
           return `<button class="pp-row" data-ppgid="${esc(g.game_id)}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span>${bStars(p.stars)}${res}</button>`;
         }).join("");
-        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${(r.wins || 0) >= (r.losses || 0) ? "pos" : "neg"}">${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}">${roi}</span>` : ""}<span class="pp-n">${list.length} pick${list.length === 1 ? "" : "s"}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${rows}</div></details>`;
+        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${(r.wins || 0) >= (r.losses || 0) ? "pos" : "neg"}">${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}">${roi}</span>` : ""}<span class="pp-n">${list.length} pick${list.length === 1 ? "" : "s"}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}</div></details>`;
       };
       return `<div class="ixc pastpicks"><div class="ixc-h">Past picks, day by day</div><div class="ixc-sub">Every published pick — side, line, stars, price and the graded result. Most recent first.</div>
         ${shown.map((k, i) => dayBlock(k, i === 0)).join("")}

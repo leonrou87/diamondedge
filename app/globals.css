@@ -2658,6 +2658,11 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .ppres.lost{color:#fff;background:var(--red)}
 .ppres.pushed{color:#d7deea;background:rgba(255,255,255,.16)}
 .ppres.open{color:var(--ink3);background:rgba(210,224,247,.08)}
+/* honest day notes — flagged empty/thin days are stated, never silent */
+.pp-noteonly{padding:10px 2px}
+.pp-notehead{display:flex;align-items:center;gap:9px}
+.pp-notetext{margin-top:5px;font-size:11px;line-height:1.5;color:var(--ink3)}
+.pp-notetext.inday{margin:0 0 4px;padding:7px 10px;border:1px dashed var(--line3);border-radius:10px}
 .pp-more{width:100%;border:1px solid var(--glass-brd);border-radius:12px;padding:10px;margin-top:8px;cursor:pointer;
   font-family:var(--disp);font-weight:700;font-size:11.5px;color:var(--ink2);background:var(--glass-hi);transition:.2s ease}
 .pp-more:hover{color:var(--ink);box-shadow:var(--shadow)}
