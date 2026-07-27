@@ -721,7 +721,15 @@ export default function Home() {
       if (!pl || entitled()) return false;
       const q = qualityOf(pl);
       if (q !== "strong" && q !== "good") return false;
-      return !(st === "won" || st === "lost" || st === "pushed");
+      // LOCK ONLY WHAT IS STILL ACTIONABLE (Leon, 2026-07-26). A DECIDED pick has nothing
+      // left to sell, so it reads in the open for everyone: graded (won/lost/pushed) AND
+      // live-decided — `clinched` (already cashed) and `cooked` (the number is gone, the
+      // pick can no longer land). Showing "✗ NOT LANDING" *underneath* a "SIGN IN TO
+      // UNLOCK" cover was paywalling a verdict we'd already published. Only picks whose
+      // outcome is genuinely open (pre-game, or in play and undecided) stay locked.
+      // Passes and leans never reach here — qualityOf() is null on a PASS and "lean" on a
+      // 1–2★ call, so both bail out above and read as passes to signed-out visitors.
+      return !(st === "won" || st === "lost" || st === "pushed" || st === "clinched" || st === "cooked");
     }
     // ===================== VIG / +EV GATE =====================
     // A bet is only worth taking when our win probability clears the PRICE's break-even (the
@@ -836,17 +844,24 @@ export default function Home() {
     // "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)" — the Vegas number we judged, clearly
     // stated, plus a small timestamp of when the pick was FIRST made (that wall's clock).
     const LEAD_MS: any = { "T-24h": 864e5, "T-12h": 432e5, "T-6h": 216e5, "T-3h": 108e5, "T-1h": 36e5 };
+    // ELEGANCE PASS (Leon, 2026-07-26): same four facts, one quiet typographic line.
+    // Was: "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h) · 🔒 locked — judged at this line" —
+    // a sentence competing with the pick above it. Now the frozen state leads as a real
+    // lock GLYPH (no emoji) and the provenance follows as tabular micro-copy. Nothing is
+    // dropped: the Vegas number we judged, the clock, the wall, and the freeze all stay.
     function pickMadeMeta(pl: any) {
       if (!pl || pl.src !== "v4") return "";
       const bits: string[] = [];
-      if (pl.vegas_line != null) bits.push(`vs Vegas O/U ${lineStr(pl.vegas_line)}`);
+      if (pl.vegas_line != null) bits.push(`Vegas ${lineStr(pl.vegas_line)}`);
       if (pl.lead_time && pl.fp_utc && LEAD_MS[pl.lead_time]) {
         const t = new Date(new Date(pl.fp_utc).getTime() - LEAD_MS[pl.lead_time]);
-        if (!isNaN(t.getTime())) bits.push(`picked ${t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} (${pl.lead_time})`);
-      } else if (pl.lead_time) bits.push(`picked at the ${pl.lead_time} check`);
+        if (!isNaN(t.getTime())) bits.push(`picked ${t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`);
+        bits.push(pl.lead_time);
+      } else if (pl.lead_time) bits.push(`picked at ${pl.lead_time}`);
       // once first pitch passes, the pick and its judged line are FROZEN — say so.
-      if (pl.fp_utc && Date.now() >= new Date(pl.fp_utc).getTime()) bits.push("🔒 locked — judged at this line");
-      return bits.length ? `<div class="pk-made">${esc(bits.join(" · "))}</div>` : "";
+      const frozen = !!(pl.fp_utc && Date.now() >= new Date(pl.fp_utc).getTime());
+      if (!bits.length && !frozen) return "";
+      return `<div class="pk-made${frozen ? " frozen" : ""}"${frozen ? ` title="Locked before first pitch — graded at exactly this line"` : ""}>${frozen ? `${lockSvg}<span class="pkm-lk">locked at this line</span>` : ""}${bits.length ? `<span class="pkm-b">${esc(bits.join(" · "))}</span>` : ""}</div>`;
     }
     // ===================== "WHAT'S LIGHTING UP" — context signals on a pick =====================
     // The payload carries pick.signals = [{text, dir}] — 1-3 short plain-English context
@@ -881,6 +896,201 @@ export default function Home() {
         <div class="sig-note">Context signals, not causal attribution.</div>
       </div>`;
     }
+    // ═══════════ STRATEGY STREAMS — every rule-set's take, and its own record ═══════════
+    // Reads the payload's `strategies_spec`, per-game `games[].strategies[]`, and
+    // `record.by_strategy`. All THREE are optional: absent/malformed ⇒ readers return []
+    // and every renderer returns "", so nothing about the app changes without them.
+    //
+    // THE ONE RULE THAT MATTERS HERE — LIVE ≠ BACKTEST.
+    // Each by_strategy entry's TOP-LEVEL n/W-L-P/roi is its LIVE-SERVED record from its own
+    // activation date. Reconstructed / walk-forward / would-have measurements live in
+    // `backtest[]`, and `combined_view` restates the union ONLY because the older published
+    // blocks (record.overall) report it — the payload itself labels it "NOT a live record".
+    // So: the live number is the number. Backtests render secondary, labelled, and are never
+    // summed into it. combined_view is a reconciliation footnote, never a headline.
+    //
+    // Status vocabulary is PICK | PASS | NO_VIEW. There is NO "LEAN" status: a lean is a PASS
+    // that still carries a side/line, and it renders as exactly that — the model's read, with
+    // the existing "Model lean — not an official pick" wording.
+    // A PASS can carry a graded `result`, but we deliberately do NOT badge it W/L: we did not
+    // bet it, and a green WON on a pass is precisely the hindsight-shopping bait this panel
+    // exists to prevent.
+    const STRAT_STATUS = (s: any) => {
+      const t = String(s == null ? "" : s).toUpperCase();
+      return t === "PICK" ? "PICK" : t === "NO_VIEW" || t === "NOVIEW" ? "NO_VIEW" : "PASS";
+    };
+    // Machine codes ("ev_gate", "junk_cell") never reach a reader; real phrases ("Strong",
+    // "Priced out — no value at the real price") pass through untouched.
+    function humanNote(raw: any) {
+      const t = String(raw == null ? "" : raw).trim();
+      if (!t) return "";
+      if (/^[a-z0-9]+(_[a-z0-9]+)+$/.test(t)) return "";
+      return t;
+    }
+    // The spec block, from whichever loaded feed carries it.
+    function strategiesSpec() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const sp = d && (d as any).strategies_spec;
+        if (sp && typeof sp === "object") return sp;
+      }
+      return null;
+    }
+    function normStrategy(s: any) {
+      if (!s || typeof s !== "object") return null;
+      const key = String(s.key != null ? s.key : (s.id != null ? s.id : "")).trim();
+      if (!key) return null;
+      const sideRaw = String(s.side == null ? "" : s.side).trim();
+      const status = STRAT_STATUS(s.status);
+      return {
+        key,
+        label: String(s.label || key).trim() || key,
+        status,
+        side: sideRaw,
+        dir: /under/i.test(sideRaw) ? "under" : /over/i.test(sideRaw) ? "over" : "",
+        line: _fin(s.line),
+        vegas_line: _fin(s.vegas_line),
+        price: _fin(s.price),
+        stars: s.stars == null || !isFinite(Number(s.stars)) ? null : Math.max(0, Math.min(5, Math.round(Number(s.stars)))),
+        score: _fin(s.score),
+        // only a PICK carries a result onto the surface (see the note above)
+        result: status === "PICK" && /^(win|loss|push)$/i.test(String(s.result || "")) ? String(s.result).toLowerCase() : null,
+        // A PICK's `reason` is often just its tier word ("Strong"), which the stars already
+        // say — drop it there so the row doesn't carry a redundant one-word paragraph. On a
+        // PASS or a NO_VIEW the reason IS the point, so it always stays.
+        reason: (() => {
+          const t = humanNote(s.reason);
+          if (status === "PICK" && !/\s/.test(t)) return "";   // "Strong" / "Elite" — the stars already say it
+          return t;
+        })(),
+        lead: String(s.lead_time == null ? "" : s.lead_time).trim(),
+        headline: s.is_headline === true,
+        servedSrc: s.is_served_source === true,
+        // a PASS that still carries a side IS the model's lean on the game
+        lean: status === "PASS" && !!sideRaw,
+      };
+    }
+    // Every stream's take on ONE game. Accepts a board game (looks up the unified game) or a
+    // unified/beta game object directly. Order comes from strategies_spec.order (the payload's
+    // own display order), with the headline pinned first — never re-ranked by who looks best.
+    function gameStrategies(g: any) {
+      if (!g) return [];
+      const src = Array.isArray(g.strategies) ? g : (v4GameFor(g) || g);
+      const raw = Array.isArray(src.strategies) ? src.strategies : null;
+      if (!Array.isArray(raw) || !raw.length) return [];
+      const out: any[] = [];
+      const seen: any = {};
+      raw.forEach((s: any) => { const n = normStrategy(s); if (n && !seen[n.key]) { seen[n.key] = 1; out.push(n); } });
+      const spec = strategiesSpec();
+      const order: string[] = Array.isArray(spec && spec.order) ? spec.order : [];
+      const idx = (k: string) => { const i = order.indexOf(k); return i < 0 ? 999 : i; };
+      out.sort((a, b) => (b.headline ? 1 : 0) - (a.headline ? 1 : 0) || idx(a.key) - idx(b.key));
+      return out;
+    }
+    // "OVER 8.5" from whatever shape the side/line arrived in.
+    function stratCall(s: any) {
+      if (!s) return "—";
+      const raw = String(s.side || "").trim();
+      if (!raw && s.line == null) return "—";
+      if (/\d/.test(raw)) return raw.toUpperCase();
+      const d = s.dir ? s.dir.toUpperCase() : raw.toUpperCase();
+      const ln = s.line != null ? lineStr(s.line) : "";
+      return [d, ln].filter(Boolean).join(" ") || "—";
+    }
+    const stratArrow = (s: any) => (s.dir === "over" ? "▲" : s.dir === "under" ? "▼" : "•");
+    // ---- record.by_strategy ----
+    // One block → { n, win, loss, push, hit, roi, units } (or null when there is nothing).
+    function stratBlock(r: any) {
+      if (!r || typeof r !== "object") return null;
+      const n = Math.max(0, Math.round(Number(r.n || 0)) || 0);
+      const win = Math.max(0, Math.round(Number(r.win || 0)) || 0);
+      const loss = Math.max(0, Math.round(Number(r.loss || 0)) || 0);
+      const push = Math.max(0, Math.round(Number(r.push || 0)) || 0);
+      if (!n && !win && !loss && !push) return null;
+      return {
+        n: n || win + loss + push, win, loss, push,
+        hit: _fin(r.hit_rate), roi: _fin(r.roi),
+        units: _fin(r.units_flat != null ? r.units_flat : r.units),
+        first: String(r.first_graded_date || "").slice(0, 10),
+        last: String(r.last_graded_date || "").slice(0, 10),
+      };
+    }
+    function strategyRecords(d: any) {
+      const bs = d && d.record && d.record.by_strategy;
+      if (!bs || typeof bs !== "object" || Array.isArray(bs)) return [];
+      const spec = strategiesSpec();
+      const order: string[] = Array.isArray(spec && spec.order) ? spec.order : [];
+      const rows: any[] = [];
+      Object.keys(bs).forEach((k) => {
+        const r = bs[k];
+        if (!r || typeof r !== "object") return;
+        // TOP-LEVEL = the LIVE-SERVED record. This is the primary number, always.
+        const live = stratBlock(r);
+        // evidence_split = how that live number was actually observed (served on the board,
+        // logged forward in the paper ledger, as-of-wall reconstruction of a live day…).
+        const modes: any[] = [];
+        const es = r.evidence_split;
+        if (es && typeof es === "object") Object.keys(es).forEach((m) => {
+          const b = stratBlock(es[m]);
+          if (b) modes.push({ ...b, mode: m, kind: String((es[m] || {}).kind || "live").toLowerCase(), what: humanNote((es[m] || {}).what) });
+        });
+        modes.sort((a, b) => b.n - a.n);
+        // backtest[] = explicitly NOT live. Each block carries its own label from the payload.
+        const backtests: any[] = [];
+        (Array.isArray(r.backtest) ? r.backtest : []).forEach((b: any) => {
+          const bl = stratBlock(b);
+          if (bl) backtests.push({ ...bl, kind: String(b.kind || "backtest"), label: humanNote(b.label) });
+        });
+        // combined_view = the union the OLDER published blocks report. Footnote only.
+        const cv = stratBlock(r.combined_view);
+        const combined = cv ? { ...cv, label: humanNote((r.combined_view || {}).label) } : null;
+        rows.push({
+          key: k,
+          label: String(r.label || k).trim() || k,
+          headline: r.is_headline === true || (spec && spec.headline_key === k),
+          live, modes, backtests, combined,
+          what: humanNote(r.what), basis: humanNote(r.basis), note: humanNote(r.note),
+          activation: String(r.activation_date == null ? "" : r.activation_date).slice(0, 10),
+        });
+      });
+      // NEUTRAL, STABLE ORDER: the payload's own spec order, then anything unknown by sample
+      // size and alphabetically. Explicitly NOT by ROI — a leaderboard buries the losers.
+      const idx = (k: string) => { const i = order.indexOf(k); return i < 0 ? 999 : i; };
+      rows.sort((a, b) => idx(a.key) - idx(b.key)
+        || ((b.live ? b.live.n : 0) - (a.live ? a.live.n : 0))
+        || String(a.label).localeCompare(String(b.label)));
+      return rows;
+    }
+    // The LIVE record for ONE stream, from whichever feed has landed.
+    function strategyRecordFor(key: any) {
+      const k = String(key || "");
+      if (!k) return null;
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const bs = d && d.record && d.record.by_strategy;
+        if (bs && typeof bs === "object" && bs[k]) {
+          const hit = strategyRecords(d).find((r: any) => r.key === k);
+          if (hit) return hit;
+        }
+      }
+      return null;
+    }
+    // The headline stream's record — what the Insights hero must lead with.
+    function headlineStrategyRecord(d: any) {
+      const rows = strategyRecords(d);
+      if (!rows.length) return null;
+      const spec = strategiesSpec();
+      const hk = spec && spec.headline_key ? String(spec.headline_key) : "";
+      return rows.find((r: any) => r.key === hk) || rows.find((r: any) => r.headline) || null;
+    }
+    const stratDateTxt = (s: any) => {
+      const t = String(s || "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) return "";
+      const dd = new Date(t + "T12:00:00");
+      return isNaN(dd.getTime()) ? "" : dd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    };
+    const stratWL = (b: any) => (b ? `${b.win}–${b.loss}${b.push ? `–${b.push}` : ""}` : "—");
+    const stratPct = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
+    const stratRoi = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
+    const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
     // Universal star renderer: unified picks use the 5-star scale; any legacy pick keeps 3.
     function pickStars(pl: any) {
       if (pl && pl.stars != null) return bStars(pl.stars);
@@ -2098,7 +2308,10 @@ export default function Home() {
       if (st === "lost") return { txt: "✗ LOST", cls: "lost" };
       if (st === "pushed") return { txt: "PUSH", cls: "pushed" };
       if (st === "clinched") return { txt: `${condCheck} CLINCHED`, cls: "won" };
-      if (st === "cooked") return { txt: "✗ LINE PASSED", cls: "lost" };
+      // NOT "LINE PASSED" — that read as "we passed on this line" (the product's other,
+      // opposite meaning of the word). This state means the number is gone and the pick
+      // can no longer land; say exactly that, in the same words the live read uses.
+      if (st === "cooked") return { txt: "✗ NOT LANDING", cls: "lost" };
       if (st === "inplay") {
         const ca = g.current_actuals || {};
         const per = ca.period_label ? esc(ca.period_label) : "";
@@ -2543,7 +2756,7 @@ export default function Home() {
         : st === "lost" ? `<span class="ft-res lost">✗ LOST</span>`
         : st === "pushed" ? `<span class="ft-res pushed">PUSH</span>`
         : st === "clinched" ? `<span class="ft-res won">${condCheck} CLINCHED</span>`
-        : st === "cooked" ? `<span class="ft-res lost">✗ LINE PASSED</span>`
+        : st === "cooked" ? `<span class="ft-res lost">✗ NOT LANDING</span>`
         : st === "inplay" ? `<span class="ft-res inplay"><span class="ip-dot"></span>IN PLAY</span>` : "";
       const sc = gs.score;
       const side = (which: "away" | "home") => {
@@ -3261,7 +3474,7 @@ export default function Home() {
       if (pl.action === "TAKE") {
         const resTxt = r
           ? (r.status === "hit" ? `✓ WON${r.pnl != null ? ` ${r.pnl >= 0 ? "+" : ""}${Number(r.pnl).toFixed(2)}u` : ""}` : r.status === "miss" ? `✗ LOST${r.pnl != null ? ` ${Number(r.pnl).toFixed(2)}u` : ""}` : "PUSH")
-          : live === "clinch-won" ? "✓ CLINCHED" : live === "clinch-lost" ? "✗ LINE PASSED" : live === "inplay" ? "IN PLAY" : "";
+          : live === "clinch-won" ? "✓ CLINCHED" : live === "clinch-lost" ? "✗ NOT LANDING" : live === "inplay" ? "IN PLAY" : "";
         head = `<div class="shp-head take ${rCls}">
           <span class="shp-mk">${MK_FULL[mk]}</span>
           <span class="shp-act">BET</span>
@@ -3416,10 +3629,14 @@ export default function Home() {
     // Share tagline — lead with the HONEST forward expectation (not the in-sample backtest %),
     // then the clean out-of-sample evidence. Social proof that doesn't overstate the edge.
     function shareTagline() {
-      const ov = betaData && betaData.record && betaData.record.overall;
-      return ov && ov.n
-        ? `DiamondEdge — every pick star-rated 1–5 and graded in the open: ${ov.win}–${ov.loss} (${(ov.hit_rate * 100).toFixed(1)}%)${ov.roi != null ? ` at ${ov.roi >= 0 ? "+" : ""}${(ov.roi * 100).toFixed(0)}% return` : ""} and counting.`
-        : "DiamondEdge — every sports pick star-rated 1–5 and graded in the open.";
+      // Shared text is the easiest place to accidentally publish a backtest as a record —
+      // so it quotes the LIVE-SERVED number, with its start date, or nothing at all.
+      const hr = headlineStrategyRecord(betaData);
+      if (hr && hr.live) {
+        const since = stratDateTxt(hr.activation);
+        return `DiamondEdge — every pick star-rated 1–5 and graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.`;
+      }
+      return "DiamondEdge — every sports pick star-rated 1–5 and graded in the open.";
     }
     function socialShareBar() {
       const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.origin + location.pathname; } })();
@@ -3595,6 +3812,82 @@ export default function Home() {
       }
       return "";
     }
+    // ═══════════ EVERY STRATEGY ON THIS GAME (the per-game transparency panel) ═══════════
+    // Tap any pick → what each stream said about THAT game: its side, line, price,
+    // conviction, and for the ones that declined, the reason. The SERVED pick is pinned and
+    // ringed; a NO_VIEW is stated out loud rather than silently omitted; a PASS that still
+    // carries a side is shown as the model's lean with the existing honesty label.
+    // Each row's lifetime line shows that stream's LIVE-SERVED record only — the backtest is
+    // named but never folded in, and the panel says the streams overlap in plain language.
+    function strategyRowHtml(s: any) {
+      const served = s.headline;
+      const isPickRow = s.status === "PICK";
+      const noView = s.status === "NO_VIEW";
+      const statusTxt = isPickRow ? "PICK" : noView ? "NO VIEW" : "PASS";
+      const statusCls = isPickRow ? "is-pick" : noView ? "is-noview" : "is-pass";
+      const dirCls = s.dir === "over" ? "ou-over" : s.dir === "under" ? "ou-under" : "";
+      const call = noView
+        ? `<span class="sgr-side is-noview"><b>No view on this game</b></span>`
+        : isPickRow
+          ? `<span class="sgr-side ${dirCls}">${stratArrow(s)} <b>${esc(stratCall(s))}</b></span>${s.price != null ? `<i class="sgr-px">${fmtOdds(s.price)}</i>` : ""}`
+          : `<span class="sgr-side is-pass"><b>Pass</b></span>${s.lean ? `<i class="sgr-lean-side ${dirCls}">${stratArrow(s)} ${esc(stratCall(s))}${s.price != null ? ` ${fmtOdds(s.price)}` : ""}</i>` : (s.line != null ? `<i class="sgr-px">judged at ${esc(lineStr(s.line))}</i>` : "")}`;
+      const conf = !noView && (s.stars != null || s.score != null)
+        ? `<span class="sgr-q">${s.stars != null ? bStars(s.stars) : ""}${s.score != null ? `<i class="pgrade${isPickRow ? "" : " muted"}">${s.score.toFixed(2)}</i>` : ""}</span>`
+        : "";
+      // Only a PICK gets a W/L badge. A PASS may be graded in the payload, but we did not
+      // bet it — a green WON on a pass is exactly the hindsight bait this panel prevents.
+      const res = s.result === "win" ? `<span class="sgr-res won">WON</span>`
+        : s.result === "loss" ? `<span class="sgr-res lost">LOST</span>`
+        : s.result === "push" ? `<span class="sgr-res pushed">PUSH</span>` : "";
+      const rec = strategyRecordFor(s.key);
+      const lv = rec && rec.live;
+      const btN = rec && rec.backtests.length ? rec.backtests.reduce((a: number, b: any) => a + b.n, 0) : 0;
+      const recLine = rec
+        ? `<div class="sgr-rec">${lv
+            ? `<em class="sgr-lv">Live</em> ${esc(stratWL(lv))}${lv.hit != null ? ` · ${stratPct(lv.hit)}` : ""}${lv.roi != null ? ` · <b class="${lv.roi >= 0 ? "pos" : "neg"}">${stratRoi(lv.roi)} ROI</b>` : ""}${rec.activation ? ` · served since ${esc(stratDateTxt(rec.activation) || rec.activation)}` : ""}`
+            : `<em class="sgr-lv none">Live</em> no live-served picks yet`}${btN ? `<span class="sgr-btnote">+ ${btN} backtested — reported separately, never added in</span>` : ""}</div>`
+        : "";
+      const why = s.reason ? `<div class="sgr-why${noView ? " dim" : ""}">${esc(s.reason)}</div>` : "";
+      const leanNote = s.lean ? `<div class="sgr-leanlab">Model lean — not an official pick</div>` : "";
+      const srcNote = s.servedSrc && !served ? `<div class="sgr-src">This is the stream the served pick came from.</div>` : "";
+      return `<div class="sgr ${statusCls}${served ? " served" : ""}">
+        <div class="sgr-top">
+          <span class="sgr-lab">${esc(s.label)}</span>
+          ${served ? `<span class="sgr-served">◆ Served</span>` : ""}
+          <span class="sgr-status ${statusCls}">${statusTxt}</span>
+        </div>
+        <div class="sgr-call">${call}${conf}${res}</div>
+        ${leanNote}
+        ${why}
+        ${srcNote}
+        ${recLine}
+      </div>`;
+    }
+    function strategiesPanel(g: any) {
+      const list = gameStrategies(g);
+      if (!list.length) return "";
+      const nPick = list.filter((s: any) => s.status === "PICK").length;
+      const nPass = list.filter((s: any) => s.status === "PASS").length;
+      const nNo = list.filter((s: any) => s.status === "NO_VIEW").length;
+      const counts = [`${nPick} would bet it`, nPass ? `${nPass} passed` : "", nNo ? `${nNo} had no view` : ""].filter(Boolean).join(" · ");
+      return `<div class="stgy" id="stgy-panel">
+        <div class="stgy-h"><span class="stgy-k">◆ Every strategy on this game</span><span class="stgy-count">${list.length} streams${counts ? ` · ${esc(counts)}` : ""}</span></div>
+        <p class="stgy-lede">These are the separate rule-sets we run over the same game. <b>Exactly one is served as the DiamondEdge Pick</b> — it's marked below. The others are here so the calls we <i>didn't</i> make, and why, are on the record too.</p>
+        <div class="stgy-rows">${list.map(strategyRowHtml).join("")}</div>
+        <div class="stgy-note"><b>These overlap — never add them up.</b> The same game shows up in more than one stream, so these are the same bets seen from different angles, not four independent bets. Each lifetime line above is that stream's <b>live-served</b> record from its own start date; anything backtested is counted separately and never blended in. And reading down this list afterwards to find whichever one got it right isn't a strategy, it's hindsight — we serve one pick per game, before the game, and grade that one.</div>
+      </div>`;
+    }
+    // A one-line entry point on the Preview pane — the counts, then straight to the panel.
+    function strategiesTeaser(g: any) {
+      const list = gameStrategies(g);
+      if (!list.length) return "";
+      const nPick = list.filter((s: any) => s.status === "PICK").length;
+      return `<button class="stgy-teaser" data-gostrat="1" aria-label="See every strategy's take on this game">
+        <span class="sgt-k">Every strategy on this game</span>
+        <span class="sgt-sum">${list.length} streams · ${nPick} would bet it</span>
+        <span class="sgt-go" aria-hidden="true">›</span>
+      </button>`;
+    }
     // The DiamondEdge reasoning tab: a plain-English narrative FIRST, then the divergence, the
     // data visuals (graphs), the model-vs-market read, and the driving factors. Easy to follow, deep.
     function diamondEdgeReasoning(g: any, lead: any, leadLocked: boolean) {
@@ -3613,6 +3906,7 @@ export default function Home() {
         : `We're passing this one. Here's the read that didn't clear our bar.`;
       return `<div class="de-pane">
         <div class="de-lead"><div class="de-k">◆ Why DiamondEdge ${lead2 ? "is on this" : "passed"}</div><p class="de-sub">${intro}</p></div>
+        ${strategiesPanel(g)}
         ${narrative}
         ${div ? `<div class="de-sec"><div class="de-h">Our number vs the market</div>${div}</div>` : ""}
         ${viz ? `<div class="de-sec"><div class="de-h">The numbers</div>${viz}</div>` : ""}
@@ -3833,9 +4127,12 @@ export default function Home() {
       const isFinal = gs.kind === "final";
       // Exactly THREE tabs: Preview (matchup, pitchers, records, our pick + why) ·
       // Odds (the pick + the wall-by-wall grid + prices) · Box score (line score + scoring).
+      // STILL EXACTLY THREE TABS. The middle one keeps its job (our call + the numbers) and
+      // simply says what it now leads with when the strategy streams are in the payload.
+      const hasStrats = gameStrategies(g).length > 0 && !leadLocked;
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
-        <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">Odds</button>
+        <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">${hasStrats ? "Strategies" : "Odds"}</button>
         ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box score</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
@@ -3845,6 +4142,7 @@ export default function Home() {
         ${previewBlock}
         ${linesBlock}
         ${lead || !leadLocked ? pickPayoff : ""}
+        ${leadLocked ? "" : strategiesTeaser(g)}
         ${lead && !leadLocked ? signalBlock(lead) : ""}
         ${passBlock}
         ${leadLocked ? "" : more}
@@ -3860,6 +4158,20 @@ export default function Home() {
       function wireBody() {
         const page = $("gamepage"); if (!page) return;
         page.querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
+        // Preview → the strategies panel (same sheet, middle tab), scrolled into view.
+        page.querySelectorAll("[data-gostrat]").forEach((b: any) => (b.onclick = (e: any) => {
+          e.stopPropagation();
+          switchDetailTab("de");
+          // The sheet body is its own scroller and KEEPS its offset across tabs, so a bare
+          // scrollIntoView lands the panel above the fold. Scroll the container by the
+          // measured delta instead.
+          requestAnimationFrame(() => {
+            const body = $("gp-body"), p = $("stgy-panel");
+            if (!body || !p) return;
+            const d = p.getBoundingClientRect().top - body.getBoundingClientRect().top - 8;
+            body.scrollTo({ top: Math.max(0, body.scrollTop + d), behavior: "smooth" });
+          });
+        }));
         // every locked chip inside the detail body routes to the unlock flow
         page.querySelectorAll("[data-up]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => openUnlock(), 60); }));
       }
@@ -4401,6 +4713,124 @@ export default function Home() {
         <div class="ixs"><i class="neg">${ll ? `L${ll}` : "—"}</i><em>longest skid</em></div>
       </div>`;
     }
+    // ═══════════ STRATEGY RECORDS (Insights) ═══════════
+    // WHY IT LIVES ON INSIGHTS: Insights already IS the record page — headline record, equity
+    // curve, star-tier validation, day-by-day archive. A strategy's record is the same claim
+    // cut a different way; a fifth dock tab would put two versions of "how we're doing" in two
+    // places and crowd the dock. So it sits here, directly under the tier validation.
+    //
+    // THE STRUCTURE IS THE HONESTY:
+    //   1. LIVE-SERVED is the primary number on every card — big, first, with its start date.
+    //      That is the only number that ever described a real bankroll.
+    //   2. How the live number was OBSERVED is itemised (served on the board / logged forward
+    //      in the paper ledger / as-of-wall reconstruction of a live day), because "live"
+    //      itself has grades and hiding that would be its own dishonesty.
+    //   3. Anything BACKTESTED is walled off below a rule, dimmed, carries the payload's own
+    //      label, and is never added to the live number.
+    //   4. combined_view appears only as a reconciliation footnote — it is what the older
+    //      published blocks report, and the payload itself says it is not a live record.
+    //   5. Losing streams render identically to winning ones. Order is the payload's spec
+    //      order, never ROI.
+    // Two small bars per card, in the same inline-SVG language as the charts above, and both
+    // computed from the LIVE block only:
+    //   · hit rate against the break-even mark (52.4% at −110) — fixed 35–70% scale
+    //   · ROI around zero — fixed ±25% scale, so cards are comparable side by side
+    // Fixed scales matter: per-card auto-scaling would make a terrible ROI look the same size
+    // as a great one.
+    function strategyBarsSvg(b: any, label: string) {
+      if (!b || (b.hit == null && b.roi == null)) return "";
+      const w = 300, h = 46, padL = 6, padR = 6;
+      const inner = w - padL - padR;
+      const cl = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+      const HLO = 0.35, HHI = 0.70, BE = 0.524, RMAX = 0.25;
+      const HX = (v: number) => padL + ((cl(v, HLO, HHI) - HLO) / (HHI - HLO)) * inner;
+      const zero = padL + inner / 2;
+      const RX = (v: number) => zero + (cl(v, -RMAX, RMAX) / RMAX) * (inner / 2);
+      const hitBar = b.hit == null ? "" : (() => {
+        const x = HX(b.hit), ok = b.hit >= BE;
+        return `<rect x="${padL}" y="6" width="${inner}" height="9" rx="4.5" fill="rgba(224,235,255,.07)"/>
+          <rect x="${padL}" y="6" width="${Math.max(2, x - padL).toFixed(1)}" height="9" rx="4.5" fill="${ok ? "rgba(43,214,149,.72)" : "rgba(255,92,119,.66)"}"/>
+          <line x1="${HX(BE).toFixed(1)}" y1="2.5" x2="${HX(BE).toFixed(1)}" y2="18.5" stroke="rgba(224,235,255,.5)" stroke-dasharray="2 3" stroke-width="1.2"/>`;
+      })();
+      const roiBar = b.roi == null ? "" : (() => {
+        const x = RX(b.roi), pos = b.roi >= 0;
+        const x0 = Math.min(zero, x), wdt = Math.max(2, Math.abs(x - zero));
+        return `<rect x="${padL}" y="28" width="${inner}" height="9" rx="4.5" fill="rgba(224,235,255,.05)"/>
+          <rect x="${x0.toFixed(1)}" y="28" width="${wdt.toFixed(1)}" height="9" rx="3" fill="${pos ? "rgba(43,214,149,.72)" : "rgba(255,92,119,.66)"}"/>
+          <line x1="${zero.toFixed(1)}" y1="24.5" x2="${zero.toFixed(1)}" y2="40.5" stroke="rgba(224,235,255,.34)" stroke-width="1.2"/>`;
+      })();
+      return `<svg class="ixsvg sgc-bars" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)} — ${b.hit != null ? `${(b.hit * 100).toFixed(1)}% hit rate against a 52.4% break-even` : "no hit rate"}${b.roi != null ? `, ${(b.roi >= 0 ? "plus " : "minus ")}${Math.abs(b.roi * 100).toFixed(1)}% return` : ""}, over ${b.n} graded pick${b.n === 1 ? "" : "s"}">${hitBar}${roiBar}</svg>`;
+    }
+    const stratNumsHtml = (b: any) => `<div class="sgc-nums">
+      <span class="sgc-n"><b>${esc(stratWL(b))}</b><em>record</em></span>
+      <span class="sgc-n"><b>${stratPct(b.hit)}</b><em>hit rate</em></span>
+      <span class="sgc-n"><b class="${b.roi == null ? "" : b.roi >= 0 ? "pos" : "neg"}">${stratRoi(b.roi)}</b><em>ROI</em></span>
+      <span class="sgc-n"><b class="${b.units == null ? "" : b.units >= 0 ? "pos" : "neg"}">${stratUnits(b.units)}</b><em>units (flat)</em></span>
+    </div>`;
+    function strategyCard(r: any) {
+      const lv = r.live;
+      const act = stratDateTxt(r.activation);
+      const liveBlock = lv
+        ? `<div class="sgc-live">
+            <div class="sgc-livek"><span class="sgc-tag live">Live-served</span><span class="sgc-liven">${lv.n} graded pick${lv.n === 1 ? "" : "s"}${act ? ` · since ${esc(act)}` : ""}</span></div>
+            ${stratNumsHtml(lv)}
+            ${strategyBarsSvg(lv, r.label)}
+            <div class="sgc-axis"><span>hit rate · dashed = break-even 52.4%</span><span>ROI · centre = 0, scale ±25%</span></div>
+          </div>`
+        : `<div class="sgc-live none"><div class="sgc-livek"><span class="sgc-tag live none">Live-served</span></div>
+            <div class="sgc-empty">No live-served picks graded yet${act ? ` — activated ${esc(act)}` : ""}. The record starts at 0–0.</div></div>`;
+      // How that live number was observed. "Live" has grades, and pretending otherwise
+      // would be the same sin as passing a backtest off as live.
+      const modes = r.modes.length
+        ? `<details class="sgc-modes"><summary><span>How the live picks were observed</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
+            ${r.modes.map((m: any) => `<div class="sgc-mode"><div class="sgcm-top"><b>${esc(m.n)} pick${m.n === 1 ? "" : "s"}</b><span class="sgcm-rec">${esc(stratWL(m))}${m.roi != null ? ` · ${stratRoi(m.roi)}` : ""}</span></div>${m.what ? `<div class="sgcm-what">${esc(m.what)}</div>` : ""}</div>`).join("")}
+          </details>`
+        : "";
+      // NOT LIVE — walled off, dimmed, labelled by the payload itself, never summed.
+      const bts = r.backtests.length
+        ? `<div class="sgc-bt">
+            <div class="sgc-bthead"><span class="sgc-tag bt">Not live</span><span class="sgc-bthk">Backtested / reconstructed — never added to the number above</span></div>
+            ${r.backtests.map((b: any) => `<div class="sgc-btrow">
+              <div class="sgc-btnums"><b>${esc(stratWL(b))}</b><span>${stratPct(b.hit)} hit</span><span class="${b.roi == null ? "" : b.roi >= 0 ? "pos" : "neg"}">${stratRoi(b.roi)} ROI</span><span>${b.n} row${b.n === 1 ? "" : "s"}</span></div>
+              ${b.label ? `<div class="sgc-btlab">${esc(b.label)}</div>` : ""}
+            </div>`).join("")}
+          </div>`
+        : "";
+      const comb = r.combined
+        ? `<div class="sgc-comb"><b>Live + backtest together: ${esc(stratWL(r.combined))}${r.combined.roi != null ? ` · ${stratRoi(r.combined.roi)} ROI` : ""} over ${r.combined.n}.</b> ${r.combined.label ? esc(r.combined.label) : "Shown only because the older published blocks report it — this is not a live record."}</div>`
+        : "";
+      return `<div class="sgc${r.headline ? " headline" : ""}">
+        <div class="sgc-top">
+          <span class="sgc-lab">${esc(r.label)}</span>
+          ${r.headline ? `<span class="sgc-hl">◆ The product</span>` : ""}
+        </div>
+        ${r.what ? `<div class="sgc-what">${esc(r.what)}</div>` : ""}
+        ${liveBlock}
+        ${modes}
+        ${bts}
+        ${comb}
+        ${r.note ? `<div class="sgc-note">${esc(r.note)}</div>` : ""}
+        ${r.basis ? `<details class="sgc-basis"><summary><span>Exactly what this record counts</span><span class="sgc-caret" aria-hidden="true">›</span></summary><p>${esc(r.basis)}</p></details>` : ""}
+      </div>`;
+    }
+    function strategyRecordSection(d: any) {
+      const rows = strategyRecords(d);
+      if (!rows.length) return "";
+      const spec = strategiesSpec();
+      const overlap = humanNote(spec && spec.overlap_note) || humanNote(d && d.record && d.record.by_strategy_note);
+      return `<div class="ixc stgyrec" id="strategy-record">
+        <div class="ixc-h">Strategy by strategy</div>
+        <div class="ixc-sub">Every rule-set we run, each with its own record — the ones losing money as well as the ones making it.</div>
+        <div class="stgyrec-warn">
+          <p><b>Live-served picks only, at the top of every card.</b> That is the only kind of number that ever described a real bankroll. Anything reconstructed or backtested sits below a rule, is labelled, and is never added in.</p>
+          <p><b>They overlap — never add them up.</b> The same game appears in more than one stream, so these are the same bets from different angles, not independent bets. And choosing whichever stream currently looks best is not a strategy: with four overlapping streams over a few dozen graded picks, one of them looks good by construction.</p>
+          <p><b>The samples are small.</b> None of this is an edge claim.</p>
+        </div>
+        <div class="stgyrec-order">Listed in the model's own order, the served product first. Deliberately <b>not</b> ranked by returns — a leaderboard would bury the losers.</div>
+        <div class="stgyrec-list">${rows.map(strategyCard).join("")}</div>
+        ${overlap ? `<details class="stgyrec-full"><summary><span>The full methodology note, unedited</span><span class="sgc-caret" aria-hidden="true">›</span></summary><p>${esc(overlap)}</p></details>` : ""}
+      </div>`;
+    }
     // ── PAST PICKS (Leon, 2026-07-25): a browsable day-by-day archive on Insights —
     // most recent first, each day's picks with side/line/stars + W/L/P chips + the
     // day record. Reuses by_date_record + the history games; compact and scannable.
@@ -4470,18 +4900,21 @@ export default function Home() {
         <div class="ix-masthead">
           <div class="ix-eyebrow">DiamondEdge · Insights</div>
           <h2 class="ix-mast-h">The record, graded in public</h2>
-          <p class="ix-mast-sub">Every pregame totals pick we publish, graded against the final at the real price. Wins, losses, and the record they add up to — no cherry-picking.</p>
+          <p class="ix-mast-sub">${headlineStrategyRecord(betaData)
+            ? `Every pick we <b>serve</b> is graded against the final at the real price. The live-served record leads. Anything reconstructed or backtested is labelled as such and never blended into it — including on the charts below, which cover the combined history.`
+            : `Every pregame totals pick we publish, graded against the final at the real price. Wins, losses, and the record they add up to — no cherry-picking.`}</p>
           <div class="ix-mast-act">
             <button class="ix-btn" id="res-share">Share the record ↗</button>
           </div>
         </div>
         ${betaData ? betaDashboard(betaData) : `<div class="beta-skel">Loading the record…</div>`}
         ${betaData ? `
-          ${chartCard("Season equity curve", "Cumulative units, day by day, at the real prices.", equityCurveSvg(betaData))}
+          ${chartCard("Season equity curve", "Cumulative units, day by day, at the real prices.", equityCurveSvg(betaData), headlineStrategyRecord(betaData) ? "Covers the <b>combined</b> ledger — live-served picks plus the reconstructed and backtested days. Only the tail is a served record; the split is spelled out under the hero above." : "")}
           ${chartCard("Do more stars win more?", "Hit rate by star tier — the scale only means something if the higher tiers deliver.", starPerfSvg(betaData), "Dashed line = break-even (52.4%) at −110 pricing. Counts under each bar.")}
           ${chartCard("Calibration", "When the model says a number, does reality agree? Predicted vs realized win rate.", calibrationSvg(betaData))}
           ${chartCard("Month by month", "Net units each month — hot months and cold months alike.", monthlySvg(betaData))}
           ${streaksBlock(betaData)}
+          ${strategyRecordSection(betaData)}
           <div class="ix-why"><span class="ixw-k">◆ Every pick shows its work</span><p>Open any pick and you'll see exactly why it exists — the signals that fired, the model's 0–5 confidence score, and the price edge it clears. No black box, no after-the-fact edits.</p></div>
           ${pastPicksSection(betaData)}
           <div class="ix-upsell"><div class="ixu-k">◆ DiamondEdge Premium</div><p>${isSignedIn() ? "Every Strong and Good pick unlocked the moment it publishes — the side, the line, the price and the why." : "Sign in to unlock every pick — the side, the line, the price and the why, the moment it publishes."}</p><button class="ixu-cta" id="ins-upsell2">${isSignedIn() ? "Go Premium" : "Sign in to unlock all picks"}</button></div>
@@ -4579,9 +5012,16 @@ export default function Home() {
     }
     // Branded record line for the masthead + footer — leads with the HONEST forward expectation,
     // with the in-sample backtest labelled as such (never sold as the forward number).
+    // ONE rule for every number that leaves this page (strips, share text, taglines): quote
+    // the LIVE-SERVED record, never record.overall. record.overall is the combined block —
+    // most of it is reconstruction and walk-forward backtest, and quoting it as "graded in
+    // the open so far" reads as a track record it isn't.
     function recordStrip() {
-      const ov = betaData && betaData.record && betaData.record.overall;
-      if (ov && ov.n) return `Every pick graded in the open — ${ov.win}–${ov.loss}${ov.push ? `–${ov.push}` : ""} (${(ov.hit_rate * 100).toFixed(1)}%) so far.`;
+      const hr = headlineStrategyRecord(betaData);
+      if (hr && hr.live) {
+        const since = stratDateTxt(hr.activation);
+        return `Live-served picks, graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}. Backtested history is reported separately.`;
+      }
       return `Every pick graded in the open, win or lose.`;
     }
     // ── News-forward front: real top sports stories (news_feed) with a DiamondEdge betting angle,
@@ -5622,7 +6062,11 @@ export default function Home() {
     function betaFrame(d: any) {
       const dates = Array.isArray(d && d.dates) ? d.dates : [];
       const n = d && d.record && d.record.overall ? d.record.overall.n : 0;
-      const range = dates.length ? `Graded ${esc(dates[0])} → ${esc(dates[dates.length - 1])}${n ? ` · ${n} picks so far` : ""}` : "";
+      // The date range covers the whole ledger, most of which was never served — so the
+      // count is labelled "graded rows", and the live-served count is stated next to it.
+      const hr = headlineStrategyRecord(d);
+      const lv = hr && hr.live;
+      const range = dates.length ? `Graded ${esc(dates[0])} → ${esc(dates[dates.length - 1])}${n ? ` · ${n} graded rows` : ""}${lv ? ` · ${lv.n} of them served live` : ""}` : "";
       return `<div class="beta-frame">
         <p class="bf-lede">Pregame totals, star-rated and graded in the open — win or lose.</p>
         <div class="bf-note">${range}</div>
@@ -5681,6 +6125,49 @@ export default function Home() {
         ? `<div class="strec-l7"><span class="l7k">Last 7 days</span><div class="l7row">${l7}</div></div>`
         : "";
       const gatedNote = `<div class="strec-gate">Every pick has to beat the actual price it's judged at — a call that's on the right side of the number but priced out is an honest pass, not a bet.</div>`;
+      // ═══ THE HERO LEADS WITH THE LIVE-SERVED RECORD ═══
+      // record.overall is a COMBINED block: live-served picks plus pre-activation
+      // reconstruction plus the champion's rolling-origin walk-forward backtest. Most of it
+      // was never served to anyone. Leading with it — under the words "graded in public…
+      // nothing hidden" — reads as a live track record that does not exist. So the live
+      // number leads at full size with its start date, and the combined total is demoted to
+      // a labelled secondary block that states exactly how much of it was never live.
+      const hr = headlineStrategyRecord(d);
+      const lv = hr && hr.live;
+      if (lv) {
+        const lvPos = (lv.roi || 0) >= 0;
+        const since = stratDateTxt(hr.activation);
+        // the combined figure the older blocks publish (record.overall) + how much of it
+        // was never a served pick — stated as a number, not a hedge.
+        const cmb = (hr.combined && hr.combined.n ? hr.combined : (ov && ov.n ? { n: ov.n, win: ov.win, loss: ov.loss, push: ov.push, hit: _fin(ov.hit_rate), roi: _fin(ov.roi) } : null));
+        const notLiveN = cmb ? Math.max(0, cmb.n - lv.n) : 0;
+        const combinedBlock = cmb && cmb.n > lv.n
+          ? `<div class="strec-notlive">
+              <div class="snl-k">Also published — the combined total</div>
+              <p><b>${esc(stratWL(cmb))}${cmb.hit != null ? ` · ${stratPct(cmb.hit)}` : ""}${cmb.roi != null ? ` · ${stratRoi(cmb.roi)} ROI` : ""} over ${cmb.n}.</b> Only <b>${lv.n}</b> of those were picks we actually served. The other <b>${notLiveN}</b> are the same rules replayed backwards — pre-activation reconstruction and walk-forward backtest. The individual picks are real; the record is not a served one. It stays on the page because the older blocks below report it. Don't read it as a track record.</p>
+            </div>`
+          : "";
+        return `
+        <div class="strec-hero ${lvPos ? "pos" : "neg"}">
+          <div class="strec-k">The live record — picks we actually served</div>
+          <div class="strec-big"><b>${esc(stratWL(lv))}</b></div>
+          <div class="strec-stats">
+            <span class="strec-stat"><i>${stratPct(lv.hit)}</i><em>hit rate</em></span>
+            <span class="strec-stat"><i class="${lvPos ? "pos" : "neg"}">${stratRoi(lv.roi)}</i><em>ROI</em></span>
+            <span class="strec-stat"><i>${lv.n}</i><em>served &amp; graded</em></span>
+          </div>
+          <div class="strec-sub">${since ? `Every pick served since ${esc(since)}, when the current pick rule went live` : "Every pick we've actually served"} — graded against the final at the real price. Backtested history is kept separate, below.</div>
+        </div>
+        ${combinedBlock}
+        ${last7Strip}
+        <div class="strec-card">
+          <div class="strec-ch">Record by star tier</div>
+          <div class="strec-csub">A star is a conviction band. It only means something if the higher tiers win more — so here's each tier, graded.</div>
+          <div class="strec-rows">${rows}</div>
+          <div class="strec-mixnote">These tiers bucket the <b>combined</b> history above — live and reconstructed together. Read them as a shape check on the star scale, not as a live record.</div>
+          ${gatedNote}
+        </div>`;
+      }
       const roiPos = (ov.roi || 0) >= 0;
       return `
         <div class="strec-hero ${roiPos ? "pos" : "neg"}">
@@ -5728,7 +6215,13 @@ export default function Home() {
       const games = (lv.games || []) as any[];
       const bc = lv.board_census || {};
       const ov = (lv.record || {}).overall || {};
-      const recBit = ov.n
+      // Quote the LIVE-SERVED record here too — "season record" off record.overall would be
+      // mostly reconstruction and backtest.
+      const lvHr = headlineStrategyRecord(lv) || headlineStrategyRecord(betaData);
+      const lvB = lvHr && lvHr.live;
+      const recBit = lvB
+        ? `<div class="beta-liverec">Live-served record${lvHr.activation ? ` since ${esc(stratDateTxt(lvHr.activation) || lvHr.activation)}` : ""}: <b>${esc(stratWL(lvB))}</b>${lvB.hit != null ? ` · ${stratPct(lvB.hit)}` : ""}${lvB.roi != null ? ` · ${stratRoi(lvB.roi)} ROI` : ""}</div>`
+        : ov.n
         ? `<div class="beta-liverec">Season record: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""}</div>`
         : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;
       // Today's picks (the actionable ones), or an honest no-play note.
@@ -5843,6 +6336,7 @@ export default function Home() {
               <div class="bgrid-h">The DiamondEdge Pick</div>
               ${pickCard}
             </div>
+            ${strategiesPanel(g)}
           </div>
         </div>`;
       let layer = $("sheet-layer");

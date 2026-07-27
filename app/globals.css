@@ -2762,3 +2762,240 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 @media(prefers-reduced-motion:reduce){.lab-detail{animation:none}}
 /* 4-icon dock still overflow-clean on the narrowest phones */
 @media(max-width:392px){.dock-item{padding:10px 11.5px}.dock-lab{font-size:12px}}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   PICK PRESENTATION — ELEGANCE PASS  (Leon, 2026-07-26)
+   Not a redesign: the same components, given one rhythm and one accent.
+   Every pick surface now reads in three beats —
+     1. EYEBROW   who is speaking + how it finished        (quiet, tracked, small)
+     2. THE CALL  the side, the line, the price            (the ONLY loud element)
+     3. THE LEDGER stars · score, then the provenance line  (below a hairline)
+   The noise being removed is chip-clutter: the price and the confidence score had
+   their own filled pills, so a single pick carried four competing gold objects.
+   Now GOLD MEANS ONE THING — the stars. Price and score are bare tabular figures,
+   the eyebrow steps back to ink3, and a hairline separates the call from its
+   receipts. Nothing is hidden and no information is dropped.
+   ══════════════════════════════════════════════════════════════════════════════ */
+/* 1 — eyebrow steps back so the call can step forward */
+.pstrip.bold .ps-kickrow{gap:8px;align-items:baseline}
+.pstrip.bold .ps-k{color:var(--ink3);font-size:8.5px;letter-spacing:.16em}
+.pstrip.bold.q-strong .ps-k{color:rgba(238,194,88,.7)}
+.pstrip.bold .ps-res{font-size:8.5px;letter-spacing:.07em;padding:2.5px 9px}
+/* 2 — the call: bigger, tighter, with the price as a quiet mono trailer (no pill) */
+.pstrip.bold .ps-main{gap:4px 10px;align-items:baseline}
+.pstrip.bold .ps-side{font-size:19.5px;letter-spacing:-.012em;gap:8px;align-items:baseline}
+.pstrip.bold .ps-side .ps-px{background:none;padding:0;border-radius:0;
+  font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.01em;color:var(--ink3)}
+@media(max-width:699px){.pstrip.bold .ps-side{font-size:20px}}
+/* 3 — the ledger: gold stars carry confidence; the 0–5 score is a bare figure beside them */
+.pstrip.bold .ps-q{gap:7px;align-items:center}
+.pstrip .ps-q .pgrade{background:none;padding:0;margin-left:0;font-size:11px;color:var(--golddeep);opacity:.9}
+.pstrip .ps-q .pgrade::before{content:"";display:inline-block;width:1px;height:9px;margin-right:7px;
+  vertical-align:-1px;background:rgba(224,235,255,.18)}
+/* provenance — one tabular hairline-ruled line; the freeze reads as a real lock glyph */
+.pk-made{display:flex;align-items:center;flex-wrap:wrap;gap:4px 7px}
+.pk-made svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.2;flex-shrink:0;opacity:.85}
+.pk-made .pkm-lk{font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.pk-made .pkm-b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pstrip.bold .pk-made{margin-top:7px;padding-top:6px;border-top:1px solid rgba(210,224,247,.07);
+  font-family:var(--mono);font-weight:500;font-size:9.5px;letter-spacing:.015em;color:var(--ink4);line-height:1.4}
+.pstrip.bold .pk-made .pkm-lk{color:var(--ink3)}
+.sts .pk-made{justify-content:center}
+.feat .pk-made{justify-content:flex-start}
+/* signals sit under the receipts, not beside them */
+.pstrip .ps-signals{padding-top:6px;margin-top:1px}
+/* TOP PICKS — same three beats in the dark-glass voice */
+.tpk{gap:8px}
+.tpk-rank{font-size:8.5px;letter-spacing:.05em;background:rgba(255,255,255,.06);color:rgba(238,242,248,.5)}
+.tpk-when{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(238,242,248,.5)}
+.tpk-side{letter-spacing:-.015em}
+.tpk-side i{font-family:var(--mono);font-weight:500;font-size:11.5px;color:rgba(238,242,248,.52);margin-left:8px}
+.tpk-foot .pgrade{background:none;padding:0;margin-left:0;font-size:10.5px;color:rgba(244,200,74,.85)}
+.tpk-foot .pgrade::before{content:"";display:inline-block;width:1px;height:9px;margin-right:7px;
+  vertical-align:-1px;background:rgba(255,255,255,.16)}
+.tp-grid .tpk-foot{padding-top:8px;border-top:1px solid rgba(255,255,255,.07)}
+.tpk-hero .tpk-foot{padding-top:2px;border-top:0}
+/* the article payoff callout: eyebrow on its own line, the call unmistakable */
+.art-pick{gap:6px 12px;padding:13px 15px;border-left-width:3px}
+.art-pick .apk-k{width:100%;font-size:8px;letter-spacing:.18em;color:var(--ink4)}
+.art-pick .apk-txt{font-size:20px;letter-spacing:-.012em}
+.art-pick .apk-q .pgrade{background:none;padding:0;margin-left:4px;color:var(--golddeep)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   EVERY STRATEGY ON THIS GAME — the per-game transparency panel
+   Receipts, not a menu: the served pick is pinned and ringed; the rest render at
+   equal weight whether they played or passed, and the overlap warning is part of
+   the panel, not a footnote.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.stgy-teaser{display:flex;align-items:center;gap:10px;width:100%;margin:12px 0;padding:12px 14px;text-align:left;
+  border:1px solid var(--line2);border-radius:14px;background:rgba(210,224,247,.045);cursor:pointer;
+  transition:background .2s var(--ease),transform .16s var(--spring)}
+.stgy-teaser:hover{background:rgba(210,224,247,.075)}
+.stgy-teaser:active{transform:scale(.985)}
+.stgy-teaser:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.stgy-teaser .sgt-k{font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:-.005em;color:var(--ink);min-width:0}
+.stgy-teaser .sgt-sum{margin-left:auto;font-family:var(--mono);font-weight:500;font-size:9.5px;color:var(--ink3);white-space:nowrap}
+.stgy-teaser .sgt-go{color:var(--ink4);font-size:16px;line-height:1;flex-shrink:0}
+.stgy{margin:14px 0;padding:14px 15px 15px;border:1px solid var(--line2);border-radius:16px;background:rgba(8,13,24,.34)}
+.stgy-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+.stgy-k{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--golddeep)}
+.stgy-count{margin-left:auto;font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink3);white-space:nowrap}
+.stgy-lede{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink2);margin:8px 0 0}
+.stgy-lede b{color:var(--ink)}
+.stgy-rows{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+/* Status modifiers are is-* prefixed ON PURPOSE: a bare .lean here collides with the
+   lean-METER component (a 74x16 inline-block) and collapses the whole row — the exact
+   bug already fixed once in the pick strips. Do not reintroduce it. The explicit
+   flex:0 0 auto is the second belt: a long row must never be shrunk in the stack. */
+.stgy-rows>.sgr{flex:0 0 auto}
+.sgr{min-width:0;padding:11px 12px;border-radius:12px;border:1px solid var(--line3);background:rgba(210,224,247,.035)}
+.sgr.served{border-color:rgba(224,172,32,.4);background:linear-gradient(135deg,rgba(224,172,32,.11),rgba(210,224,247,.04) 72%);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.14)}
+.sgr-top{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;min-width:0}
+.sgr-lab{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:-.005em;color:var(--ink);min-width:0;
+  overflow:hidden;text-overflow:ellipsis}
+.sgr-served{font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  color:#3a2c05;background:linear-gradient(135deg,#f6dd94,#e7b62e);border-radius:999px;padding:2.5px 8px;flex-shrink:0}
+.sgr-status{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
+.sgr-status.is-pick{color:#45d6a2;background:rgba(25,197,138,.15)}
+.sgr-status.is-lean{color:#8cadff;background:rgba(110,161,255,.14)}
+.sgr-status.is-pass{color:var(--ink3);background:rgba(210,224,247,.07)}
+.sgr-call{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 9px;margin-top:7px;min-width:0}
+.sgr-side{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:-.01em;color:var(--ink);white-space:nowrap}
+.sgr-side.ou-over{color:var(--over)}
+.sgr-side.ou-under{color:var(--under)}
+.sgr-side.is-pass{font-weight:700;font-size:14px;color:var(--ink3)}
+.sgr-px{font-style:normal;font-family:var(--mono);font-weight:500;font-size:10.5px;color:var(--ink3)}
+.sgr-q{display:inline-flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+.sgr-q .bstars{font-size:10.5px}
+.sgr-q .pgrade{background:none;padding:0;margin-left:0;font-size:10.5px}
+.sgr-q .pgrade.muted{color:var(--ink3)}
+.sgr-res{font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.1em;border-radius:999px;padding:2.5px 8px;flex-shrink:0}
+.sgr-res.won{color:#fff;background:var(--green)}
+.sgr-res.lost{color:#fff;background:var(--red)}
+.sgr-res.pushed{color:var(--push);background:var(--pushbg)}
+.sgr-lean{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-top:6px}
+.sgr-why{font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink2);margin-top:6px}
+.sgr-why.dim{color:var(--ink4)}
+.sgr-rec{font-family:var(--mono);font-weight:500;font-size:9.5px;line-height:1.5;color:var(--ink4);margin-top:7px;
+  padding-top:6px;border-top:1px dashed rgba(210,224,247,.1)}
+.sgr-rec em{font-style:normal;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:8px;
+  border-radius:999px;padding:2px 6px;margin-right:5px}
+.sgr-rec .sgr-lv{color:#45d6a2;background:rgba(25,197,138,.14)}
+.sgr-rec .sgr-bt{color:var(--amber);background:rgba(240,178,60,.15)}
+.sgr-rec b{font-weight:700}
+.sgr-rec .pos{color:#45d6a2}.sgr-rec .neg{color:#ff7d93}
+.stgy-note{font-family:var(--sans);font-size:11.5px;line-height:1.55;color:var(--ink3);margin-top:13px;padding-top:11px;
+  border-top:1px solid var(--line3)}
+.stgy-note b{color:var(--ink2)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   STRATEGY RECORDS (Insights) — every stream's honest record
+   Losing streams render EXACTLY like winning ones: same card, same size, same
+   order rule (biggest sample first, never by ROI). Backtests are walled off in
+   their own labelled group and never blended with live results.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.stgyrec-warn{margin-top:11px;padding:12px 13px;border-radius:12px;border:1px solid rgba(240,178,60,.26);
+  background:rgba(240,178,60,.07)}
+.stgyrec-warn p{font-family:var(--sans);font-size:12px;line-height:1.55;color:var(--ink2);margin:0}
+.stgyrec-warn p + p{margin-top:8px}
+.stgyrec-warn b{color:var(--ink)}
+.stgyrec-order{font-family:var(--sans);font-size:11px;line-height:1.5;color:var(--ink3);margin-top:10px}
+.stgyrec-order b{color:var(--ink2)}
+.stgyrec-list{display:flex;flex-direction:column;gap:11px;margin-top:12px}
+.stgyrec-list>.sgc{flex:0 0 auto}
+.sgc{min-width:0;padding:13px 14px;border-radius:14px;border:1px solid var(--line3);background:rgba(210,224,247,.035)}
+.sgc.bt{border-style:dashed;border-color:rgba(240,178,60,.3);background:rgba(240,178,60,.045)}
+.sgc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.sgc-lab{font-family:var(--disp);font-weight:700;font-size:13.5px;letter-spacing:-.01em;color:var(--ink);min-width:0}
+.sgc-tag{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
+.sgc-tag.live{color:#45d6a2;background:rgba(25,197,138,.15)}
+.sgc-tag.bt{color:var(--amber);background:rgba(240,178,60,.16)}
+.sgc-nums{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px}
+.sgc-n{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sgc-n b{font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink);font-variant-numeric:tabular-nums}
+.sgc-n b.pos{color:#45d6a2}.sgc-n b.neg{color:#ff7d93}
+.sgc-n em{font-style:normal;font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink4);white-space:nowrap}
+.sgc-bars{display:block;width:100%;height:auto;margin-top:11px}
+.sgc-axis{display:flex;flex-wrap:wrap;gap:2px 12px;margin-top:5px;
+  font-family:var(--mono);font-weight:500;font-size:8.5px;color:var(--ink4)}
+.sgc-empty{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin-top:9px}
+.sgc-meta{font-family:var(--mono);font-weight:500;font-size:9.5px;line-height:1.5;color:var(--ink3);margin-top:10px}
+.sgc-basis{font-family:var(--sans);font-size:11.5px;line-height:1.55;color:var(--ink2);margin-top:8px;padding-top:8px;
+  border-top:1px dashed rgba(210,224,247,.1)}
+.sgc-basis b{font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink4);margin-right:6px}
+.sgc-note{font-family:var(--sans);font-size:11.5px;line-height:1.55;color:var(--ink3);margin-top:7px}
+.stgyrec-btwrap{margin-top:16px;padding-top:14px;border-top:2px solid rgba(240,178,60,.24)}
+.stgyrec-bthead{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.stgyrec-btnote{font-family:var(--sans);font-size:11.5px;line-height:1.55;color:var(--ink3);margin:7px 0 0}
+
+/* NO_VIEW / lean additions to the per-game strategy rows */
+.sgr-status.is-noview{color:var(--ink4);background:rgba(210,224,247,.05)}
+.sgr-side.is-noview{font-weight:700;font-size:13.5px;color:var(--ink4)}
+.sgr.is-noview{opacity:.82}
+.sgr-lean-side{font-style:normal;font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.01em;opacity:.75}
+.sgr-lean-side.ou-over{color:var(--over)}
+.sgr-lean-side.ou-under{color:var(--under)}
+.sgr-leanlab{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-top:6px}
+.sgr-src{font-family:var(--sans);font-size:11px;line-height:1.5;color:var(--golddeep);opacity:.9;margin-top:6px}
+.sgr-btnote{display:block;margin-top:3px;color:var(--amber);opacity:.85}
+.sgr-rec .sgr-lv.none{color:var(--ink4);background:rgba(210,224,247,.06)}
+
+/* ── strategy cards: LIVE is the primary block, everything else is visibly secondary ── */
+.sgc.headline{border-color:rgba(224,172,32,.34);background:linear-gradient(135deg,rgba(224,172,32,.075),rgba(210,224,247,.035) 70%)}
+.sgc-hl{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  color:#3a2c05;background:linear-gradient(135deg,#f6dd94,#e7b62e);border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
+.sgc-what{font-family:var(--sans);font-size:12px;line-height:1.55;color:var(--ink2);margin-top:7px}
+.sgc-live{margin-top:11px;padding:11px 12px;border-radius:12px;border:1px solid rgba(25,197,138,.22);background:rgba(25,197,138,.05)}
+.sgc-live.none{border-color:var(--line3);background:rgba(210,224,247,.03)}
+.sgc-livek{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sgc-liven{font-family:var(--mono);font-weight:500;font-size:9.5px;color:var(--ink3)}
+.sgc-tag.live.none{color:var(--ink3);background:rgba(210,224,247,.07)}
+.sgc-live .sgc-nums{margin-top:9px}
+.sgc-live .sgc-tag{margin-left:0}
+/* the observation breakdown + the methodology text: available, never shouting */
+.sgc-modes,.sgc-basis{margin-top:10px;border-top:1px dashed rgba(210,224,247,.1);padding-top:9px}
+.sgc-modes>summary,.sgc-basis>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;
+  font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.sgc-modes>summary::-webkit-details-marker,.sgc-basis>summary::-webkit-details-marker{display:none}
+.sgc-caret{margin-left:auto;color:var(--ink4);font-size:15px;line-height:1;transition:transform .2s ease}
+.sgc-modes[open] .sgc-caret,.sgc-basis[open] .sgc-caret,.stgyrec-full[open] .sgc-caret{transform:rotate(90deg)}
+.sgc-basis>p,.stgyrec-full>p{font-family:var(--sans);font-size:11.5px;line-height:1.6;color:var(--ink3);margin:8px 0 0}
+.sgc-mode{margin-top:9px}
+.sgcm-top{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+  font-family:var(--mono);font-weight:500;font-size:10.5px;color:var(--ink2)}
+.sgcm-top b{font-weight:700;color:var(--ink)}
+.sgcm-rec{color:var(--ink3)}
+.sgcm-what{font-family:var(--sans);font-size:11px;line-height:1.5;color:var(--ink4);margin-top:3px}
+/* NOT LIVE — ruled off, dimmed, amber-tagged, never adjacent to the live figures */
+.sgc-bt{margin-top:12px;padding-top:11px;border-top:2px solid rgba(240,178,60,.24)}
+.sgc-bthead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sgc-bthk{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);opacity:.9}
+.sgc-btrow{margin-top:9px;opacity:.78}
+.sgc-btnums{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;
+  font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink3)}
+.sgc-btnums b{font-weight:700;font-size:12.5px;color:var(--ink2)}
+.sgc-btnums .pos{color:#45d6a2}.sgc-btnums .neg{color:#ff7d93}
+.sgc-btlab{font-family:var(--sans);font-size:11px;line-height:1.55;color:var(--ink4);margin-top:5px}
+/* combined_view — a footnote, and it says so */
+.sgc-comb{margin-top:11px;padding:9px 11px;border-radius:10px;background:rgba(210,224,247,.035);
+  font-family:var(--sans);font-size:11px;line-height:1.55;color:var(--ink4)}
+.sgc-comb b{color:var(--ink3)}
+.stgyrec-full{margin-top:14px;padding-top:12px;border-top:1px solid var(--line3)}
+.stgyrec-full>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;
+  font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.stgyrec-full>summary::-webkit-details-marker{display:none}
+
+/* ── Insights hero: the live record leads, the combined total is demoted and explained ── */
+.strec-notlive{margin:10px 0 0;padding:12px 14px;border-radius:14px;border:1px solid rgba(240,178,60,.26);
+  background:rgba(240,178,60,.06)}
+.snl-k{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.strec-notlive p{font-family:var(--sans);font-size:12px;line-height:1.6;color:var(--ink2);margin:7px 0 0}
+.strec-notlive b{color:var(--ink)}
+.strec-mixnote{font-family:var(--sans);font-size:11px;line-height:1.55;color:var(--ink4);margin-top:11px;
+  padding-top:9px;border-top:1px dashed rgba(210,224,247,.1)}
+.strec-mixnote b{color:var(--ink3)}
