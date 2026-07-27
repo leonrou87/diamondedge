@@ -1,13 +1,26 @@
 {
- "generated_utc": "2026-07-26T23:55:50Z",
+ "generated_utc": "2026-07-27T20:13:50Z",
  "summary": {
   "shipped": 12,
   "testing": 0,
-  "accruing": 5,
+  "accruing": 6,
   "queued": 0,
-  "closed": 16
+  "closed": 19
  },
  "items": [
+  {
+   "id": "spreads_return",
+   "title": "Spreads return (run lines)",
+   "tagline": "Run-line calls are back on every game tile \u2014 as a brand-new stream that starts 0-0-0 and gets graded in public from day one.",
+   "status": "accruing",
+   "category": "model",
+   "progress_pct": 25,
+   "started": "2026-07-27",
+   "eta": "accruing live",
+   "latest": "07-27: engine verdict landed \u2014 BLOCKED (margin fitness gate failed; the run-line market beat every arm tested, including the no-sim control). Spreads stay honest leans \u2014 no bet path opens.",
+   "detail": "Spreads were removed from the product on 07-07 and return on Leon's call as a NEW, separately-graded, activation-dated stream: the record starts 0-0-0 on 07-27, every stated side is locked at first pitch and graded at the real locked price, and nothing is retro-credited or blended with a backtest. Honesty posture: the stream is UNPROVEN and serves clearly-labeled LEANS only \u2014 never a bet. The run-line engine test that could have opened a bet path reported the same day: BLOCKED \u2014 the simulator (validated on totals) fails its margin fitness gate (it carries no home-field advantage), and even set aside, the de-vigged run-line market beat every declared arm on Brier, including the moneyline-only control. So the market's run-line price is genuinely informative and our leans are exactly that: leans, graded in public until something real is earned. The pre-pivot spread machinery was adjudicated a research null and is never revived as credit.",
+   "result": null
+  },
   {
    "id": "unified_one_pick",
    "title": "Unified one-pick model",
@@ -431,6 +444,45 @@
    "latest": "2026-07-26: worth about nothing \u2014 and the market is just as accurate three hours before any lineup exists",
    "detail": "Rather than build better lineup predictions, we gave the model the actual nine hitters from the box score \u2014 information no bettor could ever have \u2014 across 8,300 games. A better lineup is worth about a quarter of a run raw, but the posted total already knows most of it, and the lineup we can project the day before captures ninety percent of the rest. What is genuinely new when the lineup posts moves the game by about a fiftieth of a run, and the book prices even that. Decisive check: the market forecasts just as well at six hours out, when zero lineups have posted, as at one hour out when nearly all have.",
    "result": "NULL \u2014 actual-vs-projected lineup worth +0.019 runs (CI includes zero); 0 of 33 tests beat the market; best honest ROI +0.02%"
+  },
+  {
+   "id": "accuracy-ceiling",
+   "title": "Can we just pick the right side?",
+   "tagline": "Forget the fee \u2014 can we pick over/under better than a coin flip at all? Measured to the ceiling.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-26",
+   "eta": "closed",
+   "latest": "2026-07-26: best honest accuracy 51.5%, statistically indistinguishable from always betting under",
+   "detail": "We changed the goal entirely: stop optimising for profit, just try to pick the winning side as often as possible. Best result across 8,412 games was 51.5%, with an error range that includes the strategy \"always bet under\" \u2014 a rule requiring no model at all. The most accurate rule we found was simply copying the market own side (52.1%), and even that falls short of the 52.4% needed to break even at standard pricing. Our confidence ranking is flat: keeping only the games we feel best about does not improve accuracy.",
+   "result": "NULL \u2014 51.5% ceiling (CI 50.5-52.6%) vs 50.6% for always-under; 0 of 26 pre-declared segments survived correction"
+  },
+  {
+   "id": "derivative-markets",
+   "title": "The simulator vs derived markets",
+   "tagline": "Pointed our validated game simulator at First-5 totals, run lines, and team-total ladders.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-26",
+   "eta": "closed",
+   "latest": "2026-07-27: F5 closed for the third and final time; run line blocked on a fixable simulator defect (and the peek says the market wins anyway); team-total ladders hold the one measured crack but have zero graded outcomes yet",
+   "detail": "First-5: the five-inning simulator passed every physics check, and its median lands within 0.06 runs of the posted line \u2014 same story as full games; closed. Run line: the simulator reproduces the strange texture of baseball margins almost perfectly but does not know home teams are better (it only knows they bat last) \u2014 a real, fixable defect. Team totals: we proved the book generates its ladders by formula, and that its own ladder, total, and moneyline disagree by 1.5-2 points on every game \u2014 a measured inconsistency, but with zero graded outcomes collected yet, no honest test is possible.",
+   "result": "F5 NULL (3rd mechanism); run line BLOCKED on missing home-field advantage; TT ladder inconsistency REAL but untestable until data accrues"
+  },
+  {
+   "id": "player-state-momentum",
+   "title": "Player form + momentum, combined",
+   "tagline": "Fifty player-form signals \u2014 hot bats, pitcher stuff trends, bullpen state \u2014 combined into one model, aimed at totals and spreads.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-26",
+   "eta": "closed",
+   "latest": "2026-07-27: the combined model is WORSE than the market line, every season, on both markets",
+   "detail": "The fair critique was that player momentum signals had only been tested one at a time. So all fifty were combined into one model and aimed at both the totals market and the newly-returned spread market across 9,230 games. Result: the combined model is significantly worse than the market price on both, every season, both favorite and dog sides. The spread market is at least as sharp as totals. By the time we can bet, player form is in the price.",
+   "result": "DOUBLE NULL \u2014 totals composite \u0394Brier +0.0018 worse (CI excludes zero); run-line market beats fundamentals AND player-state every season; spread market NOT softer"
   }
  ]
 }

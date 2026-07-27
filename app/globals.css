@@ -2999,3 +2999,30 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .strec-mixnote{font-family:var(--sans);font-size:11px;line-height:1.55;color:var(--ink4);margin-top:11px;
   padding-top:9px;border-top:1px dashed rgba(210,224,247,.1)}
 .strec-mixnote b{color:var(--ink3)}
+
+/* ═══════ SPREAD STREAM — run lines return (2026-07-27; NEW, separately graded) ═══════ */
+/* Tile row: quiet + subordinate to the headline pick strip — never a second headline. */
+.sprow{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:6px;padding:6px 10px 7px;
+  border-radius:var(--r-xs);background:rgba(210,224,247,.03);border:1px dashed rgba(210,224,247,.10)}
+.sprow .spr-k{font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink4);white-space:nowrap;flex-shrink:0}
+.sprow .spr-call{display:inline-flex;align-items:baseline;gap:4px;font-family:var(--disp);font-weight:700;
+  font-size:12px;color:var(--ink2);white-space:nowrap}
+.sprow .spr-call i.spr-px{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink4)}
+.sprow.is-pick .spr-call{color:var(--ink)}
+.sprow .spr-leanlab{font-family:var(--sans);font-size:9.5px;color:var(--ink4);white-space:nowrap}
+.sprow .spr-new{font-family:var(--disp);font-weight:700;font-size:7.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--amber,#f0b23c);border:1px solid rgba(240,178,60,.32);border-radius:99px;padding:2px 7px;white-space:nowrap}
+.sprow .spr-lk{display:inline-flex;opacity:.6}
+.sprow .spr-lk svg{width:9px;height:9px}
+.sprow .spr-res{font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+  margin-left:auto;white-space:nowrap}
+.sprow .spr-res.won{color:#45d6a2}.sprow .spr-res.lost{color:#ff7d93}.sprow .spr-res.pushed{color:var(--ink3)}
+@media (max-width:420px){.sprow{gap:3px 6px;padding:5px 8px 6px}.sprow .spr-new{font-size:7px;padding:2px 5px}}
+
+/* Strategy rows + record cards: the NEW badge and the lean-ledger framing */
+.sgr-new,.sgc-new{font-family:var(--disp);font-weight:700;font-size:7.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--amber,#f0b23c);border:1px solid rgba(240,178,60,.32);border-radius:99px;padding:2px 7px;white-space:nowrap;flex-shrink:0}
+.sgc-leanled{margin-top:8px;padding:8px 11px;border-radius:10px;border:1px solid rgba(240,178,60,.2);
+  background:rgba(240,178,60,.05);font-family:var(--sans);font-size:11px;line-height:1.55;color:var(--ink3)}
+.sgc-leanled b{color:var(--ink2)}

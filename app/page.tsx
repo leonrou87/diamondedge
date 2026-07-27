@@ -841,6 +841,50 @@ export default function Home() {
         suggested_units: pk.suggested_units != null ? pk.suggested_units : null,
       };
     }
+    // ═══════════ SPREAD STREAM — run lines RETURN (Leon, 2026-07-26; live 2026-07-27) ═══════════
+    // The unified feed now carries games[].spread — a NEW, separately-graded run-line stream.
+    // HONESTY CONTRACT (mirrors the payload): the stream starts 0-0-0 at its activation date and
+    // is graded in public from day one; in lean_only mode every call is an HONEST LEAN — clearly
+    // labeled, never a bet, never above 1★ (sim mode, if it ever certifies in, caps at 2★). The
+    // TOTALS headline pick is UNCHANGED — this renders as a subordinate labeled row, never a
+    // second headline. Read defensively: absent/malformed ⇒ nothing renders anywhere.
+    function spreadBlockFor(g: any) {
+      const direct = g && g.spread && typeof g.spread === "object" ? g.spread : null;
+      if (direct) return direct;
+      const vg = v4GameFor(g);
+      return vg && vg.spread && typeof vg.spread === "object" ? vg.spread : null;
+    }
+    // "PIT -1.5" — the chosen side's own point, named by team abbr (never bare home/away).
+    function spreadCallTxt(g: any, sp: any) {
+      if (!sp || !sp.side) return "";
+      const ab = sp.side === "home"
+        ? (g && g.home_abbr) || mlbAbbr(sp.side_team)
+        : sp.side === "away" ? (g && g.away_abbr) || mlbAbbr(sp.side_team) : "";
+      const ln = sp.line != null && isFinite(Number(sp.line)) ? sgn(Number(sp.line)) : "";
+      return [ab || String(sp.side).toUpperCase(), ln].filter(Boolean).join(" ");
+    }
+    // ONE quiet subordinate row on the game tile. LEAN = stated read, explicitly not a bet;
+    // PICK (sim mode only, capped stars) shows its stars; PASS/no block renders nothing.
+    function spreadRowTile(g: any) {
+      const sp = spreadBlockFor(g);
+      if (!sp || !sp.side || (sp.status !== "LEAN" && sp.status !== "PICK")) return "";
+      const call = spreadCallTxt(g, sp);
+      if (!call) return "";
+      const isBet = sp.status === "PICK" && sp.is_bet === true;
+      const res = sp.result === "win" ? `<span class="spr-res won">${isBet ? "WON" : "lean ✓"}</span>`
+        : sp.result === "loss" ? `<span class="spr-res lost">${isBet ? "LOST" : "lean ✗"}</span>`
+        : sp.result === "push" ? `<span class="spr-res pushed">PUSH</span>` : "";
+      return `<div class="sprow ${isBet ? "is-pick" : "is-lean"}" title="${esc(isBet
+        ? "New spread stream — unproven, capped at 2 stars, graded in public from day one"
+        : "Honest run-line lean — an unproven new stream; not a bet. Graded in public from day one.")}">
+        <span class="spr-k">Run line</span>
+        <span class="spr-call"><b>${esc(call)}</b>${sp.price != null ? `<i class="spr-px">${fmtOdds(sp.price)}</i>` : ""}</span>
+        ${isBet ? `<span class="spr-q">${bStars(sp.stars)}</span>` : `<span class="spr-leanlab">Lean · not a bet</span>`}
+        <span class="spr-new">NEW · graded from day one</span>
+        ${sp.locked ? `<span class="spr-lk" title="Locked at first pitch — graded at exactly this line">${lockSvg}</span>` : ""}
+        ${res}
+      </div>`;
+    }
     // "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)" — the Vegas number we judged, clearly
     // stated, plus a small timestamp of when the pick was FIRST made (that wall's clock).
     const LEAD_MS: any = { "T-24h": 864e5, "T-12h": 432e5, "T-6h": 216e5, "T-3h": 108e5, "T-1h": 36e5 };
@@ -946,6 +990,10 @@ export default function Home() {
         label: String(s.label || key).trim() || key,
         status,
         side: sideRaw,
+        // spread stream: the one non-totals entry — carries its market + the
+        // named team so a run-line side never renders as a bare "HOME"
+        market: String(s.market == null ? "" : s.market).trim(),
+        side_team: String(s.side_team == null ? "" : s.side_team).trim(),
         dir: /under/i.test(sideRaw) ? "under" : /over/i.test(sideRaw) ? "over" : "",
         line: _fin(s.line),
         vegas_line: _fin(s.vegas_line),
@@ -992,6 +1040,13 @@ export default function Home() {
       const raw = String(s.side || "").trim();
       if (!raw && s.line == null) return "—";
       if (/\d/.test(raw)) return raw.toUpperCase();
+      // run-line entry: name the team + its own signed point ("PIT -1.5"),
+      // never a bare "HOME 1.5"
+      if (s.market === "spread" || /^(home|away)$/i.test(raw)) {
+        const ab = mlbAbbr(s.side_team) || raw.toUpperCase();
+        const ln = s.line != null && isFinite(Number(s.line)) ? sgn(Number(s.line)) : "";
+        return [ab, ln].filter(Boolean).join(" ") || "—";
+      }
       const d = s.dir ? s.dir.toUpperCase() : raw.toUpperCase();
       const ln = s.line != null ? lineStr(s.line) : "";
       return [d, ln].filter(Boolean).join(" ") || "—";
@@ -1050,6 +1105,12 @@ export default function Home() {
           live, modes, backtests, combined,
           what: humanNote(r.what), basis: humanNote(r.basis), note: humanNote(r.note),
           activation: String(r.activation_date == null ? "" : r.activation_date).slice(0, 10),
+          // spread stream honesty stamps (absent on every totals stream):
+          // a NEW badge + the graded-lean-ledger framing when it isn't bets
+          market: String(r.market == null ? "" : r.market).trim(),
+          isNew: r.is_new_stream === true,
+          newTag: humanNote(r.new_tag) || "NEW — graded from day one",
+          leanLedger: r.is_new_stream === true && r.is_betting_record === false,
         });
       });
       // NEUTRAL, STABLE ORDER: the payload's own spec order, then anything unknown by sample
@@ -2610,6 +2671,7 @@ export default function Home() {
         </div>
         ${pre ? "" : totOnly}
         ${isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
+        ${spreadRowTile(g)}
       </article>`;
     }
     // A human sentence for WHY the model passed a market — built from the numbers when we
@@ -3850,9 +3912,11 @@ export default function Home() {
       const why = s.reason ? `<div class="sgr-why${noView ? " dim" : ""}">${esc(s.reason)}</div>` : "";
       const leanNote = s.lean ? `<div class="sgr-leanlab">Model lean — not an official pick</div>` : "";
       const srcNote = s.servedSrc && !served ? `<div class="sgr-src">This is the stream the served pick came from.</div>` : "";
+      const isSpreadStream = s.key === "spread_stream";
       return `<div class="sgr ${statusCls}${served ? " served" : ""}">
         <div class="sgr-top">
           <span class="sgr-lab">${esc(s.label)}</span>
+          ${isSpreadStream ? `<span class="sgr-new">NEW · graded from day one</span>` : ""}
           ${served ? `<span class="sgr-served">◆ Served</span>` : ""}
           <span class="sgr-status ${statusCls}">${statusTxt}</span>
         </div>
@@ -4799,11 +4863,13 @@ export default function Home() {
       const comb = r.combined
         ? `<div class="sgc-comb"><b>Live + backtest together: ${esc(stratWL(r.combined))}${r.combined.roi != null ? ` · ${stratRoi(r.combined.roi)} ROI` : ""} over ${r.combined.n}.</b> ${r.combined.label ? esc(r.combined.label) : "Shown only because the older published blocks report it — this is not a live record."}</div>`
         : "";
-      return `<div class="sgc${r.headline ? " headline" : ""}">
+      return `<div class="sgc${r.headline ? " headline" : ""}${r.isNew ? " is-new" : ""}">
         <div class="sgc-top">
           <span class="sgc-lab">${esc(r.label)}</span>
+          ${r.isNew ? `<span class="sgc-new">${esc(r.newTag)}</span>` : ""}
           ${r.headline ? `<span class="sgc-hl">◆ The product</span>` : ""}
         </div>
+        ${r.leanLedger ? `<div class="sgc-leanled">Graded <b>lean</b> ledger — these are stated reads locked and graded in public, <b>not bets</b>. No units are staked and no edge is claimed.</div>` : ""}
         ${r.what ? `<div class="sgc-what">${esc(r.what)}</div>` : ""}
         ${liveBlock}
         ${modes}
