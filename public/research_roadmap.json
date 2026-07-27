@@ -1,11 +1,11 @@
 {
- "generated_utc": "2026-07-27T20:13:50Z",
+ "generated_utc": "2026-07-27T21:04:20Z",
  "summary": {
-  "shipped": 12,
+  "shipped": 13,
   "testing": 0,
   "accruing": 6,
   "queued": 0,
-  "closed": 19
+  "closed": 21
  },
  "items": [
   {
@@ -467,9 +467,9 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "closed",
-   "latest": "2026-07-27: F5 closed for the third and final time; run line blocked on a fixable simulator defect (and the peek says the market wins anyway); team-total ladders hold the one measured crack but have zero graded outcomes yet",
+   "latest": "2026-07-27: home-field advantage added and validated; run line re-tested and closed NULL \u2014 the market beats the simulator even fixed",
    "detail": "First-5: the five-inning simulator passed every physics check, and its median lands within 0.06 runs of the posted line \u2014 same story as full games; closed. Run line: the simulator reproduces the strange texture of baseball margins almost perfectly but does not know home teams are better (it only knows they bat last) \u2014 a real, fixable defect. Team totals: we proved the book generates its ladders by formula, and that its own ladder, total, and moneyline disagree by 1.5-2 points on every game \u2014 a measured inconsistency, but with zero graded outcomes collected yet, no honest test is possible.",
-   "result": "F5 NULL (3rd mechanism); run line BLOCKED on missing home-field advantage; TT ladder inconsistency REAL but untestable until data accrues"
+   "result": "F5 NULL (3rd mechanism); run line NULL after the home-field fix (market sharper, 0 survivors); TT ladder inconsistency real but awaits data"
   },
   {
    "id": "player-state-momentum",
@@ -483,6 +483,45 @@
    "latest": "2026-07-27: the combined model is WORSE than the market line, every season, on both markets",
    "detail": "The fair critique was that player momentum signals had only been tested one at a time. So all fifty were combined into one model and aimed at both the totals market and the newly-returned spread market across 9,230 games. Result: the combined model is significantly worse than the market price on both, every season, both favorite and dog sides. The spread market is at least as sharp as totals. By the time we can bet, player form is in the price.",
    "result": "DOUBLE NULL \u2014 totals composite \u0394Brier +0.0018 worse (CI excludes zero); run-line market beats fundamentals AND player-state every season; spread market NOT softer"
+  },
+  {
+   "id": "live-mc-repricing",
+   "title": "Live in-game repricing (Monte Carlo)",
+   "tagline": "Re-price the total mid-game from the live state, against 19.2M historical in-play quotes.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-26",
+   "eta": "closed (early innings); late innings blocked on calibration",
+   "latest": "2026-07-27: in the corner where the engine is certified, the live market wins clean \u2014 and it is signal, not execution friction",
+   "detail": "The one Monte Carlo surface never tested. Where the simulator is provably calibrated (early innings, normal scoring), the live market beat it even at zero execution cost \u2014 a flat coin-flip baseline nearly ties the market and beats our sim there. Crucially the test separated \"no edge\" from \"edge eaten by slow execution\": it is no edge, so faster pipes would not help. The honest asterisk: the territory where the founding mid-game folklore lives (late innings, hot high-scoring games) was never tested because the engine is provably miscalibrated there \u2014 that corner is blocked, not closed.",
+   "result": "NULL in certified states (frictionless leg also null; -3.2% executable); late/hot states BLOCKED pending four named calibration fixes"
+  },
+  {
+   "id": "sim-hfa-fix",
+   "title": "Simulator home-field fix",
+   "tagline": "Taught the simulator that home teams are actually better \u2014 validated, and it still does not beat the run-line market.",
+   "status": "shipped",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "done",
+   "latest": "2026-07-27: home-win rate now matches reality (53.6% vs 53.1% empirical); one defect remains in extra-inning walk-off modeling",
+   "detail": "The engine knew home teams bat last but not that they win more. Fixed from training data only, with no regression to everything already validated. The re-test still closed honest null: the run-line market beats even the fixed simulator, confirming that market is actively priced, not derived. The remaining walk-off quirk is documented; fixing it would improve the instrument but the evidence says it would not create an edge.",
+   "result": "Location fixed and validated; run-line front closed NULL; margin engine not yet certified (1-run region), spread stream stays leans-only"
+  },
+  {
+   "id": "live-late-innings-final",
+   "title": "The last corner: late-inning live totals",
+   "tagline": "Recalibrated the engine for late, high-scoring, hot games \u2014 the founding folklore territory \u2014 and tested it clean.",
+   "status": "closed_null",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "closed",
+   "latest": "2026-07-27: all four calibration fixes worked; the certified engine now TIES the live market at the flagged instant \u2014 and loses at any price you could actually get",
+   "detail": "This was the one corner never tested, with zero peeks: late innings, high-scoring environments, hot games. The calibration round genuinely fixed the engine (the 0.9-run under-projection closed to near zero). The result: our simulator now knows exactly as much as the live late-inning market \u2014 and nothing more. At executable prices the book is decisively ahead in every bucket, season, side, and book. The map of our markets is complete.",
+   "result": "NULL in all three certified buckets; frictionless LATE is a genuine tie (zero edge); executable -4.5% over 26,320 bets. The keepers: a certified conditional engine and a fitness harness."
   }
  ]
 }

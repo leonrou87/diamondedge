@@ -5421,7 +5421,10 @@ export default function Home() {
       const s = sl.s || {};
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
       const when = niceTime(s.published_at, s.published_display);
-      const img = s.image_url ? `<img class="sts-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onerror="this.remove()">` : "";
+      // Full-bleed cover on a portrait slide needs a tall source; small landscape
+      // photos blown up 3-4x read as blur. Gate on natural size once loaded:
+      // tiny/broken → drop to the gradient bg; low-res → crisp inset photo card.
+      const img = s.image_url ? `<img class="sts-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onload="if(!this.naturalWidth||this.naturalWidth<240){this.remove()}else if(this.naturalHeight<700){this.classList.add('lowres')}" onerror="this.remove()">` : "";
       return `<div class="sts sts-news">
         <div class="sts-bg" aria-hidden="true"></div>
         ${img}
