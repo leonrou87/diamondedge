@@ -3100,3 +3100,34 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
    thin out when the viewBox is scaled down to fit the card. ══ */
 .ixsvg line{vector-effect:non-scaling-stroke;shape-rendering:crispEdges}
 .ixsvg path{vector-effect:non-scaling-stroke}
+
+/* ══ VISIBLE-VOID / POSTPONED (2026-07-28): a rained-out game's locked pick
+   never vanishes from history — it renders as a dimmed glass card with a PPD
+   tag where the final score would be and a NEUTRAL void chip (not red, not
+   green). Counted in no record. ══ */
+.tile.ppd{cursor:default;opacity:.74;filter:saturate(.78)}
+.tile.ppd:hover{transform:none;box-shadow:var(--e0)}
+.ppd-tag{margin-left:auto;font-family:var(--disp);font-weight:800;font-size:9.5px;
+  letter-spacing:.14em;color:var(--ink3);background:rgba(210,224,247,.08);
+  border:1px solid rgba(210,224,247,.14);border-radius:999px;padding:2px 9px}
+.ppd-teams{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 0}
+.ppd-team{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.ppd-team b{font-family:var(--disp);font-weight:700;font-size:14.5px;color:var(--ink2)}
+.ppd-mid{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.08em;color:var(--ink3)}
+.ppd-pickrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 9px;
+  border-radius:11px;background:rgba(210,224,247,.05);border:1px solid rgba(210,224,247,.09)}
+.ppd-side{font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--ink2)}
+.void-chip{margin-left:auto;flex-shrink:0;font-family:var(--mono);font-weight:700;font-size:9.5px;
+  letter-spacing:.06em;color:#c6d1e4;background:rgba(210,224,247,.12);
+  border:1px solid rgba(210,224,247,.2);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.void-chip.sm{margin-left:6px;font-size:8.5px;padding:2px 7px}
+.ppd-note{font-family:var(--sans);font-size:11px;line-height:1.45;color:var(--ink3)}
+.ppd-spread{font-family:var(--sans);font-size:11px;color:var(--ink3);display:flex;align-items:center}
+.slate-sec.ppdsec .sec-lab{color:var(--ink3)}
+/* Totals-tab list row + past-picks archive: neutral void treatments */
+.bg-pick.voidppd{opacity:.7;filter:saturate(.7)}
+.bg-res.void{color:#c6d1e4;background:rgba(210,224,247,.14);font-size:8.5px;letter-spacing:.04em}
+.ppres.voidppd{color:#c6d1e4;background:rgba(210,224,247,.14)}
+.pp-row.isvoid{opacity:.66}
+.bcell.voidppd{opacity:.78;filter:saturate(.8);background:rgba(210,224,247,.045)}
+.pf-voidn{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink3);margin-left:4px}

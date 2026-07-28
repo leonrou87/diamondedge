@@ -2674,6 +2674,48 @@ export default function Home() {
         ${spreadRowTile(g)}
       </article>`;
     }
+    // ===================== POSTPONED (VISIBLE-VOID) CARD =====================
+    // A rained-out/cancelled game NEVER vanishes from its day view (Leon's
+    // standing rule: picks lock at first pitch and you can always look back at
+    // them). The unified history feed serves the game as status="postponed"
+    // with the locked pick frozen exactly as served and result="void" — this
+    // renders it as a dimmed glass card: PPD where the final score would be,
+    // the pick row with a neutral VOID chip (not a win, not a loss), excluded
+    // from every record. Source: picks_unified games[] (betaData).
+    function ppdCard(bg: any, idx: number) {
+      const aAb = bg.away_abbr || mlbAbbr(bg.away), hAb = bg.home_abbr || mlbAbbr(bg.home);
+      const g = { sport: "mlb", away_abbr: aAb, home_abbr: hAb };
+      const p = bg.pick || {};
+      const hasPick = !!p.side;
+      const side = hasPick ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
+      const sp = bg.spread || null;
+      const spBit = sp && sp.side
+        ? `<div class="ppd-spread">Run-line lean ${esc(sp.side === "home" ? hAb : aAb)} ${sp.line != null ? `${Number(sp.line) > 0 ? "+" : ""}${lineStr(sp.line)}` : ""} <span class="void-chip sm">VOID</span></div>`
+        : "";
+      return `<article class="tile ppd" style="--i:${Math.min(idx, 14)}" aria-label="${esc(aAb)} at ${esc(hAb)} — postponed, pick void, no action">
+        <div class="t-head">${leagueTag(g)}<span class="ppd-tag">POSTPONED</span></div>
+        <div class="ppd-teams">
+          <span class="ppd-team"><span class="t-crest">${gCrest(g, "away")}</span><b>${esc(aAb)}</b></span>
+          <span class="ppd-mid">PPD</span>
+          <span class="ppd-team"><b>${esc(hAb)}</b><span class="t-crest">${gCrest(g, "home")}</span></span>
+        </div>
+        ${hasPick ? `<div class="ppd-pickrow">${bStars(p.stars)}<span class="ppd-side">${esc(side)}${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span><span class="void-chip">VOID — no action</span></div>` : ""}
+        <div class="ppd-note">${esc((bg.postponed && bg.postponed.note) || "Postponed — pick void, no action")}</div>
+        ${spBit}
+      </article>`;
+    }
+    // The day's postponed cards from the unified history feed — PAST dates
+    // only (upcoming/live boards keep excluding PPD games; that part of the
+    // postponement handling is right). Deduped against the slate's own tiles.
+    function ppdGamesFor(dateISO: string, slateGames0: any[]) {
+      if (!(league === "all" || league === "mlb")) return [];
+      if (!betaData || !Array.isArray(betaData.games)) return [];
+      if (!(dateISO < todayISO())) return [];
+      const seen = new Set((slateGames0 || []).map((g: any) => String(g.game_id)));
+      return betaData.games.filter((g: any) =>
+        g && g.date === dateISO && String(g.status || "") === "postponed"
+        && !seen.has(String(g.game_pk)) && !seen.has(String(g.game_id)));
+    }
     // A human sentence for WHY the model passed a market — built from the numbers when we
     // have them, never the raw jargon string.
     function plainPassReason(c: any) {
@@ -3008,7 +3050,8 @@ export default function Home() {
       if ((league === "all" || league === "mlb") && betaData && betaData.by_date_record) {
         const r = betaData.by_date_record[curDate];
         if (r && r.n_picks != null) {
-          return { w: r.wins || 0, l: r.losses || 0, p: r.pushes || 0, sw: 0, sl: 0, n: r.n_picks || 0, roi: r.roi != null ? r.roi : null, hit: r.hit_rate != null ? r.hit_rate : null };
+          // n_void (visible-void): postponed picks shown on the day but in NO record
+          return { w: r.wins || 0, l: r.losses || 0, p: r.pushes || 0, sw: 0, sl: 0, n: r.n_picks || 0, roi: r.roi != null ? r.roi : null, hit: r.hit_rate != null ? r.hit_rate : null, nv: r.n_void || 0 };
         }
       }
       const games = payload ? gamesForLeague(payload, league) : [];
@@ -3041,7 +3084,9 @@ export default function Home() {
         // per-day record: W–L(–P) + hit% / ROI when we have it (historical days carry both)
         const roiTxt = (t as any).roi != null ? `<span class="pf-roi ${(t as any).roi >= 0 ? "pos" : "neg"}">${((t as any).roi >= 0 ? "+" : "") + ((t as any).roi * 100).toFixed(0)}%</span>` : "";
         const extra = (t.sw + t.sl) ? `<span class="pf-top">★ Top ${t.sw}–${t.sl}</span>` : roiTxt;
-        inner = `<span class="pf-k">${esc(dayLab)}'s record</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${extra}`;
+        // a postponed day says so: "· 1 void" — shown, never counted in the W–L
+        const voidBit = (t as any).nv ? `<span class="pf-voidn">· ${(t as any).nv} void</span>` : "";
+        inner = `<span class="pf-k">${esc(dayLab)}'s record</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${voidBit}${extra}`;
       }
       const chip = `<button class="recchip perf" id="recchip" aria-label="See the full pick record, broken down by confidence level">${inner}<span class="rc-arw">→</span></button>`;
       // "All picks →" opens the model's deep-dive view (record + every pick, lead-by-lead).
@@ -3245,10 +3290,26 @@ export default function Home() {
           }));
         }
         slateGames = games || [];   // remember what we rendered so findGame can open any of it
+        // VISIBLE-VOID: the day's postponed games (rained out / cancelled) ride the
+        // unified history feed and render as dimmed PPD cards — a locked pick can
+        // never silently vanish from a day you look back at.
+        if (curDate < todayISO() && !betaData) {
+          // unified feed not in yet (deep-link straight to a past date) — pull it,
+          // then repaint quietly so any postponed card lands. Cached after first load.
+          loadBeta().then(() => { try { if (!rangeMode && tab === "games") renderSlate(true); } catch {} }).catch(() => {});
+        }
+        const ppdGames = ppdGamesFor(curDate, games);
         if (meta) meta.innerHTML = metaRow();
         // Feeds still in flight → hold the shimmer skeletons; the empty state only ever
         // renders once the loaders have RESOLVED empty (no more "No games" flash at boot).
         if (!games.length && dayLoading) { body.innerHTML = skeletonSlate(); return; }
+        if (!games.length && ppdGames.length) {
+          // a day whose ONLY games were postponed still shows them, voided
+          body.innerHTML = `<div class="slate-sec ppdsec"><div class="sec-hd"><span class="sec-lab">Postponed</span><span class="sec-n">${ppdGames.length}</span></div><div class="slate">${ppdGames.map((g: any, i: number) => ppdCard(g, i)).join("")}</div></div>
+            <div class="refnote">${ppdGames.length} game${ppdGames.length > 1 ? "s" : ""} · ${esc(dispDate)} · postponed, picks void</div>`;
+          bindMeta();
+          return;
+        }
         if (!games.length) {
           // Early-return states still need their chrome bound (record chip / All picks /
           // How-picks-work went DEAD on future+empty dates before this).
@@ -3269,14 +3330,21 @@ export default function Home() {
           const section = (label: string, arr: any[], cls = "") => arr.length
             ? `<div class="slate-sec ${cls}"><div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div><div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
             : "";
-          const grouped = `${section("Live", grp.live, "live")}${section(grp.live.length ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}`;
+          // Postponed cards ride at the end of the day, after the finals —
+          // visible, dimmed, VOID (never counted in the day's record).
+          let pn = 0;
+          const ppdSec = ppdGames.length
+            ? `<div class="slate-sec ppdsec"><div class="sec-hd"><span class="sec-lab">Postponed</span><span class="sec-n">${ppdGames.length}</span></div><div class="slate">${ppdGames.map((g: any) => ppdCard(g, pn++)).join("")}</div></div>`
+            : "";
+          const grouped = `${section("Live", grp.live, "live")}${section(grp.live.length ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}${ppdSec}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
           // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
           const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
+          const nAll = games.length + ppdGames.length;
           // Tier legend rides at the very BOTTOM of the slate (Leon) — reference, not headline.
           body.innerHTML = `${futureBanner}${rail}${grouped}
             ${anyPick ? tierLegend() : ""}
-            <div class="refnote">${games.length}${esc(lgSuffix)} game${games.length > 1 ? "s" : ""} · ${esc(dispDate)}</div>`;
+            <div class="refnote">${nAll}${esc(lgSuffix)} game${nAll > 1 ? "s" : ""} · ${esc(dispDate)}${ppdGames.length ? ` · ${ppdGames.length} postponed` : ""}</div>`;
         }
       }
       // League counts — from the loaded snapshot, or the live board when browsing a future date.
@@ -4911,7 +4979,10 @@ export default function Home() {
       const dayNotes = (d && d.days_incomplete) || {};
       const byDate: any = {};
       games.forEach((g: any) => {
-        if (!g || !g.pick || String(g.pick.status || "").toUpperCase() !== "PICK") return;
+        // PICKs and VOIDed (postponed) picks both stay on the record page —
+        // a locked pick never disappears; VOID renders neutral, counts nowhere.
+        const st = g && g.pick ? String(g.pick.status || "").toUpperCase() : "";
+        if (st !== "PICK" && st !== "VOID") return;
         (byDate[g.date] = byDate[g.date] || []).push(g);
       });
       // PAST picks — prior days only (today's board lives on Games/News until it grades)
@@ -4940,11 +5011,15 @@ export default function Home() {
         const list = byDate[k].slice().sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
         const rows = list.map((g: any) => {
           const p = g.pick;
-          const side = `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim();
-          const res = p.result === "win" ? `<span class="ppres won">W</span>` : p.result === "loss" ? `<span class="ppres lost">L</span>` : p.result === "push" ? `<span class="ppres pushed">P</span>` : `<span class="ppres open">—</span>`;
-          return `<button class="pp-row" data-ppgid="${esc(g.game_id)}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span>${bStars(p.stars)}${res}</button>`;
+          const isV = String(p.status || "").toUpperCase() === "VOID";
+          const side = p.side ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
+          const res = isV ? `<span class="ppres voidppd" title="Postponed — pick void, no action">V</span>`
+            : p.result === "win" ? `<span class="ppres won">W</span>` : p.result === "loss" ? `<span class="ppres lost">L</span>` : p.result === "push" ? `<span class="ppres pushed">P</span>` : `<span class="ppres open">—</span>`;
+          return `<button class="pp-row${isV ? " isvoid" : ""}" data-ppgid="${esc(g.game_id)}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span>${bStars(p.stars)}${res}</button>`;
         }).join("");
-        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${(r.wins || 0) >= (r.losses || 0) ? "pos" : "neg"}">${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}">${roi}</span>` : ""}<span class="pp-n">${list.length} pick${list.length === 1 ? "" : "s"}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}</div></details>`;
+        const nV = list.filter((g: any) => String((g.pick || {}).status || "").toUpperCase() === "VOID").length;
+        const nP = list.length - nV;
+        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${(r.wins || 0) >= (r.losses || 0) ? "pos" : "neg"}">${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}">${roi}</span>` : ""}<span class="pp-n">${nP} pick${nP === 1 ? "" : "s"}${nV ? ` · ${nV} void` : ""}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}</div></details>`;
       };
       return `<div class="ixc pastpicks"><div class="ixc-h">Past picks, day by day</div><div class="ixc-sub">Every published pick — side, line, stars, price and the graded result. Most recent first.</div>
         ${shown.map((k, i) => dayBlock(k, i === 0)).join("")}
@@ -6278,12 +6353,23 @@ export default function Home() {
       const fin = g.final || {};
       const hasFinal = fin.home_runs != null && fin.away_runs != null;
       const fp = firstPitchTs({ start_ts: g.first_pitch_utc });
-      const when = hasFinal
+      // VISIBLE-VOID: a postponed game keeps its row — frozen pick + neutral VOID
+      // chip, "Postponed" where the final score would be. Counted in no record.
+      const isPpd = String(g.status || "") === "postponed";
+      const when = isPpd
+        ? "Postponed — pick void, no action"
+        : hasFinal
         ? `Final ${teamShort(g.away)} ${fin.away_runs} – ${fin.home_runs} ${teamShort(g.home)}`
         : fp ? new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "upcoming";
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-      const sideTxt = best ? `${/over/i.test(String(best.side)) ? "OVER" : "UNDER"} ${best.line != null ? lineStr(best.line) : ""}`.trim() : "";
-      const badge = best
+      const vp = isPpd && g.pick && g.pick.side ? g.pick : null;
+      const sideTxt = best ? `${/over/i.test(String(best.side)) ? "OVER" : "UNDER"} ${best.line != null ? lineStr(best.line) : ""}`.trim()
+        : vp ? `${/over/i.test(String(vp.side)) ? "OVER" : "UNDER"} ${vp.line != null ? lineStr(vp.line) : ""}`.trim() : "";
+      const badge = isPpd
+        ? (vp
+          ? `<span class="bg-pick voidppd">${bStars(vp.stars)}<span class="bg-side">${esc(sideTxt)}${vp.price != null ? ` ${fmtOdds(vp.price)}` : ""}</span><span class="bg-res void">PPD</span></span>`
+          : `<span class="bg-nopick">postponed</span>`)
+        : best
         ? `<span class="bg-pick ${best.result || "open"}">${bStars(best.stars)}<span class="bg-side">${esc(sideTxt)}${best.price != null ? ` ${fmtOdds(best.price)}` : ""}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✗" : "P"}</span>` : ""}</span>`
         : `<span class="bg-nopick">${hasFinal ? "pass" : "no pick"}</span>`;
       return `<button class="beta-gcard" data-bgid="${esc(g.game_id)}">
@@ -6388,12 +6474,20 @@ export default function Home() {
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
       const p = g.pick || null;
       const isPick = p && String(p.status || "").toUpperCase() === "PICK";
-      const side = isPick ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
+      // VISIBLE-VOID: a postponed game's sheet shows the frozen pick with a
+      // neutral VOID chip — the pick never changes and never grades.
+      const isVoid = p && String(p.status || "").toUpperCase() === "VOID";
+      const side = (isPick || (isVoid && p.side)) ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
       const resTag = isPick && p.result && p.result !== "push"
         ? `<span class="bcell-res ${p.result}">${p.result === "win" ? "WIN" : "LOSS"}</span>`
         : isPick && p.result === "push" ? `<span class="bcell-res push">PUSH</span>` : "";
       const scoreChip = p && p.score != null ? `<i class="pgrade">${Number(p.score).toFixed(2)}</i>` : "";
-      const pickCard = isPick
+      const pickCard = isVoid
+        ? `<div class="bcell voidppd" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
+             ${p.side ? `<span class="bcell-stars">${bStars(p.stars)}</span>${scoreChip}<span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>` : ""}<span class="void-chip">VOID — no action</span>
+           </div>
+           <div class="bgrid-legend">${esc((g.postponed && g.postponed.note) || "Postponed — pick void, no action")} The pick stays exactly as served; it counts in no record.</div>`
+        : isPick
         ? `<div class="bcell take s${p.stars} ${p.result || ""}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
              <span class="bcell-stars">${bStars(p.stars)}</span>${scoreChip}
              <span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>${resTag}
@@ -6410,7 +6504,9 @@ export default function Home() {
           <div class="gp-body" id="gp-body">
             <div class="bgame-hero">
               <div class="bgh-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></div>
-              <div class="bgh-fin">${fin.away_runs != null
+              <div class="bgh-fin">${isVoid || String(g.status || "") === "postponed"
+                ? `<span class="ppd-tag">POSTPONED</span> · never played as scheduled`
+                : fin.away_runs != null
                 ? `Final · ${esc(teamShort(g.away))} <b>${fin.away_runs}</b> – <b>${fin.home_runs}</b> ${esc(teamShort(g.home))}`
                 : (() => { const fp = firstPitchTs({ start_ts: g.first_pitch_utc }); return fp ? `First pitch ${esc(new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))} · the pick firms up as game time nears` : "Upcoming"; })()}</div>
               <div class="bgh-date">${esc(dd)} · full game</div>

@@ -1,7 +1,7 @@
 {
- "generated_utc": "2026-07-27T22:50:52Z",
+ "generated_utc": "2026-07-28T00:42:21Z",
  "summary": {
-  "shipped": 13,
+  "shipped": 14,
   "testing": 4,
   "accruing": 5,
   "queued": 0,
@@ -20,6 +20,19 @@
    "latest": "2026-07-27: 11 run-line leans served today; the first graded results land tonight \u2014 record starts honest at 0-0-0",
    "detail": "Spreads were removed from the product on 07-07 and return on Leon's call as a NEW, separately-graded, activation-dated stream: the record starts 0-0-0 on 07-27, every stated side is locked at first pitch and graded at the real locked price, and nothing is retro-credited or blended with a backtest. Honesty posture: the stream is UNPROVEN and serves clearly-labeled LEANS only \u2014 never a bet. The run-line engine test that could have opened a bet path reported the same day: BLOCKED \u2014 the simulator (validated on totals) fails its margin fitness gate (it carries no home-field advantage), and even set aside, the de-vigged run-line market beat every declared arm on Brier, including the moneyline-only control. So the market's run-line price is genuinely informative and our leans are exactly that: leans, graded in public until something real is earned. The pre-pivot spread machinery was adjudicated a research null and is never revived as credit.",
    "result": null
+  },
+  {
+   "id": "calibrated_confidence",
+   "title": "Better-calibrated confidence",
+   "tagline": "The confidence number behind every score now means what it says \u2014 probabilities are re-checked against everything we've actually graded, every day.",
+   "status": "shipped",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-27",
+   "eta": "done",
+   "latest": "07-27: live from today \u2014 served probabilities pass through a walk-forward calibration check fitted only on already-graded picks (7,001 of them). Past picks and records are untouched.",
+   "detail": "Our research kept finding the same honest problem: the model's WIN/LOSS picking is real but its CONFIDENCE grading was not \u2014 measured out-of-sample, our probabilities ran overconfident and the star ladder didn't order results the way it claimed. This ships the fix the research validated: before a pick is scored, its probability is passed through a calibration map fitted ONLY on picks that were already graded before that day (never the day's own games, never the future). The map is deliberately humble \u2014 it can shrink or grow how boldly we disagree with Vegas, but it can never flip a pick's side and it refuses to learn 'unders are hot lately'. Practical effect: conviction is currently getting SHRUNK (the graded evidence says our disagreements were overstated), so expect fewer model picks, more honest PASSes, and scores that bunch lower. To be clear about what this is NOT: it does not create an edge and we claim none \u2014 it makes the confidence number honest, which is what the stars are built on. Old picks, scores and records are locked and never restated.",
+   "result": "Live 07-27. Walk-forward Brier 0.24996 -> 0.24989, calibration Z 1.10 -> 0.54 on 6,424 replayed rows; model take-rate roughly halves. Not an edge \u2014 honesty."
   },
   {
    "id": "unified_one_pick",
