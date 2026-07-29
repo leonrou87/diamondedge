@@ -994,6 +994,11 @@ export default function Home() {
         // named team so a run-line side never renders as a bare "HOME"
         market: String(s.market == null ? "" : s.market).trim(),
         side_team: String(s.side_team == null ? "" : s.side_team).trim(),
+        // simulator: the physics-model voice carries its own P(over) + the
+        // market's, so the row can show the two numbers side by side
+        sim_p_over: _fin(s.sim_p_over),
+        sim_p_over_market: _fin(s.sim_p_over_market),
+        sim_median: _fin(s.sim_median),
         dir: /under/i.test(sideRaw) ? "under" : /over/i.test(sideRaw) ? "over" : "",
         line: _fin(s.line),
         vegas_line: _fin(s.vegas_line),
@@ -3981,14 +3986,23 @@ export default function Home() {
       const leanNote = s.lean ? `<div class="sgr-leanlab">Model lean — not an official pick</div>` : "";
       const srcNote = s.servedSrc && !served ? `<div class="sgr-src">This is the stream the served pick came from.</div>` : "";
       const isSpreadStream = s.key === "spread_stream";
+      // SIMULATOR (2026-07-28): the physics-model voice — its own badge, and
+      // its P(over) shown against the market's so the "ties the market"
+      // honesty is visible per game. Never a PICK, never a W/L badge.
+      const isSimulator = s.key === "simulator";
+      const simProb = isSimulator && s.sim_p_over != null
+        ? `<div class="sgr-why">Sim's price: <b>${(s.sim_p_over * 100).toFixed(1)}%</b> chance the total goes over${s.sim_p_over_market != null ? ` · the market says <b>${(s.sim_p_over_market * 100).toFixed(1)}%</b>` : ""}${s.sim_median != null ? ` · sim median ${num(s.sim_median, 0)} runs` : ""}</div>`
+        : "";
       return `<div class="sgr ${statusCls}${served ? " served" : ""}">
         <div class="sgr-top">
           <span class="sgr-lab">${esc(s.label)}</span>
           ${isSpreadStream ? `<span class="sgr-new">NEW · graded from day one</span>` : ""}
+          ${isSimulator ? `<span class="sgr-new">PHYSICS SIM · tracking, not bets</span>` : ""}
           ${served ? `<span class="sgr-served">◆ Served</span>` : ""}
           <span class="sgr-status ${statusCls}">${statusTxt}</span>
         </div>
         <div class="sgr-call">${call}${conf}${res}</div>
+        ${simProb}
         ${leanNote}
         ${why}
         ${srcNote}
