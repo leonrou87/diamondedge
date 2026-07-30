@@ -3131,3 +3131,281 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .pp-row.isvoid{opacity:.66}
 .bcell.voidppd{opacity:.78;filter:saturate(.8);background:rgba(210,224,247,.045)}
 .pf-voidn{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink3);margin-left:4px}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE ANALYST DESK — four named models competing on every game.
+   VEGA (cyan, market pulse) · ATLAS (gold, orbit) · NOVA (violet, starburst) ·
+   SCOUT (emerald, compass). DiamondEdge = the desk chief (the gold diamond).
+   Same dark liquid glass: each analyst gets ONE accent custom-prop pair the
+   components read (--anc ink / --anbg wash / --anline rim).
+   ══════════════════════════════════════════════════════════════════════════ */
+.an-vega{--anc:#3fd0f0;--anbg:rgba(63,208,240,.12);--anline:rgba(63,208,240,.36)}
+.an-atlas{--anc:#eec258;--anbg:rgba(224,172,32,.13);--anline:rgba(224,172,32,.4)}
+.an-nova{--anc:#a78bfa;--anbg:rgba(167,139,250,.13);--anline:rgba(167,139,250,.38)}
+.an-scout{--anc:#2fd6a0;--anbg:rgba(25,197,138,.12);--anline:rgba(25,197,138,.36)}
+
+/* ---- consensus headline chip: "4–0 OVER · UNANIMOUS" / "SPLIT 2–2" ---- */
+.cons{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:800;font-size:10.5px;
+  letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:4px 11px;white-space:nowrap;
+  color:var(--ink2);background:rgba(210,224,247,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.cons .cons-dot{width:6px;height:6px;border-radius:99px;background:currentColor;opacity:.85;flex-shrink:0}
+.cons.unan{color:#ffe08a;background:linear-gradient(135deg,rgba(224,172,32,.22),rgba(224,172,32,.10));
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.42),0 2px 14px rgba(224,172,32,.14)}
+.cons.maj{color:#45d6a2;background:rgba(11,158,109,.13);box-shadow:inset 0 0 0 1px rgba(25,197,138,.34)}
+.cons.split{color:var(--ink3);background:rgba(147,161,184,.10);box-shadow:inset 0 0 0 1px rgba(147,161,184,.24)}
+.cons.pend{color:var(--ink4);background:rgba(147,161,184,.07);box-shadow:inset 0 0 0 1px rgba(147,161,184,.16);font-size:9px}
+.cons .cons-sub{font-family:var(--mono);font-weight:600;font-size:8.5px;letter-spacing:.02em;font-style:normal;
+  color:currentColor;opacity:.72;text-transform:none}
+.cons.cons-mini{font-size:8.5px;padding:2.5px 8px;gap:4px}
+.cons.cons-mini .cons-dot{width:4.5px;height:4.5px}
+.cons.cons-wide{font-size:11.5px;padding:5px 13px}
+
+/* ---- "SIM SAYS 5–3" — ATLAS's predicted final as a concrete scoreline chip ---- */
+.simsays{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-weight:700;font-size:9.5px;
+  letter-spacing:.05em;color:#f2ca61;background:rgba(224,172,32,.10);border-radius:999px;padding:3.5px 9px;
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.26);white-space:nowrap}
+.simsays .ss-g{display:inline-flex;color:var(--anc,#eec258);opacity:.9}
+.simsays.ss-big{font-size:11px;padding:5px 12px;gap:6px}
+
+/* ---- the desk block on a game tile ---- */
+.deskblk{display:flex;flex-direction:column;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid var(--line3)}
+.dsk-toprow{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;min-width:0}
+.dsk-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;min-width:0}
+.dsk-cell{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;cursor:pointer;
+  border:0;text-align:left;font:inherit;color:inherit;border-radius:11px;padding:6px 7px 5px;
+  background:linear-gradient(180deg,rgba(23,33,54,.5),rgba(18,27,45,.42));
+  box-shadow:inset 0 1.5px 0 var(--anline,rgba(255,255,255,.1)),inset 0 0 0 1px rgba(255,255,255,.05),0 1px 3px rgba(2,6,16,.25);
+  transition:transform .16s var(--spring,ease),box-shadow .2s ease}
+.dsk-cell:active{transform:scale(.95)}
+.dsk-cell .dsk-id{display:inline-flex;align-items:center;gap:4px;min-width:0;color:var(--anc,var(--ink2))}
+.dsk-cell .dsk-id b{font-family:var(--disp);font-weight:800;font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--anc,var(--ink2));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsk-cell .dsk-side{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:-.01em;color:var(--ink)}
+.dsk-cell .dsk-side.ou-over{color:var(--over)}
+.dsk-cell .dsk-side.ou-under{color:var(--under)}
+.dsk-cell .dsk-side.none{color:var(--ink4);font-weight:600}
+.dsk-cell .dsk-conv{font-family:var(--mono);font-weight:600;font-size:8.5px;color:var(--ink3)}
+
+/* ---- the chief's verdict strip: ◆ PLAY / ◆ LEAN / ◆ WE PASS ---- */
+.chief{display:flex;align-items:center;gap:9px;flex-wrap:wrap;border-radius:12px;padding:8px 11px;min-width:0}
+.chief .ch-act{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:800;
+  font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.chief .ch-dia{font-size:10px;line-height:1}
+.chief .ch-rat{flex:1 1 140px;min-width:0;font-family:var(--sans);font-weight:500;font-size:11px;line-height:1.45;color:var(--ink2)}
+.chief.ch-play{background:linear-gradient(135deg,rgba(224,172,32,.20),rgba(224,172,32,.08));
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.42),inset 0 1.5px 0 rgba(255,225,140,.28),0 3px 16px rgba(224,172,32,.12)}
+.chief.ch-play .ch-act{color:#ffe08a}
+.chief.ch-play .ch-dia{color:#f2ca61}
+.chief.ch-lean{background:rgba(110,161,255,.09);box-shadow:inset 0 0 0 1px rgba(110,161,255,.26),inset 0 1.5px 0 rgba(255,255,255,.08)}
+.chief.ch-lean .ch-act{color:#9dbcff}
+.chief.ch-lean .ch-dia{color:#6ea1ff}
+/* the PASS is a position — steel glass, upright type, zero apology */
+.chief.ch-avoid{background:linear-gradient(180deg,rgba(147,161,184,.13),rgba(147,161,184,.06));
+  box-shadow:inset 0 0 0 1px rgba(147,161,184,.30),inset 0 1.5px 0 rgba(255,255,255,.12)}
+.chief.ch-avoid .ch-act{color:var(--ink)}
+.chief.ch-avoid .ch-dia{color:var(--slate)}
+.chief.ch-avoid .ch-rat{color:var(--ink2);font-weight:600}
+
+/* the chief's run-line second read */
+.ch-spread{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px;padding:5px 2px 0;
+  border-top:1px solid var(--line3);font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink3);min-width:0}
+.ch-spread .chs-k{font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4)}
+.ch-spread b{font-size:10.5px;font-weight:700;color:var(--ink)}
+.ch-spread .chs-why{flex:1 1 120px;min-width:0;font-family:var(--sans);font-weight:500;font-size:10.5px;color:var(--ink3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---- DESK STANDINGS (top of home): the competition scoreboard ---- */
+.dskst{margin:2px 0 18px}
+.dskst-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.dskst-k{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#f2ca61}
+.dskst-sub{font-family:var(--sans);font-weight:500;font-size:11px;color:var(--ink3)}
+.dskst-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-width:0}
+.dskst-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;cursor:pointer;border:0;
+  text-align:left;font:inherit;color:inherit;border-radius:var(--r-sm,12px);padding:10px 11px 9px;
+  background:linear-gradient(180deg,var(--glass-hi),var(--glass));
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--e1),inset 0 2px 0 var(--anline,rgba(255,255,255,.1));
+  transition:transform .18s var(--spring,ease),box-shadow .22s ease}
+.dskst-card:active{transform:scale(.96)}
+.dskst-card.lead{box-shadow:var(--e2),inset 0 0 0 1px rgba(224,172,32,.34),inset 0 2px 0 rgba(255,225,140,.3)}
+.dskst-rank{font-family:var(--mono);font-weight:700;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink4)}
+.dskst-card.lead .dskst-rank{color:#f2ca61}
+.dskst-id{display:inline-flex;align-items:center;gap:7px;min-width:0;color:var(--anc,var(--ink2))}
+.dskst-nm{display:flex;flex-direction:column;min-width:0}
+.dskst-nm b{font-family:var(--disp);font-weight:800;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
+.dskst-nm i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:8px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dskst-rec{display:inline-flex;align-items:baseline;gap:7px;min-width:0;flex-wrap:wrap}
+.dskst-rec b{font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:-.01em;color:var(--ink)}
+.dskst-roi{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9.5px}
+.dskst-roi.pos{color:var(--green)}.dskst-roi.neg{color:var(--red)}.dskst-roi.dim{color:var(--ink4);font-size:8.5px}
+.dsk-l10{display:inline-flex;align-items:center;gap:3px}
+.dsk-l10 i{width:5.5px;height:5.5px;border-radius:99px;display:block}
+.dsk-l10 .d-w{background:var(--green);box-shadow:0 0 5px rgba(25,197,138,.5)}
+.dsk-l10 .d-l{background:rgba(255,92,119,.75)}
+.dsk-l10 .d-p{background:rgba(147,161,184,.55)}
+
+/* ---- flagship / lead-story + top-picks consensus chips ---- */
+.ls-desk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:7px 0 2px}
+.dskm-row{display:inline-flex;align-items:center;gap:5px}
+.dskm{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:3px 7px;color:var(--anc,var(--ink2));
+  background:var(--anbg,rgba(210,224,247,.07));box-shadow:inset 0 0 0 1px var(--anline,rgba(255,255,255,.09))}
+.dskm i{font-style:normal;font-size:8.5px;line-height:1}
+.dskm i.ou-over{color:var(--over)}.dskm i.ou-under{color:var(--under)}
+.tpk-cons{display:flex;justify-content:flex-start;margin:2px 0}
+
+/* ---- the DESK DEBATE panel (game detail) ---- */
+.dskdb-rows{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.dbt{border-radius:12px;padding:9px 11px;min-width:0;cursor:pointer;
+  background:linear-gradient(180deg,rgba(23,33,54,.5),rgba(18,27,45,.4));
+  box-shadow:inset 0 1.5px 0 var(--anline,rgba(255,255,255,.09)),inset 0 0 0 1px rgba(255,255,255,.05)}
+.dbt-id{display:flex;align-items:center;gap:8px;min-width:0;color:var(--anc,var(--ink2))}
+.dbt-nm{display:flex;flex-direction:column;min-width:0;flex:1}
+.dbt-nm b{font-family:var(--disp);font-weight:800;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.dbt-nm i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.dbt-rec{font-family:var(--mono);font-weight:700;font-size:9.5px;color:var(--ink3);background:rgba(210,224,247,.07);
+  border-radius:999px;padding:2px 8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.dbt-call{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:5px;min-width:0}
+.dbt-side{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:-.01em;color:var(--ink)}
+.dbt-side.ou-over{color:var(--over)}.dbt-side.ou-under{color:var(--under)}
+.dbt-side.none{color:var(--ink4);font-weight:600;font-size:11px}
+.dbt-conv{font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink3)}
+.dbt-wall{font-family:var(--mono);font-weight:600;font-size:8.5px;letter-spacing:.04em;color:var(--ink4);
+  background:rgba(210,224,247,.06);border-radius:999px;padding:2px 7px}
+.dbt-say{margin:6px 0 0;font-family:var(--sans);font-weight:500;font-style:italic;font-size:11.5px;line-height:1.5;color:var(--ink2)}
+.dbt-say.chief{font-style:normal;font-weight:600}
+.dbt.chiefrow{cursor:default;background:linear-gradient(180deg,rgba(30,38,58,.62),rgba(20,28,46,.5))}
+.dbt.chiefrow .dbt-dia{font-size:15px;color:#f2ca61;line-height:1}
+.dbt.chiefrow.ch-play{box-shadow:inset 0 0 0 1px rgba(224,172,32,.4),inset 0 1.5px 0 rgba(255,225,140,.26),0 4px 18px rgba(224,172,32,.1)}
+.dbt.chiefrow.ch-lean{box-shadow:inset 0 0 0 1px rgba(110,161,255,.3),inset 0 1.5px 0 rgba(255,255,255,.09)}
+.dbt.chiefrow.ch-avoid{box-shadow:inset 0 0 0 1px rgba(147,161,184,.32),inset 0 1.5px 0 rgba(255,255,255,.12)}
+.dbt-verdict{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink)}
+.dbt.chiefrow.ch-play .dbt-verdict{color:#ffe08a}
+.dbt.chiefrow.ch-lean .dbt-verdict{color:#9dbcff}
+.dskdb .stgy-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.dskdb-raw{margin-top:10px;border-radius:12px;background:rgba(18,27,45,.4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.dskdb-raw>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;list-style:none;
+  padding:10px 13px;font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.dskdb-raw>summary::-webkit-details-marker{display:none}
+.dskdb-raw[open]>summary .sgc-caret{transform:rotate(90deg)}
+.dskdb-raw>.stgy{margin:0 9px 9px}
+
+/* detail masthead desk line */
+.sh-desk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+
+/* ---- the ANALYST CARD sheet ---- */
+.sheet.anl .anl-head{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.anl-glyph{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:15px;
+  color:var(--anc,var(--ink));background:var(--anbg,rgba(210,224,247,.08));
+  box-shadow:inset 0 0 0 1px var(--anline,rgba(255,255,255,.12)),inset 0 2px 0 rgba(255,255,255,.1)}
+.anl-name{font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:.1em;color:var(--ink);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.anl-title{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--anc,var(--ink3))}
+.anl-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:4px 0 12px}
+.anl-big{display:flex;flex-direction:column;gap:3px;border-radius:12px;padding:10px 11px;
+  background:linear-gradient(180deg,rgba(23,33,54,.55),rgba(18,27,45,.45));
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.06)}
+.anl-big b{font-family:var(--mono);font-weight:700;font-size:17px;letter-spacing:-.02em;color:var(--ink)}
+.anl-big.pos b{color:var(--green)}.anl-big.neg b{color:var(--red)}
+.anl-big i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4)}
+.anl-big.form b{display:inline-flex;flex-wrap:wrap;max-width:100%;row-gap:3px}
+.anl-note{margin:0 0 12px;font-family:var(--sans);font-size:11.5px;line-height:1.55;color:var(--ink3)}
+.anl-rows{display:flex;flex-direction:column;gap:4px}
+.anl-row{display:flex;align-items:center;gap:9px;min-width:0;border-radius:10px;padding:7px 9px;
+  background:rgba(210,224,247,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.anl-d{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink4);flex-shrink:0;width:44px}
+.anl-mu{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.02em;color:var(--ink2);
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anl-call{font-family:var(--mono);font-weight:700;font-size:10.5px;white-space:nowrap;color:var(--ink)}
+.anl-call.ou-over{color:var(--over)}.anl-call.ou-under{color:var(--under)}
+.anl-conv{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3)}
+
+/* ---- STORIES: the desk slide ---- */
+.sts-desk .sts-head.deskhead{font-size:27px;line-height:1.12;margin:10px 0 4px}
+.sts-desk.cons-unan .sts-bg{background:
+  radial-gradient(120% 90% at 50% 0%,rgba(224,172,32,.20),transparent 55%),
+  radial-gradient(130% 100% at 50% 110%,rgba(20,30,52,.9),transparent),
+  linear-gradient(180deg,#101827,#0b111e)}
+.sts-desk.cons-maj .sts-bg{background:
+  radial-gradient(120% 90% at 50% 0%,rgba(25,197,138,.16),transparent 55%),
+  linear-gradient(180deg,#101827,#0b111e)}
+.sts-desk.cons-split .sts-bg{background:
+  radial-gradient(120% 90% at 50% 0%,rgba(147,161,184,.14),transparent 55%),
+  linear-gradient(180deg,#101827,#0b111e)}
+.sts-drows{display:flex;flex-direction:column;gap:7px;width:100%;max-width:340px;margin:10px auto 0}
+.sts-drow{display:flex;align-items:center;gap:9px;min-width:0;border-radius:12px;padding:8px 12px;text-align:left;
+  color:var(--anc,var(--ink2));background:rgba(18,27,45,.55);
+  box-shadow:inset 0 1.5px 0 var(--anline,rgba(255,255,255,.1)),inset 0 0 0 1px rgba(255,255,255,.06)}
+.sts-dnm{display:flex;flex-direction:column;min-width:0;flex:1}
+.sts-dnm b{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.sts-dnm i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:7.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.sts-dcall{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink)}
+.sts-dcall.ou-over{color:var(--over)}.sts-dcall.ou-under{color:var(--under)}
+.sts-dcall.none{color:var(--ink4)}
+.sts-dconv{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3)}
+.sts-chief{display:flex;flex-direction:column;align-items:center;gap:4px;margin:12px auto 0;border-radius:13px;
+  padding:10px 16px;max-width:340px}
+.sts-chief b{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.sts-chief span{font-family:var(--sans);font-weight:500;font-size:11px;line-height:1.45;color:var(--ink2);text-align:center}
+.sts-chief.ch-play{background:linear-gradient(135deg,rgba(224,172,32,.2),rgba(224,172,32,.08));box-shadow:inset 0 0 0 1px rgba(224,172,32,.4)}
+.sts-chief.ch-play b{color:#ffe08a}
+.sts-chief.ch-lean{background:rgba(110,161,255,.1);box-shadow:inset 0 0 0 1px rgba(110,161,255,.28)}
+.sts-chief.ch-lean b{color:#9dbcff}
+.sts-chief.ch-avoid{background:rgba(147,161,184,.11);box-shadow:inset 0 0 0 1px rgba(147,161,184,.3)}
+.sts-chief.ch-avoid b{color:var(--ink)}
+.sts-desk .simsays{margin:10px auto 0}
+.sts-desk .st-cta{margin-top:14px}
+
+/* ---- INSIGHTS: the desk, ranked + when the desk agrees ---- */
+.dskrec-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.dskrec-card{display:flex;align-items:center;gap:11px;min-width:0;width:100%;cursor:pointer;border:0;text-align:left;
+  font:inherit;color:inherit;border-radius:var(--r-sm,12px);padding:11px 13px;
+  background:linear-gradient(180deg,var(--glass-hi),var(--glass));
+  box-shadow:var(--e0),inset 0 2px 0 var(--anline,rgba(255,255,255,.1))}
+.dskrec-card .dskst-id{flex:0 0 auto;width:118px}
+.dskrec-stats{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0;flex:1}
+.dskrec-stats b{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink)}
+.dskrec-stats i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink3)}
+.dskrec-stats i.pos{color:var(--green)}.dskrec-stats i.neg{color:var(--red)}
+.dskrec-stats i.dim{color:var(--ink4)}
+.chh{margin-top:14px;border-radius:12px;padding:11px 13px;background:rgba(18,27,45,.45);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.chh-h{font-family:var(--disp);font-weight:800;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
+.chh-row{display:flex;align-items:baseline;gap:9px;min-width:0;padding:5px 0;border-top:1px solid var(--line3);flex-wrap:wrap}
+.chh-row:first-of-type{border-top:0}
+.chh-lab{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.04em;color:var(--ink2);flex:0 0 108px}
+.chh-row.unanimous .chh-lab{color:#f2ca61}
+.chh-row b{font-family:var(--mono);font-weight:700;font-size:12.5px;color:var(--ink)}
+.chh-row i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink3)}
+.chh-row i.pos{color:var(--green)}.chh-row i.neg{color:var(--red)}
+.chh-n{margin-left:auto;font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink4)}
+.chh-note{margin-top:8px;font-family:var(--sans);font-size:10.5px;line-height:1.5;color:var(--ink4)}
+
+/* ---- 375px: the standings go 2×2, tile cells stay 4-up but tighter ---- */
+@media (max-width:520px){
+  .dskst-rail{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dsk-row{gap:4px}
+  .dsk-cell{padding:5px 5px 4px;border-radius:9px}
+  .dsk-cell .dsk-side{font-size:9px}
+  .dsk-cell .dsk-conv{font-size:8px}
+  .dskrec-card{flex-wrap:wrap}
+  .dskrec-card .dskst-id{width:auto;flex:1 1 100%}
+  .chh-lab{flex-basis:96px}
+  .sts-desk .sts-head.deskhead{font-size:23px}
+}
+/* desktop: the tile desk row breathes; standings stay one row of four */
+@media (min-width:760px){
+  .dsk-cell{padding:7px 9px 6px}
+  .dskst-rail{gap:10px}
+}
+
+/* desk redaction: locked analyst sides use the same crisp chip recipe (no blur, ever) */
+.dsk-dots{display:inline-flex;align-items:center;gap:4px;font-size:0;letter-spacing:0;line-height:0;color:transparent;user-select:none;-webkit-user-select:none}
+.dsk-dots::before,.dsk-dots::after{content:"";display:block;border-radius:999px;
+  background:linear-gradient(180deg,rgba(233,240,250,.24),rgba(233,240,250,.13));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 1.5px 0 rgba(255,255,255,.10)}
+.dsk-dots::before{width:26px;height:9px}
+.dsk-dots::after{width:11px;height:9px}
+.dbt .dsk-dots::before{width:40px;height:12px}
+.dbt .dsk-dots::after{width:16px;height:12px}
+.ch-spread b.nocall{color:var(--ink3);font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.08em}
+.dbt-say{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}

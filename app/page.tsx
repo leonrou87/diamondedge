@@ -874,13 +874,13 @@ export default function Home() {
       const res = sp.result === "win" ? `<span class="spr-res won">${isBet ? "WON" : "lean ✓"}</span>`
         : sp.result === "loss" ? `<span class="spr-res lost">${isBet ? "LOST" : "lean ✗"}</span>`
         : sp.result === "push" ? `<span class="spr-res pushed">PUSH</span>` : "";
-      return `<div class="sprow ${isBet ? "is-pick" : "is-lean"}" title="${esc(isBet
-        ? "New spread stream — unproven, capped at 2 stars, graded in public from day one"
-        : "Honest run-line lean — an unproven new stream; not a bet. Graded in public from day one.")}">
+      // The record itself carries the honesty (Leon, 2026-07-30): the timid "not a bet /
+      // tracking" chrome is gone — the stream's own graded W–L rides the row instead.
+      const spRec = (() => { const r = strategyRecordFor("spread_stream"); const lv = r && r.live; return lv ? `${lv.win}–${lv.loss}${lv.push ? `–${lv.push}` : ""}` : ""; })();
+      return `<div class="sprow ${isBet ? "is-pick" : "is-lean"}" title="${esc("Run-line read — graded in public from day one")}">
         <span class="spr-k">Run line</span>
         <span class="spr-call"><b>${esc(call)}</b>${sp.price != null ? `<i class="spr-px">${fmtOdds(sp.price)}</i>` : ""}</span>
-        ${isBet ? `<span class="spr-q">${bStars(sp.stars)}</span>` : `<span class="spr-leanlab">Lean · not a bet</span>`}
-        <span class="spr-new">NEW · graded from day one</span>
+        ${isBet ? `<span class="spr-q">${bStars(sp.stars)}</span>` : `<span class="spr-leanlab">Lean${spRec ? ` · ${spRec}` : ""}</span>`}
         ${sp.locked ? `<span class="spr-lk" title="Locked at first pitch — graded at exactly this line">${lockSvg}</span>` : ""}
         ${res}
       </div>`;
@@ -1114,7 +1114,9 @@ export default function Home() {
           // a NEW badge + the graded-lean-ledger framing when it isn't bets
           market: String(r.market == null ? "" : r.market).trim(),
           isNew: r.is_new_stream === true,
-          newTag: humanNote(r.new_tag) || "NEW — graded from day one",
+          // strip the timid "tracking, not bets" phrasing from served tags (Leon, 2026-07-30):
+          // the graded record next to it carries the honesty
+          newTag: (humanNote(r.new_tag) || "NEW — graded from day one").replace(/\s*[—–-]*\s*tracking, not bets\.?/i, "").trim(),
           leanLedger: r.is_new_stream === true && r.is_betting_record === false,
         });
       });
@@ -1157,6 +1159,498 @@ export default function Home() {
     const stratPct = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
     const stratRoi = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
+    // ═══════════════════ THE ANALYST DESK — four named models on every game ═══════════════════
+    // The home screen is THE ANALYST DESK: four named analysts (VEGA · ATLAS · NOVA · SCOUT)
+    // each file an independent call on every game, the CONSENSUS is the headline, and
+    // DiamondEdge — the desk chief — issues the verdict: PLAY / LEAN / AVOID. Passing on a
+    // split desk is the product's discipline, styled proudly. Every reader below is FULLY
+    // DEFENSIVE: the payload fields (games[].analysts / games[].consensus /
+    // games[].diamondedge / record.analysts / record.consensus_history) may not be served
+    // yet — absent/malformed ⇒ readers return []/null and every surface degrades to the
+    // existing layout, byte for byte.
+    const DESK_ORDER = ["vega", "atlas", "nova", "scout"];
+    const DESK_CAST: any = {
+      vega: { name: "Vega", title: "The Market Reader", short: "Reads the sharpest books", method: "Reads the sharpest books on the planet and prices every number against where the smart money already sits." },
+      atlas: { name: "Atlas", title: "The Physicist", short: "Simulates every game 20,000 times", method: "Rebuilds the game from first principles — then simulates it 20,000 times and reads the distribution." },
+      nova: { name: "Nova", title: "The Quant", short: "Patterns across thousands of games", method: "Hunts repeatable patterns across thousands of graded games and only speaks when history rhymes." },
+      scout: { name: "Scout", title: "The Traditionalist", short: "Matchups, form and parks", method: "Works the slate the old way — starters, recent form, ballparks and weather, one matchup at a time." },
+    };
+    function deskGlyph(key: string, sz = 14) {
+      const common = `viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+      const body = key === "vega"
+        ? `<path d="M3 16l4.5-6 3.4 3.4L16 6.6 21 12"/><path d="M21 6.6v5.4h-5.4"/>`
+        : key === "atlas"
+        ? `<circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><ellipse cx="12" cy="12" rx="9" ry="3.8"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(64 12 12)"/>`
+        : key === "nova"
+        ? `<path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3.2 3.2M14.8 14.8L18 18M18 6l-3.2 3.2M9.2 14.8L6 18"/>`
+        : `<circle cx="12" cy="12" r="8.6"/><path d="M15.4 8.6l-2.1 4.7-4.7 2.1 2.1-4.7z"/>`;
+      return `<svg ${common}>${body}</svg>`;
+    }
+    // one analyst row, whatever shape it arrived in → a stable object (or null)
+    function normAnalystRow(a: any) {
+      if (!a || typeof a !== "object") return null;
+      const key = String(a.key == null ? "" : a.key).toLowerCase().trim();
+      if (!key) return null;
+      const cast = DESK_CAST[key] || null;
+      const sideRaw = String(a.side == null ? "" : a.side).trim();
+      const dir = /under/i.test(sideRaw) ? "under" : /over/i.test(sideRaw) ? "over" : "";
+      const pOver = _fin(a.p_over);
+      let conv = _fin(a.conviction);
+      if (conv != null && conv > 1) conv = conv / 100; // tolerate 0-100 scales
+      if (conv == null && pOver != null && dir) conv = dir === "under" ? 1 - pOver : pOver;
+      // served name may be "VEGA · The Market Reader" — split it into name + title
+      const nmRaw = String(a.name || (cast && cast.name) || key).trim();
+      const nmParts = nmRaw.split(/\s*[·|]\s*/);
+      return {
+        key, cast,
+        name: (nmParts[0] || nmRaw).trim(),
+        title: (nmParts.length > 1 ? nmParts.slice(1).join(" · ").trim() : "") || (cast && cast.title) || "",
+        persona: humanNote(a.persona_line),
+        side: sideRaw, dir,
+        p_over: pOver, conv,
+        locked: a.locked === true,
+        wall: String(a.wall == null ? "" : a.wall).trim(),
+        line: _fin(a.line),
+        result: /^(win|loss|push)$/i.test(String(a.result || "")) ? String(a.result).toLowerCase() : null,
+      };
+    }
+    // Every analyst's call on ONE game (board game or unified game), in cast order. [] when unserved.
+    function deskAnalysts(g: any): any[] {
+      if (!g) return [];
+      const src = Array.isArray(g.analysts) ? g : (v4GameFor(g) || g);
+      const raw = Array.isArray(src.analysts) ? src.analysts : null;
+      if (!raw || !raw.length) return [];
+      const out: any[] = []; const seen: any = {};
+      raw.forEach((a: any) => { const n = normAnalystRow(a); if (n && !seen[n.key]) { seen[n.key] = 1; out.push(n); } });
+      const idx = (k: string) => { const i = DESK_ORDER.indexOf(k); return i < 0 ? 99 : i; };
+      out.sort((a, b) => idx(a.key) - idx(b.key));
+      return out;
+    }
+    const CONS_STATES = ["UNANIMOUS", "MAJORITY", "SPLIT", "PENDING"];
+    function normConsensusBlock(c: any) {
+      if (!c || typeof c !== "object") return null;
+      const state = String(c.state || "").toUpperCase().trim();
+      if (CONS_STATES.indexOf(state) < 0) return null;
+      // totals blocks count n_over/n_under; the run-line dimension counts n_home/n_away
+      const nA = Math.max(0, Math.round(Number(c.n_over != null ? c.n_over : c.n_home) || 0));
+      const nB = Math.max(0, Math.round(Number(c.n_under != null ? c.n_under : c.n_away) || 0));
+      return {
+        state,
+        side: String(c.majority_side == null ? "" : c.majority_side).trim(),
+        nOver: nA,
+        nUnder: nB,
+      };
+    }
+    // The consensus on a game: served games[].consensus first; derived from the analyst
+    // rows when the block is missing but the calls are there. Null when there is no desk.
+    function deskConsensus(g: any) {
+      if (!g) return null;
+      const src = (g.consensus && typeof g.consensus === "object") ? g : (v4GameFor(g) || g);
+      const served = normConsensusBlock(src && src.consensus);
+      const spread = normConsensusBlock(src && src.consensus && (src.consensus as any).spread);
+      if (served) return { ...served, spread };
+      const ans = deskAnalysts(g);
+      if (!ans.length) return null;
+      const nO = ans.filter((a) => a.dir === "over").length;
+      const nU = ans.filter((a) => a.dir === "under").length;
+      if (!nO && !nU) return { state: "PENDING", side: "", nOver: 0, nUnder: 0, spread };
+      const state = (!nO || !nU) ? "UNANIMOUS" : nO === nU ? "SPLIT" : "MAJORITY";
+      return { state, side: nO >= nU ? "over" : "under", nOver: nO, nUnder: nU, spread };
+    }
+    // The desk chief's block: action PLAY|LEAN|AVOID + rationale, the run-line second read,
+    // and ATLAS's predicted final score. Null when unserved.
+    function deskChief(g: any) {
+      if (!g) return null;
+      const src = (g.diamondedge && typeof g.diamondedge === "object") ? g.diamondedge
+        : (() => { const vg = v4GameFor(g); return vg && vg.diamondedge && typeof vg.diamondedge === "object" ? vg.diamondedge : null; })();
+      if (!src) return null;
+      const act = String(src.action || "").toUpperCase().trim();
+      const action = act === "PLAY" || act === "LEAN" || act === "AVOID" ? act : null;
+      // spread_call may carry an explicit NO-CALL (side null + a rationale) — that's a real
+      // read ("the margin voices disagree"), rendered honestly, not dropped.
+      const scRaw = src.spread_call && typeof src.spread_call === "object" ? src.spread_call : null;
+      const sc = scRaw && (scRaw.side || humanNote(scRaw.rationale_line))
+        ? { side: scRaw.side ? String(scRaw.side).trim() : "", side_team: String(scRaw.side_team || "").trim(), line: _fin(scRaw.line), rationale: humanNote(scRaw.rationale_line) }
+        : null;
+      const psRaw = src.predicted_score && typeof src.predicted_score === "object" ? src.predicted_score : null;
+      const pred = psRaw && _fin(psRaw.away) != null && _fin(psRaw.home) != null
+        ? { away: Number(psRaw.away), home: Number(psRaw.home), source: String(psRaw.source || "ATLAS").toUpperCase() }
+        : null;
+      if (!action && !sc && !pred) return null;
+      return { action, rationale: humanNote(src.rationale_line), spread: sc, pred, raw: src };
+    }
+    // "4–0 OVER · UNANIMOUS" — the consensus headline. Locked mode keeps the count + state
+    // but redacts the side (the side is the product).
+    function consensusBanner(g: any, locked = false, size = "tile") {
+      const c = deskConsensus(g);
+      if (!c) return "";
+      const cls = c.state === "UNANIMOUS" ? "unan" : c.state === "MAJORITY" ? "maj" : c.state === "SPLIT" ? "split" : "pend";
+      const hi = Math.max(c.nOver, c.nUnder), lo = Math.min(c.nOver, c.nUnder);
+      const sideWord = locked ? "" : String(c.side || "").toUpperCase();
+      let txt = "";
+      if (c.state === "PENDING") txt = "DESK CONVENES AT THE WALL";
+      else if (c.state === "SPLIT") txt = `SPLIT ${c.nOver}–${c.nUnder}`;
+      else txt = `${hi}–${lo}${sideWord ? ` ${sideWord}` : ""} · ${c.state}`;
+      const sub = c.spread && !locked && c.spread.state !== "PENDING"
+        ? `<i class="cons-sub">RL ${c.spread.state === "SPLIT" ? `split ${c.spread.nOver}–${c.spread.nUnder}` : `${Math.max(c.spread.nOver, c.spread.nUnder)}–${Math.min(c.spread.nOver, c.spread.nUnder)} ${esc(String(c.spread.side || "").toUpperCase())}`}</i>`
+        : "";
+      const sizeCls = size === "mini" ? " cons-mini" : size === "wide" ? " cons-wide" : "";
+      return `<span class="cons ${cls}${sizeCls}"><i class="cons-dot" aria-hidden="true"></i>${esc(txt)}${sub}</span>`;
+    }
+    // "SIM SAYS 5–3" — ATLAS's most likely final, a concrete scoreline chip.
+    function simSaysChip(g: any, size = "tile") {
+      const chief = deskChief(g);
+      const p = chief && chief.pred;
+      if (!p) return "";
+      return `<span class="simsays${size === "big" ? " ss-big" : ""}" title="${esc(p.source)} — most likely final score from 20,000 simulations"><span class="ss-g an-atlas">${deskGlyph("atlas", 11)}</span>SIM SAYS ${num(p.away, 0)}–${num(p.home, 0)}</span>`;
+    }
+    // The chief's run-line second read (replaces the generic spread row when served).
+    function chiefSpreadLine(g: any, chief: any) {
+      const sp = chief && chief.spread;
+      if (!sp) return "";
+      // explicit no-call: the desk's margin voices disagree — say so, don't go quiet
+      if (!sp.side) {
+        return sp.rationale ? `<div class="ch-spread"><span class="chs-k">Run line</span><b class="nocall">No call</b><span class="chs-why">${esc(sp.rationale)}</span></div>` : "";
+      }
+      const ab = sp.side === "home" ? (g && g.home_abbr) || mlbAbbr(sp.side_team) || "HOME"
+        : sp.side === "away" ? (g && g.away_abbr) || mlbAbbr(sp.side_team) || "AWAY" : String(sp.side).toUpperCase();
+      const ln = sp.line != null && isFinite(Number(sp.line)) ? sgn(Number(sp.line)) : "";
+      const call = [ab, ln].filter(Boolean).join(" ");
+      if (!call) return "";
+      return `<div class="ch-spread"><span class="chs-k">Run line</span><b>${esc(call)}</b>${sp.rationale ? `<span class="chs-why">${esc(sp.rationale)}</span>` : ""}</div>`;
+    }
+    // The verdict strip: ◆ PLAY (bold) / ◆ LEAN / ◆ WE PASS (the pass styled proudly —
+    // passing on a split desk IS the discipline being sold).
+    function chiefStrip(g: any, chief: any) {
+      if (!chief || !chief.action) return "";
+      const cls = chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid";
+      const word = chief.action === "AVOID" ? "WE PASS" : chief.action;
+      const rat = chief.rationale || (chief.action === "AVOID" ? "The desk is split — we pass." : "");
+      return `<div class="chief ${cls}"><span class="ch-act"><i class="ch-dia" aria-hidden="true">◆</i>${word}</span>${rat ? `<span class="ch-rat">${esc(rat)}</span>` : ""}</div>`;
+    }
+    // The four calls as one compact row (glyph · name · side · conviction). Tap a cell →
+    // that analyst's card. Locked picks redact the sides (crisp dots), never the cast.
+    function deskChipRow(g: any, locked = false, interactive = true) {
+      const ans = deskAnalysts(g);
+      if (!ans.length) return "";
+      const cells = ans.map((a) => {
+        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        const arrow = a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : "•";
+        const sideTxt = a.dir ? a.dir.toUpperCase() : (a.side ? esc(a.side.toUpperCase()) : "—");
+        const call = hide
+          ? `<span class="dsk-dots" aria-hidden="true">●●</span>`
+          : a.side
+            ? `<span class="dsk-side ${dirCls}">${arrow} ${sideTxt}</span>`
+            : `<span class="dsk-side none">—</span>`;
+        const conv = !hide && a.conv != null ? `<span class="dsk-conv">${Math.round(a.conv * 100)}%</span>` : "";
+        const tag = interactive ? "button" : "span";
+        return `<${tag} class="dsk-cell an-${esc(a.key)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}` : ", no call yet"}"` : ""}>
+          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span>${call}${conv}</${tag}>`;
+      }).join("");
+      return `<div class="dsk-row">${cells}</div>`;
+    }
+    // The whole desk block for a game tile: consensus headline · sim score · the four calls ·
+    // the chief's verdict (+ run-line read). "" when the desk isn't served for this game.
+    function deskBlockTile(g: any, locked = false) {
+      const ans = deskAnalysts(g);
+      if (!ans.length) return "";
+      const chief = deskChief(g);
+      return `<div class="deskblk">
+        <div class="dsk-toprow">${consensusBanner(g, locked)}${simSaysChip(g)}</div>
+        ${deskChipRow(g, locked)}
+        ${chiefStrip(g, chief)}
+        ${chiefSpreadLine(g, chief)}
+      </div>`;
+    }
+    // ---- record.analysts → the standings ----
+    function deskRecordRows() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        let ra = d && (d as any).record && (d as any).record.analysts;
+        if (!ra || typeof ra !== "object" || Array.isArray(ra)) continue;
+        // served shape is { order:[...], records:{key:{...}}, note } — a flat {key:{...}}
+        // map is accepted too
+        if (ra.records && typeof ra.records === "object") ra = ra.records;
+        const rows: any[] = [];
+        Object.keys(ra).forEach((k) => {
+          const r = ra[k];
+          if (!r || typeof r !== "object") return;
+          const key = String(k).toLowerCase();
+          if (key === "order" || key === "note") return;
+          const cast = DESK_CAST[key] || null;
+          const win = Math.max(0, Math.round(Number(r.win != null ? r.win : r.wins) || 0));
+          const loss = Math.max(0, Math.round(Number(r.loss != null ? r.loss : r.losses) || 0));
+          const push = Math.max(0, Math.round(Number(r.push != null ? r.push : r.pushes) || 0));
+          // last10 arrives as "W-W-L-P-…" (string) or an array of marks/objects
+          const l10src = r.last10 != null ? r.last10 : (r.last_10 != null ? r.last_10 : r.form);
+          const l10raw = Array.isArray(l10src) ? l10src : typeof l10src === "string" ? l10src.split(/[^WLPwlp]+/) : [];
+          const last10 = l10raw.map((x: any) => {
+            const s = String(typeof x === "string" ? x : (x && (x.result || x.r)) || "").toUpperCase();
+            return s.startsWith("W") ? "W" : s.startsWith("L") ? "L" : s.startsWith("P") ? "P" : "";
+          }).filter(Boolean).slice(-10);
+          const nmRaw = String(r.name || (cast && cast.name) || key).trim();
+          const nmParts = nmRaw.split(/\s*[·|]\s*/);
+          rows.push({
+            key, cast,
+            name: (nmParts[0] || nmRaw).trim(),
+            title: (nmParts.length > 1 ? nmParts.slice(1).join(" · ").trim() : "") || (cast && cast.title) || "",
+            persona: humanNote(r.persona_line),
+            n: Math.max(0, Math.round(Number(r.n) || 0)) || win + loss + push,
+            win, loss, push,
+            hit: _fin(r.hit_rate != null ? r.hit_rate : r.hit),
+            roi: _fin(r.roi),
+            last10,
+          });
+        });
+        if (rows.length) return rows;
+      }
+      return [];
+    }
+    // any live game already carries analyst calls (the cast exists even before records do)
+    function deskAnyAnalysts() {
+      for (const d of [betaLiveData, betaData]) {
+        if (d && Array.isArray((d as any).games) && (d as any).games.some((g: any) => Array.isArray(g.analysts) && g.analysts.length)) return true;
+      }
+      return false;
+    }
+    const deskL10Dots = (arr: any[]) => (arr && arr.length
+      ? `<span class="dsk-l10" aria-label="last ${arr.length} calls">${arr.map((r) => `<i class="d-${r === "W" ? "w" : r === "L" ? "l" : "p"}"></i>`).join("")}</span>`
+      : "");
+    // ---- DESK STANDINGS (top of home): the four analysts ranked by record ----
+    function deskStandingsStrip() {
+      let rows = deskRecordRows();
+      const haveRec = rows.length > 0;
+      if (!haveRec && !deskAnyAnalysts()) return "";
+      if (!haveRec) rows = DESK_ORDER.map((k) => ({ key: k, cast: DESK_CAST[k], name: DESK_CAST[k].name, title: DESK_CAST[k].title, n: 0, win: 0, loss: 0, push: 0, hit: null, roi: null, last10: [] }));
+      rows = rows.slice().sort((a: any, b: any) =>
+        ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) ||
+        ((b.hit || 0) - (a.hit || 0)) || ((b.win || 0) - (a.win || 0)) ||
+        (DESK_ORDER.indexOf(a.key) - DESK_ORDER.indexOf(b.key)));
+      const cards = rows.map((r: any, i: number) => {
+        const graded = r.win + r.loss + r.push > 0;
+        const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0";
+        const roiTxt = r.roi != null ? `<i class="dskst-roi ${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : `<i class="dskst-roi dim">${graded ? "" : "first calls today"}</i>`;
+        return `<button class="dskst-card an-${esc(r.key)}${i === 0 && graded ? " lead" : ""}" data-an="${esc(r.key)}" aria-label="${esc(r.name)} — ${esc(r.title)}, record ${rec}">
+          <span class="dskst-rank">${i === 0 && graded ? "◆ 1st" : `${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}`}</span>
+          <span class="dskst-id">${deskGlyph(r.key, 17)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
+          <span class="dskst-rec"><b>${rec}</b>${roiTxt}</span>
+          ${deskL10Dots(r.last10)}
+        </button>`;
+      }).join("");
+      return `<section class="dskst" aria-label="Desk standings">
+        <div class="dskst-h"><span class="dskst-k">◆ Desk standings</span><span class="dskst-sub">Four analysts call every game — ranked by their graded record</span></div>
+        <div class="dskst-rail">${cards}</div>
+      </section>`;
+    }
+    // ---- the analyst card (sheet): persona · method · record · recent calls ----
+    function openAnalystSheet(key: any) {
+      const k = String(key || "").toLowerCase();
+      const cast = DESK_CAST[k] || { name: k, title: "Analyst", method: "" };
+      const rec = deskRecordRows().find((r: any) => r.key === k) || null;
+      // recent calls: newest first across the live + history feeds, deduped by game
+      const seen: any = {}; const calls: any[] = [];
+      [betaLiveData, betaData].forEach((d: any) => ((d && d.games) || []).forEach((g: any) => {
+        const gid = String(g.game_id || "");
+        if (!gid || seen[gid]) return; seen[gid] = 1;
+        const a = (Array.isArray(g.analysts) ? g.analysts : []).map(normAnalystRow).filter(Boolean).find((x: any) => x.key === k);
+        if (a && a.side) calls.push({ g, a });
+      }));
+      calls.sort((x: any, y: any) => String(y.g.date || "").localeCompare(String(x.g.date || "")));
+      const rows = calls.slice(0, 10).map(({ g, a }: any) => {
+        const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+        const aAb = g.away_abbr || mlbAbbr(g.away) || "—", hAb = g.home_abbr || mlbAbbr(g.home) || "—";
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        const res = a.result === "win" ? `<span class="ppres won">W</span>` : a.result === "loss" ? `<span class="ppres lost">L</span>` : a.result === "push" ? `<span class="ppres pushed">P</span>` : `<span class="ppres open">—</span>`;
+        return `<div class="anl-row"><span class="anl-d">${esc(dd)}</span><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span><span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>${a.conv != null ? `<span class="anl-conv">${Math.round(a.conv * 100)}%</span>` : ""}${res}</div>`;
+      }).join("");
+      const graded = rec && rec.win + rec.loss + rec.push > 0;
+      const recHero = rec
+        ? `<div class="anl-hero">
+            <div class="anl-big"><b>${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}</b><i>record</i></div>
+            ${rec.hit != null ? `<div class="anl-big"><b>${(rec.hit * 100).toFixed(0)}%</b><i>hit</i></div>` : ""}
+            ${rec.roi != null ? `<div class="anl-big ${rec.roi >= 0 ? "pos" : "neg"}"><b>${bRoi(rec.roi)}</b><i>ROI</i></div>` : ""}
+            ${rec.last10.length ? `<div class="anl-big form"><b>${deskL10Dots(rec.last10)}</b><i>last ${rec.last10.length}</i></div>` : ""}
+          </div>`
+        : `<div class="anl-hero"><div class="anl-big"><b>0–0</b><i>first calls pending</i></div></div>`;
+      detail = { _record: true };
+      const html = `
+        <div class="sheet-bg" id="sheet-bg"></div>
+        <div class="sheet anl an-${esc(k)}" id="sheet" role="dialog" aria-modal="true">
+          <div class="sh-grab" id="sh-grab"><span></span></div>
+          <div class="sh-head anl-head">
+            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <div class="anl-glyph an-${esc(k)}">${deskGlyph(k, 26)}</div>
+            <div class="anl-name">${esc(String(cast.name || k).toUpperCase())}<span class="anl-title">${esc(cast.title || "")}</span></div>
+            <div class="sh-meta">${esc(cast.method || "")}</div>
+          </div>
+          <div class="sh-body">
+            ${recHero}
+            ${graded ? "" : `<div class="anl-note">Every call ${esc(cast.name || "this analyst")} files is graded against the real final — the record builds here in public.</div>`}
+            ${rows ? `<div class="dsec"><div class="dsec-h">Recent calls</div><div class="anl-rows">${rows}</div></div>` : ""}
+            <div class="dsec"><div class="dsec-b rcp"><p><b>One desk, one bet.</b> ${esc(cast.name || "Each analyst")} argues a side on every game; the desk chief weighs all four and only the DiamondEdge call is ever played. Each analyst's own calls are graded separately — that scoreboard is the competition.</p></div></div>
+            <button class="rb-full" id="anl-insights">See the full desk record →</button>
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      $("sheet-close").onclick = () => closeDetail();
+      $("sheet-bg").onclick = () => closeDetail();
+      const ins = $("anl-insights"); if (ins) ins.onclick = () => { closeDetail(); switchTab("results"); };
+      bindSheetDrag($("sheet"), $("sh-grab"));
+    }
+    // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
+    // card — tiles, the standings strip, the debate panel — without touching each binder.
+    let deskTapBound = false;
+    function bindDeskTaps() {
+      if (deskTapBound) return; deskTapBound = true;
+      document.addEventListener("click", (e: any) => {
+        const b = e.target && e.target.closest && e.target.closest("[data-an]");
+        if (!b) return;
+        e.preventDefault(); e.stopPropagation();
+        openAnalystSheet(b.dataset.an);
+      }, true);
+    }
+    // ---- the detail drill-down: the four analysts DEBATING the game ----
+    function deskRecChip(key: string) {
+      const r = deskRecordRows().find((x: any) => x.key === key);
+      if (!r || r.win + r.loss + r.push === 0) return "";
+      return `<span class="dbt-rec">${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</span>`;
+    }
+    function deskDebatePanel(g: any, locked = false) {
+      const ans = deskAnalysts(g);
+      if (!ans.length) return "";
+      const chief = deskChief(g);
+      const rows = ans.map((a: any) => {
+        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        const call = hide
+          ? `<span class="dsk-dots" aria-hidden="true">●●●</span>`
+          : a.side
+            ? `<b class="dbt-side ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</b>`
+            : `<b class="dbt-side none">No call yet</b>`;
+        const conv = !hide && a.conv != null ? `<span class="dbt-conv">${Math.round(a.conv * 100)}% sure</span>` : "";
+        const res = a.result === "win" ? `<span class="sgr-res won">RIGHT</span>` : a.result === "loss" ? `<span class="sgr-res lost">WRONG</span>` : a.result === "push" ? `<span class="sgr-res pushed">PUSH</span>` : "";
+        return `<div class="dbt an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
+          <div class="dbt-id">${deskGlyph(a.key, 15)}<span class="dbt-nm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${deskRecChip(a.key)}</div>
+          <div class="dbt-call">${call}${conv}${a.wall ? `<span class="dbt-wall">${esc(a.wall)}</span>` : ""}${res}</div>
+          ${!hide && a.persona ? `<p class="dbt-say">“${esc(a.persona)}”</p>` : ""}
+        </div>`;
+      }).join("");
+      const chiefRow = chief && chief.action ? `<div class="dbt chiefrow ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}">
+          <div class="dbt-id"><span class="dbt-dia" aria-hidden="true">◆</span><span class="dbt-nm"><b>DIAMONDEDGE</b><i>Desk chief</i></span></div>
+          <div class="dbt-call"><b class="dbt-verdict">${chief.action === "AVOID" ? "WE PASS" : chief.action}</b></div>
+          ${chief.rationale ? `<p class="dbt-say chief">${esc(chief.rationale)}</p>` : ""}
+          ${chiefSpreadLine(g, chief)}
+        </div>` : "";
+      return `<div class="stgy dskdb" id="stgy-panel">
+        <div class="stgy-h"><span class="stgy-k">◆ The desk on this game</span>${consensusBanner(g, locked, "wide")}</div>
+        <p class="stgy-lede">Four analysts file <b>independent</b> calls on every game — then the desk chief weighs them. Agreement is a green light; a split desk is a pass.</p>
+        <div class="dskdb-rows">${rows}${chiefRow}</div>
+        <div class="stgy-note">One desk, one bet: only the DiamondEdge call is ever played, and only it grades into the headline record. Every analyst's own calls are graded separately — that scoreboard lives on Insights.</div>
+      </div>`;
+    }
+    // compact desk line for the flagship/lead story card (consensus chip + the four glyphs)
+    function deskMiniRow(g: any, locked = false) {
+      const ans = deskAnalysts(g);
+      if (!ans.length) return "";
+      const chips = ans.map((a: any) => {
+        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        return `<span class="dskm an-${esc(a.key)}" title="${esc(a.name)} — ${esc(a.title)}">${deskGlyph(a.key, 11)}${!hide && a.dir ? `<i class="${dirCls}">${a.dir === "over" ? "▲" : "▼"}</i>` : ""}</span>`;
+      }).join("");
+      return `<div class="ls-desk">${consensusBanner(g, locked, "mini")}<span class="dskm-row">${chips}</span></div>`;
+    }
+    // ---- record.consensus_history → "when the desk agrees" (Insights) ----
+    function consensusHistoryRows() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        let ch = d && (d as any).record && (d as any).record.consensus_history;
+        if (!ch) continue;
+        // served shape nests the states under by_state
+        if (ch.by_state && typeof ch.by_state === "object") ch = ch.by_state;
+        const items: any[] = [];
+        const push = (state: string, r: any) => {
+          const b = stratBlock(r);
+          if (b) items.push({ state: state.toUpperCase(), ...b });
+        };
+        if (Array.isArray(ch)) ch.forEach((r: any) => r && r.state && push(String(r.state), r));
+        else if (typeof ch === "object") Object.keys(ch).forEach((k) => push(k, ch[k]));
+        const order = ["UNANIMOUS", "MAJORITY", "SPLIT"];
+        items.sort((a, b) => order.indexOf(a.state) - order.indexOf(b.state));
+        if (items.length) return items;
+      }
+      return [];
+    }
+    // Insights: the desk, ranked — per-analyst records + the consensus-state record.
+    function analystRecordSection() {
+      const rows = deskRecordRows();
+      if (!rows.length) return "";
+      const ranked = rows.slice().sort((a: any, b: any) =>
+        ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) || ((b.hit || 0) - (a.hit || 0)));
+      const cards = ranked.map((r: any, i: number) => `
+        <button class="dskrec-card an-${esc(r.key)}" data-an="${esc(r.key)}">
+          <span class="dskst-rank">${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}</span>
+          <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
+          <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)} ROI</i>` : ""}${r.n ? `<i class="dim">${r.n} calls</i>` : ""}</span>
+          ${deskL10Dots(r.last10)}
+        </button>`).join("");
+      const ch = consensusHistoryRows();
+      const chRows = ch.map((r: any) => {
+        const lab = r.state === "UNANIMOUS" ? "All four agree" : r.state === "MAJORITY" ? "3–1 majority" : "Desk split";
+        return `<div class="chh-row ${r.state.toLowerCase()}"><span class="chh-lab">${lab}</span><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(0)}%</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}<span class="chh-n">${r.n} games</span></div>`;
+      }).join("");
+      return `<div class="ixc dskrec" id="analyst-record">
+        <div class="ixc-h">The desk, ranked</div>
+        <div class="ixc-sub">Four analysts call every game independently. Each one's calls are graded against the real final — this is the competition scoreboard.</div>
+        <div class="dskrec-list">${cards}</div>
+        ${chRows ? `<div class="chh"><div class="chh-h">When the desk agrees</div>${chRows}<div class="chh-note">The same games seen four ways — the states overlap with nothing else and are graded on the desk's own calls.</div></div>` : ""}
+      </div>`;
+    }
+    // ---- DEV-ONLY DESK MOCK (?deskmock=1 on localhost): synthesizes the analyst fields so
+    // the Analyst Desk UI can be exercised before the backend payload lands. NEVER active in
+    // production — gated on hostname. Real served fields always win (mock skips games that
+    // already carry analysts).
+    const DESK_MOCK = typeof location !== "undefined" && /[?&]deskmock=1/.test(location.search) && /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
+    function applyDeskMock(d: any) {
+      if (!DESK_MOCK || !d || !Array.isArray(d.games)) return d;
+      try {
+        const h = (s: string) => { let x = 0; for (let i = 0; i < s.length; i++) x = (x * 31 + s.charCodeAt(i)) >>> 0; return x; };
+        d.games.forEach((g: any) => {
+          if (!g || Array.isArray(g.analysts)) return;
+          const pk = g.pick || {};
+          // coherent mock: the desk mostly agrees with the model's side, with real dissent
+          const pBase = pk.side ? (/under/i.test(String(pk.side)) ? 0.455 : 0.545) : 0.5;
+          const seed = h(String(g.game_id || ""));
+          const offs: any = { vega: ((seed % 13) - 6) / 100, atlas: (((seed >> 3) % 15) - 7) / 100, nova: (((seed >> 6) % 11) - 5) / 100, scout: (((seed >> 9) % 17) - 8) / 100 };
+          const simP = g.simulator && _fin(g.simulator.p_over);
+          g.analysts = DESK_ORDER.map((k) => {
+            const p = Math.max(0.35, Math.min(0.68, k === "atlas" && simP != null ? simP : pBase + offs[k]));
+            const side = p >= 0.5 ? "over" : "under";
+            return { key: k, name: DESK_CAST[k].name, persona_line: { vega: "The sharp books moved first — I follow the money.", atlas: "Twenty thousand sims say the runs are there.", nova: "This profile has cashed for years.", scout: "Two tired arms and a short porch — I like runs." }[k], side, p_over: p, conviction: p >= 0.5 ? p : 1 - p, locked: !!pk.locked, wall: pk.lead_time || "T-3h" };
+          });
+          const nO = g.analysts.filter((a: any) => a.side === "over").length;
+          const nU = 4 - nO;
+          const state = nO === 4 || nU === 4 ? "UNANIMOUS" : nO === nU ? "SPLIT" : "MAJORITY";
+          g.consensus = { state, majority_side: nO >= nU ? "over" : "under", n_over: nO, n_under: nU };
+          const mu = g.simulator && _fin(g.simulator.sim_mu) != null ? Number(g.simulator.sim_mu) : 8.6;
+          const hm = Math.round(mu * 0.54), aw = Math.max(0, Math.round(mu) - hm);
+          g.diamondedge = {
+            action: state === "UNANIMOUS" ? "PLAY" : state === "MAJORITY" ? "LEAN" : "AVOID",
+            rationale_line: state === "UNANIMOUS" ? "All four reached the same side independently — that agreement is the play." : state === "MAJORITY" ? "Three of four line up — a lean, not a full play." : "The desk is split — we pass.",
+            spread_call: g.spread && g.spread.side ? { side: g.spread.side, line: g.spread.line, rationale_line: "The run line follows the same read." } : null,
+            predicted_score: { away: aw, home: hm, source: "ATLAS" },
+          };
+        });
+        d.record = d.record || {};
+        if (!d.record.analysts) {
+          const mk = (w: number, l: number, roi: number) => ({ n: w + l, win: w, loss: l, push: 0, hit_rate: w / (w + l), roi, last10: Array.from({ length: 10 }, (_, i) => ((h(String(i * 7 + w)) % 10) < 5 ? "W" : "L")) });
+          d.record.analysts = { vega: mk(31, 24, 0.062), atlas: mk(29, 26, 0.018), nova: mk(27, 27, -0.021), scout: mk(25, 30, -0.055) };
+        }
+        if (!d.record.consensus_history) d.record.consensus_history = { unanimous: { n: 18, win: 12, loss: 6, push: 0, hit_rate: 0.667, roi: 0.21 }, majority: { n: 41, win: 22, loss: 19, push: 0, hit_rate: 0.537, roi: 0.012 }, split: { n: 24, win: 11, loss: 13, push: 0, hit_rate: 0.458, roi: -0.09 } };
+      } catch {}
+      return d;
+    }
     // Universal star renderer: unified picks use the 5-star scale; any legacy pick keeps 3.
     function pickStars(pl: any) {
       if (pl && pl.stars != null) return bStars(pl.stars);
@@ -2565,7 +3059,7 @@ export default function Home() {
             <span class="ps-lowconf">Low confidence</span>
             <span class="ps-q">${bStars(pk.stars != null ? pk.stars : 1)}${passGrade(sc)}</span>
           </div>
-          <div class="pk-made dim">Model lean — not an official pick${why ? ` · ${why}` : ""}</div>
+          ${why ? `<div class="pk-made dim">${why}</div>` : ""}
         </div>`;
       }
       // no lean at all (market never posted): the old honest pass line
@@ -2668,15 +3162,22 @@ export default function Home() {
       // abbr · record), per-side ODDS GRID right (Spread | o/u Total | ML) with OUR pick's
       // cells highlighted + tiny stars. Pitchers underneath. Live/final: the odds column
       // quiets to the inline per-team score; the pick strip carries the live read.
-      return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+      // ANALYST DESK: when the game carries the four analysts, the tile becomes a MATCHUP
+      // PANEL — consensus headline, the four calls, the chief's verdict. A chief AVOID with
+      // no pick replaces the pass strip (the pass IS the verdict); a served chief run-line
+      // call replaces the generic spread row. No desk served ⇒ the tile is unchanged.
+      const deskHtml = deskBlockTile(g, locked);
+      const deskChf = deskHtml ? deskChief(g) : null;
+      return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}${deskHtml ? " has-desk" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
         <div class="t-head">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="t-body">
           <div class="t-teams">${tileRow(g, "away", gs)}${pitcherSub(g, "away")}${tileRow(g, "home", gs)}${pitcherSub(g, "home")}</div>
         </div>
         ${pre ? "" : totOnly}
+        ${deskHtml}
         ${isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
-        ${spreadRowTile(g)}
+        ${deskChf && deskChf.spread ? "" : spreadRowTile(g)}
       </article>`;
     }
     // ===================== POSTPONED (VISIBLE-VOID) CARD =====================
@@ -2901,10 +3402,14 @@ export default function Home() {
     // dark/compact style (echoes the dock) so it never reads as a duplicate of the light game
     // tiles below. Tap → the same game detail. Only +EV picks qualify; nothing ⇒ no rail.
     function topPicksRail(games: any[]) {
+      // Desk agreement leads the ranking when the analysts are served: a unanimous desk is
+      // the strongest possible feature, a majority next — then the model score as before.
+      const consRank = (g: any) => { const c = deskConsensus(g); return c ? (c.state === "UNANIMOUS" ? 2 : c.state === "MAJORITY" ? 1 : 0) : 0; };
       const rows = games
         .map((g: any) => ({ g, pl: displayPick(g) }))
         .filter((r: any) => isBet(r.pl))
         .sort((a: any, b: any) =>
+          (consRank(b.g) - consRank(a.g)) ||
           ((b.pl.grade != null ? Number(b.pl.grade) : 0) - (a.pl.grade != null ? Number(a.pl.grade) : 0)) ||
           ((b.pl.stars || 0) - (a.pl.stars || 0)) ||
           ((b.pl.p || 0) - (a.pl.p || 0)))
@@ -2938,6 +3443,7 @@ export default function Home() {
           return `<button class="tpk tpk-hero s${stars}" data-gid="${esc(g.game_id)}" style="--i:0"
             aria-label="Top pick 1 — ${esc(g.away_abbr)} at ${esc(g.home_abbr)} — ${aria} — open details">
             <span class="tpk-top"><span class="tpk-rank">#1</span><span class="tpk-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${when}</span>
+            ${consensusBanner(g, locked, "mini") ? `<span class="tpk-cons">${consensusBanner(g, locked, "mini")}</span>` : ""}
             <span class="tpk-heromid">
               <span class="tpk-crest">${gCrest(g, "away")}</span>
               <span class="tpk-heropick">
@@ -2952,14 +3458,16 @@ export default function Home() {
         return `<button class="tpk s${stars}" data-gid="${esc(g.game_id)}" style="--i:${i}"
           aria-label="Top pick ${i + 1} — ${esc(g.away_abbr)} at ${esc(g.home_abbr)} — ${aria} — open details">
           <span class="tpk-top"><span class="tpk-rank">#${i + 1}</span><span class="tpk-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${when}</span>
+          ${consensusBanner(g, locked, "mini") ? `<span class="tpk-cons">${consensusBanner(g, locked, "mini")}</span>` : ""}
           ${sideEl}
           ${foot}
         </button>`;
       };
       const heroCard = card(rows[0], 0, true);
       const rest = rows.slice(1).map((r: any, i: number) => card(r, i + 1, false)).join("");
+      const deskOn = rows.some((r: any) => deskConsensus(r.g));
       return `<div class="toppicks">
-        <div class="tp-head"><span class="tp-lab">◆ Top Picks${isToday ? " Today" : ""}</span><span class="tp-sub">ranked by model score</span></div>
+        <div class="tp-head"><span class="tp-lab">◆ Top Picks${isToday ? " Today" : ""}</span><span class="tp-sub">${deskOn ? "the desk's strongest calls first" : "ranked by model score"}</span></div>
         ${heroCard}
         ${rest ? `<div class="tp-grid">${rest}</div>` : ""}
       </div>`;
@@ -3983,12 +4491,9 @@ export default function Home() {
             : `<em class="sgr-lv none">Live</em> no live-served picks yet`}${btN ? `<span class="sgr-btnote">+ ${btN} backtested — reported separately, never added in</span>` : ""}</div>`
         : "";
       const why = s.reason ? `<div class="sgr-why${noView ? " dim" : ""}">${esc(s.reason)}</div>` : "";
-      const leanNote = s.lean ? `<div class="sgr-leanlab">Model lean — not an official pick</div>` : "";
       const srcNote = s.servedSrc && !served ? `<div class="sgr-src">This is the stream the served pick came from.</div>` : "";
-      const isSpreadStream = s.key === "spread_stream";
-      // SIMULATOR (2026-07-28): the physics-model voice — its own badge, and
-      // its P(over) shown against the market's so the "ties the market"
-      // honesty is visible per game. Never a PICK, never a W/L badge.
+      // SIMULATOR: the physics-model voice — its P(over) shown against the market's per
+      // game. (The timid "tracking, not bets" chrome is gone — the record is the honesty.)
       const isSimulator = s.key === "simulator";
       const simProb = isSimulator && s.sim_p_over != null
         ? `<div class="sgr-why">Sim's price: <b>${(s.sim_p_over * 100).toFixed(1)}%</b> chance the total goes over${s.sim_p_over_market != null ? ` · the market says <b>${(s.sim_p_over_market * 100).toFixed(1)}%</b>` : ""}${s.sim_median != null ? ` · sim median ${num(s.sim_median, 0)} runs` : ""}</div>`
@@ -3996,14 +4501,11 @@ export default function Home() {
       return `<div class="sgr ${statusCls}${served ? " served" : ""}">
         <div class="sgr-top">
           <span class="sgr-lab">${esc(s.label)}</span>
-          ${isSpreadStream ? `<span class="sgr-new">NEW · graded from day one</span>` : ""}
-          ${isSimulator ? `<span class="sgr-new">PHYSICS SIM · tracking, not bets</span>` : ""}
           ${served ? `<span class="sgr-served">◆ Served</span>` : ""}
           <span class="sgr-status ${statusCls}">${statusTxt}</span>
         </div>
         <div class="sgr-call">${call}${conf}${res}</div>
         ${simProb}
-        ${leanNote}
         ${why}
         ${srcNote}
         ${recLine}
@@ -4050,9 +4552,14 @@ export default function Home() {
       const intro = lead2
         ? `How the model sees ${esc(g.away_abbr)} at ${esc(g.home_abbr)} — and where it disagrees with Vegas.`
         : `We're passing this one. Here's the read that didn't clear our bar.`;
+      // THE DESK DEBATE leads when the four analysts are served — the strategies panel
+      // stays available underneath as the raw streams; without the desk it renders as before.
+      const debate = deskDebatePanel(g, leadLocked);
+      const stratHtml = strategiesPanel(g);
       return `<div class="de-pane">
         <div class="de-lead"><div class="de-k">◆ Why DiamondEdge ${lead2 ? "is on this" : "passed"}</div><p class="de-sub">${intro}</p></div>
-        ${strategiesPanel(g)}
+        ${debate || stratHtml}
+        ${debate && stratHtml ? `<details class="dskdb-raw"><summary><span>The raw model streams behind the desk</span><span class="sgc-caret" aria-hidden="true">›</span></summary>${stratHtml.replace(' id="stgy-panel"', "")}</details>` : ""}
         ${narrative}
         ${div ? `<div class="de-sec"><div class="de-h">Our number vs the market</div>${div}</div>` : ""}
         ${viz ? `<div class="de-sec"><div class="de-h">The numbers</div>${viz}</div>` : ""}
@@ -4151,6 +4658,7 @@ export default function Home() {
         <h2 class="sh-mast-h">${mastHead}</h2>
         ${mastDek ? `<p class="sh-mast-dek">${mastDek}</p>` : ""}
         <div class="sh-mast-byline">DiamondEdge Preview${dispDate ? ` · ${esc(dispDate)}` : ""}${startTxt ? ` · ${esc(startTxt)}` : ""}</div>
+        ${(consensusBanner(g, leadLocked) || simSaysChip(g, "big")) ? `<div class="sh-desk">${consensusBanner(g, leadLocked)}${simSaysChip(g, "big")}</div>` : ""}
       </div>`;
       // PASS games get an explicit no-bet block that NAMES the lines we judged — a pass is
       // a priced decision, and it reads like one.
@@ -5083,6 +5591,7 @@ export default function Home() {
           ${chartCard("Calibration", "When the model says a number, does reality agree? Predicted vs realized win rate.", calibrationSvg(betaData))}
           ${chartCard("Month by month", "Net units each month — hot months and cold months alike.", monthlySvg(betaData))}
           ${streaksBlock(betaData)}
+          ${analystRecordSection()}
           ${strategyRecordSection(betaData)}
           <div class="ix-why"><span class="ixw-k">◆ Every pick shows its work</span><p>Open any pick and you'll see exactly why it exists — the signals that fired, the model's 0–5 confidence score, and the price edge it clears. No black box, no after-the-fact edits.</p></div>
           ${pastPicksSection(betaData)}
@@ -5390,6 +5899,7 @@ export default function Home() {
         <div class="ls-body">
           <h3 class="ls-match">${headline}</h3>
           <div class="ls-byline">${esc(kicker)} · DiamondEdge${dateTxt ? ` · ${esc(dateTxt)}` : ""}</div>
+          ${deskMiniRow(g, locked)}
           ${lede ? `<p class="ls-lede small">${esc(lede)}</p>` : ""}
           ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
           <span class="hero-cta">${cta}</span>
@@ -5474,6 +5984,16 @@ export default function Home() {
       }
       const slides: any[] = [];
       if (picks[0]) slides.push({ t: "pick", g: picks[0].g, pl: picks[0].pl, rank: 1 });
+      // ANALYST DESK slide: the day's strongest consensus is the strongest possible story —
+      // "all four analysts agree" leads; a 3–1 majority still makes the deck; a split gets
+      // the "desk divided" treatment only when nothing stronger exists.
+      const consRank: any = { UNANIMOUS: 3, MAJORITY: 2, SPLIT: 1 };
+      const deskBest = pool
+        .map((g0: any) => ({ g: g0, c: deskConsensus(g0), n: deskAnalysts(g0).length }))
+        .filter((r: any) => r.n >= 2 && r.c && consRank[r.c.state])
+        .sort((a: any, b: any) => (consRank[b.c.state] - consRank[a.c.state]) ||
+          (((displayPick(b.g) || {}).stars || 0) - ((displayPick(a.g) || {}).stars || 0)))[0] || null;
+      if (deskBest) slides.push({ t: "desk", g: deskBest.g, c: deskBest.c });
       const recap = yesterdayRecap();
       if (recap) slides.push({ t: "recap", ...recap });
       let pi = 1, ni = 0;
@@ -5576,10 +6096,46 @@ export default function Home() {
         <button class="st-cta" data-go="games">Open the board →</button>
       </div>`;
     }
+    // THE ANALYST DESK slide — the consensus as cinema: "All four say OVER." with the four
+    // calls stacked and the chief's verdict. A split gets the proud "desk divided" pass.
+    function storyDeskSlide(sl: any) {
+      const g = sl.g;
+      const c = sl.c || deskConsensus(g);
+      const ans = deskAnalysts(g);
+      const pl = displayPick(g);
+      const locked = pl ? pickLocked(pl, playState(g, pl)) : false;
+      const chief = deskChief(g);
+      const state = (c && c.state) || "PENDING";
+      const sideWord = locked ? "" : String((c && c.side) || "").toUpperCase();
+      const head = state === "UNANIMOUS" ? (sideWord ? `All four say ${sideWord}.` : "All four analysts agree.")
+        : state === "MAJORITY" ? `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)}${sideWord ? ` ${sideWord}` : ""} — the desk leans.`
+        : state === "SPLIT" ? "The desk is divided." : "The desk convenes soon.";
+      const rows = ans.map((a: any) => {
+        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        const call = hide ? `<span class="dsk-dots" aria-hidden="true">●●</span>`
+          : a.side ? `<b class="sts-dcall ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}</b>` : `<b class="sts-dcall none">—</b>`;
+        return `<div class="sts-drow an-${esc(a.key)}">${deskGlyph(a.key, 14)}<span class="sts-dnm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${call}${!hide && a.conv != null ? `<span class="sts-dconv">${Math.round(a.conv * 100)}%</span>` : ""}</div>`;
+      }).join("");
+      const verdict = chief && chief.action
+        ? `<div class="sts-chief ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}"><b>◆ ${chief.action === "AVOID" ? "WE PASS" : chief.action}</b>${chief.rationale ? `<span>${esc(chief.rationale)}</span>` : ""}</div>`
+        : "";
+      const stCls = state === "UNANIMOUS" ? "unan" : state === "MAJORITY" ? "maj" : "split";
+      return `<div class="sts sts-desk cons-${stCls}">
+        <div class="sts-bg" aria-hidden="true"></div>
+        <div class="sts-kick"><span>◆ The Analyst Desk</span><span class="sts-when">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span></div>
+        <h3 class="sts-head deskhead">${esc(head)}</h3>
+        <div class="sts-drows">${rows}</div>
+        ${verdict}
+        ${simSaysChip(g, "big")}
+        <button class="st-cta" data-go="pick" data-gid="${esc(g.game_id)}">See the desk's full read →</button>
+      </div>`;
+    }
     function storySlideHtml(sl: any, i: number) {
       const inner = sl.t === "pick" ? storyPickSlide(sl)
         : sl.t === "news" ? storyNewsSlide(sl)
         : sl.t === "recap" ? storyRecapSlide(sl)
+        : sl.t === "desk" ? storyDeskSlide(sl)
         : storySummarySlide(sl);
       return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
     }
@@ -5756,6 +6312,7 @@ export default function Home() {
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
           </div>
           <div class="mh-rule"></div>
+          ${deskStandingsStrip()}
           ${nextUpBanner()}
           <section class="ng-lead front-hero">${leadStory}</section>
           ${flag2 ? `<section class="ng-lead front-hero second">${flag2}</section>` : ""}
@@ -6169,7 +6726,7 @@ export default function Home() {
         if (!r.ok) throw new Error("history fetch " + r.status);
         fresh = await r.json();
       }
-      betaData = fresh;
+      betaData = applyDeskMock(fresh);
       return betaData;
     }
     // LIVE picks (today + tomorrow) — the freshest copy lives in Supabase (slate_snapshots
@@ -6193,7 +6750,7 @@ export default function Home() {
         if (!r.ok) throw new Error("live fetch " + r.status);
         fresh = await r.json();
       }
-      betaLiveData = fresh;
+      betaLiveData = applyDeskMock(fresh);
       betaLiveAt = Date.now();
       if (hadNone) reRender(); // swap in the real picks / flagship once the feed lands
       // SELF-HEAL: if we had to fall back to the bundled static file (Supabase was slow), it
@@ -6206,7 +6763,7 @@ export default function Home() {
             try {
               const sb: any = await snap("picks_unified_live");
               if (sb && sb.games && sb.generated_utc !== fresh.generated_utc) {
-                betaLiveData = sb; betaLiveAt = Date.now(); reRender(); return;
+                betaLiveData = applyDeskMock(sb); betaLiveAt = Date.now(); reRender(); return;
               }
             } catch {}
           }
@@ -6907,6 +7464,7 @@ export default function Home() {
       // web-only chrome via body.native (CSS).
       const NATIVE = /DiamondEdgeNative/i.test(navigator.userAgent) || !!(window as any).Capacitor || /[?&]native=1/.test(location.search);
       if (NATIVE) document.body.classList.add("native");
+      bindDeskTaps(); // one capture-phase delegate: any [data-an] tap opens the analyst card
       renderShell();
       renderScoresChrome();
       renderToday(); // skeleton until the payload lands

@@ -1,13 +1,25 @@
 {
- "generated_utc": "2026-07-28T00:42:21Z",
+ "generated_utc": "2026-07-30T19:14:51Z",
  "summary": {
-  "shipped": 14,
-  "testing": 4,
+  "shipped": 16,
+  "testing": 2,
   "accruing": 5,
   "queued": 0,
-  "closed": 29
+  "closed": 31
  },
  "items": [
+  {
+   "id": "analyst_desk",
+   "title": "The Analyst Desk",
+   "tagline": "Four named analysts \u2014 VEGA the Market Reader, ATLAS the Physicist, NOVA the Quant, SCOUT the Traditionalist \u2014 now call every game head-to-head, the desk states its consensus, and the DiamondEdge pick synthesizes their independent reads.",
+   "status": "shipped",
+   "category": "product",
+   "progress_pct": 100,
+   "started": "2026-07-30",
+   "eta": "live \u2014 shipped 2026-07-30",
+   "latest": "2026-07-30: the desk's full walk-forward audit is in (28,892 graded analyst-reads, leakage-audited, sealed stores untouched). Headlines: VEGA is the only analyst with a real measured record (51.8% on 8,534 reads, the only one that beats the market's own price; 54.8% in high-run parks across five straight seasons). When the three long-history analysts all agree they hit 52.5% on 2,065 games \u2014 real but too streaky to bet, so consensus stays presentation, never stake. And Leon's inversion question is answered: served picks ran 55.8% on 190 \u2014 no inversion, and no extra confidence either. Full plain-language write-up: v4/models/output/ANALYST_DESK_REPORT.md; measured synthesis rules v1 live in analyst_desk/synthesis_config_v1.json.",
+   "detail": "Leon's product pivot: every model gets a name and an identity, and the home screen becomes a competition between them. All four analysts are REAL engines already serving \u2014 VEGA is the champion market engine (the live betting record), ATLAS the physical Monte Carlo simulator, NOVA the calibrated v4 model, SCOUT the honest-null simple-8 fundamentals model wired in as a new no-stars lean stream (walk-forward daily refit, its own write-once board and public ledger, activation 2026-07-30). The desk consensus covers both markets (totals for all four; run-line for the two margin voices, ATLAS + NOVA \u2014 VEGA and SCOUT honestly have no margin view). CONTINUITY RULE: the synthesis is presentation \u2014 the existing unified pick machinery keeps serving and grading underneath, its record continues unbroken, and where the desk says AVOID over a live pick, the pick still grades; it displays as the desk passing. A stricter coupling (the desk actually gating picks) waits for a measured, human-signed config (the synthesis_config_version hook), informed by the new consensus-history table \u2014 which starts sparse and says so. Also new: a pre-registered inversion check on the live served record (n>=150 trigger, exact binomial CI vs 0.50) that turns 'it feels like it's negatively predicting' into a falsifiable test. MEASURED (2026-07-30): the consensus-history table is no longer sparse \u2014 the desk's whole walk-forward history was assembled and audited. Core-3 desk (VEGA/ATLAS/SCOUT, 7,484 games 2022-2026): unanimous 52.5% [50.4, 54.8] but season-unstable (54-55% in 2024-25, ~coin-flip in 2022-23 and 2026); 2-1 majority 50.9% \u2014 a coin flip. All-4 window (thin, 391 games): unanimous 46.2% on 52, 3-1 46.3% on 218 \u2014 nothing playable or fadeable as a bet rule, which is exactly why synthesis rules v1 route presentation only: unanimous \u2192 prominent shared lean, 3-1 \u2192 majority with the dissenter named and no confidence language, 2-2 \u2192 the disagreement is the story. Personalities are now number-backed: VEGA the Market Reader is the desk's one certified specialist (51.8% overall, STRONG cells in high-run parks/high totals/late season); SCOUT the Traditionalist an honest 51.0% with no certified specialty; ATLAS the Physicist a 50.6% side-picker whose real value is independence (agrees with VEGA only 47% of the time) and run-distribution shape; NOVA the Quant 49.5% (2026-only), echoing SCOUT 68% of the time so it never double-counts. The pre-registered inversion check resolved early on the pooled record: 106/190 = 55.8%, day-clustered CI [44.8, 66.4] \u2014 the served picks are not negatively predictive, and the sample licenses no extra confidence in either direction. Staking remains 100% champion EV gate + stars; all conclusions provisional under the standing hygiene rule."
+  },
   {
    "id": "spreads_return",
    "title": "Spreads return (run lines)",
@@ -20,6 +32,19 @@
    "latest": "2026-07-27: 11 run-line leans served today; the first graded results land tonight \u2014 record starts honest at 0-0-0",
    "detail": "Spreads were removed from the product on 07-07 and return on Leon's call as a NEW, separately-graded, activation-dated stream: the record starts 0-0-0 on 07-27, every stated side is locked at first pitch and graded at the real locked price, and nothing is retro-credited or blended with a backtest. Honesty posture: the stream is UNPROVEN and serves clearly-labeled LEANS only \u2014 never a bet. The run-line engine test that could have opened a bet path reported the same day: BLOCKED \u2014 the simulator (validated on totals) fails its margin fitness gate (it carries no home-field advantage), and even set aside, the de-vigged run-line market beat every declared arm on Brier, including the moneyline-only control. So the market's run-line price is genuinely informative and our leans are exactly that: leans, graded in public until something real is earned. The pre-pivot spread machinery was adjudicated a research null and is never revived as credit.",
    "result": null
+  },
+  {
+   "id": "simulator_joins_board",
+   "title": "Simulator joins the board",
+   "tagline": "A fully-physical Monte Carlo of every game \u2014 20,000 simulated games per matchup \u2014 re-priced at every decision wall through the day (T-24h to T-1h) and shown on every game tile, tracked in public.",
+   "status": "shipped",
+   "category": "model",
+   "progress_pct": 100,
+   "started": "2026-07-26",
+   "eta": "live \u2014 first priced slate 2026-07-29",
+   "latest": "2026-07-30: the sim now re-prices at every decision wall (T-24h/T-12h/T-6h/T-3h/T-1h) as inputs firm up \u2014 each wall write-once, the latest wall locked at first pitch is what grades \u2014 so its read is visible all day, not just the T-3h hour. First graded day stands 9-6 on 15 leans \u2014 small-sample noise by its own measured tie-the-market baseline; record accrues in public",
+   "result": null,
+   "detail": "Leon's call: 'add a monte carlo model.' The validated physical run simulator \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of the T-3h wall, with the home-field module ON and the walk-forward run-environment recalibration \u2014 prices P(over the posted total) for every game at each decision wall as it arrives (T-24h through T-1h; each wall written once, never revised; the latest wall locked at first pitch is what grades), from as-of inputs only \u2014 early walls ride the strictly-more-conservative D\u22122 enrichment per the wall-hygiene rule. THE HONEST PART, said loudly: in validation the simulator TIES the market (its blend-vs-market test came back a statistical tie, p=0.28, and its median lands within ~0.02 runs of the posted line). That is remarkable physics \u2014 an independent model of the game reproducing Vegas's number from first principles \u2014 but it is NOT an edge. So it serves as a transparent voice, never a bet: LEAN/PASS only, stars hard-capped at 1, is_bet always false, it never touches the headline pick, and its record starts 0-0-0 (activation 2026-07-28) in its own separately-graded lean ledger. An upgrade to a priced mode exists only behind a passing engine-vs-market report plus a human-signed state file \u2014 never automatic."
   },
   {
    "id": "calibrated_confidence",
@@ -540,25 +565,27 @@
    "id": "moon-llm-forecaster",
    "title": "LLM as forecaster",
    "tagline": "Ask a frontier AI to price every game from pregame facts \u2014 on 2026 games it provably cannot have memorized.",
-   "status": "building",
+   "status": "closed_null",
    "category": "model",
-   "progress_pct": 70,
+   "progress_pct": 100,
    "started": "2026-07-27",
-   "eta": "needs 1 login",
-   "latest": "2026-07-27: BLOCKED on a one-time login \u2014 fully built and frozen; one command from Leon grades 437 games end to end",
-   "detail": "Ask a frontier AI to price every game from pregame facts \u2014 on 2026 games it provably cannot have memorized. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed."
+   "eta": "closed",
+   "latest": "2026-07-29: the frozen test finally ran \u2014 the AI lost to the market by a statistically real margin",
+   "detail": "A frozen pre-2026 AI read a rich pregame packet for 437 games it provably could not have memorized and priced each one. Verdict: decisively worse than the market \u2014 it even lost to a coin flip, leaned heavily under in an over-heavy month, and was most wrong when most confident. The fairness probe came back clean, so this is a real refutation, not a broken test. The one instrument whose test set renews itself every season is now measured.",
+   "result": "NULL \u2014 LLM Brier 0.2629 vs market 0.2489 (CI excludes zero, wrong side); blending hurts the market; memorization probe clean"
   },
   {
    "id": "moon-llm-news",
    "title": "LLM as news reader",
    "tagline": "Mine injury whispers, bullpen notes and manager quotes from timestamped news \u2014 the one information channel never tested.",
-   "status": "building",
+   "status": "closed_null",
    "category": "model",
-   "progress_pct": 70,
+   "progress_pct": 100,
    "started": "2026-07-27",
-   "eta": "auto-resume",
-   "latest": "2026-07-27: on standby waiting for the news-archive probe; resumes automatically",
-   "detail": "Mine injury whispers, bullpen notes and manager quotes from timestamped news \u2014 the one information channel never tested. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed."
+   "eta": "parked",
+   "latest": "2026-07-30: parked by Leon \u2014 LLM effort aimed at modeling, not news; front was blocked on archive data anyway",
+   "detail": "Mine injury whispers, bullpen notes and manager quotes from timestamped news \u2014 the one information channel never tested. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "PARKED by decision (never tested) \u2014 the LLM-as-model question was answered separately and decisively"
   },
   {
    "id": "moon-close-forecast",
