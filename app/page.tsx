@@ -5994,6 +5994,9 @@ export default function Home() {
         .sort((a: any, b: any) => (consRank[b.c.state] - consRank[a.c.state]) ||
           (((displayPick(b.g) || {}).stars || 0) - ((displayPick(a.g) || {}).stars || 0)))[0] || null;
       if (deskBest) slides.push({ t: "desk", g: deskBest.g, c: deskBest.c });
+      // the competition scoreboard rides the deck too — stories is the DEFAULT home mode,
+      // and the standings are the top-of-home promise
+      if (deskRecordRows().length) slides.push({ t: "standings" });
       const recap = yesterdayRecap();
       if (recap) slides.push({ t: "recap", ...recap });
       let pi = 1, ni = 0;
@@ -6131,11 +6134,35 @@ export default function Home() {
         <button class="st-cta" data-go="pick" data-gid="${esc(g.game_id)}">See the desk's full read →</button>
       </div>`;
     }
+    // DESK STANDINGS as cinema: the four analysts ranked, records front and center.
+    function storyStandingsSlide() {
+      const rows = deskRecordRows().slice().sort((a: any, b: any) =>
+        ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) || ((b.hit || 0) - (a.hit || 0)) || ((b.win || 0) - (a.win || 0)));
+      const items = rows.map((r: any, i: number) => {
+        const graded = r.win + r.loss + r.push > 0;
+        return `<button class="sts-strow an-${esc(r.key)}${i === 0 && graded ? " lead" : ""}" data-an="${esc(r.key)}">
+          <span class="sts-strank">${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}</span>
+          ${deskGlyph(r.key, 15)}
+          <span class="sts-dnm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span>
+          <span class="sts-strec"><b>${graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0"}</b>${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}</span>
+          ${deskL10Dots(r.last10.slice(-5))}
+        </button>`;
+      }).join("");
+      return `<div class="sts sts-standings">
+        <div class="sts-bg" aria-hidden="true"></div>
+        <div class="sts-kick"><span>◆ Desk Standings</span></div>
+        <h3 class="sts-head deskhead">Four analysts.<br>Every game. One scoreboard.</h3>
+        <div class="sts-strows">${items}</div>
+        <div class="sts-substat">Graded against real finals, in public — tap an analyst for the full card.</div>
+        <button class="st-cta" data-go="results">See the full record →</button>
+      </div>`;
+    }
     function storySlideHtml(sl: any, i: number) {
       const inner = sl.t === "pick" ? storyPickSlide(sl)
         : sl.t === "news" ? storyNewsSlide(sl)
         : sl.t === "recap" ? storyRecapSlide(sl)
         : sl.t === "desk" ? storyDeskSlide(sl)
+        : sl.t === "standings" ? storyStandingsSlide()
         : storySummarySlide(sl);
       return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
     }

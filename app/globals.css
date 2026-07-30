@@ -3409,3 +3409,16 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .dbt .dsk-dots::after{width:16px;height:12px}
 .ch-spread b.nocall{color:var(--ink3);font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.08em}
 .dbt-say{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* stories: the standings slide */
+.sts-strows{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin:14px auto 10px}
+.sts-strow{display:flex;align-items:center;gap:9px;min-width:0;cursor:pointer;border:0;font:inherit;color:var(--anc,var(--ink2));
+  text-align:left;border-radius:13px;padding:10px 13px;background:rgba(18,27,45,.6);
+  box-shadow:inset 0 1.5px 0 var(--anline,rgba(255,255,255,.1)),inset 0 0 0 1px rgba(255,255,255,.06)}
+.sts-strow.lead{box-shadow:inset 0 0 0 1px rgba(224,172,32,.38),inset 0 1.5px 0 rgba(255,225,140,.3),0 4px 18px rgba(224,172,32,.1)}
+.sts-strank{font-family:var(--mono);font-weight:700;font-size:9px;color:var(--ink4);width:24px;flex-shrink:0}
+.sts-strow.lead .sts-strank{color:#f2ca61}
+.sts-strec{display:inline-flex;align-items:baseline;gap:6px;margin-left:auto}
+.sts-strec b{font-family:var(--mono);font-weight:700;font-size:13.5px;color:var(--ink)}
+.sts-strec i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9px}
+.sts-strec i.pos{color:var(--green)}.sts-strec i.neg{color:var(--red)}
