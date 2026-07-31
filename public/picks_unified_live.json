@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-07-31T00:07:00Z",
+  "generated_utc": "2026-07-31T00:41:41Z",
   "dates": [
     "2026-07-30",
     "2026-07-31"
@@ -292,13 +292,200 @@
         "conviction_basis": "the residual head is fit on log-loss against the market offset \u2014 approximately calibrated by construction; no separate calibration map"
       }
     ],
-    "per_game_fields": "games[].analysts = [{key, name, persona_line, side (over|under|null), p_over, conviction (0-1, P(stated side), calibrated where the engine has a calibration \u2014 see each analyst's conviction_basis), locked, wall, has_row}] \u2014 ALWAYS all four, in `order`; null side = no read yet (pre-wall or no view; has_row=false means the engine has not priced the game at all). games[].consensus = {n_over, n_under, n_no_read, state UNANIMOUS|MAJORITY|SPLIT|PENDING, majority_side, spread: {n_home, n_away, n_no_read, state, majority_side, voices, note}} \u2014 UNANIMOUS requires all FOUR to agree; MAJORITY is a strict majority of those with reads; SPLIT is a tie of reads; PENDING is no reads. The spread dimension counts the desk's margin voices only (ATLAS + NOVA); VEGA and SCOUT have no margin view and are honest no-reads there. games[].diamondedge = the synthesis frame: the served pick's mirror (side/line/stars/score/price/result/...) + {consensus_state, action PLAY|LEAN|AVOID, rationale_line, synthesis_config_version (null until a measured gating config is signed), spread_call, predicted_score, note}. spread_call = {side home|away|null, side_team, line, home_line, rationale_line, voices, is_bet:false, note} | null. predicted_score = {away, home, source:'ATLAS', p_home_win, wall, note} | null \u2014 per-team medians from the sim's joint distribution; display only, graded nowhere.",
+    "per_game_fields": "games[].analysts = [{key, name, persona_line, side (over|under|null), p_over, conviction (0-1, P(stated side), calibrated where the engine has a calibration \u2014 see each analyst's conviction_basis), locked, wall, has_row, take, take_kind}] \u2014 ALWAYS all four, in `order`; null side = no read yet (pre-wall or no view; has_row=false means the engine has not priced the game at all). ANALYST VOICES (2026-07-30): `take` is a 1-2 sentence line in the persona's voice rendered FROM THAT ENGINE'S OWN ROW DATA (analyst_takes.py template libraries \u2014 deterministic per analyst x game, byte-stable across regenerations); every number in a take is validator-checked to exist in the source row \u2014 nothing fabricated, ever. take_kind is standard | dissent (the lone voice against >= 2 opposing reads argues back) | no_read. LIVE ATLAS (2026-07-30): on LIVE games the atlas entry gains {live_p_over, live_state_note, as_of} \u2014 the certified conditional simulator re-pricing P(over the pregame line) from the actual game state, ONLY inside its certified fitness buckets (v4/serve/live_atlas.py); outside them live_p_over is null and the note says the desk is watching. DISPLAY ONLY, forever: never graded, never a bet, never touches any record. games[].consensus = {n_over, n_under, n_no_read, state UNANIMOUS|MAJORITY|SPLIT|PENDING, majority_side, spread: {n_home, n_away, n_no_read, state, majority_side, voices, note}} \u2014 UNANIMOUS requires all FOUR to agree; MAJORITY is a strict majority of those with reads; SPLIT is a tie of reads; PENDING is no reads. The spread dimension counts the desk's margin voices only (ATLAS + NOVA); VEGA and SCOUT have no margin view and are honest no-reads there. games[].diamondedge = the synthesis frame: the served pick's mirror (side/line/stars/score/price/result/...) + {consensus_state, action PLAY|LEAN|AVOID, rationale_line, synthesis_config_version (null until a measured gating config is signed), spread_call, predicted_score, note}. spread_call = {side home|away|null, side_team, line, home_line, rationale_line, voices, is_bet:false, note} | null. predicted_score = {away, home, source:'ATLAS', p_home_win, wall, note} | null \u2014 per-team medians from the sim's joint distribution; display only, graded nowhere.",
     "action_vocabulary": {
       "PLAY": "underlying PICK + the desk is UNANIMOUS behind its side",
       "LEAN": "underlying PICK with a friendly majority, or reads still pending",
       "AVOID": "the desk is split or leans against the pick, or there is no qualifying pick \u2014 displayed as the desk passing. CONTINUITY: an underlying pick still exists and still grades; AVOID is presentation only."
     },
-    "record_fields": "record.analysts = {order, records: {vega|atlas|nova|scout: {n, win, loss, push, hit_rate, roi, units, last10 (oldest->newest W/L/P), activation_date, is_betting_record, basis}}, note} \u2014 vega/nova live-only activation-dated betting records (identical numbers to by_strategy champion/model_v4 headlines); atlas/scout graded lean ledgers. record.consensus_history = {by_state: {UNANIMOUS|MAJORITY|SPLIT: {n, win, loss, push, hit_rate, roi}}, n_games_with_all_four_graded, note} \u2014 sparse until all four have history; honest n, no conclusions at small n.",
+    "record_fields": "record.analysts = {order, records: {vega|atlas|nova|scout: {n, win, loss, push, hit_rate, roi, units, last10 (oldest->newest W/L/P), activation_date, is_betting_record, basis}}, note} \u2014 vega/nova live-only activation-dated betting records (identical numbers to by_strategy champion/model_v4 headlines); atlas/scout graded lean ledgers. record.consensus_history = {by_state: {UNANIMOUS|MAJORITY|SPLIT: {n, win, loss, push, hit_rate, roi}}, n_games_with_all_four_graded, note} \u2014 sparse until all four have history; honest n, no conclusions at small n. NIGHTLY RECAP (2026-07-30): record.desk_recap = the latest written recap {date, winner (analyst of the night: best graded record, ties to higher avg conviction), lines (per-analyst W-L), best_call/worst_call ({analyst, game_pk, matchup, line, conviction} \u2014 the line is grounded in the actual graded row + the real final total and validator-checked), consensus_note, desk_verdict_line} | null; record.desk_recaps = {latest, history (last 14 written dates, newest last), n_written, note} \u2014 write-once per date, computed from graded ledgers only, never restated. RIVALRY (2026-07-30): record.head_to_head = {pairs: [{pair, names, n_disagreements, wins: {key: n}, pushes, n_both_graded, line}], note} \u2014 disagreement scoreboards over games where both analysts graded and their sides differed. record.weekly_standings = {week_start, this_week (Mon-Sun in progress), last_week (completed), analyst_of_the_week (from the last completed week only), note}.",
+    "takes_note": "takes are each analyst's own served row restated in its persona's voice \u2014 every number in a take is validated to exist in that engine's actual row data (nothing fabricated, ever); takes are display voice, not new analysis, and never a bet",
+    "takes_library": {
+      "vega": [
+        {
+          "id": "vega_follow_money",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_price_moved",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_edge_read",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_thin_edge",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_books_price",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_playable",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_lean_only",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_ev_voice",
+          "kind": "standard"
+        },
+        {
+          "id": "vega_dissent_tape",
+          "kind": "dissent"
+        },
+        {
+          "id": "vega_dissent_alone",
+          "kind": "dissent"
+        },
+        {
+          "id": "vega_no_read",
+          "kind": "no_read"
+        },
+        {
+          "id": "vega_no_read_2",
+          "kind": "no_read"
+        }
+      ],
+      "atlas": [
+        {
+          "id": "atlas_ran_sims",
+          "kind": "standard"
+        },
+        {
+          "id": "atlas_center_spread",
+          "kind": "standard"
+        },
+        {
+          "id": "atlas_median_vs_line",
+          "kind": "standard"
+        },
+        {
+          "id": "atlas_edge_v_market",
+          "kind": "standard"
+        },
+        {
+          "id": "atlas_small_gap",
+          "kind": "standard"
+        },
+        {
+          "id": "atlas_mu_voice",
+          "kind": "standard"
+        },
+        {
+          "id": "atlas_dissent_physics",
+          "kind": "dissent"
+        },
+        {
+          "id": "atlas_dissent_crowd",
+          "kind": "dissent"
+        },
+        {
+          "id": "atlas_no_read",
+          "kind": "no_read"
+        },
+        {
+          "id": "atlas_no_read_2",
+          "kind": "no_read"
+        }
+      ],
+      "nova": [
+        {
+          "id": "nova_barely_lean",
+          "kind": "standard"
+        },
+        {
+          "id": "nova_number_says",
+          "kind": "standard"
+        },
+        {
+          "id": "nova_calibrated",
+          "kind": "standard"
+        },
+        {
+          "id": "nova_score_voice",
+          "kind": "standard"
+        },
+        {
+          "id": "nova_pass_grade",
+          "kind": "standard"
+        },
+        {
+          "id": "nova_playable",
+          "kind": "standard"
+        },
+        {
+          "id": "nova_ev_print",
+          "kind": "standard"
+        },
+        {
+          "id": "nova_dissent_data",
+          "kind": "dissent"
+        },
+        {
+          "id": "nova_dissent_alone",
+          "kind": "dissent"
+        },
+        {
+          "id": "nova_no_read",
+          "kind": "no_read"
+        },
+        {
+          "id": "nova_no_read_2",
+          "kind": "no_read"
+        }
+      ],
+      "scout": [
+        {
+          "id": "scout_soft_starters",
+          "kind": "standard"
+        },
+        {
+          "id": "scout_sharp_starters",
+          "kind": "standard"
+        },
+        {
+          "id": "scout_hitter_park",
+          "kind": "standard"
+        },
+        {
+          "id": "scout_pitcher_park",
+          "kind": "standard"
+        },
+        {
+          "id": "scout_eight_numbers",
+          "kind": "standard"
+        },
+        {
+          "id": "scout_bullpens",
+          "kind": "standard"
+        },
+        {
+          "id": "scout_conviction",
+          "kind": "standard"
+        },
+        {
+          "id": "scout_dissent_oldschool",
+          "kind": "dissent"
+        },
+        {
+          "id": "scout_dissent_card",
+          "kind": "dissent"
+        },
+        {
+          "id": "scout_no_read",
+          "kind": "no_read"
+        },
+        {
+          "id": "scout_no_read_2",
+          "kind": "no_read"
+        }
+      ]
+    },
     "continuity_note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top: where the synthesis says AVOID but the engine had a qualifying pick, that pick still exists, still locks and still grades (record integrity) \u2014 it simply DISPLAYS as the desk passing. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that.",
     "synthesis_config": {
       "version": "v1",
@@ -2059,6 +2246,475 @@
       "n_games_with_all_four_graded": 0,
       "note": "the served unified pick's graded results bucketed by the desk's consensus state, over ONLY the games where all four analysts have a graded read. SCOUT activated 2026-07-30 and ATLAS 2026-07-28, so this table is sparse and will accrue slowly \u2014 small n means NO conclusion; it is reported honestly, not hidden. It informs the future synthesis gating config (synthesis_config_version hook); it never gates anything today."
     },
+    "desk_recap": {
+      "date": "2026-07-29",
+      "winner": {
+        "key": "atlas",
+        "name": "ATLAS \u00b7 The Physicist",
+        "line": "9-6",
+        "avg_conviction": 0.5587,
+        "tiebreak": "wins-losses, then hit rate, ties to higher average conviction"
+      },
+      "lines": {
+        "vega": {
+          "key": "vega",
+          "name": "VEGA \u00b7 The Market Reader",
+          "n": 0,
+          "win": 0,
+          "loss": 0,
+          "push": 0,
+          "hit_rate": null,
+          "line": "0-0",
+          "avg_conviction": null,
+          "is_betting_record": true
+        },
+        "atlas": {
+          "key": "atlas",
+          "name": "ATLAS \u00b7 The Physicist",
+          "n": 15,
+          "win": 9,
+          "loss": 6,
+          "push": 0,
+          "hit_rate": 0.6,
+          "line": "9-6",
+          "avg_conviction": 0.5587,
+          "is_betting_record": false
+        },
+        "nova": {
+          "key": "nova",
+          "name": "NOVA \u00b7 The Quant",
+          "n": 5,
+          "win": 1,
+          "loss": 4,
+          "push": 0,
+          "hit_rate": 0.2,
+          "line": "1-4",
+          "avg_conviction": 0.5058,
+          "is_betting_record": true
+        },
+        "scout": {
+          "key": "scout",
+          "name": "SCOUT \u00b7 The Traditionalist",
+          "n": 0,
+          "win": 0,
+          "loss": 0,
+          "push": 0,
+          "hit_rate": null,
+          "line": "0-0",
+          "avg_conviction": null,
+          "is_betting_record": false
+        }
+      },
+      "best_call": {
+        "analyst": "atlas",
+        "name": "ATLAS \u00b7 The Physicist",
+        "game_pk": 823837,
+        "date": "2026-07-29",
+        "matchup": "Philadelphia Phillies @ Miami Marlins",
+        "line": "ATLAS said 60% over at 7.5 \u2014 it landed 14",
+        "conviction": 0.5998
+      },
+      "worst_call": {
+        "analyst": "atlas",
+        "name": "ATLAS \u00b7 The Physicist",
+        "game_pk": 823022,
+        "date": "2026-07-29",
+        "matchup": "Chicago Cubs @ St. Louis Cardinals",
+        "line": "ATLAS said 57% over at 8 \u2014 it landed 5",
+        "conviction": 0.5714
+      },
+      "consensus_note": "3 game(s) had every graded voice on the same side \u2014 the desk swept 0 of them; 2 game(s) split the desk.",
+      "desk_verdict_line": "ATLAS took the night at 9-6.",
+      "computed_at_utc": "2026-07-31T00:38:20Z",
+      "note": "nightly desk recap \u2014 computed once per date from the SAME graded ledgers the records read (activation-dated, one row per game per analyst, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed"
+    },
+    "desk_recaps": {
+      "latest": {
+        "date": "2026-07-29",
+        "winner": {
+          "key": "atlas",
+          "name": "ATLAS \u00b7 The Physicist",
+          "line": "9-6",
+          "avg_conviction": 0.5587,
+          "tiebreak": "wins-losses, then hit rate, ties to higher average conviction"
+        },
+        "lines": {
+          "vega": {
+            "key": "vega",
+            "name": "VEGA \u00b7 The Market Reader",
+            "n": 0,
+            "win": 0,
+            "loss": 0,
+            "push": 0,
+            "hit_rate": null,
+            "line": "0-0",
+            "avg_conviction": null,
+            "is_betting_record": true
+          },
+          "atlas": {
+            "key": "atlas",
+            "name": "ATLAS \u00b7 The Physicist",
+            "n": 15,
+            "win": 9,
+            "loss": 6,
+            "push": 0,
+            "hit_rate": 0.6,
+            "line": "9-6",
+            "avg_conviction": 0.5587,
+            "is_betting_record": false
+          },
+          "nova": {
+            "key": "nova",
+            "name": "NOVA \u00b7 The Quant",
+            "n": 5,
+            "win": 1,
+            "loss": 4,
+            "push": 0,
+            "hit_rate": 0.2,
+            "line": "1-4",
+            "avg_conviction": 0.5058,
+            "is_betting_record": true
+          },
+          "scout": {
+            "key": "scout",
+            "name": "SCOUT \u00b7 The Traditionalist",
+            "n": 0,
+            "win": 0,
+            "loss": 0,
+            "push": 0,
+            "hit_rate": null,
+            "line": "0-0",
+            "avg_conviction": null,
+            "is_betting_record": false
+          }
+        },
+        "best_call": {
+          "analyst": "atlas",
+          "name": "ATLAS \u00b7 The Physicist",
+          "game_pk": 823837,
+          "date": "2026-07-29",
+          "matchup": "Philadelphia Phillies @ Miami Marlins",
+          "line": "ATLAS said 60% over at 7.5 \u2014 it landed 14",
+          "conviction": 0.5998
+        },
+        "worst_call": {
+          "analyst": "atlas",
+          "name": "ATLAS \u00b7 The Physicist",
+          "game_pk": 823022,
+          "date": "2026-07-29",
+          "matchup": "Chicago Cubs @ St. Louis Cardinals",
+          "line": "ATLAS said 57% over at 8 \u2014 it landed 5",
+          "conviction": 0.5714
+        },
+        "consensus_note": "3 game(s) had every graded voice on the same side \u2014 the desk swept 0 of them; 2 game(s) split the desk.",
+        "desk_verdict_line": "ATLAS took the night at 9-6.",
+        "computed_at_utc": "2026-07-31T00:38:20Z",
+        "note": "nightly desk recap \u2014 computed once per date from the SAME graded ledgers the records read (activation-dated, one row per game per analyst, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed"
+      },
+      "history": [
+        {
+          "date": "2026-07-29",
+          "winner": {
+            "key": "atlas",
+            "name": "ATLAS \u00b7 The Physicist",
+            "line": "9-6",
+            "avg_conviction": 0.5587,
+            "tiebreak": "wins-losses, then hit rate, ties to higher average conviction"
+          },
+          "lines": {
+            "vega": {
+              "key": "vega",
+              "name": "VEGA \u00b7 The Market Reader",
+              "n": 0,
+              "win": 0,
+              "loss": 0,
+              "push": 0,
+              "hit_rate": null,
+              "line": "0-0",
+              "avg_conviction": null,
+              "is_betting_record": true
+            },
+            "atlas": {
+              "key": "atlas",
+              "name": "ATLAS \u00b7 The Physicist",
+              "n": 15,
+              "win": 9,
+              "loss": 6,
+              "push": 0,
+              "hit_rate": 0.6,
+              "line": "9-6",
+              "avg_conviction": 0.5587,
+              "is_betting_record": false
+            },
+            "nova": {
+              "key": "nova",
+              "name": "NOVA \u00b7 The Quant",
+              "n": 5,
+              "win": 1,
+              "loss": 4,
+              "push": 0,
+              "hit_rate": 0.2,
+              "line": "1-4",
+              "avg_conviction": 0.5058,
+              "is_betting_record": true
+            },
+            "scout": {
+              "key": "scout",
+              "name": "SCOUT \u00b7 The Traditionalist",
+              "n": 0,
+              "win": 0,
+              "loss": 0,
+              "push": 0,
+              "hit_rate": null,
+              "line": "0-0",
+              "avg_conviction": null,
+              "is_betting_record": false
+            }
+          },
+          "best_call": {
+            "analyst": "atlas",
+            "name": "ATLAS \u00b7 The Physicist",
+            "game_pk": 823837,
+            "date": "2026-07-29",
+            "matchup": "Philadelphia Phillies @ Miami Marlins",
+            "line": "ATLAS said 60% over at 7.5 \u2014 it landed 14",
+            "conviction": 0.5998
+          },
+          "worst_call": {
+            "analyst": "atlas",
+            "name": "ATLAS \u00b7 The Physicist",
+            "game_pk": 823022,
+            "date": "2026-07-29",
+            "matchup": "Chicago Cubs @ St. Louis Cardinals",
+            "line": "ATLAS said 57% over at 8 \u2014 it landed 5",
+            "conviction": 0.5714
+          },
+          "consensus_note": "3 game(s) had every graded voice on the same side \u2014 the desk swept 0 of them; 2 game(s) split the desk.",
+          "desk_verdict_line": "ATLAS took the night at 9-6.",
+          "computed_at_utc": "2026-07-31T00:38:20Z",
+          "note": "nightly desk recap \u2014 computed once per date from the SAME graded ledgers the records read (activation-dated, one row per game per analyst, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed"
+        }
+      ],
+      "n_written": 1,
+      "note": "write-once nightly recaps, newest last; computed from graded ledgers only, never restated. History carries the last 14 written dates."
+    },
+    "head_to_head": {
+      "pairs": [
+        {
+          "pair": [
+            "vega",
+            "atlas"
+          ],
+          "names": [
+            "VEGA \u00b7 The Market Reader",
+            "ATLAS \u00b7 The Physicist"
+          ],
+          "n_disagreements": 0,
+          "wins": {
+            "vega": 0,
+            "atlas": 0
+          },
+          "pushes": 0,
+          "n_both_graded": 0,
+          "line": "When VEGA and ATLAS disagree: VEGA 0, ATLAS 0"
+        },
+        {
+          "pair": [
+            "vega",
+            "nova"
+          ],
+          "names": [
+            "VEGA \u00b7 The Market Reader",
+            "NOVA \u00b7 The Quant"
+          ],
+          "n_disagreements": 2,
+          "wins": {
+            "vega": 1,
+            "nova": 1
+          },
+          "pushes": 0,
+          "n_both_graded": 6,
+          "line": "When VEGA and NOVA disagree: VEGA 1, NOVA 1"
+        },
+        {
+          "pair": [
+            "vega",
+            "scout"
+          ],
+          "names": [
+            "VEGA \u00b7 The Market Reader",
+            "SCOUT \u00b7 The Traditionalist"
+          ],
+          "n_disagreements": 0,
+          "wins": {
+            "vega": 0,
+            "scout": 0
+          },
+          "pushes": 0,
+          "n_both_graded": 0,
+          "line": "When VEGA and SCOUT disagree: VEGA 0, SCOUT 0"
+        },
+        {
+          "pair": [
+            "atlas",
+            "nova"
+          ],
+          "names": [
+            "ATLAS \u00b7 The Physicist",
+            "NOVA \u00b7 The Quant"
+          ],
+          "n_disagreements": 2,
+          "wins": {
+            "atlas": 1,
+            "nova": 1
+          },
+          "pushes": 0,
+          "n_both_graded": 5,
+          "line": "When ATLAS and NOVA disagree: ATLAS 1, NOVA 1"
+        },
+        {
+          "pair": [
+            "atlas",
+            "scout"
+          ],
+          "names": [
+            "ATLAS \u00b7 The Physicist",
+            "SCOUT \u00b7 The Traditionalist"
+          ],
+          "n_disagreements": 0,
+          "wins": {
+            "atlas": 0,
+            "scout": 0
+          },
+          "pushes": 0,
+          "n_both_graded": 0,
+          "line": "When ATLAS and SCOUT disagree: ATLAS 0, SCOUT 0"
+        },
+        {
+          "pair": [
+            "nova",
+            "scout"
+          ],
+          "names": [
+            "NOVA \u00b7 The Quant",
+            "SCOUT \u00b7 The Traditionalist"
+          ],
+          "n_disagreements": 0,
+          "wins": {
+            "nova": 0,
+            "scout": 0
+          },
+          "pushes": 0,
+          "n_both_graded": 0,
+          "line": "When NOVA and SCOUT disagree: NOVA 0, SCOUT 0"
+        }
+      ],
+      "note": "disagreement scoreboards: for each pair, only games where BOTH analysts had a graded read and their sides differed; each side's wins count its OWN graded row (streams grade at their own locked line, so both can push). Computed from the same activation-dated graded ledgers as record.analysts \u2014 sparse until the younger desks accrue; small n means NO conclusion."
+    },
+    "weekly_standings": {
+      "week_start": "2026-07-27",
+      "this_week": {
+        "vega": {
+          "key": "vega",
+          "name": "VEGA \u00b7 The Market Reader",
+          "n": 1,
+          "win": 1,
+          "loss": 0,
+          "push": 0,
+          "hit_rate": 1.0,
+          "line": "1-0",
+          "is_betting_record": true
+        },
+        "atlas": {
+          "key": "atlas",
+          "name": "ATLAS \u00b7 The Physicist",
+          "n": 15,
+          "win": 9,
+          "loss": 6,
+          "push": 0,
+          "hit_rate": 0.6,
+          "line": "9-6",
+          "is_betting_record": false
+        },
+        "nova": {
+          "key": "nova",
+          "name": "NOVA \u00b7 The Quant",
+          "n": 22,
+          "win": 6,
+          "loss": 16,
+          "push": 0,
+          "hit_rate": 0.2727,
+          "line": "6-16",
+          "is_betting_record": true
+        },
+        "scout": {
+          "key": "scout",
+          "name": "SCOUT \u00b7 The Traditionalist",
+          "n": 0,
+          "win": 0,
+          "loss": 0,
+          "push": 0,
+          "hit_rate": null,
+          "line": "0-0",
+          "is_betting_record": false
+        }
+      },
+      "last_week": {
+        "week_start": "2026-07-20",
+        "vega": {
+          "key": "vega",
+          "name": "VEGA \u00b7 The Market Reader",
+          "n": 4,
+          "win": 1,
+          "loss": 3,
+          "push": 0,
+          "hit_rate": 0.25,
+          "line": "1-3",
+          "is_betting_record": true
+        },
+        "atlas": {
+          "key": "atlas",
+          "name": "ATLAS \u00b7 The Physicist",
+          "n": 0,
+          "win": 0,
+          "loss": 0,
+          "push": 0,
+          "hit_rate": null,
+          "line": "0-0",
+          "is_betting_record": false
+        },
+        "nova": {
+          "key": "nova",
+          "name": "NOVA \u00b7 The Quant",
+          "n": 33,
+          "win": 17,
+          "loss": 15,
+          "push": 1,
+          "hit_rate": 0.5312,
+          "line": "17-15-1",
+          "is_betting_record": true
+        },
+        "scout": {
+          "key": "scout",
+          "name": "SCOUT \u00b7 The Traditionalist",
+          "n": 0,
+          "win": 0,
+          "loss": 0,
+          "push": 0,
+          "hit_rate": null,
+          "line": "0-0",
+          "is_betting_record": false
+        }
+      },
+      "analyst_of_the_week": {
+        "key": "nova",
+        "name": "NOVA \u00b7 The Quant",
+        "line": "17-15-1",
+        "week_start": "2026-07-20",
+        "basis": "best wins-losses over the last COMPLETED Mon-Sun week, ties to hit rate then volume"
+      },
+      "note": "weeks run Monday-Sunday; this_week is in progress and changes as games grade, analyst_of_the_week comes only from the last COMPLETED week. Same activation-dated graded ledgers as record.analysts \u2014 never restated, never summed across analysts."
+    },
     "note": "ONE record over the unified product: exactly one graded pick per (date, game_pk) \u2014 champion-sourced picks have priority, model leans fill games the champion did not play; expanded-band fills (2026-07-24 on) are graded separately under expanded_band.served_record and fold into by_star_tier with includes_expanded_n. by_source is DIAGNOSTIC ONLY; the champion subset is the champion's own graded ledger over the one-pick-per-GAME population (it is not the champion headline, which counts one row per game x stream at the last decision wall \u2014 a different population, reconciled to a zero residual), the model subset is the honest fill, and the two sum to overall. No pick is counted twice. by_star_tier buckets ALL history under the CURRENT frozen v3.3 display bands (re-derived from each row's stored score; ledgers on disk untouched)."
   },
   "by_date_record": {
@@ -2833,9 +3489,9 @@
   },
   "featured_game_id": "2026-07-30-Miami Marlins-New York Mets-823595",
   "board_census": {
-    "n_games": 16,
+    "n_games": 17,
     "n_picks": 4,
-    "n_passes": 12,
+    "n_passes": 13,
     "n_void": 0,
     "n_champion_sourced": 0,
     "n_model_sourced": 4,
@@ -3076,7 +3732,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -3087,7 +3745,9 @@
           "conviction": 0.568,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Median sim lands 8 against the posted 7.5 \u2014 57% of the universe agrees with the over.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -3098,7 +3758,9 @@
           "conviction": 0.5154,
           "locked": true,
           "wall": "T-6h",
-          "has_row": true
+          "has_row": true,
+          "take": "A 1.8 grade \u2014 my lean is over at 51.5%, but the edge isn't there. Discipline is a feature.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -3109,7 +3771,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -3410,7 +4074,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -3421,7 +4087,9 @@
           "conviction": 0.5716,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "I ran this 20,000 times \u2014 median 10, and 57% of my sims clear 9.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -3432,7 +4100,9 @@
           "conviction": 0.5089,
           "locked": true,
           "wall": "T-6h",
-          "has_row": true
+          "has_row": true,
+          "take": "The model prints 50.9% on the over of 9.5. I don't do narratives \u2014 that's the number.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -3443,7 +4113,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -3749,7 +4421,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -3760,7 +4434,9 @@
           "conviction": 0.5768,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Median sim lands 8 against the posted 7.5 \u2014 58% of the universe agrees with the over.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -3771,7 +4447,9 @@
           "conviction": 0.501,
           "locked": true,
           "wall": "T-6h",
-          "has_row": true
+          "has_row": true,
+          "take": "A 1.2 grade \u2014 my lean is over at 50.1%, but the edge isn't there. Discipline is a feature.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -3782,7 +4460,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -4079,7 +4759,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -4090,7 +4772,9 @@
           "conviction": 0.5511,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "The distribution centers 9.5 with a 4.5-run spread \u2014 against 8.5 the physics leans over.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -4101,7 +4785,9 @@
           "conviction": 0.4862,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "A 0.9 grade \u2014 my lean is under at 48.6%, but the edge isn't there. Discipline is a feature.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -4112,7 +4798,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -4419,6 +5107,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 3.7762,
+          "sp_away_era_std": 4.211,
+          "bat_home_avg_r30": 0.2332,
+          "bat_away_avg_r30": 0.2689,
+          "pen_home_era_std": 3.2106,
+          "pen_away_era_std": 3.6318,
+          "enr_park_run_factor_3y": 0.9891,
+          "wx_temp_f": 72.86
+        },
         "result": null,
         "locked": true,
         "locked_at_utc": "2026-07-30T23:33:00Z",
@@ -4443,7 +5141,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -4454,7 +5154,13 @@
           "conviction": 0.6235,
           "locked": true,
           "wall": "T-1h",
-          "has_row": true
+          "has_row": true,
+          "take": "20,000 simulated games average 8.7 runs against a 7 line \u2014 first principles say over.",
+          "take_kind": "standard",
+          "live_p_over": null,
+          "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-07-31T00:41:36Z",
+          "live_display_only": true
         },
         {
           "key": "nova",
@@ -4465,7 +5171,9 @@
           "conviction": 0.4833,
           "locked": true,
           "wall": "T-12h",
-          "has_row": true
+          "has_row": true,
+          "take": "Expected value 5.8% at the served price, 48.3% the over \u2014 the spreadsheet approves.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -4476,7 +5184,9 @@
           "conviction": 0.497,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Alone on the under at 50%? Fine. I've been reading pitching lines since before anyone simulated anything.",
+          "take_kind": "dissent"
         }
       ],
       "consensus": {
@@ -4794,6 +5504,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 5.3138,
+          "sp_away_era_std": null,
+          "bat_home_avg_r30": 0.2236,
+          "bat_away_avg_r30": 0.276,
+          "pen_home_era_std": 3.3504,
+          "pen_away_era_std": 4.1885,
+          "enr_park_run_factor_3y": 1.0306,
+          "wx_temp_f": 86.18
+        },
         "result": null,
         "locked": true,
         "locked_at_utc": "2026-07-30T23:33:00Z",
@@ -4818,7 +5538,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -4829,7 +5551,13 @@
           "conviction": 0.5512,
           "locked": true,
           "wall": "T-1h",
-          "has_row": true
+          "has_row": true,
+          "take": "The desk isn't a data point. My distribution puts 55% on the under and the crowd doesn't change the arithmetic.",
+          "take_kind": "dissent",
+          "live_p_over": null,
+          "live_state_note": "Bot 5th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-07-31T00:41:36Z",
+          "live_display_only": true
         },
         {
           "key": "nova",
@@ -4840,7 +5568,9 @@
           "conviction": 0.5132,
           "locked": true,
           "wall": "T-6h",
-          "has_row": true
+          "has_row": true,
+          "take": "My number says 51.3% over \u2014 barely a lean, and I've learned not to force these.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -4851,7 +5581,9 @@
           "conviction": 0.5124,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Check the bullpens \u2014 3.35 and 4.19 ERAs behind the starters. The card reads over.",
+          "take_kind": "standard"
         }
       ],
       "consensus": {
@@ -5158,6 +5890,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 4.0213,
+          "sp_away_era_std": 5.2258,
+          "bat_home_avg_r30": 0.2229,
+          "bat_away_avg_r30": 0.2517,
+          "pen_home_era_std": 2.3116,
+          "pen_away_era_std": 3.9679,
+          "enr_park_run_factor_3y": 1.0086,
+          "wx_temp_f": 87.08
+        },
         "result": null,
         "locked": true,
         "locked_at_utc": "2026-07-30T23:33:00Z",
@@ -5182,7 +5924,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -5193,7 +5937,13 @@
           "conviction": 0.6057,
           "locked": true,
           "wall": "T-1h",
-          "has_row": true
+          "has_row": true,
+          "take": "My 20,000 runs put the over at 39%; the market says 50%. The gap is the under.",
+          "take_kind": "standard",
+          "live_p_over": 0.3708,
+          "live_state_note": "Bot 6th, 6 runs in \u2014 my number's moved to 37% over.",
+          "as_of": "2026-07-31T00:41:36Z",
+          "live_display_only": true
         },
         {
           "key": "nova",
@@ -5204,7 +5954,9 @@
           "conviction": 0.511,
           "locked": true,
           "wall": "T-12h",
-          "has_row": true
+          "has_row": true,
+          "take": "I'll be the outlier: 51.1% the over. Consensus is a feeling; calibration is a measurement.",
+          "take_kind": "dissent"
         },
         {
           "key": "scout",
@@ -5215,7 +5967,9 @@
           "conviction": 0.5035,
           "locked": true,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Check the bullpens \u2014 2.31 and 3.97 ERAs behind the starters. The card reads under.",
+          "take_kind": "standard"
         }
       ],
       "consensus": {
@@ -5523,6 +6277,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": null,
+          "sp_away_era_std": 2.6097,
+          "bat_home_avg_r30": 0.2505,
+          "bat_away_avg_r30": 0.2386,
+          "pen_home_era_std": 4.7093,
+          "pen_away_era_std": 3.2209,
+          "enr_park_run_factor_3y": 1.1227,
+          "wx_temp_f": 79.16
+        },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
@@ -5547,7 +6311,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -5558,7 +6324,9 @@
           "conviction": 0.6021,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Median sim lands 9 against the posted 10 \u2014 60% of the universe agrees with the under.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -5569,7 +6337,9 @@
           "conviction": 0.4946,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "My number says 50.5% over \u2014 barely a lean, and I've learned not to force these.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -5580,7 +6350,9 @@
           "conviction": 0.5043,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Check the bullpens \u2014 4.71 and 3.22 ERAs behind the starters. The card reads under.",
+          "take_kind": "standard"
         }
       ],
       "consensus": {
@@ -5893,6 +6665,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 6.9677,
+          "sp_away_era_std": null,
+          "bat_home_avg_r30": 0.2357,
+          "bat_away_avg_r30": 0.2721,
+          "pen_home_era_std": 3.1588,
+          "pen_away_era_std": 3.0975,
+          "enr_park_run_factor_3y": 0.9169,
+          "wx_temp_f": 73.4
+        },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
@@ -5917,7 +6699,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -5928,7 +6712,9 @@
           "conviction": 0.5012,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "The distribution centers 8.9 with a 4.4-run spread \u2014 against 8.5 the physics leans over.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -5939,7 +6725,9 @@
           "conviction": 0.4907,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "I'll be the outlier: 49.1% the under. Consensus is a feeling; calibration is a measurement.",
+          "take_kind": "dissent"
         },
         {
           "key": "scout",
@@ -5950,7 +6738,9 @@
           "conviction": 0.4957,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Check the bullpens \u2014 3.16 and 3.10 ERAs behind the starters. The card reads over.",
+          "take_kind": "standard"
         }
       ],
       "consensus": {
@@ -6258,6 +7048,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 5.4,
+          "sp_away_era_std": 4.1678,
+          "bat_home_avg_r30": 0.2716,
+          "bat_away_avg_r30": 0.2254,
+          "pen_home_era_std": 3.0933,
+          "pen_away_era_std": 3.716,
+          "enr_park_run_factor_3y": null,
+          "wx_temp_f": 74.12
+        },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
@@ -6282,7 +7082,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -6293,7 +7095,9 @@
           "conviction": 0.5295,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "The desk isn't a data point. My distribution puts 53% on the over and the crowd doesn't change the arithmetic.",
+          "take_kind": "dissent"
         },
         {
           "key": "nova",
@@ -6304,7 +7108,9 @@
           "conviction": 0.4937,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "A 1.3 grade \u2014 my lean is under at 49.4%, but the edge isn't there. Discipline is a feature.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -6315,7 +7121,9 @@
           "conviction": 0.4828,
           "locked": false,
           "wall": "T-3h",
-          "has_row": true
+          "has_row": true,
+          "take": "Fundamentals first: my card makes it 48% the under against 8.5. Eight numbers, no black box.",
+          "take_kind": "standard"
         }
       ],
       "consensus": {
@@ -6621,7 +7429,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -6632,7 +7442,9 @@
           "conviction": 0.6584,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "I ran this 20,000 times \u2014 median 9, and 66% of my sims clear 7.5.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -6643,7 +7455,9 @@
           "conviction": 0.5014,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "My number says 49.9% over \u2014 barely a lean, and I've learned not to force these.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -6654,7 +7468,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -6958,7 +7774,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -6969,7 +7787,9 @@
           "conviction": 0.5522,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "20,000 simulated games average 8.7 runs against a 7.5 line \u2014 first principles say over.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -6980,7 +7800,9 @@
           "conviction": 0.5188,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "Expected value 3.2% at the served price, 51.9% the over \u2014 the spreadsheet approves.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -6991,7 +7813,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -7292,7 +8116,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -7303,7 +8129,9 @@
           "conviction": 0.5919,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "20,000 simulated games average 8.0 runs against a 8.5 line \u2014 first principles say under.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -7314,7 +8142,9 @@
           "conviction": 0.5155,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "My number says 51.5% over \u2014 barely a lean, and I've learned not to force these.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -7325,7 +8155,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -7624,7 +8456,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -7635,7 +8469,9 @@
           "conviction": 0.5497,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "I ran this 20,000 times \u2014 median 9, and 55% of my sims clear 8.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -7646,7 +8482,9 @@
           "conviction": 0.5173,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "My number says 51.7% over \u2014 barely a lean, and I've learned not to force these.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -7657,7 +8495,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "My card isn't filled out yet \u2014 I price once, at three hours to first pitch, when the real lineups are in.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -7958,7 +8798,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "Nothing in the price action worth speaking on. I only talk when the market does.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -7969,7 +8811,9 @@
           "conviction": 0.5726,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "The distribution centers 9.7 with a 4.5-run spread \u2014 against 8.5 the physics leans over.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -7980,7 +8824,9 @@
           "conviction": 0.4995,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "Expected value 0.4% at the served price, 50.0% the over \u2014 the spreadsheet approves.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -7991,7 +8837,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "My card isn't filled out yet \u2014 I price once, at three hours to first pitch, when the real lineups are in.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -8292,7 +9140,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
         },
         {
           "key": "atlas",
@@ -8303,7 +9153,9 @@
           "conviction": 0.4783,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "Median sim lands 9 against the posted 8.5 \u2014 48% of the universe agrees with the under.",
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -8314,7 +9166,9 @@
           "conviction": 0.5018,
           "locked": false,
           "wall": "T-24h",
-          "has_row": true
+          "has_row": true,
+          "take": "Expected value 3.6% at the served price, 50.2% the under \u2014 the spreadsheet approves.",
+          "take_kind": "standard"
         },
         {
           "key": "scout",
@@ -8325,7 +9179,9 @@
           "conviction": null,
           "locked": false,
           "wall": null,
-          "has_row": false
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
         }
       ],
       "consensus": {
@@ -8392,6 +9248,348 @@
           "home": 4,
           "source": "ATLAS",
           "p_home_win": 0.4872,
+          "wall": "T-24h",
+          "note": "per-team MEDIAN runs from the simulator's joint distribution (ties broken toward the winner per P(home win)). Display prediction only \u2014 graded nowhere."
+        },
+        "note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top: where the synthesis says AVOID but the engine had a qualifying pick, that pick still exists, still locks and still grades (record integrity) \u2014 it simply DISPLAYS as the desk passing. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that."
+      }
+    },
+    {
+      "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164",
+      "game_pk": 824164,
+      "date": "2026-07-31",
+      "away": "Texas Rangers",
+      "home": "Houston Astros",
+      "matchup": "Texas Rangers @ Houston Astros",
+      "first_pitch_utc": "2026-08-01T00:15:00+00:00",
+      "pick": {
+        "status": "PASS",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "stars": 1,
+        "score": 1.11,
+        "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+        "price": 109,
+        "suggested_units": null,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "timestamp": null,
+        "lead_time": "T-24h",
+        "source": "model",
+        "our_prob": 0.4987,
+        "ev": 0.0423,
+        "expanded_band": false,
+        "certified": false,
+        "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0035 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+        "pass_why": "price_only",
+        "signals": []
+      },
+      "spread": {
+        "status": "LEAN",
+        "side": "away",
+        "side_team": "Texas Rangers",
+        "line": 1.5,
+        "home_line": -1.5,
+        "vegas_line": -1.5,
+        "price": 180,
+        "best_book": null,
+        "stars": 1,
+        "score": 1.39,
+        "our_prob": 0.5028,
+        "ev": 0.3922,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "lean_only",
+        "activation_date": "2026-07-27",
+        "is_new_stream": true,
+        "new_tag": "NEW \u2014 graded from day one",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164"
+      },
+      "simulator": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5043,
+        "p_over_market": 0.4951,
+        "sim_edge": 0.0091,
+        "price": 109.0,
+        "best_book": "onexbet",
+        "stars": 1,
+        "score": null,
+        "sim_mu": 8.563,
+        "sim_median": 8,
+        "sim_sd": 4.247,
+        "n_sims": 20000,
+        "hfa": "on",
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-28",
+        "is_new_stream": true,
+        "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "physics simulator \u2014 ties the market, no proven edge",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "strategies": [
+        {
+          "key": "unified",
+          "label": "The DiamondEdge Pick",
+          "status": "PASS",
+          "is_headline": true,
+          "is_served_source": false,
+          "side": "over",
+          "line": 8.0,
+          "vegas_line": 8.0,
+          "price": 109,
+          "stars": 1,
+          "score": 1.11,
+          "result": null,
+          "lead_time": "T-24h",
+          "locked": false,
+          "expanded_band": false,
+          "pass_why": "price_only",
+          "reason": "Below our conviction floor \u2014 the model barely disagrees with the market"
+        },
+        {
+          "key": "champion",
+          "label": "Champion engine",
+          "status": "NO_VIEW",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": null,
+          "line": null,
+          "vegas_line": null,
+          "price": null,
+          "stars": null,
+          "score": null,
+          "result": null,
+          "lead_time": null,
+          "locked": null,
+          "expanded_band": false,
+          "pass_why": null,
+          "reason": "No view \u2014 the champion engine did not fire on this game"
+        },
+        {
+          "key": "model_v4",
+          "label": "V4 model grid",
+          "status": "PASS",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": "over",
+          "line": 8.0,
+          "vegas_line": 8.0,
+          "price": 109,
+          "stars": 1,
+          "score": 1.11,
+          "result": null,
+          "lead_time": "T-24h",
+          "locked": false,
+          "expanded_band": false,
+          "pass_why": "price_only",
+          "reason": "Below our conviction floor \u2014 the model barely disagrees with the market"
+        },
+        {
+          "key": "expanded_band",
+          "label": "Expanded band",
+          "status": "PASS",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": null,
+          "line": null,
+          "vegas_line": null,
+          "price": null,
+          "stars": null,
+          "score": null,
+          "result": null,
+          "lead_time": null,
+          "locked": null,
+          "expanded_band": false,
+          "pass_why": null,
+          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+        },
+        {
+          "key": "spread_stream",
+          "label": "Spread stream (run line)",
+          "status": "PASS",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": "away",
+          "line": 1.5,
+          "vegas_line": -1.5,
+          "price": 180,
+          "stars": 1,
+          "score": 1.39,
+          "result": null,
+          "lead_time": "T-24h",
+          "locked": false,
+          "expanded_band": false,
+          "pass_why": "unproven_stream",
+          "reason": "Honest lean \u2014 NEW unproven spread stream (graded in public from day one; low confidence, not a bet)",
+          "market": "spread",
+          "side_team": "Texas Rangers"
+        },
+        {
+          "key": "simulator",
+          "label": "Physical run simulator",
+          "status": "PASS",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": "over",
+          "line": 8.0,
+          "vegas_line": 8.0,
+          "price": 109.0,
+          "stars": 1,
+          "score": null,
+          "result": null,
+          "lead_time": "T-24h",
+          "locked": false,
+          "expanded_band": false,
+          "pass_why": "sim_no_edge",
+          "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
+          "market": "total",
+          "sim_p_over": 0.5043,
+          "sim_p_over_market": 0.4951,
+          "sim_mu": 8.563,
+          "sim_median": 8,
+          "sim_n_sims": 20000
+        }
+      ],
+      "scout": null,
+      "analysts": [
+        {
+          "key": "vega",
+          "name": "VEGA \u00b7 The Market Reader",
+          "persona_line": "Reads the market itself \u2014 line movement, price structure and where the money is leaning. Only speaks when the tape says something; silence is a position.",
+          "side": null,
+          "p_over": null,
+          "conviction": null,
+          "locked": false,
+          "wall": null,
+          "has_row": false,
+          "take": "The tape isn't saying anything here \u2014 and silence is a position. No call.",
+          "take_kind": "no_read"
+        },
+        {
+          "key": "atlas",
+          "name": "ATLAS \u00b7 The Physicist",
+          "persona_line": "Builds the game from first principles \u2014 20,000 Monte Carlo runs of every plate appearance, park, weather and umpire included. Trusts the simulation, not the crowd.",
+          "side": "over",
+          "p_over": 0.5043,
+          "conviction": 0.5043,
+          "locked": false,
+          "wall": "T-24h",
+          "has_row": true,
+          "take": "The distribution centers 8.6 with a 4.2-run spread \u2014 against 8 the physics leans over.",
+          "take_kind": "standard"
+        },
+        {
+          "key": "nova",
+          "name": "NOVA \u00b7 The Quant",
+          "persona_line": "The statistical engine \u2014 the calibrated v4 residual model behind the grid. Every game gets a number; conviction is walk-forward calibrated before it speaks.",
+          "side": "over",
+          "p_over": 0.4987,
+          "conviction": 0.4987,
+          "locked": false,
+          "wall": "T-24h",
+          "has_row": true,
+          "take": "My number says 49.9% over \u2014 barely a lean, and I've learned not to force these.",
+          "take_kind": "standard"
+        },
+        {
+          "key": "scout",
+          "name": "SCOUT \u00b7 The Traditionalist",
+          "persona_line": "Old-school fundamentals \u2014 both starters' ERAs, both lineups' bats, both bullpens, the park and the weather. Eight numbers, refit every morning, no black box.",
+          "side": null,
+          "p_over": null,
+          "conviction": null,
+          "locked": false,
+          "wall": null,
+          "has_row": false,
+          "take": "No read yet. Old school means doing the homework first \u2014 come back closer to game time.",
+          "take_kind": "no_read"
+        }
+      ],
+      "consensus": {
+        "n_over": 2,
+        "n_under": 0,
+        "n_no_read": 2,
+        "state": "MAJORITY",
+        "majority_side": "over",
+        "spread": {
+          "n_home": 0,
+          "n_away": 2,
+          "n_no_read": 2,
+          "state": "MAJORITY",
+          "majority_side": "away",
+          "voices": {
+            "vega": null,
+            "atlas": "away",
+            "nova": "away",
+            "scout": null
+          },
+          "note": "margin voices only: ATLAS (simulator joint margin) and NOVA (run-line lean stream \u2014 the residual engine's direction). VEGA and SCOUT have no margin view; their null here is honest, not missing data."
+        }
+      },
+      "diamondedge": {
+        "status": "PASS",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "stars": 1,
+        "score": 1.11,
+        "price": 109,
+        "suggested_units": null,
+        "result": null,
+        "locked": false,
+        "lead_time": "T-24h",
+        "source": "model",
+        "expanded_band": false,
+        "consensus_state": "MAJORITY",
+        "action": "AVOID",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
+        "synthesis_config_version": "v1",
+        "spread_call": {
+          "side": "away",
+          "side_team": "Texas Rangers",
+          "line": 1.5,
+          "home_line": -1.5,
+          "rationale_line": "Both margin voices like the away side of the run line \u2014 NOVA's engine direction and ATLAS's simulated margin agree.",
+          "voices": {
+            "nova": {
+              "side": "away",
+              "basis": "run-line lean stream (residual engine direction)"
+            },
+            "atlas": {
+              "side": "away",
+              "p_cover": 0.6933,
+              "basis": "simulator joint margin distribution"
+            }
+          },
+          "is_bet": false,
+          "note": "displayed prediction synthesized from the desk's margin voices; the run-line lean stream keeps grading unchanged in its own ledger, and the margin engine's betting certification status is irrelevant for display"
+        },
+        "predicted_score": {
+          "away": 5,
+          "home": 4,
+          "source": "ATLAS",
+          "p_home_win": 0.4963,
           "wall": "T-24h",
           "note": "per-team MEDIAN runs from the simulator's joint distribution (ties broken toward the winner per P(home win)). Display prediction only \u2014 graded nowhere."
         },

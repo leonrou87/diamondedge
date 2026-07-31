@@ -1754,7 +1754,9 @@ export default function Home() {
       const m = k.match(/vega|atlas|nova|scout/);
       return m ? m[0] : "";
     };
-    // best_call / worst_call → { key, mu, call, result, txt } (string payloads become txt-only)
+    // best_call / worst_call → { key, mu, call, result, txt } (string payloads become txt-only).
+    // The served nightly block writes the whole sentence into `line` ("ATLAS said 60% over at
+    // 7.5 — it landed 14") — a non-numeric `line` is the quote, a numeric one is the market line.
     function normRecapCall(c: any) {
       if (!c) return null;
       if (typeof c === "string") { const t = humanNote(c); return t ? { key: "", mu: "", call: "", result: null, txt: t } : null; }
@@ -1765,7 +1767,8 @@ export default function Home() {
       const ln = _fin(c.line);
       const call = sideRaw ? `${sideRaw.toUpperCase()}${ln != null && !/\d/.test(sideRaw) ? ` ${lineStr(ln)}` : ""}` : "";
       const result = /^(win|loss|push)$/i.test(String(c.result || "")) ? String(c.result).toLowerCase() : null;
-      const txt = humanNote(c.note != null ? c.note : (c.text != null ? c.text : (c.quote != null ? c.quote : c.take)));
+      let txt = humanNote(c.note != null ? c.note : (c.text != null ? c.text : (c.quote != null ? c.quote : c.take)));
+      if (!txt && typeof c.line === "string" && ln == null) txt = humanNote(c.line);
       if (!key && !mu && !call && !txt) return null;
       return { key, mu, call, result, txt, conv: _fin(c.conviction) };
     }
@@ -1782,8 +1785,13 @@ export default function Home() {
         const key = anKeyOf(x) || anKeyOf(hint);
         if (!DESK_CAST[key]) return;
         const wl = wlParse(typeof x === "object" ? (x.record != null ? x.record : x) : x);
-        const txt = typeof x === "object" ? humanNote(x.line != null ? x.line : (x.note != null ? x.note : x.text)) : "";
+        // served per-analyst `line` is often just the W-L string ("1-4") — that's the record,
+        // not a persona sentence; only a real sentence renders as the italic line
+        const txtRaw = typeof x === "object" ? humanNote(x.line != null ? x.line : (x.note != null ? x.note : x.text)) : "";
+        const txt = /^\d+\s*[–-]\s*\d+(\s*[–-]\s*\d+)?$/.test(txtRaw) ? "" : txtRaw;
         if (!wl && !txt) return;
+        // an analyst who filed nothing that night (0-0, no line) stays off the recap
+        if (wl && wl.w + wl.l + wl.p === 0 && !txt) return;
         lines.push({ key, wl, txt, roi: typeof x === "object" ? _fin(x.roi) : null });
       };
       if (Array.isArray(linesRaw)) linesRaw.forEach((x: any) => pushLine(x));
@@ -1794,9 +1802,11 @@ export default function Home() {
       const worst = normRecapCall(r.worst_call);
       const note = humanNote(r.consensus_note != null ? r.consensus_note : r.note);
       if (!winner && !lines.length && !best && !worst && !note) return null;
-      return { date, winner, lines, best, worst, note, headline: humanNote(r.headline) };
+      return { date, winner, lines, best, worst, note, headline: humanNote(r.headline != null ? r.headline : r.desk_verdict_line) };
     }
-    // every served nightly recap, newest first, deduped by date — desk_recaps[] + desk_recap
+    // every served nightly recap, newest first, deduped by date. Tolerated containers:
+    // record.desk_recap (single), record.desk_recaps as an array, a {date: recap} map, or
+    // the served { latest, history, note, n_written } wrapper.
     function deskRecapsAll() {
       for (const d of [betaLiveData, betaData, livePayload, payload]) {
         const rec = d && (d as any).record;
@@ -1804,7 +1814,16 @@ export default function Home() {
         const out: any[] = []; const seen: any = {};
         const add = (raw: any) => { const n = normDeskRecap(raw); if (n && !seen[n.date || "?"]) { seen[n.date || "?"] = 1; out.push(n); } };
         add(rec.desk_recap);
-        const list = Array.isArray(rec.desk_recaps) ? rec.desk_recaps : (rec.desk_recaps && typeof rec.desk_recaps === "object" ? Object.values(rec.desk_recaps) : []);
+        const dr = rec.desk_recaps;
+        let list: any[] = [];
+        if (Array.isArray(dr)) list = dr;
+        else if (dr && typeof dr === "object") {
+          if (dr.latest) list.push(dr.latest);
+          const hist = dr.history;
+          if (Array.isArray(hist)) list = list.concat(hist);
+          else if (hist && typeof hist === "object") list = list.concat(Object.values(hist));
+          else if (!dr.latest) list = Object.values(dr);
+        }
         list.forEach(add);
         if (out.length) { out.sort((a, b) => String(b.date).localeCompare(String(a.date))); return out; }
       }
@@ -1832,15 +1851,21 @@ export default function Home() {
           if (!o || typeof o !== "object") return;
           let a = anKeyOf(o.a != null ? o.a : (o.analyst_a != null ? o.analyst_a : o.left));
           let b = anKeyOf(o.b != null ? o.b : (o.analyst_b != null ? o.analyst_b : o.right));
+          // served shape: pair: ["vega","nova"] + wins: {vega: 1, nova: 1}
+          if ((!a || !b) && Array.isArray(o.pair) && o.pair.length >= 2) { a = anKeyOf(o.pair[0]); b = anKeyOf(o.pair[1]); }
           if (!a || !b) {
             const m = String(kGuess).toLowerCase().match(/vega|atlas|nova|scout/g);
             if (m && m.length >= 2) { a = a || m[0]; b = b || m[1]; }
           }
           if (!DESK_CAST[a] || !DESK_CAST[b] || a === b) return;
-          const aw = Math.max(0, Math.round(Number(o.a_wins != null ? o.a_wins : o.a_win) || 0));
-          const bw = Math.max(0, Math.round(Number(o.b_wins != null ? o.b_wins : o.b_win) || 0));
+          let aw = Math.max(0, Math.round(Number(o.a_wins != null ? o.a_wins : o.a_win) || 0));
+          let bw = Math.max(0, Math.round(Number(o.b_wins != null ? o.b_wins : o.b_win) || 0));
+          if (o.wins && typeof o.wins === "object") {
+            aw = Math.max(0, Math.round(Number(o.wins[a]) || 0));
+            bw = Math.max(0, Math.round(Number(o.wins[b]) || 0));
+          }
           const pu = Math.max(0, Math.round(Number(o.push != null ? o.push : o.pushes) || 0));
-          const n = Math.max(0, Math.round(Number(o.n) || 0)) || aw + bw + pu;
+          const n = Math.max(0, Math.round(Number(o.n_disagreements != null ? o.n_disagreements : o.n) || 0)) || aw + bw + pu;
           if (!n) return;
           const id = [a, b].sort().join("|");
           if (seen[id]) return; seen[id] = 1;
@@ -1876,7 +1901,10 @@ export default function Home() {
       for (const d of [betaLiveData, betaData, livePayload, payload]) {
         const w = d && (d as any).record && (d as any).record.weekly_standings;
         if (!w || typeof w !== "object") continue;
-        const rowsRaw = w.rows != null ? w.rows : (w.records != null ? w.records : (w.analysts != null ? w.analysts : w));
+        // served shape: rows live under this_week (a {key: {win,loss,push,…}} map, with a
+        // stray week_start string the DESK_CAST guard skips); older spellings tolerated
+        const rowsRaw = w.this_week != null ? w.this_week
+          : (w.rows != null ? w.rows : (w.records != null ? w.records : (w.analysts != null ? w.analysts : w)));
         const rows: any[] = []; const seen: any = {};
         const add = (x: any, hint = "") => {
           if (!x || typeof x !== "object") return;
@@ -1893,7 +1921,10 @@ export default function Home() {
         const label = humanNote(w.label != null ? w.label : w.week_label)
           || (String(w.week_start || "").slice(0, 10).match(/^\d{4}-\d{2}-\d{2}$/) ? `Week of ${recapDateTxt(w.week_start)}` : "This week");
         if (rows.length || aotw) {
-          rows.sort((a, b) => ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) || (b.w - a.w) || (a.l - b.l)
+          // the race ranks on net wins (W−L) first — the same "best wins-losses" basis the
+          // served analyst_of_the_week uses — then volume, then ROI when present
+          rows.sort((a, b) => ((b.w - b.l) - (a.w - a.l)) || (b.w - a.w)
+            || ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi))
             || (DESK_ORDER.indexOf(a.key) - DESK_ORDER.indexOf(b.key)));
           return { rows, aotw, label, note: humanNote(w.note) };
         }

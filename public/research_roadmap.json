@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-07-30T19:14:51Z",
+ "generated_utc": "2026-07-31T00:40:31Z",
  "summary": {
   "shipped": 16,
   "testing": 2,
@@ -9,55 +9,67 @@
  },
  "items": [
   {
-   "id": "analyst_desk",
-   "title": "The Analyst Desk",
-   "tagline": "Four named analysts \u2014 VEGA the Market Reader, ATLAS the Physicist, NOVA the Quant, SCOUT the Traditionalist \u2014 now call every game head-to-head, the desk states its consensus, and the DiamondEdge pick synthesizes their independent reads.",
+   "id": "desk_comes_alive",
+   "title": "The desk comes alive",
+   "tagline": "The four analysts now talk: per-game takes in each persona's voice rendered from that engine's real numbers, a nightly desk recap with an analyst of the night, head-to-head rivalry scoreboards, and ATLAS re-pricing live games in-game — inside his certified range only.",
    "status": "shipped",
    "category": "product",
    "progress_pct": 100,
    "started": "2026-07-30",
-   "eta": "live \u2014 shipped 2026-07-30",
-   "latest": "2026-07-30: the desk's full walk-forward audit is in (28,892 graded analyst-reads, leakage-audited, sealed stores untouched). Headlines: VEGA is the only analyst with a real measured record (51.8% on 8,534 reads, the only one that beats the market's own price; 54.8% in high-run parks across five straight seasons). When the three long-history analysts all agree they hit 52.5% on 2,065 games \u2014 real but too streaky to bet, so consensus stays presentation, never stake. And Leon's inversion question is answered: served picks ran 55.8% on 190 \u2014 no inversion, and no extra confidence either. Full plain-language write-up: v4/models/output/ANALYST_DESK_REPORT.md; measured synthesis rules v1 live in analyst_desk/synthesis_config_v1.json.",
-   "detail": "Leon's product pivot: every model gets a name and an identity, and the home screen becomes a competition between them. All four analysts are REAL engines already serving \u2014 VEGA is the champion market engine (the live betting record), ATLAS the physical Monte Carlo simulator, NOVA the calibrated v4 model, SCOUT the honest-null simple-8 fundamentals model wired in as a new no-stars lean stream (walk-forward daily refit, its own write-once board and public ledger, activation 2026-07-30). The desk consensus covers both markets (totals for all four; run-line for the two margin voices, ATLAS + NOVA \u2014 VEGA and SCOUT honestly have no margin view). CONTINUITY RULE: the synthesis is presentation \u2014 the existing unified pick machinery keeps serving and grading underneath, its record continues unbroken, and where the desk says AVOID over a live pick, the pick still grades; it displays as the desk passing. A stricter coupling (the desk actually gating picks) waits for a measured, human-signed config (the synthesis_config_version hook), informed by the new consensus-history table \u2014 which starts sparse and says so. Also new: a pre-registered inversion check on the live served record (n>=150 trigger, exact binomial CI vs 0.50) that turns 'it feels like it's negatively predicting' into a falsifiable test. MEASURED (2026-07-30): the consensus-history table is no longer sparse \u2014 the desk's whole walk-forward history was assembled and audited. Core-3 desk (VEGA/ATLAS/SCOUT, 7,484 games 2022-2026): unanimous 52.5% [50.4, 54.8] but season-unstable (54-55% in 2024-25, ~coin-flip in 2022-23 and 2026); 2-1 majority 50.9% \u2014 a coin flip. All-4 window (thin, 391 games): unanimous 46.2% on 52, 3-1 46.3% on 218 \u2014 nothing playable or fadeable as a bet rule, which is exactly why synthesis rules v1 route presentation only: unanimous \u2192 prominent shared lean, 3-1 \u2192 majority with the dissenter named and no confidence language, 2-2 \u2192 the disagreement is the story. Personalities are now number-backed: VEGA the Market Reader is the desk's one certified specialist (51.8% overall, STRONG cells in high-run parks/high totals/late season); SCOUT the Traditionalist an honest 51.0% with no certified specialty; ATLAS the Physicist a 50.6% side-picker whose real value is independence (agrees with VEGA only 47% of the time) and run-distribution shape; NOVA the Quant 49.5% (2026-only), echoing SCOUT 68% of the time so it never double-counts. The pre-registered inversion check resolved early on the pooled record: 106/190 = 55.8%, day-clustered CI [44.8, 66.4] \u2014 the served picks are not negatively predictive, and the sample licenses no extra confidence in either direction. Staking remains 100% champion EV gate + stars; all conclusions provisional under the standing hygiene rule."
+   "eta": "live — shipped 2026-07-30",
+   "latest": "2026-07-30: shipped in one iteration, everything grounded in real engine data. (1) ANALYST VOICES — every game card's four analysts now carry a 1-2 sentence take in their own voice (VEGA in market terms, ATLAS in simulation terms, NOVA in calibrated-probability terms, SCOUT in fundamentals terms), rendered from deterministic template libraries over that engine's ACTUAL served row; a validator extracts every number from every take and asserts it exists in the source row — nothing fabricated, ever, selftested on every rebuild. A lone dissenter argues back (dissent template class). (2) NIGHTLY DESK RECAP — once a slate grades, a write-once recap is stored: analyst of the night, per-analyst W-L lines, best and worst call quoted with the real final ('ATLAS said 60% over at 7.5 — it landed 14'), a consensus note and a verdict line; last 14 days ride the payload. (3) RIVALRY — head-to-head disagreement scoreboards for all six analyst pairs (only games both graded on opposite sides) plus Mon-Sun weekly standings with an analyst-of-the-week from completed weeks only. (4) LIVE ATLAS — during live games the certified conditional simulator re-prices P(over the pregame line) from the actual score/inning/base-out state, ONLY inside the fitness-certified buckets from the live-MC late round (the S guard blocks 2026 innings 7-9, so those states honestly say 'watching'); display only forever — never graded, never a bet, never touches any record. All rails selftested (345 unified checks green).",
+   "detail": "The Analyst Desk's second act: presentation depth without a single new claim. Every voice line is a restatement of numbers that engine already published (the pick_reasons pattern extended into persona template libraries, ~10-12 templates each, seeded deterministic per game so regenerations are byte-stable). The recap, head-to-head and weekly standings are pure views over the SAME activation-dated graded ledgers the records already read — nothing re-graded, nothing restated, write-once where it matters. LIVE ATLAS runs the exact certified conditional engine (FIX-A..D + HFA, engine_late) with per-game tables built walk-forward from the sim stream's own as-of live corpus; certified-bucket membership mirrors the frozen m1b decision-point censor cell-for-cell and is selftested against the frozen certified corpus itself. Its market verdict in that territory was NULL, and the display says so: a transparent voice, not an edge. The underlying pick machinery, every record, the champion, and the sealed holdouts are untouched."
+  },
+  {
+   "id": "analyst_desk",
+   "title": "The Analyst Desk",
+   "tagline": "Four named analysts — VEGA the Market Reader, ATLAS the Physicist, NOVA the Quant, SCOUT the Traditionalist — now call every game head-to-head, the desk states its consensus, and the DiamondEdge pick synthesizes their independent reads.",
+   "status": "shipped",
+   "category": "product",
+   "progress_pct": 100,
+   "started": "2026-07-30",
+   "eta": "live — shipped 2026-07-30",
+   "latest": "2026-07-30: the desk's full walk-forward audit is in (28,892 graded analyst-reads, leakage-audited, sealed stores untouched). Headlines: VEGA is the only analyst with a real measured record (51.8% on 8,534 reads, the only one that beats the market's own price; 54.8% in high-run parks across five straight seasons). When the three long-history analysts all agree they hit 52.5% on 2,065 games — real but too streaky to bet, so consensus stays presentation, never stake. And Leon's inversion question is answered: served picks ran 55.8% on 190 — no inversion, and no extra confidence either. Full plain-language write-up: v4/models/output/ANALYST_DESK_REPORT.md; measured synthesis rules v1 live in analyst_desk/synthesis_config_v1.json. Follow-on iteration 2026-07-30: 'The desk comes alive' (see desk_comes_alive) — persona takes, nightly recap, rivalry boards, live in-game ATLAS.",
+   "detail": "Leon's product pivot: every model gets a name and an identity, and the home screen becomes a competition between them. All four analysts are REAL engines already serving — VEGA is the champion market engine (the live betting record), ATLAS the physical Monte Carlo simulator, NOVA the calibrated v4 model, SCOUT the honest-null simple-8 fundamentals model wired in as a new no-stars lean stream (walk-forward daily refit, its own write-once board and public ledger, activation 2026-07-30). The desk consensus covers both markets (totals for all four; run-line for the two margin voices, ATLAS + NOVA — VEGA and SCOUT honestly have no margin view). CONTINUITY RULE: the synthesis is presentation — the existing unified pick machinery keeps serving and grading underneath, its record continues unbroken, and where the desk says AVOID over a live pick, the pick still grades; it displays as the desk passing. A stricter coupling (the desk actually gating picks) waits for a measured, human-signed config (the synthesis_config_version hook), informed by the new consensus-history table — which starts sparse and says so. Also new: a pre-registered inversion check on the live served record (n>=150 trigger, exact binomial CI vs 0.50) that turns 'it feels like it's negatively predicting' into a falsifiable test. MEASURED (2026-07-30): the consensus-history table is no longer sparse — the desk's whole walk-forward history was assembled and audited. Core-3 desk (VEGA/ATLAS/SCOUT, 7,484 games 2022-2026): unanimous 52.5% [50.4, 54.8] but season-unstable (54-55% in 2024-25, ~coin-flip in 2022-23 and 2026); 2-1 majority 50.9% — a coin flip. All-4 window (thin, 391 games): unanimous 46.2% on 52, 3-1 46.3% on 218 — nothing playable or fadeable as a bet rule, which is exactly why synthesis rules v1 route presentation only: unanimous → prominent shared lean, 3-1 → majority with the dissenter named and no confidence language, 2-2 → the disagreement is the story. Personalities are now number-backed: VEGA the Market Reader is the desk's one certified specialist (51.8% overall, STRONG cells in high-run parks/high totals/late season); SCOUT the Traditionalist an honest 51.0% with no certified specialty; ATLAS the Physicist a 50.6% side-picker whose real value is independence (agrees with VEGA only 47% of the time) and run-distribution shape; NOVA the Quant 49.5% (2026-only), echoing SCOUT 68% of the time so it never double-counts. The pre-registered inversion check resolved early on the pooled record: 106/190 = 55.8%, day-clustered CI [44.8, 66.4] — the served picks are not negatively predictive, and the sample licenses no extra confidence in either direction. Staking remains 100% champion EV gate + stars; all conclusions provisional under the standing hygiene rule."
   },
   {
    "id": "spreads_return",
    "title": "Spreads return (run lines)",
-   "tagline": "Run-line calls are back on every game tile \u2014 as a brand-new stream that starts 0-0-0 and gets graded in public from day one.",
+   "tagline": "Run-line calls are back on every game tile — as a brand-new stream that starts 0-0-0 and gets graded in public from day one.",
    "status": "live_testing",
    "category": "model",
    "progress_pct": 60,
    "started": "2026-07-27",
    "eta": "first graded results tonight",
-   "latest": "2026-07-27: 11 run-line leans served today; the first graded results land tonight \u2014 record starts honest at 0-0-0",
-   "detail": "Spreads were removed from the product on 07-07 and return on Leon's call as a NEW, separately-graded, activation-dated stream: the record starts 0-0-0 on 07-27, every stated side is locked at first pitch and graded at the real locked price, and nothing is retro-credited or blended with a backtest. Honesty posture: the stream is UNPROVEN and serves clearly-labeled LEANS only \u2014 never a bet. The run-line engine test that could have opened a bet path reported the same day: BLOCKED \u2014 the simulator (validated on totals) fails its margin fitness gate (it carries no home-field advantage), and even set aside, the de-vigged run-line market beat every declared arm on Brier, including the moneyline-only control. So the market's run-line price is genuinely informative and our leans are exactly that: leans, graded in public until something real is earned. The pre-pivot spread machinery was adjudicated a research null and is never revived as credit.",
+   "latest": "2026-07-27: 11 run-line leans served today; the first graded results land tonight — record starts honest at 0-0-0",
+   "detail": "Spreads were removed from the product on 07-07 and return on Leon's call as a NEW, separately-graded, activation-dated stream: the record starts 0-0-0 on 07-27, every stated side is locked at first pitch and graded at the real locked price, and nothing is retro-credited or blended with a backtest. Honesty posture: the stream is UNPROVEN and serves clearly-labeled LEANS only — never a bet. The run-line engine test that could have opened a bet path reported the same day: BLOCKED — the simulator (validated on totals) fails its margin fitness gate (it carries no home-field advantage), and even set aside, the de-vigged run-line market beat every declared arm on Brier, including the moneyline-only control. So the market's run-line price is genuinely informative and our leans are exactly that: leans, graded in public until something real is earned. The pre-pivot spread machinery was adjudicated a research null and is never revived as credit.",
    "result": null
   },
   {
    "id": "simulator_joins_board",
    "title": "Simulator joins the board",
-   "tagline": "A fully-physical Monte Carlo of every game \u2014 20,000 simulated games per matchup \u2014 re-priced at every decision wall through the day (T-24h to T-1h) and shown on every game tile, tracked in public.",
+   "tagline": "A fully-physical Monte Carlo of every game — 20,000 simulated games per matchup — re-priced at every decision wall through the day (T-24h to T-1h) and shown on every game tile, tracked in public.",
    "status": "shipped",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-26",
-   "eta": "live \u2014 first priced slate 2026-07-29",
-   "latest": "2026-07-30: the sim now re-prices at every decision wall (T-24h/T-12h/T-6h/T-3h/T-1h) as inputs firm up \u2014 each wall write-once, the latest wall locked at first pitch is what grades \u2014 so its read is visible all day, not just the T-3h hour. First graded day stands 9-6 on 15 leans \u2014 small-sample noise by its own measured tie-the-market baseline; record accrues in public",
+   "eta": "live — first priced slate 2026-07-29",
+   "latest": "2026-07-30: the sim now re-prices at every decision wall (T-24h/T-12h/T-6h/T-3h/T-1h) as inputs firm up — each wall write-once, the latest wall locked at first pitch is what grades — so its read is visible all day, not just the T-3h hour. First graded day stands 9-6 on 15 leans — small-sample noise by its own measured tie-the-market baseline; record accrues in public",
    "result": null,
-   "detail": "Leon's call: 'add a monte carlo model.' The validated physical run simulator \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of the T-3h wall, with the home-field module ON and the walk-forward run-environment recalibration \u2014 prices P(over the posted total) for every game at each decision wall as it arrives (T-24h through T-1h; each wall written once, never revised; the latest wall locked at first pitch is what grades), from as-of inputs only \u2014 early walls ride the strictly-more-conservative D\u22122 enrichment per the wall-hygiene rule. THE HONEST PART, said loudly: in validation the simulator TIES the market (its blend-vs-market test came back a statistical tie, p=0.28, and its median lands within ~0.02 runs of the posted line). That is remarkable physics \u2014 an independent model of the game reproducing Vegas's number from first principles \u2014 but it is NOT an edge. So it serves as a transparent voice, never a bet: LEAN/PASS only, stars hard-capped at 1, is_bet always false, it never touches the headline pick, and its record starts 0-0-0 (activation 2026-07-28) in its own separately-graded lean ledger. An upgrade to a priced mode exists only behind a passing engine-vs-market report plus a human-signed state file \u2014 never automatic."
+   "detail": "Leon's call: 'add a monte carlo model.' The validated physical run simulator — every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of the T-3h wall, with the home-field module ON and the walk-forward run-environment recalibration — prices P(over the posted total) for every game at each decision wall as it arrives (T-24h through T-1h; each wall written once, never revised; the latest wall locked at first pitch is what grades), from as-of inputs only — early walls ride the strictly-more-conservative D−2 enrichment per the wall-hygiene rule. THE HONEST PART, said loudly: in validation the simulator TIES the market (its blend-vs-market test came back a statistical tie, p=0.28, and its median lands within ~0.02 runs of the posted line). That is remarkable physics — an independent model of the game reproducing Vegas's number from first principles — but it is NOT an edge. So it serves as a transparent voice, never a bet: LEAN/PASS only, stars hard-capped at 1, is_bet always false, it never touches the headline pick, and its record starts 0-0-0 (activation 2026-07-28) in its own separately-graded lean ledger. An upgrade to a priced mode exists only behind a passing engine-vs-market report plus a human-signed state file — never automatic."
   },
   {
    "id": "calibrated_confidence",
    "title": "Better-calibrated confidence",
-   "tagline": "The confidence number behind every score now means what it says \u2014 probabilities are re-checked against everything we've actually graded, every day.",
+   "tagline": "The confidence number behind every score now means what it says — probabilities are re-checked against everything we've actually graded, every day.",
    "status": "shipped",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "done",
-   "latest": "07-27: live from today \u2014 served probabilities pass through a walk-forward calibration check fitted only on already-graded picks (7,001 of them). Past picks and records are untouched.",
-   "detail": "Our research kept finding the same honest problem: the model's WIN/LOSS picking is real but its CONFIDENCE grading was not \u2014 measured out-of-sample, our probabilities ran overconfident and the star ladder didn't order results the way it claimed. This ships the fix the research validated: before a pick is scored, its probability is passed through a calibration map fitted ONLY on picks that were already graded before that day (never the day's own games, never the future). The map is deliberately humble \u2014 it can shrink or grow how boldly we disagree with Vegas, but it can never flip a pick's side and it refuses to learn 'unders are hot lately'. Practical effect: conviction is currently getting SHRUNK (the graded evidence says our disagreements were overstated), so expect fewer model picks, more honest PASSes, and scores that bunch lower. To be clear about what this is NOT: it does not create an edge and we claim none \u2014 it makes the confidence number honest, which is what the stars are built on. Old picks, scores and records are locked and never restated.",
-   "result": "Live 07-27. Walk-forward Brier 0.24996 -> 0.24989, calibration Z 1.10 -> 0.54 on 6,424 replayed rows; model take-rate roughly halves. Not an edge \u2014 honesty."
+   "latest": "07-27: live from today — served probabilities pass through a walk-forward calibration check fitted only on already-graded picks (7,001 of them). Past picks and records are untouched.",
+   "detail": "Our research kept finding the same honest problem: the model's WIN/LOSS picking is real but its CONFIDENCE grading was not — measured out-of-sample, our probabilities ran overconfident and the star ladder didn't order results the way it claimed. This ships the fix the research validated: before a pick is scored, its probability is passed through a calibration map fitted ONLY on picks that were already graded before that day (never the day's own games, never the future). The map is deliberately humble — it can shrink or grow how boldly we disagree with Vegas, but it can never flip a pick's side and it refuses to learn 'unders are hot lately'. Practical effect: conviction is currently getting SHRUNK (the graded evidence says our disagreements were overstated), so expect fewer model picks, more honest PASSes, and scores that bunch lower. To be clear about what this is NOT: it does not create an edge and we claim none — it makes the confidence number honest, which is what the stars are built on. Old picks, scores and records are locked and never restated.",
+   "result": "Live 07-27. Walk-forward Brier 0.24996 -> 0.24989, calibration Z 1.10 -> 0.54 on 6,424 replayed rows; model take-rate roughly halves. Not an edge — honesty."
   },
   {
    "id": "unified_one_pick",
@@ -69,7 +81,7 @@
    "started": "2026-07-05",
    "eta": "done",
    "latest": "07-25: live record 72-67-5, +1.14 units, every pick graded in public.",
-   "detail": "One model, one pick per game, no hedging. Every pick lands on the site before first pitch and gets graded when the game ends. The running record is 72-67-5 for +1.14 units \u2014 modestly ahead, fully transparent.",
+   "detail": "One model, one pick per game, no hedging. Every pick lands on the site before first pitch and gets graded when the game ends. The running record is 72-67-5 for +1.14 units — modestly ahead, fully transparent.",
    "result": "72-67-5, +1.14u live, graded in public"
   },
   {
@@ -81,7 +93,7 @@
    "progress_pct": 100,
    "started": "2026-07-12",
    "eta": "done",
-   "latest": "07-24: v3.3 live \u2014 5 stars now means the top 10% of picks; per-tier records shown on site.",
+   "latest": "07-24: v3.3 live — 5 stars now means the top 10% of picks; per-tier records shown on site.",
    "detail": "Stars are earned, not decorative: 5 stars is reserved for roughly the top 10% of picks by model conviction. The site shows the win-loss record for each star tier separately, so you can judge whether the stars actually mean anything.",
    "result": "5-star = top 10% of picks; per-tier records live on site"
   },
@@ -101,7 +113,7 @@
   {
    "id": "enriched_data_layer",
    "title": "Enriched data layer",
-   "tagline": "Feeds the model everything a sharp bettor would check before a game \u2014 umps, bullpens, lineups, parks.",
+   "tagline": "Feeds the model everything a sharp bettor would check before a game — umps, bullpens, lineups, parks.",
    "status": "shipped",
    "category": "data",
    "progress_pct": 100,
@@ -134,7 +146,7 @@
    "started": "2026-07-18",
    "eta": "done",
    "latest": "07-24: 'why this pick' chips live on every pick card.",
-   "detail": "Every pick card now carries short chips naming the main reasons behind the call \u2014 things like a tired bullpen, a favorable ump, or a park that suppresses runs. No black box: if the model likes a side, you can see what it saw.",
+   "detail": "Every pick card now carries short chips naming the main reasons behind the call — things like a tired bullpen, a favorable ump, or a park that suppresses runs. No black box: if the model likes a side, you can see what it saw.",
    "result": "'Why this pick' chips live on every card"
   },
   {
@@ -147,7 +159,7 @@
    "started": "2026-07-19",
    "eta": "done",
    "latest": "07-24: Insights page live with running record and performance breakdowns.",
-   "detail": "A dedicated charts page tracks the running record, units won and lost, and how each star tier is performing. The point is accountability \u2014 the wins and the losses are on the same chart.",
+   "detail": "A dedicated charts page tracks the running record, units won and lost, and how each star tier is performing. The point is accountability — the wins and the losses are on the same chart.",
    "result": "Insights page live"
   },
   {
@@ -159,9 +171,9 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "closed",
-   "latest": "2026-07-25: full nested walk-forward eval complete \u2014 closed honestly",
+   "latest": "2026-07-25: full nested walk-forward eval complete — closed honestly",
    "detail": "We built a second model to learn WHEN the main model is right. It found a real but tiny trust gradient, and on the strict tests the trust flag was not sharper than the market and leaned too hard to unders. Nothing ships; the record stays clean. It did leave two new doors (see queued items).",
-   "result": "NULL \u2014 trust flag failed the market-sharpness gate (and 94.5%-under sidedness); tiny +3.1pt trust gradient real but unbettable"
+   "result": "NULL — trust flag failed the market-sharpness gate (and 94.5%-under sidedness); tiny +3.1pt trust gradient real but unbettable"
   },
   {
    "id": "mega_edge_hunt",
@@ -172,8 +184,8 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "closed",
-   "latest": "2026-07-26: all 12 fronts complete \u2014 zero survivors, nine doors closed for good",
-   "detail": "The biggest sweep we have run: 97 ideas from 25 research angles, narrowed to the 12 strongest, each pre-registered and tested on old data only. Nothing earned money. The recurring lesson: where a retail book looks slow or generous, it is usually informed behavior or noise \u2014 and the real patterns we did find were already in the price. One old edge (shopping extreme prices vs the sharpest book) existed but died around 2023.",
+   "latest": "2026-07-26: all 12 fronts complete — zero survivors, nine doors closed for good",
+   "detail": "The biggest sweep we have run: 97 ideas from 25 research angles, narrowed to the 12 strongest, each pre-registered and tested on old data only. Nothing earned money. The recurring lesson: where a retail book looks slow or generous, it is usually informed behavior or noise — and the real patterns we did find were already in the price. One old edge (shopping extreme prices vs the sharpest book) existed but died around 2023.",
    "result": "0 of 12 fronts survived; 9 mechanisms permanently closed; banked facts feed future models"
   },
   {
@@ -185,7 +197,7 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "done",
-   "latest": "2026-07-26: sweep complete \u2014 213 findings from 25 researchers, distilled to 35 testable ideas",
+   "latest": "2026-07-26: sweep complete — 213 findings from 25 researchers, distilled to 35 testable ideas",
    "detail": "Twenty-four research agents fan out tonight across GitHub code, Reddit threads, academic papers, professional bettor lore, and how the betting markets themselves work. Anything promising gets written up as a candidate idea and fed into the edge-hunt pipeline for honest testing.",
    "result": "213 findings -> 35-idea testable queue + full sourced dossier; queue now piloting"
   },
@@ -198,7 +210,7 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "closed",
-   "latest": "2026-07-26: all 35 pilots complete \u2014 33 dead, 1 blocked on data, 0 graduated",
+   "latest": "2026-07-26: all 35 pilots complete — 33 dead, 1 blocked on data, 0 graduated",
    "detail": "Thirty-five ideas from the internet research sweep got a fast honest trial on old seasons we can afford to burn. None earned the right to touch the good data. Three patterns explain nearly every death: the books already price the effect (weather, umpires, parks, air density); the profit was really just one good season; or the idea only fires 20-80 times a year, too rare to ever prove.",
    "result": "0 of 35 graduated; 33 dead, 1 blocked; confirmation data untouched"
   },
@@ -211,9 +223,9 @@
    "progress_pct": 100,
    "started": "2026-07-24",
    "eta": "closed",
-   "latest": "2026-07-26: data build finished overnight, real test ran \u2014 directionally right, economically inert",
-   "detail": "Do batters facing a badly-matched starter (handedness splits) beat the total? The data build finished after weeks, and the test finally ran on 6,366 games. The tilt exists in the direction we predicted \u2014 but it is smaller than the vig, so it does not pay for itself at any book, and it is statistically indistinguishable from noise.",
-   "result": "NULL \u2014 176-game cell, 50.6% hit vs 50.7% break-even, ROI -0.2% (-3.0% at our book); holdout not spent"
+   "latest": "2026-07-26: data build finished overnight, real test ran — directionally right, economically inert",
+   "detail": "Do batters facing a badly-matched starter (handedness splits) beat the total? The data build finished after weeks, and the test finally ran on 6,366 games. The tilt exists in the direction we predicted — but it is smaller than the vig, so it does not pay for itself at any book, and it is statistically indistinguishable from noise.",
+   "result": "NULL — 176-game cell, 50.6% hit vs 50.7% break-even, ROI -0.2% (-3.0% at our book); holdout not spent"
   },
   {
    "id": "nrfi_first_inning",
@@ -224,9 +236,9 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "closed",
-   "latest": "2026-07-25: full pre-registered test on 5,297 priced games \u2014 market wins at the root; door closed",
-   "detail": "The idea: first-inning (NRFI/YRFI) markets get less attention, so maybe they are softer. We built true first-inning pitcher form from pitch-level data and tested honestly on 4,609 out-of-sample games. The books price the first inning slightly BETTER than our data. All six pre-declared cells died. Together with the earlier probe, both natural angles are now closed \u2014 no future cycle needs to wonder about NRFI.",
-   "result": "NULL \u2014 market Brier beats ours at the root (0.2482 vs 0.2490); 0 of 6 cells survived; last untested derivative niche closed"
+   "latest": "2026-07-25: full pre-registered test on 5,297 priced games — market wins at the root; door closed",
+   "detail": "The idea: first-inning (NRFI/YRFI) markets get less attention, so maybe they are softer. We built true first-inning pitcher form from pitch-level data and tested honestly on 4,609 out-of-sample games. The books price the first inning slightly BETTER than our data. All six pre-declared cells died. Together with the earlier probe, both natural angles are now closed — no future cycle needs to wonder about NRFI.",
+   "result": "NULL — market Brier beats ours at the root (0.2482 vs 0.2490); 0 of 6 cells survived; last untested derivative niche closed"
   },
   {
    "id": "line_divergence_v3",
@@ -237,9 +249,9 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "closed",
-   "latest": "2026-07-25: pre-registered test complete \u2014 missed the final significance bar by a hair; stop honored",
-   "detail": "Third redesign of the sharp-book disagreement idea. For the first time the mechanism test passed on the numbers, but the family-wide significance bar missed (p=0.071 vs the 0.05 we froze in advance), so the rule says null and we honored it. Notably, on the one book profile Leon can actually bet, every per-cell test passed with +11.5% over 496 games \u2014 that thread continues in a redesigned follow-up.",
-   "result": "NULL by pre-registered bar (p=0.071 vs 0.05) \u2014 but the bettable-book subset passed every per-cell gate (+11.5%, n=496); holdout stays sealed"
+   "latest": "2026-07-25: pre-registered test complete — missed the final significance bar by a hair; stop honored",
+   "detail": "Third redesign of the sharp-book disagreement idea. For the first time the mechanism test passed on the numbers, but the family-wide significance bar missed (p=0.071 vs the 0.05 we froze in advance), so the rule says null and we honored it. Notably, on the one book profile Leon can actually bet, every per-cell test passed with +11.5% over 496 games — that thread continues in a redesigned follow-up.",
+   "result": "NULL by pre-registered bar (p=0.071 vs 0.05) — but the bettable-book subset passed every per-cell gate (+11.5%, n=496); holdout stays sealed"
   },
   {
    "id": "pinnacle_divergence_flags",
@@ -251,7 +263,7 @@
    "started": "2026-07-25",
    "eta": "~1 week",
    "latest": "07-25: flags recording daily; about a week until we know how often they fire.",
-   "detail": "Every day we log the games where our number disagrees with Pinnacle's. Nothing is bet on these yet \u2014 first we need to see how often the flag even fires. About a week of accrual gets us that answer, then we can judge whether the disagreements win."
+   "detail": "Every day we log the games where our number disagrees with Pinnacle's. Nothing is bet on these yet — first we need to see how often the flag even fires. About a week of accrual gets us that answer, then we can judge whether the disagreements win."
   },
   {
    "id": "team_total_quotes",
@@ -263,7 +275,7 @@
    "started": "2026-07-24",
    "eta": "4-6 weeks",
    "latest": "07-25: quote capture running daily; needs several weeks of history before testing.",
-   "detail": "Team totals \u2014 how many runs one team scores, not both combined \u2014 are a quieter market that fewer people study. We are capturing the daily quotes now. Testing needs a real sample, so this one is a 4-6 week accumulation before any verdict."
+   "detail": "Team totals — how many runs one team scores, not both combined — are a quieter market that fewer people study. We are capturing the daily quotes now. Testing needs a real sample, so this one is a 4-6 week accumulation before any verdict."
   },
   {
    "id": "weather_snapshots",
@@ -287,7 +299,7 @@
    "started": "2026-07-02",
    "eta": "closed",
    "latest": "07-06: closed after a full search found zero picks worth taking.",
-   "detail": "We built a dedicated model for first-five-innings totals and searched 25,710 priced rows for bets worth taking. It found zero. Tested honestly, door closed \u2014 the books price this market too well for our current tools.",
+   "detail": "We built a dedicated model for first-five-innings totals and searched 25,710 priced rows for bets worth taking. It found zero. Tested honestly, door closed — the books price this market too well for our current tools.",
    "result": "0 +EV takes in 25,710 rows"
   },
   {
@@ -299,7 +311,7 @@
    "progress_pct": 100,
    "started": "2026-07-03",
    "eta": "closed",
-   "latest": "07-06: closed \u2014 the two markets move in lockstep with nothing left over.",
+   "latest": "07-06: closed — the two markets move in lockstep with nothing left over.",
    "detail": "The idea was that first-five lines and full-game lines might drift out of sync in exploitable ways. They don't: the first-five share of the full total sits at a constant 0.586, and none of our features added anything on top. Tested honestly, door closed.",
    "result": "F5 share constant at 0.586; features add nothing"
   },
@@ -312,8 +324,8 @@
    "progress_pct": 100,
    "started": "2026-07-08",
    "eta": "closed",
-   "latest": "07-12: closed \u2014 every apparent winner dissolved under honest checking.",
-   "detail": "We carved games into 1,378 situational slices \u2014 day games after night games, certain umps, certain parks \u2014 looking for pockets the books misprice. Plenty looked like winners at first glance. After correcting for the fact that we checked 1,378 of them, zero survived. Tested honestly, door closed.",
+   "latest": "07-12: closed — every apparent winner dissolved under honest checking.",
+   "detail": "We carved games into 1,378 situational slices — day games after night games, certain umps, certain parks — looking for pockets the books misprice. Plenty looked like winners at first glance. After correcting for the fact that we checked 1,378 of them, zero survived. Tested honestly, door closed.",
    "result": "0 of 1,378 cells survived correction"
   },
   {
@@ -325,8 +337,8 @@
    "progress_pct": 100,
    "started": "2026-07-10",
    "eta": "closed",
-   "latest": "07-14: closed \u2014 the market already adjusts for resting stars.",
-   "detail": "When a star sits, does the total stay too high? No \u2014 the books already move the line by roughly the right amount, about 0.05 runs of pricing that matches the real effect. Nothing left to take. Tested honestly, door closed.",
+   "latest": "07-14: closed — the market already adjusts for resting stars.",
+   "detail": "When a star sits, does the total stay too high? No — the books already move the line by roughly the right amount, about 0.05 runs of pricing that matches the real effect. Nothing left to take. Tested honestly, door closed.",
    "result": "Books already price star rest (~0.05 runs)"
   },
   {
@@ -338,9 +350,9 @@
    "progress_pct": 100,
    "started": "2026-07-15",
    "eta": "closed",
-   "latest": "07-24: closed \u2014 it made money in development but failed the believability test.",
+   "latest": "07-24: closed — it made money in development but failed the believability test.",
    "detail": "Both versions showed a profit in development, which is exactly when to be most suspicious. The mechanism check failed: our disagreement sizes overshot reality by about 2.5 times, meaning the profit came from overconfidence, not insight. We closed it without touching the holdout data, so a smarter version 3 can still be tested fairly.",
-   "result": "Failed mechanism gate \u2014 magnitudes overshoot 2.5x; holdout preserved"
+   "result": "Failed mechanism gate — magnitudes overshoot 2.5x; holdout preserved"
   },
   {
    "id": "distrust-avoid-filter",
@@ -351,9 +363,9 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "closed",
-   "latest": "2026-07-26: decision brief did the honest math \u2014 headline overstated, cannot be proven in a human timeframe",
+   "latest": "2026-07-26: decision brief did the honest math — headline overstated, cannot be proven in a human timeframe",
    "detail": "The idea: skip our least-trusted picks. On closer inspection the result includes zero in its own error bars, and when transferred to the picks we actually serve it was worth nothing (-0.24pp). Even if real, it is worth about 1 point and would take 7-15 seasons to prove.",
-   "result": "NULL \u2014 CI includes zero, transfer test -0.24pp (p=0.53), needs 7-15 seasons to certify"
+   "result": "NULL — CI includes zero, transfer test -0.24pp (p=0.53), needs 7-15 seasons to certify"
   },
   {
    "id": "big-disagreement-confirm",
@@ -364,8 +376,8 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "done",
-   "latest": "2026-07-26: turned out to be already shipped \u2014 this rule is in production today",
-   "detail": "We thought we had found a contradiction: a region we planned to veto looked profitable. The brief resolved it \u2014 the two numbers describe two different models, and the sweet-spot-then-decay pattern was already measured and is already how picks are graded today. Nothing to change.",
+   "latest": "2026-07-26: turned out to be already shipped — this rule is in production today",
+   "detail": "We thought we had found a contradiction: a region we planned to veto looked profitable. The brief resolved it — the two numbers describe two different models, and the sweet-spot-then-decay pattern was already measured and is already how picks are graded today. Nothing to change.",
    "result": "Already in production (the conviction sweet spot); the apparent contradiction was two different models being compared"
   },
   {
@@ -378,8 +390,8 @@
    "started": "2026-07-25",
    "eta": "closed",
    "latest": "2026-07-26: the kill-test came back unproven, and the idea reverses on every book except the one we picked",
-   "detail": "The premise was that our book hangs the stale number and the sharp book knows better. Tested directly on the exact games we would bet: our book was NOT measurably worse. Worse for the thesis, when you look across all bettable books the effect flips sign entirely \u2014 it only survives at the single book we had already picked for having the best returns, which is how false edges are born. The apparent signal traced back to one hot 49-bet stretch; remove two seasons and it inverts.",
-   "result": "RETIRED after four honored stops \u2014 and the one-shot validation data was never spent"
+   "detail": "The premise was that our book hangs the stale number and the sharp book knows better. Tested directly on the exact games we would bet: our book was NOT measurably worse. Worse for the thesis, when you look across all bettable books the effect flips sign entirely — it only survives at the single book we had already picked for having the best returns, which is how false edges are born. The apparent signal traced back to one hot 49-bet stretch; remove two seasons and it inverts.",
+   "result": "RETIRED after four honored stops — and the one-shot validation data was never spent"
   },
   {
    "id": "live-snapshot-retest",
@@ -415,7 +427,7 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "done",
-   "latest": "2026-07-26: shipped with 21/21 tests passing \u2014 and it immediately erased a claimed +0.66% that was a measurement artifact",
+   "latest": "2026-07-26: shipped with 21/21 tests passing — and it immediately erased a claimed +0.66% that was a measurement artifact",
    "detail": "Three diagnostics that catch the exact ways the pilots died: comparing against a matched control, checking whether one lucky bet carries the whole result, and requiring each season to stand on its own. Applied to future tests, not retro-fitted to the live record.",
    "result": "Standing gates live; the tool that flagged them was itself attacked and weakened where it deserved it"
   },
@@ -428,7 +440,7 @@
    "progress_pct": 30,
    "started": "2026-07-26",
    "eta": "~1 season",
-   "latest": "2026-07-26: live and writing \u2014 162 rows across 27 games in the first three snapshots, on its own 30-minute job",
+   "latest": "2026-07-26: live and writing — 162 rows across 27 games in the first three snapshots, on its own 30-minute job",
    "detail": "One promising idea (do books reprice slowly when a starter is scratched?) is untestable on history because the record gets rewritten after the fact. Recording snapshots as they happen fixes that going forward."
   },
   {
@@ -440,8 +452,8 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "closed",
-   "latest": "2026-07-26: tested properly \u2014 two add nothing to the forecast, one cannot be tested yet, and the headline stat behind it was overstated",
-   "detail": "Three facts we discovered while killing other ideas, tested as model inputs. The pitcher trait is real but adds nothing measurable. The luck-vs-performance gap makes the forecast slightly worse. The \"FanDuel moves first\" stat could not be tested at all (the sharp book only started recording two days ago) \u2014 and while checking, we found the original 43% was really 37%, inflated by a tie-breaking rule that happened to favour FanDuel alphabetically.",
+   "latest": "2026-07-26: tested properly — two add nothing to the forecast, one cannot be tested yet, and the headline stat behind it was overstated",
+   "detail": "Three facts we discovered while killing other ideas, tested as model inputs. The pitcher trait is real but adds nothing measurable. The luck-vs-performance gap makes the forecast slightly worse. The \"FanDuel moves first\" stat could not be tested at all (the sharp book only started recording two days ago) — and while checking, we found the original 43% was really 37%, inflated by a tie-breaking rule that happened to favour FanDuel alphabetically.",
    "result": "0 of 6 tests passed; the one untestable feature also had its headline stat corrected downward"
   },
   {
@@ -453,9 +465,9 @@
    "progress_pct": 100,
    "started": "2026-07-25",
    "eta": "closed",
-   "latest": "2026-07-26: both stalls were slow code, not bad ideas \u2014 fixed, run to completion, both came back negative",
+   "latest": "2026-07-26: both stalls were slow code, not bad ideas — fixed, run to completion, both came back negative",
    "detail": "Two ideas about our own book being slow or mispricing injury news. Both had stalled on code that never finished running. Fixed and completed. Both lost money in testing, and one was actively disproved: on exactly the games where our book looks generously wrong, its number was CLOSER to the final score than the sharpest book in the world.",
-   "result": "Both NULL \u2014 and a third independent confirmation that a friendly-looking retail line is information, not a gift"
+   "result": "Both NULL — and a third independent confirmation that a friendly-looking retail line is information, not a gift"
   },
   {
    "id": "serving-hardening",
@@ -466,8 +478,8 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "done",
-   "latest": "2026-07-27: picks-history architecture rebuilt \u2014 locked picks now provably immutable, hourly served-vs-displayed alarm, honest markers on thin days",
-   "detail": "Config files in the repo had drifted from what actually runs. Reinstalling would have broken six jobs two different ways: three crash on startup, three more write logs somewhere background jobs are not allowed. Separately, a failing record check turned out not to be a grading bug \u2014 two ledgers were counting different populations \u2014 so it was replaced with five sharper checks that name the offending game if a real gap ever appears.",
+   "latest": "2026-07-27: picks-history architecture rebuilt — locked picks now provably immutable, hourly served-vs-displayed alarm, honest markers on thin days",
+   "detail": "Config files in the repo had drifted from what actually runs. Reinstalling would have broken six jobs two different ways: three crash on startup, three more write logs somewhere background jobs are not allowed. Separately, a failing record check turned out not to be a grading bug — two ledgers were counting different populations — so it was replaced with five sharper checks that name the offending game if a real gap ever appears.",
    "result": "Yesterday fully restored (15 games, 4 picks); 3 silently-dropped locked picks recovered; 20/20 byte-stability proof"
   },
   {
@@ -479,22 +491,22 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "closed",
-   "latest": "2026-07-26: worth about nothing \u2014 and the market is just as accurate three hours before any lineup exists",
-   "detail": "Rather than build better lineup predictions, we gave the model the actual nine hitters from the box score \u2014 information no bettor could ever have \u2014 across 8,300 games. A better lineup is worth about a quarter of a run raw, but the posted total already knows most of it, and the lineup we can project the day before captures ninety percent of the rest. What is genuinely new when the lineup posts moves the game by about a fiftieth of a run, and the book prices even that. Decisive check: the market forecasts just as well at six hours out, when zero lineups have posted, as at one hour out when nearly all have.",
-   "result": "NULL \u2014 actual-vs-projected lineup worth +0.019 runs (CI includes zero); 0 of 33 tests beat the market; best honest ROI +0.02%"
+   "latest": "2026-07-26: worth about nothing — and the market is just as accurate three hours before any lineup exists",
+   "detail": "Rather than build better lineup predictions, we gave the model the actual nine hitters from the box score — information no bettor could ever have — across 8,300 games. A better lineup is worth about a quarter of a run raw, but the posted total already knows most of it, and the lineup we can project the day before captures ninety percent of the rest. What is genuinely new when the lineup posts moves the game by about a fiftieth of a run, and the book prices even that. Decisive check: the market forecasts just as well at six hours out, when zero lineups have posted, as at one hour out when nearly all have.",
+   "result": "NULL — actual-vs-projected lineup worth +0.019 runs (CI includes zero); 0 of 33 tests beat the market; best honest ROI +0.02%"
   },
   {
    "id": "accuracy-ceiling",
    "title": "Can we just pick the right side?",
-   "tagline": "Forget the fee \u2014 can we pick over/under better than a coin flip at all? Measured to the ceiling.",
+   "tagline": "Forget the fee — can we pick over/under better than a coin flip at all? Measured to the ceiling.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "closed",
    "latest": "2026-07-26: best honest accuracy 51.5%, statistically indistinguishable from always betting under",
-   "detail": "We changed the goal entirely: stop optimising for profit, just try to pick the winning side as often as possible. Best result across 8,412 games was 51.5%, with an error range that includes the strategy \"always bet under\" \u2014 a rule requiring no model at all. The most accurate rule we found was simply copying the market own side (52.1%), and even that falls short of the 52.4% needed to break even at standard pricing. Our confidence ranking is flat: keeping only the games we feel best about does not improve accuracy.",
-   "result": "NULL \u2014 51.5% ceiling (CI 50.5-52.6%) vs 50.6% for always-under; 0 of 26 pre-declared segments survived correction"
+   "detail": "We changed the goal entirely: stop optimising for profit, just try to pick the winning side as often as possible. Best result across 8,412 games was 51.5%, with an error range that includes the strategy \"always bet under\" — a rule requiring no model at all. The most accurate rule we found was simply copying the market own side (52.1%), and even that falls short of the 52.4% needed to break even at standard pricing. Our confidence ranking is flat: keeping only the games we feel best about does not improve accuracy.",
+   "result": "NULL — 51.5% ceiling (CI 50.5-52.6%) vs 50.6% for always-under; 0 of 26 pre-declared segments survived correction"
   },
   {
    "id": "derivative-markets",
@@ -505,14 +517,14 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "closed",
-   "latest": "2026-07-27: home-field advantage added and validated; run line re-tested and closed NULL \u2014 the market beats the simulator even fixed",
-   "detail": "First-5: the five-inning simulator passed every physics check, and its median lands within 0.06 runs of the posted line \u2014 same story as full games; closed. Run line: the simulator reproduces the strange texture of baseball margins almost perfectly but does not know home teams are better (it only knows they bat last) \u2014 a real, fixable defect. Team totals: we proved the book generates its ladders by formula, and that its own ladder, total, and moneyline disagree by 1.5-2 points on every game \u2014 a measured inconsistency, but with zero graded outcomes collected yet, no honest test is possible.",
+   "latest": "2026-07-27: home-field advantage added and validated; run line re-tested and closed NULL — the market beats the simulator even fixed",
+   "detail": "First-5: the five-inning simulator passed every physics check, and its median lands within 0.06 runs of the posted line — same story as full games; closed. Run line: the simulator reproduces the strange texture of baseball margins almost perfectly but does not know home teams are better (it only knows they bat last) — a real, fixable defect. Team totals: we proved the book generates its ladders by formula, and that its own ladder, total, and moneyline disagree by 1.5-2 points on every game — a measured inconsistency, but with zero graded outcomes collected yet, no honest test is possible.",
    "result": "F5 NULL (3rd mechanism); run line NULL after the home-field fix (market sharper, 0 survivors); TT ladder inconsistency real but awaits data"
   },
   {
    "id": "player-state-momentum",
    "title": "Player form + momentum, combined",
-   "tagline": "Fifty player-form signals \u2014 hot bats, pitcher stuff trends, bullpen state \u2014 combined into one model, aimed at totals and spreads.",
+   "tagline": "Fifty player-form signals — hot bats, pitcher stuff trends, bullpen state — combined into one model, aimed at totals and spreads.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
@@ -520,7 +532,7 @@
    "eta": "closed",
    "latest": "2026-07-27: the combined model is WORSE than the market line, every season, on both markets",
    "detail": "The fair critique was that player momentum signals had only been tested one at a time. So all fifty were combined into one model and aimed at both the totals market and the newly-returned spread market across 9,230 games. Result: the combined model is significantly worse than the market price on both, every season, both favorite and dog sides. The spread market is at least as sharp as totals. By the time we can bet, player form is in the price.",
-   "result": "DOUBLE NULL \u2014 totals composite \u0394Brier +0.0018 worse (CI excludes zero); run-line market beats fundamentals AND player-state every season; spread market NOT softer"
+   "result": "DOUBLE NULL — totals composite ΔBrier +0.0018 worse (CI excludes zero); run-line market beats fundamentals AND player-state every season; spread market NOT softer"
   },
   {
    "id": "live-mc-repricing",
@@ -531,14 +543,14 @@
    "progress_pct": 100,
    "started": "2026-07-26",
    "eta": "closed (early innings); late innings blocked on calibration",
-   "latest": "2026-07-27: in the corner where the engine is certified, the live market wins clean \u2014 and it is signal, not execution friction",
-   "detail": "The one Monte Carlo surface never tested. Where the simulator is provably calibrated (early innings, normal scoring), the live market beat it even at zero execution cost \u2014 a flat coin-flip baseline nearly ties the market and beats our sim there. Crucially the test separated \"no edge\" from \"edge eaten by slow execution\": it is no edge, so faster pipes would not help. The honest asterisk: the territory where the founding mid-game folklore lives (late innings, hot high-scoring games) was never tested because the engine is provably miscalibrated there \u2014 that corner is blocked, not closed.",
+   "latest": "2026-07-27: in the corner where the engine is certified, the live market wins clean — and it is signal, not execution friction",
+   "detail": "The one Monte Carlo surface never tested. Where the simulator is provably calibrated (early innings, normal scoring), the live market beat it even at zero execution cost — a flat coin-flip baseline nearly ties the market and beats our sim there. Crucially the test separated \"no edge\" from \"edge eaten by slow execution\": it is no edge, so faster pipes would not help. The honest asterisk: the territory where the founding mid-game folklore lives (late innings, hot high-scoring games) was never tested because the engine is provably miscalibrated there — that corner is blocked, not closed.",
    "result": "NULL in certified states (frictionless leg also null; -3.2% executable); late/hot states BLOCKED pending four named calibration fixes"
   },
   {
    "id": "sim-hfa-fix",
    "title": "Simulator home-field fix",
-   "tagline": "Taught the simulator that home teams are actually better \u2014 validated, and it still does not beat the run-line market.",
+   "tagline": "Taught the simulator that home teams are actually better — validated, and it still does not beat the run-line market.",
    "status": "shipped",
    "category": "model",
    "progress_pct": 100,
@@ -551,41 +563,41 @@
   {
    "id": "live-late-innings-final",
    "title": "The last corner: late-inning live totals",
-   "tagline": "Recalibrated the engine for late, high-scoring, hot games \u2014 the founding folklore territory \u2014 and tested it clean.",
+   "tagline": "Recalibrated the engine for late, high-scoring, hot games — the founding folklore territory — and tested it clean.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "closed",
-   "latest": "2026-07-27: all four calibration fixes worked; the certified engine now TIES the live market at the flagged instant \u2014 and loses at any price you could actually get",
-   "detail": "This was the one corner never tested, with zero peeks: late innings, high-scoring environments, hot games. The calibration round genuinely fixed the engine (the 0.9-run under-projection closed to near zero). The result: our simulator now knows exactly as much as the live late-inning market \u2014 and nothing more. At executable prices the book is decisively ahead in every bucket, season, side, and book. The map of our markets is complete.",
+   "latest": "2026-07-27: all four calibration fixes worked; the certified engine now TIES the live market at the flagged instant — and loses at any price you could actually get",
+   "detail": "This was the one corner never tested, with zero peeks: late innings, high-scoring environments, hot games. The calibration round genuinely fixed the engine (the 0.9-run under-projection closed to near zero). The result: our simulator now knows exactly as much as the live late-inning market — and nothing more. At executable prices the book is decisively ahead in every bucket, season, side, and book. The map of our markets is complete.",
    "result": "NULL in all three certified buckets; frictionless LATE is a genuine tie (zero edge); executable -4.5% over 26,320 bets. The keepers: a certified conditional engine and a fitness harness."
   },
   {
    "id": "moon-llm-forecaster",
    "title": "LLM as forecaster",
-   "tagline": "Ask a frontier AI to price every game from pregame facts \u2014 on 2026 games it provably cannot have memorized.",
+   "tagline": "Ask a frontier AI to price every game from pregame facts — on 2026 games it provably cannot have memorized.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "closed",
-   "latest": "2026-07-29: the frozen test finally ran \u2014 the AI lost to the market by a statistically real margin",
-   "detail": "A frozen pre-2026 AI read a rich pregame packet for 437 games it provably could not have memorized and priced each one. Verdict: decisively worse than the market \u2014 it even lost to a coin flip, leaned heavily under in an over-heavy month, and was most wrong when most confident. The fairness probe came back clean, so this is a real refutation, not a broken test. The one instrument whose test set renews itself every season is now measured.",
-   "result": "NULL \u2014 LLM Brier 0.2629 vs market 0.2489 (CI excludes zero, wrong side); blending hurts the market; memorization probe clean"
+   "latest": "2026-07-29: the frozen test finally ran — the AI lost to the market by a statistically real margin",
+   "detail": "A frozen pre-2026 AI read a rich pregame packet for 437 games it provably could not have memorized and priced each one. Verdict: decisively worse than the market — it even lost to a coin flip, leaned heavily under in an over-heavy month, and was most wrong when most confident. The fairness probe came back clean, so this is a real refutation, not a broken test. The one instrument whose test set renews itself every season is now measured.",
+   "result": "NULL — LLM Brier 0.2629 vs market 0.2489 (CI excludes zero, wrong side); blending hurts the market; memorization probe clean"
   },
   {
    "id": "moon-llm-news",
    "title": "LLM as news reader",
-   "tagline": "Mine injury whispers, bullpen notes and manager quotes from timestamped news \u2014 the one information channel never tested.",
+   "tagline": "Mine injury whispers, bullpen notes and manager quotes from timestamped news — the one information channel never tested.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "parked",
-   "latest": "2026-07-30: parked by Leon \u2014 LLM effort aimed at modeling, not news; front was blocked on archive data anyway",
-   "detail": "Mine injury whispers, bullpen notes and manager quotes from timestamped news \u2014 the one information channel never tested. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
-   "result": "PARKED by decision (never tested) \u2014 the LLM-as-model question was answered separately and decisively"
+   "latest": "2026-07-30: parked by Leon — LLM effort aimed at modeling, not news; front was blocked on archive data anyway",
+   "detail": "Mine injury whispers, bullpen notes and manager quotes from timestamped news — the one information channel never tested. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "PARKED by decision (never tested) — the LLM-as-model question was answered separately and decisively"
   },
   {
    "id": "moon-close-forecast",
@@ -603,15 +615,15 @@
   {
    "id": "moon-sun-shadow",
    "title": "Sun & shadow geometry",
-   "tagline": "Pure astronomy: computed sun angles per park per first pitch \u2014 the batter-blinding shadow bands nobody prices per game.",
+   "tagline": "Pure astronomy: computed sun angles per park per first pitch — the batter-blinding shadow bands nobody prices per game.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "closed",
-   "latest": "2026-07-27: exact sun-position engine built and verified \u2014 the shadow effect is smaller than the lore and already priced at the close",
-   "detail": "Pure astronomy: computed sun angles per park per first pitch \u2014 the batter-blinding shadow bands nobody prices per game. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
-   "result": "exact sun-position engine built and verified \u2014 the shadow effect is smaller than the lore and already priced at the close"
+   "latest": "2026-07-27: exact sun-position engine built and verified — the shadow effect is smaller than the lore and already priced at the close",
+   "detail": "Pure astronomy: computed sun angles per park per first pitch — the batter-blinding shadow bands nobody prices per game. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "exact sun-position engine built and verified — the shadow effect is smaller than the lore and already priced at the close"
   },
   {
    "id": "moon-sequence-motifs",
@@ -642,27 +654,27 @@
   {
    "id": "moon-stacked",
    "title": "Stack of all our models",
-   "tagline": "Our models disagree with each other \u2014 does the disagreement structure itself carry information? One tiny meta-model.",
+   "tagline": "Our models disagree with each other — does the disagreement structure itself carry information? One tiny meta-model.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "closed",
-   "latest": "2026-07-27: our models genuinely disagree with each other \u2014 and the disagreement carries zero information about when the market is wrong",
-   "detail": "Our models disagree with each other \u2014 does the disagreement structure itself carry information? One tiny meta-model. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
-   "result": "our models genuinely disagree with each other \u2014 and the disagreement carries zero information about when the market is wrong"
+   "latest": "2026-07-27: our models genuinely disagree with each other — and the disagreement carries zero information about when the market is wrong",
+   "detail": "Our models disagree with each other — does the disagreement structure itself carry information? One tiny meta-model. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "result": "our models genuinely disagree with each other — and the disagreement carries zero information about when the market is wrong"
   },
   {
    "id": "moon-biology",
    "title": "Circadian & workload kernels",
-   "tagline": "Acclimatization curves from sleep science applied as decaying travel/workload kernels \u2014 constants from literature, not fit to outcomes.",
+   "tagline": "Acclimatization curves from sleep science applied as decaying travel/workload kernels — constants from literature, not fit to outcomes.",
    "status": "closed_null",
    "category": "model",
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "closed",
    "latest": "2026-07-27: literature-locked jet-lag and workload kernels: 0 of 6 effects survive, no dose-response",
-   "detail": "Acclimatization curves from sleep science applied as decaying travel/workload kernels \u2014 constants from literature, not fit to outcomes. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
+   "detail": "Acclimatization curves from sleep science applied as decaying travel/workload kernels — constants from literature, not fit to outcomes. Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
    "result": "literature-locked jet-lag and workload kernels: 0 of 6 effects survive, no dose-response"
   },
   {
@@ -687,9 +699,9 @@
    "progress_pct": 100,
    "started": "2026-07-27",
    "eta": "closed",
-   "latest": "2026-07-27: its best idea (line hysteresis) is REAL and sign-perfect \u2014 the market breaks lines with juice pressure 23.8% vs 0% \u2014 but the book charges more for it than it is worth",
+   "latest": "2026-07-27: its best idea (line hysteresis) is REAL and sign-perfect — the market breaks lines with juice pressure 23.8% vs 0% — but the book charges more for it than it is worth",
    "detail": "Feed an AI all seventy null reports and ask: what mechanism survives every one of these constraints? Part of the 10-front out-of-the-box hunt. Anything that claims a win faces three adversarial reviewers before it is believed.",
-   "result": "its best idea (line hysteresis) is REAL and sign-perfect \u2014 the market breaks lines with juice pressure 23.8% vs 0% \u2014 but the book charges more for it than it is worth"
+   "result": "its best idea (line hysteresis) is REAL and sign-perfect — the market breaks lines with juice pressure 23.8% vs 0% — but the book charges more for it than it is worth"
   },
   {
    "id": "gamepk-audit",
@@ -700,7 +712,7 @@
    "progress_pct": 60,
    "started": "2026-07-27",
    "eta": "~hours",
-   "latest": "2026-07-27: the moonshot round independently found ~45-47% of 2021-2023 games in the big odds archive carry the WRONG game's pregame odds \u2014 fixes shipped; the deep audit is confirming scope and which past results need re-checking",
+   "latest": "2026-07-27: the moonshot round independently found ~45-47% of 2021-2023 games in the big odds archive carry the WRONG game's pregame odds — fixes shipped; the deep audit is confirming scope and which past results need re-checking",
    "detail": "A routine check flagged possible game-ID contamination in the big historical odds store. Several past results lean on it, so it gets audited properly. If contamination is real, affected results get re-checked."
   }
  ]

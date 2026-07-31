@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-31T00:07:00Z",
+  "generated_utc": "2026-07-31T00:41:36Z",
   "dates": [
     "2026-07-30",
     "2026-07-31"
@@ -1196,18 +1196,18 @@
     "note": "price_improved={now, was, book, ts} appears on UNLOCKED playable rows whose CURRENT best per-side price at the pick's line beats the entry price ('price improved \u2014 now +112 at X'). Refreshed every intraday cycle; drops when no longer better. The pick/side/line/price/stars stay frozen to their wall and locked rows are never touched \u2014 grading uses the stored entry price."
   },
   "board_census": {
-    "n_games": 16,
-    "n_rows": 49,
+    "n_games": 17,
+    "n_rows": 50,
     "n_voided": 0,
     "n_playable": 4,
     "n_takes": 4,
-    "n_passes": 45,
+    "n_passes": 46,
     "stars": {
       "5": 0,
       "4": 1,
       "3": 1,
       "2": 2,
-      "1": 45
+      "1": 46
     }
   },
   "spread_stream": {
@@ -1263,7 +1263,7 @@
       "separation": "this record counts ONLY stream-stamped run-line rows graded on/after 2026-07-27; it never contains a totals row, and no totals record (overall, by_strategy, live_record, champion) ever contains a spread row \u2014 selftested in spread_stream, daily_cycle and unified_model"
     },
     "positioning": "SPREADS RETURN (Leon, 2026-07-26) \u2014 an ADDITIONAL, clearly labeled run-line section. The totals headline pick is UNCHANGED and stays the product; the spread row renders subordinate to it. New stream: activation 2026-07-27, record starts 0-0-0, graded in public from day one, no retro-credit, no backtest blended in.",
-    "n_games": 16,
+    "n_games": 17,
     "games": {
       "823595": {
         "status": "LEAN",
@@ -1696,6 +1696,33 @@
         "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
         "date": "2026-07-31",
         "game_id": "2026-07-31-Washington Nationals-Atlanta Braves-824892"
+      },
+      "824164": {
+        "status": "LEAN",
+        "side": "away",
+        "side_team": "Texas Rangers",
+        "line": 1.5,
+        "home_line": -1.5,
+        "vegas_line": -1.5,
+        "price": 180,
+        "best_book": null,
+        "stars": 1,
+        "score": 1.39,
+        "our_prob": 0.5028,
+        "ev": 0.3922,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "lean_only",
+        "activation_date": "2026-07-27",
+        "is_new_stream": true,
+        "new_tag": "NEW \u2014 graded from day one",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164"
       }
     }
   },
@@ -1792,7 +1819,7 @@
       "separation": "this record counts ONLY sim-stamped rows from the stream's own ledger (state/sim_graded.jsonl), graded on/after 2026-07-28; it never contains a row from the totals or spread ledgers, and no totals/spread record ever contains a simulator row \u2014 the simulator never writes the shared board or the shared graded ledger at all (selftested in sim_stream, daily_cycle and unified_model)"
     },
     "positioning": "SIMULATOR JOINS THE BOARD (Leon, 2026-07-28) \u2014 a fully-physical Monte Carlo of each game, shown as a TRANSPARENT VOICE beside the product. The totals headline pick is UNCHANGED and the simulator never influences it, never rates above 1*, and is never a bet: its validated result is that it TIES the market (median within ~0.02 runs of the posted line). New stream: activation 2026-07-28, record starts 0-0-0, graded in public from day one, in its own ledger, never blended.",
-    "n_games": 16,
+    "n_games": 17,
     "games": {
       "822946": {
         "status": "LEAN",
@@ -2358,6 +2385,40 @@
         "walls_priced": [
           "T-24h"
         ]
+      },
+      "824164": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5043,
+        "p_over_market": 0.4951,
+        "sim_edge": 0.0091,
+        "price": 109.0,
+        "best_book": "onexbet",
+        "stars": 1,
+        "score": null,
+        "sim_mu": 8.563,
+        "sim_median": 8,
+        "sim_sd": 4.247,
+        "n_sims": 20000,
+        "hfa": "on",
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-28",
+        "is_new_stream": true,
+        "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "physics simulator \u2014 ties the market, no proven edge",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164",
+        "walls_priced": [
+          "T-24h"
+        ]
       }
     }
   },
@@ -2461,6 +2522,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 3.7762,
+          "sp_away_era_std": 4.211,
+          "bat_home_avg_r30": 0.2332,
+          "bat_away_avg_r30": 0.2689,
+          "pen_home_era_std": 3.2106,
+          "pen_away_era_std": 3.6318,
+          "enr_park_run_factor_3y": 0.9891,
+          "wx_temp_f": 72.86
+        },
         "result": null,
         "locked": true,
         "locked_at_utc": "2026-07-30T23:33:00Z",
@@ -2490,6 +2561,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 5.3138,
+          "sp_away_era_std": null,
+          "bat_home_avg_r30": 0.2236,
+          "bat_away_avg_r30": 0.276,
+          "pen_home_era_std": 3.3504,
+          "pen_away_era_std": 4.1885,
+          "enr_park_run_factor_3y": 1.0306,
+          "wx_temp_f": 86.18
+        },
         "result": null,
         "locked": true,
         "locked_at_utc": "2026-07-30T23:33:00Z",
@@ -2519,6 +2600,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 4.0213,
+          "sp_away_era_std": 5.2258,
+          "bat_home_avg_r30": 0.2229,
+          "bat_away_avg_r30": 0.2517,
+          "pen_home_era_std": 2.3116,
+          "pen_away_era_std": 3.9679,
+          "enr_park_run_factor_3y": 1.0086,
+          "wx_temp_f": 87.08
+        },
         "result": null,
         "locked": true,
         "locked_at_utc": "2026-07-30T23:33:00Z",
@@ -2548,6 +2639,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 6.9677,
+          "sp_away_era_std": null,
+          "bat_home_avg_r30": 0.2357,
+          "bat_away_avg_r30": 0.2721,
+          "pen_home_era_std": 3.1588,
+          "pen_away_era_std": 3.0975,
+          "enr_park_run_factor_3y": 0.9169,
+          "wx_temp_f": 73.4
+        },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
@@ -2577,6 +2678,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": null,
+          "sp_away_era_std": 2.6097,
+          "bat_home_avg_r30": 0.2505,
+          "bat_away_avg_r30": 0.2386,
+          "pen_home_era_std": 4.7093,
+          "pen_away_era_std": 3.2209,
+          "enr_park_run_factor_3y": 1.1227,
+          "wx_temp_f": 79.16
+        },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
@@ -2606,6 +2717,16 @@
         "score": null,
         "n_train": 11053,
         "train_max_date": "2026-07-29",
+        "raw_inputs": {
+          "sp_home_era_std": 5.4,
+          "sp_away_era_std": 4.1678,
+          "bat_home_avg_r30": 0.2716,
+          "bat_away_avg_r30": 0.2254,
+          "pen_home_era_std": 3.0933,
+          "pen_away_era_std": 3.716,
+          "enr_park_run_factor_3y": null,
+          "wx_temp_f": 74.12
+        },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
@@ -5764,6 +5885,57 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0043 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
+          "pass_why": "price_only"
+        }
+      ],
+      "locked": false
+    },
+    {
+      "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164",
+      "game_pk": 824164,
+      "date": "2026-07-31",
+      "away": "Texas Rangers",
+      "home": "Houston Astros",
+      "first_pitch_utc": "2026-08-01T00:15:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": 109,
+          "our_prob": 0.4987,
+          "p_breakeven": 0.4785,
+          "ev": 0.0423,
+          "tier": "Good",
+          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "stars": 1,
+          "score": 1.11,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": true,
+          "result": null,
+          "edge": 0.0035,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "onexbet",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0035 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
           "pass_why": "price_only"
         }
       ],
