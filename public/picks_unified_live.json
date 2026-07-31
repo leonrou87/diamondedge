@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-07-31T04:42:12Z",
+  "generated_utc": "2026-07-31T05:52:03Z",
   "dates": [
     "2026-07-30",
     "2026-07-31"
@@ -514,68 +514,84 @@
     "continuity_note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top: where the synthesis says AVOID but the engine had a qualifying pick, that pick still exists, still locks and still grades (record integrity) \u2014 it simply DISPLAYS as the desk passing. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that.",
     "synthesis_config": {
       "version": "v2_live_patterns",
-      "generated": "2026-07-31T04:01:47Z",
+      "generated": "2026-07-31T05:30:50Z",
       "path": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/analyst_desk/synthesis_config_v2.json",
       "fallback_path": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/analyst_desk/synthesis_config_v1.json",
       "generated_from": "v4/serve/consensus_patterns.py (nightly)",
       "dissent_patterns": {
         "atlas": {
           "reconstructed_era": {
-            "n": 79,
-            "hit": 0.4557,
+            "n": 520,
+            "hit": 0.4923,
             "hit_ci95_exact": [
-              0.3431,
-              0.5717
+              0.4485,
+              0.5362
             ],
-            "fade_hit": 0.5443,
-            "win": 36,
-            "loss": 43,
-            "push": 0
+            "fade_hit": 0.5077,
+            "win": 256,
+            "loss": 264,
+            "push": 0,
+            "p_two_sided": 0.7589,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 45%-54%, NOT distinguishable from a coin flip"
           },
           "live_era": null
         },
         "nova": {
           "reconstructed_era": {
-            "n": 29,
-            "hit": 0.5517,
+            "n": 280,
+            "hit": 0.5357,
             "hit_ci95_exact": [
-              0.3569,
-              0.7355
+              0.4754,
+              0.5953
             ],
-            "fade_hit": 0.4483,
-            "win": 16,
-            "loss": 13,
-            "push": 0
+            "fade_hit": 0.4643,
+            "win": 150,
+            "loss": 130,
+            "push": 0,
+            "p_two_sided": 0.256139,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 48%-60%, NOT distinguishable from a coin flip"
           },
           "live_era": null
         },
         "scout": {
           "reconstructed_era": {
-            "n": 12,
-            "hit": 0.3333,
+            "n": 276,
+            "hit": 0.4783,
             "hit_ci95_exact": [
-              0.0992,
-              0.6511
+              0.418,
+              0.539
             ],
-            "fade_hit": 0.6667,
-            "win": 4,
-            "loss": 8,
-            "push": 0
+            "fade_hit": 0.5217,
+            "win": 132,
+            "loss": 144,
+            "push": 0,
+            "p_two_sided": 0.507966,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 42%-54%, NOT distinguishable from a coin flip"
           },
           "live_era": null
         },
         "vega": {
           "reconstructed_era": {
-            "n": 65,
-            "hit": 0.4462,
+            "n": 441,
+            "hit": 0.5193,
             "hit_ci95_exact": [
-              0.3227,
-              0.5747
+              0.4715,
+              0.5668
             ],
-            "fade_hit": 0.5538,
-            "win": 29,
-            "loss": 36,
-            "push": 0
+            "fade_hit": 0.4807,
+            "win": 229,
+            "loss": 212,
+            "push": 0,
+            "p_two_sided": 0.446153,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 47%-57%, NOT distinguishable from a coin flip"
           },
           "live_era": null
         }
@@ -583,16 +599,20 @@
       "split_pair_patterns": {
         "atlas+nova": {
           "reconstructed_era": {
-            "n": 1,
-            "hit": 0.0,
+            "n": 130,
+            "hit": 0.4308,
             "hit_ci95_exact": [
-              0.0,
-              0.975
+              0.3443,
+              0.5205
             ],
-            "fade_hit": 1.0,
-            "win": 0,
-            "loss": 1,
-            "push": 0
+            "fade_hit": 0.5692,
+            "win": 56,
+            "loss": 74,
+            "push": 0,
+            "p_two_sided": 0.135656,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 34%-52%, NOT distinguishable from a coin flip"
           },
           "live_era": null,
           "over_pair": [
@@ -606,16 +626,20 @@
         },
         "atlas+scout": {
           "reconstructed_era": {
-            "n": 41,
-            "hit": 0.5122,
+            "n": 262,
+            "hit": 0.5076,
             "hit_ci95_exact": [
-              0.3513,
-              0.6712
+              0.4454,
+              0.5697
             ],
-            "fade_hit": 0.4878,
-            "win": 21,
-            "loss": 20,
-            "push": 0
+            "fade_hit": 0.4924,
+            "win": 133,
+            "loss": 129,
+            "push": 0,
+            "p_two_sided": 0.853007,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 45%-57%, NOT distinguishable from a coin flip"
           },
           "live_era": null,
           "over_pair": [
@@ -629,16 +653,20 @@
         },
         "nova+scout": {
           "reconstructed_era": {
-            "n": 2,
-            "hit": 1.0,
+            "n": 101,
+            "hit": 0.495,
             "hit_ci95_exact": [
-              0.1581,
-              1.0
+              0.394,
+              0.5964
             ],
-            "fade_hit": 0.0,
-            "win": 2,
-            "loss": 0,
-            "push": 0
+            "fade_hit": 0.505,
+            "win": 50,
+            "loss": 51,
+            "push": 0,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 39%-60%, NOT distinguishable from a coin flip"
           },
           "live_era": null,
           "over_pair": [
@@ -652,16 +680,20 @@
         },
         "vega+atlas": {
           "reconstructed_era": {
-            "n": 46,
-            "hit": 0.587,
+            "n": 236,
+            "hit": 0.5339,
             "hit_ci95_exact": [
-              0.4323,
-              0.73
+              0.4681,
+              0.5989
             ],
-            "fade_hit": 0.413,
-            "win": 27,
-            "loss": 19,
-            "push": 0
+            "fade_hit": 0.4661,
+            "win": 126,
+            "loss": 110,
+            "push": 0,
+            "p_two_sided": 0.328867,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 47%-60%, NOT distinguishable from a coin flip"
           },
           "live_era": null,
           "over_pair": [
@@ -675,16 +707,20 @@
         },
         "vega+nova": {
           "reconstructed_era": {
-            "n": 1,
-            "hit": 1.0,
+            "n": 110,
+            "hit": 0.5,
             "hit_ci95_exact": [
-              0.025,
-              1.0
+              0.4032,
+              0.5968
             ],
-            "fade_hit": 0.0,
-            "win": 1,
-            "loss": 0,
-            "push": 0
+            "fade_hit": 0.5,
+            "win": 55,
+            "loss": 55,
+            "push": 0,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 40%-60%, NOT distinguishable from a coin flip"
           },
           "live_era": null,
           "over_pair": [
@@ -698,16 +734,20 @@
         },
         "vega+scout": {
           "reconstructed_era": {
-            "n": 15,
-            "hit": 0.5333,
+            "n": 157,
+            "hit": 0.4968,
             "hit_ci95_exact": [
-              0.2659,
-              0.7873
+              0.4161,
+              0.5776
             ],
-            "fade_hit": 0.4667,
-            "win": 8,
-            "loss": 7,
-            "push": 0
+            "fade_hit": 0.5032,
+            "win": 78,
+            "loss": 79,
+            "push": 0,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 42%-58%, NOT distinguishable from a coin flip"
           },
           "live_era": null,
           "over_pair": [
@@ -720,47 +760,7 @@
           ]
         }
       },
-      "highlights": [
-        {
-          "era": "reconstructed_era",
-          "key": "UNANIMOUS_4",
-          "n": 34,
-          "hit_rate": 0.4118,
-          "hit_ci95": [
-            0.2465,
-            0.593
-          ],
-          "fade_hit_rate": 0.5882,
-          "significant": false,
-          "line": "When all four agree, the game has gone the OTHER way 59% of the time (n=34, reconstructed)."
-        },
-        {
-          "era": "reconstructed_era",
-          "key": "SPLIT_2-2|over=vega+atlas",
-          "n": 46,
-          "hit_rate": 0.587,
-          "hit_ci95": [
-            0.4323,
-            0.73
-          ],
-          "fade_hit_rate": 0.413,
-          "significant": false,
-          "line": "When the desk splits 2-2 with VEGA + ATLAS on the over, the over has landed 59% of the time (n=46, reconstructed)."
-        },
-        {
-          "era": "reconstructed_era",
-          "key": "SPLIT_2-2",
-          "n": 106,
-          "hit_rate": 0.5566,
-          "hit_ci95": [
-            0.4569,
-            0.6531
-          ],
-          "fade_hit_rate": 0.4434,
-          "significant": false,
-          "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
-        }
-      ],
+      "highlights": [],
       "scope": "PRESENTATION/ROUTING ONLY \u2014 the config's own measurement: no consensus state is distinguishable from a coin flip as a bet rule; betting confidence remains solely the champion EV gate + star system. The desk actions stay presentation over the unchanged pick machinery.",
       "measured_consensus": {
         "UNANIMOUS": {
@@ -769,19 +769,23 @@
           "core3_support": null,
           "live_era": null,
           "reconstructed_era": {
-            "n": 34,
-            "hit": 0.4118,
+            "n": 459,
+            "hit": 0.4728,
             "hit_ci95_exact": [
-              0.2465,
-              0.593
+              0.4263,
+              0.5196
             ],
-            "fade_hit": 0.5882,
-            "win": 14,
-            "loss": 20,
-            "push": 0
+            "fade_hit": 0.5272,
+            "win": 217,
+            "loss": 242,
+            "push": 0,
+            "p_two_sided": 0.262596,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 43%-52%, NOT distinguishable from a coin flip"
           },
           "family": "UNANIMOUS_4",
-          "underperforms": true
+          "underperforms": false
         },
         "3-1": {
           "action": "present_majority_with_dissent \u2014 show the 3-side, name the dissenter, and quote that dissenter's own measured row. No confidence language beyond what the interval supports.",
@@ -789,19 +793,23 @@
           "core3_support": null,
           "live_era": null,
           "reconstructed_era": {
-            "n": 185,
-            "hit": 0.4595,
+            "n": 1517,
+            "hit": 0.5056,
             "hit_ci95_exact": [
-              0.3861,
-              0.5341
+              0.4801,
+              0.5311
             ],
-            "fade_hit": 0.5405,
-            "win": 85,
-            "loss": 100,
-            "push": 0
+            "fade_hit": 0.4944,
+            "win": 767,
+            "loss": 750,
+            "push": 0,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 48%-53%, NOT distinguishable from a coin flip"
           },
           "family": "MAJORITY_3-1",
-          "underperforms": true
+          "underperforms": false
         },
         "SPLIT": {
           "action": "flag_disagreement_no_side \u2014 present the 2-2 split as the story (WHICH pair sides together), never a desk lean.",
@@ -809,16 +817,20 @@
           "core3_support": null,
           "live_era": null,
           "reconstructed_era": {
-            "n": 106,
-            "hit": 0.5566,
+            "n": 996,
+            "hit": 0.5,
             "hit_ci95_exact": [
-              0.4569,
-              0.6531
+              0.4685,
+              0.5315
             ],
-            "fade_hit": 0.4434,
-            "win": 59,
-            "loss": 47,
-            "push": 0
+            "fade_hit": 0.5,
+            "win": 498,
+            "loss": 498,
+            "push": 0,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
+            "bh_significant": false,
+            "reads_as": "95% CI 47%-53%, NOT distinguishable from a coin flip"
           },
           "family": "SPLIT_2-2",
           "underperforms": false
@@ -827,7 +839,7 @@
       "analyst_weights": null,
       "voice_roles": {},
       "fade_check": null,
-      "honesty_note": "THE PATTERN TABLE IS A MEASUREMENT, NOT A BET RULE. Every row carries its n and an EXACT binomial (Clopper-Pearson) 95% interval; a hit rate whose interval straddles 50% is a coin flip no matter how far from 50% the point estimate looks. The two eras are computed and shown separately and are NEVER summed: `reconstructed_era` is the walk-forward reconstruction of the four engines before the desk existed, `live_era` is the desk's own graded ledgers from 2026-07-30 forward (it starts empty and accrues). Betting confidence remains solely the champion EV gate + the star system \u2014 nothing in this table gates, sizes or creates a bet."
+      "honesty_note": "THE PATTERN TABLE IS A MEASUREMENT, NOT A BET RULE. Every row carries its n and an EXACT binomial (Clopper-Pearson) 95% interval; a hit rate whose interval straddles 50% is a coin flip no matter how far from 50% the point estimate looks. The two eras are computed and shown separately and are NEVER summed: `reconstructed_era` is the walk-forward reconstruction of the four engines before the desk existed, `live_era` is the desk's own graded ledgers from 2026-07-30 forward (it starts empty and accrues). The reconstructed era's 2022-2023 slice sits inside the DEV window the four recipes were selected on, so it flatters the analysts relative to true out-of-sample; `by_season_family` keeps that slice visible instead of pooling it away. Betting confidence remains solely the champion EV gate + the star system \u2014 nothing in this table gates, sizes or creates a bet."
     },
     "positioning": "THE ANALYST DESK (Leon, 2026-07-30): the home screen is a competition \u2014 four named analysts, each a real graded engine, call every game; the desk states its consensus and DiamondEdge synthesizes the final frame. All agree -> play; split -> avoid; historically informed via consensus_history. The underlying pick machinery, every record, and every honesty rail are UNCHANGED underneath."
   },
@@ -2502,8 +2514,16 @@
       "note": "the served unified pick's graded results bucketed by the desk's consensus state, over ONLY the games where all four analysts have a graded read. SCOUT activated 2026-07-30 and ATLAS 2026-07-28, so this table is sparse and will accrue slowly \u2014 small n means NO conclusion; it is reported honestly, not hidden. It informs the future synthesis gating config (synthesis_config_version hook); it never gates anything today."
     },
     "patterns": {
-      "updated": "2026-07-31T04:01:47Z",
+      "updated": "2026-07-31T05:30:50Z",
       "desk_activation": "2026-07-30",
+      "headline": {
+        "line": "Across 2972 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: every configuration's exact 95% interval includes 50%, and no row survives correction for testing all 41 (BH q=0.1). Agreement, dissent and splits all land at a coin flip.",
+        "any_finding": false,
+        "status": "no_measurable_signal",
+        "live_era_line": "Nothing measured yet in this era \u2014 it starts empty and accrues.",
+        "reconstructed_era_line": "Across 2972 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: every configuration's exact 95% interval includes 50%, and no row survives correction for testing all 41 (BH q=0.1). Agreement, dissent and splits all land at a coin flip.",
+        "what_this_table_is": "a LIVE MEASUREMENT that keeps updating as the live era accrues, not a list of discoveries. Each row carries its own exact interval. No configuration has yet separated from chance."
+      },
       "live_era": {
         "era": "live_era",
         "n_games": 0,
@@ -2511,7 +2531,18 @@
           null,
           null
         ],
+        "headline": "Nothing measured yet in this era \u2014 it starts empty and accrues.",
+        "significance": {
+          "family_size": 0,
+          "method": "Benjamini-Hochberg step-up at q=0.1",
+          "n_rows_ci_excludes_50": 0,
+          "n_rows_bh_significant": 0,
+          "smallest_p_two_sided": null,
+          "any_finding": false,
+          "note": "the configuration rows are NESTED (a family row aggregates its own dissenter/split rows), so these tests are not independent and BH is approximate here \u2014 it is applied as a FLOOR on what may be called a finding, never as a licence."
+        },
         "by_family": {},
+        "by_season_family": {},
         "by_config": {},
         "by_dissenter": {},
         "by_split_pair": {},
@@ -2528,6 +2559,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2547,6 +2581,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2569,6 +2606,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2588,6 +2628,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2610,6 +2653,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2629,6 +2675,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2651,6 +2700,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2670,6 +2722,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2692,6 +2747,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2711,6 +2769,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2733,6 +2794,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2752,6 +2816,9 @@
                 null,
                 null
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": null,
+              "bh_significant": false,
               "fade": {
                 "hit_rate": null,
                 "hit_ci95": [
@@ -2767,90 +2834,438 @@
       },
       "reconstructed_era": {
         "era": "reconstructed_era",
-        "n_games": 325,
+        "n_games": 2972,
         "date_range": [
-          "2026-03-27",
+          "2022-06-01",
           "2026-04-30"
         ],
+        "headline": "Across 2972 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: every configuration's exact 95% interval includes 50%, and no row survives correction for testing all 41 (BH q=0.1). Agreement, dissent and splits all land at a coin flip.",
+        "significance": {
+          "family_size": 41,
+          "method": "Benjamini-Hochberg step-up at q=0.1",
+          "n_rows_ci_excludes_50": 0,
+          "n_rows_bh_significant": 0,
+          "smallest_p_two_sided": 0.058064,
+          "any_finding": false,
+          "note": "the configuration rows are NESTED (a family row aggregates its own dissenter/split rows), so these tests are not independent and BH is approximate here \u2014 it is applied as a FLOOR on what may be called a finding, never as a licence."
+        },
         "by_family": {
           "MAJORITY_3-1": {
-            "n": 185,
-            "n_decided": 185,
-            "win": 85,
-            "loss": 100,
+            "n": 1517,
+            "n_decided": 1517,
+            "win": 767,
+            "loss": 750,
             "push": 0,
-            "hit_rate": 0.4595,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3861,
-              0.5341
+              0.4801,
+              0.5311
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.681235,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5405,
+              "hit_rate": 0.4944,
               "hit_ci95": [
-                0.4659,
-                0.6139
+                0.4689,
+                0.5199
               ]
             },
             "family": "MAJORITY_3-1"
           },
           "SPLIT_2-2": {
-            "n": 106,
-            "n_decided": 106,
-            "win": 59,
-            "loss": 47,
+            "n": 996,
+            "n_decided": 996,
+            "win": 498,
+            "loss": 498,
             "push": 0,
-            "hit_rate": 0.5566,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.4569,
-              0.6531
+              0.4685,
+              0.5315
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.4434,
+              "hit_rate": 0.5,
               "hit_ci95": [
-                0.3469,
-                0.5431
+                0.4685,
+                0.5315
               ]
             },
             "family": "SPLIT_2-2"
           },
           "UNANIMOUS_4": {
-            "n": 34,
-            "n_decided": 34,
-            "win": 14,
-            "loss": 20,
+            "n": 459,
+            "n_decided": 459,
+            "win": 217,
+            "loss": 242,
             "push": 0,
-            "hit_rate": 0.4118,
+            "hit_rate": 0.4728,
             "hit_ci95": [
-              0.2465,
-              0.593
+              0.4263,
+              0.5196
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.262596,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5882,
+              "hit_rate": 0.5272,
               "hit_ci95": [
-                0.407,
-                0.7535
+                0.4804,
+                0.5737
               ]
             },
             "family": "UNANIMOUS_4"
           }
         },
-        "by_config": {
-          "MAJORITY_3-1|dissent=vega|under": {
-            "n": 65,
-            "n_decided": 65,
-            "win": 29,
-            "loss": 36,
-            "push": 0,
-            "hit_rate": 0.4462,
-            "hit_ci95": [
-              0.3227,
-              0.5747
+        "by_season_family": {
+          "2022": {
+            "n_games": 1020,
+            "date_range": [
+              "2022-06-01",
+              "2022-10-05"
             ],
+            "by_family": {
+              "MAJORITY_3-1": {
+                "n": 497,
+                "n_decided": 497,
+                "win": 255,
+                "loss": 242,
+                "push": 0,
+                "hit_rate": 0.5131,
+                "hit_ci95": [
+                  0.4682,
+                  0.5578
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.590433,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.4869,
+                  "hit_ci95": [
+                    0.4422,
+                    0.5318
+                  ]
+                },
+                "family": "MAJORITY_3-1"
+              },
+              "SPLIT_2-2": {
+                "n": 401,
+                "n_decided": 401,
+                "win": 195,
+                "loss": 206,
+                "push": 0,
+                "hit_rate": 0.4863,
+                "hit_ci95": [
+                  0.4364,
+                  0.5364
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.61757,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.5137,
+                  "hit_ci95": [
+                    0.4636,
+                    0.5636
+                  ]
+                },
+                "family": "SPLIT_2-2"
+              },
+              "UNANIMOUS_4": {
+                "n": 122,
+                "n_decided": 122,
+                "win": 62,
+                "loss": 60,
+                "push": 0,
+                "hit_rate": 0.5082,
+                "hit_ci95": [
+                  0.4162,
+                  0.5998
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.927911,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.4918,
+                  "hit_ci95": [
+                    0.4002,
+                    0.5838
+                  ]
+                },
+                "family": "UNANIMOUS_4"
+              }
+            }
+          },
+          "2023": {
+            "n_games": 1627,
+            "date_range": [
+              "2023-03-30",
+              "2023-10-01"
+            ],
+            "by_family": {
+              "MAJORITY_3-1": {
+                "n": 835,
+                "n_decided": 835,
+                "win": 427,
+                "loss": 408,
+                "push": 0,
+                "hit_rate": 0.5114,
+                "hit_ci95": [
+                  0.4769,
+                  0.5458
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.533365,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.4886,
+                  "hit_ci95": [
+                    0.4542,
+                    0.5231
+                  ]
+                },
+                "family": "MAJORITY_3-1"
+              },
+              "SPLIT_2-2": {
+                "n": 489,
+                "n_decided": 489,
+                "win": 244,
+                "loss": 245,
+                "push": 0,
+                "hit_rate": 0.499,
+                "hit_ci95": [
+                  0.4538,
+                  0.5442
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 1.0,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.501,
+                  "hit_ci95": [
+                    0.4558,
+                    0.5462
+                  ]
+                },
+                "family": "SPLIT_2-2"
+              },
+              "UNANIMOUS_4": {
+                "n": 303,
+                "n_decided": 303,
+                "win": 141,
+                "loss": 162,
+                "push": 0,
+                "hit_rate": 0.4653,
+                "hit_ci95": [
+                  0.4081,
+                  0.5233
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.250527,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.5347,
+                  "hit_ci95": [
+                    0.4767,
+                    0.5919
+                  ]
+                },
+                "family": "UNANIMOUS_4"
+              }
+            }
+          },
+          "2026": {
+            "n_games": 325,
+            "date_range": [
+              "2026-03-27",
+              "2026-04-30"
+            ],
+            "by_family": {
+              "MAJORITY_3-1": {
+                "n": 185,
+                "n_decided": 185,
+                "win": 85,
+                "loss": 100,
+                "push": 0,
+                "hit_rate": 0.4595,
+                "hit_ci95": [
+                  0.3861,
+                  0.5341
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.303327,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.5405,
+                  "hit_ci95": [
+                    0.4659,
+                    0.6139
+                  ]
+                },
+                "family": "MAJORITY_3-1"
+              },
+              "SPLIT_2-2": {
+                "n": 106,
+                "n_decided": 106,
+                "win": 59,
+                "loss": 47,
+                "push": 0,
+                "hit_rate": 0.5566,
+                "hit_ci95": [
+                  0.4569,
+                  0.6531
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.285284,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.4434,
+                  "hit_ci95": [
+                    0.3469,
+                    0.5431
+                  ]
+                },
+                "family": "SPLIT_2-2"
+              },
+              "UNANIMOUS_4": {
+                "n": 34,
+                "n_decided": 34,
+                "win": 14,
+                "loss": 20,
+                "push": 0,
+                "hit_rate": 0.4118,
+                "hit_ci95": [
+                  0.2465,
+                  0.593
+                ],
+                "ci_excludes_50": false,
+                "p_two_sided": 0.391528,
+                "bh_significant": false,
+                "fade": {
+                  "hit_rate": 0.5882,
+                  "hit_ci95": [
+                    0.407,
+                    0.7535
+                  ]
+                },
+                "family": "UNANIMOUS_4"
+              }
+            }
+          }
+        },
+        "by_config": {
+          "MAJORITY_3-1|dissent=vega|over": {
+            "n": 111,
+            "n_decided": 111,
+            "win": 55,
+            "loss": 56,
+            "push": 0,
+            "hit_rate": 0.4955,
+            "hit_ci95": [
+              0.3992,
+              0.592
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5538,
+              "hit_rate": 0.5045,
               "hit_ci95": [
-                0.4253,
-                0.6773
+                0.408,
+                0.6008
+              ]
+            },
+            "family": "MAJORITY_3-1",
+            "dissenter": "vega",
+            "side": "over",
+            "call": "over"
+          },
+          "SPLIT_2-2|over=atlas+scout": {
+            "n": 262,
+            "n_decided": 262,
+            "win": 133,
+            "loss": 129,
+            "push": 0,
+            "hit_rate": 0.5076,
+            "hit_ci95": [
+              0.4454,
+              0.5697
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.853007,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.4924,
+              "hit_ci95": [
+                0.4303,
+                0.5546
+              ]
+            },
+            "family": "SPLIT_2-2",
+            "over_pair": [
+              "atlas",
+              "scout"
+            ],
+            "under_pair": [
+              "vega",
+              "nova"
+            ],
+            "call": "over"
+          },
+          "SPLIT_2-2|over=nova+scout": {
+            "n": 101,
+            "n_decided": 101,
+            "win": 50,
+            "loss": 51,
+            "push": 0,
+            "hit_rate": 0.495,
+            "hit_ci95": [
+              0.394,
+              0.5964
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.505,
+              "hit_ci95": [
+                0.4036,
+                0.606
+              ]
+            },
+            "family": "SPLIT_2-2",
+            "over_pair": [
+              "nova",
+              "scout"
+            ],
+            "under_pair": [
+              "vega",
+              "atlas"
+            ],
+            "call": "over"
+          },
+          "MAJORITY_3-1|dissent=vega|under": {
+            "n": 330,
+            "n_decided": 330,
+            "win": 174,
+            "loss": 156,
+            "push": 0,
+            "hit_rate": 0.5273,
+            "hit_ci95": [
+              0.4719,
+              0.5822
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.349382,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.4727,
+              "hit_ci95": [
+                0.4178,
+                0.5281
               ]
             },
             "family": "MAJORITY_3-1",
@@ -2858,126 +3273,108 @@
             "side": "under",
             "call": "under"
           },
-          "SPLIT_2-2|over=vega+atlas": {
-            "n": 46,
-            "n_decided": 46,
-            "win": 27,
-            "loss": 19,
+          "SPLIT_2-2|over=atlas+nova": {
+            "n": 130,
+            "n_decided": 130,
+            "win": 56,
+            "loss": 74,
             "push": 0,
-            "hit_rate": 0.587,
+            "hit_rate": 0.4308,
             "hit_ci95": [
-              0.4323,
-              0.73
+              0.3443,
+              0.5205
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.135656,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.413,
+              "hit_rate": 0.5692,
               "hit_ci95": [
-                0.27,
-                0.5677
+                0.4795,
+                0.6557
               ]
             },
             "family": "SPLIT_2-2",
             "over_pair": [
-              "vega",
-              "atlas"
+              "atlas",
+              "nova"
             ],
             "under_pair": [
-              "nova",
+              "vega",
               "scout"
             ],
             "call": "over"
           },
-          "MAJORITY_3-1|dissent=nova|over": {
-            "n": 29,
-            "n_decided": 29,
-            "win": 16,
-            "loss": 13,
+          "UNANIMOUS_4|under": {
+            "n": 404,
+            "n_decided": 404,
+            "win": 197,
+            "loss": 207,
             "push": 0,
-            "hit_rate": 0.5517,
+            "hit_rate": 0.4876,
             "hit_ci95": [
-              0.3569,
-              0.7355
+              0.4379,
+              0.5375
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.654375,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.4483,
+              "hit_rate": 0.5124,
               "hit_ci95": [
-                0.2645,
-                0.6431
+                0.4625,
+                0.5621
+              ]
+            },
+            "family": "UNANIMOUS_4",
+            "side": "under",
+            "call": "under"
+          },
+          "MAJORITY_3-1|dissent=nova|under": {
+            "n": 137,
+            "n_decided": 137,
+            "win": 73,
+            "loss": 64,
+            "push": 0,
+            "hit_rate": 0.5328,
+            "hit_ci95": [
+              0.4457,
+              0.6185
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.494442,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.4672,
+              "hit_ci95": [
+                0.3815,
+                0.5543
               ]
             },
             "family": "MAJORITY_3-1",
             "dissenter": "nova",
-            "side": "over",
-            "call": "over"
-          },
-          "SPLIT_2-2|over=atlas+scout": {
-            "n": 41,
-            "n_decided": 41,
-            "win": 21,
-            "loss": 20,
-            "push": 0,
-            "hit_rate": 0.5122,
-            "hit_ci95": [
-              0.3513,
-              0.6712
-            ],
-            "fade": {
-              "hit_rate": 0.4878,
-              "hit_ci95": [
-                0.3288,
-                0.6487
-              ]
-            },
-            "family": "SPLIT_2-2",
-            "over_pair": [
-              "atlas",
-              "scout"
-            ],
-            "under_pair": [
-              "vega",
-              "nova"
-            ],
-            "call": "over"
-          },
-          "MAJORITY_3-1|dissent=atlas|under": {
-            "n": 79,
-            "n_decided": 79,
-            "win": 36,
-            "loss": 43,
-            "push": 0,
-            "hit_rate": 0.4557,
-            "hit_ci95": [
-              0.3431,
-              0.5717
-            ],
-            "fade": {
-              "hit_rate": 0.5443,
-              "hit_ci95": [
-                0.4283,
-                0.6569
-              ]
-            },
-            "family": "MAJORITY_3-1",
-            "dissenter": "atlas",
             "side": "under",
             "call": "under"
           },
           "SPLIT_2-2|over=vega+scout": {
-            "n": 15,
-            "n_decided": 15,
-            "win": 8,
-            "loss": 7,
+            "n": 157,
+            "n_decided": 157,
+            "win": 78,
+            "loss": 79,
             "push": 0,
-            "hit_rate": 0.5333,
+            "hit_rate": 0.4968,
             "hit_ci95": [
-              0.2659,
-              0.7873
+              0.4161,
+              0.5776
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.4667,
+              "hit_rate": 0.5032,
               "hit_ci95": [
-                0.2127,
-                0.7341
+                0.4224,
+                0.5839
               ]
             },
             "family": "SPLIT_2-2",
@@ -2991,22 +3388,108 @@
             ],
             "call": "over"
           },
-          "MAJORITY_3-1|dissent=scout|under": {
-            "n": 11,
-            "n_decided": 11,
-            "win": 4,
-            "loss": 7,
+          "MAJORITY_3-1|dissent=atlas|over": {
+            "n": 64,
+            "n_decided": 64,
+            "win": 32,
+            "loss": 32,
+            "push": 0,
+            "hit_rate": 0.5,
+            "hit_ci95": [
+              0.3723,
+              0.6277
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.5,
+              "hit_ci95": [
+                0.3723,
+                0.6277
+              ]
+            },
+            "family": "MAJORITY_3-1",
+            "dissenter": "atlas",
+            "side": "over",
+            "call": "over"
+          },
+          "UNANIMOUS_4|over": {
+            "n": 55,
+            "n_decided": 55,
+            "win": 20,
+            "loss": 35,
             "push": 0,
             "hit_rate": 0.3636,
             "hit_ci95": [
-              0.1093,
-              0.6921
+              0.2381,
+              0.5044
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.058064,
+            "bh_significant": false,
             "fade": {
               "hit_rate": 0.6364,
               "hit_ci95": [
-                0.3079,
-                0.8907
+                0.4956,
+                0.7619
+              ]
+            },
+            "family": "UNANIMOUS_4",
+            "side": "over",
+            "call": "over"
+          },
+          "SPLIT_2-2|over=vega+nova": {
+            "n": 110,
+            "n_decided": 110,
+            "win": 55,
+            "loss": 55,
+            "push": 0,
+            "hit_rate": 0.5,
+            "hit_ci95": [
+              0.4032,
+              0.5968
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.5,
+              "hit_ci95": [
+                0.4032,
+                0.5968
+              ]
+            },
+            "family": "SPLIT_2-2",
+            "over_pair": [
+              "vega",
+              "nova"
+            ],
+            "under_pair": [
+              "atlas",
+              "scout"
+            ],
+            "call": "over"
+          },
+          "MAJORITY_3-1|dissent=scout|under": {
+            "n": 196,
+            "n_decided": 196,
+            "win": 87,
+            "loss": 109,
+            "push": 0,
+            "hit_rate": 0.4439,
+            "hit_ci95": [
+              0.3731,
+              0.5164
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.133408,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.5561,
+              "hit_ci95": [
+                0.4836,
+                0.6269
               ]
             },
             "family": "MAJORITY_3-1",
@@ -3015,21 +3498,24 @@
             "call": "under"
           },
           "MAJORITY_3-1|dissent=scout|over": {
-            "n": 1,
-            "n_decided": 1,
-            "win": 0,
-            "loss": 1,
+            "n": 80,
+            "n_decided": 80,
+            "win": 45,
+            "loss": 35,
             "push": 0,
-            "hit_rate": 0.0,
+            "hit_rate": 0.5625,
             "hit_ci95": [
-              0.0,
-              0.975
+              0.447,
+              0.6732
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.314307,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 1.0,
+              "hit_rate": 0.4375,
               "hit_ci95": [
-                0.025,
-                1.0
+                0.3268,
+                0.553
               ]
             },
             "family": "MAJORITY_3-1",
@@ -3037,111 +3523,86 @@
             "side": "over",
             "call": "over"
           },
-          "UNANIMOUS_4|under": {
-            "n": 34,
-            "n_decided": 34,
-            "win": 14,
-            "loss": 20,
+          "MAJORITY_3-1|dissent=atlas|under": {
+            "n": 456,
+            "n_decided": 456,
+            "win": 224,
+            "loss": 232,
             "push": 0,
-            "hit_rate": 0.4118,
+            "hit_rate": 0.4912,
             "hit_ci95": [
-              0.2465,
-              0.593
+              0.4444,
+              0.5381
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.7431,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5882,
+              "hit_rate": 0.5088,
               "hit_ci95": [
-                0.407,
-                0.7535
+                0.4619,
+                0.5556
               ]
             },
-            "family": "UNANIMOUS_4",
+            "family": "MAJORITY_3-1",
+            "dissenter": "atlas",
             "side": "under",
             "call": "under"
           },
-          "SPLIT_2-2|over=vega+nova": {
-            "n": 1,
-            "n_decided": 1,
-            "win": 1,
-            "loss": 0,
+          "MAJORITY_3-1|dissent=nova|over": {
+            "n": 143,
+            "n_decided": 143,
+            "win": 77,
+            "loss": 66,
             "push": 0,
-            "hit_rate": 1.0,
+            "hit_rate": 0.5385,
             "hit_ci95": [
-              0.025,
-              1.0
+              0.4532,
+              0.6221
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.403104,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.0,
+              "hit_rate": 0.4615,
               "hit_ci95": [
-                0.0,
-                0.975
+                0.3779,
+                0.5468
               ]
             },
-            "family": "SPLIT_2-2",
-            "over_pair": [
-              "vega",
-              "nova"
-            ],
-            "under_pair": [
-              "atlas",
-              "scout"
-            ],
+            "family": "MAJORITY_3-1",
+            "dissenter": "nova",
+            "side": "over",
             "call": "over"
           },
-          "SPLIT_2-2|over=nova+scout": {
-            "n": 2,
-            "n_decided": 2,
-            "win": 2,
-            "loss": 0,
+          "SPLIT_2-2|over=vega+atlas": {
+            "n": 236,
+            "n_decided": 236,
+            "win": 126,
+            "loss": 110,
             "push": 0,
-            "hit_rate": 1.0,
+            "hit_rate": 0.5339,
             "hit_ci95": [
-              0.1581,
-              1.0
+              0.4681,
+              0.5989
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.328867,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.0,
+              "hit_rate": 0.4661,
               "hit_ci95": [
-                0.0,
-                0.8419
+                0.4011,
+                0.5319
               ]
             },
             "family": "SPLIT_2-2",
             "over_pair": [
-              "nova",
-              "scout"
-            ],
-            "under_pair": [
               "vega",
               "atlas"
             ],
-            "call": "over"
-          },
-          "SPLIT_2-2|over=atlas+nova": {
-            "n": 1,
-            "n_decided": 1,
-            "win": 0,
-            "loss": 1,
-            "push": 0,
-            "hit_rate": 0.0,
-            "hit_ci95": [
-              0.0,
-              0.975
-            ],
-            "fade": {
-              "hit_rate": 1.0,
-              "hit_ci95": [
-                0.025,
-                1.0
-              ]
-            },
-            "family": "SPLIT_2-2",
-            "over_pair": [
-              "atlas",
-              "nova"
-            ],
             "under_pair": [
-              "vega",
+              "nova",
               "scout"
             ],
             "call": "over"
@@ -3149,84 +3610,96 @@
         },
         "by_dissenter": {
           "MAJORITY_3-1|dissent=vega": {
-            "n": 65,
-            "n_decided": 65,
-            "win": 29,
-            "loss": 36,
+            "n": 441,
+            "n_decided": 441,
+            "win": 229,
+            "loss": 212,
             "push": 0,
-            "hit_rate": 0.4462,
+            "hit_rate": 0.5193,
             "hit_ci95": [
-              0.3227,
-              0.5747
+              0.4715,
+              0.5668
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.446153,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5538,
+              "hit_rate": 0.4807,
               "hit_ci95": [
-                0.4253,
-                0.6773
+                0.4332,
+                0.5285
               ]
             },
             "family": "MAJORITY_3-1",
             "dissenter": "vega"
           },
           "MAJORITY_3-1|dissent=nova": {
-            "n": 29,
-            "n_decided": 29,
-            "win": 16,
-            "loss": 13,
+            "n": 280,
+            "n_decided": 280,
+            "win": 150,
+            "loss": 130,
             "push": 0,
-            "hit_rate": 0.5517,
+            "hit_rate": 0.5357,
             "hit_ci95": [
-              0.3569,
-              0.7355
+              0.4754,
+              0.5953
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.256139,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.4483,
+              "hit_rate": 0.4643,
               "hit_ci95": [
-                0.2645,
-                0.6431
+                0.4047,
+                0.5246
               ]
             },
             "family": "MAJORITY_3-1",
             "dissenter": "nova"
           },
           "MAJORITY_3-1|dissent=atlas": {
-            "n": 79,
-            "n_decided": 79,
-            "win": 36,
-            "loss": 43,
+            "n": 520,
+            "n_decided": 520,
+            "win": 256,
+            "loss": 264,
             "push": 0,
-            "hit_rate": 0.4557,
+            "hit_rate": 0.4923,
             "hit_ci95": [
-              0.3431,
-              0.5717
+              0.4485,
+              0.5362
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.7589,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5443,
+              "hit_rate": 0.5077,
               "hit_ci95": [
-                0.4283,
-                0.6569
+                0.4638,
+                0.5515
               ]
             },
             "family": "MAJORITY_3-1",
             "dissenter": "atlas"
           },
           "MAJORITY_3-1|dissent=scout": {
-            "n": 12,
-            "n_decided": 12,
-            "win": 4,
-            "loss": 8,
+            "n": 276,
+            "n_decided": 276,
+            "win": 132,
+            "loss": 144,
             "push": 0,
-            "hit_rate": 0.3333,
+            "hit_rate": 0.4783,
             "hit_ci95": [
-              0.0992,
-              0.6511
+              0.418,
+              0.539
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.507966,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.6667,
+              "hit_rate": 0.5217,
               "hit_ci95": [
-                0.3489,
-                0.9008
+                0.461,
+                0.582
               ]
             },
             "family": "MAJORITY_3-1",
@@ -3234,50 +3707,25 @@
           }
         },
         "by_split_pair": {
-          "SPLIT_2-2|over=vega+atlas": {
-            "n": 46,
-            "n_decided": 46,
-            "win": 27,
-            "loss": 19,
-            "push": 0,
-            "hit_rate": 0.587,
-            "hit_ci95": [
-              0.4323,
-              0.73
-            ],
-            "fade": {
-              "hit_rate": 0.413,
-              "hit_ci95": [
-                0.27,
-                0.5677
-              ]
-            },
-            "family": "SPLIT_2-2",
-            "over_pair": [
-              "vega",
-              "atlas"
-            ],
-            "under_pair": [
-              "nova",
-              "scout"
-            ]
-          },
           "SPLIT_2-2|over=atlas+scout": {
-            "n": 41,
-            "n_decided": 41,
-            "win": 21,
-            "loss": 20,
+            "n": 262,
+            "n_decided": 262,
+            "win": 133,
+            "loss": 129,
             "push": 0,
-            "hit_rate": 0.5122,
+            "hit_rate": 0.5076,
             "hit_ci95": [
-              0.3513,
-              0.6712
+              0.4454,
+              0.5697
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.853007,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.4878,
+              "hit_rate": 0.4924,
               "hit_ci95": [
-                0.3288,
-                0.6487
+                0.4303,
+                0.5546
               ]
             },
             "family": "SPLIT_2-2",
@@ -3288,80 +3736,27 @@
             "under_pair": [
               "vega",
               "nova"
-            ]
-          },
-          "SPLIT_2-2|over=vega+scout": {
-            "n": 15,
-            "n_decided": 15,
-            "win": 8,
-            "loss": 7,
-            "push": 0,
-            "hit_rate": 0.5333,
-            "hit_ci95": [
-              0.2659,
-              0.7873
-            ],
-            "fade": {
-              "hit_rate": 0.4667,
-              "hit_ci95": [
-                0.2127,
-                0.7341
-              ]
-            },
-            "family": "SPLIT_2-2",
-            "over_pair": [
-              "vega",
-              "scout"
-            ],
-            "under_pair": [
-              "atlas",
-              "nova"
-            ]
-          },
-          "SPLIT_2-2|over=vega+nova": {
-            "n": 1,
-            "n_decided": 1,
-            "win": 1,
-            "loss": 0,
-            "push": 0,
-            "hit_rate": 1.0,
-            "hit_ci95": [
-              0.025,
-              1.0
-            ],
-            "fade": {
-              "hit_rate": 0.0,
-              "hit_ci95": [
-                0.0,
-                0.975
-              ]
-            },
-            "family": "SPLIT_2-2",
-            "over_pair": [
-              "vega",
-              "nova"
-            ],
-            "under_pair": [
-              "atlas",
-              "scout"
             ]
           },
           "SPLIT_2-2|over=nova+scout": {
-            "n": 2,
-            "n_decided": 2,
-            "win": 2,
-            "loss": 0,
+            "n": 101,
+            "n_decided": 101,
+            "win": 50,
+            "loss": 51,
             "push": 0,
-            "hit_rate": 1.0,
+            "hit_rate": 0.495,
             "hit_ci95": [
-              0.1581,
-              1.0
+              0.394,
+              0.5964
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 0.0,
+              "hit_rate": 0.505,
               "hit_ci95": [
-                0.0,
-                0.8419
+                0.4036,
+                0.606
               ]
             },
             "family": "SPLIT_2-2",
@@ -3375,21 +3770,24 @@
             ]
           },
           "SPLIT_2-2|over=atlas+nova": {
-            "n": 1,
-            "n_decided": 1,
-            "win": 0,
-            "loss": 1,
+            "n": 130,
+            "n_decided": 130,
+            "win": 56,
+            "loss": 74,
             "push": 0,
-            "hit_rate": 0.0,
+            "hit_rate": 0.4308,
             "hit_ci95": [
-              0.0,
-              0.975
+              0.3443,
+              0.5205
             ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.135656,
+            "bh_significant": false,
             "fade": {
-              "hit_rate": 1.0,
+              "hit_rate": 0.5692,
               "hit_ci95": [
-                0.025,
-                1.0
+                0.4795,
+                0.6557
               ]
             },
             "family": "SPLIT_2-2",
@@ -3401,26 +3799,122 @@
               "vega",
               "scout"
             ]
+          },
+          "SPLIT_2-2|over=vega+scout": {
+            "n": 157,
+            "n_decided": 157,
+            "win": 78,
+            "loss": 79,
+            "push": 0,
+            "hit_rate": 0.4968,
+            "hit_ci95": [
+              0.4161,
+              0.5776
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.5032,
+              "hit_ci95": [
+                0.4224,
+                0.5839
+              ]
+            },
+            "family": "SPLIT_2-2",
+            "over_pair": [
+              "vega",
+              "scout"
+            ],
+            "under_pair": [
+              "atlas",
+              "nova"
+            ]
+          },
+          "SPLIT_2-2|over=vega+nova": {
+            "n": 110,
+            "n_decided": 110,
+            "win": 55,
+            "loss": 55,
+            "push": 0,
+            "hit_rate": 0.5,
+            "hit_ci95": [
+              0.4032,
+              0.5968
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 1.0,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.5,
+              "hit_ci95": [
+                0.4032,
+                0.5968
+              ]
+            },
+            "family": "SPLIT_2-2",
+            "over_pair": [
+              "vega",
+              "nova"
+            ],
+            "under_pair": [
+              "atlas",
+              "scout"
+            ]
+          },
+          "SPLIT_2-2|over=vega+atlas": {
+            "n": 236,
+            "n_decided": 236,
+            "win": 126,
+            "loss": 110,
+            "push": 0,
+            "hit_rate": 0.5339,
+            "hit_ci95": [
+              0.4681,
+              0.5989
+            ],
+            "ci_excludes_50": false,
+            "p_two_sided": 0.328867,
+            "bh_significant": false,
+            "fade": {
+              "hit_rate": 0.4661,
+              "hit_ci95": [
+                0.4011,
+                0.5319
+              ]
+            },
+            "family": "SPLIT_2-2",
+            "over_pair": [
+              "vega",
+              "atlas"
+            ],
+            "under_pair": [
+              "nova",
+              "scout"
+            ]
           }
         },
         "pairwise": {
           "vega~atlas": {
             "agree": {
-              "n": 123,
-              "n_decided": 123,
-              "win": 61,
-              "loss": 62,
+              "n": 1352,
+              "n_decided": 1352,
+              "win": 676,
+              "loss": 676,
               "push": 0,
-              "hit_rate": 0.4959,
+              "hit_rate": 0.5,
               "hit_ci95": [
-                0.4046,
-                0.5875
+                0.473,
+                0.527
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 1.0,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.5041,
+                "hit_rate": 0.5,
                 "hit_ci95": [
-                  0.4125,
-                  0.5954
+                  0.473,
+                  0.527
                 ]
               },
               "pair": [
@@ -3428,24 +3922,27 @@
                 "atlas"
               ],
               "mode": "agree",
-              "side": "over"
+              "side": "under"
             },
             "disagree": {
-              "n": 202,
-              "n_decided": 202,
-              "win": 102,
-              "loss": 100,
+              "n": 1620,
+              "n_decided": 1620,
+              "win": 804,
+              "loss": 816,
               "push": 0,
-              "hit_rate": 0.505,
+              "hit_rate": 0.4963,
               "hit_ci95": [
-                0.4339,
-                0.5759
+                0.4717,
+                0.5209
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.784635,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.495,
+                "hit_rate": 0.5037,
                 "hit_ci95": [
-                  0.4241,
-                  0.5661
+                  0.4791,
+                  0.5283
                 ]
               },
               "pair": [
@@ -3459,21 +3956,24 @@
           },
           "vega~nova": {
             "agree": {
-              "n": 167,
-              "n_decided": 167,
-              "win": 75,
-              "loss": 92,
+              "n": 1627,
+              "n_decided": 1627,
+              "win": 789,
+              "loss": 838,
               "push": 0,
-              "hit_rate": 0.4491,
+              "hit_rate": 0.4849,
               "hit_ci95": [
-                0.3722,
-                0.5279
+                0.4604,
+                0.5095
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.234036,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.5509,
+                "hit_rate": 0.5151,
                 "hit_ci95": [
-                  0.4721,
-                  0.6278
+                  0.4905,
+                  0.5396
                 ]
               },
               "pair": [
@@ -3484,21 +3984,24 @@
               "side": "under"
             },
             "disagree": {
-              "n": 158,
-              "n_decided": 158,
-              "win": 88,
-              "loss": 70,
+              "n": 1345,
+              "n_decided": 1345,
+              "win": 691,
+              "loss": 654,
               "push": 0,
-              "hit_rate": 0.557,
+              "hit_rate": 0.5138,
               "hit_ci95": [
-                0.4759,
-                0.6358
+                0.4867,
+                0.5408
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.32629,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.443,
+                "hit_rate": 0.4862,
                 "hit_ci95": [
-                  0.3642,
-                  0.5241
+                  0.4592,
+                  0.5133
                 ]
               },
               "pair": [
@@ -3512,21 +4015,24 @@
           },
           "vega~scout": {
             "agree": {
-              "n": 158,
-              "n_decided": 158,
-              "win": 75,
-              "loss": 83,
+              "n": 1546,
+              "n_decided": 1546,
+              "win": 775,
+              "loss": 771,
               "push": 0,
-              "hit_rate": 0.4747,
+              "hit_rate": 0.5013,
               "hit_ci95": [
-                0.3948,
-                0.5555
+                0.4761,
+                0.5265
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.939185,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.5253,
+                "hit_rate": 0.4987,
                 "hit_ci95": [
-                  0.4445,
-                  0.6052
+                  0.4735,
+                  0.5239
                 ]
               },
               "pair": [
@@ -3534,24 +4040,27 @@
                 "scout"
               ],
               "mode": "agree",
-              "side": "over"
+              "side": "under"
             },
             "disagree": {
-              "n": 167,
-              "n_decided": 167,
-              "win": 88,
-              "loss": 79,
+              "n": 1426,
+              "n_decided": 1426,
+              "win": 705,
+              "loss": 721,
               "push": 0,
-              "hit_rate": 0.5269,
+              "hit_rate": 0.4944,
               "hit_ci95": [
-                0.4483,
-                0.6046
+                0.4681,
+                0.5207
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.691219,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.4731,
+                "hit_rate": 0.5056,
                 "hit_ci95": [
-                  0.3954,
-                  0.5517
+                  0.4793,
+                  0.5319
                 ]
               },
               "pair": [
@@ -3565,21 +4074,24 @@
           },
           "atlas~nova": {
             "agree": {
-              "n": 127,
-              "n_decided": 127,
-              "win": 54,
-              "loss": 73,
+              "n": 1463,
+              "n_decided": 1463,
+              "win": 713,
+              "loss": 750,
               "push": 0,
-              "hit_rate": 0.4252,
+              "hit_rate": 0.4874,
               "hit_ci95": [
-                0.338,
-                0.516
+                0.4614,
+                0.5133
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.346607,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.5748,
+                "hit_rate": 0.5126,
                 "hit_ci95": [
-                  0.484,
-                  0.662
+                  0.4867,
+                  0.5386
                 ]
               },
               "pair": [
@@ -3587,24 +4099,27 @@
                 "nova"
               ],
               "mode": "agree",
-              "side": "under"
+              "side": "over"
             },
             "disagree": {
-              "n": 198,
-              "n_decided": 198,
-              "win": 107,
-              "loss": 91,
+              "n": 1509,
+              "n_decided": 1509,
+              "win": 779,
+              "loss": 730,
               "push": 0,
-              "hit_rate": 0.5404,
+              "hit_rate": 0.5162,
               "hit_ci95": [
-                0.4683,
-                0.6113
+                0.4907,
+                0.5417
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.216574,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.4596,
+                "hit_rate": 0.4838,
                 "hit_ci95": [
-                  0.3887,
-                  0.5317
+                  0.4583,
+                  0.5093
                 ]
               },
               "pair": [
@@ -3618,21 +4133,24 @@
           },
           "atlas~scout": {
             "agree": {
-              "n": 170,
-              "n_decided": 170,
-              "win": 80,
-              "loss": 90,
+              "n": 1552,
+              "n_decided": 1552,
+              "win": 784,
+              "loss": 768,
               "push": 0,
-              "hit_rate": 0.4706,
+              "hit_rate": 0.5052,
               "hit_ci95": [
-                0.3937,
-                0.5485
+                0.48,
+                0.5303
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.703398,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.5294,
+                "hit_rate": 0.4948,
                 "hit_ci95": [
-                  0.4515,
-                  0.6063
+                  0.4697,
+                  0.52
                 ]
               },
               "pair": [
@@ -3640,24 +4158,27 @@
                 "scout"
               ],
               "mode": "agree",
-              "side": "under"
+              "side": "over"
             },
             "disagree": {
-              "n": 155,
-              "n_decided": 155,
-              "win": 81,
-              "loss": 74,
+              "n": 1420,
+              "n_decided": 1420,
+              "win": 708,
+              "loss": 712,
               "push": 0,
-              "hit_rate": 0.5226,
+              "hit_rate": 0.4986,
               "hit_ci95": [
-                0.441,
-                0.6033
+                0.4723,
+                0.5249
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.93655,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.4774,
+                "hit_rate": 0.5014,
                 "hit_ci95": [
-                  0.3967,
-                  0.559
+                  0.4751,
+                  0.5277
                 ]
               },
               "pair": [
@@ -3671,21 +4192,24 @@
           },
           "nova~scout": {
             "agree": {
-              "n": 226,
-              "n_decided": 226,
-              "win": 100,
-              "loss": 126,
+              "n": 1757,
+              "n_decided": 1757,
+              "win": 862,
+              "loss": 895,
               "push": 0,
-              "hit_rate": 0.4425,
+              "hit_rate": 0.4906,
               "hit_ci95": [
-                0.3766,
-                0.5098
+                0.467,
+                0.5143
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.445221,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.5575,
+                "hit_rate": 0.5094,
                 "hit_ci95": [
-                  0.4902,
-                  0.6234
+                  0.4857,
+                  0.533
                 ]
               },
               "pair": [
@@ -3693,24 +4217,27 @@
                 "scout"
               ],
               "mode": "agree",
-              "side": "under"
+              "side": "over"
             },
             "disagree": {
-              "n": 99,
-              "n_decided": 99,
-              "win": 45,
-              "loss": 54,
+              "n": 1215,
+              "n_decided": 1215,
+              "win": 581,
+              "loss": 634,
               "push": 0,
-              "hit_rate": 0.4545,
+              "hit_rate": 0.4782,
               "hit_ci95": [
-                0.3541,
-                0.5577
+                0.4498,
+                0.5067
               ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.135715,
+              "bh_significant": false,
               "fade": {
-                "hit_rate": 0.5455,
+                "hit_rate": 0.5218,
                 "hit_ci95": [
-                  0.4423,
-                  0.6459
+                  0.4933,
+                  0.5502
                 ]
               },
               "pair": [
@@ -3725,48 +4252,8 @@
         },
         "note": "every row is graded on that configuration's CALL (unanimous/majority side; for a 2-2 split the over pair's side), against the game's final vs the reference line (the median of the four analysts' own lines). `fade` is the same row read the other way \u2014 what betting AGAINST the configuration would have done."
       },
-      "highlights": [
-        {
-          "era": "reconstructed_era",
-          "key": "UNANIMOUS_4",
-          "n": 34,
-          "hit_rate": 0.4118,
-          "hit_ci95": [
-            0.2465,
-            0.593
-          ],
-          "fade_hit_rate": 0.5882,
-          "significant": false,
-          "line": "When all four agree, the game has gone the OTHER way 59% of the time (n=34, reconstructed)."
-        },
-        {
-          "era": "reconstructed_era",
-          "key": "SPLIT_2-2|over=vega+atlas",
-          "n": 46,
-          "hit_rate": 0.587,
-          "hit_ci95": [
-            0.4323,
-            0.73
-          ],
-          "fade_hit_rate": 0.413,
-          "significant": false,
-          "line": "When the desk splits 2-2 with VEGA + ATLAS on the over, the over has landed 59% of the time (n=46, reconstructed)."
-        },
-        {
-          "era": "reconstructed_era",
-          "key": "SPLIT_2-2",
-          "n": 106,
-          "hit_rate": 0.5566,
-          "hit_ci95": [
-            0.4569,
-            0.6531
-          ],
-          "fade_hit_rate": 0.4434,
-          "significant": false,
-          "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
-        }
-      ],
-      "honest_note": "THE PATTERN TABLE IS A MEASUREMENT, NOT A BET RULE. Every row carries its n and an EXACT binomial (Clopper-Pearson) 95% interval; a hit rate whose interval straddles 50% is a coin flip no matter how far from 50% the point estimate looks. The two eras are computed and shown separately and are NEVER summed: `reconstructed_era` is the walk-forward reconstruction of the four engines before the desk existed, `live_era` is the desk's own graded ledgers from 2026-07-30 forward (it starts empty and accrues). Betting confidence remains solely the champion EV gate + the star system \u2014 nothing in this table gates, sizes or creates a bet.",
+      "highlights": [],
+      "honest_note": "THE PATTERN TABLE IS A MEASUREMENT, NOT A BET RULE. Every row carries its n and an EXACT binomial (Clopper-Pearson) 95% interval; a hit rate whose interval straddles 50% is a coin flip no matter how far from 50% the point estimate looks. The two eras are computed and shown separately and are NEVER summed: `reconstructed_era` is the walk-forward reconstruction of the four engines before the desk existed, `live_era` is the desk's own graded ledgers from 2026-07-30 forward (it starts empty and accrues). The reconstructed era's 2022-2023 slice sits inside the DEV window the four recipes were selected on, so it flatters the analysts relative to true out-of-sample; `by_season_family` keeps that slice visible instead of pooling it away. Betting confidence remains solely the champion EV gate + the star system \u2014 nothing in this table gates, sizes or creates a bet.",
       "computed_from": {
         "live_era": [
           "state/champion_v2_graded.jsonl",
@@ -3775,7 +4262,13 @@
           "state/scout_graded.jsonl"
         ],
         "reconstructed_era": [
-          "v4/models/analyst_desk/history.parquet"
+          "v4/models/analyst_desk/history.parquet",
+          "v4/models/analyst_desk/nova_recon_dev.parquet (the 2022-2023 nova walk that lifted the all-four corpus off nova's 2026-only floor)"
+        ],
+        "reconstructed_era_audits": [
+          "v4/models/analyst_desk/leakage_audit.json",
+          "v4/models/analyst_desk/nova_recon_leakage_audit.json",
+          "v4/models/analyst_desk/nova_recon_dev_report.json"
         ],
         "labels": [
           "dim_game_label.parquet",
@@ -5526,25 +6019,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "All four analysts lean over, but nothing clears the betting bar \u2014 the desk passes \u2014 and unanimous calls have gone the other way 59% of the time (n=34, reconstructed).",
+        "rationale_line": "All four analysts lean over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "UNANIMOUS_4",
           "family": "UNANIMOUS_4",
           "call": "over",
-          "n": 34,
-          "hit_rate": 0.4118,
+          "n": 459,
+          "hit_rate": 0.4728,
           "hit_ci95": [
-            0.2465,
-            0.593
+            0.4263,
+            0.5196
           ],
-          "fade_hit_rate": 0.5882,
+          "fade_hit_rate": 0.5272,
+          "p_two_sided": 0.262596,
+          "ci_excludes_50": false,
           "underperforms": true,
           "significant": false,
-          "line": "When all four agree, the game has gone the OTHER way 59% of the time (n=34, reconstructed)."
+          "best_powered_of": 1,
+          "ci_clause": "95% CI 43%-52%, NOT distinguishable from a coin flip",
+          "line": "When all four analysts agree, the side they called has landed 47% of the time (n=459, reconstructed; 95% CI 43%-52%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "unanimous calls have gone the other way 59% of the time (n=34, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": null,
@@ -5627,20 +6124,24 @@
             "key": "UNANIMOUS_4",
             "family": "UNANIMOUS_4",
             "call": "over",
-            "n": 34,
-            "hit_rate": 0.4118,
+            "n": 459,
+            "hit_rate": 0.4728,
             "hit_ci95": [
-              0.2465,
-              0.593
+              0.4263,
+              0.5196
             ],
-            "fade_hit_rate": 0.5882,
+            "fade_hit_rate": 0.5272,
+            "p_two_sided": 0.262596,
+            "ci_excludes_50": false,
             "underperforms": true,
             "significant": false,
-            "line": "When all four agree, the game has gone the OTHER way 59% of the time (n=34, reconstructed)."
+            "best_powered_of": 1,
+            "ci_clause": "95% CI 43%-52%, NOT distinguishable from a coin flip",
+            "line": "When all four analysts agree, the side they called has landed 47% of the time (n=459, reconstructed; 95% CI 43%-52%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "unanimous calls have gone the other way 59% of the time (n=34, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "All four analysts lean over, but nothing clears the betting bar \u2014 the desk passes \u2014 and unanimous calls have gone the other way 59% of the time (n=34, reconstructed).",
+          "rationale_line": "All four analysts lean over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -6013,25 +6514,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=vega",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 65,
-          "hit_rate": 0.4462,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3227,
-            0.5747
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5538,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -6110,24 +6615,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=vega",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 65,
-            "hit_rate": 0.4462,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3227,
-              0.5747
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5538,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -6505,25 +7014,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=vega",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 65,
-          "hit_rate": 0.4462,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3227,
-            0.5747
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5538,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -6594,24 +7107,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=vega",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 65,
-            "hit_rate": 0.4462,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3227,
-              0.5747
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5538,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -6984,25 +7501,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 185,
-          "hit_rate": 0.4595,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3861,
-            0.5341
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5405,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "home",
@@ -7085,20 +7606,24 @@
             "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 185,
-            "hit_rate": 0.4595,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3861,
-              0.5341
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5405,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -7514,25 +8039,29 @@
         "action_before_pattern": "LEAN",
         "pattern_downgraded": false,
         "confidence_rank": 2,
-        "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+        "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick.",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 185,
-          "hit_rate": 0.4595,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3861,
-            0.5341
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5405,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+          "best_powered_of": 2,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -7615,20 +8144,24 @@
             "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 185,
-            "hit_rate": 0.4595,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3861,
-              0.5341
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5405,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+            "best_powered_of": 2,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+          "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -8055,25 +8588,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=atlas",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 79,
-          "hit_rate": 0.4557,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3431,
-            0.5717
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5443,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+          "best_powered_of": 2,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "home",
@@ -8152,24 +8689,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=atlas",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 79,
-            "hit_rate": 0.4557,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3431,
-              0.5717
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5443,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+            "best_powered_of": 2,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -8585,25 +9126,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.) (this configuration has landed 56% of the time (n=106, reconstructed)).",
+        "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.)",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "SPLIT_2-2",
           "family": "SPLIT_2-2",
           "call": "over",
-          "n": 106,
-          "hit_rate": 0.5566,
+          "n": 996,
+          "hit_rate": 0.5,
           "hit_ci95": [
-            0.4569,
-            0.6531
+            0.4685,
+            0.5315
           ],
-          "fade_hit_rate": 0.4434,
+          "fade_hit_rate": 0.5,
+          "p_two_sided": 1.0,
+          "ci_excludes_50": false,
           "underperforms": false,
           "significant": false,
-          "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "this configuration has landed 56% of the time (n=106, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": null,
@@ -8686,20 +9231,24 @@
             "key": "SPLIT_2-2",
             "family": "SPLIT_2-2",
             "call": "over",
-            "n": 106,
-            "hit_rate": 0.5566,
+            "n": 996,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.4569,
-              0.6531
+              0.4685,
+              0.5315
             ],
-            "fade_hit_rate": 0.4434,
+            "fade_hit_rate": 0.5,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
             "underperforms": false,
             "significant": false,
-            "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "this configuration has landed 56% of the time (n=106, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.) (this configuration has landed 56% of the time (n=106, reconstructed)).",
+          "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.)",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -9117,25 +9666,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "All four analysts lean under, but nothing clears the betting bar \u2014 the desk passes \u2014 and unanimous calls have gone the other way 59% of the time (n=34, reconstructed).",
+        "rationale_line": "All four analysts lean under, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_config",
-          "key": "UNANIMOUS_4|under",
+          "bucket": "by_family",
+          "key": "UNANIMOUS_4",
           "family": "UNANIMOUS_4",
           "call": "under",
-          "n": 34,
-          "hit_rate": 0.4118,
+          "n": 459,
+          "hit_rate": 0.4728,
           "hit_ci95": [
-            0.2465,
-            0.593
+            0.4263,
+            0.5196
           ],
-          "fade_hit_rate": 0.5882,
+          "fade_hit_rate": 0.5272,
+          "p_two_sided": 0.262596,
+          "ci_excludes_50": false,
           "underperforms": true,
           "significant": false,
-          "line": "When all four agree, the game has gone the OTHER way 59% of the time (n=34, reconstructed)."
+          "best_powered_of": 2,
+          "ci_clause": "95% CI 43%-52%, NOT distinguishable from a coin flip",
+          "line": "When all four analysts agree, the side they called has landed 47% of the time (n=459, reconstructed; 95% CI 43%-52%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "unanimous calls have gone the other way 59% of the time (n=34, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": null,
@@ -9214,24 +9767,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_config",
-            "key": "UNANIMOUS_4|under",
+            "bucket": "by_family",
+            "key": "UNANIMOUS_4",
             "family": "UNANIMOUS_4",
             "call": "under",
-            "n": 34,
-            "hit_rate": 0.4118,
+            "n": 459,
+            "hit_rate": 0.4728,
             "hit_ci95": [
-              0.2465,
-              0.593
+              0.4263,
+              0.5196
             ],
-            "fade_hit_rate": 0.5882,
+            "fade_hit_rate": 0.5272,
+            "p_two_sided": 0.262596,
+            "ci_excludes_50": false,
             "underperforms": true,
             "significant": false,
-            "line": "When all four agree, the game has gone the OTHER way 59% of the time (n=34, reconstructed)."
+            "best_powered_of": 2,
+            "ci_clause": "95% CI 43%-52%, NOT distinguishable from a coin flip",
+            "line": "When all four analysts agree, the side they called has landed 47% of the time (n=459, reconstructed; 95% CI 43%-52%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "unanimous calls have gone the other way 59% of the time (n=34, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "All four analysts lean under, but nothing clears the betting bar \u2014 the desk passes \u2014 and unanimous calls have gone the other way 59% of the time (n=34, reconstructed).",
+          "rationale_line": "All four analysts lean under, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -9654,25 +10211,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass (this configuration has landed 51% of the time (n=41, reconstructed)).",
+        "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_config",
-          "key": "SPLIT_2-2|over=atlas+scout",
+          "bucket": "by_family",
+          "key": "SPLIT_2-2",
           "family": "SPLIT_2-2",
           "call": "over",
-          "n": 41,
-          "hit_rate": 0.5122,
+          "n": 996,
+          "hit_rate": 0.5,
           "hit_ci95": [
-            0.3513,
-            0.6712
+            0.4685,
+            0.5315
           ],
-          "fade_hit_rate": 0.4878,
+          "fade_hit_rate": 0.5,
+          "p_two_sided": 1.0,
+          "ci_excludes_50": false,
           "underperforms": false,
           "significant": false,
-          "line": "When the desk splits 2-2 with ATLAS + SCOUT on the over, the over has landed 51% of the time (n=41, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "this configuration has landed 51% of the time (n=41, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -9751,24 +10312,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_config",
-            "key": "SPLIT_2-2|over=atlas+scout",
+            "bucket": "by_family",
+            "key": "SPLIT_2-2",
             "family": "SPLIT_2-2",
             "call": "over",
-            "n": 41,
-            "hit_rate": 0.5122,
+            "n": 996,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.3513,
-              0.6712
+              0.4685,
+              0.5315
             ],
-            "fade_hit_rate": 0.4878,
+            "fade_hit_rate": 0.5,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
             "underperforms": false,
             "significant": false,
-            "line": "When the desk splits 2-2 with ATLAS + SCOUT on the over, the over has landed 51% of the time (n=41, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "this configuration has landed 51% of the time (n=41, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass (this configuration has landed 51% of the time (n=41, reconstructed)).",
+          "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -10103,11 +10668,7 @@
           "low_conviction": false,
           "conviction_calibrated": true,
           "take": "The desk isn't a data point. My distribution puts 53% on the over and the crowd doesn't change the arithmetic.",
-          "take_kind": "dissent",
-          "live_p_over": null,
-          "live_state_note": "Bot 8th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-07-31T04:42:12Z",
-          "live_display_only": true
+          "take_kind": "dissent"
         },
         {
           "key": "nova",
@@ -10190,25 +10751,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+        "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_config",
-          "key": "MAJORITY_3-1|dissent=atlas|under",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "under",
-          "n": 79,
-          "hit_rate": 0.4557,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3431,
-            0.5717
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5443,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -10287,57 +10852,34 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_config",
-            "key": "MAJORITY_3-1|dissent=atlas|under",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "under",
-            "n": 79,
-            "hit_rate": 0.4557,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3431,
-              0.5717
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5443,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+          "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
         "note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top: where the synthesis says AVOID but the engine had a qualifying pick, that pick still exists, still locks and still grades (record integrity) \u2014 it simply DISPLAYS as the desk passing. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that."
       },
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 8,
-        "half": "bottom",
-        "outs": 0,
-        "away_score": 2,
-        "home_score": 6,
-        "runs_so_far": 8,
-        "pregame_total": 8.5,
-        "runs_vs_pregame_total": -0.5,
-        "runs_still_needed_for_over": 1,
-        "innings_elapsed": 8.0,
-        "pace_runs_per_inning": 1.0,
-        "projected_final_runs": 9.0,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-07-31T04:42:12Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-07-31-Pittsburgh Pirates-Cincinnati Reds-824486",
@@ -10611,7 +11153,7 @@
         "run_line_price_home": -143.0,
         "run_line_price_away": 136.0,
         "book": "betmgm",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824486,
@@ -10644,7 +11186,7 @@
           "total_price_under": -102.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -10775,25 +11317,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 185,
-          "hit_rate": 0.4595,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3861,
-            0.5341
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5405,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -10876,20 +11422,24 @@
             "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 185,
-            "hit_rate": 0.4595,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3861,
-              0.5341
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5405,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -11167,7 +11717,7 @@
         "run_line_price_home": 127.0,
         "run_line_price_away": -138.0,
         "book": "draftkings",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 822782,
@@ -11186,21 +11736,21 @@
       "line_now": {
         "total": 7.5,
         "pregame_total_compared": 7.5,
-        "total_price_over": -101.0,
-        "total_price_under": -120.0,
+        "total_price_over": -114.0,
+        "total_price_under": -106.0,
         "book": null,
         "comparison_basis": "book_consensus_median",
         "same_basis": true,
         "same_book_check": {
           "book": "draftkings",
           "pregame_total": 7.5,
-          "total": 8.0,
-          "move": 0.5,
-          "total_price_over": -101.0,
-          "total_price_under": -120.0
+          "total": 7.5,
+          "move": 0.0,
+          "total_price_over": -114.0,
+          "total_price_under": -106.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -11331,25 +11881,29 @@
         "action_before_pattern": "LEAN",
         "pattern_downgraded": false,
         "confidence_rank": 2,
-        "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+        "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick.",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 185,
-          "hit_rate": 0.4595,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3861,
-            0.5341
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5405,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+          "best_powered_of": 2,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -11432,20 +11986,24 @@
             "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 185,
-            "hit_rate": 0.4595,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3861,
-              0.5341
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5405,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "On 3-1 desks the majority has gone the OTHER way 54% of the time (n=185, reconstructed)."
+            "best_powered_of": 2,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "3-1 desks have missed 54% of the time (n=185, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick \u2014 and 3-1 desks have missed 54% of the time (n=185, reconstructed).",
+          "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -11720,7 +12278,7 @@
         "run_line_price_home": 170.0,
         "run_line_price_away": -174.0,
         "book": "lowvig",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824407,
@@ -11753,7 +12311,7 @@
           "total_price_under": -104.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -11884,25 +12442,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=atlas",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 79,
-          "hit_rate": 0.4557,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3431,
-            0.5717
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5443,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+          "best_powered_of": 2,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -11981,24 +12543,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=atlas",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 79,
-            "hit_rate": 0.4557,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3431,
-              0.5717
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5443,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+            "best_powered_of": 2,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -12271,7 +12837,7 @@
         "run_line_price_home": 160.0,
         "run_line_price_away": -170.0,
         "book": "onexbet",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 822945,
@@ -12288,7 +12854,7 @@
         "note": "THE PREGAME LINE, LOCKED: the market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'ATLAS: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
       "line_now": {
-        "total": 8.0,
+        "total": 8.5,
         "pregame_total_compared": 8.0,
         "total_price_over": 105.0,
         "total_price_under": -114.0,
@@ -12304,11 +12870,11 @@
           "total_price_under": -114.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
-        "moved_vs_pregame": false,
-        "move": 0.0,
+        "moved_vs_pregame": true,
+        "move": 0.5,
         "max_plausible_move": 2.0,
         "display_only": true,
         "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
@@ -12435,25 +13001,29 @@
         "action_before_pattern": "LEAN",
         "pattern_downgraded": false,
         "confidence_rank": 2,
-        "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+        "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=vega",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 65,
-          "hit_rate": 0.4462,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3227,
-            0.5747
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5538,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -12532,24 +13102,28 @@
           "confidence_rank": 2,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=vega",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 65,
-            "hit_rate": 0.4462,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3227,
-              0.5747
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5538,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+          "rationale_line": "3 of 4 analysts with a read like the over \u2014 the desk leans with the pick.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -12824,7 +13398,7 @@
         "run_line_price_home": 175.0,
         "run_line_price_away": -176.0,
         "book": "onexbet",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 823593,
@@ -12857,7 +13431,7 @@
           "total_price_under": -110.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -12988,25 +13562,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=vega",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 65,
-          "hit_rate": 0.4462,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3227,
-            0.5747
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5538,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -13085,24 +13663,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=vega",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 65,
-            "hit_rate": 0.4462,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3227,
-              0.5747
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5538,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -13377,7 +13959,7 @@
         "run_line_price_home": 175.0,
         "run_line_price_away": 155.0,
         "book": "pinnacle",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824892,
@@ -13396,8 +13978,8 @@
       "line_now": {
         "total": 9.0,
         "pregame_total_compared": 8.5,
-        "total_price_over": -110.0,
-        "total_price_under": -104.0,
+        "total_price_over": -111.0,
+        "total_price_under": -103.0,
         "book": null,
         "comparison_basis": "book_consensus_median",
         "same_basis": true,
@@ -13406,11 +13988,11 @@
           "pregame_total": 8.5,
           "total": 9.0,
           "move": 0.5,
-          "total_price_over": -110.0,
-          "total_price_under": -104.0
+          "total_price_over": -111.0,
+          "total_price_under": -103.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": true,
@@ -13541,25 +14123,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass (this configuration has landed 56% of the time (n=106, reconstructed)).",
+        "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass.",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "SPLIT_2-2",
           "family": "SPLIT_2-2",
           "call": "over",
-          "n": 106,
-          "hit_rate": 0.5566,
+          "n": 996,
+          "hit_rate": 0.5,
           "hit_ci95": [
-            0.4569,
-            0.6531
+            0.4685,
+            0.5315
           ],
-          "fade_hit_rate": 0.4434,
+          "fade_hit_rate": 0.5,
+          "p_two_sided": 1.0,
+          "ci_excludes_50": false,
           "underperforms": false,
           "significant": false,
-          "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "this configuration has landed 56% of the time (n=106, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -13642,20 +14228,24 @@
             "key": "SPLIT_2-2",
             "family": "SPLIT_2-2",
             "call": "over",
-            "n": 106,
-            "hit_rate": 0.5566,
+            "n": 996,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.4569,
-              0.6531
+              0.4685,
+              0.5315
             ],
-            "fade_hit_rate": 0.4434,
+            "fade_hit_rate": 0.5,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
             "underperforms": false,
             "significant": false,
-            "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "this configuration has landed 56% of the time (n=106, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass (this configuration has landed 56% of the time (n=106, reconstructed)).",
+          "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -13930,7 +14520,7 @@
         "run_line_price_home": 169.0,
         "run_line_price_away": 180.0,
         "book": "onexbet",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824164,
@@ -13963,7 +14553,7 @@
           "total_price_under": 108.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -14094,25 +14684,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=vega",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 65,
-          "hit_rate": 0.4462,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3227,
-            0.5747
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5538,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -14191,24 +14785,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=vega",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 65,
-            "hit_rate": 0.4462,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3227,
-              0.5747
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5538,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -14483,7 +15081,7 @@
         "run_line_price_home": 156.0,
         "run_line_price_away": 139.0,
         "book": "onexbet",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824325,
@@ -14516,7 +15114,7 @@
           "total_price_under": -117.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -14647,25 +15245,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+        "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_config",
-          "key": "MAJORITY_3-1|dissent=vega|under",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "under",
-          "n": 65,
-          "hit_rate": 0.4462,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3227,
-            0.5747
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5538,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": null,
@@ -14744,24 +15346,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_config",
-            "key": "MAJORITY_3-1|dissent=vega|under",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "under",
-            "n": 65,
-            "hit_rate": 0.4462,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3227,
-              0.5747
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5538,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When VEGA is the lone dissenter, the DISSENT side has cashed 55% of the time \u2014 the other three have been wrong more often than right (n=65, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes \u2014 and when VEGA is the lone dissenter the other three have been wrong 55% of the time (n=65, reconstructed).",
+          "rationale_line": "Most of the desk leans under, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -15034,7 +15640,7 @@
         "run_line_price_home": -105.0,
         "run_line_price_away": 100.0,
         "book": "nordicbet",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 823999,
@@ -15067,7 +15673,7 @@
           "total_price_under": -139.0
         },
         "n_books": 22,
-        "as_of": "2026-07-31T04:38:21Z",
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -15198,25 +15804,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.) (this configuration has landed 51% of the time (n=41, reconstructed)).",
+        "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.)",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_config",
-          "key": "SPLIT_2-2|over=atlas+scout",
+          "bucket": "by_family",
+          "key": "SPLIT_2-2",
           "family": "SPLIT_2-2",
           "call": "over",
-          "n": 41,
-          "hit_rate": 0.5122,
+          "n": 996,
+          "hit_rate": 0.5,
           "hit_ci95": [
-            0.3513,
-            0.6712
+            0.4685,
+            0.5315
           ],
-          "fade_hit_rate": 0.4878,
+          "fade_hit_rate": 0.5,
+          "p_two_sided": 1.0,
+          "ci_excludes_50": false,
           "underperforms": false,
           "significant": false,
-          "line": "When the desk splits 2-2 with ATLAS + SCOUT on the over, the over has landed 51% of the time (n=41, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "this configuration has landed 51% of the time (n=41, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": null,
@@ -15295,24 +15905,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_config",
-            "key": "SPLIT_2-2|over=atlas+scout",
+            "bucket": "by_family",
+            "key": "SPLIT_2-2",
             "family": "SPLIT_2-2",
             "call": "over",
-            "n": 41,
-            "hit_rate": 0.5122,
+            "n": 996,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.3513,
-              0.6712
+              0.4685,
+              0.5315
             ],
-            "fade_hit_rate": 0.4878,
+            "fade_hit_rate": 0.5,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
             "underperforms": false,
             "significant": false,
-            "line": "When the desk splits 2-2 with ATLAS + SCOUT on the over, the over has landed 51% of the time (n=41, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "this configuration has landed 51% of the time (n=41, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.) (this configuration has landed 51% of the time (n=41, reconstructed)).",
+          "rationale_line": "The desk is split \u2014 we're passing. (The engine's pick still grades on its own record.)",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -15592,7 +16206,7 @@
         "run_line_price_home": -109.0,
         "run_line_price_away": 100.0,
         "book": "fanduel",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824975,
@@ -15624,8 +16238,8 @@
           "total_price_over": -122.0,
           "total_price_under": 100.0
         },
-        "n_books": 18,
-        "as_of": "2026-07-31T04:38:21Z",
+        "n_books": 19,
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -15756,25 +16370,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass (this configuration has landed 56% of the time (n=106, reconstructed)).",
+        "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass.",
         "pattern": {
           "era": "reconstructed_era",
           "bucket": "by_family",
           "key": "SPLIT_2-2",
           "family": "SPLIT_2-2",
           "call": "over",
-          "n": 106,
-          "hit_rate": 0.5566,
+          "n": 996,
+          "hit_rate": 0.5,
           "hit_ci95": [
-            0.4569,
-            0.6531
+            0.4685,
+            0.5315
           ],
-          "fade_hit_rate": 0.4434,
+          "fade_hit_rate": 0.5,
+          "p_two_sided": 1.0,
+          "ci_excludes_50": false,
           "underperforms": false,
           "significant": false,
-          "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
+          "best_powered_of": 3,
+          "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "this configuration has landed 56% of the time (n=106, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -15857,20 +16475,24 @@
             "key": "SPLIT_2-2",
             "family": "SPLIT_2-2",
             "call": "over",
-            "n": 106,
-            "hit_rate": 0.5566,
+            "n": 996,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.4569,
-              0.6531
+              0.4685,
+              0.5315
             ],
-            "fade_hit_rate": 0.4434,
+            "fade_hit_rate": 0.5,
+            "p_two_sided": 1.0,
+            "ci_excludes_50": false,
             "underperforms": false,
             "significant": false,
-            "line": "On a 2-2 split the desk's over side has landed 56% of the time (n=106, reconstructed)."
+            "best_powered_of": 3,
+            "ci_clause": "95% CI 47%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 2-2, the side they called has landed 50% of the time (n=996, reconstructed; 95% CI 47%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "this configuration has landed 56% of the time (n=106, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass (this configuration has landed 56% of the time (n=106, reconstructed)).",
+          "rationale_line": "The desk is split and nothing clears the betting bar \u2014 an easy pass.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },
@@ -16145,7 +16767,7 @@
         "run_line_price_home": 130.0,
         "run_line_price_away": 106.0,
         "book": "betrivers",
-        "captured_at": "2026-07-31T04:42:12Z",
+        "captured_at": "2026-07-31T05:52:02Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 823111,
@@ -16177,8 +16799,8 @@
           "total_price_over": 100.0,
           "total_price_under": -120.0
         },
-        "n_books": 21,
-        "as_of": "2026-07-31T04:38:21Z",
+        "n_books": 22,
+        "as_of": "2026-07-31T05:48:17Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": true,
@@ -16309,25 +16931,29 @@
         "action_before_pattern": "AVOID",
         "pattern_downgraded": false,
         "confidence_rank": 1,
-        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+        "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
         "pattern": {
           "era": "reconstructed_era",
-          "bucket": "by_dissenter",
-          "key": "MAJORITY_3-1|dissent=atlas",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
           "family": "MAJORITY_3-1",
           "call": "over",
-          "n": 79,
-          "hit_rate": 0.4557,
+          "n": 1517,
+          "hit_rate": 0.5056,
           "hit_ci95": [
-            0.3431,
-            0.5717
+            0.4801,
+            0.5311
           ],
-          "fade_hit_rate": 0.5443,
-          "underperforms": true,
+          "fade_hit_rate": 0.4944,
+          "p_two_sided": 0.681235,
+          "ci_excludes_50": false,
+          "underperforms": false,
           "significant": false,
-          "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+          "best_powered_of": 2,
+          "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
         },
-        "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+        "pattern_line": null,
         "synthesis_config_version": "v2_live_patterns",
         "spread_call": {
           "side": "away",
@@ -16406,24 +17032,28 @@
           "confidence_rank": 1,
           "pattern": {
             "era": "reconstructed_era",
-            "bucket": "by_dissenter",
-            "key": "MAJORITY_3-1|dissent=atlas",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
             "family": "MAJORITY_3-1",
             "call": "over",
-            "n": 79,
-            "hit_rate": 0.4557,
+            "n": 1517,
+            "hit_rate": 0.5056,
             "hit_ci95": [
-              0.3431,
-              0.5717
+              0.4801,
+              0.5311
             ],
-            "fade_hit_rate": 0.5443,
-            "underperforms": true,
+            "fade_hit_rate": 0.4944,
+            "p_two_sided": 0.681235,
+            "ci_excludes_50": false,
+            "underperforms": false,
             "significant": false,
-            "line": "When ATLAS is the lone dissenter, the DISSENT side has cashed 54% of the time \u2014 the other three have been wrong more often than right (n=79, reconstructed)."
+            "best_powered_of": 2,
+            "ci_clause": "95% CI 48%-53%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=1517, reconstructed; 95% CI 48%-53%, NOT distinguishable from a coin flip)."
           },
-          "pattern_line": "when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed)",
+          "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes \u2014 and when ATLAS is the lone dissenter the other three have been wrong 54% of the time (n=79, reconstructed).",
+          "rationale_line": "Most of the desk leans over, but nothing clears the betting bar \u2014 the desk passes.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED pattern table (record.patterns). The chief is PRESENTATION and ROUTING ONLY: the pattern table can change the language and move the displayed action DOWN the ladder, never up, and a PASS can never become a PLAY. Betting stays with the +EV gate and the star system, exactly as before. predicted_score is a display prediction, graded nowhere."
         },

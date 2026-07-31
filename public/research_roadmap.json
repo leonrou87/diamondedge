@@ -1,11 +1,11 @@
 {
- "generated_utc": "2026-07-31T04:14:49Z",
+ "generated_utc": "2026-07-31T05:31:59Z",
  "summary": {
   "shipped": 18,
   "testing": 2,
   "accruing": 5,
   "queued": 0,
-  "closed": 31
+  "closed": 32
  },
  "items": [
   {
@@ -726,6 +726,19 @@
    "eta": "~hours",
    "latest": "2026-07-27: the moonshot round independently found ~45-47% of 2021-2023 games in the big odds archive carry the WRONG game's pregame odds — fixes shipped; the deep audit is confirming scope and which past results need re-checking",
    "detail": "A routine check flagged possible game-ID contamination in the big historical odds store. Several past results lean on it, so it gets audited properly. If contamination is real, affected results get re-checked."
+  },
+  {
+   "id": "desk-consensus-corpus",
+   "title": "Desk-consensus corpus, 10x deeper",
+   "tagline": "The four analysts' agreement table had 34 unanimous games. We rebuilt it with 459 — and the headline finding dissolved.",
+   "status": "closed_null",
+   "category": "data",
+   "progress_pct": 100,
+   "started": "2026-07-30",
+   "eta": "closed",
+   "latest": "2026-07-30: nova walked back across 2022-2023 (407 days, leakage-audited); all-four corpus 325 -> 2,972 games; 'fade the unanimous desk' did NOT survive — and the product now leads with that null instead of a cherry-picked percentage",
+   "detail": "The desk's consensus table asks what happens when all four analysts agree, when three outvote one, and when they split two-two. On the small corpus it looked like the desk was WORST when unanimous (41%) and BEST when split (56%) — a striking shape, but built on only 34 unanimous games. One analyst (nova) had no history before 2026, which capped the whole table. We reconstructed nova's point-in-time read for every day of 2022 and 2023 using the same engine and the same train-on-the-past-only rule, hand-auditing two reads end to end plus a deliberate-leak control. The sealed 2024-2026 data was never opened, and 2021 is not reconstructible at all. The measurement also changed how the product talks: nothing gets quoted as a reason unless it clears correction for the whole table, and the desk's agreement no longer nudges what you see.",
+   "result": "NULL — with 13.5x the sample the shape washed out: unanimous 47.3% (was 41.2%), 3-1 majority 50.6% (was 46.0%), 2-2 split 50.0% (was 55.7%). Across 41 measured configurations not one 95% interval excludes a coin flip and nothing survives multiple-testing correction. The old surface ranked cells by how far they sat from 50% and printed the top three — a finding generator on a null table; it now serves the negative result as the headline, an empty highlight list, and every row's interval in view. The corpus stays as permanent infrastructure."
   }
  ]
 }

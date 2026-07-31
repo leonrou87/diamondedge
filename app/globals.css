@@ -4358,3 +4358,395 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .de-rv.nocall,
 .ixsvg .ix-ax.ix-axw{font-family:var(--sans);letter-spacing:0}
 .ixsvg .ix-ax.ix-axw{font-size:11px}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   COMPARABILITY — THE TWO MARKS, AND WHAT MAY BE RANKED
+   The desk keeps two kinds of ledger and the difference is a different CLAIM, not a
+   footnote: VEGA and NOVA stake units (a betting record); ATLAS and SCOUT file leans
+   that are graded but never backed with money (a what-if). Sorting one against the
+   other, or ranking any of them before the sample is readable, tells the reader
+   something the data does not support. So the distinction is carried in the FORM:
+     ◆ SOLID rim   = staked. Real money behind it. ROI may wear profit green / loss red.
+     ◇ DASHED rim  = leans. Nothing staked. ROI is neutral slate and reads "if staked".
+       (dashed already means "kept separate, never summed in" here — see .rost-recon)
+     Ranked groups get ordinals; anything under the readable bar sits in a "too early
+     to rank" group, listed neutrally, and its rank slot says so in words.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.lkchip{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
+  font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.01em;line-height:1.3;
+  border-radius:999px;padding:3px 9px;white-space:nowrap}
+.lkchip i{font-style:normal;font-size:10px;line-height:1}
+.lkchip.tight{font-size:10px;padding:2px 7px;gap:4px}
+.lkchip.lk-bet{color:var(--golddeep);background:rgba(224,172,32,.11);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.30)}
+.lkchip.lk-lean{color:var(--slate);background:rgba(147,161,184,.09);
+  box-shadow:inset 0 0 0 1px transparent;border:1px dashed rgba(147,161,184,.42);padding:2px 8px}
+.lkchip.lk-lean.tight{padding:1px 6px}
+/* a lean ledger's ROI is a bet nobody placed — it never wears the profit colour */
+.whatif{color:var(--slate)!important;font-style:normal}
+.anl-big.whatif b,.rost-st.whatif b{color:var(--slate)}
+.dskrec-stats i.soft,.dskst-rec i.soft{opacity:.72}
+
+/* ── HOME STANDINGS: groups, not one table ── */
+.dskst-grp{margin-top:14px}
+.dskst-grp:first-of-type{margin-top:10px}
+.dskst-gh{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:8px;
+  padding-bottom:7px;border-bottom:1px solid var(--line3)}
+.dskst-grp.early .dskst-gh{border-bottom:1px dashed rgba(147,161,184,.28)}
+.dskst-gk{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink2);flex-shrink:0}
+.dskst-grp.early .dskst-gk{color:var(--slate)}
+.dskst-gs{font-family:var(--sans);font-weight:500;font-size:12px;line-height:1.45;
+  color:var(--ink4);min-width:0;text-wrap:pretty}
+.dskst-unranked{font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.02em;
+  text-transform:none;color:var(--slate)}
+.dskst-card.lk-lean{box-shadow:var(--e1),inset 0 0 0 1px rgba(147,161,184,.10)}
+.dskst-card.lk-lean::before{content:"";position:absolute;inset:0;border-radius:inherit;
+  border:1px dashed rgba(147,161,184,.34);pointer-events:none}
+.dskst-card{position:relative}
+.dskst-card.early{opacity:.94}
+.dskst-n{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;white-space:normal}
+
+/* ── INSIGHTS BOARD: the same grouping, plus the rank-slot fix ──
+   `.dskst-rank{width:100%}` (set for the strip's column cards) also hit the Insights
+   ROW cards and blew the rank cell out to ~460px, shoving every stat into a 1-word
+   column. The strip rule is now scoped to the strip. */
+.dskst-card .dskst-rank{display:flex;align-items:center;gap:6px;width:100%}
+.dskrec-grp{margin-top:16px}
+.dskrec-gh{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;padding-bottom:7px;
+  border-bottom:1px solid var(--line3)}
+.dskrec-grp.early .dskrec-gh{border-bottom:1px dashed rgba(147,161,184,.28)}
+.dskrec-gk{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink2)}
+.dskrec-grp.early .dskrec-gk{color:var(--slate)}
+.dskrec-gs{font-family:var(--sans);font-weight:500;font-size:12px;line-height:1.5;
+  color:var(--ink4);max-width:64ch;text-wrap:pretty}
+.dskrec-rank{flex:0 0 auto;width:34px;font-family:var(--sans);font-variant-numeric:tabular-nums;
+  font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink4)}
+.dskrec-norank{font-style:normal;color:var(--ink4);opacity:.6}
+.dskrec-card.lk-lean{border:1px dashed rgba(147,161,184,.34)}
+.dskrec-card.early{opacity:.96}
+.dskrec-stats{row-gap:5px}
+.dskrec-key{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;
+  gap:7px 10px;margin-top:14px;padding:11px 13px;border-radius:12px;
+  background:rgba(18,27,45,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.dskrec-keytx{font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--ink3);min-width:0}
+
+/* ── THE WEEK AT THE DESK: a tally, not a race ── */
+.wkr-mark{flex:0 0 auto;width:14px;text-align:center;font-size:11px;line-height:1}
+.wkr-mark.lk-bet{color:var(--golddeep)}
+.wkr-mark.lk-lean{color:var(--slate)}
+.wkr.lk-lean{border:1px dashed rgba(147,161,184,.30)}
+/* each bar is the analyst's OWN win/loss split at full width — two bars are never a
+   comparison, which is the entire reason the ordinals are gone */
+.wkr-bar{display:flex;align-items:stretch}
+.wkr-bar i{display:block;height:100%;border-radius:0}
+.wkr-bar i:first-child{border-radius:99px 0 0 99px}
+.wkr-bar i:last-child{border-radius:0 99px 99px 0}
+.wkr-bar i.wb-w{background:linear-gradient(90deg,rgba(25,197,138,.55),var(--green))}
+.wkr-bar i.wb-p{background:rgba(147,161,184,.55)}
+.wkr-bar i.wb-l{background:linear-gradient(90deg,rgba(255,77,104,.5),rgba(255,77,104,.75))}
+.wkr-bar.none{background:repeating-linear-gradient(90deg,rgba(224,235,255,.10) 0 4px,transparent 4px 8px)}
+.wkr-rec b.none{color:var(--ink4)}
+.wkr-rec i.dim{color:var(--ink4);font-family:var(--sans);font-size:11px}
+.wkr-legend{display:flex;align-items:center;gap:6px;margin-top:9px;
+  font-family:var(--sans);font-weight:600;font-size:11px;color:var(--ink4)}
+.wkr-legend i{display:inline-block;width:12px;height:6px;border-radius:99px;margin-left:5px}
+.wkr-legend i:first-child{margin-left:0}
+.wkr-champ{flex-direction:column;align-items:flex-start;gap:5px}
+.wkr-champ-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wkr-champ-top b{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink)}
+.wkr-champ-top span{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink2)}
+.wkr-champ-w{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;
+  font-size:12px;color:var(--golddeep)}
+.wkr-champ-b{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4);
+  max-width:62ch;text-wrap:pretty}
+
+/* ── RIVALRIES: no score until the feud is real ── */
+.vscard.early{border:1px dashed rgba(147,161,184,.26)}
+.vs-mid.none{opacity:.5}
+.vs-lk{margin-top:3px;font-family:var(--sans);font-weight:600;font-size:10px;letter-spacing:.02em;
+  white-space:nowrap}
+.vs-lk.lk-bet{color:var(--golddeep)}
+.vs-lk.lk-lean{color:var(--slate)}
+.vs-early{margin-top:10px;padding:9px 11px;border-radius:12px;
+  background:rgba(147,161,184,.06);border:1px dashed rgba(147,161,184,.26)}
+.vs-early b{display:block;font-family:var(--disp);font-weight:800;font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.vs-early-n{display:block;margin-top:5px;font-family:var(--sans);font-size:12px;line-height:1.5;
+  color:var(--ink3);text-wrap:pretty}
+.vs-meter{display:block;height:5px;border-radius:99px;margin-top:8px;overflow:hidden;
+  background:rgba(224,235,255,.08)}
+.vs-meter i{display:block;height:100%;border-radius:99px;background:rgba(147,161,184,.6)}
+.vs-early-k{display:block;margin-top:5px;font-family:var(--sans);font-variant-numeric:tabular-nums;
+  font-weight:600;font-size:11px;color:var(--ink4)}
+
+/* ── CHARACTER PAGE: the band that says how to read every number under it ── */
+.anl-lkband{display:flex;flex-direction:column;gap:3px;margin-bottom:11px;padding:10px 12px;
+  border-radius:12px;position:relative}
+.anl-lkband b{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase}
+.anl-lkband span:last-child{font-family:var(--sans);font-size:12px;line-height:1.5;
+  color:var(--ink3);max-width:62ch;text-wrap:pretty}
+.anl-lkmark{position:absolute;top:10px;right:12px;font-size:14px;line-height:1}
+.anl-lkband.lk-bet{background:rgba(224,172,32,.08);box-shadow:inset 0 0 0 1px rgba(224,172,32,.28)}
+.anl-lkband.lk-bet b,.anl-lkband.lk-bet .anl-lkmark{color:var(--golddeep)}
+.anl-lkband.lk-lean{background:rgba(147,161,184,.06);border:1px dashed rgba(147,161,184,.36)}
+.anl-lkband.lk-lean b,.anl-lkband.lk-lean .anl-lkmark{color:var(--slate)}
+.anl-norank{margin-top:9px;font-family:var(--sans);font-size:12px;line-height:1.5;
+  color:var(--ink3);border-left:2px solid rgba(147,161,184,.45);padding:1px 0 1px 10px;
+  max-width:58ch;text-wrap:pretty}
+.anl-riv.early{border:1px dashed rgba(147,161,184,.28)}
+.anl-riv-rec.none{color:var(--ink4)}
+
+/* ── THE QUAD: the map carries the kind too ── */
+.qd-lk{margin-top:9px;display:inline-flex;flex-direction:column;gap:2px;align-items:flex-start;
+  font-family:var(--sans);font-weight:600;font-size:11px;line-height:1.3;border-radius:8px;
+  padding:5px 8px}
+.qd-lk i{font-style:normal;margin-right:5px}
+.qd-lk em{font-style:normal;font-variant-numeric:tabular-nums;font-weight:600;font-size:10px;
+  color:var(--ink4)}
+.qd-lk.lk-bet{color:var(--golddeep);background:rgba(224,172,32,.09)}
+.qd-lk.lk-lean{color:var(--slate);background:rgba(147,161,184,.07);
+  border:1px dashed rgba(147,161,184,.34);padding:4px 7px}
+
+/* ── ROSTER CARD ── */
+.rost-lkrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rost-norank{font-family:var(--sans);font-weight:600;font-size:11px;color:var(--slate);opacity:.85}
+
+/* ── NIGHTLY RECAP: one night is one night ── */
+.rcap-lk{font-size:10px;line-height:1;margin-left:5px}
+.rcap-lk.lk-bet{color:var(--golddeep)}
+.rcap-lk.lk-lean{color:var(--slate)}
+.rcap-key{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;padding-top:8px;
+  border-top:1px dashed rgba(147,161,184,.22)}
+.rcap-key-tx{font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--ink4);
+  min-width:0;flex:1 1 220px;text-wrap:pretty}
+
+/* ── STORY SLIDE: cinema obeys the same rule ── */
+.sts-stgrp{display:flex;flex-direction:column;gap:7px;width:100%}
+.sts-stgrp+.sts-stgrp{margin-top:13px}
+.sts-stgk{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink4);text-align:left}
+.sts-stgrp.early .sts-stgk{color:var(--slate)}
+.sts-strow.lk-lean{border:1px dashed rgba(147,161,184,.30)}
+.sts-strank i{font-style:normal;color:var(--slate)}
+.sts-strow.lk-bet .sts-strank i{color:var(--golddeep)}
+
+/* ── DEBATE CHIP ── */
+.dbt-rec.lk-lean i{color:var(--slate)}
+.dbt-rec.lk-bet i{color:var(--ink4)}
+
+@media(max-width:520px){
+  .dskrec-key{grid-template-columns:minmax(0,1fr);gap:3px 0}
+  .dskrec-keytx{margin-bottom:6px}
+  .dskst-gs{font-size:11px}
+}
+
+/* ══ COMPARABILITY — FIT AND FINISH ══════════════════════════════════════════ */
+/* the what-if ROI is a SENTENCE with a number in it: numeral keeps the mono face,
+   the "if staked" qualifier is prose and must never inherit a mono context */
+i.whatif{font-family:var(--sans);letter-spacing:0;font-weight:600}
+i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-style:normal;
+  font-weight:700;letter-spacing:-.01em}
+/* the strip's small-sample tint: "unranked" now carries that message in words, so the
+   number stops shouting in gold (gold means premium here, not caution) */
+.dskst-n.young{color:var(--slate)}
+.dskst-nm i{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+/* a group of one should not sit in a quarter-width cell with three empty cells beside it —
+   the rail sizes itself to the group it actually holds */
+.dskst-rail.n1{grid-template-columns:minmax(0,1fr)}
+.dskst-rail.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dskst-rail.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:520px){
+  .dskst-rail.n1{grid-template-columns:minmax(0,1fr)}
+  .dskst-rail.n2,.dskst-rail.n3,.dskst-rail.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* the lone readable record earns a banner rather than a stretched tile */
+@media(min-width:760px){
+  .dskst-rail.n1 .dskst-card{flex-direction:row;align-items:center;gap:16px;flex-wrap:wrap;padding:13px 15px}
+  .dskst-rail.n1 .dskst-card .dskst-rank{width:auto;flex:0 0 auto}
+  .dskst-rail.n1 .dskst-card .dskst-id{flex:0 0 auto;min-width:150px}
+  .dskst-rail.n1 .dskst-card .dskst-n{margin-left:auto}
+}
+/* the quad's kind chip: mark and label share a line, the count sits under it */
+.qd-lkr{display:inline-flex;align-items:center;gap:5px}
+/* the legend swatches live outside .wkr-bar, so they need their own fills */
+.wkr-legend i.wb-w{background:var(--green)}
+.wkr-legend i.wb-p{background:rgba(147,161,184,.7)}
+.wkr-legend i.wb-l{background:var(--red)}
+/* STORY SLIDE: a 340px cinema row cannot take a wrapping sub-label — it collided with
+   the record. One line, ellipsis, prose face for the qualifier. */
+.sts-standings .sts-dnm i{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:10px;letter-spacing:.06em}
+.sts-standings .sts-strec{flex-shrink:0;max-width:56%}
+.sts-standings .sts-strec i{font-size:11px}
+.sts-standings .sts-strec i.whatif{font-size:10px}
+.sts-standings .dsk-l10{flex-shrink:0}
+/* the standings slide goes two-line: identity + record up top, sample + what-if under it */
+.sts-standings .sts-strow{align-items:flex-start;gap:10px}
+.sts-stbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.sts-strow1{display:flex;align-items:center;gap:8px;min-width:0}
+.sts-strow1 svg{flex-shrink:0}
+.sts-stnm{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sts-strow1 .sts-strec{margin-left:auto;flex-shrink:0;max-width:none}
+.sts-strow2{display:flex;align-items:center;gap:8px;min-width:0}
+.sts-strow2>i{font-style:normal;font-family:var(--sans);font-weight:600;font-size:11px;
+  letter-spacing:.01em;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.sts-strow2 i.sts-stroi{flex-shrink:0;overflow:visible}
+.sts-strow2 .dsk-l10{margin-left:auto;flex-shrink:0}
+.sts-strow.lk-lean .sts-strow2>i{color:var(--slate)}
+.sts-strow2 i.pos,.sts-strow2 i.neg{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-weight:700;flex-shrink:0}
+.sts-strow2 i.pos{color:var(--green)}.sts-strow2 i.neg{color:var(--red)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   THE PATTERN TABLE — A WELL-POWERED NULL, DRAWN
+   41 configurations, 2,972 games, and every exact 95% interval containing 50%.
+   That is a RESULT, and it gets a result's typography: a stated lead, a figure
+   strip, and then every row's interval drawn against one shared axis with the
+   50% line running straight down the table. Twenty-five bands all crossing the
+   same line says more than any sentence — and it is the honest thing to say.
+   Nothing here may look like an empty state or a section that failed to load.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.patlead{margin:14px 0 4px;padding:15px 16px;border-radius:16px;
+  background:linear-gradient(158deg,rgba(147,161,184,.10),rgba(20,29,48,.72) 62%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),inset 0 1px 0 rgba(255,255,255,.08)}
+.patlead.found{background:linear-gradient(158deg,rgba(224,172,32,.12),rgba(20,29,48,.72) 62%);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.28),inset 0 1px 0 rgba(255,225,140,.16)}
+.patlead-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:800;
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--slate);
+  border-radius:999px;padding:4px 11px;background:rgba(147,161,184,.12)}
+.patlead-tag.on{color:var(--golddeep);background:rgba(224,172,32,.14)}
+.patlead-line{margin:11px 0 0;font-family:var(--sans);font-weight:500;font-size:16px;line-height:1.55;
+  color:var(--ink);max-width:66ch;text-wrap:pretty}
+/* the figure strip: what was tested, and what came back */
+.patsig{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 0}
+.patsig-c{display:flex;flex-direction:column;gap:2px;flex:1 1 120px;min-width:0;
+  border-radius:12px;padding:9px 11px;background:rgba(18,27,45,.5);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.patsig-c b{font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;color:var(--ink)}
+.patsig-c i{font-style:normal;font-family:var(--sans);font-weight:500;font-size:11px;line-height:1.35;
+  color:var(--ink4)}
+.patsig-c.on b{color:var(--golddeep)}
+.patsig-m{margin-top:8px;font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4);
+  max-width:70ch;text-wrap:pretty}
+/* era blocks — computed separately, never summed */
+.patera{margin-top:20px;padding-top:16px;border-top:1px solid var(--line3)}
+.patera-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.patera-k{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink2)}
+.patera-k.live{color:var(--acc)}
+.patera-m{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;
+  color:var(--ink4)}
+.patera-sub{margin-top:3px;font-family:var(--sans);font-size:12px;color:var(--ink4)}
+.patera-line{margin:10px 0 0;font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink3);
+  max-width:70ch;text-wrap:pretty}
+.patera-note{margin-top:11px;font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4);
+  max-width:72ch;text-wrap:pretty}
+/* an empty era is a STATE, said in words — never a blank */
+.patera.empty .patera-none{margin-top:11px;border-radius:12px;padding:13px 14px;
+  background:rgba(147,161,184,.05);border:1px dashed rgba(147,161,184,.28)}
+.patera-none b{display:block;font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink2)}
+.patera-none span{display:block;margin-top:5px;font-family:var(--sans);font-size:13px;line-height:1.55;
+  color:var(--ink3);max-width:64ch;text-wrap:pretty}
+/* the shared axis — one scale for the whole era, so widths are comparable */
+.pataxis{position:relative;height:15px;margin:14px 0 2px;
+  font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:11px;color:var(--ink4)}
+.pataxis>span:first-child{position:absolute;left:0}
+.pataxis>span:last-child{position:absolute;right:0}
+.pataxis-mid{position:absolute;transform:translateX(-50%);color:var(--ink3)}
+.patgrp{margin-top:15px}
+.patgrp-h{display:flex;align-items:baseline;gap:8px;font-family:var(--disp);font-weight:800;
+  font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink2)}
+.patgrp-n{font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.01em;
+  text-transform:none;color:var(--ink4)}
+.patgrp-sub{margin-top:2px;font-family:var(--sans);font-size:12px;color:var(--ink4)}
+.patgrp.fold{margin-top:15px;border-radius:12px;padding:2px 0;
+  border:1px dashed rgba(224,235,255,.14)}
+.patgrp.fold>summary{display:flex;align-items:center;gap:9px;cursor:pointer;list-style:none;
+  padding:10px 12px}
+.patgrp.fold>summary::-webkit-details-marker{display:none}
+.patgrp.fold>summary .patgrp-n{margin-left:auto}
+.patgrp.fold[open]>summary .pp-caret{transform:rotate(90deg)}
+.patgrp.fold .patgrp-sub,.patgrp.fold .patrows{padding:0 12px 10px}
+.patrows{display:flex;flex-direction:column;gap:2px;margin-top:9px}
+/* ONE ROW = label · point estimate · sample · the interval, drawn */
+.patrow{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"l fig" "ci ci" "note note";
+  gap:5px 12px;align-items:baseline;padding:10px 12px;border-radius:10px;
+  background:rgba(18,27,45,.38);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+.patrow.is-clear{box-shadow:inset 0 0 0 1px rgba(240,178,60,.22)}
+.patrow.is-sig{background:rgba(224,172,32,.09);box-shadow:inset 0 0 0 1px rgba(224,172,32,.34)}
+.patrow-l{grid-area:l;display:flex;align-items:center;gap:7px;min-width:0}
+.patrow-g{display:inline-flex;align-items:center;gap:3px;flex-shrink:0;line-height:0}
+.patrow-lab{font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.35;color:var(--ink2);
+  min-width:0;text-wrap:pretty}
+.patrow-fig{grid-area:fig;display:inline-flex;align-items:baseline;gap:9px;flex-shrink:0}
+.patrow-hit{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;color:var(--ink)}
+.patrow-n{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:11px;
+  color:var(--ink4);white-space:nowrap}
+.patci{grid-area:ci;position:relative;display:block;height:14px;border-radius:5px;
+  background:rgba(224,235,255,.045)}
+.patci-mid{position:absolute;top:0;bottom:0;width:1px;background:rgba(233,240,250,.42);
+  transform:translateX(-.5px)}
+.patci-band{position:absolute;top:4px;height:6px;border-radius:99px;
+  background:linear-gradient(90deg,rgba(147,161,184,.42),rgba(147,161,184,.62))}
+.patrow.is-clear .patci-band{background:linear-gradient(90deg,rgba(240,178,60,.5),rgba(240,178,60,.75))}
+.patrow.is-sig .patci-band{background:linear-gradient(90deg,rgba(224,172,32,.7),var(--golddeep))}
+.patci-dot{position:absolute;top:3px;width:8px;height:8px;border-radius:50%;
+  transform:translateX(-4px);background:var(--ink);box-shadow:0 0 0 2px rgba(11,17,30,.75)}
+.patrow.is-sig .patci-dot{background:var(--golddeep)}
+.patrow-ci{grid-area:note;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.patrow-cit{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:11px;
+  color:var(--ink4);white-space:nowrap}
+.patv{font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.01em;border-radius:999px;
+  padding:2px 8px}
+.patv.null{color:var(--slate);background:rgba(147,161,184,.10)}
+.patv.clear{color:var(--amber);background:rgba(240,178,60,.12)}
+.patv.sig{color:var(--golddeep);background:rgba(224,172,32,.16)}
+/* HOME: the null, at full confidence */
+.patstrip.nullres .patnull{border-radius:16px;padding:15px 16px;
+  background:linear-gradient(158deg,rgba(147,161,184,.10),rgba(20,29,48,.72) 62%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),inset 0 1px 0 rgba(255,255,255,.08)}
+.patnull-tag{display:inline-flex;font-family:var(--disp);font-weight:800;font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--slate);border-radius:999px;
+  padding:4px 11px;background:rgba(147,161,184,.12)}
+.patnull-line{margin:11px 0 0;font-family:var(--sans);font-weight:500;font-size:15px;line-height:1.55;
+  color:var(--ink);max-width:66ch;text-wrap:pretty}
+.patnull-figs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.patnull-figs span{display:flex;flex-direction:column;gap:2px;flex:1 1 100px;border-radius:11px;
+  padding:8px 10px;background:rgba(18,27,45,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.patnull-figs b{font-family:var(--mono);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;
+  color:var(--ink)}
+.patnull-figs i{font-style:normal;font-family:var(--sans);font-weight:500;font-size:11px;color:var(--ink4)}
+.patnull-foot{margin-top:11px;font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4);
+  max-width:64ch;text-wrap:pretty}
+/* STORIES: the null slide reads at the same volume as a finding */
+.sts-patbody{margin:10px auto 0;max-width:34ch;font-family:var(--sans);font-size:14px;line-height:1.6;
+  color:var(--ink3);text-wrap:pretty}
+/* CHARACTER PAGE slice */
+.anlp-patlede{margin:0 0 10px;font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink3);
+  max-width:62ch;text-wrap:pretty}
+.anlp-patrows{margin-top:0}
+@media(min-width:760px){
+  .patrow{grid-template-columns:minmax(0,1.15fr) auto minmax(180px,1fr) auto;
+    grid-template-areas:"l fig ci note";align-items:center;gap:14px;padding:11px 14px}
+  .patrow-ci{justify-content:flex-end;flex-wrap:nowrap}
+  .patci{height:16px}
+}
+@media(max-width:520px){
+  .patlead-line{font-size:15px}
+  .patsig-c{flex:1 1 44%}
+  .patrow-lab{font-size:12px}
+}
+/* the strip's column cells must not let a long title push past the card edge */
+.dskst-card>span{max-width:100%;min-width:0}
+.pataxis.own{margin:9px 0 2px}
+/* the null slide is centred cinema, not a top-and-bottom split */
+.sts-patterns.nullres .pat-meta.center{margin-top:6px}
+.sts-patterns.nullres .st-cta{margin-top:16px}

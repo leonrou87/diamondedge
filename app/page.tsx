@@ -1955,7 +1955,7 @@ export default function Home() {
           `${n} graded`,
           "live era",
           since ? `since ${since}` : "",
-          rec.isBet ? "" : "lean ledger",
+          rec.isBet ? "staked" : "leans, never staked",
         ].filter(Boolean),
         since,
         kind: rec.isBet ? "betting record" : "graded leans, never staked",
@@ -1969,13 +1969,114 @@ export default function Home() {
         return `<div class="anprov none ${cls}"><span class="anprov-bits">0 graded · live era${m.since ? ` · opens ${esc(m.since)}` : ""}</span></div>`;
       }
       const warn = m.young
-        ? `<p class="anprov-young">Too young to read — ${m.n} graded call${m.n === 1 ? "" : "s"}. A record needs roughly ${ANALYST_MIN_N} before the hit rate and ROI mean anything. Treat these as a running tally, not a skill level.</p>`
+        ? `<p class="anprov-young">Too small to rank — ${m.n} graded call${m.n === 1 ? "" : "s"}. A ledger needs roughly ${ANALYST_MIN_N} before the hit rate and ROI separate skill from noise, so this one is listed but never ranked against the rest of the desk. Treat it as a running tally.</p>`
         : "";
       return `<div class="anprov ${m.young ? "is-young" : ""} ${cls}">
         <span class="anprov-bits">${esc(m.bits.join(" · "))}</span>
         ${warn}
       </div>`;
     }
+    /* ══════════════════ COMPARABILITY — WHAT MAY BE RANKED AGAINST WHAT ══════════════════
+       Two facts, orthogonal, decide whether two analysts can be put in rank order. A ranked
+       table that ignores either one is telling the reader something the data does not support.
+
+         1. WHAT THE LEDGER CLAIMS.  `is_betting_record` splits the desk in half.
+            VEGA and NOVA stake units — their W–L and ROI are a real betting record.
+            ATLAS and SCOUT file LEANS that are graded but never staked; their "ROI" is a
+            what-if tally of a bet nobody placed. Those are different claims about the world,
+            so they are never sorted into one list and never share a colour: a lean ledger's
+            ROI is printed in neutral ink, never in profit green / loss red, and always
+            carries "if staked". The two kinds carry a permanent visual mark everywhere they
+            appear — ◆ solid for staked, ◇ dashed for leans — not a footnote in small type.
+
+         2. HOW BIG THE SAMPLE IS.  Below ANALYST_MIN_N graded calls a hit rate is noise.
+            Records under the bar are NOT ordered by hit rate or ROI at all — they are grouped
+            as "too early to rank" and listed neutrally (calls made, then alphabetical), so no
+            layout position can be mistaken for a standing.
+
+       Every ranked surface — home strip, story slide, Insights board, the weekly board, the
+       rivalry cards, the quad, the character pages — reads its order from deskGroups(). */
+    const H2H_MIN_N = 20;               // disagreements needed before a feud has a score
+    // Served notes sometimes quote their own field names ("this_week", "record.analysts").
+    // Those are engineering identifiers, not English, and on the page they read as a leak.
+    const deIdent = (t: any) => String(t == null ? "" : t)
+      .replace(/\brecord\.analysts\b/g, "the season ledgers")
+      .replace(/\banalyst_of_the_week\b/g, "the Analyst of the Week")
+      .replace(/\bis_betting_record\b/g, "the staked-or-lean flag")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\b[a-z0-9]+(?:_[a-z0-9]+)+\b/g, (m) => m.replace(/_/g, " "));
+    // served sentences quote raw counts ("Across 2972 games") — group the thousands so the
+    // number reads at a glance, without touching years, decimals or ids
+    const groupThousands = (t: any) => String(t == null ? "" : t)
+      .replace(/(\d{4,})(?=\s+(?:games|configurations|calls|rows)\b)/g,
+        (m) => Number(m).toLocaleString("en-US"));
+    const sentence = (t: any) => { const s = String(t == null ? "" : t).trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; };
+    const isLean = (rec: any) => !!rec && rec.isBet === false;
+    const ledgerMark = (rec: any) => (isLean(rec) ? "◇" : "◆");
+    const ledgerCls = (rec: any) => (isLean(rec) ? "lk-lean" : "lk-bet");
+    const ledgerWord = (rec: any) => (isLean(rec) ? "leans, never staked" : "staked record");
+    const ledgerShort = (rec: any) => (isLean(rec) ? "leans" : "staked");
+    // the permanent kind marker. `tight` = the inline micro form used inside dense rows.
+    function ledgerChip(rec: any, tight = false) {
+      if (!rec) return "";
+      const t = isLean(rec)
+        ? { lab: tight ? "leans" : "leans, never staked", tip: "A graded LEAN ledger — this analyst's calls are scored against the real final, but no units are ever staked on them." }
+        : { lab: tight ? "staked" : "staked record", tip: "A real betting record — this stream stakes units on its own calls and the result is graded in public." };
+      return `<span class="lkchip ${ledgerCls(rec)}${tight ? " tight" : ""}" title="${esc(t.tip)}"><i aria-hidden="true">${ledgerMark(rec)}</i>${esc(t.lab)}</span>`;
+    }
+    // ROI, printed honestly: a lean ledger's ROI is a what-if and never wears the profit colour.
+    // The numeral keeps the mono face; the "if staked" qualifier is prose and stays in sans.
+    function ledgerRoi(rec: any, cls = "") {
+      if (!rec || rec.roi == null) return "";
+      if (isLean(rec)) return `<i class="${cls} whatif" title="No units were staked — this is the flat-1u what-if tally of the leans."><em class="wi-n">${bRoi(rec.roi)}</em> if staked</i>`;
+      return `<i class="${cls} ${rec.roi >= 0 ? "pos" : "neg"}">${bRoi(rec.roi)}</i>`;
+    }
+    const isRankable = (rec: any) => !!rec && Math.max(0, Number(rec.n) || 0) >= ANALYST_MIN_N;
+    // the ledger kind for an analyst KEY, resolved from the season record whenever the row at
+    // hand (a weekly tally, a nightly recap line, a rivalry side) has no flag of its own —
+    // the mark must be identical on every surface or it stops being a language
+    function anLedger(key: string, row?: any) {
+      if (row && row.isBet != null) return { isBet: row.isBet !== false };
+      const r = deskRecordRows().find((x: any) => x.key === key);
+      return { isBet: !(r && r.isBet === false) };
+    }
+    /* THE ONE SORTER. Returns ordered GROUPS, never one flat ranked list:
+         · ranked staked records (n ≥ 50) — by ROI, the only genuine standings on the site
+         · ranked lean ledgers  (n ≥ 50) — by what-if ROI, kept in their own table
+         · too early to rank    (n < 50) — NEUTRAL order (calls made, then name), no ordinals
+       A group of one is never given an ordinal: "1st of one" is a rank claim with no contest. */
+    function deskGroups(rows: any[]) {
+      const byRoi = (a: any, b: any) =>
+        ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) ||
+        ((b.hit || 0) - (a.hit || 0)) || ((b.win || 0) - (a.win || 0)) ||
+        (DESK_ORDER.indexOf(a.key) - DESK_ORDER.indexOf(b.key));
+      const neutral = (a: any, b: any) =>
+        ((b.n || 0) - (a.n || 0)) || String(a.name || a.key).localeCompare(String(b.name || b.key));
+      const ranked = rows.filter(isRankable);
+      const early = rows.filter((r) => !isRankable(r));
+      const out: any[] = [];
+      const rb = ranked.filter((r) => !isLean(r)).sort(byRoi);
+      const rl = ranked.filter(isLean).sort(byRoi);
+      if (rb.length) out.push({
+        id: "ranked-bet", ranked: true, ordinals: rb.length > 1, rows: rb,
+        head: rb.length > 1 ? "Ranked — staked records" : "The one readable record",
+        sub: rb.length > 1
+          ? `${ANALYST_MIN_N}+ graded calls with units actually staked, ordered by ROI.`
+          : `The only ledger past ${ANALYST_MIN_N} graded calls — there is nothing comparable to rank it against yet.`,
+      });
+      if (rl.length) out.push({
+        id: "ranked-lean", ranked: true, ordinals: rl.length > 1, rows: rl,
+        head: rl.length > 1 ? "Ranked — lean ledgers" : "The one readable lean ledger",
+        sub: `${ANALYST_MIN_N}+ graded leans, ordered by what-if ROI. Nothing here was ever staked, so these are kept off the betting table.`,
+      });
+      if (early.length) out.push({
+        id: "early", ranked: false, ordinals: false, rows: early.sort(neutral),
+        head: "Too early to rank",
+        sub: `Under ${ANALYST_MIN_N} graded calls, so hit rate and ROI are still noise. Listed by calls made — the order here means nothing.`,
+      });
+      return out;
+    }
+    const ordinal = (i: number) => `${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}`;
     // any live game already carries analyst calls (the cast exists even before records do)
     function deskAnyAnalysts() {
       for (const d of [betaLiveData, betaData]) {
@@ -1986,39 +2087,49 @@ export default function Home() {
     const deskL10Dots = (arr: any[]) => (arr && arr.length
       ? `<span class="dsk-l10" aria-label="last ${arr.length} calls">${arr.map((r) => `<i class="d-${r === "W" ? "w" : r === "L" ? "l" : "p"}"></i>`).join("")}</span>`
       : "");
-    // ---- DESK STANDINGS (top of home): the four analysts ranked by record ----
+    // ---- DESK STANDINGS (top of home) ----
+    // NOT one leaderboard. A ranked group only exists where the sample and the ledger kind
+    // make the comparison mean something; everyone else sits under "too early to rank" in a
+    // deliberately neutral order. See deskGroups() for the rule.
     function deskStandingsStrip() {
       let rows = deskRecordRows();
       const haveRec = rows.length > 0;
       if (!haveRec && !deskAnyAnalysts()) return "";
-      if (!haveRec) rows = DESK_ORDER.map((k) => ({ key: k, cast: DESK_CAST[k], name: DESK_CAST[k].name, title: DESK_CAST[k].title, n: 0, win: 0, loss: 0, push: 0, hit: null, roi: null, last10: [] }));
-      rows = rows.slice().sort((a: any, b: any) =>
-        ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) ||
-        ((b.hit || 0) - (a.hit || 0)) || ((b.win || 0) - (a.win || 0)) ||
-        (DESK_ORDER.indexOf(a.key) - DESK_ORDER.indexOf(b.key)));
+      if (!haveRec) rows = DESK_ORDER.map((k) => ({ key: k, cast: DESK_CAST[k], name: DESK_CAST[k].name, title: DESK_CAST[k].title, n: 0, win: 0, loss: 0, push: 0, hit: null, roi: null, last10: [], isBet: true }));
       const wk = weeklyStandingsData();
-      const cards = rows.map((r: any, i: number) => {
+      const card = (r: any, grp: any, i: number) => {
         const graded = r.win + r.loss + r.push > 0;
         const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0";
-        const roiTxt = r.roi != null ? `<i class="dskst-roi ${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : `<i class="dskst-roi dim">${graded ? "" : "first calls today"}</i>`;
-        // THIS-WEEK FORM: the weekly race rides the strip — each card carries its week
-        // ("wk 3–1"), the analyst of the week wears the crown. Absent feed ⇒ nothing.
+        const roiTxt = r.roi != null
+          ? ledgerRoi(r, "dskst-roi")
+          : `<i class="dskst-roi dim">${graded ? "" : "first calls today"}</i>`;
+        // THIS-WEEK FORM rides the strip as a plain tally. The crown does NOT: it belongs to a
+        // COMPLETED week and pinning it to a live standings position is how a reader ends up
+        // believing the bottom row is the champion.
         const wrow = wk ? wk.rows.find((x: any) => x.key === r.key) : null;
-        const crowned = wk && wk.aotw === r.key;
-        const wkChip = wrow
-          ? `<span class="dskst-wk${crowned ? " crowned" : ""}">${crowned ? crownSvg(9) : ""}wk <b>${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b></span>`
-          : (crowned ? `<span class="dskst-wk crowned">${crownSvg(9)}this week</span>` : "");
-        return `<button class="dskst-card an-${esc(r.key)}${i === 0 && graded ? " lead" : ""}${crowned ? " aotw" : ""}" data-an="${esc(r.key)}" aria-label="${esc(r.name)} — ${esc(r.title)}, record ${rec}${wrow ? `, this week ${wrow.w} and ${wrow.l}` : ""}">
-          <span class="dskst-rank">${i === 0 && graded ? "◆ 1st" : `${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}`}${wkChip}</span>
+        const wkChip = wrow ? `<span class="dskst-wk">wk <b>${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b></span>` : "";
+        const rankTxt = grp.ranked
+          ? (grp.ordinals ? `${i === 0 ? "◆ " : ""}${ordinal(i)}` : "◆ readable")
+          : `<span class="dskst-unranked">unranked</span>`;
+        const aria = `${r.name} — ${r.title}, ${isLean(r) ? "lean ledger" : "staked record"}, ${rec} over ${r.n} graded call${r.n === 1 ? "" : "s"}`
+          + (grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : ", the only readable record") : ", too early to rank")
+          + (wrow ? `, this week ${wrow.w} and ${wrow.l}` : "");
+        return `<button class="dskst-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked && grp.ordinals && i === 0 ? " lead" : ""}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}" aria-label="${esc(aria)}">
+          <span class="dskst-rank">${rankTxt}${wkChip}</span>
           <span class="dskst-id">${deskGlyph(r.key, 17)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
           <span class="dskst-rec"><b>${rec}</b>${roiTxt}</span>
-          <span class="dskst-n${graded && r.n < ANALYST_MIN_N ? " young" : ""}">${graded ? `${r.n} graded · live era` : "live era · no graded calls yet"}</span>
+          <span class="dskst-n${graded && r.n < ANALYST_MIN_N ? " young" : ""}">${graded ? `${r.n} graded` : "no graded calls yet"}${ledgerChip(r, true)}</span>
           ${deskL10Dots(r.last10)}
         </button>`;
-      }).join("");
+      };
+      const groups = deskGroups(rows).map((grp: any) => `
+        <div class="dskst-grp ${esc(grp.id)}">
+          <div class="dskst-gh"><span class="dskst-gk">${esc(grp.head)}</span><span class="dskst-gs">${esc(grp.sub)}</span></div>
+          <div class="dskst-rail n${Math.min(4, grp.rows.length)}">${grp.rows.map((r: any, i: number) => card(r, grp, i)).join("")}</div>
+        </div>`).join("");
       return `<section class="dskst" aria-label="Desk standings">
-        <div class="dskst-h"><span class="dskst-k">◆ Desk standings</span><span class="dskst-sub">Four analysts call every game — ranked by their graded record</span></div>
-        <div class="dskst-rail">${cards}</div>
+        <div class="dskst-h"><span class="dskst-k">◆ Desk standings</span><span class="dskst-sub">Four analysts call every game. Only a ledger with ${ANALYST_MIN_N}+ graded calls is ranked — and staked records and lean ledgers are never ranked against each other.</span></div>
+        ${groups}
       </section>`;
     }
     // ---- the analyst PAGE: a full-screen character destination — the persona as the star.
@@ -2070,14 +2181,28 @@ export default function Home() {
       const wkAll = weeklyStandingsData();
       const wrow = wkAll ? wkAll.rows.find((x: any) => x.key === k) : null;
       const crowned = !!(wkAll && wkAll.aotw === k);
+      // the crown belongs to a COMPLETED week — it is dated here rather than left to read as
+      // a permanent title over a live record
+      const aiW = wkAll && wkAll.aotwInfo && wkAll.aotwInfo.key === k ? wkAll.aotwInfo : null;
       const wkCell = wrow
-        ? `<div class="anl-big wk${crowned ? " crowned" : ""}"><b>${crowned ? crownSvg(12) : ""}${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b><i>this week${crowned ? " · crowned" : ""}</i></div>`
+        ? `<div class="anl-big wk"><b>${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b><i>this week</i></div>`
+        : "";
+      // THE BANNER that decides how every number under it should be read
+      const lkBanner = rec
+        ? `<div class="anl-lkband ${ledgerCls(rec)}">
+            <span class="anl-lkmark" aria-hidden="true">${ledgerMark(rec)}</span>
+            <b>${isLean(rec) ? "Lean ledger — never staked" : "Staked betting record"}</b>
+            <span>${isLean(rec)
+              ? "Every call below is graded against the real final, but no units were ever put behind them. The ROI is a what-if on a bet nobody placed."
+              : "This stream stakes units on its own calls. The W–L and the ROI below are a real betting record, graded in public."}</span>
+          </div>`
         : "";
       const recHero = rec
-        ? `<div class="anl-hero">
-            <div class="anl-big"><b>${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}</b><i>record</i></div>
+        ? `${lkBanner}
+          <div class="anl-hero">
+            <div class="anl-big"><b>${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}</b><i>${isLean(rec) ? "lean record" : "record"}</i></div>
             ${rec.hit != null ? `<div class="anl-big"><b>${(rec.hit * 100).toFixed(0)}%</b><i>hit</i></div>` : ""}
-            ${rec.roi != null ? `<div class="anl-big ${rec.roi >= 0 ? "pos" : "neg"}"><b>${bRoi(rec.roi)}</b><i>ROI</i></div>` : ""}
+            ${rec.roi != null ? `<div class="anl-big ${isLean(rec) ? "whatif" : (rec.roi >= 0 ? "pos" : "neg")}"><b>${bRoi(rec.roi)}</b><i>${isLean(rec) ? "ROI if staked" : "ROI"}</i></div>` : ""}
             ${wkCell}
             ${rec.last10.length ? `<div class="anl-big form"><b>${deskL10Dots(rec.last10)}</b><i>last ${rec.last10.length}</i></div>` : ""}
           </div>
@@ -2105,14 +2230,18 @@ export default function Home() {
         </div>`;
       }).join("");
       // THEIR RIVALRIES — head-to-head disagreement records involving this analyst.
+      // Under H2H_MIN_N disagreements there is no score to show, and the chip says so.
       const rivHtml = h2hFor(k).slice(0, 3).map((r: any) => {
         const opp = r.a === k ? r.b : r.a;
         const mine = r.a === k ? r.aw : r.bw, theirs = r.a === k ? r.bw : r.aw;
+        const scored = r.n >= H2H_MIN_N;
         const cls = mine > theirs ? "pos" : mine < theirs ? "neg" : "";
-        return `<button class="anl-riv an-${esc(opp)}" data-an="${esc(opp)}" aria-label="Rivalry with ${esc((DESK_CAST[opp] || {}).name || opp)}">
-          <span class="anl-riv-id">${deskGlyph(opp, 12)}<b>vs ${esc((DESK_CAST[opp] || {}).name || opp)}</b></span>
-          <b class="anl-riv-rec ${cls}">${mine}–${theirs}</b>
-          <i>when they disagree</i>
+        const nm = (DESK_CAST[opp] || {}).name || opp;
+        return `<button class="anl-riv an-${esc(opp)} ${ledgerCls(anLedger(opp))}${scored ? "" : " early"}" data-an="${esc(opp)}"
+          aria-label="${esc(scored ? `Rivalry with ${nm} — ${mine} to ${theirs} over ${r.n} disagreements` : `${nm} — only ${r.n} disagreement${r.n === 1 ? "" : "s"} so far, too few to score`)}">
+          <span class="anl-riv-id">${deskGlyph(opp, 12)}<b>vs ${esc(nm)}</b></span>
+          ${scored ? `<b class="anl-riv-rec ${cls}">${mine}–${theirs}</b><i>when they disagree</i>`
+            : `<b class="anl-riv-rec none">—</b><i>only ${r.n} disagreement${r.n === 1 ? "" : "s"} — too few to score</i>`}
         </button>`;
       }).join("");
       // BEST RECENT CALL — the most recent night this analyst owned the desk's best call;
@@ -2163,7 +2292,17 @@ export default function Home() {
       const myPats = patternHighlights().filter((it: any) => it.keys.indexOf(k) >= 0).slice(0, 3);
       const patsHtml = myPats.length
         ? `<div class="anlp-sec"><div class="anlp-sec-h">Their patterns</div><div class="pat-grid one">${myPats.map((it: any) => patternCard(it)).join("")}</div></div>`
-        : "";
+        : (() => {
+          // no surviving finding names this analyst — so show the MEASUREMENT instead of
+          // dropping the section: every configuration they are part of, interval and all
+          const pr = patRowsForAnalyst(k);
+          if (!pr) return "";
+          const nm = String(cast.name || k).toUpperCase();
+          return `<div class="anlp-sec"><div class="anlp-sec-h">Where ${esc(nm)} shows up in the table</div>
+            <p class="anlp-patlede">Every board shape ${esc(nm)} is part of, measured across ${pr.era.n.toLocaleString("en-US")} games of ${esc(pr.era.label.replace(/^the\s+/i, "the "))}, each with its own exact 95% interval.${pr.era.sig.any ? "" : " Not one of them has separated from a coin flip."}</p>
+            <div class="patrows anlp-patrows" role="list">${pr.rows.map((r: any) => patRowHtml(r, pr.sc)).join("")}</div>
+            <button class="rb-full" id="anl-pat-all">See the whole table →</button></div>`;
+        })();
       const arc = rec ? anlArcSvg(rec.last10, k) : "";
       const html = `
         <div class="gamepage anlpage an-${esc(k)}" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(cast.name || k)} — analyst">
@@ -2177,7 +2316,7 @@ export default function Home() {
               <div class="anlp-aura" aria-hidden="true"></div>
               <div class="anlp-art">${deskPortrait(k, 148, "page")}</div>
               <h2 class="anlp-name">${esc(String(cast.name || k).toUpperCase())}</h2>
-              <div class="anlp-title">${esc(cast.title || "Analyst")}${crowned ? `<span class="anlp-crown">${crownSvg(13)} Analyst of the week</span>` : ""}</div>
+              <div class="anlp-title">${esc(cast.title || "Analyst")}${crowned ? `<span class="anlp-crown">${crownSvg(13)} Analyst of the week${aiW && aiW.week ? ` · ${esc(aiW.week)}` : ""}</span>` : ""}</div>
               ${bio.tagline ? `<p class="anlp-tag">“${esc(bio.tagline)}”</p>` : ""}
             </header>
             ${bio.how ? `<section class="anlp-sec anlp-voice"><div class="anlp-sec-h">How I see baseball</div><p class="anlp-method">${esc(bio.how)}</p></section>` : (cast.method ? `<section class="anlp-sec"><p class="anlp-method">${esc(cast.method)}</p></section>` : "")}
@@ -2212,6 +2351,7 @@ export default function Home() {
       $("gp-back").onclick = () => closeDetail();
       const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
       const ins = $("anl-insights"); if (ins) ins.onclick = () => { closeDetail(); switchTab("results"); };
+      const pAll = $("anl-pat-all"); if (pAll) pAll.onclick = () => { closeDetail(); switchTab("results"); };
     }
     // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
     // card — tiles, the standings strip, the debate panel — without touching each binder.
@@ -2233,9 +2373,10 @@ export default function Home() {
     function deskRecChip(key: string) {
       const r = deskRecordRows().find((x: any) => x.key === key);
       if (!r || r.win + r.loss + r.push === 0) return "";
-      // even the smallest inline chip carries its sample — a bare W–L with no n is the
-      // exact thing that reads as a characteristic instead of a running tally.
-      return `<span class="dbt-rec"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b><i>${r.n} graded${r.n < ANALYST_MIN_N ? " · young" : ""}</i></span>`;
+      // even the smallest inline chip carries its sample AND its kind — a bare W–L with no n
+      // reads as a characteristic instead of a running tally, and a lean ledger's W–L read as
+      // a betting record is the same lie in miniature.
+      return `<span class="dbt-rec ${ledgerCls(r)}"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b><i>${ledgerMark(r)} ${r.n} graded ${esc(ledgerShort(r))}${r.n < ANALYST_MIN_N ? " · too early to rank" : ""}</i></span>`;
     }
     function deskDebatePanel(g: any, locked = false) {
       const ans = deskAnalysts(g);
@@ -2501,21 +2642,46 @@ export default function Home() {
       return [];
     }
     const h2hFor = (key: string) => headToHeadRows().filter((r: any) => r.a === key || r.b === key);
-    // one versus-card: two glyphs face off, the disagreement record between them
+    // one versus-card. Under H2H_MIN_N disagreements a feud has NO score: two games decided
+    // 1–1 is a coin flip, and printing it as a scoreboard invents a rivalry out of nothing.
+    // Below the bar the card says how far off it is and shows no numbers at all.
     function h2hCardHtml(r: any) {
-      const lead = r.aw === r.bw ? null : (r.aw > r.bw ? r.a : r.b);
+      const scored = r.n >= H2H_MIN_N;
+      const lead = !scored || r.aw === r.bw ? null : (r.aw > r.bw ? r.a : r.b);
       const nmA = (DESK_CAST[r.a] || {}).name || r.a, nmB = (DESK_CAST[r.b] || {}).name || r.b;
-      const side = (k: string, w: number) => `<button class="vs-side an-${esc(k)}${lead === k ? " lead" : ""}" data-an="${esc(k)}" aria-label="${esc((DESK_CAST[k] || {}).name || k)} — analyst card">
-          ${deskGlyph(k, 17)}<b>${esc((DESK_CAST[k] || {}).name || k)}</b><span class="vs-w">${w}</span>
+      const lkA = anLedger(r.a), lkB = anLedger(r.b);
+      const side = (k: string, w: number, lk: any) => `<button class="vs-side an-${esc(k)} ${ledgerCls(lk)}${lead === k ? " lead" : ""}" data-an="${esc(k)}" aria-label="${esc((DESK_CAST[k] || {}).name || k)} — analyst card">
+          ${deskGlyph(k, 17)}<b>${esc((DESK_CAST[k] || {}).name || k)}</b>${scored ? `<span class="vs-w">${w}</span>` : ""}<span class="vs-lk ${ledgerCls(lk)}">${ledgerMark(lk)} ${esc(ledgerShort(lk))}</span>
         </button>`;
+      // a staked record vs a lean ledger is still a legitimate "who was right" count — it is
+      // just not a money comparison, and the card has to say which one it is
+      const mixed = isLean(lkA) !== isLean(lkB)
+        ? `<div class="vs-note">One of these ledgers stakes units and the other never does — this counts who read the game right, not who made money.</div>`
+        : "";
+      if (!scored) {
+        const pct = Math.max(4, Math.min(100, (r.n / H2H_MIN_N) * 100));
+        return `<div class="vscard early">
+          <div class="vs-k">When ${esc(nmA)} and ${esc(nmB)} disagree</div>
+          <div class="vs-face">${side(r.a, r.aw, lkA)}<span class="vs-mid none"><i>VS</i></span>${side(r.b, r.bw, lkB)}</div>
+          <div class="vs-early">
+            <b>Too few disagreements to score</b>
+            <span class="vs-early-n">They have taken opposite sides ${r.n} time${r.n === 1 ? "" : "s"}. A head-to-head needs about ${H2H_MIN_N} before the result says anything about either of them, so this one carries no score yet.</span>
+            <span class="vs-meter" aria-hidden="true"><i style="width:${pct.toFixed(0)}%"></i></span>
+            <span class="vs-early-k">${r.n} of ~${H2H_MIN_N}</span>
+          </div>
+          ${mixed}
+          ${r.note ? `<div class="vs-note">${esc(deIdent(r.note))}</div>` : ""}
+        </div>`;
+      }
       const verdict = lead
         ? `${esc((DESK_CAST[lead] || {}).name || lead)} leads the feud ${Math.max(r.aw, r.bw)}–${Math.min(r.aw, r.bw)}`
         : `Dead even at ${r.aw}–${r.bw}`;
       return `<div class="vscard">
         <div class="vs-k">When ${esc(nmA)} and ${esc(nmB)} disagree</div>
-        <div class="vs-face">${side(r.a, r.aw)}<span class="vs-mid"><b>${r.aw}–${r.bw}</b><i>VS</i></span>${side(r.b, r.bw)}</div>
+        <div class="vs-face">${side(r.a, r.aw, lkA)}<span class="vs-mid"><b>${r.aw}–${r.bw}</b><i>VS</i></span>${side(r.b, r.bw, lkB)}</div>
         <div class="vs-foot">${esc(verdict)}${r.push ? ` · ${r.push} push${r.push === 1 ? "" : "es"}` : ""} · ${r.n} head-to-head game${r.n === 1 ? "" : "s"}</div>
-        ${r.note ? `<div class="vs-note">${esc(r.note)}</div>` : ""}
+        ${mixed}
+        ${r.note ? `<div class="vs-note">${esc(deIdent(r.note))}</div>` : ""}
       </div>`;
     }
 
@@ -2533,23 +2699,40 @@ export default function Home() {
           if (!x || typeof x !== "object") return;
           const key = anKeyOf(x) || anKeyOf(hint);
           if (!DESK_CAST[key] || seen[key]) return;
-          const wl = wlParse(x.record != null ? x.record : x);
-          if (!wl) return;
+          // a 0–0 week is a FACT about that analyst's week, not a missing row — it stays on
+          // the board so nobody has to wonder where the fourth desk went
+          const wl = wlParse(x.record != null ? x.record : x) || { w: 0, l: 0, p: 0 };
           seen[key] = 1;
-          rows.push({ key, ...wl, roi: _fin(x.roi), n: Math.max(0, Math.round(Number(x.n) || 0)) || wl.w + wl.l + wl.p });
+          rows.push({
+            key, ...wl, roi: _fin(x.roi),
+            n: Math.max(0, Math.round(Number(x.n) || 0)) || wl.w + wl.l + wl.p,
+            // the served weekly rows carry their own is_betting_record; fall back to the
+            // season ledger so a lean week is never coloured as a staked one
+            isBet: x.is_betting_record != null ? x.is_betting_record !== false : undefined,
+          });
         };
         if (Array.isArray(rowsRaw)) rowsRaw.forEach((x: any) => add(x));
         else if (rowsRaw && typeof rowsRaw === "object") Object.keys(rowsRaw).forEach((k) => add(rowsRaw[k], k));
-        const aotw = anKeyOf(w.analyst_of_the_week != null ? w.analyst_of_the_week : (w.aotw != null ? w.aotw : w.crown));
+        const aotwRaw = w.analyst_of_the_week != null ? w.analyst_of_the_week : (w.aotw != null ? w.aotw : w.crown);
+        const aotw = anKeyOf(aotwRaw);
+        // WHICH week the crown is for, and on what basis — both are served, and without them
+        // the crown floats over a live board it has nothing to do with.
+        const aotwInfo = aotw ? {
+          key: aotw,
+          line: aotwRaw && typeof aotwRaw === "object" ? String(aotwRaw.line || "") : "",
+          week: aotwRaw && typeof aotwRaw === "object" && String(aotwRaw.week_start || "").slice(0, 10).match(/^\d{4}-\d{2}-\d{2}$/)
+            ? recapDateTxt((aotwRaw as any).week_start) : "",
+          basis: aotwRaw && typeof aotwRaw === "object" ? humanNote((aotwRaw as any).basis) : "",
+        } : null;
         const label = humanNote(w.label != null ? w.label : w.week_label)
           || (String(w.week_start || "").slice(0, 10).match(/^\d{4}-\d{2}-\d{2}$/) ? `Week of ${recapDateTxt(w.week_start)}` : "This week");
         if (rows.length || aotw) {
-          // the race ranks on net wins (W−L) first — the same "best wins-losses" basis the
-          // served analyst_of_the_week uses — then volume, then ROI when present
-          rows.sort((a, b) => ((b.w - b.l) - (a.w - a.l)) || (b.w - a.w)
-            || ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi))
-            || (DESK_ORDER.indexOf(a.key) - DESK_ORDER.indexOf(b.key)));
-          return { rows, aotw, label, note: humanNote(w.note) };
+          // NEUTRAL ORDER ONLY. A week is a handful of calls — far under the readable bar —
+          // so ordering it by result would manufacture a standing out of noise. Rows are
+          // listed by calls made, then by name; nothing here is a rank.
+          rows.sort((a, b) => ((b.n || 0) - (a.n || 0))
+            || String((DESK_CAST[a.key] || {}).name || a.key).localeCompare(String((DESK_CAST[b.key] || {}).name || b.key)));
+          return { rows, aotw, aotwInfo, label, note: humanNote(w.note) };
         }
       }
       return null;
@@ -2558,39 +2741,55 @@ export default function Home() {
       const w = weeklyStandingsData();
       return w ? (w.rows.find((r: any) => r.key === key) || null) : null;
     };
-    // Insights: the seven-day sprint — weekly records as a race, the crown on this week's leader.
+    // Insights: THE WEEK AT THE DESK — a tally, deliberately not a race.
+    // A week is a handful of graded calls, an order of magnitude under the readable bar, so
+    // there are no ordinals and no result-order here: rows are listed by calls made and each
+    // bar shows that analyst's OWN win/loss split at full width, so no two bars can be read
+    // against each other. The crown is a separate, dated award for a COMPLETED week.
     function weeklyRaceSection() {
       const w = weeklyStandingsData();
       if (!w || !w.rows.length) return "";
-      const maxW = Math.max(1, ...w.rows.map((r: any) => r.w));
-      const rows = w.rows.map((r: any, i: number) => {
-        const crowned = w.aotw === r.key;
+      const rows = w.rows.map((r: any) => {
+        const lk = anLedger(r.key, r);
         const rec = `${r.w}–${r.l}${r.p ? `–${r.p}` : ""}`;
-        return `<button class="wkr an-${esc(r.key)}${crowned ? " crowned" : ""}" data-an="${esc(r.key)}" aria-label="${esc((DESK_CAST[r.key] || {}).name || r.key)} — this week ${rec}">
-          <span class="wkr-rank">${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}</span>
-          <span class="wkr-id">${deskGlyph(r.key, 14)}<b>${esc((DESK_CAST[r.key] || {}).name || r.key)}</b>${crowned ? `<span class="wkr-crown">${crownSvg(12)}</span>` : ""}</span>
-          <span class="wkr-bar" aria-hidden="true"><i style="width:${Math.max(6, (r.w / maxW) * 100).toFixed(0)}%"></i></span>
-          <span class="wkr-rec"><b>${rec}</b>${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}</span>
+        const played = r.w + r.l + r.p;
+        const nm = (DESK_CAST[r.key] || {}).name || r.key;
+        const split = played
+          ? `<span class="wkr-bar" aria-hidden="true"><i class="wb-w" style="width:${((r.w / played) * 100).toFixed(1)}%"></i><i class="wb-p" style="width:${((r.p / played) * 100).toFixed(1)}%"></i><i class="wb-l" style="width:${((r.l / played) * 100).toFixed(1)}%"></i></span>`
+          : `<span class="wkr-bar none" aria-hidden="true"></span>`;
+        return `<button class="wkr an-${esc(r.key)} ${ledgerCls(lk)}" data-an="${esc(r.key)}"
+          aria-label="${esc(`${nm} — ${played ? `${rec} this week` : "no graded calls this week"}, ${isLean(lk) ? "leans, never staked" : "staked record"}`)}">
+          <span class="wkr-mark ${ledgerCls(lk)}" aria-hidden="true">${ledgerMark(lk)}</span>
+          <span class="wkr-id">${deskGlyph(r.key, 14)}<b>${esc(nm)}</b></span>
+          ${split}
+          <span class="wkr-rec">${played ? `<b>${rec}</b>` : `<b class="none">0–0</b>`}${played ? ledgerRoi({ ...r, isBet: lk.isBet }, "") : `<i class="dim">no calls</i>`}</span>
         </button>`;
       }).join("");
-      const champ = w.aotw && DESK_CAST[w.aotw]
-        ? `<div class="wkr-champ an-${esc(w.aotw)}"><span class="wkr-crown big">${crownSvg(15)}</span>${deskGlyph(w.aotw, 16)}<b>${esc(DESK_CAST[w.aotw].name)}</b><span>is the Analyst of the Week</span></div>`
+      const ai = w.aotwInfo;
+      const champ = ai && DESK_CAST[ai.key]
+        ? `<div class="wkr-champ an-${esc(ai.key)} ${ledgerCls(anLedger(ai.key))}">
+            <div class="wkr-champ-top"><span class="wkr-crown big">${crownSvg(15)}</span>${deskGlyph(ai.key, 16)}<b>${esc(DESK_CAST[ai.key].name)}</b><span>Analyst of the Week</span>${ledgerChip(anLedger(ai.key), true)}</div>
+            <div class="wkr-champ-w">${esc(ai.week ? `for the completed week of ${ai.week}` : "for the last completed week")}${ai.line ? ` · ${esc(ai.line)}` : ""}</div>
+            <div class="wkr-champ-b">${esc(ai.basis ? `Awarded on: ${ai.basis}.` : "Awarded on the best wins-losses of that completed week.")} It is a prize for one week of a few dozen calls — not a standing, and nothing to do with the tally below.</div>
+          </div>`
         : "";
       return `<div class="ixc wkrace" id="weekly-race">
-        <div class="ixc-h">The weekly race</div>
-        <div class="ixc-sub">${esc(w.label || "This week")} — the same four analysts, sprint-scored week by week. The crown resets every Monday.</div>
+        <div class="ixc-h">The week at the desk</div>
+        <div class="ixc-sub">${esc(w.label || "This week")}, in progress. A week is a few dozen calls at most — nowhere near enough to rank anyone — so this is a tally and not a race: no places, listed by calls made, and each bar is that analyst's own win-loss split rather than a comparison.</div>
         ${champ}
         <div class="wkr-rows">${rows}</div>
-        ${w.note ? `<div class="chh-note">${esc(w.note)}</div>` : ""}
+        <div class="wkr-legend"><i class="wb-w"></i>won<i class="wb-p"></i>push<i class="wb-l"></i>lost</div>
+        ${w.note ? `<div class="chh-note">${esc(deIdent(w.note))}</div>` : ""}
       </div>`;
     }
     // Insights: the rivalry board — every pairwise disagreement scoreboard as a versus-card.
     function rivalriesSection() {
       const rows = headToHeadRows();
       if (!rows.length) return "";
+      const scored = rows.filter((r: any) => r.n >= H2H_MIN_N).length;
       return `<div class="ixc rivalries" id="rivalries">
         <div class="ixc-h">Desk rivalries</div>
-        <div class="ixc-sub">Same game, opposite calls — when two analysts take different sides, exactly one of them is right. These are those games only, scored head-to-head.</div>
+        <div class="ixc-sub">Same game, opposite calls — when two analysts take different sides, exactly one of them is right. These are those games only. A feud is only given a score once the pair has disagreed about ${H2H_MIN_N} times; ${scored ? `${scored} of these ${rows.length} ${scored === 1 ? "has" : "have"}` : "none of these has"} got there yet, so the rest show how far off they are instead of a scoreline.</div>
         <div class="vsgrid">${rows.slice(0, 6).map(h2hCardHtml).join("")}</div>
       </div>`;
     }
@@ -2623,12 +2822,22 @@ export default function Home() {
     const recapLineRows = (rc: any, max = 4) => rc.lines.slice(0, max).map((l: any) => {
       const rec = l.wl ? `${l.wl.w}–${l.wl.l}${l.wl.p ? `–${l.wl.p}` : ""}` : "";
       const win = rc.winner === l.key;
-      return `<button class="rcap-line an-${esc(l.key)}${win ? " won" : ""}" data-an="${esc(l.key)}">
-        ${deskGlyph(l.key, 13)}<span class="rcap-nm"><b>${esc((DESK_CAST[l.key] || {}).name || l.key)}</b>${win ? `<span class="rcap-crown">${crownSvg(10)}</span>` : ""}</span>
+      const lk = anLedger(l.key);
+      return `<button class="rcap-line an-${esc(l.key)} ${ledgerCls(lk)}${win ? " won" : ""}" data-an="${esc(l.key)}">
+        ${deskGlyph(l.key, 13)}<span class="rcap-nm"><b>${esc((DESK_CAST[l.key] || {}).name || l.key)}</b><span class="rcap-lk ${ledgerCls(lk)}" title="${esc(ledgerWord(lk))}">${ledgerMark(lk)}</span>${win ? `<span class="rcap-crown">${crownSvg(10)}</span>` : ""}</span>
         ${l.txt ? `<i class="rcap-linetx">${esc(l.txt)}</i>` : ""}
         ${rec ? `<b class="rcap-rec">${rec}</b>` : ""}
       </button>`;
     }).join("");
+    // one night is one night. The recap names a winner of the evening — a fact — but the
+    // rows underneath mix staked records with lean ledgers, and that has to be said once
+    // wherever they are shown together.
+    const recapKeyLine = (rc: any) => {
+      if (!rc || !rc.lines || !rc.lines.length) return "";
+      const kinds = rc.lines.map((l: any) => isLean(anLedger(l.key)));
+      if (!kinds.some(Boolean) || kinds.every(Boolean)) return "";
+      return `<div class="rcap-key"><span class="lkchip lk-bet tight"><i aria-hidden="true">◆</i>staked</span><span class="lkchip lk-lean tight"><i aria-hidden="true">◇</i>leans</span><span class="rcap-key-tx">One night's tally, and two of these ledgers never stake a unit — winning a night is not a standing.</span></div>`;
+    };
     // (b) the morning recap card on the home board — fresh content every day.
     function deskRecapCard() {
       const rc = latestDeskRecap();
@@ -2645,6 +2854,7 @@ export default function Home() {
           <div class="rcap-head"><b>${esc(head)}</b>${rc.note ? `<i>${esc(rc.note)}</i>` : ""}</div>
         </div>
         ${rc.lines.length ? `<div class="rcap-lines">${recapLineRows(rc)}</div>` : ""}
+        ${recapKeyLine(rc)}
         ${recapCallRow(rc.best, "best")}
         ${recapCallRow(rc.worst, "worst")}
       </section>`;
@@ -2664,6 +2874,7 @@ export default function Home() {
           <div class="rcap-day-b">
             ${rc.headline ? `<div class="rcap-day-head">${esc(rc.headline)}</div>` : ""}
             ${rc.lines.length ? `<div class="rcap-lines">${recapLineRows(rc)}</div>` : ""}
+            ${recapKeyLine(rc)}
             ${recapCallRow(rc.best, "best")}
             ${recapCallRow(rc.worst, "worst")}
             ${rc.note ? `<div class="chh-note">${esc(rc.note)}</div>` : ""}
@@ -2676,28 +2887,39 @@ export default function Home() {
         ${all.map((rc: any, i: number) => night(rc, i === 0)).join("")}
       </div>`;
     }
-    // Insights: the desk, ranked — per-analyst records + the consensus-state record.
+    // Insights: the desk board — per-analyst records + the consensus-state record.
+    // Grouped, not ranked flat: see deskGroups(). A row's position only carries meaning
+    // inside a group whose heading says the comparison is defensible.
     function analystRecordSection() {
       const rows = deskRecordRows();
       if (!rows.length) return "";
-      const ranked = rows.slice().sort((a: any, b: any) =>
-        ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) || ((b.hit || 0) - (a.hit || 0)));
-      const cards = ranked.map((r: any, i: number) => `
-        <button class="dskrec-card an-${esc(r.key)}" data-an="${esc(r.key)}">
-          <span class="dskst-rank">${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}</span>
-          <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
-          <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)} ROI</i>` : ""}<i class="dim">${r.n || 0} graded · live era${r.n && r.n < ANALYST_MIN_N ? " · too young to read" : ""}</i></span>
-          ${deskL10Dots(r.last10)}
-        </button>`).join("");
+      const groups = deskGroups(rows).map((grp: any) => {
+        const cards = grp.rows.map((r: any, i: number) => `
+          <button class="dskrec-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}"
+            aria-label="${esc(`${r.name} — ${isLean(r) ? "lean ledger" : "staked record"}, ${r.win}-${r.loss}${r.push ? `-${r.push}` : ""} over ${r.n} graded calls${grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : "") : ", too early to rank"}`)}">
+            <span class="dskrec-rank">${grp.ranked && grp.ordinals ? ordinal(i) : `<i class="dskrec-norank">${grp.ranked ? "◆" : "—"}</i>`}</span>
+            <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
+            <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i${grp.ranked ? "" : ` class="soft"`}>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? ledgerRoi(r, grp.ranked ? "" : "soft") : ""}<i class="dim">${r.n || 0} graded · live era</i>${ledgerChip(r)}</span>
+            ${deskL10Dots(r.last10)}
+          </button>`).join("");
+        return `<div class="dskrec-grp ${esc(grp.id)}">
+          <div class="dskrec-gh"><span class="dskrec-gk">${esc(grp.head)}</span><span class="dskrec-gs">${esc(grp.sub)}</span></div>
+          <div class="dskrec-list">${cards}</div>
+        </div>`;
+      }).join("");
       const ch = consensusHistoryRows();
       const chRows = ch.map((r: any) => {
         const lab = r.state === "UNANIMOUS" ? "All four agree" : r.state === "MAJORITY" ? "3–1 majority" : "Desk split";
         return `<div class="chh-row ${r.state.toLowerCase()}"><span class="chh-lab">${lab}</span><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(0)}%</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}<span class="chh-n">${r.n} games</span></div>`;
       }).join("");
       return `<div class="ixc dskrec" id="analyst-record">
-        <div class="ixc-h">The desk, ranked</div>
-        <div class="ixc-sub">Four analysts call every game independently. Each one's calls are graded against the real final — this is the competition scoreboard.</div>
-        <div class="dskrec-list">${cards}</div>
+        <div class="ixc-h">The desk board</div>
+        <div class="ixc-sub">Four analysts call every game independently, and every call is graded against the real final. What they cannot all do is share one league table: two of them stake units and two of them file leans that are never staked, and three of the four are still nowhere near a readable sample. So the board is grouped by what is actually comparable — a position only means something inside a group that says so.</div>
+        ${groups}
+        <div class="dskrec-key">
+          <span class="lkchip lk-bet"><i aria-hidden="true">◆</i>staked record</span><span class="dskrec-keytx">units were really risked — this W–L and ROI is a betting record</span>
+          <span class="lkchip lk-lean"><i aria-hidden="true">◇</i>leans, never staked</span><span class="dskrec-keytx">graded opinions; the ROI is a what-if on a bet nobody placed</span>
+        </div>
         ${chRows ? `<div class="chh"><div class="chh-h">When the desk agrees</div>${chRows}<div class="chh-note">The same games seen four ways — the states overlap with nothing else and are graded on the desk's own calls.</div></div>` : ""}
       </div>`;
     }
@@ -2714,25 +2936,8 @@ export default function Home() {
       }
       return null;
     }
-    // one era block → { key, label, n, since, note } (or null)
-    function normPatternEra(key: string, e: any) {
-      if (!e || typeof e !== "object") return null;
-      return {
-        key,
-        label: humanNote(e.label) || (key === "live" ? "Live era" : "Reconstructed era"),
-        n: Math.max(0, Math.round(Number(e.n != null ? e.n : e.n_games) || 0)),
-        since: String(e.since || e.start || e.start_date || "").slice(0, 10),
-        note: humanNote(e.note != null ? e.note : e.what),
-      };
-    }
-    function patternEras() {
-      const p = patternsRaw();
-      if (!p) return { live: null, recon: null };
-      return {
-        live: normPatternEra("live", p.live_era != null ? p.live_era : p.live),
-        recon: normPatternEra("reconstructed", p.reconstructed_era != null ? p.reconstructed_era : p.reconstructed),
-      };
-    }
+    // (the old era-summary reader is gone — patternEraTable() below reads the full era block,
+    // rows and all, because the table IS the surface now)
     // one highlight, whatever shape it arrived in → a stable object (or null).
     // Tolerated: a bare string; { line|text|headline, n, era, kind, analysts|pair|keys,
     // record {win,loss}|"12-8", pct|rate, note }.
@@ -2822,6 +3027,260 @@ export default function Home() {
       const body = m ? m[3] : it.text;
       return patternProse(body.charAt(0).toUpperCase() + body.slice(1));
     }
+    /* ═══════════ THE MEASUREMENT TABLE — a well-powered NULL, rendered as a result ═══════════
+       The corpus went from 325 games to 2,972 and the answer came back clean: all 41 consensus
+       configurations have an exact (Clopper-Pearson) 95% interval that contains 50%, and none
+       survives Benjamini-Hochberg across the table. `highlights` is therefore [] BY DESIGN — the
+       old finding-generator was picking the most extreme of 41 cells and printing it as a
+       discovery, which is the same failure as ranking a 15-call ledger first.
+
+       So this surface stops being a list of revelations and becomes a MEASUREMENT: the headline
+       states the null in full, and every configuration is shown with its own interval drawn
+       against a 50% line. Seeing twenty-five intervals all straddling the midline is a far
+       stronger statement than any sentence — and it is the honest one. This is not an empty
+       state and must never look like one; a well-powered negative is the most trustworthy thing
+       on the site. If a row ever does survive correction, `highlights` fills again and those
+       sentences take the lead back. */
+    function patternsHeadline() {
+      const p = patternsRaw();
+      if (!p) return null;
+      const h = p.headline && typeof p.headline === "object" ? p.headline : {};
+      const line = groupThousands(humanNote(h.line) || (typeof p.headline === "string" ? humanNote(p.headline) : ""));
+      const status = String(h.status || p.status || "").toLowerCase();
+      const anyFinding = h.any_finding != null ? h.any_finding === true
+        : (patternHighlights().length > 0);
+      if (!line && !anyFinding) return null;
+      return {
+        line, anyFinding, status,
+        liveLine: humanNote(h.live_era_line),
+        reconLine: humanNote(h.reconstructed_era_line),
+        what: humanNote(h.what_this_table_is),
+        honest: humanNote(p.honest_note),
+      };
+    }
+    const PAT_FAM: any = { UNANIMOUS_4: "All four agree", "MAJORITY_3-1": "3–1 majority", "SPLIT_2-2": "2–2 split" };
+    // most agreement first — the reader's mental order, not the payload's key order
+    const FAM_ORDER = (lab: string) => (/all four/i.test(lab) ? 0 : /majority/i.test(lab) ? 1 : /split/i.test(lab) ? 2 : 3);
+    const anCaps = (k: any) => String((DESK_CAST[anKeyOf(k)] || {}).name || k).toUpperCase();
+    // "MAJORITY_3-1|dissent=vega|over" → "3–1 majority · VEGA dissents · called OVER"
+    function patRowLabel(key: string) {
+      const parts = String(key).split("|");
+      const out: string[] = [PAT_FAM[parts[0]] || String(parts[0]).replace(/_/g, " ")];
+      parts.slice(1).forEach((seg) => {
+        let m = seg.match(/^dissent=(.+)$/);
+        if (m) { out.push(`${anCaps(m[1])} dissents`); return; }
+        m = seg.match(/^over=(.+)$/);
+        if (m) { out.push(`${m[1].split("+").map(anCaps).join(" + ")} on the over`); return; }
+        if (/^(over|under)$/i.test(seg)) { out.push(`called ${seg.toUpperCase()}`); return; }
+        out.push(seg.replace(/_/g, " "));
+      });
+      return out.join(" · ");
+    }
+    // one served cell → a row we can draw, or null. n + hit + the exact interval are required:
+    // a hit rate without its interval is exactly the thing this table exists to stop printing.
+    function normPatRow(label: string, r: any, keys: string[] = []) {
+      if (!r || typeof r !== "object") return null;
+      const n = Math.max(0, Math.round(Number(r.n_decided != null ? r.n_decided : r.n) || 0));
+      const hit = _fin(r.hit_rate);
+      if (!n || hit == null) return null;
+      const ciRaw = Array.isArray(r.hit_ci95) ? r.hit_ci95 : (Array.isArray(r.ci95) ? r.ci95 : null);
+      const lo = ciRaw ? _fin(ciRaw[0]) : null, hi = ciRaw ? _fin(ciRaw[1]) : null;
+      return {
+        label, keys,
+        n, hit,
+        lo: lo != null ? lo : null,
+        hi: hi != null ? hi : null,
+        win: Math.max(0, Math.round(Number(r.win) || 0)),
+        loss: Math.max(0, Math.round(Number(r.loss) || 0)),
+        clear: r.ci_excludes_50 === true,
+        sig: r.bh_significant === true,
+        p: _fin(r.p_two_sided),
+      };
+    }
+    // an era block → { key, label, n, range, line, sig, groups:[{key,head,sub,rows}] }
+    function patternEraTable(eraKey: string, e: any) {
+      if (!e || typeof e !== "object") return null;
+      const rows = (obj: any, keyer?: (k: string) => string[]) => {
+        if (!obj || typeof obj !== "object") return [];
+        return Object.keys(obj).map((k) => normPatRow(patRowLabel(k), obj[k], keyer ? keyer(k) : []))
+          .filter(Boolean) as any[];
+      };
+      const dissentKeys = (k: string) => { const m = String(k).match(/dissent=(\w+)/); return m ? [anKeyOf(m[1])].filter(Boolean) : []; };
+      const splitKeys = (k: string) => { const m = String(k).match(/over=([\w+]+)/); return m ? m[1].split("+").map(anKeyOf).filter(Boolean) : []; };
+      // pairwise arrives as { "vega~atlas": { agree:{…}, disagree:{…}, note } } — two rows each
+      const pw: any[] = [];
+      if (e.pairwise && typeof e.pairwise === "object") {
+        Object.keys(e.pairwise).forEach((k) => {
+          const o = e.pairwise[k];
+          if (!o || typeof o !== "object") return;
+          const pair = String(k).split(/[~+_]/).map(anKeyOf).filter(Boolean);
+          if (pair.length !== 2) return;
+          const [a, b] = pair.map(anCaps);
+          const ag = normPatRow(`${a} + ${b} agree`, o.agree, pair);
+          const dg = normPatRow(`${a} vs ${b} — graded on ${a}'s side`, o.disagree, pair);
+          if (ag) pw.push(ag);
+          if (dg) pw.push(dg);
+        });
+      }
+      const groups = [
+        { key: "family", head: "By consensus family", sub: "the three shapes the desk's board can take",
+          rows: rows(e.by_family).sort((a: any, b: any) => FAM_ORDER(a.label) - FAM_ORDER(b.label)) },
+        { key: "dissent", head: "By who dissents", sub: "3–1 boards, split by which analyst is the one holding out", rows: rows(e.by_dissenter, dissentKeys) },
+        { key: "split", head: "By which pair takes the over", sub: "every way a 2–2 board can divide", rows: rows(e.by_split_pair, splitKeys) },
+        { key: "pairwise", head: "Pair by pair", sub: "each duo when they agree, and when they don't", rows: pw },
+        { key: "config", head: "Every configuration, side included", sub: "the same boards again with the side they called", rows: rows(e.by_config), fold: true },
+      ].filter((g) => g.rows.length);
+      const sg = e.significance && typeof e.significance === "object" ? e.significance : {};
+      const dr = Array.isArray(e.date_range) ? e.date_range : [];
+      return {
+        key: eraKey,
+        label: eraKey === "live" ? "The live era" : "The reconstructed era",
+        sub: eraKey === "live"
+          ? "the desk's own graded ledgers, from the day the desk went live"
+          : "the four engines walked forward across history, before the desk existed",
+        n: Math.max(0, Math.round(Number(e.n_games != null ? e.n_games : e.n) || 0)),
+        range: dr[0] && dr[1] ? `${stratDateTxt(String(dr[0]).slice(0, 10)) || dr[0]} – ${stratDateTxt(String(dr[1]).slice(0, 10)) || dr[1]}` : "",
+        line: groupThousands(humanNote(e.headline)),
+        note: humanNote(e.note),
+        groups,
+        sig: {
+          family: Math.max(0, Math.round(Number(sg.family_size) || 0)),
+          method: humanNote(sg.method),
+          clear: Math.max(0, Math.round(Number(sg.n_rows_ci_excludes_50) || 0)),
+          survive: Math.max(0, Math.round(Number(sg.n_rows_bh_significant) || 0)),
+          smallestP: _fin(sg.smallest_p_two_sided),
+          any: sg.any_finding === true,
+          note: humanNote(sg.note),
+        },
+      };
+    }
+    function patternEraTables() {
+      const p = patternsRaw();
+      if (!p) return { live: null, recon: null };
+      return {
+        live: patternEraTable("live", p.live_era != null ? p.live_era : p.live),
+        recon: patternEraTable("recon", p.reconstructed_era != null ? p.reconstructed_era : p.reconstructed),
+      };
+    }
+    /* ONE SHARED SCALE per era. Every interval in an era is drawn against the same axis, so
+       "wider" really means less certain and the 50% line runs straight down the whole table. */
+    function patScale(groups: any[]) {
+      let lo = 0.5, hi = 0.5;
+      groups.forEach((g: any) => g.rows.forEach((r: any) => {
+        if (r.lo != null) lo = Math.min(lo, r.lo);
+        if (r.hi != null) hi = Math.max(hi, r.hi);
+        lo = Math.min(lo, r.hit); hi = Math.max(hi, r.hit);
+      }));
+      const pad = Math.max(0.02, (hi - lo) * 0.08);
+      lo = Math.max(0.05, lo - pad); hi = Math.min(0.95, hi + pad);
+      if (hi - lo < 0.08) { lo = Math.max(0.05, 0.5 - 0.04); hi = Math.min(0.95, 0.5 + 0.04); }
+      const at = (v: number) => `${(((v - lo) / (hi - lo)) * 100).toFixed(2)}%`;
+      return { lo, hi, at };
+    }
+    const pctTxt = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
+    // one measured row: the label, the sample, the point estimate, and the interval DRAWN.
+    function patRowHtml(r: any, sc: any) {
+      const verdict = r.sig
+        ? `<span class="patv sig">survives correction</span>`
+        : r.clear
+          ? `<span class="patv clear">clear of 50%, not after correction</span>`
+          : `<span class="patv null">coin flip</span>`;
+      const band = r.lo != null && r.hi != null
+        ? `<i class="patci-band" style="left:${sc.at(r.lo)};right:calc(100% - ${sc.at(r.hi)})"></i>`
+        : "";
+      const aria = `${r.label}: ${(r.hit * 100).toFixed(1)} percent over ${r.n} games`
+        + (r.lo != null ? `, 95 percent interval ${(r.lo * 100).toFixed(1)} to ${(r.hi * 100).toFixed(1)} percent` : "")
+        + `, ${r.sig ? "survives correction" : r.clear ? "interval clear of 50 percent but not after correction" : "a coin flip"}`;
+      return `<div class="patrow${r.sig ? " is-sig" : r.clear ? " is-clear" : ""}" role="listitem" aria-label="${esc(aria)}">
+        <div class="patrow-l">
+          ${r.keys && r.keys.length && r.keys.length <= 2 ? `<span class="patrow-g">${r.keys.map((k: string) => deskGlyph(k, 12)).join("")}</span>` : ""}
+          <span class="patrow-lab">${esc(r.label)}</span>
+        </div>
+        <div class="patrow-fig">
+          <span class="patrow-hit">${pctTxt(r.hit)}</span>
+          <span class="patrow-n">n = ${r.n.toLocaleString("en-US")}</span>
+        </div>
+        <div class="patci" aria-hidden="true">
+          <i class="patci-mid" style="left:${sc.at(0.5)}"></i>
+          ${band}
+          <i class="patci-dot" style="left:${sc.at(r.hit)}"></i>
+        </div>
+        <div class="patrow-ci">${r.lo != null ? `<span class="patrow-cit">95% CI ${pctTxt(r.lo)} – ${pctTxt(r.hi)}</span>` : ""}${verdict}</div>
+      </div>`;
+    }
+    const patAxisHtml = (sc: any, cls = "") => `<div class="pataxis ${cls}" aria-hidden="true">
+      <span>${pctTxt(sc.lo)}</span><span class="pataxis-mid" style="left:${sc.at(0.5)}">50%</span><span>${pctTxt(sc.hi)}</span>
+    </div>`;
+    function patGroupHtml(g: any, sc: any) {
+      if (g.fold) {
+        // the folded group contains much smaller samples, so it is drawn on ITS OWN axis —
+        // squeezing one 20-point interval into the main scale would flatten every row above
+        const own = patScale([g]);
+        const body = `<div class="patrows" role="list">${g.rows.map((r: any) => patRowHtml(r, own)).join("")}</div>`;
+        return `<details class="patgrp fold">
+          <summary><span class="patgrp-h">${esc(g.head)}</span><span class="patgrp-n">${g.rows.length} rows</span><span class="pp-caret" aria-hidden="true">›</span></summary>
+          <div class="patgrp-sub">${esc(g.sub)} — smaller samples, so these are drawn on their own wider scale.</div>
+          ${patAxisHtml(own, "own")}
+          ${body}
+        </details>`;
+      }
+      const body = `<div class="patrows" role="list">${g.rows.map((r: any) => patRowHtml(r, sc)).join("")}</div>`;
+      return `<div class="patgrp">
+        <div class="patgrp-h">${esc(g.head)}<span class="patgrp-n">${g.rows.length} row${g.rows.length === 1 ? "" : "s"}</span></div>
+        <div class="patgrp-sub">${esc(g.sub)}</div>
+        ${body}
+      </div>`;
+    }
+    function patEraHtml(era: any) {
+      if (!era) return "";
+      const head = `<div class="patera-h">
+        <span class="patera-k ${esc(era.key)}">${esc(era.label)}</span>
+        <span class="patera-m">${era.n ? `${era.n.toLocaleString("en-US")} games` : "no games yet"}${era.range ? ` · ${esc(era.range)}` : ""}</span>
+      </div>
+      <div class="patera-sub">${esc(era.sub)}</div>`;
+      if (!era.groups.length) {
+        // an era with nothing in it is a STATE, not a hole — it says so in words
+        return `<section class="patera empty">
+          ${head}
+          <div class="patera-none"><b>Nothing measured here yet</b><span>${esc(era.line || "This era starts empty and accrues — every graded night adds to it, and the table above is what the reconstruction says in the meantime.")}</span></div>
+        </section>`;
+      }
+      // the main axis is set by the always-visible groups only; the folded small-sample group
+      // carries its own (see patGroupHtml)
+      const sc = patScale(era.groups.filter((g: any) => !g.fold).length ? era.groups.filter((g: any) => !g.fold) : era.groups);
+      const s = era.sig;
+      const sigStrip = s.family ? `<div class="patsig">
+        <span class="patsig-c"><b>${s.family}</b><i>configurations tested</i></span>
+        <span class="patsig-c${s.clear ? " on" : ""}"><b>${s.clear}</b><i>with an interval clear of 50%</i></span>
+        <span class="patsig-c${s.survive ? " on" : ""}"><b>${s.survive}</b><i>surviving correction</i></span>
+        ${s.smallestP != null ? `<span class="patsig-c"><b>${s.smallestP.toFixed(3)}</b><i>smallest two-sided p</i></span>` : ""}
+      </div>${s.method ? `<div class="patsig-m">Correction: ${esc(s.method)}.${s.note ? ` ${esc(sentence(deIdent(s.note)))}` : ""}</div>` : ""}` : "";
+      // the lead already carries this sentence when they match — don't say it twice
+      const hd0 = patternsHeadline();
+      const dupLead = !!(hd0 && hd0.line && era.line && hd0.line.trim() === era.line.trim());
+      return `<section class="patera">
+        ${head}
+        ${era.line && !dupLead ? `<p class="patera-line">${esc(era.line)}</p>` : ""}
+        ${sigStrip}
+        ${patAxisHtml(sc)}
+        ${era.groups.map((g: any) => patGroupHtml(g, sc)).join("")}
+        ${era.note ? `<div class="patera-note">${esc(sentence(deIdent(era.note)))}</div>` : ""}
+      </section>`;
+    }
+    // the character page's slice of the same table — every configuration this analyst is part
+    // of, on the era's own shared scale so it lines up with the full board on Insights
+    function patRowsForAnalyst(k: string) {
+      const eras = patternEraTables();
+      const era = eras.recon && eras.recon.groups.length ? eras.recon
+        : (eras.live && eras.live.groups.length ? eras.live : null);
+      if (!era) return null;
+      const rows: any[] = [];
+      era.groups.forEach((g: any) => g.rows.forEach((r: any) => {
+        if (r.keys && r.keys.indexOf(k) >= 0) rows.push(r);
+      }));
+      if (!rows.length) return null;
+      return { era, rows: rows.slice(0, 8), sc: patScale(era.groups) };
+    }
     const PATTERN_MIN_N = 25;
     function patternCard(it: any, big = false) {
       const glyphs = it.keys.length && it.keys.length <= 2
@@ -2840,50 +3299,101 @@ export default function Home() {
         ${it.note ? `<div class="pat-note">${esc(it.note)}</div>` : ""}
       </article>`;
     }
-    // HOME: the patterns rail — the boldest reads, swipable, with the deep-dive link.
+    // HOME: the patterns card. With findings it is the rail of revelations; with a
+    // well-powered null it is the null, stated at full confidence — the same size of type,
+    // the same weight of surface. A result is a result.
     function patternsStrip() {
       const items = patternHighlights();
-      if (!items.length) return "";
-      const cards = items.slice(0, 5).map((it) => patternCard(it)).join("");
-      return `<section class="patstrip" aria-label="The patterns">
+      const hd = patternsHeadline();
+      if (items.length) {
+        const cards = items.slice(0, 5).map((it) => patternCard(it)).join("");
+        return `<section class="patstrip" aria-label="The patterns">
+          <div class="pat-h">
+            <span class="pat-k">◆ The Patterns</span>
+            <span class="pat-sub">What actually happens when the desk lines up — measured nightly, not vibes</span>
+            <button class="pat-all" data-nav="results" aria-label="Every pattern, on Insights">All patterns →</button>
+          </div>
+          <div class="pat-rail">${cards}</div>
+        </section>`;
+      }
+      if (!hd || !hd.line) return "";
+      const recon = patternEraTables().recon;
+      const s = recon ? recon.sig : null;
+      return `<section class="patstrip nullres" aria-label="The patterns">
         <div class="pat-h">
           <span class="pat-k">◆ The Patterns</span>
-          <span class="pat-sub">What actually happens when the desk lines up — measured nightly, not vibes</span>
-          <button class="pat-all" data-nav="results" aria-label="Every pattern, on Insights">All patterns →</button>
+          <button class="pat-all" data-nav="results" aria-label="Every configuration and its interval, on Insights">Every interval →</button>
         </div>
-        <div class="pat-rail">${cards}</div>
+        <div class="patnull">
+          <span class="patnull-tag">Measured — no signal</span>
+          <p class="patnull-line">${esc(hd.line)}</p>
+          ${s && s.family ? `<div class="patnull-figs">
+            <span><b>${s.family}</b><i>configurations tested</i></span>
+            <span><b>${s.clear}</b><i>clear of 50%</i></span>
+            <span><b>${s.survive}</b><i>survive correction</i></span>
+          </div>` : ""}
+          <div class="patnull-foot">We publish this the same way we would publish a winner. Nothing in the table gates, sizes or creates a bet.</div>
+        </div>
       </section>`;
     }
-    // INSIGHTS: the deep dive — every highlight, with the era ledger framing up top.
+    // INSIGHTS: the deep dive — the headline, then EVERY configuration with its own interval
+    // drawn against the 50% line, era by era, never summed.
     function patternsSection() {
       const items = patternHighlights();
-      if (!items.length) return "";
-      const eras = patternEras();
-      const eraRow = (e: any, cls: string) => e
-        ? `<div class="pat-erarow ${cls}"><span class="pat-era ${cls}">${esc(e.label)}</span><span class="pat-eratx">${e.n ? `${e.n} games` : ""}${e.since ? `${e.n ? " · " : ""}since ${esc(stratDateTxt(e.since) || e.since)}` : ""}${e.note ? ` — ${esc(e.note)}` : ""}</span></div>`
-        : "";
+      const hd = patternsHeadline();
+      const eras = patternEraTables();
+      if (!hd && !items.length && !eras.recon && !eras.live) return "";
+      const lead = items.length
+        ? `<div class="patlead found">
+            <span class="patlead-tag on">${items.length} configuration${items.length === 1 ? "" : "s"} survived correction</span>
+            <div class="pat-grid">${items.map((it) => patternCard(it)).join("")}</div>
+          </div>`
+        : (hd && hd.line
+          ? `<div class="patlead">
+              <span class="patlead-tag">Measured — no signal</span>
+              <p class="patlead-line">${esc(hd.line)}</p>
+            </div>`
+          : "");
       return `<div class="ixc patsec" id="patterns">
         <div class="ixc-h">The patterns</div>
-        <div class="ixc-sub">The desk's history, mined for tendencies — including the uncomfortable ones. When agreement helps, when it hurts, and which pairs are worth listening to. Updated as every night grades.</div>
-        ${eraRow(eras.live, "live")}${eraRow(eras.recon, "recon")}
-        <div class="pat-grid">${items.map((it) => patternCard(it)).join("")}</div>
-        <div class="pat-honest">These are observed tendencies, not laws — most samples are small, the eras are labelled, and a pattern that stops working gets reported here the same night it breaks.</div>
+        <div class="ixc-sub">${esc(hd && hd.what
+          ? `This table is ${hd.what}`
+          : "Every shape the desk's board can take, measured against the real finals — each row with its own sample and its own exact interval.")}</div>
+        ${lead}
+        ${patEraHtml(eras.recon)}
+        ${patEraHtml(eras.live)}
+        ${hd && hd.honest ? `<div class="pat-honest">${esc(deIdent(hd.honest))}</div>` : ""}
       </div>`;
     }
-    // STORIES: the boldest pattern as a full-viewport revelation slide.
+    // STORIES: the pattern slide. A finding leads if there is one; otherwise the null does,
+    // at exactly the same volume — this is the slide that proves the site reports both ways.
     function storyPatternsSlide() {
       const items = patternHighlights();
-      if (!items.length) return "";
-      const pick0 = items.find((x) => x.kind === "contrarian") || items[0];
-      const more = items.length > 1 ? `<div class="sts-substat">${items.length - 1} more pattern${items.length === 2 ? "" : "s"} on Insights</div>` : "";
-      return `<div class="sts sts-patterns">
+      if (items.length) {
+        const pick0 = items.find((x) => x.kind === "contrarian") || items[0];
+        const more = items.length > 1 ? `<div class="sts-substat">${items.length - 1} more pattern${items.length === 2 ? "" : "s"} on Insights</div>` : "";
+        return `<div class="sts sts-patterns">
+          <div class="sts-bg" aria-hidden="true"></div>
+          <div class="sts-kick"><span>◆ The Patterns</span></div>
+          <div class="sts-patlead">${esc(patternLead(pick0))}</div>
+          <h3 class="sts-head pat">${patternBody(pick0)}</h3>
+          <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">live era</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">replayed era</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample</span>` : ""}</div>
+          ${more}
+          <button class="st-cta" data-go="results">Every pattern, graded →</button>
+        </div>`;
+      }
+      const hd = patternsHeadline();
+      if (!hd || !hd.line) return "";
+      const recon = patternEraTables().recon;
+      const s = recon ? recon.sig : null;
+      return `<div class="sts sts-patterns nullres">
         <div class="sts-bg" aria-hidden="true"></div>
         <div class="sts-kick"><span>◆ The Patterns</span></div>
-        <div class="sts-patlead">${esc(patternLead(pick0))}</div>
-        <h3 class="sts-head pat">${patternBody(pick0)}</h3>
-        <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">live era</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">replayed era</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample</span>` : ""}</div>
-        ${more}
-        <button class="st-cta" data-go="results">Every pattern, graded →</button>
+        <div class="sts-patlead">THE ANSWER IS NO</div>
+        <h3 class="sts-head pat">${esc(recon && recon.n ? `Across ${recon.n.toLocaleString("en-US")} games, the desk's agreement carries no measurable signal.` : "The desk's agreement carries no measurable signal.")}</h3>
+        <p class="sts-patbody">Agreement, dissent and splits all land at a coin flip. Every interval contains 50%, and nothing survives correcting for the whole table.</p>
+        ${s && s.family ? `<div class="pat-meta center"><span class="pat-n">${s.family} configurations</span><span class="pat-n">${s.clear} clear of 50%</span><span class="pat-n">${s.survive} survive correction</span></div>` : ""}
+        <button class="st-cta" data-go="results">See every interval →</button>
       </div>`;
     }
 
@@ -7395,7 +7905,8 @@ export default function Home() {
       // and the standings are the top-of-home promise
       if (deskRecordRows().length) slides.push({ t: "standings" });
       // THE PATTERNS — the boldest measured tendency as its own revelation slide
-      if (patternHighlights().length) slides.push({ t: "patterns" });
+      // the patterns slide now stands on a FINDING or on a well-powered null — both are results
+      if (patternHighlights().length || (patternsHeadline() && patternsHeadline().line)) slides.push({ t: "patterns" });
       const recap = yesterdayRecap();
       if (recap) slides.push({ t: "recap", ...recap });
       let pi = 1, ni = 0;
@@ -7585,25 +8096,32 @@ export default function Home() {
       </div>`;
     }
     // DESK STANDINGS as cinema: the four analysts ranked, records front and center.
+    // The cinema version of the standings obeys the same rule as every other surface: a rank
+    // number only appears inside a group where the ranking is defensible. Cinema is exactly
+    // where a fake leaderboard does the most damage, because it is read fastest.
     function storyStandingsSlide() {
-      const rows = deskRecordRows().slice().sort((a: any, b: any) =>
-        ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) || ((b.hit || 0) - (a.hit || 0)) || ((b.win || 0) - (a.win || 0)));
-      const items = rows.map((r: any, i: number) => {
-        const graded = r.win + r.loss + r.push > 0;
-        return `<button class="sts-strow an-${esc(r.key)}${i === 0 && graded ? " lead" : ""}" data-an="${esc(r.key)}">
-          <span class="sts-strank">${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}</span>
-          ${deskGlyph(r.key, 15)}
-          <span class="sts-dnm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span>
-          <span class="sts-strec"><b>${graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0"}</b>${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}</span>
-          ${deskL10Dots(r.last10.slice(-5))}
-        </button>`;
+      const groups = deskGroups(deskRecordRows());
+      const items = groups.map((grp: any) => {
+        const rows = grp.rows.map((r: any, i: number) => {
+          const graded = r.win + r.loss + r.push > 0;
+          // two lines, because a 340px cinema row cannot carry name + sample + record + ROI
+          // on one and the sample is exactly the part that must not be dropped
+          return `<button class="sts-strow an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked && grp.ordinals && i === 0 ? " lead" : ""}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}">
+            <span class="sts-strank">${grp.ranked ? (grp.ordinals ? ordinal(i) : "◆") : `<i>${ledgerMark(r)}</i>`}</span>
+            <span class="sts-stbody">
+              <span class="sts-strow1">${deskGlyph(r.key, 15)}<b class="sts-stnm">${esc(r.name)}</b><span class="sts-strec"><b>${graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0"}</b></span></span>
+              <span class="sts-strow2"><i>${esc(graded ? `${r.n} graded · ${ledgerShort(r)}` : `no graded calls · ${ledgerShort(r)}`)}</i>${r.roi != null ? ledgerRoi(r, "sts-stroi") : ""}${deskL10Dots(r.last10.slice(-5))}</span>
+            </span>
+          </button>`;
+        }).join("");
+        return `<div class="sts-stgrp ${esc(grp.id)}"><span class="sts-stgk">${esc(grp.head)}</span>${rows}</div>`;
       }).join("");
       return `<div class="sts sts-standings">
         <div class="sts-bg" aria-hidden="true"></div>
         <div class="sts-kick"><span>◆ Desk Standings</span></div>
-        <h3 class="sts-head deskhead">Four analysts.<br>Every game. One scoreboard.</h3>
+        <h3 class="sts-head deskhead">Four analysts.<br>Not one league table.</h3>
         <div class="sts-strows">${items}</div>
-        <div class="sts-substat">Graded against real finals, in public — tap an analyst for the full card.</div>
+        <div class="sts-substat">Only a ledger with ${ANALYST_MIN_N}+ graded calls gets a place, and ◇ leans are never ranked against ◆ staked records — tap an analyst for the full card.</div>
         <button class="st-cta" data-go="results">See the full record →</button>
       </div>`;
     }
@@ -8811,11 +9329,12 @@ export default function Home() {
           </div>
         </header>
         ${bio.tagline ? `<p class="rost-tag">“${esc(bio.tagline)}”</p>` : ""}
-        <div class="rost-rec${graded ? "" : " none"}${meta && meta.young ? " young" : ""}">
+        <div class="rost-rec${graded ? "" : " none"}${meta && meta.young ? " young" : ""}${rec ? ` ${ledgerCls(rec)}` : ""}">
+          ${rec ? `<div class="rost-lkrow">${ledgerChip(rec)}${isRankable(rec) ? "" : `<span class="rost-norank">too early to rank</span>`}</div>` : ""}
           <div class="rost-recrow">
-            ${graded ? `<span class="rost-wl"><b>${esc(wl)}</b><i>record</i></span>` : `<span class="rost-wl none"><b>0–0</b><i>no graded calls yet</i></span>`}
+            ${graded ? `<span class="rost-wl"><b>${esc(wl)}</b><i>${isLean(rec) ? "lean record" : "record"}</i></span>` : `<span class="rost-wl none"><b>0–0</b><i>no graded calls yet</i></span>`}
             ${hit ? `<span class="rost-st"><b>${esc(hit)}</b><i>hit</i></span>` : ""}
-            ${roi ? `<span class="rost-st ${rec.roi >= 0 ? "pos" : "neg"}"><b>${esc(roi)}</b><i>roi</i></span>` : ""}
+            ${roi ? `<span class="rost-st ${isLean(rec) ? "whatif" : (rec.roi >= 0 ? "pos" : "neg")}"><b>${esc(roi)}</b><i>${isLean(rec) ? "roi if staked" : "roi"}</i></span>` : ""}
             ${dots}
           </div>
           ${analystProvenance(rec)}
@@ -8837,12 +9356,17 @@ export default function Home() {
     function rosterQuadCell(k: string) {
       const cast = DESK_CAST[k] || { name: k, title: "Analyst", short: "" };
       const today = anlTodayCount(k);
-      return `<button class="qd an-${esc(k)}" data-an="${esc(k)}"
-        aria-label="${esc(cast.name)} — ${esc(cast.title)}. ${today} call${today === 1 ? "" : "s"} on today's board. Open the full profile.">
+      // the map has to carry the one fact that decides how this analyst's numbers may be read
+      const rec = deskRecordRows().find((r: any) => r.key === k) || null;
+      const lk = anLedger(k, rec);
+      const nTx = rec && rec.n ? `${rec.n} graded` : "0 graded";
+      return `<button class="qd an-${esc(k)} ${ledgerCls(lk)}" data-an="${esc(k)}"
+        aria-label="${esc(`${cast.name} — ${cast.title}. ${isLean(lk) ? "Lean ledger, never staked" : "Staked betting record"}, ${nTx}. ${today} call${today === 1 ? "" : "s"} on today's board. Open the full profile.`)}">
         <span class="qd-art" aria-hidden="true">${deskPortrait(k, 54, "qd")}</span>
         <span class="qd-nm">${esc(String(cast.name || k).toUpperCase())}</span>
         <span class="qd-ti">${esc(cast.title || "Analyst")}</span>
         <span class="qd-id">${esc(cast.short || "")}</span>
+        <span class="qd-lk ${ledgerCls(lk)}"><span class="qd-lkr"><i aria-hidden="true">${ledgerMark(lk)}</i>${esc(ledgerWord(lk))}</span><em>${esc(nTx)}${rec && isRankable(rec) ? "" : " · too early to rank"}</em></span>
         <span class="qd-n${today ? " on" : ""}">${today ? `${today} call${today === 1 ? "" : "s"} today` : "no calls today"}</span>
       </button>`;
     }
@@ -8865,6 +9389,7 @@ export default function Home() {
           <div class="dp-grid">${cards}</div>
           <div class="dp-foot">
             <p><b>How the competition is scored.</b> Each analyst's own calls are graded separately against the real final, at the line they were priced against — not against each other's opinions. ${anyRec ? "Records shown are graded calls only" : "Records start at 0–0 and build here in public"}; nothing is backfilled, and a call that never got a number is never counted as a win or a loss.</p>
+            <p><b>Why there is no single league table.</b> Two of these desks stake units on their own calls (<span class="lkchip lk-bet tight"><i aria-hidden="true">◆</i>staked</span>) and two file leans that are graded but never backed with money (<span class="lkchip lk-lean tight"><i aria-hidden="true">◇</i>leans</span>) — a lean ledger's ROI is a what-if, so it is never sorted against a betting record. And a ledger is only ranked at all once it passes ${ANALYST_MIN_N} graded calls; under that, a hit rate is noise and we say so instead of giving it a place.</p>
             ${patternsStrip()}
           </div>
         </section>`;
