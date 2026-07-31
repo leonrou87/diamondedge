@@ -4,7 +4,7 @@
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
   "record_basis": "headline = CHAMPION V2 stream (champion picks x +EV gate at real per-side prices); v4 model grid record = sealed 2026 walk (42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f), star-capped take set, TOTALS ONLY",
-  "generated_utc": "2026-07-31T11:05:48Z",
+  "generated_utc": "2026-07-31T20:33:03Z",
   "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
   "recipe_sha256": "ecac66ecf0bc6b198550786b38930c345d7d20669f7f32719fe075407adc9b48",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
@@ -299,11 +299,11 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 68,
+        "n": 69,
         "n_graded": 65,
-        "n_pending_or_no_result": 3,
+        "n_pending_or_no_result": 4,
         "by_reason": {
-          "ev_gate": 64,
+          "ev_gate": 65,
           "price_only": 0,
           "toxic_tail": 4
         },
@@ -328,7 +328,7 @@
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate AND outside the measured >=0.065 anti-signal tail. EXECUTION LAYER (Leon, 2026-07-09 \u2014 the proven config): the +EV GATE evaluates at the MEDIAN de-vig per-side price at the pick's line (strict entry), while the served/graded per-side price is the BEST EXECUTABLE price at that same line (payout gain; the median is carried per row as median_price + gate_price/gate_ev diagnostics). A row playable only on best-book juice (fails the median gate) is NOT a pick: the median-gated set repriced at best ran +3.2% ROI (41-35-1) on the 2026 backfill, the 21 gate-expansion picks ran -25% and are EXCLUDED. record.best_vs_median_2026 carries the exact 3-way same-pick-set comparison (median / median_gate_best / best). HEADLINE DEDUP: the headline + per-tier + per-lead + per-source + per-month rollups count ONE result per (game x stream) \u2014 a game that emits multiple per-wall graded rows (reconstructed/live) counts once (the locked/latest-wall canonical); n_rows_dropped is disclosed in record.headline_dedup. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, morning shopped/median per-side prices) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot best-book price they were served at (gated at the median). Every record block also carries units_weighted \u2014 the same picks staked by the star-tier ladder (see UNITS_BASIS) \u2014 next to the flat 1u record.",
       "best_vs_median_2026": {
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
-        "n_rows_each": 132,
+        "n_rows_each": 133,
         "median": {
           "n": 84,
           "win": 44,
@@ -478,7 +478,7 @@
             "roi": 0.0111,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 112,
+          "n_playable": 113,
           "by_star_tier": {
             "4": {
               "n": 48,
@@ -565,7 +565,7 @@
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
         },
-        "n_newly_playable_at_best": 28,
+        "n_newly_playable_at_best": 29,
         "newly_playable_at_best": [
           {
             "date": "2026-03-28",
@@ -874,6 +874,17 @@
             "best_book": "betrivers",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 54.5% vs median break-even 54.5% at -120 (median ev -0.12% < +1.5% min)",
             "result": "win"
+          },
+          {
+            "date": "2026-07-31",
+            "matchup": "STL @ TOR",
+            "side": "over",
+            "line": 7.5,
+            "median_price": -110,
+            "best_price": -105,
+            "best_book": "bovada",
+            "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 52.0% vs median break-even 52.4% at -110 (median ev -0.65% < +1.5% min)",
+            "result": null
           }
         ],
         "n_dropped_at_best": 0,
@@ -883,9 +894,9 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-07-31T11:05:48Z",
+    "record_generated_utc": "2026-07-31T20:33:03Z",
     "backfill": {
-      "n_rows": 132,
+      "n_rows": 133,
       "sources": {
         "rolling_origin_2026": {
           "n": 96,
@@ -896,10 +907,10 @@
           "what": "champion's own rolling-origin (expanding, 14-day retrain) 2026 stream, Tier A trigger, stored median morning per-side prices \u2014 bets_expanding.parquet"
         },
         "forward_paper_ledger": {
-          "n": 36,
+          "n": 37,
           "date_range": [
             "2026-07-02",
-            "2026-07-29"
+            "2026-07-31"
           ],
           "what": "the live value-plays paper track (value_plays_ledger.json), Tier A + Tier B, stored frozen morning price"
         }
@@ -9312,6 +9323,69 @@
         "pnl": 0.8929,
         "graded_line": 9.5,
         "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
+      },
+      {
+        "model": "champion_v2",
+        "source": "forward_paper_ledger",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-12h",
+        "date": "2026-07-31",
+        "game_pk": 822782,
+        "game_id": "2026-07-31-STL-TOR",
+        "matchup": "STL @ TOR",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": null,
+        "market_line": 7.5,
+        "pick_side": null,
+        "pick_line": 7.5,
+        "lean": {
+          "side": "over",
+          "line": 7.5
+        },
+        "our_prob": 0.5204,
+        "per_side_price": -105,
+        "best_book": "bovada",
+        "median_price": -110,
+        "p_breakeven": 0.5122,
+        "ev": 0.016,
+        "ev_min": 0.015,
+        "take": false,
+        "playable": false,
+        "gate_price": -110,
+        "gate_ev": -0.0065,
+        "gate_p_breakeven": 0.5238,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.93,
+        "gate_reason": "negative_ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0204,
+          "signed_edge": 0.0204,
+          "side": "over",
+          "frozen_at": "2026-07-31T12:27:14.290468+00:00",
+          "morning_price": -110,
+          "nlines": 1
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0204,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "informational_lean": "over",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.0% vs median break-even 52.4% at -110 (median ev -0.65% < +1.5% min); +EV at best -105 but gate-expansion picks measured -25% ROI \u2014 not a bet",
+        "result": null,
+        "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
       }
     ]
   },
@@ -9380,7 +9454,7 @@
     },
     "n_playable_scores": 532,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-07-31T11:05:48Z",
+    "generated_utc": "2026-07-31T20:33:03Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
     "n_nonplayable_scores": 6107
@@ -9394,7 +9468,7 @@
     "n_playable": 532,
     "n_nonplayable": 6107,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-07-31T11:05:48Z",
+    "generated_utc": "2026-07-31T20:33:03Z",
     "basis": "v3.2 frozen season reference: percentile ranks of |model divergence| and EV (0.5/0.5 blend) over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill); non-playable rows rank in their own frozen distribution (tail-inverted edge measure + pass EV position). Frozen for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: no score promotes a non-playable row.",
     "playable": {
       "n": 532,
@@ -11359,6 +11433,21 @@
       },
       "playable": true,
       "all_pass": false
+    },
+    "2026-07-31": {
+      "featured_game_id": "2026-07-31-STL-TOR",
+      "game_pk": 822782,
+      "matchup": "STL @ TOR",
+      "source_model": "champion_v2",
+      "stars": 1,
+      "score": 1.93,
+      "lean": {
+        "side": "over",
+        "line": 7.5
+      },
+      "playable": false,
+      "all_pass": true,
+      "note": "nothing playable today \u2014 featured is the highest-score 1-star PASS lean, shown for interest; it is NOT a bet"
     }
   },
   "by_date_record": {
@@ -13177,11 +13266,11 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 68,
+        "n": 69,
         "n_graded": 65,
-        "n_pending_or_no_result": 3,
+        "n_pending_or_no_result": 4,
         "by_reason": {
-          "ev_gate": 64,
+          "ev_gate": 65,
           "price_only": 0,
           "toxic_tail": 4
         },
@@ -13206,7 +13295,7 @@
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate AND outside the measured >=0.065 anti-signal tail. EXECUTION LAYER (Leon, 2026-07-09 \u2014 the proven config): the +EV GATE evaluates at the MEDIAN de-vig per-side price at the pick's line (strict entry), while the served/graded per-side price is the BEST EXECUTABLE price at that same line (payout gain; the median is carried per row as median_price + gate_price/gate_ev diagnostics). A row playable only on best-book juice (fails the median gate) is NOT a pick: the median-gated set repriced at best ran +3.2% ROI (41-35-1) on the 2026 backfill, the 21 gate-expansion picks ran -25% and are EXCLUDED. record.best_vs_median_2026 carries the exact 3-way same-pick-set comparison (median / median_gate_best / best). HEADLINE DEDUP: the headline + per-tier + per-lead + per-source + per-month rollups count ONE result per (game x stream) \u2014 a game that emits multiple per-wall graded rows (reconstructed/live) counts once (the locked/latest-wall canonical); n_rows_dropped is disclosed in record.headline_dedup. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, morning shopped/median per-side prices) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot best-book price they were served at (gated at the median). Every record block also carries units_weighted \u2014 the same picks staked by the star-tier ladder (see UNITS_BASIS) \u2014 next to the flat 1u record.",
       "best_vs_median_2026": {
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
-        "n_rows_each": 132,
+        "n_rows_each": 133,
         "median": {
           "n": 84,
           "win": 44,
@@ -13356,7 +13445,7 @@
             "roi": 0.0111,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 112,
+          "n_playable": 113,
           "by_star_tier": {
             "4": {
               "n": 48,
@@ -13443,7 +13532,7 @@
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
         },
-        "n_newly_playable_at_best": 28,
+        "n_newly_playable_at_best": 29,
         "newly_playable_at_best": [
           {
             "date": "2026-03-28",
@@ -13752,6 +13841,17 @@
             "best_book": "betrivers",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 54.5% vs median break-even 54.5% at -120 (median ev -0.12% < +1.5% min)",
             "result": "win"
+          },
+          {
+            "date": "2026-07-31",
+            "matchup": "STL @ TOR",
+            "side": "over",
+            "line": 7.5,
+            "median_price": -110,
+            "best_price": -105,
+            "best_book": "bovada",
+            "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 52.0% vs median break-even 52.4% at -110 (median ev -0.65% < +1.5% min)",
+            "result": null
           }
         ],
         "n_dropped_at_best": 0,
