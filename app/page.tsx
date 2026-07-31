@@ -1562,10 +1562,29 @@ export default function Home() {
       if (!total && !rl) return null;
       return { total, rl, book, lockedAt, source, served: served != null };
     }
-    // WHERE THE MARKET IS NOW — strictly secondary. The locked line NEVER changes; this is a
-    // labelled delta beside it. Served as games[].line_now (or pregame_line.now / vs_line.now).
-    function lineNow(g: any) {
+    /* WHERE THE MARKET IS NOW — strictly secondary. The locked line NEVER changes; this is a
+       labelled delta beside it. Served as games[].line_now (or pregame_line.now / vs_line.now).
+
+       ══ line_now CONTRACT (backend fix, 2026-07-30) ══
+       The old payload compared the locked FULL-GAME total against an in-play REMAINING-RUNS
+       total from a different book, which produced impossible chips like "9.0 → 3.5". The
+       served shape is now:
+         · line_now is NULL for any game that has started. Live/final ⇒ locked line alone.
+         · line_now.book on the headline is ALWAYS null — both sides are a book-consensus
+           median, so there is no book to name. We never print one beside the move.
+         · same_book_check {book, pregame_total, total, move, prices} is the corroboration.
+           Deliberately NOT rendered: it is one book's move, not the market's, and the slab's
+           job is the market's own statement.
+         · pregame_total_compared (must equal our locked total), comparison_basis, same_basis,
+           market:"full_game_total", max_plausible_move, n_books.
+       Every one of those is enforced below as a GATE, not decoration — the UI refuses to draw
+       a move it cannot prove is like-for-like, whatever the feed says. And it refuses on
+       started games regardless of what is served, so the class of bug cannot come back. */
+    function lineNow(g: any, lockedTotal?: any) {
       if (!g) return null;
+      // GATE 0 — the game has started: there is no comparable pregame market any more.
+      const gk = gameState(g).kind;
+      if (gk !== "pre") return null;
       const vg = v4GameFor(g);
       for (const s of [g, vg].filter(Boolean)) {
         const raw = (s as any).line_now != null ? (s as any).line_now
@@ -1574,9 +1593,29 @@ export default function Home() {
         if (raw == null) continue;
         if (typeof raw === "number") return { total: { line: Number(raw), price: null }, rl: null };
         if (typeof raw !== "object") continue;
+        // GATE 1 — market must be the full-game total (the thing the locked line quotes)
+        const mkt = String(raw.market == null ? "" : raw.market).trim();
+        if (mkt && mkt !== "full_game_total") continue;
+        // GATE 2 — both sides must be the same basis
+        if (raw.same_basis === false) continue;
+        // GATE 3 — what the backend compared against must be the number WE are showing
+        const cmp = _fin(raw.pregame_total_compared);
+        const lt = _fin(lockedTotal);
+        if (cmp != null && lt != null && Math.abs(cmp - lt) > 0.001) continue;
+        // GATE 4 — a move larger than the backend's own plausibility ceiling is a bug, not news
+        const mv = _fin(raw.move);
+        const maxMv = _fin(raw.max_plausible_move);
+        if (mv != null && maxMv != null && Math.abs(mv) > Math.abs(maxMv) + 0.001) continue;
+        // GATE 5 — an explicit zero move is not a move; never chip it. The backend's own
+        // moved_vs_pregame boolean is authoritative when present.
+        if (raw.moved_vs_pregame === false) continue;
+        if (mv != null && Math.abs(mv) < 0.001) continue;
         const total = pgSideBlock(raw.total != null ? raw.total : raw);
         const rl = pgSideBlock(raw.run_line != null ? raw.run_line : raw.spread);
-        if (total || rl) return { total, rl };
+        // the headline move has NO book — consensus median on both sides. Strip any that rides along.
+        if (total) (total as any).book = "";
+        if (rl) (rl as any).book = "";
+        if (total || rl) return { total, rl, nBooks: _fin(raw.n_books) };
       }
       return null;
     }
@@ -1610,8 +1649,9 @@ export default function Home() {
     function pregameLineBlock(g: any, size = "tile") {
       const pg = pregameLine(g);
       if (!pg) return "";
-      const now = lineNow(g);
       const tl = pg.total && pg.total.line != null ? pg.total.line : null;
+      // the locked total is passed in so lineNow can refuse a comparison against a different number
+      const now = lineNow(g, tl);
       const nl = now && now.total && now.total.line != null ? now.total.line : null;
       const moved = tl != null && nl != null && Math.abs(nl - tl) > 0.001;
       const rlNowTxt = (() => {
@@ -1860,11 +1900,81 @@ export default function Home() {
             hit: _fin(r.hit_rate != null ? r.hit_rate : r.hit),
             roi: _fin(r.roi),
             last10,
+            // ── PROVENANCE: every record must be able to say how big it is and which era it is ──
+            // The served rows carry activation_date + first/last_graded_date and a
+            // is_betting_record flag (VEGA/NOVA stake units; ATLAS/SCOUT are graded lean
+            // ledgers). Nothing here is ever summed with a reconstructed/backtest record —
+            // the backend's own note is explicit that the rolling-origin backtest is never
+            // counted — so the UI carries the era label rather than inventing one.
+            activation: String(r.activation_date || "").slice(0, 10) || null,
+            firstGraded: String(r.first_graded_date || "").slice(0, 10) || null,
+            lastGraded: String(r.last_graded_date || "").slice(0, 10) || null,
+            isBet: r.is_betting_record !== false,
+            basis: humanNote(r.basis),
+            // a longer RECONSTRUCTED record, only if the backend ever serves one alongside.
+            // Shown next to the live one, clearly separated — never added to it.
+            recon: (() => {
+              const rc = r.reconstructed || r.backtest || r.replayed;
+              if (!rc || typeof rc !== "object") return null;
+              const w = Math.max(0, Math.round(Number(rc.win != null ? rc.win : rc.wins) || 0));
+              const l = Math.max(0, Math.round(Number(rc.loss != null ? rc.loss : rc.losses) || 0));
+              const p = Math.max(0, Math.round(Number(rc.push != null ? rc.push : rc.pushes) || 0));
+              const nn = Math.max(0, Math.round(Number(rc.n) || 0)) || w + l + p;
+              if (!nn) return null;
+              return { n: nn, win: w, loss: l, push: p, hit: _fin(rc.hit_rate != null ? rc.hit_rate : rc.hit), roi: _fin(rc.roi) };
+            })(),
           });
         });
         if (rows.length) return rows;
       }
       return [];
+    }
+    /* ══════════════════ ANALYST RECORD PROVENANCE ══════════════════
+       PRODUCT-HONESTY RULE: an analyst's W–L / HIT / ROI may never appear anywhere without
+       its sample size and its era, inline and legible. At n=14 a 38% hit rate is noise; shown
+       big and bare it reads as a characteristic of the analyst, which is a lie the layout is
+       telling. Every surface that prints a record calls this and prints the provenance line
+       next to it — roster card, character page, standings, debate chips.
+       Below ANALYST_MIN_N graded calls the card additionally says so in words, visibly. */
+    const ANALYST_MIN_N = 50;
+    function analystRecMeta(rec: any) {
+      if (!rec) return null;
+      const n = Math.max(0, Number(rec.n) || 0) || (rec.win + rec.loss + rec.push) || 0;
+      const shortDate = (iso: any) => {
+        if (!iso) return "";
+        const d = new Date(String(iso) + "T12:00:00");
+        return isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      };
+      const since = shortDate(rec.activation || rec.firstGraded);
+      return {
+        n,
+        young: n > 0 && n < ANALYST_MIN_N,
+        none: n === 0,
+        // "14 graded · live era" — the two facts that must never be separated from the number
+        bits: [
+          `${n} graded`,
+          "live era",
+          since ? `since ${since}` : "",
+          rec.isBet ? "" : "lean ledger",
+        ].filter(Boolean),
+        since,
+        kind: rec.isBet ? "betting record" : "graded leans, never staked",
+      };
+    }
+    // the inline provenance line — sits directly under any displayed record, always legible
+    function analystProvenance(rec: any, cls = "") {
+      const m = analystRecMeta(rec);
+      if (!m) return "";
+      if (m.none) {
+        return `<div class="anprov none ${cls}"><span class="anprov-bits">0 graded · live era${m.since ? ` · opens ${esc(m.since)}` : ""}</span></div>`;
+      }
+      const warn = m.young
+        ? `<p class="anprov-young">Too young to read — ${m.n} graded call${m.n === 1 ? "" : "s"}. A record needs roughly ${ANALYST_MIN_N} before the hit rate and ROI mean anything. Treat these as a running tally, not a skill level.</p>`
+        : "";
+      return `<div class="anprov ${m.young ? "is-young" : ""} ${cls}">
+        <span class="anprov-bits">${esc(m.bits.join(" · "))}</span>
+        ${warn}
+      </div>`;
     }
     // any live game already carries analyst calls (the cast exists even before records do)
     function deskAnyAnalysts() {
@@ -1902,6 +2012,7 @@ export default function Home() {
           <span class="dskst-rank">${i === 0 && graded ? "◆ 1st" : `${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}`}${wkChip}</span>
           <span class="dskst-id">${deskGlyph(r.key, 17)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
           <span class="dskst-rec"><b>${rec}</b>${roiTxt}</span>
+          <span class="dskst-n${graded && r.n < ANALYST_MIN_N ? " young" : ""}">${graded ? `${r.n} graded · live era` : "live era · no graded calls yet"}</span>
           ${deskL10Dots(r.last10)}
         </button>`;
       }).join("");
@@ -1969,7 +2080,11 @@ export default function Home() {
             ${rec.roi != null ? `<div class="anl-big ${rec.roi >= 0 ? "pos" : "neg"}"><b>${bRoi(rec.roi)}</b><i>ROI</i></div>` : ""}
             ${wkCell}
             ${rec.last10.length ? `<div class="anl-big form"><b>${deskL10Dots(rec.last10)}</b><i>last ${rec.last10.length}</i></div>` : ""}
-          </div>`
+          </div>
+          ${analystProvenance(rec, "anl-prov")}
+          ${rec.recon ? `<div class="rost-recon wide"><span class="rost-recon-k">Replayed era — kept separate</span>
+            <span class="rost-recon-v"><b>${rec.recon.win}–${rec.recon.loss}${rec.recon.push ? `–${rec.recon.push}` : ""}</b>${rec.recon.hit != null ? `<i>${(rec.recon.hit * 100).toFixed(0)}% hit</i>` : ""}<em>${rec.recon.n} graded</em></span>
+            <span class="rost-recon-n">Backtested on history, not served live. Never added to the record above.</span></div>` : ""}`
         : `<div class="anl-hero"><div class="anl-big"><b>0–0</b><i>first calls pending</i></div>${wkCell}</div>`;
       // TODAY AT THE DESK — their persona-voice takes on today's slate, quoted.
       const takesToday: any[] = [];
@@ -2118,7 +2233,9 @@ export default function Home() {
     function deskRecChip(key: string) {
       const r = deskRecordRows().find((x: any) => x.key === key);
       if (!r || r.win + r.loss + r.push === 0) return "";
-      return `<span class="dbt-rec">${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</span>`;
+      // even the smallest inline chip carries its sample — a bare W–L with no n is the
+      // exact thing that reads as a characteristic instead of a running tally.
+      return `<span class="dbt-rec"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b><i>${r.n} graded${r.n < ANALYST_MIN_N ? " · young" : ""}</i></span>`;
     }
     function deskDebatePanel(g: any, locked = false) {
       const ans = deskAnalysts(g);
@@ -2569,7 +2686,7 @@ export default function Home() {
         <button class="dskrec-card an-${esc(r.key)}" data-an="${esc(r.key)}">
           <span class="dskst-rank">${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}</span>
           <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
-          <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)} ROI</i>` : ""}${r.n ? `<i class="dim">${r.n} calls</i>` : ""}</span>
+          <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)} ROI</i>` : ""}<i class="dim">${r.n || 0} graded · live era${r.n && r.n < ANALYST_MIN_N ? " · too young to read" : ""}</i></span>
           ${deskL10Dots(r.last10)}
         </button>`).join("");
       const ch = consensusHistoryRows();
@@ -6553,9 +6670,9 @@ export default function Home() {
       const dots = pts.map((p: any) => `<g><title>predicted ${(p.p * 100).toFixed(0)}% → won ${(p.a * 100).toFixed(0)}%${p.n ? ` (${p.n} picks)` : ""}</title><circle cx="${X(p.p).toFixed(1)}" cy="${Y(p.a).toFixed(1)}" r="${Math.max(3.4, Math.min(7, Math.sqrt(p.n || 1) * 1.1)).toFixed(1)}" fill="rgba(238,194,88,.85)" stroke="rgba(11,17,30,.85)" stroke-width="1.5"/></g>`).join("");
       return `<svg class="ixsvg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Calibration — predicted vs realized win rate">
         <line x1="${X(lo).toFixed(1)}" y1="${Y(lo).toFixed(1)}" x2="${X(hi).toFixed(1)}" y2="${Y(hi).toFixed(1)}" stroke="rgba(224,235,255,.2)" stroke-dasharray="3 4"/>
-        <text x="${X(hi).toFixed(1)}" y="${(Y(hi) + 12).toFixed(1)}" text-anchor="end" class="ix-ax">perfect calibration</text>
+        <text x="${X(hi).toFixed(1)}" y="${(Y(hi) + 12).toFixed(1)}" text-anchor="end" class="ix-ax ix-axw">perfect calibration</text>
         ${dots}
-        <text x="${w / 2}" y="${h - 2}" text-anchor="middle" class="ix-ax">predicted win chance →</text>
+        <text x="${w / 2}" y="${h - 2}" text-anchor="middle" class="ix-ax ix-axw">predicted win chance →</text>
       </svg>`;
     }
     // net units by month — diverging bars off a zero baseline
@@ -6603,7 +6720,7 @@ export default function Home() {
         return `<g><title>${lab} — ${r.u >= 0 ? "+" : ""}${r.u.toFixed(1)} units across ${r.n} picks</title>
           <rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2, y1 - y0).toFixed(1)}" rx="4" fill="${r.u >= 0 ? "rgba(43,214,149,.72)" : "rgba(255,92,119,.66)"}"/>
           <text x="${(x + bw / 2).toFixed(1)}" y="${(r.u >= 0 ? y0 - 4 : y1 + 11).toFixed(1)}" text-anchor="middle" class="ix-lab ${r.u >= 0 ? "pos" : "neg"}">${r.u >= 0 ? "+" : ""}${r.u.toFixed(1)}</text>
-          <text x="${(x + bw / 2).toFixed(1)}" y="${h - 4}" text-anchor="middle" class="ix-ax">${esc(lab)}</text></g>`;
+          <text x="${(x + bw / 2).toFixed(1)}" y="${h - 4}" text-anchor="middle" class="ix-ax ix-axw">${esc(lab)}</text></g>`;
       }).join("");
       return `<svg class="ixsvg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Net units by month">
         <line x1="${padL}" y1="${zero.toFixed(1)}" x2="${w - padR}" y2="${zero.toFixed(1)}" stroke="rgba(224,235,255,.16)" stroke-width="1"/>
@@ -8670,6 +8787,14 @@ export default function Home() {
       const dots = rec && rec.last10 && rec.last10.length
         ? `<span class="rost-dots" aria-label="last ${rec.last10.length} calls">${rec.last10.map((r: string) => `<i class="d-${r.toLowerCase()}"></i>`).join("")}</span>` : "";
       const today = anlTodayCount(k);
+      const meta = analystRecMeta(rec);
+      // a reconstructed/replayed record, when one is served, sits BESIDE the live one behind
+      // its own label and a rule — never merged, never added into the headline numbers.
+      const reconBlk = rec && rec.recon
+        ? `<div class="rost-recon"><span class="rost-recon-k">Replayed era — kept separate</span>
+             <span class="rost-recon-v"><b>${rec.recon.win}–${rec.recon.loss}${rec.recon.push ? `–${rec.recon.push}` : ""}</b>${rec.recon.hit != null ? `<i>${(rec.recon.hit * 100).toFixed(0)}% hit</i>` : ""}<em>${rec.recon.n} graded</em></span>
+             <span class="rost-recon-n">Backtested on history, not served live. Never added to the record above.</span></div>`
+        : "";
       const edges = (bio.edges || []).slice(0, 4).map((e: string) => `<li>${esc(e)}</li>`).join("");
       const inputs = (bio.inputs || []).slice(0, 4).map((e: string) => `<li>${esc(e)}</li>`).join("");
       const moreInputs = (bio.inputs || []).length > 4 ? `<li class="rost-more">+${(bio.inputs || []).length - 4} more</li>` : "";
@@ -8686,11 +8811,15 @@ export default function Home() {
           </div>
         </header>
         ${bio.tagline ? `<p class="rost-tag">“${esc(bio.tagline)}”</p>` : ""}
-        <div class="rost-rec${graded ? "" : " none"}">
-          ${graded ? `<span class="rost-wl"><b>${esc(wl)}</b><i>record</i></span>` : `<span class="rost-wl none"><b>0–0</b><i>no graded calls yet</i></span>`}
-          ${hit ? `<span class="rost-st"><b>${esc(hit)}</b><i>hit</i></span>` : ""}
-          ${roi ? `<span class="rost-st ${rec.roi >= 0 ? "pos" : "neg"}"><b>${esc(roi)}</b><i>roi</i></span>` : ""}
-          ${dots}
+        <div class="rost-rec${graded ? "" : " none"}${meta && meta.young ? " young" : ""}">
+          <div class="rost-recrow">
+            ${graded ? `<span class="rost-wl"><b>${esc(wl)}</b><i>record</i></span>` : `<span class="rost-wl none"><b>0–0</b><i>no graded calls yet</i></span>`}
+            ${hit ? `<span class="rost-st"><b>${esc(hit)}</b><i>hit</i></span>` : ""}
+            ${roi ? `<span class="rost-st ${rec.roi >= 0 ? "pos" : "neg"}"><b>${esc(roi)}</b><i>roi</i></span>` : ""}
+            ${dots}
+          </div>
+          ${analystProvenance(rec)}
+          ${reconBlk}
         </div>
         ${how ? `<p class="rost-how">${esc(how)}</p>` : ""}
         <div class="rost-cols">
@@ -8700,11 +8829,29 @@ export default function Home() {
         <div class="rost-cta">Meet ${esc(String(cast.name || k).toUpperCase())}<i aria-hidden="true">→</i></div>
       </article>`;
     }
+    /* THE QUAD — Leon: "a page where you see four icons in four boxes and you get to learn
+       about each personality." Four tall stacked cards mean you never see all four at once,
+       so the roster loses its shape. The quad is the MAP: sigil, name, one-line identity,
+       today's call count, all four visible in one screen at 375px. The detailed cards below
+       stay exactly as they were — the quad is the overview, the stack is the depth. */
+    function rosterQuadCell(k: string) {
+      const cast = DESK_CAST[k] || { name: k, title: "Analyst", short: "" };
+      const today = anlTodayCount(k);
+      return `<button class="qd an-${esc(k)}" data-an="${esc(k)}"
+        aria-label="${esc(cast.name)} — ${esc(cast.title)}. ${today} call${today === 1 ? "" : "s"} on today's board. Open the full profile.">
+        <span class="qd-art" aria-hidden="true">${deskPortrait(k, 54, "qd")}</span>
+        <span class="qd-nm">${esc(String(cast.name || k).toUpperCase())}</span>
+        <span class="qd-ti">${esc(cast.title || "Analyst")}</span>
+        <span class="qd-id">${esc(cast.short || "")}</span>
+        <span class="qd-n${today ? " on" : ""}">${today ? `${today} call${today === 1 ? "" : "s"} today` : "no calls today"}</span>
+      </button>`;
+    }
     function renderDesk() {
       const v = $("desk-view"); if (!v) return;
       const rows = deskRecordRows();
       const byKey: any = {}; rows.forEach((r: any) => (byKey[r.key] = r));
       const cards = DESK_ORDER.map((k) => rosterCard(k, byKey[k] || null)).join("");
+      const quad = DESK_ORDER.map((k) => rosterQuadCell(k)).join("");
       const anyRec = rows.length > 0;
       v.innerHTML = `
         <section class="deskpage">
@@ -8713,6 +8860,8 @@ export default function Home() {
             <h2 class="dp-h">Four analysts.<br>One board.</h2>
             <p class="dp-dek">Every game on DiamondEdge is argued by four independent models, each with its own way of seeing a baseball game and its own record kept in the open. They disagree constantly — that disagreement is the product. The desk chief weighs all four, and only the DiamondEdge call is ever played.</p>
           </header>
+          <div class="dp-quad" role="group" aria-label="The four analysts">${quad}</div>
+          <div class="dp-quadfoot">Tap any of the four to jump to their card — or keep reading.</div>
           <div class="dp-grid">${cards}</div>
           <div class="dp-foot">
             <p><b>How the competition is scored.</b> Each analyst's own calls are graded separately against the real final, at the line they were priced against — not against each other's opinions. ${anyRec ? "Records shown are graded calls only" : "Records start at 0–0 and build here in public"}; nothing is backfilled, and a call that never got a number is never counted as a win or a loss.</p>

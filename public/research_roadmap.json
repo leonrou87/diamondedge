@@ -1,13 +1,25 @@
 {
- "generated_utc": "2026-07-31T00:40:31Z",
+ "generated_utc": "2026-07-31T04:14:49Z",
  "summary": {
-  "shipped": 16,
+  "shipped": 18,
   "testing": 2,
   "accruing": 5,
   "queued": 0,
   "closed": 31
  },
  "items": [
+  {
+   "id": "analyst_desk_v3",
+   "title": "The Analyst Desk v3 — full coverage, locked lines, the pattern engine",
+   "tagline": "Every analyst now reads every game, the pregame line is locked and shown on every card, a new pattern engine measures what the desk's agreement is actually worth (including the contrarian read), and the chief speaks in those measured numbers.",
+   "status": "shipped",
+   "category": "product",
+   "progress_pct": 100,
+   "started": "2026-07-30",
+   "eta": "live — shipped 2026-07-30",
+   "latest": "2026-07-30: shipped in one pass, four items, 479 serving checks green. (1) FULL COVERAGE — the board had 36 analyst no-reads this morning (VEGA silent on all 21 games because the champion engine froze no value play, SCOUT silent on 15). SCOUT now prices EVERY wall (T-24h→T-1h) the way ATLAS already did, and a new forced-coverage layer fills whatever is left: VEGA reads its own market microstructure (line move off the open → sharp-book divergence → de-vigged book-median lean, conviction capped at 0.53 and labelled low conviction in its own voice), ATLAS/SCOUT backfill from their own engines on the latest arrived pregame wall. Board today: 21/21 for all four analysts, ZERO no-reads. RECORDS DISCIPLINE: coverage reads carry a coverage_expanded flag with today's activation date and grade in their OWN ledger (record.coverage) — record.analysts is byte-identical to before. (2) THE PREGAME LINE, LOCKED — a new write-once store captures the market state at the last wall before first pitch (total, both totals prices, the run line and both run-line prices, book, wall, captured_at) and freezes it at first pitch; a locked record can never be rewritten. Every analyst read now carries vs_line — the exact number that engine was priced against — so a card can say 'ATLAS: OVER 8.5 (priced vs 8.5)' and flag when a voice is on a different number. A post-lock market move shows in line_now, separately, and never touches the locked block. Live games gain live_progress: score, inning, runs so far vs the locked total, pace, projected final, and p_hit_now — the probability the pregame pick still cashes — populated ONLY inside the live simulator's certified buckets (null and 'watching' outside them). Every live number is display-only and touches no record. (3) THE PATTERN ENGINE — the centrepiece Leon asked for: for every consensus configuration (4-0 unanimous; 3-1 keyed by WHICH analyst dissents; 2-2 keyed by WHICH PAIR sides together) × side, the graded n / W-L-P / hit rate / EXACT binomial (Clopper-Pearson) interval AND the contrarian read — what FADING that configuration would have done — plus all six pairwise-conditional patterns (agree and disagree). Two eras, computed separately and NEVER summed: the walk-forward reconstruction (325 all-four games, 2026-03-27→04-30) and the live era from today's activation (starts empty). The headline measurement: when all four agree the game has gone the OTHER way 59% of the time (n=34, reconstructed) — interval 0.25–0.59, so a coin flip, and the payload says so. Pattern maths verified against a hand-computed 12-game fixture and the exact interval cross-checked against scipy. (4) THE CHIEF USES IT — the DiamondEdge synthesis is now pattern-aware in its LANGUAGE and its confidence ordering: on a unanimous game where unanimity measures below 50% the chief says so and the displayed action drops one rung ('All four analysts lean over… and unanimous calls have gone the other way 59% of the time (n=34, reconstructed)'). Each card's chief block carries the pregame O/U call against the locked line, the run-line call, the predicted final score and the pattern-grounded rationale. Synthesis stays PRESENTATION/ROUTING ONLY — the pattern can only move an action DOWN the ladder, a PASS can never become a PLAY, and betting confidence remains solely the +EV gate + the star system. synthesis_config_version is now v2_live_patterns, regenerated nightly from the pattern engine with the static v1 artifact as the fallback.",
+   "detail": "Modules: v4/serve/pregame_line.py (the locked pregame store + line_now), v4/serve/coverage.py (forced-coverage reads, own board + own ledger), v4/serve/consensus_patterns.py (the pattern engine + the nightly synthesis_config_v2 generator), plus multi-wall pricing in v4/serve/scout_stream.py and the pattern-aware chief in v4/serve/analyst_desk.py. Cycle wiring: the intraday serve captures/locks the pregame line and fills coverage; the overnight grades the coverage ledger and recomputes the pattern table + synthesis config AFTER every stream has graded, from GRADED LEDGERS ONLY. Rails held throughout: write-once picks, no existing record restated, the champion engine read-only, the sealed holdouts and the confirmation corpus never opened, no Odds API spend (every new number comes from the local point-in-time fact store or the free live poller), live numbers display-only. New suites: pregame_line 15 checks, coverage 18, consensus_patterns 28, analyst_desk +23, unified_model +37, daily_cycle +5 — 479 unified serving checks green."
+  },
   {
    "id": "desk_comes_alive",
    "title": "The desk comes alive",
