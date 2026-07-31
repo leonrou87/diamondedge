@@ -1347,9 +1347,12 @@ export default function Home() {
             ? `<span class="dsk-side ${dirCls}">${arrow} ${sideTxt}</span>`
             : `<span class="dsk-side none">—</span>`;
         const conv = !hide && a.conv != null ? `<span class="dsk-conv">${Math.round(a.conv * 100)}%</span>` : "";
+        // conviction as LIGHT: a hairline meter in the analyst's own accent under the call
+        const meter = !hide && a.conv != null
+          ? `<span class="dsk-meter" aria-hidden="true"><i style="width:${Math.max(6, Math.min(100, a.conv * 100)).toFixed(0)}%"></i></span>` : "";
         const tag = interactive ? "button" : "span";
         return `<${tag} class="dsk-cell an-${esc(a.key)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}` : ", no call yet"}"` : ""}>
-          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span>${call}${conv}</${tag}>`;
+          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span><span class="dsk-callrow">${call}${conv}</span>${meter}</${tag}>`;
       }).join("");
       return `<div class="dsk-row">${cells}</div>`;
     }
@@ -1369,6 +1372,24 @@ export default function Home() {
         <summary><span class="dskv-k">◆ Hear the desk</span><span class="dskv-sum">${voiced.length} voice${voiced.length === 1 ? "" : "s"} on this game</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
         <div class="dskv-rows">${rows}</div>
       </details>`;
+    }
+    // THE STAR TAKE — the desk's loudest voice on this game, promoted to a HEADLINE quote
+    // (featured / lead cards). The highest-conviction analyst with a served take speaks in
+    // display type; the other three ride as glyph chips. Locked picks render nothing (a
+    // quote argues the side). "" when no takes are served — every surface degrades.
+    function deskStarTake(g: any, locked = false) {
+      if (locked) return "";
+      const voiced = deskAnalysts(g).filter((a: any) => a.take);
+      if (!voiced.length) return "";
+      const star = voiced.slice().sort((x: any, y: any) => ((y.conv != null ? y.conv : 0) - (x.conv != null ? x.conv : 0)))[0];
+      const dirCls = star.dir === "over" ? "ou-over" : star.dir === "under" ? "ou-under" : "";
+      return `<blockquote class="startake an-${esc(star.key)}" data-an="${esc(star.key)}" role="button" tabindex="0" aria-label="${esc(star.name)} — hear the desk">
+        <p class="stk-quote">“${esc(star.take)}”</p>
+        <footer class="stk-by">
+          <span class="stk-id">${deskGlyph(star.key, 14)}<b>${esc(star.name)}</b><i>${esc(star.title || "")}</i></span>
+          ${star.dir ? `<span class="stk-dir ${dirCls}">${star.dir === "over" ? "▲ OVER" : "▼ UNDER"}${star.conv != null ? ` · ${Math.round(star.conv * 100)}%` : ""}</span>` : ""}
+        </footer>
+      </blockquote>`;
     }
     // The whole desk block for a game tile: consensus headline · sim score · the four calls ·
     // the chief's verdict (+ run-line read) · the four voices behind one tap. "" when the
@@ -1472,7 +1493,28 @@ export default function Home() {
         <div class="dskst-rail">${cards}</div>
       </section>`;
     }
-    // ---- the analyst card (sheet): persona · method · record · recent calls ----
+    // ---- the analyst PAGE: a full-screen character destination — the persona as the star.
+    // Hero (glyph medallion · name · title · method) → the record arc → their week → today's
+    // takes → best call → rivalries → the patterns they star in → every recent call.
+    // "the record arc": last-N calls as a cumulative W−L sparkline in the analyst's accent.
+    function anlArcSvg(last10: string[], key: string) {
+      if (!last10 || last10.length < 3) return "";
+      let cum = 0;
+      const pts = [0, ...last10.map((r) => (cum += r === "W" ? 1 : r === "L" ? -1 : 0))];
+      const w = 300, h = 64, pad = 6;
+      const lo = Math.min(0, ...pts), hi = Math.max(0, ...pts);
+      const span = Math.max(1, hi - lo);
+      const X = (i: number) => pad + (i / (pts.length - 1)) * (w - pad * 2);
+      const Y = (v: number) => pad + (1 - (v - lo) / span) * (h - pad * 2);
+      const line = pts.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
+      const up = pts[pts.length - 1] >= 0;
+      return `<svg class="anlp-arc" viewBox="0 0 ${w} ${h}" role="img" aria-label="Last ${last10.length} calls — running win-loss arc, currently ${pts[pts.length - 1] >= 0 ? "up" : "down"} ${Math.abs(pts[pts.length - 1])}">
+        <line x1="${pad}" y1="${Y(0).toFixed(1)}" x2="${w - pad}" y2="${Y(0).toFixed(1)}" stroke="rgba(224,235,255,.14)" stroke-dasharray="3 4" stroke-width="1"/>
+        <polyline points="${line}" fill="none" stroke="var(--anc,#eec258)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${X(pts.length - 1).toFixed(1)}" cy="${Y(pts[pts.length - 1]).toFixed(1)}" r="3.4" fill="var(--anc,#eec258)"/>
+        <text x="${(X(pts.length - 1) - 7).toFixed(1)}" y="${Math.max(11, Math.min(h - 5, Y(pts[pts.length - 1]) - 7)).toFixed(1)}" text-anchor="end" class="anlp-arc-lab ${up ? "pos" : "neg"}">${pts[pts.length - 1] >= 0 ? "+" : ""}${pts[pts.length - 1]}</text>
+      </svg>`;
+    }
     function openAnalystSheet(key: any) {
       const k = String(key || "").toLowerCase();
       const cast = DESK_CAST[k] || { name: k, title: "Analyst", method: "" };
@@ -1562,24 +1604,38 @@ export default function Home() {
         }
       }
       detail = { _record: true };
+      // THE PATTERNS THEY STAR IN — pattern highlights naming this analyst.
+      const myPats = patternHighlights().filter((it: any) => it.keys.indexOf(k) >= 0).slice(0, 3);
+      const patsHtml = myPats.length
+        ? `<div class="anlp-sec"><div class="anlp-sec-h">Their patterns</div><div class="pat-grid one">${myPats.map((it: any) => patternCard(it)).join("")}</div></div>`
+        : "";
+      const arc = rec ? anlArcSvg(rec.last10, k) : "";
       const html = `
-        <div class="sheet-bg" id="sheet-bg"></div>
-        <div class="sheet anl an-${esc(k)}" id="sheet" role="dialog" aria-modal="true">
-          <div class="sh-grab" id="sh-grab"><span></span></div>
-          <div class="sh-head anl-head">
-            <button class="close" id="sheet-close" aria-label="Close">✕</button>
-            <div class="anl-glyph an-${esc(k)}">${deskGlyph(k, 26)}</div>
-            <div class="anl-name">${esc(String(cast.name || k).toUpperCase())}<span class="anl-title">${esc(cast.title || "")}</span></div>
-            <div class="sh-meta">${esc(cast.method || "")}</div>
+        <div class="gamepage anlpage an-${esc(k)}" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(cast.name || k)} — analyst">
+          <div class="gp-head">
+            <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button class="gp-brand" id="gp-brand" aria-label="DiamondEdge — home"><span class="diamond" aria-hidden="true"></span><span class="gp-brand-tx">Diamond<b>Edge</b></span></button>
+            <div class="hspacer"></div>
           </div>
-          <div class="sh-body">
-            ${recHero}
-            ${graded ? "" : `<div class="anl-note">Every call ${esc(cast.name || "this analyst")} files is graded against the real final — the record builds here in public.</div>`}
-            ${takesHtml ? `<div class="dsec"><div class="dsec-h">Today at the desk</div><div class="anl-takes">${takesHtml}</div></div>` : ""}
+          <div class="gp-body anlp-body" id="gp-body">
+            <header class="anlp-hero">
+              <div class="anlp-aura" aria-hidden="true"></div>
+              <div class="anlp-glyph">${deskGlyph(k, 38)}</div>
+              <h2 class="anlp-name">${esc(String(cast.name || k).toUpperCase())}</h2>
+              <div class="anlp-title">${esc(cast.title || "Analyst")}${crowned ? `<span class="anlp-crown">${crownSvg(13)} Analyst of the week</span>` : ""}</div>
+              ${cast.method ? `<p class="anlp-method">${esc(cast.method)}</p>` : ""}
+            </header>
+            <section class="anlp-recwrap">
+              ${recHero}
+              ${arc ? `<div class="anlp-arcwrap">${arc}<span class="anlp-arc-k">last ${rec.last10.length} calls — the running arc</span></div>` : ""}
+              ${graded ? "" : `<div class="anl-note">Every call ${esc(cast.name || "this analyst")} files is graded against the real final — the record builds here in public.</div>`}
+            </section>
+            ${takesHtml ? `<div class="anlp-sec"><div class="anlp-sec-h">Today at the desk</div><div class="anl-takes">${takesHtml}</div></div>` : ""}
             ${bestCallHtml}
-            ${rivHtml ? `<div class="dsec"><div class="dsec-h">Rivalries</div><div class="anl-rivs">${rivHtml}</div></div>` : ""}
-            ${rows ? `<div class="dsec"><div class="dsec-h">Recent calls</div><div class="anl-rows">${rows}</div></div>` : ""}
-            <div class="dsec"><div class="dsec-b rcp"><p><b>One desk, one bet.</b> ${esc(cast.name || "Each analyst")} argues a side on every game; the desk chief weighs all four and only the DiamondEdge call is ever played. Each analyst's own calls are graded separately — that scoreboard is the competition.</p></div></div>
+            ${rivHtml ? `<div class="anlp-sec"><div class="anlp-sec-h">Rivalries</div><div class="anl-rivs">${rivHtml}</div></div>` : ""}
+            ${patsHtml}
+            ${rows ? `<div class="anlp-sec"><div class="anlp-sec-h">Recent calls</div><div class="anl-rows">${rows}</div></div>` : ""}
+            <div class="anlp-sec"><div class="dsec-b rcp"><p><b>One desk, one bet.</b> ${esc(cast.name || "Each analyst")} argues a side on every game; the desk chief weighs all four and only the DiamondEdge call is ever played. Each analyst's own calls are graded separately — that scoreboard is the competition.</p></div></div>
             <button class="rb-full" id="anl-insights">See the full desk record →</button>
           </div>
         </div>`;
@@ -1587,10 +1643,10 @@ export default function Home() {
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
-      $("sheet-close").onclick = () => closeDetail();
-      $("sheet-bg").onclick = () => closeDetail();
+      requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
+      $("gp-back").onclick = () => closeDetail();
+      const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
       const ins = $("anl-insights"); if (ins) ins.onclick = () => { closeDetail(); switchTab("results"); };
-      bindSheetDrag($("sheet"), $("sh-grab"));
     }
     // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
     // card — tiles, the standings strip, the debate panel — without touching each binder.
@@ -2078,6 +2134,192 @@ export default function Home() {
         ${chRows ? `<div class="chh"><div class="chh-h">When the desk agrees</div>${chRows}<div class="chh-note">The same games seen four ways — the states overlap with nothing else and are graded on the desk's own calls.</div></div>` : ""}
       </div>`;
     }
+    // ═══════════ THE PATTERNS — record.patterns → what the desk's history actually says ═══════════
+    // The backend serves record.patterns { live_era, reconstructed_era, highlights[] } —
+    // plain-English pattern lines ("When all four agree, the game has gone the other way
+    // 54% of the time"), each with its sample size and which era measured it. This is the
+    // site's intellectual centerpiece: rendered like revelations, captioned like science.
+    // Every reader is FULLY DEFENSIVE — absent/malformed ⇒ []/null and no surface renders.
+    function patternsRaw() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const p = d && (d as any).record && (d as any).record.patterns;
+        if (p && typeof p === "object") return p;
+      }
+      return null;
+    }
+    // one era block → { key, label, n, since, note } (or null)
+    function normPatternEra(key: string, e: any) {
+      if (!e || typeof e !== "object") return null;
+      return {
+        key,
+        label: humanNote(e.label) || (key === "live" ? "Live era" : "Reconstructed era"),
+        n: Math.max(0, Math.round(Number(e.n != null ? e.n : e.n_games) || 0)),
+        since: String(e.since || e.start || e.start_date || "").slice(0, 10),
+        note: humanNote(e.note != null ? e.note : e.what),
+      };
+    }
+    function patternEras() {
+      const p = patternsRaw();
+      if (!p) return { live: null, recon: null };
+      return {
+        live: normPatternEra("live", p.live_era != null ? p.live_era : p.live),
+        recon: normPatternEra("reconstructed", p.reconstructed_era != null ? p.reconstructed_era : p.reconstructed),
+      };
+    }
+    // one highlight, whatever shape it arrived in → a stable object (or null).
+    // Tolerated: a bare string; { line|text|headline, n, era, kind, analysts|pair|keys,
+    // record {win,loss}|"12-8", pct|rate, note }.
+    function normPatternItem(x: any) {
+      if (x == null) return null;
+      if (typeof x === "string") { const t = humanNote(x); return t ? { text: t, n: 0, era: "", kind: "", keys: [], wl: null, note: "" } : null; }
+      if (typeof x !== "object") return null;
+      const text = humanNote(x.line != null ? x.line : (x.text != null ? x.text : (x.headline != null ? x.headline : x.pattern)));
+      if (!text) return null;
+      // which analysts the pattern is about (pair patterns carry two)
+      const rawKeys = Array.isArray(x.analysts) ? x.analysts : Array.isArray(x.pair) ? x.pair : Array.isArray(x.keys) ? x.keys : [];
+      const keys: string[] = [];
+      rawKeys.forEach((k: any) => { const a = anKeyOf(k); if (a && DESK_CAST[a] && keys.indexOf(a) < 0) keys.push(a); });
+      // also mine the sentence itself so pair cards get their glyphs even without a keys field
+      if (!keys.length) {
+        const m = text.toLowerCase().match(/vega|atlas|nova|scout/g);
+        if (m) m.forEach((k: string) => { if (keys.indexOf(k) < 0) keys.push(k); });
+      }
+      const wl = wlParse(x.record != null ? x.record : (x.wl != null ? x.wl : null));
+      const era = (() => {
+        const e = String(x.era || x.basis || "").toLowerCase();
+        if (/live/.test(e)) return "live";
+        if (/recon|backtest|replay/.test(e)) return "reconstructed";
+        return "";
+      })();
+      const kind = (() => {
+        const k = String(x.kind || x.type || "").toLowerCase();
+        if (k) return k;
+        const t = text.toLowerCase();
+        if (/other way|opposite|fade|contrar/.test(t)) return "contrarian";
+        if (/all four|unanimous|whole desk/.test(t)) return "unanimous";
+        if (keys.length === 2) return "pair";
+        if (/split|disagree/.test(t)) return "split";
+        return "";
+      })();
+      return {
+        text,
+        n: Math.max(0, Math.round(Number(x.n != null ? x.n : (x.n_games != null ? x.n_games : (wl ? wl.w + wl.l + wl.p : 0))) || 0)),
+        era, kind, keys, wl,
+        note: humanNote(x.note != null ? x.note : x.caption),
+      };
+    }
+    function patternHighlights() {
+      const p = patternsRaw();
+      if (!p) return [];
+      const out: any[] = []; const seen: any = {};
+      const add = (x: any, eraHint = "") => {
+        const n = normPatternItem(x);
+        if (!n) return;
+        if (!n.era && eraHint) n.era = eraHint;
+        const id = n.text.slice(0, 80).toLowerCase();
+        if (seen[id]) return; seen[id] = 1;
+        out.push(n);
+      };
+      const hl = p.highlights != null ? p.highlights : p.items;
+      if (Array.isArray(hl)) hl.forEach((x: any) => add(x));
+      else if (hl && typeof hl === "object") Object.values(hl).forEach((x: any) => add(x));
+      // eras can carry their own highlight lists too
+      [["live", p.live_era], ["reconstructed", p.reconstructed_era]].forEach(([k, e]: any) => {
+        if (e && typeof e === "object" && Array.isArray(e.highlights)) e.highlights.forEach((x: any) => add(x, k));
+      });
+      return out;
+    }
+    // Typeset a pattern sentence: escape, then set the FIGURES (percentages, W–L records,
+    // counts) in the emphasis ink so the revelation reads at a glance. Also lifts an
+    // opening "When …," clause into the display-caps lead the cards are built around.
+    function patternProse(text: string) {
+      let t = esc(text);
+      t = t.replace(/(\d+(?:\.\d+)?%)/g, `<b class="pat-num">$1</b>`);
+      t = t.replace(/(\d+[–-]\d+(?:[–-]\d+)?)/g, `<b class="pat-num">$1</b>`);
+      return t;
+    }
+    function patternLead(it: any) {
+      // an explicit "When …" opening clause becomes the shouted lead
+      const m = it.text.match(/^(when [^,—.]{3,48})[,—.]/i);
+      if (m) return m[1].toUpperCase();
+      if (it.kind === "unanimous") return "WHEN THEY ALL AGREE";
+      if (it.kind === "contrarian") return "THE CONTRARIAN READ";
+      if (it.kind === "split") return "WHEN THE DESK SPLITS";
+      if (it.kind === "pair" && it.keys.length === 2)
+        return `${String((DESK_CAST[it.keys[0]] || {}).name || it.keys[0]).toUpperCase()} + ${String((DESK_CAST[it.keys[1]] || {}).name || it.keys[1]).toUpperCase()} TOGETHER`;
+      return "THE PATTERN";
+    }
+    // the body = the sentence minus a lifted lead clause (keeps the reveal from repeating)
+    function patternBody(it: any) {
+      const m = it.text.match(/^(when [^,—.]{3,48})([,—.]\s*)(.+)$/i);
+      const body = m ? m[3] : it.text;
+      return patternProse(body.charAt(0).toUpperCase() + body.slice(1));
+    }
+    const PATTERN_MIN_N = 25;
+    function patternCard(it: any, big = false) {
+      const glyphs = it.keys.length && it.keys.length <= 2
+        ? `<span class="pat-glyphs">${it.keys.map((k: string) => `<i class="pat-g an-${esc(k)}">${deskGlyph(k, big ? 15 : 13)}</i>`).join("")}</span>`
+        : `<span class="pat-glyphs all">${DESK_ORDER.map((k) => `<i class="pat-g an-${esc(k)}">${deskGlyph(k, big ? 12 : 10)}</i>`).join("")}</span>`;
+      const eraChip = it.era === "live"
+        ? `<span class="pat-era live">live era</span>`
+        : it.era === "reconstructed" ? `<span class="pat-era recon">replayed era</span>` : "";
+      const nChip = it.n ? `<span class="pat-n">n = ${it.n} game${it.n === 1 ? "" : "s"}</span>` : "";
+      const smalln = it.n > 0 && it.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample — a lean, not a law</span>` : "";
+      const wlChip = it.wl ? `<span class="pat-wl">${it.wl.w}–${it.wl.l}${it.wl.p ? `–${it.wl.p}` : ""}</span>` : "";
+      return `<article class="patcard${big ? " big" : ""}${it.kind ? ` kind-${esc(it.kind)}` : ""}">
+        <div class="pat-kick">${glyphs}<span class="pat-lead">${esc(patternLead(it))}</span></div>
+        <p class="pat-line">${patternBody(it)}</p>
+        <div class="pat-meta">${nChip}${wlChip}${eraChip}${smalln}</div>
+        ${it.note ? `<div class="pat-note">${esc(it.note)}</div>` : ""}
+      </article>`;
+    }
+    // HOME: the patterns rail — the boldest reads, swipable, with the deep-dive link.
+    function patternsStrip() {
+      const items = patternHighlights();
+      if (!items.length) return "";
+      const cards = items.slice(0, 5).map((it) => patternCard(it)).join("");
+      return `<section class="patstrip" aria-label="The patterns">
+        <div class="pat-h">
+          <span class="pat-k">◆ The Patterns</span>
+          <span class="pat-sub">What actually happens when the desk lines up — measured nightly, not vibes</span>
+          <button class="pat-all" data-nav="results" aria-label="Every pattern, on Insights">All patterns →</button>
+        </div>
+        <div class="pat-rail">${cards}</div>
+      </section>`;
+    }
+    // INSIGHTS: the deep dive — every highlight, with the era ledger framing up top.
+    function patternsSection() {
+      const items = patternHighlights();
+      if (!items.length) return "";
+      const eras = patternEras();
+      const eraRow = (e: any, cls: string) => e
+        ? `<div class="pat-erarow ${cls}"><span class="pat-era ${cls}">${esc(e.label)}</span><span class="pat-eratx">${e.n ? `${e.n} games` : ""}${e.since ? `${e.n ? " · " : ""}since ${esc(stratDateTxt(e.since) || e.since)}` : ""}${e.note ? ` — ${esc(e.note)}` : ""}</span></div>`
+        : "";
+      return `<div class="ixc patsec" id="patterns">
+        <div class="ixc-h">The patterns</div>
+        <div class="ixc-sub">The desk's history, mined for tendencies — including the uncomfortable ones. When agreement helps, when it hurts, and which pairs are worth listening to. Updated as every night grades.</div>
+        ${eraRow(eras.live, "live")}${eraRow(eras.recon, "recon")}
+        <div class="pat-grid">${items.map((it) => patternCard(it)).join("")}</div>
+        <div class="pat-honest">These are observed tendencies, not laws — most samples are small, the eras are labelled, and a pattern that stops working gets reported here the same night it breaks.</div>
+      </div>`;
+    }
+    // STORIES: the boldest pattern as a full-viewport revelation slide.
+    function storyPatternsSlide() {
+      const items = patternHighlights();
+      if (!items.length) return "";
+      const pick0 = items.find((x) => x.kind === "contrarian") || items[0];
+      const more = items.length > 1 ? `<div class="sts-substat">${items.length - 1} more pattern${items.length === 2 ? "" : "s"} on Insights</div>` : "";
+      return `<div class="sts sts-patterns">
+        <div class="sts-bg" aria-hidden="true"></div>
+        <div class="sts-kick"><span>◆ The Patterns</span></div>
+        <div class="sts-patlead">${esc(patternLead(pick0))}</div>
+        <h3 class="sts-head pat">${patternBody(pick0)}</h3>
+        <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">live era</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">replayed era</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample</span>` : ""}</div>
+        ${more}
+        <button class="st-cta" data-go="results">Every pattern, graded →</button>
+      </div>`;
+    }
+
     // ---- DEV-ONLY DESK MOCK (?deskmock=1 on localhost): synthesizes the analyst fields so
     // the Analyst Desk UI can be exercised before the backend payload lands. NEVER active in
     // production — gated on hostname. Real served fields always win (mock skips games that
@@ -2192,6 +2434,17 @@ export default function Home() {
             { key: "vega", win: 4, loss: 2, roi: 0.12 },
             { key: "atlas", win: 3, loss: 3, roi: -0.02 },
             { key: "nova", win: 2, loss: 4, roi: -0.14 },
+          ],
+        };
+        if (!d.record.patterns) d.record.patterns = {
+          live_era: { label: "Live era", n: 58, since: shiftDate(todayISO(), -24), note: "calls served on the board" },
+          reconstructed_era: { label: "Reconstructed era", n: 329, since: "2026-04-01", note: "the same rules replayed at the walls" },
+          highlights: [
+            { kind: "contrarian", line: "When all four agree, the game has gone the other way 54% of the time.", n: 61, era: "reconstructed", record: { win: 28, loss: 33 } },
+            { kind: "pair", pair: ["atlas", "vega"], line: "Atlas and Vega together have cashed 61% when they land on the same side.", n: 38, era: "reconstructed" },
+            { kind: "split", line: "A 2–2 split desk has been a coin flip — 50.8% — exactly as a split should be.", n: 65, era: "reconstructed" },
+            { kind: "pair", pair: ["nova", "scout"], line: "When Nova fades Scout, Nova has taken the disagreement 7–3.", n: 10, era: "live" },
+            { line: "The desk's unders have outperformed its overs by 6 points of hit rate.", n: 112, era: "reconstructed" },
           ],
         };
       } catch {}
@@ -3717,7 +3970,14 @@ export default function Home() {
       // call replaces the generic spread row. No desk served ⇒ the tile is unchanged.
       const deskHtml = deskBlockTile(g, locked);
       const deskChf = deskHtml ? deskChief(g) : null;
-      return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}${deskHtml ? " has-desk" : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+      // CONSENSUS AS THE CARD'S LIGHT: the agreement state becomes the card's visual
+      // language — all four aligned = one unified glow ring; a split desk = a visibly
+      // divided pane; a majority = a softer single-accent lean. CSS reads these classes.
+      const deskCons = deskHtml ? deskConsensus(g) : null;
+      const consCls = deskCons && deskCons.state === "UNANIMOUS" ? " cons-unan"
+        : deskCons && deskCons.state === "MAJORITY" ? " cons-maj"
+        : deskCons && deskCons.state === "SPLIT" ? " cons-split" : "";
+      return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls ? " " + resCls : ""}${deskHtml ? " has-desk" : ""}${consCls}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${pick ? (locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pick.side || "")}`) : ""} — open details">
         <div class="t-head">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="t-body">
@@ -6145,6 +6405,7 @@ export default function Home() {
           ${chartCard("Month by month", "Net units each month — hot months and cold months alike.", monthlySvg(betaData))}
           ${streaksBlock(betaData)}
           ${analystRecordSection()}
+          ${patternsSection()}
           ${weeklyRaceSection()}
           ${rivalriesSection()}
           ${deskRecapSection()}
@@ -6456,6 +6717,7 @@ export default function Home() {
           <h3 class="ls-match">${headline}</h3>
           <div class="ls-byline">${esc(kicker)} · DiamondEdge${dateTxt ? ` · ${esc(dateTxt)}` : ""}</div>
           ${deskMiniRow(g, locked)}
+          ${deskStarTake(g, locked)}
           ${lede ? `<p class="ls-lede small">${esc(lede)}</p>` : ""}
           ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
           <span class="hero-cta">${cta}</span>
@@ -6557,6 +6819,8 @@ export default function Home() {
       // the competition scoreboard rides the deck too — stories is the DEFAULT home mode,
       // and the standings are the top-of-home promise
       if (deskRecordRows().length) slides.push({ t: "standings" });
+      // THE PATTERNS — the boldest measured tendency as its own revelation slide
+      if (patternHighlights().length) slides.push({ t: "patterns" });
       const recap = yesterdayRecap();
       if (recap) slides.push({ t: "recap", ...recap });
       let pi = 1, ni = 0;
@@ -6775,6 +7039,7 @@ export default function Home() {
         : sl.t === "desk" ? storyDeskSlide(sl)
         : sl.t === "lastnight" ? storyLastNightSlide(sl)
         : sl.t === "standings" ? storyStandingsSlide()
+        : sl.t === "patterns" ? storyPatternsSlide()
         : storySummarySlide(sl);
       return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
     }
@@ -6952,6 +7217,7 @@ export default function Home() {
           </div>
           <div class="mh-rule"></div>
           ${deskStandingsStrip()}
+          ${patternsStrip()}
           ${deskRecapCard()}
           ${nextUpBanner()}
           <section class="ng-lead front-hero">${leadStory}</section>
