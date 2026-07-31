@@ -3407,6 +3407,255 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 .dsk-dots::after{width:11px;height:9px}
 .dbt .dsk-dots::before{width:40px;height:12px}
 .dbt .dsk-dots::after{width:16px;height:12px}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE DESK COMES ALIVE — voices · nightly recap · rivalries · weekly race ·
+   ATLAS LIVE. Same dark liquid glass; each surface reads the analyst accent
+   custom-props (--anc/--anbg/--anline) set by .an-<key>.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* the per-game take is the LIVE voice — a touch brighter than the persona line */
+.dbt-say.is-take{color:var(--ink);font-weight:550}
+
+/* ---- "Hear the desk" — the four voices folded behind one tap on a tile ---- */
+.dsk-voices{border-radius:11px;background:rgba(18,27,45,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.055)}
+.dsk-voices>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;padding:7px 10px;min-width:0}
+.dsk-voices>summary::-webkit-details-marker{display:none}
+.dsk-voices .dskv-k{font-family:var(--disp);font-weight:800;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:#f2ca61;white-space:nowrap}
+.dsk-voices .dskv-sum{flex:1;min-width:0;font-family:var(--sans);font-weight:500;font-size:10px;color:var(--ink4);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dsk-voices .sgc-caret{font-size:12px;color:var(--ink4);transition:transform .18s ease}
+.dsk-voices[open]>summary .sgc-caret{transform:rotate(90deg)}
+.dskv-rows{display:flex;flex-direction:column;gap:6px;padding:0 9px 9px}
+.dskv{border-radius:10px;padding:7px 9px;min-width:0;cursor:pointer;
+  background:linear-gradient(180deg,rgba(23,33,54,.5),rgba(18,27,45,.4));
+  box-shadow:inset 2px 0 0 var(--anc,rgba(255,255,255,.2)),inset 0 0 0 1px rgba(255,255,255,.05)}
+.dskv-id{display:inline-flex;align-items:center;gap:5px;color:var(--anc,var(--ink2))}
+.dskv-id b{font-family:var(--disp);font-weight:800;font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--anc,var(--ink2))}
+.dskv-dir{font-style:normal;font-size:8.5px;line-height:1}
+.dskv-dir.ou-over{color:var(--over)}.dskv-dir.ou-under{color:var(--under)}
+.dskv-say{margin:4px 0 0;font-family:var(--sans);font-weight:500;font-style:italic;font-size:11px;line-height:1.5;color:var(--ink2)}
+
+/* ---- ATLAS LIVE — the physicist re-prices the game as it's played ---- */
+.atlive{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;margin-top:8px;
+  border-radius:11px;padding:7px 10px;
+  background:linear-gradient(135deg,rgba(224,172,32,.14),rgba(18,27,45,.55) 62%);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.32),inset 0 1.5px 0 rgba(255,225,140,.2),0 2px 12px rgba(224,172,32,.10);
+  animation:atglow 2.6s ease-in-out infinite}
+.atlive.watch{background:linear-gradient(135deg,rgba(224,172,32,.08),rgba(18,27,45,.5) 62%);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.2),inset 0 1.5px 0 rgba(255,255,255,.08);animation:none}
+.atlive .atl-g{display:inline-flex;color:#f2ca61;flex-shrink:0}
+.atlive .atl-k{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:800;font-size:9px;
+  letter-spacing:.13em;text-transform:uppercase;color:#ffe08a;white-space:nowrap}
+.atlive .atl-livew{display:inline-flex;align-items:center;gap:3.5px;font-style:normal;color:var(--red);font-size:8px;letter-spacing:.16em}
+.atlive .atl-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite;display:block}
+.atlive .atl-p{font-family:var(--mono);font-weight:600;font-size:10.5px;color:var(--ink2);white-space:nowrap}
+.atlive .atl-p b{font-weight:700;font-size:12px;color:var(--ink)}
+.atlive.ou-o .atl-p b{color:var(--over)}
+.atlive.ou-u .atl-p b{color:var(--under)}
+.atlive .atl-meter{flex:1 1 46px;min-width:34px;height:5px;border-radius:99px;background:rgba(224,235,255,.09);
+  overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.atlive .atl-meter i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--under),#f2ca61 50%,var(--over));
+  transition:width .6s ease}
+.atlive .atl-per{font-family:var(--mono);font-weight:600;font-size:9px;color:var(--ink3);white-space:nowrap}
+.atlive .atl-tx{font-family:var(--sans);font-weight:500;font-size:10.5px;color:var(--ink3);min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atlive .atl-tx.note{flex:1 1 100%;white-space:normal}
+.atlive.atl-full{padding:9px 12px;gap:9px;margin-top:0}
+.atlive.atl-full .atl-k{font-size:10px}
+.atlive.atl-full .atl-p{font-size:11.5px}
+.atlive.atl-full .atl-p b{font-size:14px}
+.gp-trend .atlive{margin-top:7px}
+@keyframes atglow{0%,100%{box-shadow:inset 0 0 0 1px rgba(224,172,32,.32),inset 0 1.5px 0 rgba(255,225,140,.2),0 2px 12px rgba(224,172,32,.08)}
+  50%{box-shadow:inset 0 0 0 1px rgba(224,172,32,.5),inset 0 1.5px 0 rgba(255,225,140,.3),0 2px 18px rgba(224,172,32,.22)}}
+@media (prefers-reduced-motion: reduce){.atlive{animation:none}.atlive .atl-dot{animation:none}}
+
+/* ---- the crown (weekly champion / nightly winner) ---- */
+.crown{color:#f2ca61;filter:drop-shadow(0 1px 4px rgba(224,172,32,.5))}
+
+/* ---- "Last night at the desk" — the morning recap card on the home board ---- */
+.rcapcard{margin:2px 0 18px;border-radius:var(--r-md,18px);padding:13px 14px 12px;min-width:0;
+  background:linear-gradient(180deg,var(--glass-hi),var(--glass));
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  box-shadow:var(--e1),inset 0 2px 0 var(--anline,rgba(255,255,255,.1))}
+.rcap-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.rcap-k{font-family:var(--disp);font-weight:800;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#f2ca61}
+.rcap-date{font-family:var(--mono);font-weight:600;font-size:9.5px;color:var(--ink4)}
+.rcap-hero{display:flex;align-items:center;gap:11px;min-width:0}
+.rcap-glyph{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  width:44px;height:44px;border-radius:14px;cursor:pointer;color:var(--anc,var(--ink));
+  background:var(--anbg,rgba(210,224,247,.08));
+  box-shadow:inset 0 0 0 1px var(--anline,rgba(255,255,255,.12)),inset 0 2px 0 rgba(255,255,255,.1)}
+.rcap-glyph-crown{position:absolute;top:-8px;left:50%;transform:translateX(-50%);line-height:0}
+.rcap-head{display:flex;flex-direction:column;gap:3px;min-width:0}
+.rcap-head b{font-family:var(--disp);font-weight:800;font-size:16px;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
+.rcap-head i{font-style:normal;font-family:var(--sans);font-weight:500;font-size:11px;line-height:1.45;color:var(--ink3)}
+.rcap-lines{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.rcap-line{display:flex;align-items:center;gap:8px;min-width:0;cursor:pointer;border:0;text-align:left;font:inherit;color:inherit;
+  border-radius:10px;padding:6px 9px;background:rgba(210,224,247,.045);
+  box-shadow:inset 2px 0 0 var(--anc,rgba(255,255,255,.16)),inset 0 0 0 1px rgba(255,255,255,.05)}
+.rcap-line.won{background:linear-gradient(90deg,rgba(224,172,32,.10),rgba(210,224,247,.045) 55%)}
+.rcap-line svg:first-of-type{color:var(--anc,var(--ink2));flex-shrink:0}
+.rcap-nm{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+.rcap-nm b{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.rcap-crown{line-height:0}
+.rcap-linetx{flex:1;min-width:0;font-style:italic;font-family:var(--sans);font-weight:500;font-size:10.5px;color:var(--ink3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rcap-rec{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:11px;color:var(--ink);flex-shrink:0}
+.rcap-call{margin-top:9px;border-radius:11px;padding:9px 11px;min-width:0}
+.rcap-call[role="button"]{cursor:pointer}
+.rcap-call.best{background:linear-gradient(135deg,rgba(25,197,138,.12),rgba(18,27,45,.5) 60%);
+  box-shadow:inset 0 0 0 1px rgba(25,197,138,.3),inset 0 1.5px 0 rgba(255,255,255,.08)}
+.rcap-call.worst{background:linear-gradient(135deg,rgba(255,77,104,.09),rgba(18,27,45,.5) 60%);
+  box-shadow:inset 0 0 0 1px rgba(255,77,104,.22),inset 0 1.5px 0 rgba(255,255,255,.07)}
+.rcap-call-k{font-family:var(--disp);font-weight:800;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase}
+.rcap-call.best .rcap-call-k{color:#45d6a2}
+.rcap-call.worst .rcap-call-k{color:#ff8ba0}
+.rcap-call-b{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:5px;min-width:0}
+.rcap-who{display:inline-flex;align-items:center;gap:5px;min-width:0;color:var(--anc,var(--ink2))}
+.rcap-who b{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.rcap-who i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.03em;color:var(--ink3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcap-side{font-family:var(--mono);font-weight:700;font-size:11.5px;color:var(--ink)}
+.rcap-side.ou-over{color:var(--over)}.rcap-side.ou-under{color:var(--under)}
+.rcap-res{font-family:var(--disp);font-weight:800;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+  border-radius:999px;padding:2px 8px}
+.rcap-res.win{color:#45d6a2;background:rgba(25,197,138,.13)}
+.rcap-res.loss{color:#ff8ba0;background:rgba(255,77,104,.12)}
+.rcap-res.push{color:var(--ink3);background:rgba(147,161,184,.12)}
+.rcap-quote{margin:6px 0 0;font-family:var(--sans);font-weight:500;font-style:italic;font-size:11px;line-height:1.5;color:var(--ink2)}
+
+/* ---- STORIES: "Last Night at the Desk" (the marquee slide) ---- */
+.sts-lastnight .sts-bg{background:
+  radial-gradient(120% 90% at 50% 0%,var(--anbg,rgba(224,172,32,.18)),transparent 55%),
+  radial-gradient(130% 100% at 50% 112%,rgba(20,30,52,.9),transparent),
+  linear-gradient(180deg,#111827,#0b111e)}
+.sts-ln-winner{display:flex;align-items:center;gap:12px;justify-content:center;margin:8px auto 0;cursor:pointer}
+.sts-ln-glyph{position:relative;display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;
+  border-radius:18px;color:var(--anc,var(--ink));background:var(--anbg,rgba(210,224,247,.08));
+  box-shadow:inset 0 0 0 1px var(--anline,rgba(255,255,255,.14)),inset 0 2px 0 rgba(255,255,255,.12),0 6px 24px var(--anbg,rgba(224,172,32,.2))}
+.sts-ln-crown{position:absolute;top:-10px;left:50%;transform:translateX(-50%);line-height:0}
+.sts-ln-nm{display:flex;flex-direction:column;align-items:flex-start}
+.sts-ln-nm b{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.sts-ln-nm i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--anc,var(--ink3))}
+.sts-lastnight{gap:9px}
+.sts-lastnight .sts-head.ln{font-size:23px;margin:2px 0 0}
+.sts-lastnight .rcap-lines{width:100%;max-width:340px;margin:2px auto 0}
+.sts-lastnight .rcap-call{width:100%;max-width:340px;margin:2px auto 0;text-align:left}
+.sts-lastnight .st-cta{margin-top:6px}
+
+/* ---- STORIES: the quoted voice on a pick slide ---- */
+.sts-voices{display:flex;flex-direction:column;gap:7px;width:100%;max-width:340px;margin:10px auto 0}
+.sts-voice{border-radius:12px;padding:8px 12px;text-align:left;cursor:pointer;min-width:0;
+  background:rgba(18,27,45,.55);
+  box-shadow:inset 2px 0 0 var(--anc,rgba(255,255,255,.18)),inset 0 0 0 1px rgba(255,255,255,.06)}
+.sts-voice.dissent{background:rgba(24,22,38,.55)}
+.sts-voice-id{display:inline-flex;align-items:center;gap:5px;color:var(--anc,var(--ink2))}
+.sts-voice-id b{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--anc,var(--ink2))}
+.sts-voice p{margin:4px 0 0;font-family:var(--sans);font-weight:500;font-style:italic;font-size:11.5px;line-height:1.5;color:var(--ink2)}
+
+/* ---- INSIGHTS: desk rivalries (versus-cards) ---- */
+.vsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:9px;margin-top:10px;min-width:0}
+.vscard{border-radius:var(--r-sm,12px);padding:11px 12px 10px;min-width:0;
+  background:linear-gradient(180deg,var(--glass-hi),var(--glass));
+  box-shadow:var(--e0),inset 0 1.5px 0 rgba(255,255,255,.09)}
+.vs-k{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.04em;color:var(--ink3);
+  text-transform:uppercase;letter-spacing:.09em}
+.vs-face{display:flex;align-items:center;gap:8px;margin-top:9px;min-width:0}
+.vs-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;cursor:pointer;border:0;
+  text-align:center;font:inherit;color:var(--anc,var(--ink2));border-radius:11px;padding:8px 6px;
+  background:var(--anbg,rgba(210,224,247,.05));box-shadow:inset 0 0 0 1px var(--anline,rgba(255,255,255,.07))}
+.vs-side b{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.vs-side .vs-w{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--ink2)}
+.vs-side.lead .vs-w{color:#ffe08a}
+.vs-side.lead{box-shadow:inset 0 0 0 1px rgba(224,172,32,.4),inset 0 1.5px 0 rgba(255,225,140,.22)}
+.vs-mid{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.vs-mid b{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink)}
+.vs-mid i{font-style:normal;font-family:var(--disp);font-weight:800;font-size:8px;letter-spacing:.18em;color:var(--ink4)}
+.vs-foot{margin-top:8px;font-family:var(--sans);font-weight:500;font-size:10.5px;color:var(--ink3)}
+.vs-note{margin-top:5px;font-family:var(--sans);font-size:10px;color:var(--ink4)}
+
+/* ---- INSIGHTS: the weekly race ---- */
+.wkr-champ{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;border-radius:12px;padding:9px 12px;
+  color:var(--anc,var(--ink2));
+  background:linear-gradient(135deg,rgba(224,172,32,.14),var(--anbg,rgba(18,27,45,.5)) 70%);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.34),inset 0 1.5px 0 rgba(255,225,140,.2)}
+.wkr-champ b{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.wkr-champ span:last-child{font-family:var(--sans);font-weight:500;font-size:11px;color:var(--ink2)}
+.wkr-crown{line-height:0;display:inline-flex}
+.wkr-rows{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.wkr{display:flex;align-items:center;gap:9px;min-width:0;cursor:pointer;border:0;text-align:left;font:inherit;color:inherit;
+  border-radius:11px;padding:8px 11px;background:linear-gradient(180deg,rgba(23,33,54,.5),rgba(18,27,45,.4));
+  box-shadow:inset 2px 0 0 var(--anc,rgba(255,255,255,.16)),inset 0 0 0 1px rgba(255,255,255,.05)}
+.wkr.crowned{box-shadow:inset 2px 0 0 var(--anc,rgba(255,255,255,.16)),inset 0 0 0 1px rgba(224,172,32,.3)}
+.wkr-rank{font-family:var(--mono);font-weight:700;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink4);flex-shrink:0;width:24px}
+.wkr-id{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;width:96px;color:var(--anc,var(--ink2))}
+.wkr-id b{font-family:var(--disp);font-weight:800;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.wkr-bar{flex:1;min-width:30px;height:6px;border-radius:99px;background:rgba(224,235,255,.07);overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+.wkr-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--anbg,rgba(255,255,255,.2)),var(--anc,#93a1b8));
+  box-shadow:0 0 8px var(--anbg,transparent)}
+.wkr-rec{display:inline-flex;align-items:baseline;gap:6px;flex-shrink:0}
+.wkr-rec b{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink)}
+.wkr-rec i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:9px}
+.wkr-rec i.pos{color:var(--green)}.wkr-rec i.neg{color:var(--red)}
+
+/* ---- home standings strip: the this-week chip + crown ---- */
+.dskst-wk{display:inline-flex;align-items:center;gap:3.5px;margin-left:auto;font-family:var(--mono);font-weight:600;
+  font-size:8px;letter-spacing:.03em;text-transform:none;color:var(--ink3);border-radius:999px;padding:1.5px 6px;
+  background:rgba(210,224,247,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.dskst-wk b{font-weight:700;font-size:8.5px;color:var(--ink2)}
+.dskst-wk.crowned{color:#f2ca61;background:rgba(224,172,32,.1);box-shadow:inset 0 0 0 1px rgba(224,172,32,.26)}
+.dskst-wk.crowned b{color:#ffe08a}
+.dskst-rank{display:flex;align-items:center;gap:6px;width:100%}
+.dskst-card.aotw{box-shadow:var(--e1),inset 0 0 0 1px rgba(224,172,32,.3),inset 0 2px 0 var(--anline,rgba(255,255,255,.1))}
+
+/* ---- INSIGHTS: last-nights archive ---- */
+.rcap-day{border-radius:12px;background:rgba(18,27,45,.4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.055);margin-top:8px}
+.rcap-day>summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;padding:10px 12px;min-width:0}
+.rcap-day>summary::-webkit-details-marker{display:none}
+.rcap-day .pp-caret{margin-left:auto;transition:transform .18s ease;color:var(--ink4)}
+.rcap-day[open]>summary .pp-caret{transform:rotate(90deg)}
+.rcap-day-win{display:inline-flex;align-items:center;gap:5px;color:var(--anc,var(--ink2));
+  border-radius:999px;padding:2.5px 9px;background:var(--anbg,rgba(210,224,247,.06));
+  box-shadow:inset 0 0 0 1px var(--anline,rgba(255,255,255,.08))}
+.rcap-day-win b{font-family:var(--disp);font-weight:800;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.rcap-day-b{padding:0 12px 11px}
+.rcap-day-head{font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--ink);margin-top:2px}
+
+/* ---- analyst sheet: takes · week · rivalries · best call ---- */
+.anl-big.wk b{display:inline-flex;align-items:center;gap:5px}
+.anl-big.wk.crowned{box-shadow:inset 0 0 0 1px rgba(224,172,32,.32),inset 0 1.5px 0 rgba(255,225,140,.2)}
+.anl-takes{display:flex;flex-direction:column;gap:6px}
+.anl-take{border-radius:11px;padding:8px 10px;min-width:0;background:rgba(210,224,247,.045);
+  box-shadow:inset 2px 0 0 var(--anc,rgba(255,255,255,.16)),inset 0 0 0 1px rgba(255,255,255,.05)}
+.anl-take-top{display:flex;align-items:center;gap:9px;min-width:0}
+.anl-take-say{margin:5px 0 0;font-family:var(--sans);font-weight:500;font-style:italic;font-size:11px;line-height:1.5;color:var(--ink2)}
+.anl-best{border-radius:11px;padding:9px 11px;margin:0 0 12px;min-width:0;
+  background:linear-gradient(135deg,rgba(25,197,138,.1),rgba(18,27,45,.5) 60%);
+  box-shadow:inset 0 0 0 1px rgba(25,197,138,.28),inset 0 1.5px 0 rgba(255,255,255,.07)}
+.anl-best-k{font-family:var(--disp);font-weight:800;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:#45d6a2}
+.anl-best-b{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:5px;min-width:0}
+.anl-rivs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:7px}
+.anl-riv{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;cursor:pointer;border:0;text-align:left;
+  font:inherit;color:inherit;border-radius:11px;padding:8px 10px;background:var(--anbg,rgba(210,224,247,.05));
+  box-shadow:inset 0 0 0 1px var(--anline,rgba(255,255,255,.07))}
+.anl-riv-id{display:inline-flex;align-items:center;gap:5px;color:var(--anc,var(--ink2))}
+.anl-riv-id b{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
+.anl-riv-rec{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--ink)}
+.anl-riv-rec.pos{color:var(--green)}.anl-riv-rec.neg{color:var(--red)}
+.anl-riv i{font-style:normal;font-family:var(--sans);font-weight:500;font-size:9px;color:var(--ink4)}
+
+/* ---- 375px: everything stays overflow-clean ---- */
+@media (max-width:520px){
+  .sts-lastnight .sts-head.ln{font-size:20px}
+  .sts-ln-glyph{width:48px;height:48px}
+  .vsgrid{grid-template-columns:1fr}
+  .wkr-id{width:82px}
+  .rcap-head b{font-size:14.5px}
+  .atlive .atl-tx{font-size:10px}
+  .rcap-linetx{display:none}
+}
 .ch-spread b.nocall{color:var(--ink3);font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.08em}
 .dbt-say{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 

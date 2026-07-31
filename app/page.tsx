@@ -1206,6 +1206,9 @@ export default function Home() {
         name: (nmParts[0] || nmRaw).trim(),
         title: (nmParts.length > 1 ? nmParts.slice(1).join(" · ").trim() : "") || (cast && cast.title) || "",
         persona: humanNote(a.persona_line),
+        // the analyst's PERSONA-VOICE take on THIS game (backend `take`) — the line the
+        // desk actually says about the matchup. Absent ⇒ "" and every surface degrades.
+        take: humanNote(a.take != null ? a.take : a.take_line),
         side: sideRaw, dir,
         p_over: pOver, conv,
         locked: a.locked === true,
@@ -1350,8 +1353,26 @@ export default function Home() {
       }).join("");
       return `<div class="dsk-row">${cells}</div>`;
     }
+    // The four VOICES on a matchup panel, folded behind one tap: the chief's rationale is
+    // the primary read on the tile; expanding gives each analyst's persona-voice take on
+    // THIS game. Renders only when at least one served take exists (and never on a locked
+    // pick — the takes argue a side).
+    function deskVoicesFold(g: any, locked = false) {
+      if (locked) return "";
+      const voiced = deskAnalysts(g).filter((a: any) => a.take);
+      if (!voiced.length) return "";
+      const rows = voiced.map((a: any) => `<div class="dskv an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
+          <span class="dskv-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b>${a.dir ? `<i class="dskv-dir ${a.dir === "over" ? "ou-over" : "ou-under"}">${a.dir === "over" ? "▲" : "▼"}</i>` : ""}</span>
+          <p class="dskv-say">“${esc(a.take)}”</p>
+        </div>`).join("");
+      return `<details class="dsk-voices">
+        <summary><span class="dskv-k">◆ Hear the desk</span><span class="dskv-sum">${voiced.length} voice${voiced.length === 1 ? "" : "s"} on this game</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
+        <div class="dskv-rows">${rows}</div>
+      </details>`;
+    }
     // The whole desk block for a game tile: consensus headline · sim score · the four calls ·
-    // the chief's verdict (+ run-line read). "" when the desk isn't served for this game.
+    // the chief's verdict (+ run-line read) · the four voices behind one tap. "" when the
+    // desk isn't served for this game.
     function deskBlockTile(g: any, locked = false) {
       const ans = deskAnalysts(g);
       if (!ans.length) return "";
@@ -1361,6 +1382,7 @@ export default function Home() {
         ${deskChipRow(g, locked)}
         ${chiefStrip(g, chief)}
         ${chiefSpreadLine(g, chief)}
+        ${deskVoicesFold(g, locked)}
       </div>`;
     }
     // ---- record.analysts → the standings ----
@@ -1426,12 +1448,20 @@ export default function Home() {
         ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) ||
         ((b.hit || 0) - (a.hit || 0)) || ((b.win || 0) - (a.win || 0)) ||
         (DESK_ORDER.indexOf(a.key) - DESK_ORDER.indexOf(b.key)));
+      const wk = weeklyStandingsData();
       const cards = rows.map((r: any, i: number) => {
         const graded = r.win + r.loss + r.push > 0;
         const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0";
         const roiTxt = r.roi != null ? `<i class="dskst-roi ${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : `<i class="dskst-roi dim">${graded ? "" : "first calls today"}</i>`;
-        return `<button class="dskst-card an-${esc(r.key)}${i === 0 && graded ? " lead" : ""}" data-an="${esc(r.key)}" aria-label="${esc(r.name)} — ${esc(r.title)}, record ${rec}">
-          <span class="dskst-rank">${i === 0 && graded ? "◆ 1st" : `${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}`}</span>
+        // THIS-WEEK FORM: the weekly race rides the strip — each card carries its week
+        // ("wk 3–1"), the analyst of the week wears the crown. Absent feed ⇒ nothing.
+        const wrow = wk ? wk.rows.find((x: any) => x.key === r.key) : null;
+        const crowned = wk && wk.aotw === r.key;
+        const wkChip = wrow
+          ? `<span class="dskst-wk${crowned ? " crowned" : ""}">${crowned ? crownSvg(9) : ""}wk <b>${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b></span>`
+          : (crowned ? `<span class="dskst-wk crowned">${crownSvg(9)}this week</span>` : "");
+        return `<button class="dskst-card an-${esc(r.key)}${i === 0 && graded ? " lead" : ""}${crowned ? " aotw" : ""}" data-an="${esc(r.key)}" aria-label="${esc(r.name)} — ${esc(r.title)}, record ${rec}${wrow ? `, this week ${wrow.w} and ${wrow.l}` : ""}">
+          <span class="dskst-rank">${i === 0 && graded ? "◆ 1st" : `${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}`}${wkChip}</span>
           <span class="dskst-id">${deskGlyph(r.key, 17)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
           <span class="dskst-rec"><b>${rec}</b>${roiTxt}</span>
           ${deskL10Dots(r.last10)}
@@ -1464,14 +1494,73 @@ export default function Home() {
         return `<div class="anl-row"><span class="anl-d">${esc(dd)}</span><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span><span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>${a.conv != null ? `<span class="anl-conv">${Math.round(a.conv * 100)}%</span>` : ""}${res}</div>`;
       }).join("");
       const graded = rec && rec.win + rec.loss + rec.push > 0;
+      // THEIR WEEK — the weekly-race row (+ the crown when they're analyst of the week).
+      const wkAll = weeklyStandingsData();
+      const wrow = wkAll ? wkAll.rows.find((x: any) => x.key === k) : null;
+      const crowned = !!(wkAll && wkAll.aotw === k);
+      const wkCell = wrow
+        ? `<div class="anl-big wk${crowned ? " crowned" : ""}"><b>${crowned ? crownSvg(12) : ""}${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b><i>this week${crowned ? " · crowned" : ""}</i></div>`
+        : "";
       const recHero = rec
         ? `<div class="anl-hero">
             <div class="anl-big"><b>${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}</b><i>record</i></div>
             ${rec.hit != null ? `<div class="anl-big"><b>${(rec.hit * 100).toFixed(0)}%</b><i>hit</i></div>` : ""}
             ${rec.roi != null ? `<div class="anl-big ${rec.roi >= 0 ? "pos" : "neg"}"><b>${bRoi(rec.roi)}</b><i>ROI</i></div>` : ""}
+            ${wkCell}
             ${rec.last10.length ? `<div class="anl-big form"><b>${deskL10Dots(rec.last10)}</b><i>last ${rec.last10.length}</i></div>` : ""}
           </div>`
-        : `<div class="anl-hero"><div class="anl-big"><b>0–0</b><i>first calls pending</i></div></div>`;
+        : `<div class="anl-hero"><div class="anl-big"><b>0–0</b><i>first calls pending</i></div>${wkCell}</div>`;
+      // TODAY AT THE DESK — their persona-voice takes on today's slate, quoted.
+      const takesToday: any[] = [];
+      const seenTk: any = {};
+      [betaLiveData, betaData].forEach((d: any) => ((d && d.games) || []).forEach((g: any) => {
+        const gid = String(g.game_id || "");
+        if (!gid || seenTk[gid]) return; seenTk[gid] = 1;
+        if (String(g.date || "").slice(0, 10) !== todayISO()) return;
+        const a = (Array.isArray(g.analysts) ? g.analysts : []).map(normAnalystRow).filter(Boolean).find((x: any) => x.key === k);
+        if (a && a.take) takesToday.push({ g, a });
+      }));
+      const takesHtml = takesToday.slice(0, 3).map(({ g, a }: any) => {
+        const aAb = g.away_abbr || mlbAbbr(g.away) || "—", hAb = g.home_abbr || mlbAbbr(g.home) || "—";
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        return `<div class="anl-take">
+          <div class="anl-take-top"><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span>${a.side ? `<span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>` : ""}</div>
+          <p class="anl-take-say">“${esc(a.take)}”</p>
+        </div>`;
+      }).join("");
+      // THEIR RIVALRIES — head-to-head disagreement records involving this analyst.
+      const rivHtml = h2hFor(k).slice(0, 3).map((r: any) => {
+        const opp = r.a === k ? r.b : r.a;
+        const mine = r.a === k ? r.aw : r.bw, theirs = r.a === k ? r.bw : r.aw;
+        const cls = mine > theirs ? "pos" : mine < theirs ? "neg" : "";
+        return `<button class="anl-riv an-${esc(opp)}" data-an="${esc(opp)}" aria-label="Rivalry with ${esc((DESK_CAST[opp] || {}).name || opp)}">
+          <span class="anl-riv-id">${deskGlyph(opp, 12)}<b>vs ${esc((DESK_CAST[opp] || {}).name || opp)}</b></span>
+          <b class="anl-riv-rec ${cls}">${mine}–${theirs}</b>
+          <i>when they disagree</i>
+        </button>`;
+      }).join("");
+      // BEST RECENT CALL — the most recent night this analyst owned the desk's best call;
+      // falls back to their strongest graded win from the recent-calls list.
+      let bestCallHtml = "";
+      const rcBest = deskRecapsAll().find((rc: any) => rc.best && rc.best.key === k);
+      if (rcBest) {
+        const b = rcBest.best;
+        bestCallHtml = `<div class="anl-best">
+          <span class="anl-best-k">◆ Best recent call${rcBest.date ? ` · ${esc(recapDateTxt(rcBest.date))}` : ""}</span>
+          <div class="anl-best-b">${b.mu ? `<span class="anl-mu">${esc(b.mu)}</span>` : ""}${b.call ? `<b class="anl-call ${/under/i.test(b.call) ? "ou-under" : /over/i.test(b.call) ? "ou-over" : ""}">${esc(b.call)}</b>` : ""}<span class="ppres won">W</span></div>
+          ${b.txt ? `<p class="anl-take-say">“${esc(b.txt)}”</p>` : ""}
+        </div>`;
+      } else {
+        const bw = calls.filter(({ a }: any) => a.result === "win")
+          .sort((x: any, y: any) => ((y.a.conv != null ? y.a.conv : 0) - (x.a.conv != null ? x.a.conv : 0)))[0];
+        if (bw) {
+          const aAb = bw.g.away_abbr || mlbAbbr(bw.g.away) || "—", hAb = bw.g.home_abbr || mlbAbbr(bw.g.home) || "—";
+          bestCallHtml = `<div class="anl-best">
+            <span class="anl-best-k">◆ Best recent call${bw.g.date ? ` · ${esc(recapDateTxt(bw.g.date))}` : ""}</span>
+            <div class="anl-best-b"><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span><b class="anl-call ${bw.a.dir === "under" ? "ou-under" : "ou-over"}">${esc((bw.a.dir || bw.a.side).toUpperCase())}${bw.a.line != null ? ` ${lineStr(bw.a.line)}` : ""}</b>${bw.a.conv != null ? `<span class="anl-conv">${Math.round(bw.a.conv * 100)}% sure</span>` : ""}<span class="ppres won">W</span></div>
+          </div>`;
+        }
+      }
       detail = { _record: true };
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
@@ -1486,6 +1575,9 @@ export default function Home() {
           <div class="sh-body">
             ${recHero}
             ${graded ? "" : `<div class="anl-note">Every call ${esc(cast.name || "this analyst")} files is graded against the real final — the record builds here in public.</div>`}
+            ${takesHtml ? `<div class="dsec"><div class="dsec-h">Today at the desk</div><div class="anl-takes">${takesHtml}</div></div>` : ""}
+            ${bestCallHtml}
+            ${rivHtml ? `<div class="dsec"><div class="dsec-h">Rivalries</div><div class="anl-rivs">${rivHtml}</div></div>` : ""}
             ${rows ? `<div class="dsec"><div class="dsec-h">Recent calls</div><div class="anl-rows">${rows}</div></div>` : ""}
             <div class="dsec"><div class="dsec-b rcp"><p><b>One desk, one bet.</b> ${esc(cast.name || "Each analyst")} argues a side on every game; the desk chief weighs all four and only the DiamondEdge call is ever played. Each analyst's own calls are graded separately — that scoreboard is the competition.</p></div></div>
             <button class="rb-full" id="anl-insights">See the full desk record →</button>
@@ -1506,6 +1598,10 @@ export default function Home() {
     function bindDeskTaps() {
       if (deskTapBound) return; deskTapBound = true;
       document.addEventListener("click", (e: any) => {
+        // "Hear the desk" fold inside a clickable tile: let the <details> toggle, but never
+        // bubble up into the tile's open-game handler.
+        const sum = e.target && e.target.closest && e.target.closest(".dsk-voices summary");
+        if (sum) { e.stopPropagation(); return; }
         const b = e.target && e.target.closest && e.target.closest("[data-an]");
         if (!b) return;
         e.preventDefault(); e.stopPropagation();
@@ -1532,10 +1628,13 @@ export default function Home() {
             : `<b class="dbt-side none">No call yet</b>`;
         const conv = !hide && a.conv != null ? `<span class="dbt-conv">${Math.round(a.conv * 100)}% sure</span>` : "";
         const res = a.result === "win" ? `<span class="sgr-res won">RIGHT</span>` : a.result === "loss" ? `<span class="sgr-res lost">WRONG</span>` : a.result === "push" ? `<span class="sgr-res pushed">PUSH</span>` : "";
+        // THE VOICE: the analyst's per-game take is the speech bubble — their persona line
+        // only stands in while the backend take hasn't landed yet.
+        const say = !hide ? (a.take || a.persona) : "";
         return `<div class="dbt an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
           <div class="dbt-id">${deskGlyph(a.key, 15)}<span class="dbt-nm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${deskRecChip(a.key)}</div>
           <div class="dbt-call">${call}${conv}${a.wall ? `<span class="dbt-wall">${esc(a.wall)}</span>` : ""}${res}</div>
-          ${!hide && a.persona ? `<p class="dbt-say">“${esc(a.persona)}”</p>` : ""}
+          ${say ? `<p class="dbt-say${a.take ? " is-take" : ""}">“${esc(say)}”</p>` : ""}
         </div>`;
       }).join("");
       const chiefRow = chief && chief.action ? `<div class="dbt chiefrow ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}">
@@ -1582,6 +1681,347 @@ export default function Home() {
       }
       return [];
     }
+    // ═══════════ THE DESK COMES ALIVE — live ATLAS · nightly recaps · rivalries · weekly race ═══════════
+    // Every reader below is FULLY DEFENSIVE: the backend fields (atlas live block,
+    // record.desk_recap / desk_recaps, record.head_to_head, record.weekly_standings) may not
+    // be served yet — absent/malformed ⇒ null/[] and every surface degrades to today's
+    // layout, byte for byte.
+
+    // ---- ATLAS LIVE: the physicist re-prices the total mid-game ----
+    // Tolerated shapes: live fields riding the atlas analysts row (flat or nested under
+    // .live), a game-level atlas / atlas_live block, or the simulator block itself.
+    function atlasLiveOf(g: any) {
+      if (!g || gameState(g).kind !== "live") return null;
+      const src = Array.isArray(g.analysts) ? g : (v4GameFor(g) || g);
+      const cands: any[] = [];
+      const push = (o: any) => { if (o && typeof o === "object") { cands.push(o); if (o.live && typeof o.live === "object") cands.push(o.live); } };
+      (Array.isArray(src && src.analysts) ? src.analysts : []).forEach((a: any) => { if (a && String(a.key || "").toLowerCase() === "atlas") push(a); });
+      push(src && src.atlas); push(g.atlas); push(src && src.atlas_live); push(g.atlas_live);
+      push((src && src.simulator) || g.simulator);
+      for (const c of cands) {
+        const p = _fin(c.live_p_over);
+        const note = humanNote(c.live_state_note);
+        if (p == null && !note) continue;
+        return { p: p != null ? Math.max(0, Math.min(1, p)) : null, note, asOf: String(c.as_of == null ? "" : c.as_of).trim() };
+      }
+      return null;
+    }
+    const atlasAsOfTxt = (iso: any) => {
+      const t = new Date(String(iso || "")).getTime();
+      return isFinite(t) ? new Date(t).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+    };
+    // The pulsing live chip: "ATLAS LIVE · 61% over · Top 5th" — the sim's live read on the
+    // total, updating with each refresh. With only a state note it's the honest "watching"
+    // state. It is an observation, never a bet prompt — no side is ever recommended here.
+    function atlasLiveChip(g: any, size = "tile") {
+      const al = atlasLiveOf(g);
+      if (!al) return "";
+      const gs = gameState(g);
+      const per = gs.kind === "live" && gs.label && gs.label !== "Live" ? gs.label : "";
+      const upd = atlasAsOfTxt(al.asOf);
+      const glyph = `<span class="atl-g" aria-hidden="true">${deskGlyph("atlas", size === "full" ? 13 : 11)}</span>`;
+      if (al.p == null) {
+        return `<div class="atlive watch atl-${size}" title="ATLAS re-runs the simulation as the game unfolds${upd ? ` · updated ${upd}` : ""}">
+          ${glyph}<b class="atl-k">ATLAS<i class="atl-livew"><em class="atl-dot" aria-hidden="true"></em>LIVE</i></b>
+          <span class="atl-tx">${esc(al.note || "watching the game")}</span>${per ? `<span class="atl-per">${esc(per)}</span>` : ""}
+        </div>`;
+      }
+      const over = al.p >= 0.5;
+      const pct = Math.round((over ? al.p : 1 - al.p) * 100);
+      return `<div class="atlive atl-${size} ${over ? "ou-o" : "ou-u"}" title="ATLAS's in-game simulation${upd ? ` · updated ${upd}` : ""} — its live probability, not a pick">
+        ${glyph}<b class="atl-k">ATLAS<i class="atl-livew"><em class="atl-dot" aria-hidden="true"></em>LIVE</i></b>
+        <span class="atl-p"><b>${pct}%</b> ${over ? "over" : "under"}</span>
+        <span class="atl-meter" aria-hidden="true"><i style="width:${Math.max(4, Math.min(100, al.p * 100)).toFixed(0)}%"></i></span>
+        ${per ? `<span class="atl-per">${esc(per)}</span>` : ""}
+        ${al.note ? `<span class="atl-tx note">${esc(al.note)}</span>` : ""}
+      </div>`;
+    }
+
+    // ---- NIGHTLY DESK RECAP (record.desk_recap + record.desk_recaps[]) ----
+    const wlParse = (r: any) => {
+      // {win,loss,push} or a "2-1" / "2–1–0" record string
+      if (r && typeof r === "object") {
+        const w = Math.max(0, Math.round(Number(r.win != null ? r.win : r.wins) || 0));
+        const l = Math.max(0, Math.round(Number(r.loss != null ? r.loss : r.losses) || 0));
+        const p = Math.max(0, Math.round(Number(r.push != null ? r.push : r.pushes) || 0));
+        return w + l + p ? { w, l, p } : null;
+      }
+      const m = String(r || "").match(/(\d+)\s*[–-]\s*(\d+)(?:\s*[–-]\s*(\d+))?/);
+      return m ? { w: Number(m[1]), l: Number(m[2]), p: Number(m[3] || 0) } : null;
+    };
+    const anKeyOf = (x: any) => {
+      const k = String(x == null ? "" : (typeof x === "object" ? (x.key || x.analyst || x.name || "") : x)).toLowerCase();
+      const m = k.match(/vega|atlas|nova|scout/);
+      return m ? m[0] : "";
+    };
+    // best_call / worst_call → { key, mu, call, result, txt } (string payloads become txt-only)
+    function normRecapCall(c: any) {
+      if (!c) return null;
+      if (typeof c === "string") { const t = humanNote(c); return t ? { key: "", mu: "", call: "", result: null, txt: t } : null; }
+      if (typeof c !== "object") return null;
+      const key = anKeyOf(c.analyst != null ? c.analyst : c.key);
+      const mu = String(c.matchup || (c.away_abbr && c.home_abbr ? `${c.away_abbr} @ ${c.home_abbr}` : (c.game || ""))).trim();
+      const sideRaw = String(c.side || c.call || "").trim();
+      const ln = _fin(c.line);
+      const call = sideRaw ? `${sideRaw.toUpperCase()}${ln != null && !/\d/.test(sideRaw) ? ` ${lineStr(ln)}` : ""}` : "";
+      const result = /^(win|loss|push)$/i.test(String(c.result || "")) ? String(c.result).toLowerCase() : null;
+      const txt = humanNote(c.note != null ? c.note : (c.text != null ? c.text : (c.quote != null ? c.quote : c.take)));
+      if (!key && !mu && !call && !txt) return null;
+      return { key, mu, call, result, txt, conv: _fin(c.conviction) };
+    }
+    // one nightly recap block → a stable object (or null)
+    function normDeskRecap(r: any) {
+      if (!r || typeof r !== "object") return null;
+      const date = String(r.date || r.for_date || r.night || "").slice(0, 10);
+      const winner = anKeyOf(r.winner != null ? r.winner : r.winner_key);
+      // per-analyst lines: array or {key:{…}} map under analysts / lines / by_analyst
+      const linesRaw = r.analysts != null ? r.analysts : (r.lines != null ? r.lines : r.by_analyst);
+      const lines: any[] = [];
+      const pushLine = (x: any, hint = "") => {
+        if (!x) return;
+        const key = anKeyOf(x) || anKeyOf(hint);
+        if (!DESK_CAST[key]) return;
+        const wl = wlParse(typeof x === "object" ? (x.record != null ? x.record : x) : x);
+        const txt = typeof x === "object" ? humanNote(x.line != null ? x.line : (x.note != null ? x.note : x.text)) : "";
+        if (!wl && !txt) return;
+        lines.push({ key, wl, txt, roi: typeof x === "object" ? _fin(x.roi) : null });
+      };
+      if (Array.isArray(linesRaw)) linesRaw.forEach((x: any) => pushLine(x));
+      else if (linesRaw && typeof linesRaw === "object") Object.keys(linesRaw).forEach((k) => pushLine(linesRaw[k], k));
+      const idx = (k: string) => { const i = DESK_ORDER.indexOf(k); return i < 0 ? 99 : i; };
+      lines.sort((a, b) => idx(a.key) - idx(b.key));
+      const best = normRecapCall(r.best_call);
+      const worst = normRecapCall(r.worst_call);
+      const note = humanNote(r.consensus_note != null ? r.consensus_note : r.note);
+      if (!winner && !lines.length && !best && !worst && !note) return null;
+      return { date, winner, lines, best, worst, note, headline: humanNote(r.headline) };
+    }
+    // every served nightly recap, newest first, deduped by date — desk_recaps[] + desk_recap
+    function deskRecapsAll() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const rec = d && (d as any).record;
+        if (!rec || typeof rec !== "object") continue;
+        const out: any[] = []; const seen: any = {};
+        const add = (raw: any) => { const n = normDeskRecap(raw); if (n && !seen[n.date || "?"]) { seen[n.date || "?"] = 1; out.push(n); } };
+        add(rec.desk_recap);
+        const list = Array.isArray(rec.desk_recaps) ? rec.desk_recaps : (rec.desk_recaps && typeof rec.desk_recaps === "object" ? Object.values(rec.desk_recaps) : []);
+        list.forEach(add);
+        if (out.length) { out.sort((a, b) => String(b.date).localeCompare(String(a.date))); return out; }
+      }
+      return [];
+    }
+    const latestDeskRecap = () => deskRecapsAll()[0] || null;
+    const recapDateTxt = (iso: any, long = false) => {
+      const t = String(iso || "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) return "";
+      const dd = new Date(t + "T12:00:00");
+      return isNaN(dd.getTime()) ? "" : dd.toLocaleDateString("en-US", long ? { weekday: "long", month: "long", day: "numeric" } : { weekday: "short", month: "short", day: "numeric" });
+    };
+    const crownSvg = (sz = 12) => `<svg class="crown" viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="currentColor" stroke="none" aria-hidden="true"><path d="M3.2 17.2L4.6 7.6l4.9 4.1L12 5l2.5 6.7 4.9-4.1 1.4 9.6z"/><rect x="4" y="18.6" width="16" height="2.2" rx="1.1"/></svg>`;
+
+    // ---- HEAD-TO-HEAD RIVALRIES (record.head_to_head) ----
+    // Pairwise disagreement scoreboards: on games where two analysts took OPPOSITE sides,
+    // who was right? Shapes tolerated: an array of pair rows, or a map keyed "vega_vs_nova".
+    function headToHeadRows() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        let hh = d && (d as any).record && (d as any).record.head_to_head;
+        if (!hh) continue;
+        if (hh.pairs && (Array.isArray(hh.pairs) || typeof hh.pairs === "object")) hh = hh.pairs;
+        const rows: any[] = []; const seen: any = {};
+        const add = (o: any, kGuess = "") => {
+          if (!o || typeof o !== "object") return;
+          let a = anKeyOf(o.a != null ? o.a : (o.analyst_a != null ? o.analyst_a : o.left));
+          let b = anKeyOf(o.b != null ? o.b : (o.analyst_b != null ? o.analyst_b : o.right));
+          if (!a || !b) {
+            const m = String(kGuess).toLowerCase().match(/vega|atlas|nova|scout/g);
+            if (m && m.length >= 2) { a = a || m[0]; b = b || m[1]; }
+          }
+          if (!DESK_CAST[a] || !DESK_CAST[b] || a === b) return;
+          const aw = Math.max(0, Math.round(Number(o.a_wins != null ? o.a_wins : o.a_win) || 0));
+          const bw = Math.max(0, Math.round(Number(o.b_wins != null ? o.b_wins : o.b_win) || 0));
+          const pu = Math.max(0, Math.round(Number(o.push != null ? o.push : o.pushes) || 0));
+          const n = Math.max(0, Math.round(Number(o.n) || 0)) || aw + bw + pu;
+          if (!n) return;
+          const id = [a, b].sort().join("|");
+          if (seen[id]) return; seen[id] = 1;
+          rows.push({ a, b, aw, bw, push: pu, n, note: humanNote(o.note) });
+        };
+        if (Array.isArray(hh)) hh.forEach((o: any) => add(o));
+        else if (typeof hh === "object") Object.keys(hh).forEach((k) => { if (k !== "note") add(hh[k], k); });
+        if (rows.length) { rows.sort((x, y) => y.n - x.n); return rows; }
+      }
+      return [];
+    }
+    const h2hFor = (key: string) => headToHeadRows().filter((r: any) => r.a === key || r.b === key);
+    // one versus-card: two glyphs face off, the disagreement record between them
+    function h2hCardHtml(r: any) {
+      const lead = r.aw === r.bw ? null : (r.aw > r.bw ? r.a : r.b);
+      const nmA = (DESK_CAST[r.a] || {}).name || r.a, nmB = (DESK_CAST[r.b] || {}).name || r.b;
+      const side = (k: string, w: number) => `<button class="vs-side an-${esc(k)}${lead === k ? " lead" : ""}" data-an="${esc(k)}" aria-label="${esc((DESK_CAST[k] || {}).name || k)} — analyst card">
+          ${deskGlyph(k, 17)}<b>${esc((DESK_CAST[k] || {}).name || k)}</b><span class="vs-w">${w}</span>
+        </button>`;
+      const verdict = lead
+        ? `${esc((DESK_CAST[lead] || {}).name || lead)} leads the feud ${Math.max(r.aw, r.bw)}–${Math.min(r.aw, r.bw)}`
+        : `Dead even at ${r.aw}–${r.bw}`;
+      return `<div class="vscard">
+        <div class="vs-k">When ${esc(nmA)} and ${esc(nmB)} disagree</div>
+        <div class="vs-face">${side(r.a, r.aw)}<span class="vs-mid"><b>${r.aw}–${r.bw}</b><i>VS</i></span>${side(r.b, r.bw)}</div>
+        <div class="vs-foot">${esc(verdict)}${r.push ? ` · ${r.push} push${r.push === 1 ? "" : "es"}` : ""} · ${r.n} head-to-head game${r.n === 1 ? "" : "s"}</div>
+        ${r.note ? `<div class="vs-note">${esc(r.note)}</div>` : ""}
+      </div>`;
+    }
+
+    // ---- THE WEEKLY RACE (record.weekly_standings + analyst_of_the_week) ----
+    function weeklyStandingsData() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const w = d && (d as any).record && (d as any).record.weekly_standings;
+        if (!w || typeof w !== "object") continue;
+        const rowsRaw = w.rows != null ? w.rows : (w.records != null ? w.records : (w.analysts != null ? w.analysts : w));
+        const rows: any[] = []; const seen: any = {};
+        const add = (x: any, hint = "") => {
+          if (!x || typeof x !== "object") return;
+          const key = anKeyOf(x) || anKeyOf(hint);
+          if (!DESK_CAST[key] || seen[key]) return;
+          const wl = wlParse(x.record != null ? x.record : x);
+          if (!wl) return;
+          seen[key] = 1;
+          rows.push({ key, ...wl, roi: _fin(x.roi), n: Math.max(0, Math.round(Number(x.n) || 0)) || wl.w + wl.l + wl.p });
+        };
+        if (Array.isArray(rowsRaw)) rowsRaw.forEach((x: any) => add(x));
+        else if (rowsRaw && typeof rowsRaw === "object") Object.keys(rowsRaw).forEach((k) => add(rowsRaw[k], k));
+        const aotw = anKeyOf(w.analyst_of_the_week != null ? w.analyst_of_the_week : (w.aotw != null ? w.aotw : w.crown));
+        const label = humanNote(w.label != null ? w.label : w.week_label)
+          || (String(w.week_start || "").slice(0, 10).match(/^\d{4}-\d{2}-\d{2}$/) ? `Week of ${recapDateTxt(w.week_start)}` : "This week");
+        if (rows.length || aotw) {
+          rows.sort((a, b) => ((b.roi == null ? -9 : b.roi) - (a.roi == null ? -9 : a.roi)) || (b.w - a.w) || (a.l - b.l)
+            || (DESK_ORDER.indexOf(a.key) - DESK_ORDER.indexOf(b.key)));
+          return { rows, aotw, label, note: humanNote(w.note) };
+        }
+      }
+      return null;
+    }
+    const weeklyRowFor = (key: string) => {
+      const w = weeklyStandingsData();
+      return w ? (w.rows.find((r: any) => r.key === key) || null) : null;
+    };
+    // Insights: the seven-day sprint — weekly records as a race, the crown on this week's leader.
+    function weeklyRaceSection() {
+      const w = weeklyStandingsData();
+      if (!w || !w.rows.length) return "";
+      const maxW = Math.max(1, ...w.rows.map((r: any) => r.w));
+      const rows = w.rows.map((r: any, i: number) => {
+        const crowned = w.aotw === r.key;
+        const rec = `${r.w}–${r.l}${r.p ? `–${r.p}` : ""}`;
+        return `<button class="wkr an-${esc(r.key)}${crowned ? " crowned" : ""}" data-an="${esc(r.key)}" aria-label="${esc((DESK_CAST[r.key] || {}).name || r.key)} — this week ${rec}">
+          <span class="wkr-rank">${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}</span>
+          <span class="wkr-id">${deskGlyph(r.key, 14)}<b>${esc((DESK_CAST[r.key] || {}).name || r.key)}</b>${crowned ? `<span class="wkr-crown">${crownSvg(12)}</span>` : ""}</span>
+          <span class="wkr-bar" aria-hidden="true"><i style="width:${Math.max(6, (r.w / maxW) * 100).toFixed(0)}%"></i></span>
+          <span class="wkr-rec"><b>${rec}</b>${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}</span>
+        </button>`;
+      }).join("");
+      const champ = w.aotw && DESK_CAST[w.aotw]
+        ? `<div class="wkr-champ an-${esc(w.aotw)}"><span class="wkr-crown big">${crownSvg(15)}</span>${deskGlyph(w.aotw, 16)}<b>${esc(DESK_CAST[w.aotw].name)}</b><span>is the Analyst of the Week</span></div>`
+        : "";
+      return `<div class="ixc wkrace" id="weekly-race">
+        <div class="ixc-h">The weekly race</div>
+        <div class="ixc-sub">${esc(w.label || "This week")} — the same four analysts, sprint-scored week by week. The crown resets every Monday.</div>
+        ${champ}
+        <div class="wkr-rows">${rows}</div>
+        ${w.note ? `<div class="chh-note">${esc(w.note)}</div>` : ""}
+      </div>`;
+    }
+    // Insights: the rivalry board — every pairwise disagreement scoreboard as a versus-card.
+    function rivalriesSection() {
+      const rows = headToHeadRows();
+      if (!rows.length) return "";
+      return `<div class="ixc rivalries" id="rivalries">
+        <div class="ixc-h">Desk rivalries</div>
+        <div class="ixc-sub">Same game, opposite calls — when two analysts take different sides, exactly one of them is right. These are those games only, scored head-to-head.</div>
+        <div class="vsgrid">${rows.slice(0, 6).map(h2hCardHtml).join("")}</div>
+      </div>`;
+    }
+
+    // ---- "LAST NIGHT AT THE DESK" — the nightly recap rendered three ways ----
+    // (a) the marquee story slide, (b) the morning card on the home board, (c) the
+    // browsable Insights archive. All from the same normalized recap objects.
+    function recapWinnerLineTxt(rc: any) {
+      const w = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner].name : "";
+      const wl = rc.lines.find((l: any) => l.key === rc.winner);
+      const rec = wl && wl.wl ? `${wl.wl.w}–${wl.wl.l}${wl.wl.p ? `–${wl.wl.p}` : ""}` : "";
+      return w ? `${w} takes the night${rec ? ` at ${rec}` : ""}` : "";
+    }
+    function recapCallRow(c: any, kind: "best" | "worst") {
+      if (!c) return "";
+      const cast = c.key && DESK_CAST[c.key] ? DESK_CAST[c.key] : null;
+      const who = cast ? cast.name : "The desk";
+      const lab = kind === "best" ? "Best call" : "Worst call";
+      const resTxt = c.result === "win" ? "cashed" : c.result === "loss" ? "missed" : c.result === "push" ? "pushed" : "";
+      return `<div class="rcap-call ${kind}${c.key ? ` an-${esc(c.key)}` : ""}"${c.key ? ` data-an="${esc(c.key)}" role="button" tabindex="0"` : ""}>
+        <span class="rcap-call-k">${kind === "best" ? "◆" : "✕"} ${lab}</span>
+        <div class="rcap-call-b">
+          <span class="rcap-who">${c.key ? deskGlyph(c.key, 12) : ""}<b>${esc(who)}</b>${c.mu ? `<i>${esc(c.mu)}</i>` : ""}</span>
+          ${c.call ? `<b class="rcap-side ${/under/i.test(c.call) ? "ou-under" : /over/i.test(c.call) ? "ou-over" : ""}">${esc(c.call)}</b>` : ""}
+          ${resTxt ? `<span class="rcap-res ${c.result}">${resTxt}</span>` : ""}
+        </div>
+        ${c.txt ? `<p class="rcap-quote">“${esc(c.txt)}”</p>` : ""}
+      </div>`;
+    }
+    const recapLineRows = (rc: any, max = 4) => rc.lines.slice(0, max).map((l: any) => {
+      const rec = l.wl ? `${l.wl.w}–${l.wl.l}${l.wl.p ? `–${l.wl.p}` : ""}` : "";
+      const win = rc.winner === l.key;
+      return `<button class="rcap-line an-${esc(l.key)}${win ? " won" : ""}" data-an="${esc(l.key)}">
+        ${deskGlyph(l.key, 13)}<span class="rcap-nm"><b>${esc((DESK_CAST[l.key] || {}).name || l.key)}</b>${win ? `<span class="rcap-crown">${crownSvg(10)}</span>` : ""}</span>
+        ${l.txt ? `<i class="rcap-linetx">${esc(l.txt)}</i>` : ""}
+        ${rec ? `<b class="rcap-rec">${rec}</b>` : ""}
+      </button>`;
+    }).join("");
+    // (b) the morning recap card on the home board — fresh content every day.
+    function deskRecapCard() {
+      const rc = latestDeskRecap();
+      if (!rc) return "";
+      const winnerCast = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner] : null;
+      const head = rc.headline || recapWinnerLineTxt(rc) || "The desk, graded overnight";
+      return `<section class="rcapcard${rc.winner ? ` an-${esc(rc.winner)}` : ""}" aria-label="Last night at the desk">
+        <div class="rcap-h">
+          <span class="rcap-k">◆ Last night at the desk</span>
+          ${rc.date ? `<span class="rcap-date">${esc(recapDateTxt(rc.date))}</span>` : ""}
+        </div>
+        <div class="rcap-hero">
+          ${winnerCast ? `<span class="rcap-glyph an-${esc(rc.winner)}" data-an="${esc(rc.winner)}" role="button" tabindex="0"><span class="rcap-glyph-crown">${crownSvg(13)}</span>${deskGlyph(rc.winner, 22)}</span>` : ""}
+          <div class="rcap-head"><b>${esc(head)}</b>${rc.note ? `<i>${esc(rc.note)}</i>` : ""}</div>
+        </div>
+        ${rc.lines.length ? `<div class="rcap-lines">${recapLineRows(rc)}</div>` : ""}
+        ${recapCallRow(rc.best, "best")}
+        ${recapCallRow(rc.worst, "worst")}
+      </section>`;
+    }
+    // (c) Insights: the last 14 nights, browsable.
+    function deskRecapSection() {
+      const all = deskRecapsAll().slice(0, 14);
+      if (!all.length) return "";
+      const night = (rc: any, open: boolean) => {
+        const winnerNm = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner].name : "";
+        return `<details class="rcap-day"${open ? " open" : ""}>
+          <summary>
+            <span class="pp-date">${esc(recapDateTxt(rc.date) || "Night desk")}</span>
+            ${winnerNm ? `<span class="rcap-day-win an-${esc(rc.winner)}">${crownSvg(10)}${deskGlyph(rc.winner, 11)}<b>${esc(winnerNm)}</b></span>` : `<span class="pp-wl dim">no winner called</span>`}
+            <span class="pp-caret" aria-hidden="true">›</span>
+          </summary>
+          <div class="rcap-day-b">
+            ${rc.headline ? `<div class="rcap-day-head">${esc(rc.headline)}</div>` : ""}
+            ${rc.lines.length ? `<div class="rcap-lines">${recapLineRows(rc)}</div>` : ""}
+            ${recapCallRow(rc.best, "best")}
+            ${recapCallRow(rc.worst, "worst")}
+            ${rc.note ? `<div class="chh-note">${esc(rc.note)}</div>` : ""}
+          </div>
+        </details>`;
+      };
+      return `<div class="ixc rcapsec" id="desk-recaps">
+        <div class="ixc-h">Last night at the desk</div>
+        <div class="ixc-sub">Every night the desk grades itself — a winner, the best call, and the worst call owned out loud. The last ${all.length === 1 ? "night" : `${all.length} nights`}, browsable.</div>
+        ${all.map((rc: any, i: number) => night(rc, i === 0)).join("")}
+      </div>`;
+    }
     // Insights: the desk, ranked — per-analyst records + the consensus-state record.
     function analystRecordSection() {
       const rows = deskRecordRows();
@@ -1616,6 +2056,37 @@ export default function Home() {
       if (!DESK_MOCK || !d || !Array.isArray(d.games)) return d;
       try {
         const h = (s: string) => { let x = 0; for (let i = 0; i < s.length; i++) x = (x * 31 + s.charCodeAt(i)) >>> 0; return x; };
+        // Games that ALREADY carry served analysts: only fill the NEW fields the backend
+        // hasn't landed yet (per-game takes + atlas live) — served values always win.
+        d.games.forEach((g: any) => {
+          if (!g || !Array.isArray(g.analysts)) return;
+          const seed2 = h(String(g.game_id || ""));
+          g.analysts.forEach((a: any, i: number) => {
+            if (!a || a.take != null) return;
+            const k = String(a.key || "").toLowerCase();
+            const side = /under/i.test(String(a.side || "")) ? "under" : /over/i.test(String(a.side || "")) ? "over" : "";
+            if (!side) return;
+            const T: any = {
+              vega: side === "over" ? "Three sharp books ticked this number up before breakfast — the money already voted over." : "The steam is all on the under side of this number — I go where the sharp money went.",
+              atlas: side === "over" ? "My twenty thousand sims keep clearing this total — the runs are in the distribution." : "The sims keep landing short of this line — the run environment just isn't there.",
+              nova: side === "over" ? "Games with this exact profile have cleared the number for three straight seasons." : "This profile has died under the total for years — I trust the pattern.",
+              scout: side === "over" ? "Two tired arms, a short porch and wind blowing out — that's a runs day." : "Two live arms and a big yard — this has 'pitchers duel' written on it.",
+            };
+            if (T[k]) a.take = T[k];
+          });
+          // unified rows carry no status — treat "started in the last ~5h, no final yet" as live
+          const fp0 = Date.parse(String(g.first_pitch_utc || ""));
+          const liveish = String(g.status || "").toLowerCase() === "live"
+            || (isFinite(fp0) && Date.now() - fp0 > 0 && Date.now() - fp0 < 5 * 3600 * 1000 && !(g.final && g.final.home_runs != null));
+          if (liveish) {
+            const at = g.analysts.find((a: any) => String(a.key || "").toLowerCase() === "atlas");
+            if (at && at.live_p_over == null && !at.live_state_note) {
+              if ((seed2 % 5) === 0) at.live_state_note = "Rain delay — re-pricing when play resumes";
+              else at.live_p_over = Math.max(0.08, Math.min(0.92, 0.5 + (((seed2 >> 4) % 21) - 10) / 40));
+              at.as_of = new Date().toISOString();
+            }
+          }
+        });
         d.games.forEach((g: any) => {
           if (!g || Array.isArray(g.analysts)) return;
           const pk = g.pick || {};
@@ -1627,8 +2098,24 @@ export default function Home() {
           g.analysts = DESK_ORDER.map((k) => {
             const p = Math.max(0.35, Math.min(0.68, k === "atlas" && simP != null ? simP : pBase + offs[k]));
             const side = p >= 0.5 ? "over" : "under";
-            return { key: k, name: DESK_CAST[k].name, persona_line: { vega: "The sharp books moved first — I follow the money.", atlas: "Twenty thousand sims say the runs are there.", nova: "This profile has cashed for years.", scout: "Two tired arms and a short porch — I like runs." }[k], side, p_over: p, conviction: p >= 0.5 ? p : 1 - p, locked: !!pk.locked, wall: pk.lead_time || "T-3h" };
+            const takes: any = {
+              vega: side === "over" ? "Three sharp books ticked this number up before breakfast — the money already voted over." : "The steam is all on the under side of this number — I go where the sharp money went.",
+              atlas: side === "over" ? "My twenty thousand sims keep clearing this total — the runs are in the distribution." : "The sims keep landing short of this line — the run environment just isn't there.",
+              nova: side === "over" ? "Games with this exact profile have cleared the number for three straight seasons." : "This profile has died under the total for years — I trust the pattern.",
+              scout: side === "over" ? "Two tired arms, a short porch and wind blowing out — that's a runs day." : "Two live arms and a big yard — this has 'pitchers duel' written on it.",
+            };
+            return { key: k, name: DESK_CAST[k].name, persona_line: { vega: "The sharp books moved first — I follow the money.", atlas: "Twenty thousand sims say the runs are there.", nova: "This profile has cashed for years.", scout: "Two tired arms and a short porch — I like runs." }[k], take: takes[k], side, p_over: p, conviction: p >= 0.5 ? p : 1 - p, locked: !!pk.locked, wall: pk.lead_time || "T-3h" };
           });
+          // ATLAS LIVE mock: live games get the in-game sim read on the atlas row
+          if (String(g.status || "").toLowerCase() === "live") {
+            const lp = Math.max(0.08, Math.min(0.92, (simP != null ? simP : 0.5) + (((seed >> 4) % 21) - 10) / 40));
+            const at = g.analysts.find((a: any) => a.key === "atlas");
+            if (at) {
+              if ((seed % 5) === 0) { at.live_state_note = "Rain delay — re-pricing when play resumes"; }
+              else { at.live_p_over = lp; }
+              at.as_of = new Date().toISOString();
+            }
+          }
           const nO = g.analysts.filter((a: any) => a.side === "over").length;
           const nU = 4 - nO;
           const state = nO === 4 || nU === 4 ? "UNANIMOUS" : nO === nU ? "SPLIT" : "MAJORITY";
@@ -1648,6 +2135,34 @@ export default function Home() {
           d.record.analysts = { vega: mk(31, 24, 0.062), atlas: mk(29, 26, 0.018), nova: mk(27, 27, -0.021), scout: mk(25, 30, -0.055) };
         }
         if (!d.record.consensus_history) d.record.consensus_history = { unanimous: { n: 18, win: 12, loss: 6, push: 0, hit_rate: 0.667, roi: 0.21 }, majority: { n: 41, win: 22, loss: 19, push: 0, hit_rate: 0.537, roi: 0.012 }, split: { n: 24, win: 11, loss: 13, push: 0, hit_rate: 0.458, roi: -0.09 } };
+        // ---- the-desk-comes-alive mocks (nightly recap / rivalries / weekly race) ----
+        if (!d.record.desk_recaps && !d.record.desk_recap) {
+          const mkNight = (dt: string, w: string, seedN: number) => ({
+            date: dt, winner: w,
+            headline: `${DESK_CAST[w].name} takes the night.`,
+            analysts: DESK_ORDER.map((k, i) => ({ key: k, win: 2 + ((seedN + i) % 3), loss: (seedN + i * 2) % 3, line: k === w ? "Read the slate like a book." : ["Half a run short all night.", "The pattern held — the prices didn't.", "Two bullpens betrayed the read."][i % 3] })),
+            best_call: { analyst: w, matchup: "NYY @ BOS", side: "over", line: 9.5, result: "win", note: "Called the runs before the books moved — final 12." },
+            worst_call: { analyst: DESK_ORDER[(DESK_ORDER.indexOf(w) + 2) % 4], matchup: "LAD @ SD", side: "under", line: 8, result: "loss", note: "Owned it: the wind report was wrong and so was I." },
+            consensus_note: "The desk went 3-for-4 when at least three voices agreed.",
+          });
+          d.record.desk_recaps = [0, 1, 2, 3, 4].map((i) => mkNight(shiftDate(todayISO(), -(i + 1)), DESK_ORDER[(h(String(i * 13)) >>> 2) % 4], (h(String(i)) >>> 3) % 7));
+          d.record.desk_recap = d.record.desk_recaps[0];
+        }
+        if (!d.record.head_to_head) d.record.head_to_head = [
+          { a: "atlas", b: "nova", a_wins: 7, b_wins: 4, push: 1, n: 12 },
+          { a: "vega", b: "scout", a_wins: 5, b_wins: 5, n: 10 },
+          { a: "vega", b: "atlas", a_wins: 3, b_wins: 6, n: 9 },
+          { a: "nova", b: "scout", a_wins: 4, b_wins: 2, n: 6 },
+        ];
+        if (!d.record.weekly_standings) d.record.weekly_standings = {
+          week_start: shiftDate(todayISO(), -3), analyst_of_the_week: "scout",
+          rows: [
+            { key: "scout", win: 5, loss: 1, roi: 0.31 },
+            { key: "vega", win: 4, loss: 2, roi: 0.12 },
+            { key: "atlas", win: 3, loss: 3, roi: -0.02 },
+            { key: "nova", win: 2, loss: 4, roi: -0.14 },
+          ],
+        };
       } catch {}
       return d;
     }
@@ -2485,8 +3000,11 @@ export default function Home() {
       const trendEl = page.querySelector(".gp-trend");
       if (trendEl && gs.kind === "live") {
         const lead = displayPick(g) || bestPlay(g);
-        const trend = lead ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero")) : "";
-        if (trend) trendEl.innerHTML = trend;
+        const leadLocked0 = lead ? pickLocked(lead, playState(g, lead)) : false;
+        const trend = lead && !leadLocked0 ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero")) : "";
+        // keep ATLAS LIVE in step with each refresh (same lock gate as the first paint)
+        const atl = !leadLocked0 ? atlasLiveChip(g, "full") : "";
+        if (trend || atl) trendEl.innerHTML = `${trend}${atl}`;
       }
       // also refresh the box score from the (possibly newer) live_detail
       pollLiveDetail();
@@ -3175,6 +3693,7 @@ export default function Home() {
           <div class="t-teams">${tileRow(g, "away", gs)}${pitcherSub(g, "away")}${tileRow(g, "home", gs)}${pitcherSub(g, "home")}</div>
         </div>
         ${pre ? "" : totOnly}
+        ${atlasLiveChip(g)}
         ${deskHtml}
         ${isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
         ${deskChf && deskChf.spread ? "" : spreadRowTile(g)}
@@ -4767,6 +5286,9 @@ export default function Home() {
       const heroTrend = (gs.kind === "live" && lead && !leadLocked)
         ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero"))
         : "";
+      // ATLAS LIVE rides the hero on a live game — the sim's in-game read, under the pick's
+      // own cash meter. Locked (unpaid) views skip it: its number argues a side.
+      const atlHero = !leadLocked ? atlasLiveChip(g, "full") : "";
       const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
         <div class="gp-mu">
@@ -4774,7 +5296,7 @@ export default function Home() {
           <div class="gp-center">${heroScore}</div>
           <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
         </div>
-        ${heroTrend ? `<div class="gp-trend">${heroTrend}</div>` : ""}
+        ${(heroTrend || atlHero) ? `<div class="gp-trend">${heroTrend}${atlHero}</div>` : ""}
       </div>`;
       // Tabs — "How it's going" only for live/final games; pre-game defaults to Preview only.
       const showLive = gs.kind === "live" || gs.kind === "final";
@@ -5592,6 +6114,9 @@ export default function Home() {
           ${chartCard("Month by month", "Net units each month — hot months and cold months alike.", monthlySvg(betaData))}
           ${streaksBlock(betaData)}
           ${analystRecordSection()}
+          ${weeklyRaceSection()}
+          ${rivalriesSection()}
+          ${deskRecapSection()}
           ${strategyRecordSection(betaData)}
           <div class="ix-why"><span class="ixw-k">◆ Every pick shows its work</span><p>Open any pick and you'll see exactly why it exists — the signals that fired, the model's 0–5 confidence score, and the price edge it clears. No black box, no after-the-fact edits.</p></div>
           ${pastPicksSection(betaData)}
@@ -5994,6 +6519,10 @@ export default function Home() {
         .sort((a: any, b: any) => (consRank[b.c.state] - consRank[a.c.state]) ||
           (((displayPick(b.g) || {}).stars || 0) - ((displayPick(a.g) || {}).stars || 0)))[0] || null;
       if (deskBest) slides.push({ t: "desk", g: deskBest.g, c: deskBest.c });
+      // LAST NIGHT AT THE DESK — the nightly recap is the marquee morning story: winner
+      // crowned, best call quoted, worst call owned. Rides right behind the day's desk story.
+      const drc = latestDeskRecap();
+      if (drc) slides.push({ t: "lastnight", rc: drc });
       // the competition scoreboard rides the deck too — stories is the DEFAULT home mode,
       // and the standings are the top-of-home promise
       if (deskRecordRows().length) slides.push({ t: "standings" });
@@ -6006,6 +6535,56 @@ export default function Home() {
       }
       if (picks.length >= 2) slides.splice(Math.min(slides.length, 5), 0, { t: "summary", picks });
       return slides.slice(0, 12);
+    }
+    // THE VOICES on a pick slide: the strongest agreeing analyst gets quoted under the call;
+    // a lone dissenter gets their dissent quoted out loud ("NOVA disagrees: …"). Nothing
+    // renders while the pick is locked (a quote argues the side) or before takes are served.
+    function storyVoiceQuote(g: any, pl: any, locked: boolean) {
+      if (locked || !pl || pl.action !== "TAKE") return "";
+      const ans = deskAnalysts(g);
+      if (!ans.length) return "";
+      const dir = /under/i.test(String(pl.side || "")) ? "under" : /over/i.test(String(pl.side || "")) ? "over" : "";
+      if (!dir) return "";
+      const agree = ans.filter((a: any) => a.dir === dir && a.take)
+        .sort((x: any, y: any) => ((y.conv != null ? y.conv : 0) - (x.conv != null ? x.conv : 0)));
+      const dissenters = ans.filter((a: any) => a.dir && a.dir !== dir);
+      let out = "";
+      if (agree[0]) {
+        const a = agree[0];
+        out += `<div class="sts-voice an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
+          <span class="sts-voice-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span>
+          <p>“${esc(a.take)}”</p>
+        </div>`;
+      }
+      if (dissenters.length === 1 && dissenters[0].take) {
+        const d0 = dissenters[0];
+        out += `<div class="sts-voice dissent an-${esc(d0.key)}" data-an="${esc(d0.key)}" role="button" tabindex="0">
+          <span class="sts-voice-id">${deskGlyph(d0.key, 12)}<b>${esc(d0.name)} disagrees</b></span>
+          <p>“${esc(d0.take)}”</p>
+        </div>`;
+      }
+      return out ? `<div class="sts-voices">${out}</div>` : "";
+    }
+    // THE NIGHTLY RECAP as a marquee story: "Last Night at the Desk" — the winner's glyph
+    // crowned, the best call quoted, the worst call owned honestly. Daily fresh content.
+    function storyLastNightSlide(sl: any) {
+      const rc = sl.rc;
+      const winnerCast = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner] : null;
+      const head = rc.headline || recapWinnerLineTxt(rc) || "The desk, graded overnight.";
+      return `<div class="sts sts-lastnight${rc.winner ? ` an-${esc(rc.winner)}` : ""}">
+        <div class="sts-bg" aria-hidden="true"></div>
+        <div class="sts-kick"><span>◆ Last Night at the Desk</span>${rc.date ? `<span class="sts-when">${esc(recapDateTxt(rc.date))}</span>` : ""}</div>
+        ${winnerCast ? `<div class="sts-ln-winner an-${esc(rc.winner)}" data-an="${esc(rc.winner)}" role="button" tabindex="0">
+          <span class="sts-ln-glyph"><span class="sts-ln-crown">${crownSvg(16)}</span>${deskGlyph(rc.winner, 30)}</span>
+          <span class="sts-ln-nm"><b>${esc(winnerCast.name)}</b><i>${esc(winnerCast.title)}</i></span>
+        </div>` : ""}
+        <h3 class="sts-head deskhead ln">${esc(head)}</h3>
+        ${(rc.best || rc.worst)
+          ? `${recapCallRow(rc.best, "best")}${recapCallRow(rc.worst, "worst")}`
+          : (rc.lines.length ? `<div class="rcap-lines sts-ln-lines">${recapLineRows(rc)}</div>` : "")}
+        ${rc.note ? `<div class="sts-substat">${esc(rc.note)}</div>` : ""}
+        <button class="st-cta" data-go="results">The full desk record →</button>
+      </div>`;
     }
     function storyPickSlide(sl: any) {
       const g = sl.g, pl = sl.pl;
@@ -6040,6 +6619,7 @@ export default function Home() {
         <div class="sts-kick"><span>◆ ${sl.rank === 1 ? "Flagship Pick" : `Top Pick #${sl.rank}`}</span>${when}</div>
         <div class="sts-mu">${team("away")}${mid}${team("home")}</div>
         <div class="sts-callwrap">${call}</div>
+        ${storyVoiceQuote(g, pl, locked)}
         ${locked ? "" : `<button class="st-cta" data-go="pick" data-gid="${esc(g.game_id)}">See the full pick →</button>`}
       </div>`;
     }
@@ -6162,6 +6742,7 @@ export default function Home() {
         : sl.t === "news" ? storyNewsSlide(sl)
         : sl.t === "recap" ? storyRecapSlide(sl)
         : sl.t === "desk" ? storyDeskSlide(sl)
+        : sl.t === "lastnight" ? storyLastNightSlide(sl)
         : sl.t === "standings" ? storyStandingsSlide()
         : storySummarySlide(sl);
       return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
@@ -6340,6 +6921,7 @@ export default function Home() {
           </div>
           <div class="mh-rule"></div>
           ${deskStandingsStrip()}
+          ${deskRecapCard()}
           ${nextUpBanner()}
           <section class="ng-lead front-hero">${leadStory}</section>
           ${flag2 ? `<section class="ng-lead front-hero second">${flag2}</section>` : ""}
