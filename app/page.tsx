@@ -5952,7 +5952,10 @@ export default function Home() {
           <div class="pb-hd">
             <span class="pb-kick">No play${isToday ? " tonight" : ""}</span>
             <h3 class="pb-head">Nothing cleared the bar.</h3>
-            <p class="pb-lede">The desk read all <b>${ro.n}</b> game${ro.n === 1 ? "" : "s"} on the board and priced every one of them. Not one came back worth betting, so we're not betting one.</p>
+            <p class="pb-lede">${ro.n >= ro.total
+              ? `The desk read all <b>${ro.n}</b> game${ro.n === 1 ? "" : "s"} on the board and priced every one of them.`
+              : `The desk priced <b>${ro.n}</b> of the <b>${ro.total}</b> games on the board — the other <b>${ro.total - ro.n}</b> carry no read yet.`
+            } Not one came back worth betting, so we're not betting one.</p>
           </div>
           <div class="pb-rows">${rows}</div>
           ${priceLine}
@@ -8896,7 +8899,7 @@ export default function Home() {
         const roF = passReadout(ftPool);
         const nUnobF = roF ? ((roF.kinds.find((k: any) => k.key === "price_not_obtainable") || {}).n || 0) : 0;
         const ledeF = roF
-          ? `The desk read all ${roF.n} game${roF.n === 1 ? "" : "s"} and priced every one. ${nUnobF ? `On ${nUnobF} of them our number liked the side and the price we needed simply wasn't quoted at that line anywhere — an edge you can't place isn't an edge. ` : ""}Every read is still on the board, and every past call stays graded in the open on the Insights tab.`
+          ? `The desk priced ${roF.n} game${roF.n === 1 ? "" : "s"} and not one came back worth betting. ${nUnobF ? `On ${nUnobF} of them our number liked the side and the price we needed simply wasn't quoted at that line anywhere — an edge you can't place isn't an edge. ` : ""}Every read is still on the board, and every past call stays graded in the open on the Insights tab.`
           : "Today none did. The top games to watch are below, and every past call stays graded in the open on the Insights tab.";
         leadStory = `<article class="leadstory pass">
           <div class="ls-body">
