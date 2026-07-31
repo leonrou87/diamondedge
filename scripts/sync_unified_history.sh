@@ -19,11 +19,34 @@ YEST=$(date -v-1d '+%Y-%m-%d' 2>/dev/null || date -d yesterday '+%Y-%m-%d' 2>/de
 if [ -n "$LATEST" ] && [ -n "$YEST" ] && [ "$LATEST" \< "$YEST" ]; then
   echo "$(date '+%F %T') WARN: unified history latest=$LATEST < yesterday=$YEST — archive may be stale (self-heal runs overnight)" >&2
 fi
-[ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ] && exit 0
+if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
+  # HEARTBEAT (2026-07-31). The payload has not changed, so there is nothing to
+  # upload — but the row IS current, and a watchdog cannot tell "nothing changed"
+  # apart from "this job died" unless something says so. Stamp updated_at alone
+  # (a tiny PATCH, no payload, negligible egress). CONTRACT: updated_at is the
+  # LIVENESS signal — when the sync last confirmed this key current. The CONTENT
+  # age lives inside the payload (generated_utc), where it always has.
+  curl -s -o /dev/null -X PATCH \
+    "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?key=eq.picks_unified" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    -H "Content-Type: application/json" -H "Prefer: return=minimal" \
+    --data-binary "{\"updated_at\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\"}" || true
+  exit 0
+fi
+# updated_at IS SET EXPLICITLY (2026-07-31). PostgREST's
+# `Prefer: resolution=merge-duplicates` upsert only writes the columns present
+# in the request body, so omitting updated_at left this key advertising its
+# original INSERT time forever while the payload was being rewritten every
+# night — picks_unified sat at 2026-07-21 while syncing fine. A freshness
+# signal that lies is worse than no signal: the watchdog cannot see a real
+# outage on a key that is always stale. See RUNBOOK "Watchdog" gotcha.
 python3 - "$FILE" "$TMP" <<'PY'
-import json,sys
+import datetime,json,sys
 payload=json.load(open(sys.argv[1]))
-json.dump([{"key":"picks_unified","payload":payload}], open(sys.argv[2],"w"))
+now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+json.dump([{"key":"picks_unified","payload":payload,"updated_at":now}],
+          open(sys.argv[2],"w"))
 PY
 HTTP=$(curl -s -o /tmp/unified_history_sync_resp.txt -w "%{http_code}" \
   -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
@@ -33,7 +56,12 @@ HTTP=$(curl -s -o /tmp/unified_history_sync_resp.txt -w "%{http_code}" \
   -H "Prefer: resolution=merge-duplicates" \
   --data-binary "@$TMP")
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
-  echo "$SHA" > "$STAMP"; echo "$(date '+%F %T') synced unified history ($HTTP)"
+  # VERIFY updated_at ROUND-TRIP — read the column back through the REST API so
+  # every run leaves proof in the log that the freshness stamp actually moved.
+  BACK=$(curl -s "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?key=eq.picks_unified&select=updated_at" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    | python3 -c 'import json,sys; r=json.load(sys.stdin); print(r[0]["updated_at"] if r else "MISSING")' 2>/dev/null || echo "READBACK_FAILED")
+  echo "$SHA" > "$STAMP"; echo "$(date '+%F %T') synced unified history ($HTTP) updated_at=$BACK"
 else
   echo "$(date '+%F %T') UNIFIED HISTORY SYNC FAILED http=$HTTP $(head -c 300 /tmp/unified_history_sync_resp.txt)" >&2; exit 1
 fi

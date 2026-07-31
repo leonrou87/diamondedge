@@ -1911,6 +1911,11 @@ export default function Home() {
             lastGraded: String(r.last_graded_date || "").slice(0, 10) || null,
             isBet: r.is_betting_record !== false,
             basis: humanNote(r.basis),
+            // the roster row's own copy of the measured-profile verdict. record.analyst_profiles
+            // is the full block; these two are what a CARD needs, and they keep the honest
+            // sentence on a card even if the block itself never arrives.
+            profHead: humanNote(r.profile_headline),
+            profAny: r.profile_has_characteristic === true,
             // a longer RECONSTRUCTED record, only if the backend ever serves one alongside.
             // Shown next to the live one, clearly separated — never added to it.
             recon: (() => {
@@ -2008,7 +2013,7 @@ export default function Home() {
     // served sentences quote raw counts ("Across 2972 games") — group the thousands so the
     // number reads at a glance, without touching years, decimals or ids
     const groupThousands = (t: any) => String(t == null ? "" : t)
-      .replace(/(\d{4,})(?=\s+(?:games|configurations|calls|rows)\b)/g,
+      .replace(/(\d{4,})(?=\s+(?:games|configurations|calls|rows|cells|graded)\b)/g,
         (m) => Number(m).toLocaleString("en-US"));
     const sentence = (t: any) => { const s = String(t == null ? "" : t).trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; };
     const isLean = (rec: any) => !!rec && rec.isBet === false;
@@ -2320,6 +2325,7 @@ export default function Home() {
               ${bio.tagline ? `<p class="anlp-tag">“${esc(bio.tagline)}”</p>` : ""}
             </header>
             ${bio.how ? `<section class="anlp-sec anlp-voice"><div class="anlp-sec-h">How I see baseball</div><p class="anlp-method">${esc(bio.how)}</p></section>` : (cast.method ? `<section class="anlp-sec"><p class="anlp-method">${esc(cast.method)}</p></section>` : "")}
+            ${anlProfileSection(k)}
             <section class="anlp-recwrap">
               ${recHero}
               ${arc ? `<div class="anlp-arcwrap">${arc}<span class="anlp-arc-k">last ${rec.last10.length} calls — the running arc</span></div>` : ""}
@@ -2894,14 +2900,22 @@ export default function Home() {
       const rows = deskRecordRows();
       if (!rows.length) return "";
       const groups = deskGroups(rows).map((grp: any) => {
-        const cards = grp.rows.map((r: any, i: number) => `
-          <button class="dskrec-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}"
-            aria-label="${esc(`${r.name} — ${isLean(r) ? "lean ledger" : "staked record"}, ${r.win}-${r.loss}${r.push ? `-${r.push}` : ""} over ${r.n} graded calls${grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : "") : ", too early to rank"}`)}">
+        const cards = grp.rows.map((r: any, i: number) => {
+          // the measured-profile verdict rides the row it belongs to — the ledger above it is
+          // the LIVE staked record, this is what the analyst's whole graded history says.
+          const ph = profHeadFor(r.key);
+          const profTx = ph && ph.line
+            ? `<span class="dskrec-prof${ph.any ? " on" : ""}"><i>${ph.any ? "measured specialism" : "no measured specialism"}</i>${esc(ph.line)}</span>` : "";
+          return `
+          <button class="dskrec-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked ? "" : " early"}${profTx ? " hasprof" : ""}" data-an="${esc(r.key)}"
+            aria-label="${esc(`${r.name} — ${isLean(r) ? "lean ledger" : "staked record"}, ${r.win}-${r.loss}${r.push ? `-${r.push}` : ""} over ${r.n} graded calls${grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : "") : ", too early to rank"}${ph && ph.line ? `. ${ph.line}` : ""}`)}">
             <span class="dskrec-rank">${grp.ranked && grp.ordinals ? ordinal(i) : `<i class="dskrec-norank">${grp.ranked ? "◆" : "—"}</i>`}</span>
             <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
             <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i${grp.ranked ? "" : ` class="soft"`}>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? ledgerRoi(r, grp.ranked ? "" : "soft") : ""}<i class="dim">${r.n || 0} graded · live era</i>${ledgerChip(r)}</span>
             ${deskL10Dots(r.last10)}
-          </button>`).join("");
+            ${profTx}
+          </button>`;
+        }).join("");
         return `<div class="dskrec-grp ${esc(grp.id)}">
           <div class="dskrec-gh"><span class="dskrec-gk">${esc(grp.head)}</span><span class="dskrec-gs">${esc(grp.sub)}</span></div>
           <div class="dskrec-list">${cards}</div>
@@ -2916,6 +2930,7 @@ export default function Home() {
         <div class="ixc-h">The desk board</div>
         <div class="ixc-sub">Four analysts call every game independently, and every call is graded against the real final. What they cannot all do is share one league table: two of them stake units and two of them file leans that are never staked, and three of the four are still nowhere near a readable sample. So the board is grouped by what is actually comparable — a position only means something inside a group that says so.</div>
         ${groups}
+        ${deskProfileBlock()}
         <div class="dskrec-key">
           <span class="lkchip lk-bet"><i aria-hidden="true">◆</i>staked record</span><span class="dskrec-keytx">units were really risked — this W–L and ROI is a betting record</span>
           <span class="lkchip lk-lean"><i aria-hidden="true">◇</i>leans, never staked</span><span class="dskrec-keytx">graded opinions; the ROI is a what-if on a bet nobody placed</span>
@@ -3395,6 +3410,347 @@ export default function Home() {
         ${s && s.family ? `<div class="pat-meta center"><span class="pat-n">${s.family} configurations</span><span class="pat-n">${s.clear} clear of 50%</span><span class="pat-n">${s.survive} survive correction</span></div>` : ""}
         <button class="st-cta" data-go="results">See every interval →</button>
       </div>`;
+    }
+
+    /* ═══════════ THE MEASURED PROFILE — record.analyst_profiles ═══════════
+       An analyst's "profile" used to be written flavour. It is now a MEASUREMENT: every
+       night the lab re-scores each analyst's own graded history across eleven axes (park,
+       total band, starter quality, day/night, lead time, its own conviction, how lopsided
+       the market was, month, season, day of week, side) and tests every eligible cell
+       against THAT SAME ANALYST'S OWN complement — never against 50%, never against another
+       analyst. Hundreds of cells are rendered at once, so a single Benjamini-Hochberg pass
+       is applied across the WHOLE family before any cell may be called a characteristic.
+
+       THREE RAILS, which this module enforces in code and not in prose:
+         1. `characteristics[]` is the ONLY list that may be presented as something an
+            analyst DOES. strengths/weaknesses are read but never rendered as claims, and a
+            row with no `line` is dropped — the sentence IS the render.
+         2. Each row's served `line` already carries its own n and its own interval. The row
+            renders the LINE; the interval is DRAWN beside it, never re-extracted as a bare
+            percentage floating on its own.
+         3. `n_cells_ci_excludes_baseline` is an UNCORRECTED diagnostic. It is never a count
+            of strengths, never sits in a figure slot that reads like one, and only appears
+            inside the method fold with the caveat attached.
+
+       TODAY THE ANSWER IS NOTHING SURVIVED — and this surface is built to carry that at full
+       confidence, exactly like the patterns null and the unrankable standings. The SAME
+       components promote a survivor to the lead the moment one exists; ?profmock=1 on
+       localhost proves that path. */
+    function analystProfilesRaw() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const p = d && (d as any).record && (d as any).record.analyst_profiles;
+        if (p && typeof p === "object" && !Array.isArray(p)) return p;
+      }
+      return null;
+    }
+    // the lab's axis ids → what a reader calls them
+    const PROF_AXIS: any = {
+      park: "Ballpark", total_band: "Total band", "total band": "Total band",
+      starter_quality: "Starter quality", "starter quality": "Starter quality",
+      daynight: "Day or night", "day night": "Day or night",
+      dow: "Day of week", lead_time: "Lead time", "lead time": "Lead time",
+      own_conviction: "Its own conviction", "own conviction": "Its own conviction",
+      market_prior: "How lopsided the market was", "market prior": "How lopsided the market was",
+      month: "Month", season: "Season", side: "Which side it took",
+    };
+    const profAxis = (a: any) => {
+      const k = String(a == null ? "" : a).toLowerCase().trim();
+      return PROF_AXIS[k] || sentence(k.replace(/_/g, " ")) || "Axis";
+    };
+    const profPct = (v: any, dp = 0) => (v == null ? "—" : `${(v * 100).toFixed(dp)}%`);
+    /* The lab's notes are written for the lab. deIdent() already un-snake-cases them; these
+       two extra passes finish the job: the ASCII cross in "analysts x axes" is a
+       multiplication sign, and a de-identified `smallest_p_two_sided` has to become the
+       English name of the thing rather than four loose words. */
+    const profProse = (t: any) => sentence(deIdent(String(t == null ? "" : t).trim()))
+      .replace(/\bx\b/g, "×")
+      .replace(/\bsmallest p two sided\b/gi, "the smallest two-sided p-value")
+      .replace(/\bp two sided\b/gi, "two-sided p-value")
+      // a de-identified field name that opened a sentence has to start it like one
+      .replace(/([.!?;]\s+)the smallest two-sided/g, "$1The smallest two-sided");
+    const profSentence = (t: any) => { const s = profProse(t); return s && !/[.!?)]$/.test(s) ? `${s}.` : s; };
+    // ONE measured cell. No served `line` ⇒ no row: rail 2 says the sentence is the render,
+    // and a row we'd have to write ourselves is a claim the backend never made.
+    function normProfChar(x: any) {
+      if (!x || typeof x !== "object") return null;
+      const line = String(x.line == null ? "" : x.line).trim();
+      if (!line) return null;
+      const ci = Array.isArray(x.hit_ci95) ? x.hit_ci95 : [];
+      const dirRaw = String(x.direction == null ? "" : x.direction).toLowerCase();
+      return {
+        axis: String(x.axis == null ? "" : x.axis),
+        cell: String(x.cell == null ? "" : x.cell),
+        n: Math.max(0, Math.round(Number(x.n) || 0)),
+        hit: _fin(x.hit_rate), lo: _fin(ci[0]), hi: _fin(ci[1]),
+        base: _fin(x.baseline_hit_rate), delta: _fin(x.delta_vs_baseline),
+        dir: /below|worse|weak|under/.test(dirRaw) ? "below" : /above|better|strong|over/.test(dirRaw) ? "above" : "",
+        p: _fin(x.p_two_sided), sig: x.bh_significant === true,
+        roi: _fin(x.roi_flat110),
+        line: groupThousands(line),
+      };
+    }
+    function normProfile(key: string, x: any) {
+      if (!x || typeof x !== "object") return null;
+      const b = x.baseline && typeof x.baseline === "object" ? x.baseline : {};
+      const bci = Array.isArray(b.hit_ci95) ? b.hit_ci95 : [];
+      const span = Array.isArray(b.span) ? b.span.map((s: any) => String(s || "").slice(0, 10)) : [];
+      const chars = (Array.isArray(x.characteristics) ? x.characteristics : [])
+        .map(normProfChar).filter(Boolean) as any[];
+      const axes = (Array.isArray(x.axes_measured) ? x.axes_measured : [])
+        .map((a: any) => String(a || "")).filter(Boolean);
+      return {
+        key: String(x.key || key || "").toLowerCase(),
+        short: String(x.short || key || "").toUpperCase(),
+        baseline: {
+          n: Math.max(0, Math.round(Number(b.n) || 0)),
+          win: Math.max(0, Math.round(Number(b.win) || 0)),
+          loss: Math.max(0, Math.round(Number(b.loss) || 0)),
+          hit: _fin(b.hit_rate), lo: _fin(bci[0]), hi: _fin(bci[1]),
+          from: span[0] || "", to: span[1] || "",
+        },
+        baselineLine: groupThousands(String(x.baseline_line == null ? "" : x.baseline_line).trim()),
+        nCells: Math.max(0, Math.round(Number(x.n_cells_tested) || 0)),
+        axes,
+        headline: String(x.headline == null ? "" : x.headline).trim(),
+        chars,
+        // read, deliberately NOT rendered as claims — rail 1. Kept so the shape is honoured
+        // and so a future surface that needs the split has it without a re-read.
+        nStrengths: (Array.isArray(x.strengths) ? x.strengths : []).length,
+        nWeaknesses: (Array.isArray(x.weaknesses) ? x.weaknesses : []).length,
+        // UNCORRECTED diagnostic — rail 3. Never a strength count.
+        nUncorrected: Math.max(0, Math.round(Number(x.n_cells_ci_excludes_baseline) || 0)),
+        note: profSentence(x.note),
+        any: chars.length > 0,
+      };
+    }
+    // ORDER COMES FROM THE PAYLOAD. The block round-trips through Postgres jsonb, which
+    // re-sorts object keys — Object.keys(profiles) would silently reorder the desk.
+    function deskProfiles() {
+      const raw = analystProfilesRaw();
+      if (!raw) return null;
+      const src = raw.profiles && typeof raw.profiles === "object" && !Array.isArray(raw.profiles) ? raw.profiles : null;
+      if (!src) return null;
+      let order = (Array.isArray(raw.order) ? raw.order : [])
+        .map((k: any) => String(k == null ? "" : k).toLowerCase())
+        .filter((k: string) => k && src[k]);
+      if (!order.length) order = DESK_ORDER.filter((k) => src[k]);   // last-ditch: the cast order
+      if (!order.length) return null;
+      const profiles: any = {};
+      order.forEach((k: string) => { const p = normProfile(k, src[k]); if (p) profiles[k] = p; });
+      order = order.filter((k: string) => profiles[k]);
+      if (!order.length) return null;
+      const hd = raw.headline && typeof raw.headline === "object" ? raw.headline : {};
+      const fam = raw.family && typeof raw.family === "object" ? raw.family : {};
+      const out: any = {
+        status: String(raw.status || ""),
+        updated: String(raw.updated || "").slice(0, 10),
+        order, profiles,
+        headline: {
+          line: groupThousands(profProse(hd.line)),
+          // served as a noun phrase ("a LIVE MEASUREMENT of…") — it needs a subject, not a
+          // capital letter, or it reads as a sentence that lost its opening
+          what: (() => { const w = profProse(hd.what_this_block_is); return w ? `This block is ${w.charAt(0).toLowerCase()}${w.slice(1)}` : ""; })(),
+        },
+        family: {
+          size: Math.max(0, Math.round(Number(fam.size) || 0)),
+          minN: Math.max(0, Math.round(Number(fam.min_cell_n) || 0)),
+          survive: Math.max(0, Math.round(Number(fam.n_cells_bh_significant) || 0)),
+          uncorrected: Math.max(0, Math.round(Number(fam.n_cells_ci_excludes_baseline) || 0)),
+          smallestP: _fin(fam.smallest_p_two_sided),
+          method: profProse(fam.method),
+          test: profSentence(fam.test),
+          note: groupThousands(profSentence(fam.note)),
+        },
+        honest: groupThousands(profSentence(raw.honest_note)),
+        mock: false,
+      };
+      // the number of axes the desk actually swept — read off the profiles, never asserted
+      out.axesN = order.reduce((m: number, k: string) => Math.max(m, profiles[k].axes.length), 0);
+      out.any = order.some((k: string) => profiles[k].any);
+      return applyProfMock(out);
+    }
+    const profileFor = (k: string) => { const P = deskProfiles(); return P ? P.profiles[String(k || "").toLowerCase()] || null : null; };
+    /* THE ONE-LINE PROFILE STATE for any card. Prefers the measured block; falls back to the
+       roster row's own served profile_headline / profile_has_characteristic so a card still
+       says the honest thing if analyst_profiles itself never arrives. */
+    function profHeadFor(k: string) {
+      const p = profileFor(k);
+      if (p) return { line: p.chars.length ? p.chars[0].line : p.headline, any: p.chars.length > 0, char: p.chars[0] || null };
+      const rec = deskRecordRows().find((r: any) => r.key === k);
+      if (rec && rec.profHead) return { line: rec.profHead, any: rec.profAny === true, char: null };
+      return null;
+    }
+    /* DEV-ONLY (?profmock=1 on localhost): promotes one synthetic surviving characteristic so
+       the "a cell finally cleared the desk-wide correction" path is provable BEFORE the
+       backend ever has one. Never active in production (hostname-gated), and it refuses to
+       run at all once the real payload carries a survivor — served truth always wins. */
+    const PROF_MOCK = typeof location !== "undefined" && /[?&]profmock=1/.test(location.search)
+      && /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
+    function applyProfMock(o: any) {
+      if (!PROF_MOCK || !o || o.any) return o;
+      const k = o.order[1] || o.order[0];
+      const p = o.profiles[k]; if (!p) return o;
+      const base = p.baseline.hit != null ? p.baseline.hit : 0.51;
+      const hit = Math.min(0.74, base + 0.078), lo = Math.max(0.02, hit - 0.043), hi = Math.min(0.98, hit + 0.043);
+      const nm = p.short || String(k).toUpperCase();
+      p.chars = [{
+        axis: "park", cell: "Coors Field", n: 412, hit, lo, hi, base,
+        delta: hit - base, dir: "above", p: 0.00021, sig: true, roi: 0.079,
+        line: `${nm} has hit ${profPct(hit)} in Coors Field on n=412 graded calls there, 95% CI ${profPct(lo)}–${profPct(hi)} — against its own ${profPct(base)} baseline. It is the one cell on the whole desk that survives the correction.`,
+      }];
+      p.any = true;
+      p.headline = `One place is measurably different from the rest of ${nm}'s record: the ballpark axis, at Coors Field.`;
+      o.any = true;
+      o.family.survive = 1;
+      o.headline.line = `Across ${(o.family.size || 353).toLocaleString("en-US")} measured cells — four analysts across eleven axes of their own graded history — exactly one clears the desk-wide correction (Benjamini-Hochberg q=0.1). ${nm} in Coors Field is the desk's first measured specialism; everything else still sits inside noise of its own baseline.`;
+      o.mock = true;
+      return o;
+    }
+    /* THE SCALE. A profile is measured against the analyst's OWN baseline, so the rule down
+       the middle of every bar is that baseline — not 50%. Drawing these against 50% would
+       quietly re-introduce exactly the comparison the block exists to refuse. */
+    function profScale(p: any) {
+      const b = p.baseline.hit != null ? p.baseline.hit : 0.5;
+      let lo = b, hi = b;
+      const push = (v: any) => { if (v != null && isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } };
+      push(p.baseline.lo); push(p.baseline.hi);
+      p.chars.forEach((c: any) => { push(c.hit); push(c.lo); push(c.hi); });
+      const pad = Math.max(0.012, (hi - lo) * 0.14);
+      lo = Math.max(0.02, lo - pad); hi = Math.min(0.98, hi + pad);
+      if (hi - lo < 0.06) { lo = Math.max(0.02, b - 0.03); hi = Math.min(0.98, b + 0.03); }
+      return { lo, hi, base: b, at: (v: number) => `${(((v - lo) / (hi - lo)) * 100).toFixed(2)}%` };
+    }
+    // the baseline, DRAWN: its own interval as a band, the point as the rule everything else
+    // is measured from.
+    function profBaseBar(p: any, sc: any) {
+      if (p.baseline.hit == null) return "";
+      const band = p.baseline.lo != null && p.baseline.hi != null
+        ? `<i class="profci-band base" style="left:${sc.at(p.baseline.lo)};right:calc(100% - ${sc.at(p.baseline.hi)})"></i>` : "";
+      return `<div class="profci base" aria-hidden="true">
+        ${band}<i class="profci-rule" style="left:${sc.at(sc.base)}"></i>
+      </div>
+      <div class="profbase-cap">the band is that 95% interval, drawn; the dashed rule is the baseline every line in this section is measured from</div>`;
+    }
+    // the baseline STATED: hit rate, its interval and its sample, together — never a bare
+    // percentage, and always labelled as a different, longer ledger than the staked record.
+    function profBaseFigs(p: any, cls = "") {
+      const b = p.baseline;
+      if (!b.n) return "";
+      const ci = b.lo != null && b.hi != null ? `95% CI ${profPct(b.lo)}–${profPct(b.hi)}` : "";
+      const span = b.from && b.to ? `${b.from.slice(0, 4)}–${b.to.slice(0, 4)}` : "";
+      return `<div class="profbase ${cls}">
+        <span class="profbase-fig"><b>${profPct(b.hit)}</b><i>its own baseline</i></span>
+        <span class="profbase-meta">${ci ? `<span>${esc(ci)}</span>` : ""}<span>n = ${b.n.toLocaleString("en-US")} graded calls</span>${span ? `<span>${esc(span)}</span>` : ""}</span>
+      </div>`;
+    }
+    // ONE CHARACTERISTIC. The served line is the body (rail 2); the interval is drawn beside
+    // it against the analyst's own baseline rule; the correction verdict is a chip.
+    function profCharHtml(c: any, sc: any, key = "") {
+      const band = c.lo != null && c.hi != null
+        ? `<i class="profci-band" style="left:${sc.at(c.lo)};right:calc(100% - ${sc.at(c.hi)})"></i>` : "";
+      const dot = c.hit != null ? `<i class="profci-dot" style="left:${sc.at(c.hit)}"></i>` : "";
+      const verdict = c.sig
+        ? `<span class="patv sig">survives the desk-wide correction</span>`
+        : `<span class="patv clear">measured — did not survive correction</span>`;
+      return `<article class="profchar${c.sig ? " is-sig" : ""}${key ? ` an-${esc(key)}` : ""}" role="listitem"
+        aria-label="${esc(`${profAxis(c.axis)}, ${c.cell}. ${c.line}`)}">
+        <div class="profchar-top">
+          ${key ? `<span class="profchar-g">${deskGlyph(key, 13)}</span>` : ""}
+          <span class="profchar-ax">${esc(profAxis(c.axis))}</span>
+          ${c.cell ? `<span class="profchar-cell">${esc(c.cell)}</span>` : ""}
+          ${verdict}
+        </div>
+        <p class="profchar-line">${esc(c.line)}</p>
+        <div class="profci" aria-hidden="true">
+          <i class="profci-rule" style="left:${sc.at(sc.base)}"></i>${band}${dot}
+        </div>
+        <div class="profchar-foot"><span class="profchar-rule">the rule is this analyst's own baseline${sc.base != null ? ` (${profPct(sc.base)})` : ""}</span>${c.roi != null
+          ? `<span class="profchar-roi">${c.roi >= 0 ? "+" : ""}${(c.roi * 100).toFixed(1)}% at a flat −110 — arithmetic on the hit rate, not a realised return</span>` : ""}</div>
+      </article>`;
+    }
+    // THE AXES, as what was LOOKED AT — never as what was found. An axis only lights up when
+    // a surviving characteristic actually sits on it.
+    function profAxesHtml(p: any) {
+      if (!p.axes.length) return "";
+      const lit: any = {};
+      p.chars.forEach((c: any) => { lit[String(c.axis || "").toLowerCase()] = 1; });
+      const chips = p.axes.map((a: string) => `<span class="profax-c${lit[String(a).toLowerCase()] ? " on" : ""}">${esc(profAxis(a))}</span>`).join("");
+      return `<div class="profax">
+        <div class="profax-k">Where we looked</div>
+        <div class="profax-row">${chips}</div>
+        <p class="profax-n">${p.nCells ? `${p.nCells.toLocaleString("en-US")} cells of this analyst's own history were measured across these ${p.axes.length} axes` : `${p.axes.length} axes of this analyst's own history were measured`} — each one against the same analyst's own complement, never against another analyst and never against 50%.</p>
+      </div>`;
+    }
+    /* THE BLOCK HEADLINE — the desk-wide statement, rendered above the roster. With survivors
+       it leads with them; with none it leads with the sentence, at the same size and weight.
+       A null is a result and gets a result's typography. */
+    function deskProfileBlock() {
+      const P = deskProfiles();
+      if (!P || !P.headline.line) return "";
+      const found: any[] = [];
+      P.order.forEach((k: string) => { const p = P.profiles[k]; if (p.chars.length) found.push({ k, p }); });
+      const lead = found.length
+        ? `<div class="profblk-found" role="list">${found.slice(0, 4).map(({ k, p }: any) => profCharHtml(p.chars[0], profScale(p), k)).join("")}</div>`
+        : "";
+      const figs = P.family.size ? `<div class="profblk-figs">
+        <span><b>${P.family.size.toLocaleString("en-US")}</b><i>cells measured</i></span>
+        <span><b>${P.axesN || 11}</b><i>axes per analyst</i></span>
+        <span><b>${P.order.length}</b><i>analysts</i></span>
+        <span class="${P.family.survive ? "on" : ""}"><b>${P.family.survive}</b><i>survive${P.family.survive === 1 ? "s" : ""} the correction</i></span>
+      </div>` : "";
+      return `<section class="profblk${found.length ? " found" : " nullres"}${P.mock ? " ismock" : ""}" aria-label="The measured profile">
+        <div class="profblk-h">
+          <span class="profblk-k">◆ The measured profile</span>
+          <span class="profblk-tag">${found.length ? `${found.length} measured specialism${found.length === 1 ? "" : "s"}` : "Measured — no specialism yet"}</span>
+        </div>
+        ${found.length ? lead : ""}
+        ${figs}
+        <p class="profblk-line">${esc(P.headline.line)}</p>
+        ${P.headline.what ? `<p class="profblk-what">${esc(P.headline.what)}</p>` : ""}
+      </section>`;
+    }
+    /* THE CHARACTER-PAGE SECTION — "what the numbers say about me", beside the written voice.
+       Written voice is what the analyst claims about itself; this is what its own ledger
+       says. They sit next to each other on purpose. */
+    function anlProfileSection(k: string) {
+      const p = profileFor(k);
+      if (!p) return "";
+      const cast = DESK_CAST[k] || { name: k };
+      const nm = String(cast.name || k).split(/\s*·\s*/)[0].toUpperCase();
+      const sc = profScale(p);
+      const P = deskProfiles();
+      const chars = p.chars.length
+        ? `<div class="profchars" role="list">${p.chars.map((c: any) => profCharHtml(c, sc, k)).join("")}</div>`
+        : "";
+      const state = p.chars.length
+        ? `<p class="profsec-state on">${esc(p.headline)}</p>`
+        : `<div class="profsec-null">
+             <span class="profsec-nulltag">Nothing has separated yet</span>
+             <p class="profsec-nullline">${esc(p.headline)}</p>
+           </div>`;
+      // rail 3: the uncorrected count lives HERE, folded, with the caveat welded to it.
+      const fold = `<details class="proffold">
+        <summary><span>How this was measured</span><span class="pp-caret" aria-hidden="true">›</span></summary>
+        <div class="proffold-b">
+          ${p.baselineLine ? `<p>${esc(p.baselineLine)}</p>` : ""}
+          ${P && P.family.test ? `<p>${esc(P.family.test)}</p>` : ""}
+          ${P && P.family.method ? `<p>${esc(P.family.method)}${P.family.minN ? `, over cells of at least ${P.family.minN} graded calls` : ""}.</p>` : ""}
+          <p><b>${p.nUncorrected}</b> of ${nm}'s ${p.nCells ? p.nCells.toLocaleString("en-US") : "measured"} cells clear its baseline on their own uncorrected 95% interval. That is a diagnostic and not a list of strengths — with ${P && P.family.size ? P.family.size.toLocaleString("en-US") : "hundreds of"} overlapping cells tested at once, a handful clearing by chance is what the null itself predicts, which is exactly why the correction is applied before anything is named.</p>
+          ${P && P.family.note ? `<p>${esc(P.family.note)}</p>` : ""}
+          ${P && P.honest ? `<p>${esc(P.honest)}</p>` : ""}
+        </div>
+      </details>`;
+      return `<section class="anlp-sec anlp-prof${p.chars.length ? " found" : ""}">
+        <div class="anlp-sec-h">What the numbers say about me</div>
+        <p class="profsec-lede">The section above is what ${esc(nm)} says about itself. This one is what its own graded ledger says — recomputed every night, and the only place on this page allowed to claim ${esc(nm)} is better at anything.</p>
+        ${profBaseFigs(p, "wide")}
+        ${profBaseBar(p, sc)}
+        ${p.baseline.n ? `<p class="profsec-basen">This is a longer, separate ledger from the staked record further down this page: every call ${esc(nm)} has filed${p.baseline.from ? ` since ${esc(p.baseline.from.slice(0, 4))}` : ""}, replayed era included. It is the yardstick everything in this section is measured against, and it is never a betting record.</p>` : ""}
+        ${chars}
+        ${state}
+        ${profAxesHtml(p)}
+        ${fold}
+      </section>`;
     }
 
     // ---- DEV-ONLY DESK MOCK (?deskmock=1 on localhost): synthesizes the analyst fields so
@@ -9345,8 +9701,34 @@ export default function Home() {
           ${edges ? `<div class="rost-col"><div class="rost-ck">Hunts</div><ul class="rost-list">${edges}</ul></div>` : ""}
           ${inputs ? `<div class="rost-col"><div class="rost-ck">Reads</div><ul class="rost-list dim">${inputs}${moreInputs}</ul></div>` : ""}
         </div>
+        ${rosterProfBlock(k)}
         <div class="rost-cta">Meet ${esc(String(cast.name || k).toUpperCase())}<i aria-hidden="true">→</i></div>
       </article>`;
+    }
+    /* THE CARD'S CLOSING STATEMENT. "Hunts" and "Reads" above it are what the analyst is
+       BUILT to do — written, by us. This block is the only part of the card allowed to say
+       what it has actually been measured doing, and today that is: nothing yet. A surviving
+       characteristic takes the lead slot automatically. */
+    function rosterProfBlock(k: string) {
+      const p = profileFor(k);
+      if (!p) {
+        const ph = profHeadFor(k);   // block absent — the roster row's own sentence still stands
+        return ph && ph.line ? `<div class="rost-prof"><div class="rost-prof-k">What the numbers say</div>
+          <p class="rost-prof-line">${esc(ph.line)}</p></div>` : "";
+      }
+      const c = p.chars[0] || null;
+      const sc = profScale(p);
+      return `<div class="rost-prof${c ? " on" : ""}">
+        <div class="rost-prof-k">What the numbers say</div>
+        ${c ? `<div class="rost-prof-char">
+            <div class="profchar-top"><span class="profchar-ax">${esc(profAxis(c.axis))}</span>${c.cell ? `<span class="profchar-cell">${esc(c.cell)}</span>` : ""}${c.sig ? `<span class="patv sig">survives the desk-wide correction</span>` : ""}</div>
+            <p class="rost-prof-line lead">${esc(c.line)}</p>
+            <div class="profci" aria-hidden="true"><i class="profci-rule" style="left:${sc.at(sc.base)}"></i>${c.lo != null && c.hi != null ? `<i class="profci-band" style="left:${sc.at(c.lo)};right:calc(100% - ${sc.at(c.hi)})"></i>` : ""}${c.hit != null ? `<i class="profci-dot" style="left:${sc.at(c.hit)}"></i>` : ""}</div>
+          </div>`
+        : `<p class="rost-prof-line">${esc(p.headline)}</p>`}
+        ${profBaseFigs(p)}
+        ${p.baseline.n ? `<p class="rost-prof-n">Its own baseline across every call it has filed${p.baseline.from ? ` since ${esc(p.baseline.from.slice(0, 4))}` : ""} — a longer, separate ledger from the record above, and the yardstick everything here is measured against.</p>` : ""}
+      </div>`;
     }
     /* THE QUAD — Leon: "a page where you see four icons in four boxes and you get to learn
        about each personality." Four tall stacked cards mean you never see all four at once,
@@ -9360,12 +9742,24 @@ export default function Home() {
       const rec = deskRecordRows().find((r: any) => r.key === k) || null;
       const lk = anLedger(k, rec);
       const nTx = rec && rec.n ? `${rec.n} graded` : "0 graded";
+      /* THE MEASURED STATE, one line. Deliberately carries NO number: the quad already shows
+         the staked record's own `n`, and the profile baseline is a different, far longer
+         ledger — two unlabelled samples on one small card is how a reader ends up believing
+         they are the same thing. The number lives on the card below and the character page,
+         where there is room to say which ledger it is. */
+      const ph = profHeadFor(k);
+      const profTx = ph
+        ? (ph.any && ph.char
+          ? `<span class="qd-prof on"><i aria-hidden="true">◆</i>${esc(profAxis(ph.char.axis))}${ph.char.cell ? ` · ${esc(ph.char.cell)}` : ""}</span>`
+          : `<span class="qd-prof">no measured specialism yet</span>`)
+        : "";
       return `<button class="qd an-${esc(k)} ${ledgerCls(lk)}" data-an="${esc(k)}"
-        aria-label="${esc(`${cast.name} — ${cast.title}. ${isLean(lk) ? "Lean ledger, never staked" : "Staked betting record"}, ${nTx}. ${today} call${today === 1 ? "" : "s"} on today's board. Open the full profile.`)}">
+        aria-label="${esc(`${cast.name} — ${cast.title}. ${isLean(lk) ? "Lean ledger, never staked" : "Staked betting record"}, ${nTx}. ${today} call${today === 1 ? "" : "s"} on today's board.${ph ? ` ${ph.any ? "Has a measured specialism." : "No measured specialism yet."}` : ""} Open the full profile.`)}">
         <span class="qd-art" aria-hidden="true">${deskPortrait(k, 54, "qd")}</span>
         <span class="qd-nm">${esc(String(cast.name || k).toUpperCase())}</span>
         <span class="qd-ti">${esc(cast.title || "Analyst")}</span>
         <span class="qd-id">${esc(cast.short || "")}</span>
+        ${profTx}
         <span class="qd-lk ${ledgerCls(lk)}"><span class="qd-lkr"><i aria-hidden="true">${ledgerMark(lk)}</i>${esc(ledgerWord(lk))}</span><em>${esc(nTx)}${rec && isRankable(rec) ? "" : " · too early to rank"}</em></span>
         <span class="qd-n${today ? " on" : ""}">${today ? `${today} call${today === 1 ? "" : "s"} today` : "no calls today"}</span>
       </button>`;
@@ -9384,6 +9778,7 @@ export default function Home() {
             <h2 class="dp-h">Four analysts.<br>One board.</h2>
             <p class="dp-dek">Every game on DiamondEdge is argued by four independent models, each with its own way of seeing a baseball game and its own record kept in the open. They disagree constantly — that disagreement is the product. The desk chief weighs all four, and only the DiamondEdge call is ever played.</p>
           </header>
+          ${deskProfileBlock()}
           <div class="dp-quad" role="group" aria-label="The four analysts">${quad}</div>
           <div class="dp-quadfoot">Tap any of the four to jump to their card — or keep reading.</div>
           <div class="dp-grid">${cards}</div>

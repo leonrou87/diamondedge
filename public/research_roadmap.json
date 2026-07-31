@@ -1,13 +1,39 @@
 {
- "generated_utc": "2026-07-31T05:31:59Z",
+ "generated_utc": "2026-07-31T07:12:44Z",
  "summary": {
-  "shipped": 18,
+  "shipped": 20,
   "testing": 2,
   "accruing": 5,
   "queued": 0,
   "closed": 32
  },
  "items": [
+  {
+   "id": "analyst_profiles",
+   "title": "The measured analyst profile — what each analyst is actually good at",
+   "tagline": "The roster no longer describes the four analysts in prose somebody wrote. It describes them in what they have been measured to do — and today the honest answer is that none of them has a proven specialism yet.",
+   "status": "shipped",
+   "category": "product",
+   "progress_pct": 100,
+   "started": "2026-07-31",
+   "eta": "live — shipped 2026-07-31",
+   "latest": "2026-07-31: shipped. Every analyst now carries a MEASURED profile on the payload, built from the analyst lab's own eleven-axis error attribution on that analyst's own graded history (total band, side, park, starter quality, day/night, day of week, lead time, its own conviction, market lopsidedness, month, season). 353 cells were eligible across the four analysts — VEGA 92, ATLAS 90, SCOUT 90, NOVA 81 — each tested by an EXACT two-sided Fisher test against that same analyst's own complement, not against 50% and not against another analyst. THE RESULT IS A NULL: zero of the 353 survive one Benjamini-Hochberg pass across the whole rendered family at q=0.10. The smallest p is 0.00055 (NOVA in 2022-04, 59.2% on n=331) and it needed to be under 0.00028 to clear the threshold. 32 cells clear their own baseline on their own uncorrected interval, which is what testing 353 overlapping cells at 95% buys you and is exactly why the correction exists. So all four roster cards read: 'Nothing yet distinguishes where this analyst is strong; the axes all sit within noise of its own baseline.' That sentence IS the shipped product — the surface does not degrade to its most extreme cell and it does not render empty.",
+   "detail": "WHY IT IS BUILT THIS WAY. On 2026-07-30 the consensus-pattern surface shipped by picking the most extreme of 41 cells and printing it as a discovery; it was torn out the same day and replaced with a null headline. This table renders more than eight times as many cells, so the same mistake would have been eight times easier to make. Six rails, enforced in code and in v4/serve/analyst_profiles.py's selftest: (1) ONE Benjamini-Hochberg pass across the ENTIRE rendered family — all four analysts x all eleven axes x every eligible cell, in a single pass, never per analyst and never per axis; (2) only BH survivors may be presented as a characteristic; (3) ordering among survivors is by EVIDENCE (smallest p, then largest n) and never by effect size — the selftest plants a smaller effect on a bigger n and requires it to lead; (4) every rendered line carries n and its exact Clopper-Pearson interval INSIDE the sentence, never a bare percentage; (5) a cell below n=100, or whose complement is below n=100, is not eligible at all; (6) when nothing survives the block SAYS SO as its headline. THE CHERRY-PICK GATE in the selftest is a purely random desk of 160 coin-flip cells whose most deviant cell sits 6.5 points off its own baseline: it must produce ZERO characteristics, and it does. BH is not a blanket veto either — a planted 62% on n=800 dropped into the same null desk does survive, and only that one line renders. The Fisher implementation is cross-checked against scipy on four tables to 1e-6. Recomputed nightly off the lab run and served as record.analyst_profiles with a documented field contract; record.analysts gains profile_headline so a roster card can render the measured one-liner beside the written persona line. Nothing here gates, sizes or creates a bet — betting confidence remains solely the champion EV gate and the star system. HONEST CAVEAT: three of the four analysts' histories reach back into the 2022-2023 DEV window their own recipes were selected on, which flatters them relative to true out-of-sample; the season axis keeps that visible instead of pooling it away. Prices are a flat -110 throughout, so every number is a hit-rate question, not an ROI claim.",
+   "result": "NULL — 0 of 353 measured cells survive correction (BH q=0.10); smallest p=0.00055 against a 0.00028 threshold. No analyst has a measured specialism yet. The profile is a live measurement and keeps updating as history accrues."
+  },
+  {
+   "id": "published_freshness_rail",
+   "title": "The freshness guard can finally see what the site reads",
+   "tagline": "Five Supabase sync scripts never stamped updated_at, so three live payloads advertised timestamps from July 19-26 while syncing every five minutes. The watchdog could not have caught a real outage on any of them.",
+   "status": "shipped",
+   "category": "infra",
+   "progress_pct": 100,
+   "started": "2026-07-31",
+   "eta": "live — shipped 2026-07-31",
+   "latest": "2026-07-31: fixed and verified end to end. PostgREST's merge-duplicates upsert only writes the columns present in the request body, so a writer that omits updated_at leaves the column frozen at the row's original INSERT forever while happily rewriting the payload. Measured before the fix: picks_unified and picks_unified_live at 2026-07-21, research_roadmap at 2026-07-26, picks_v4_beta at 07-19, picks_v4_beta_live at 07-06 — all five syncing normally. All five writers now stamp updated_at, and a run that finds the payload unchanged sends a tiny heartbeat PATCH of updated_at alone, so the column means 'the sync last confirmed this key current' and a dead job is visible within minutes. Content age still lives inside each payload's generated_utc, so the pair distinguishes 'the writer died' from 'the writer is alive but writing stale numbers'. check_feed_freshness.py gained a published-freshness rail that reads all five keys in one REST GET and escalates through the watchdog exactly like a stale store. The research roadmap also got the scheduled sync job it never had.",
+   "detail": "This is the second half of the 2026-07-26 lesson. That audit found the fleet checked that processes were alive and that keys were WRITTEN, but never how old the numbers inside those writes were; check_feed_freshness.py closed that for local stores. It left a subtler hole open: the freshness signal on the published rows was itself a lie, so the one number a watchdog would naturally trust was the one number that could never move. Every sync script now round-trips the column — it reads updated_at back through the REST API after each write and prints it in its own log line, so the proof is renewed every run rather than asserted once.",
+   "result": null
+  },
   {
    "id": "analyst_desk_v3",
    "title": "The Analyst Desk v3 — full coverage, locked lines, the pattern engine",

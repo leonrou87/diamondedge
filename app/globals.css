@@ -4750,3 +4750,187 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
 /* the null slide is centred cinema, not a top-and-bottom split */
 .sts-patterns.nullres .pat-meta.center{margin-top:6px}
 .sts-patterns.nullres .st-cta{margin-top:16px}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   THE MEASURED PROFILE  ·  record.analyst_profiles
+   The third honest null the product carries (after the consensus-pattern table
+   and the unrankable standings), and it gets the same treatment as the other
+   two: a result's typography, not an empty state's. Slate = measured, nothing
+   separated. Gold = a cell survived the desk-wide correction — the SAME
+   components, one modifier class, so a survivor promotes itself the moment the
+   payload has one.
+   THE RULE DOWN EVERY BAR IS THE ANALYST'S OWN BASELINE, not 50%: the whole
+   block exists to measure each analyst against itself, and an axis anchored on
+   50% would smuggle the refused comparison back in through the drawing.
+   ════════════════════════════════════════════════════════════════════════════ */
+/* ---- the desk-wide slab, above the roster ---- */
+.profblk{margin:0 2px 20px;border-radius:18px;padding:17px 18px;
+  background:linear-gradient(158deg,rgba(147,161,184,.10),rgba(20,29,48,.74) 62%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),inset 0 1px 0 rgba(255,255,255,.09),var(--e1)}
+.profblk.found{background:linear-gradient(158deg,rgba(224,172,32,.13),rgba(20,29,48,.74) 62%);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.24),inset 0 1px 0 rgba(255,255,255,.10),var(--e1)}
+.profblk-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.profblk-k{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--ink3)}
+.profblk-tag{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--slate);border-radius:999px;padding:4px 11px;
+  background:rgba(147,161,184,.12)}
+.profblk.found .profblk-k{color:var(--golddeep)}
+.profblk.found .profblk-tag{color:var(--golddeep);background:rgba(224,172,32,.16)}
+.profblk-line{margin:12px 0 0;font-family:var(--sans);font-weight:500;font-size:15px;line-height:1.6;
+  color:var(--ink);max-width:70ch;text-wrap:pretty}
+.profblk.found .profblk-line{font-size:14px;color:var(--ink2)}
+.profblk-found{margin-top:13px;display:flex;flex-direction:column;gap:9px}
+.profblk-figs{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.profblk-figs span{display:flex;flex-direction:column;gap:2px;flex:1 1 96px;border-radius:11px;
+  padding:9px 11px;background:rgba(18,27,45,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.profblk-figs span.on{background:rgba(224,172,32,.11);box-shadow:inset 0 0 0 1px rgba(224,172,32,.3)}
+.profblk-figs b{font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;color:var(--ink)}
+.profblk-figs span.on b{color:var(--golddeep)}
+.profblk-figs i{font-style:normal;font-family:var(--sans);font-weight:500;font-size:11px;
+  line-height:1.35;color:var(--ink4)}
+.profblk-what{margin:12px 0 0;font-family:var(--sans);font-size:12px;line-height:1.55;color:var(--ink4);
+  max-width:72ch;text-wrap:pretty}
+.profblk.ismock{outline:2px dashed rgba(240,178,60,.5);outline-offset:3px}
+.profblk.ismock::before{content:"?profmock=1 — synthetic survivor, localhost only";
+  display:block;margin-bottom:9px;font-family:var(--sans);font-weight:700;font-size:11px;
+  letter-spacing:.04em;color:var(--amber)}
+/* ---- ONE MEASURED CELL: the served sentence + its interval, drawn ---- */
+.profchar{border-radius:13px;padding:12px 13px;background:rgba(18,27,45,.44);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.profchar.is-sig{background:rgba(224,172,32,.09);box-shadow:inset 0 0 0 1px rgba(224,172,32,.32)}
+.profchar-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.profchar-g{line-height:0;color:var(--anc,var(--ink3));flex-shrink:0}
+.profchar-ax{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink3)}
+.profchar-cell{font-family:var(--sans);font-weight:700;font-size:13px;color:var(--ink);
+  min-width:0;overflow-wrap:anywhere}
+.profchar-line{margin:9px 0 0;font-family:var(--sans);font-weight:500;font-size:14px;line-height:1.6;
+  color:var(--ink);max-width:68ch;text-wrap:pretty}
+.profchar-foot{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:8px}
+.profchar-rule,.profchar-roi{font-family:var(--sans);font-weight:500;font-size:11px;line-height:1.45;
+  color:var(--ink4)}
+.profchar-roi{font-variant-numeric:tabular-nums}
+.profchars{display:flex;flex-direction:column;gap:9px;margin-top:13px}
+/* ---- the interval track. The vertical rule = the analyst's OWN baseline. ---- */
+.profci{position:relative;display:block;height:14px;margin-top:10px;border-radius:5px;
+  background:rgba(224,235,255,.045)}
+.profci.base{height:11px;margin-top:9px}
+.profci-rule{position:absolute;top:-2px;bottom:-2px;width:2px;border-radius:2px;
+  background:repeating-linear-gradient(to bottom,rgba(233,240,250,.62) 0 3px,transparent 3px 6px);
+  transform:translateX(-1px)}
+.profci-band{position:absolute;top:4px;height:6px;border-radius:99px;
+  background:linear-gradient(90deg,rgba(147,161,184,.42),rgba(147,161,184,.62))}
+.profci.base .profci-band{top:3px;height:5px;
+  background:linear-gradient(90deg,rgba(224,235,255,.22),rgba(224,235,255,.34))}
+.profchar.is-sig .profci-band{background:linear-gradient(90deg,rgba(224,172,32,.7),var(--golddeep))}
+.profci-dot{position:absolute;top:3px;width:8px;height:8px;border-radius:50%;
+  transform:translateX(-4px);background:var(--ink);box-shadow:0 0 0 2px rgba(11,17,30,.78)}
+.profchar.is-sig .profci-dot{background:var(--golddeep)}
+/* ---- the baseline, stated: never a bare percentage ---- */
+.profbase{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:11px;
+  border-radius:12px;padding:10px 12px;background:rgba(18,27,45,.46);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.055)}
+.profbase-fig{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.profbase-fig b{font-family:var(--mono);font-weight:700;font-size:22px;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink);line-height:1}
+.profbase-fig i{font-style:normal;font-family:var(--sans);font-weight:500;font-size:11px;color:var(--ink4)}
+.profbase-meta{display:flex;flex-wrap:wrap;gap:4px 12px;min-width:0}
+.profbase-meta span{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;
+  font-size:12px;color:var(--ink3);white-space:nowrap}
+/* ---- where we looked: the axes as a sweep, never as findings ---- */
+.profax{margin-top:14px}
+.profax-k{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--ink4)}
+.profax-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.profax-c{font-family:var(--sans);font-weight:600;font-size:12px;color:var(--ink3);border-radius:999px;
+  padding:4px 10px;background:rgba(224,235,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.profax-c.on{color:var(--golddeep);background:rgba(224,172,32,.14);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.36)}
+.profax-n{margin:9px 0 0;font-family:var(--sans);font-size:12px;line-height:1.55;color:var(--ink4);
+  max-width:70ch;text-wrap:pretty}
+/* ---- the character-page section ---- */
+.anlp-prof .profsec-lede{margin:0;font-family:var(--sans);font-size:13px;line-height:1.6;
+  color:var(--ink3);max-width:66ch;text-wrap:pretty}
+.anlp-prof .profsec-basen,.rost-prof-n{margin:8px 0 0;font-family:var(--sans);font-size:11.5px;
+  line-height:1.5;color:var(--ink4);max-width:68ch;text-wrap:pretty}
+.profsec-null{margin-top:13px;border-radius:13px;padding:13px 14px;
+  background:linear-gradient(158deg,rgba(147,161,184,.10),rgba(18,27,45,.5) 64%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.profsec-nulltag{display:inline-flex;font-family:var(--disp);font-weight:800;font-size:11px;
+  letter-spacing:.17em;text-transform:uppercase;color:var(--slate);border-radius:999px;
+  padding:4px 11px;background:rgba(147,161,184,.13)}
+.profsec-nullline{margin:10px 0 0;font-family:var(--sans);font-weight:500;font-size:15px;
+  line-height:1.6;color:var(--ink);max-width:62ch;text-wrap:pretty}
+.profsec-state.on{margin:11px 0 0;font-family:var(--sans);font-weight:600;font-size:14px;
+  line-height:1.6;color:var(--ink2);max-width:66ch;text-wrap:pretty}
+.anlp-prof.found{box-shadow:inset 0 0 0 1px rgba(224,172,32,.22)}
+/* ---- the method fold: where the UNCORRECTED diagnostic is allowed to live ---- */
+.proffold{margin-top:13px;border-radius:12px;background:rgba(18,27,45,.4);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.proffold>summary{display:flex;align-items:center;gap:9px;cursor:pointer;list-style:none;
+  padding:11px 13px;font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ink3)}
+.proffold>summary::-webkit-details-marker{display:none}
+.proffold>summary .pp-caret{margin-left:auto;transition:transform .2s var(--ease)}
+.proffold[open]>summary .pp-caret{transform:rotate(90deg)}
+.proffold-b{padding:0 13px 12px}
+.proffold-b p{margin:0 0 9px;font-family:var(--sans);font-size:12px;line-height:1.6;color:var(--ink4);
+  max-width:72ch;text-wrap:pretty}
+.proffold-b p:last-child{margin-bottom:0}
+.proffold-b b{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2)}
+/* ---- the quad's one line: the state, deliberately with no number on it ---- */
+.qd-prof{margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);
+  font-weight:600;font-size:11px;line-height:1.35;color:var(--ink4);border-radius:8px;
+  padding:4px 7px;background:rgba(224,235,255,.045);text-wrap:pretty}
+.qd-prof.on{color:var(--golddeep);background:rgba(224,172,32,.13)}
+.qd-prof i{font-style:normal;flex-shrink:0}
+/* ---- the roster card's closing statement ---- */
+.rost-prof{margin-top:14px;border-radius:14px;padding:13px 14px;
+  background:linear-gradient(158deg,rgba(147,161,184,.09),rgba(18,27,45,.5) 62%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.rost-prof.on{background:linear-gradient(158deg,rgba(224,172,32,.12),rgba(18,27,45,.5) 62%);
+  box-shadow:inset 0 0 0 1px rgba(224,172,32,.26)}
+.rost-prof-k{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--disp);
+  font-weight:800;font-size:11px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink4)}
+.rost-prof.on .rost-prof-k{color:var(--golddeep)}
+.rost-prof-chip{font-family:var(--sans);font-weight:700;font-size:10px;letter-spacing:.06em;
+  text-transform:none;color:var(--golddeep);border-radius:999px;padding:2px 8px;
+  background:rgba(224,172,32,.16)}
+.rost-prof-line{margin:9px 0 0;font-family:var(--sans);font-weight:500;font-size:13px;line-height:1.6;
+  color:var(--ink2);max-width:62ch;text-wrap:pretty}
+.rost-prof-line.lead{font-size:14px;color:var(--ink)}
+.rost-prof-char .profchar-top{margin-top:9px}
+/* ---- the Insights desk-board row ---- */
+.dskrec-card.hasprof{flex-wrap:wrap}
+.dskrec-prof{flex:1 1 100%;display:block;margin-top:2px;font-family:var(--sans);font-weight:500;
+  font-size:12px;line-height:1.55;color:var(--ink4);text-wrap:pretty}
+.dskrec-prof i{display:inline-flex;font-style:normal;font-family:var(--disp);font-weight:800;
+  font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--slate);border-radius:999px;
+  padding:2px 7px;margin-right:7px;background:rgba(147,161,184,.12);vertical-align:1px}
+.dskrec-prof.on{color:var(--ink2)}
+.dskrec-prof.on i{color:var(--golddeep);background:rgba(224,172,32,.16)}
+@media(max-width:520px){
+  .profblk{padding:15px 15px;margin-bottom:16px}
+  .profblk-line{font-size:14px}
+  .profblk-figs span{flex:1 1 calc(50% - 4px)}
+  .profblk-figs b{font-size:17px}
+  .profbase{gap:9px}
+  .profbase-fig b{font-size:20px}
+  .profbase-meta span{font-size:11px;white-space:normal}
+  .profchar-line{font-size:13px}
+  .profsec-nullline{font-size:14px}
+  .qd-prof{font-size:10px;padding:3px 6px}
+}
+@media(min-width:760px){
+  .profblk{padding:20px 22px;max-width:660px;margin-left:auto;margin-right:auto}
+  .profblk-line{font-size:16px}
+  .dskrec-prof{font-size:12.5px}
+}
+.profbase-cap{margin-top:6px;font-family:var(--sans);font-size:11px;line-height:1.45;color:var(--ink4);
+  max-width:64ch;text-wrap:pretty}
+/* the roster card draws its own interval track (no .profchar wrapper) — a survivor there
+   still has to read gold, or the card and the block would disagree about the same cell */
+.rost-prof.on .profci-band{background:linear-gradient(90deg,rgba(224,172,32,.7),var(--golddeep))}
+.rost-prof.on .profci-dot{background:var(--golddeep)}
