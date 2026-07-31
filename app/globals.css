@@ -4934,3 +4934,111 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
    still has to read gold, or the card and the block would disagree about the same cell */
 .rost-prof.on .profci-band{background:linear-gradient(90deg,rgba(224,172,32,.7),var(--golddeep))}
 .rost-prof.on .profci-dot{background:var(--golddeep)}
+
+/* ═════════════════ THE PASS BOARD — the slot keeps its space when nothing clears ═════════════════
+   Deliberately NOT a card grid: a single ruled slab, so it can never be mistaken for a
+   thin day of picks. A gold hairline at the top ties it to the Top Picks label it replaces;
+   the counts are big mono numerals in a ledger column (figures stay mono, prose never does). */
+.passboard{margin:2px 0 16px}
+.passboard .tp-head .tp-sub{color:var(--ink4)}
+.pb-slab{position:relative;overflow:hidden;border-radius:20px;padding:20px 18px 16px;
+  border:1px solid rgba(224,235,255,.13);
+  background:linear-gradient(168deg,rgba(26,37,60,.92),rgba(15,22,38,.94) 62%,rgba(13,19,33,.96));
+  box-shadow:var(--shadow-hi)}
+.pb-slab::before{content:"";position:absolute;inset:0 0 auto;height:2px;
+  background:linear-gradient(90deg,transparent,var(--golddeep) 18%,rgba(224,172,32,.5) 52%,transparent)}
+/* a faint diagonal grain so the slab reads as a surface, not an empty div */
+.pb-slab::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(122deg,rgba(224,235,255,.028) 0 1px,transparent 1px 9px)}
+.pb-hd{position:relative;z-index:1}
+.pb-kick{display:inline-block;font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--golddeep);border:1px solid rgba(224,172,32,.34);
+  background:rgba(224,172,32,.09);border-radius:999px;padding:3.5px 10px}
+.pb-head{margin:11px 0 0;font-family:var(--disp);font-weight:800;font-size:clamp(25px,7.4vw,32px);
+  line-height:1.04;letter-spacing:-.022em;color:var(--ink);text-wrap:balance}
+.pb-lede{margin:9px 0 0;font-family:var(--sans);font-size:15px;line-height:1.58;color:var(--ink2);
+  max-width:56ch;text-wrap:pretty}
+.pb-lede b{color:var(--ink);font-variant-numeric:tabular-nums}
+.pb-rows{position:relative;z-index:1;margin:16px 0 0;display:flex;flex-direction:column;gap:1px;
+  border-radius:13px;overflow:hidden;background:rgba(224,235,255,.07)}
+.pb-row{display:flex;align-items:flex-start;gap:13px;padding:12px 13px;background:rgba(11,17,30,.72);
+  animation:pbrow .42s var(--spring) both;animation-delay:calc(var(--i) * 70ms + 60ms)}
+@keyframes pbrow{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.pb-row{animation:none}}
+.pb-n{flex:0 0 auto;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;font-size:21px;
+  line-height:1.15;color:var(--golddeep);font-variant-numeric:tabular-nums}
+.pb-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pb-txt b{font-family:var(--disp);font-weight:700;font-size:14.5px;letter-spacing:.005em;color:var(--ink)}
+.pb-txt i{font-style:normal;font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink3);
+  max-width:52ch;text-wrap:pretty}
+.pb-price{position:relative;z-index:1;margin:13px 0 0;padding:11px 13px;border-radius:13px;
+  border:1px solid rgba(240,178,60,.24);background:rgba(240,178,60,.07);
+  font-family:var(--sans);font-size:13.5px;line-height:1.6;color:var(--ink2);text-wrap:pretty}
+.pb-price b{color:var(--golddeep);font-variant-numeric:tabular-nums}
+.pb-foot{position:relative;z-index:1;display:flex;gap:8px;margin:14px 0 0;padding-top:12px;
+  border-top:1px solid var(--line3);font-family:var(--sans);font-size:13px;line-height:1.55;
+  color:var(--ink3);text-wrap:pretty}
+.pb-dia{flex:0 0 auto;color:var(--golddeep);font-size:11px;line-height:1.85}
+@media(min-width:720px){
+  .pb-slab{padding:26px 26px 20px}
+  .pb-rows{flex-direction:row;gap:1px}
+  .pb-row{flex:1 1 0;flex-direction:column;align-items:flex-start;gap:7px;padding:14px 15px 15px}
+  .pb-n{min-width:0;text-align:left;font-size:26px}
+  .pb-lede{font-size:16px}
+}
+
+/* ═════════════ PRICE NOT OBTAINABLE — what we wanted vs what is really there ═════════════
+   Lives inside the pass strip on a game card. Two mono figures side by side: the price we
+   served (write-once, exactly as written) and the best quote that actually existed at our
+   own line. The served one is marked, not corrected — nothing here restates anything. */
+.unob{display:flex;flex-direction:column;gap:6px;margin-top:7px;padding:9px 10px;border-radius:11px;
+  border:1px solid rgba(240,178,60,.22);background:rgba(240,178,60,.055)}
+.unob-k{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--amber)}
+.unob-pair{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.unob-cell{display:flex;flex-direction:column;gap:1px;min-width:0}
+.unob-cell i{font-style:normal;font-family:var(--mono);font-weight:700;font-size:15px;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.unob-cell em{font-style:normal;font-family:var(--sans);font-weight:600;font-size:10.5px;letter-spacing:.02em;
+  color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unob-cell.want i{color:var(--ink3);text-decoration:line-through;text-decoration-color:rgba(255,92,119,.55);
+  text-decoration-thickness:1.5px}
+.unob-cell.real i{color:var(--golddeep)}
+.unob-arrow{font-family:var(--sans);font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink4);flex:0 0 auto}
+.unob-note{font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink3);text-wrap:pretty}
+
+/* ═══════════════ THE PRICING-DEFECT DISCLOSURE — additive, never a tooltip ═══════════════
+   Sits directly under whatever ROI figure it qualifies. Amber, bordered, full-width and
+   fully open at rest — no <details>, no hover, nothing to discover. */
+.pdd{position:relative;text-align:left;border-radius:16px;border:1px solid rgba(240,178,60,.30);
+  background:linear-gradient(165deg,rgba(240,178,60,.10),rgba(240,178,60,.045));
+  max-width:640px;margin:12px auto 0}
+.pdd.full{padding:16px 17px 15px}
+.pdd.inline{padding:11px 13px;display:flex;flex-direction:column;gap:5px;margin-top:11px}
+.pdd-flag{display:inline-block;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.19em;
+  text-transform:uppercase;color:#0b111e;background:var(--amber);border-radius:999px;padding:3px 9px}
+.pdd-k{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:var(--disp);font-weight:700;
+  font-size:15px;letter-spacing:-.005em;color:var(--ink)}
+.pdd.full p{margin:9px 0 0;font-family:var(--sans);font-size:13.5px;line-height:1.62;color:var(--ink2);
+  text-wrap:pretty}
+.pdd.full p b{color:var(--ink)}
+.pdd-line{font-family:var(--sans);font-size:13px;line-height:1.6;color:var(--ink2);text-wrap:pretty}
+.pdd-line b{color:var(--ink);font-family:var(--mono);font-weight:700;font-size:12.5px;
+  font-variant-numeric:tabular-nums}
+.pdd-line b.neg,.pdd-nums .neg{color:#ff7d93}
+.pdd-nums{display:flex;gap:9px;margin:13px 0 0;flex-wrap:wrap}
+.pdd-num{flex:1 1 140px;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;
+  background:rgba(11,17,30,.55);border:1px solid var(--line3)}
+.pdd-num i{font-style:normal;font-family:var(--mono);font-weight:700;font-size:21px;line-height:1.15;
+  font-variant-numeric:tabular-nums;color:var(--ink)}
+.pdd-num em{font-style:normal;font-family:var(--sans);font-weight:600;font-size:11px;line-height:1.4;
+  color:var(--ink3)}
+.pdd-num.bad{border-color:rgba(255,92,119,.32);background:rgba(255,92,119,.07)}
+.pdd-tail{border-top:1px solid rgba(240,178,60,.20);padding-top:11px}
+.pdd.full .pdd-tail{margin-top:13px}
+@media(min-width:720px){
+  .pdd.full{padding:20px 22px 18px}
+  .pdd-k{font-size:16.5px}
+  .pdd.full p{font-size:14.5px}
+}

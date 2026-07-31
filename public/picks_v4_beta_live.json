@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-31T07:34:43Z",
+  "generated_utc": "2026-07-31T09:13:46Z",
   "dates": [
     "2026-07-31",
     "2026-08-01"
@@ -940,14 +940,15 @@
       "game_pk": 823999,
       "matchup": "Milwaukee Brewers @ Los Angeles Angels",
       "source_model": "residual_total_v1",
-      "stars": 5,
+      "stars": 1,
       "score": 4.7,
       "lean": {
         "side": "under",
         "line": 9.0
       },
-      "playable": true,
-      "all_pass": false
+      "playable": false,
+      "all_pass": true,
+      "note": "nothing playable today \u2014 featured is the highest-score 1-star PASS lean, shown for interest; it is NOT a bet"
     }
   },
   "featured_game_id": "2026-07-31-Milwaukee Brewers-Los Angeles Angels-823999",
@@ -1174,19 +1175,27 @@
     },
     "note": "price_improved={now, was, book, ts} appears on UNLOCKED playable rows whose CURRENT best per-side price at the pick's line beats the entry price ('price improved \u2014 now +112 at X'). Refreshed every intraday cycle; drops when no longer better. The pick/side/line/price/stars stay frozen to their wall and locked rows are never touched \u2014 grading uses the stored entry price."
   },
+  "price_veto": {
+    "this_cycle": {
+      "n_vetoed_now": 0,
+      "n_already_vetoed": 7,
+      "n_vetoed_total": 7
+    },
+    "note": "Until 2026-07-31 the v4 grid's per-side price was the best price across books at EACH BOOK'S OWN line, not at the pick's line, so a book on a different total donated its better price to a pick at the consensus number \u2014 an unobtainable price, and the one the +EV gate evaluated. Fixed at source (v4/assemble/odds_features.py). Walls captured before the fix are first-write-wins and keep their price: those rows are DEMOTED to a disclosed lean (pass_why=price_not_obtainable) carrying price_unobtainable={served_price, best_real_price_at_line, best_book, n_books_at_line}. Nothing is restated \u2014 pick, side, line, served price, our_prob and ev are shown exactly as written, and LOCKED rows are never touched at all. Expect a smaller board: fewer picks clear the gate at honest prices, which is the correct outcome, not a regression."
+  },
   "board_census": {
     "n_games": 12,
     "n_rows": 12,
     "n_voided": 0,
-    "n_playable": 3,
-    "n_takes": 3,
-    "n_passes": 9,
+    "n_playable": 0,
+    "n_takes": 0,
+    "n_passes": 12,
     "stars": {
-      "5": 1,
-      "4": 1,
+      "5": 0,
+      "4": 0,
       "3": 0,
-      "2": 1,
-      "1": 9
+      "2": 0,
+      "1": 12
     }
   },
   "spread_stream": {
@@ -3703,10 +3712,12 @@
           "market_line": 9.0,
           "per_side_price": 115,
           "our_prob": 0.4813,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4813,
           "p_breakeven": 0.4651,
           "ev": 0.0348,
           "tier": "Good",
-          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
           "stars": 1,
           "score": 0.86,
           "playable": false,
@@ -3726,10 +3737,21 @@
             "one_sided": false
           },
           "best_book": "onexbet",
+          "price_unobtainable": {
+            "served_price": 115,
+            "best_real_price_at_line": -113,
+            "best_book": "lowvig",
+            "n_books_at_line": 18,
+            "line": 9.0,
+            "side": "over",
+            "wall": "T-12h",
+            "snapshot_ts": "2026-07-31T06:13:36Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0006 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_reason": "price not obtainable \u2014 served at 115, but the best real quote on OVER 9 at this wall was -113 (lowvig). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false
@@ -3754,6 +3776,8 @@
           "market_line": 7.5,
           "per_side_price": 103,
           "our_prob": 0.5014,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5014,
           "p_breakeven": 0.4926,
           "ev": 0.0122,
           "tier": "PASS",
@@ -3805,13 +3829,15 @@
           "market_line": 7.5,
           "per_side_price": -101,
           "our_prob": 0.5188,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5188,
           "p_breakeven": 0.5025,
           "ev": 0.0324,
           "tier": "Good",
-          "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
-          "stars": 2,
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
+          "stars": 1,
           "score": 2.54,
-          "playable": true,
+          "playable": false,
           "lean": {
             "side": "over",
             "line": 7.5
@@ -3828,10 +3854,21 @@
             "one_sided": false
           },
           "best_book": "draftkings",
-          "pick_side": "over",
-          "pick_line": 7.5,
-          "graded_line": null,
-          "suggested_units": 0.5
+          "price_unobtainable": {
+            "served_price": -101,
+            "best_real_price_at_line": -113,
+            "best_book": "lowvig",
+            "n_books_at_line": 11,
+            "line": 7.5,
+            "side": "over",
+            "wall": "T-24h",
+            "snapshot_ts": "2026-07-30T23:01:58Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price not obtainable \u2014 served at -101, but the best real quote on OVER 7.5 at this wall was -113 (lowvig). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false
@@ -3856,6 +3893,8 @@
           "market_line": 8.5,
           "per_side_price": -104,
           "our_prob": 0.5155,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5155,
           "p_breakeven": 0.5098,
           "ev": 0.0111,
           "tier": "PASS",
@@ -3907,13 +3946,15 @@
           "market_line": 8.0,
           "per_side_price": 105,
           "our_prob": 0.5173,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5173,
           "p_breakeven": 0.4878,
           "ev": 0.0604,
           "tier": "Strong",
-          "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-          "stars": 4,
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
+          "stars": 1,
           "score": 4.28,
-          "playable": true,
+          "playable": false,
           "lean": {
             "side": "over",
             "line": 8.0
@@ -3930,10 +3971,21 @@
             "one_sided": false
           },
           "best_book": "onexbet",
-          "pick_side": "over",
-          "pick_line": 8.0,
-          "graded_line": null,
-          "suggested_units": 2.0
+          "price_unobtainable": {
+            "served_price": 105,
+            "best_real_price_at_line": -102,
+            "best_book": "lowvig",
+            "n_books_at_line": 10,
+            "line": 8.0,
+            "side": "over",
+            "wall": "T-24h",
+            "snapshot_ts": "2026-07-30T23:01:58Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "price not obtainable \u2014 served at 105, but the best real quote on OVER 8 at this wall was -102 (lowvig). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false
@@ -3958,6 +4010,8 @@
           "market_line": 8.5,
           "per_side_price": 101,
           "our_prob": 0.4995,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4995,
           "p_breakeven": 0.4975,
           "ev": 0.0039,
           "tier": "PASS",
@@ -4009,6 +4063,8 @@
           "market_line": 8.5,
           "per_side_price": 108,
           "our_prob": 0.5018,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5018,
           "p_breakeven": 0.4808,
           "ev": 0.0363,
           "tier": "Good",
@@ -4060,10 +4116,12 @@
           "market_line": 8.0,
           "per_side_price": 109,
           "our_prob": 0.4987,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4987,
           "p_breakeven": 0.4785,
           "ev": 0.0423,
           "tier": "Good",
-          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
           "stars": 1,
           "score": 1.11,
           "playable": false,
@@ -4083,10 +4141,21 @@
             "one_sided": false
           },
           "best_book": "onexbet",
+          "price_unobtainable": {
+            "served_price": 109,
+            "best_real_price_at_line": -102,
+            "best_book": "lowvig",
+            "n_books_at_line": 12,
+            "line": 8.0,
+            "side": "over",
+            "wall": "T-24h",
+            "snapshot_ts": "2026-07-31T00:12:11Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0035 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_reason": "price not obtainable \u2014 served at 109, but the best real quote on OVER 8 at this wall was -102 (lowvig). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false
@@ -4111,10 +4180,12 @@
           "market_line": 11.0,
           "per_side_price": 107,
           "our_prob": 0.4953,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4953,
           "p_breakeven": 0.4831,
           "ev": 0.0447,
           "tier": "Good",
-          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
           "stars": 1,
           "score": 1.11,
           "playable": false,
@@ -4134,10 +4205,21 @@
             "one_sided": false
           },
           "best_book": "nordicbet",
+          "price_unobtainable": {
+            "served_price": 107,
+            "best_real_price_at_line": 101,
+            "best_book": "pinnacle",
+            "n_books_at_line": 10,
+            "line": 11.0,
+            "side": "under",
+            "wall": "T-24h",
+            "snapshot_ts": "2026-07-31T00:38:04Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
           "pick_side": null,
           "informational_lean": "under",
-          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0035 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_reason": "price not obtainable \u2014 served at 107, but the best real quote on UNDER 11 at this wall was 101 (pinnacle). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false
@@ -4162,13 +4244,15 @@
           "market_line": 9.0,
           "per_side_price": 112,
           "our_prob": 0.4784,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4784,
           "p_breakeven": 0.4717,
           "ev": 0.1057,
           "tier": "Strong",
-          "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-          "stars": 5,
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
+          "stars": 1,
           "score": 4.7,
-          "playable": true,
+          "playable": false,
           "lean": {
             "side": "under",
             "line": 9.0
@@ -4185,10 +4269,21 @@
             "one_sided": false
           },
           "best_book": "onexbet",
-          "pick_side": "under",
-          "pick_line": 9.0,
-          "graded_line": null,
-          "suggested_units": 2.0
+          "price_unobtainable": {
+            "served_price": 112,
+            "best_real_price_at_line": -112,
+            "best_book": "pinnacle",
+            "n_books_at_line": 13,
+            "line": 9.0,
+            "side": "under",
+            "wall": "T-24h",
+            "snapshot_ts": "2026-07-31T01:35:37Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "price not obtainable \u2014 served at 112, but the best real quote on UNDER 9 at this wall was -112 (pinnacle). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false
@@ -4213,10 +4308,12 @@
           "market_line": 10.5,
           "per_side_price": 100,
           "our_prob": 0.5068,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5068,
           "p_breakeven": 0.5,
           "ev": 0.0136,
           "tier": "PASS",
-          "star_tier": "Pass (-EV / no real price)",
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
           "stars": 1,
           "score": 0.68,
           "playable": false,
@@ -4236,10 +4333,21 @@
             "one_sided": false
           },
           "best_book": "fanduel",
+          "price_unobtainable": {
+            "served_price": 100,
+            "best_real_price_at_line": -114,
+            "best_book": "onexbet",
+            "n_books_at_line": 4,
+            "line": 10.5,
+            "side": "over",
+            "wall": "T-24h",
+            "snapshot_ts": "2026-07-31T01:35:37Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "model 50.7% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_reason": "price not obtainable \u2014 served at 100, but the best real quote on OVER 10.5 at this wall was -114 (onexbet). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false
@@ -4264,10 +4372,12 @@
           "market_line": 7.5,
           "per_side_price": 100,
           "our_prob": 0.5097,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5097,
           "p_breakeven": 0.5,
           "ev": 0.0193,
           "tier": "Lean",
-          "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
+          "star_tier": "Lean \u2014 price not obtainable at the pick's line",
           "stars": 1,
           "score": 1.0,
           "playable": false,
@@ -4287,10 +4397,21 @@
             "one_sided": false
           },
           "best_book": "betrivers",
+          "price_unobtainable": {
+            "served_price": 100,
+            "best_real_price_at_line": -113,
+            "best_book": "onexbet",
+            "n_books_at_line": 10,
+            "line": 7.5,
+            "side": "over",
+            "wall": "T-24h",
+            "snapshot_ts": "2026-07-31T02:05:37Z",
+            "note": "the price this row was written at was not available at its own line at its own decision wall \u2014 it came from a book posting a DIFFERENT number (v4/assemble/odds_features.py, fixed 2026-07-31). The pick, line, side and stored price are untouched; it is demoted out of the playable set because the edge that selected it was priced off a bet nobody could place."
+          },
           "pick_side": null,
           "informational_lean": "over",
-          "pass_reason": "price-only edge \u2014 no model conviction: |our_prob \u2212 market_devig_prob| = 0.0023 < 0.01 floor. The +EV comes from the price (plus-money juice), not from the model disagreeing with the fair number \u2014 1-star lean, not playable",
-          "pass_why": "price_only"
+          "pass_reason": "price not obtainable \u2014 served at 100, but the best real quote on OVER 7.5 at this wall was -113 (onexbet). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
+          "pass_why": "price_not_obtainable"
         }
       ],
       "locked": false

@@ -771,6 +771,126 @@ export default function Home() {
     const isBet = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side && pickPlusEV(pl));
     // A real pick of ANY strength (shown on every game — even the slightest lean).
     const isPick = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side);
+
+    /* ═══════════════════ THE PRICING-DEFECT DISCLOSURE (found 2026-07-31) ═══════════════════
+       ONE SWITCH. Set SHOW_PRICE_DEFECT_DISCLOSURE = false and every trace of this disclosure
+       disappears from the product — the record hero, the record-breakdown sheet, the strategy
+       card, the All-picks header, the footer strip and the share text all fall back, byte for
+       byte, to what they rendered before. Nothing else changes: no number anywhere is derived
+       from this block, and no historical figure is ever rewritten by it.
+
+       WHAT IT DISCLOSES. odds_features.py was taking the best price across books at each
+       book's OWN posted line, with no filter to the line the pick was actually made at — so a
+       pick at 8.0 could inherit a better price a book was quoting at 7.5. That inflated price
+       is what the +EV gate evaluated, so the gate was selecting on edge that did not exist.
+       Fixed forward only, 2026-07-31. WRITE-ONCE IS ABSOLUTE: not one historical pick, price
+       or record row was restated. The live record therefore still reads exactly as served —
+       and it UNDERSTATES the loss. Both numbers are stated, in plain language, in the open.
+
+       The served figures below are only fallbacks: every surface prefers the live record it
+       already reads out of the payload, so the disclosure can never drift from the record it
+       sits beside. `executableRoi` is the backend's re-grade of the same picks at prices that
+       were genuinely available, and is the one number that lives only here. */
+    const SHOW_PRICE_DEFECT_DISCLOSURE = true;
+    const PRICE_DEFECT = {
+      foundOn: "2026-07-31",
+      foundTxt: "July 31, 2026",
+      servedWL: "24–33–1",
+      servedRoi: -0.152,
+      executableRoi: -0.187,
+    };
+    // Same glyphs as stratRoi() — the disclosure sits inches from the record it qualifies,
+    // so the two must format a percentage identically or they read as different numbers.
+    const pdRoi = (v: number) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`;
+    // The served side of the disclosure, taken from the live record on screen where possible
+    // so the two can never disagree. `lv` = a headlineStrategyRecord(...).live block.
+    function pdFigures(lv?: any) {
+      const wl = lv && lv.win != null ? `${lv.win}–${lv.loss}${lv.push ? `–${lv.push}` : ""}` : PRICE_DEFECT.servedWL;
+      const roi = lv && lv.roi != null ? Number(lv.roi) : PRICE_DEFECT.servedRoi;
+      return { wl, served: pdRoi(roi), executable: pdRoi(PRICE_DEFECT.executableRoi) };
+    }
+    /* The disclosure itself. Three sizes, same facts, never a tooltip:
+         "full"  — the block that sits under the record hero and in the record sheet
+         "inline"— one visible sentence beside a smaller ROI figure
+         "share" — the sentence appended to any record we hand someone to publish     */
+    function priceDefectNote(kind: "full" | "inline" | "share" = "full", lv?: any) {
+      if (!SHOW_PRICE_DEFECT_DISCLOSURE) return "";
+      const f = pdFigures(lv);
+      if (kind === "share") {
+        return ` Disclosure: a pricing defect found ${PRICE_DEFECT.foundTxt} means some of those picks were graded at prices better than were truly available. The record stands exactly as served (${f.served}); at executable prices it is ${f.executable}.`;
+      }
+      if (kind === "inline") {
+        return `<div class="pdd inline"><span class="pdd-flag">Disclosure</span><span class="pdd-line">A pricing defect found ${esc(PRICE_DEFECT.foundTxt)} graded some of these picks at prices better than were truly available. Served: <b>${esc(f.served)}</b>. At executable prices: <b class="neg">${esc(f.executable)}</b>. Nothing has been restated.</span></div>`;
+      }
+      return `<div class="pdd full">
+        <div class="pdd-k"><span class="pdd-flag">Disclosure</span>The record above understates the loss</div>
+        <p>On <b>${esc(PRICE_DEFECT.foundTxt)}</b> we found a defect in how we read prices: for each pick we were taking the best price across books <b>without checking it was quoted at our own line</b>. A pick at 8.0 could inherit a better price a book was posting at 7.5 — and that inflated price is what our +EV gate judged. Some picks were selected on edge that was never really there, and every one of them was then graded at that same too-good price.</p>
+        <div class="pdd-nums">
+          <span class="pdd-num"><i>${esc(f.served)}</i><em>ROI as served — unchanged</em></span>
+          <span class="pdd-num bad"><i class="neg">${esc(f.executable)}</i><em>ROI at executable prices</em></span>
+        </div>
+        <p class="pdd-tail">The same <b>${esc(f.wl)}</b> either way — this is a price correction, not a re-grade of wins and losses. <b>We have not rewritten a single number.</b> What we published is what we published, and it stays on the page as served. The defect is fixed going forward; the honest figure is the second one.</p>
+      </div>`;
+    }
+
+    /* ═══════════ WHY A GAME WAS PASSED — the machine reason, read defensively ═══════════
+       The unified feed stamps every pick with `pass_why` (a stable machine code) alongside
+       `pass_reason` (the desk's own prose). Absent ⇒ "" and every surface degrades. */
+    function passWhyOf(g: any) {
+      const vg = v4GameFor(g);
+      const pk = vg && vg.pick;
+      const w = String((pk && pk.pass_why) || "").trim().toLowerCase();
+      return /^[a-z0-9_]+$/.test(w) ? w : "";
+    }
+    /* PRICE NOT OBTAINABLE — what we wanted vs what is really there.
+       PREFERRED: a served structured block (`pick.price_unobtainable`, or the same block on
+       the game / grid row) carrying {served_price, best_real_price_at_line, best_book,
+       n_books_at_line, line, side, wall, snapshot_ts}.
+       FALLBACK: the served price is already structured on the pick, and the desk's own
+       templated sentence carries the best real quote and the book. The pattern is anchored
+       hard and ANY mismatch returns null — we would rather show the sentence alone than a
+       number we had to guess at. Nothing here is ever computed; it is only read. */
+    function priceUnobtainable(pk: any) {
+      if (!pk || typeof pk !== "object") return null;
+      const blk = [pk.price_unobtainable, pk.price_veto, (pk.pass_detail || {}).price_unobtainable]
+        .find((b: any) => b && typeof b === "object" && _fin(b.best_real_price_at_line != null ? b.best_real_price_at_line : b.best_real_price) != null);
+      const servedPx = _fin(pk.price);
+      if (blk) {
+        const best = _fin(blk.best_real_price_at_line != null ? blk.best_real_price_at_line : blk.best_real_price);
+        return {
+          served: _fin(blk.served_price) != null ? _fin(blk.served_price) : servedPx,
+          best,
+          book: String(blk.best_book || blk.book || "").trim(),
+          nBooks: _fin(blk.n_books_at_line),
+          line: _fin(blk.line) != null ? _fin(blk.line) : _fin(pk.line),
+          side: String(blk.side || pk.side || "").trim(),
+          wall: String(blk.wall || pk.lead_time || "").trim(),
+          snapshot: String(blk.snapshot_ts || blk.snapshot || "").trim(),
+        };
+      }
+      const prose = String(pk.pass_reason || "");
+      const m = prose.match(/best real quote on (OVER|UNDER)\s+([\d.]+) at this wall was (-?\+?\d+)\s*\(([a-z0-9 _.-]+)\)/i);
+      if (!m || servedPx == null) return null;
+      const best = _fin(m[3]);
+      if (best == null) return null;
+      return {
+        served: servedPx, best,
+        book: String(m[4] || "").trim(),
+        nBooks: null,
+        line: _fin(m[2]),
+        side: String(m[1] || "").toLowerCase(),
+        wall: String(pk.lead_time || "").trim(),
+        snapshot: "",
+      };
+    }
+    // A book slug ("lowvig", "onexbet") → the name a human would recognise.
+    const BOOK_NAME: any = { lowvig: "LowVig", pinnacle: "Pinnacle", onexbet: "1xBet", betonlineag: "BetOnline", bovada: "Bovada", betus: "BetUS", mybookieag: "MyBookie", williamhill_us: "Caesars", draftkings: "DraftKings", fanduel: "FanDuel", betmgm: "BetMGM", betrivers: "BetRivers", pointsbetus: "PointsBet", superbook: "SuperBook", unibet_us: "Unibet", wynnbet: "WynnBET", espnbet: "ESPN BET", fanatics: "Fanatics", hardrockbet: "Hard Rock" };
+    const bookName = (s: any) => {
+      const k = String(s || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+      if (!k) return "";
+      return BOOK_NAME[k] || (String(s).trim().charAt(0).toUpperCase() + String(s).trim().slice(1));
+    };
+
     // ===================== THE DIAMONDEDGE PICK — ONE PER GAME =====================
     // The unified feed carries exactly ONE pick per game (pregame totals, star-rated, +EV-gated).
     // Live feed covers today/tomorrow; history covers all prior days. There is no other source.
@@ -1330,7 +1450,22 @@ export default function Home() {
       const pOver = _fin(a.p_over);
       let conv = _fin(a.conviction);
       if (conv != null && conv > 1) conv = conv / 100; // tolerate 0-100 scales
-      if (conv == null && pOver != null && dir) conv = dir === "under" ? 1 - pOver : pOver;
+      /* P(STATED SIDE), RESOLVED HERE AND NOWHERE ELSE (fix, 2026-07-31).
+         Every conviction on the site — chip row, debate bubbles, analyst sheets, the stories
+         deck — reads `conv` off this one line, so the side-resolution happens once.
+         `p_over` is now served PRE-RESOLVED as P(over the line) on every row, with
+         `our_prob_basis` naming the convention, so it is the authority: an UNDER read is
+         1 − p_over, an OVER read is p_over. Deriving it beats trusting the served
+         `conviction`, which one engine (NOVA) was still filling with a raw p_over — so a
+         52% UNDER lean was rendering as 48%, on the wrong side of the coin flip.
+         The served conviction stays the fallback for any row with no p_over or no side —
+         and a row with a probability but no side still shows nothing, as before.
+         VERIFIED against both feeds before switching the source: across picks_unified_live
+         and the full picks_unified history, every VEGA / ATLAS / SCOUT row already satisfies
+         conviction === (side === "under" ? 1 − p_over : p_over), so this derivation is a
+         byte-for-byte no-op on all three of them. It changes NOVA's under rows only — 4 live,
+         70 historical — which are exactly the rows that were rendering the wrong side of 50%. */
+      if (pOver != null && dir) conv = dir === "under" ? 1 - pOver : pOver;
       // served name may be "VEGA · The Market Reader" — split it into name + title
       const nmRaw = String(a.name || (cast && cast.name) || key).trim();
       const nmParts = nmRaw.split(/\s*[·|]\s*/);
@@ -1807,6 +1942,7 @@ export default function Home() {
         <div class="de-head"><span class="de-brand"><i class="de-dia" aria-hidden="true">◆</i>The DiamondEdge Pick</span><span class="de-act">${esc(word)}</span>${state ? `<span class="de-res ${state.cls}">${state.txt}</span>` : ""}</div>
         ${callHtml ? `<div class="de-callrow">${callHtml}${atLine}${quality}</div>` : ""}
         ${locked ? `<div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : ""}
+        ${locked ? "" : unobtainableRow(g)}
         ${rlHtml || predHtml ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
         ${rat && !locked ? `<p class="de-rat">${esc(rat)}</p>` : ""}
         ${verdict}
@@ -5270,6 +5406,32 @@ export default function Home() {
       }
       return null;
     }
+    /* PRICE NOT OBTAINABLE — what we wanted, next to what's really there.
+       This pass reason is the one a reader cannot infer from anything else on the card: the
+       side and the line look fine, and the price printed beside them was never actually on
+       offer at that number. So the card states both sides of it plainly — the price we
+       served (write-once, shown exactly as written, struck only to mark it unreachable) and
+       the best real quote at our OWN line, with the book and the wall it was read at.
+       Rendered on whichever pick surface the tile is using — the chief's call block when the
+       desk is served, the pass strip otherwise. Anything absent ⇒ "" and the card is
+       unchanged, byte for byte. */
+    function unobtainableRow(g: any) {
+      const vg = v4GameFor(g);
+      const pk = vg && vg.pick;
+      if (!pk || passWhyOf(g) !== "price_not_obtainable") return "";
+      const u = priceUnobtainable(pk);
+      if (!u || u.best == null || u.served == null) return "";
+      const where = [u.nBooks != null ? `${u.nBooks} books read` : "", u.wall ? `at ${u.wall}` : ""].filter(Boolean).join(" ");
+      return `<div class="unob">
+        <span class="unob-k">Price not obtainable</span>
+        <span class="unob-pair">
+          <span class="unob-cell want"><i>${esc(fmtOdds(u.served))}</i><em>the price we wanted</em></span>
+          <span class="unob-arrow" aria-hidden="true">vs</span>
+          <span class="unob-cell real"><i>${esc(fmtOdds(u.best))}</i><em>best real${u.book ? ` · ${esc(bookName(u.book))}` : ""}</em></span>
+        </span>
+        <span class="unob-note">No book was quoting ${esc(String(u.side || "").toUpperCase())}${u.line != null ? ` ${esc(lineStr(u.line))}` : ""} at that number${where ? ` (${esc(where)})` : ""}. The edge was priced off a bet nobody could place — so this is a lean, not a pick.</span>
+      </div>`;
+    }
     // The PASS pick-slot: same footprint as a real pick strip so cards stay uniform height.
     // Muted, empty diamonds (○○○), the model's directional read when we have one.
     function passStrip(g: any) {
@@ -5284,6 +5446,7 @@ export default function Home() {
       // only surface human-readable reasons (skip machine codes like "ev_gate"/"junk_cell")
       const whyRaw = pk ? String(pk.pass_why || pk.pass_reason || "") : "";
       const why = /\s/.test(whyRaw) && whyRaw.length > 12 ? esc(whyRaw.slice(0, 60)) : "";
+      const unobRow = unobtainableRow(g);
       if (side && line != null) {
         const dir = /over/i.test(side) ? "ou-over" : "ou-under";
         // NOTE: modifier class is "is-lean" — never bare "lean", which is the lean-METER
@@ -5294,7 +5457,8 @@ export default function Home() {
             <span class="ps-lowconf">Low confidence</span>
             <span class="ps-q">${bStars(pk.stars != null ? pk.stars : 1)}${passGrade(sc)}</span>
           </div>
-          ${why ? `<div class="pk-made dim">${why}</div>` : ""}
+          ${unobRow}
+          ${why && !unobRow ? `<div class="pk-made dim">${why}</div>` : ""}
         </div>`;
       }
       // no lean at all (market never posted): the old honest pass line
@@ -5719,6 +5883,84 @@ export default function Home() {
       </div>`;
     }
 
+    /* ═══════════════════ THE PASS BOARD — a night with no play, stated ═══════════════════
+       When nothing clears, the Top Picks rail simply used to VANISH and the page fell
+       straight through to Live & Upcoming. A reader who came for picks was left to guess
+       whether the desk had passed, or broken. So the slot keeps its space and says it:
+       every game was read, none of them cleared, and here is the count of each reason.
+
+       This is not an apology. Passing is the only thing that makes the record mean anything —
+       and one of these reasons (price not obtainable) exists precisely because we now refuse
+       to bet a price that is not really on the screen. Fully defensive: no pass reasons
+       served ⇒ the tally is dropped and the headline stands alone. */
+    const PASS_KINDS: any = {
+      price_not_obtainable: {
+        lab: "The price isn't there",
+        blurb: "Our number liked the side — but the price it needed isn't actually quoted at that line, at any book we read. An edge you can't place isn't an edge.",
+        ord: 0,
+      },
+      ev_gate: {
+        lab: "No edge at the price",
+        blurb: "Our read and the market's landed close enough that the juice eats whatever's left. Right side, wrong price.",
+        ord: 1,
+      },
+      price_only: {
+        lab: "Price alone, no read",
+        blurb: "The only edge was plus-money juice, not us disagreeing with the fair number. That's a coin flip wearing a discount.",
+        ord: 2,
+      },
+      junk_cell: { lab: "No usable market", blurb: "The market never posted a number we could judge this game against.", ord: 3 },
+      no_line: { lab: "No line posted", blurb: "No pregame total arrived in time to price a call against.", ord: 4 },
+    };
+    // { n, kinds:[{key,lab,blurb,n}] } over the games on screen with a PASS. null when
+    // there is nothing to say (no games, or a pick is live after all).
+    function passReadout(games: any[]) {
+      if (!Array.isArray(games) || !games.length) return null;
+      const counts: any = {};
+      let read = 0;
+      games.forEach((g: any) => {
+        const vg = v4GameFor(g);
+        if (!vg || !vg.pick) return;
+        read++;
+        const w = passWhyOf(g);
+        if (w) counts[w] = (counts[w] || 0) + 1;
+      });
+      if (!read) return null;
+      const kinds = Object.keys(counts)
+        .map((k) => ({ key: k, n: counts[k], ...(PASS_KINDS[k] || { lab: k.replace(/_/g, " "), blurb: "", ord: 9 }) }))
+        .sort((a: any, b: any) => (a.ord - b.ord) || (b.n - a.n));
+      return { n: read, total: games.length, kinds };
+    }
+    function passBoardPanel(games: any[]) {
+      const ro = passReadout(games);
+      if (!ro) return "";
+      const isToday = curDate === todayISO();
+      const nUnobt = (ro.kinds.find((k: any) => k.key === "price_not_obtainable") || {}).n || 0;
+      const rows = ro.kinds.map((k: any, i: number) => `
+        <div class="pb-row" style="--i:${i}">
+          <span class="pb-n">${k.n}</span>
+          <span class="pb-txt"><b>${esc(k.lab)}</b>${k.blurb ? `<i>${esc(k.blurb)}</i>` : ""}</span>
+        </div>`).join("");
+      // The one line that has to land: where the reason is price_not_obtainable, the number
+      // we wanted is not on the board anywhere — and each of those game cards proves it.
+      const priceLine = nUnobt
+        ? `<p class="pb-price">On <b>${nUnobt}</b> of them our number was on the right side and the price still wasn't there — the quote the model needed isn't posted at that line by any book we read. Every one of those cards below shows what we wanted next to what's really on the screen.</p>`
+        : "";
+      return `<div class="passboard">
+        <div class="tp-head"><span class="tp-lab">◆ Top Picks${isToday ? " Today" : ""}</span><span class="tp-sub">the bar didn't move</span></div>
+        <div class="pb-slab">
+          <div class="pb-hd">
+            <span class="pb-kick">No play${isToday ? " tonight" : ""}</span>
+            <h3 class="pb-head">Nothing cleared the bar.</h3>
+            <p class="pb-lede">The desk read all <b>${ro.n}</b> game${ro.n === 1 ? "" : "s"} on the board and priced every one of them. Not one came back worth betting, so we're not betting one.</p>
+          </div>
+          <div class="pb-rows">${rows}</div>
+          ${priceLine}
+          <div class="pb-foot"><span class="pb-dia">◆</span>A pass is a position. The record only means something because the nights we sit out are real — the reads are all still below, graded or not.</div>
+        </div>
+      </div>`;
+    }
+
     // This month's DiamondEdge Picks = TOTALS only (the validated edge). Spread/ML leans are
     // NOT blended into this headline number — they live in the record-breakdown sheet.
     function monthRecord() {
@@ -6080,7 +6322,10 @@ export default function Home() {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
           // TOP PICKS rail (replaces the single featured hero): the day's best picks by score,
           // in a distinct dark style. No rail on a future (no-pick) slate — it's a schedule.
-          const rail = anyPick ? topPicksRail(games) : "";
+          // NOTHING CLEARED: the slot never just vanishes. When the board was priced and every
+          // game came back a pass, the pass board takes the slot and says so, with the count
+          // of each reason. A future slate has no reads yet, so it keeps its own banner.
+          const rail = anyPick ? topPicksRail(games) : (isFuture ? "" : passBoardPanel(games));
           // Reference "Live & Upcoming": group the cards by game phase so LIVE games
           // sit under a live subhead, upcoming below, finals last. gameState already gives phase.
           const grp: any = { live: [], pre: [], final: [] };
@@ -6523,7 +6768,9 @@ export default function Home() {
       const hr = headlineStrategyRecord(betaData);
       if (hr && hr.live) {
         const since = stratDateTxt(hr.activation);
-        return `DiamondEdge — every pick star-rated 1–5 and graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.`;
+        // The disclosure travels WITH the number. A record we hand someone to publish is the
+        // last place it can be left off — so the share text carries it in the same sentence.
+        return `DiamondEdge — every pick star-rated 1–5 and graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.${priceDefectNote("share", hr.live)}`;
       }
       return "DiamondEdge — every sports pick star-rated 1–5 and graded in the open.";
     }
@@ -7379,6 +7626,7 @@ export default function Home() {
             ${block(scopes[0])}
             ${block(scopes[1])}
             <div class="dsec"><div class="dsec-b rcp"><p><b>Every call freezes before first pitch</b> — the side, the line and the price — and the final score does the judging. The full running record, tier by tier, lives on the Insights tab.</p></div></div>
+            ${priceDefectNote("full", (headlineStrategyRecord(betaData) || {} as any).live)}
             <button class="rb-full" id="rb-full">See the full record &amp; charts →</button>
             <button class="rb-share" id="rb-share">Share our record ↗</button>
           </div>
@@ -7684,6 +7932,7 @@ export default function Home() {
             ${stratNumsHtml(lv)}
             ${strategyBarsSvg(lv, r.label)}
             <div class="sgc-axis"><span>hit rate · dashed = break-even 52.4%</span><span>ROI · centre = 0, scale ±25%</span></div>
+            ${r.headline ? priceDefectNote("inline", lv) : ""}
           </div>`
         : `<div class="sgc-live none"><div class="sgc-livek"><span class="sgc-tag live none">Live-served</span></div>
             <div class="sgc-empty">No live-served picks graded yet${act ? ` — activated ${esc(act)}` : ""}. The record starts at 0–0.</div></div>`;
@@ -7956,7 +8205,10 @@ export default function Home() {
       const hr = headlineStrategyRecord(betaData);
       if (hr && hr.live) {
         const since = stratDateTxt(hr.activation);
-        return `Live-served picks, graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}. Backtested history is reported separately.`;
+        const pd = SHOW_PRICE_DEFECT_DISCLOSURE
+          ? ` A pricing defect found ${PRICE_DEFECT.foundTxt} means the served figure understates the loss: ${pdRoi(PRICE_DEFECT.executableRoi)} at executable prices, nothing restated.`
+          : "";
+        return `Live-served picks, graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}. Backtested history is reported separately.${pd}`;
       }
       return `Every pick graded in the open, win or lose.`;
     }
@@ -8638,11 +8890,19 @@ export default function Home() {
       if (leadGame) {
         leadStory = leadStoryCard(leadGame, "Today's Flagship Pick", dateTxt);
       } else {
+        // NOTHING CLEARED: say which bar it failed at. The board's own pass tally is the
+        // honest version of "no pick today" — and where the reason is a price that isn't
+        // really on offer, that is worth a sentence of its own. Degrades to the plain line.
+        const roF = passReadout(ftPool);
+        const nUnobF = roF ? ((roF.kinds.find((k: any) => k.key === "price_not_obtainable") || {}).n || 0) : 0;
+        const ledeF = roF
+          ? `The desk read all ${roF.n} game${roF.n === 1 ? "" : "s"} and priced every one. ${nUnobF ? `On ${nUnobF} of them our number liked the side and the price we needed simply wasn't quoted at that line anywhere — an edge you can't place isn't an edge. ` : ""}Every read is still on the board, and every past call stays graded in the open on the Insights tab.`
+          : "Today none did. The top games to watch are below, and every past call stays graded in the open on the Insights tab.";
         leadStory = `<article class="leadstory pass">
           <div class="ls-body">
             <div class="ls-kick"><span class="ls-lab">Feature bet</span></div>
             <h3 class="ls-match">No DiamondEdge Pick today — we only publish when the numbers clear our bar.</h3>
-            <p class="ls-lede">Today none did. The top games to watch are below, and every past call stays graded in the open on the Insights tab.</p>
+            <p class="ls-lede">${esc(ledeF)}</p>
             <div class="ls-ctas"><span class="hero-cta" data-nav="results">See the record →</span><span class="hero-cta alt" data-nav="games">Browse today's board →</span></div>
           </div>
         </article>`;
@@ -9242,6 +9502,7 @@ export default function Home() {
           </div>
           <div class="strec-sub">${since ? `Every pick served since ${esc(since)}, when the current pick rule went live` : "Every pick we've actually served"} — graded against the final at the real price. Backtested history is kept separate, below.</div>
         </div>
+        ${priceDefectNote("full", lv)}
         ${combinedBlock}
         ${last7Strip}
         <div class="strec-card">
@@ -9315,7 +9576,7 @@ export default function Home() {
       const lvHr = headlineStrategyRecord(lv) || headlineStrategyRecord(betaData);
       const lvB = lvHr && lvHr.live;
       const recBit = lvB
-        ? `<div class="beta-liverec">Live-served record${lvHr.activation ? ` since ${esc(stratDateTxt(lvHr.activation) || lvHr.activation)}` : ""}: <b>${esc(stratWL(lvB))}</b>${lvB.hit != null ? ` · ${stratPct(lvB.hit)}` : ""}${lvB.roi != null ? ` · ${stratRoi(lvB.roi)} ROI` : ""}</div>`
+        ? `<div class="beta-liverec">Live-served record${lvHr.activation ? ` since ${esc(stratDateTxt(lvHr.activation) || lvHr.activation)}` : ""}: <b>${esc(stratWL(lvB))}</b>${lvB.hit != null ? ` · ${stratPct(lvB.hit)}` : ""}${lvB.roi != null ? ` · ${stratRoi(lvB.roi)} ROI` : ""}</div>${priceDefectNote("inline", lvB)}`
         : ov.n
         ? `<div class="beta-liverec">Season record: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""}</div>`
         : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;
