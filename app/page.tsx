@@ -5818,8 +5818,8 @@ export default function Home() {
             : `<span class="tv-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(vd.side || "—")}</b>${vd.price != null ? `<em>${fmtOdds(vd.price)}</em>` : ""}</span>`;
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-krow"><span class="tv-k">${esc(vd.word)}</span>${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
-             <div class="tv-callrow">${callHtml}${!locked && pick && vd.kind !== "pass" ? `<span class="tv-q">${pickStars(pick)}</span>` : ""}</div>
+             <div class="tv-krow"><span class="tv-k">${esc(vd.word)}</span>${!locked && pick && vd.kind !== "pass" ? `<span class="tv-q">${pickStars(pick)}</span>` : ""}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
+             <div class="tv-callrow">${callHtml}</div>
              ${agRow}
              ${locked ? `<span class="tv-unlock">${lockSvg}${esc(unlockCtaTxt())}</span>` : ""}
            </div>`
@@ -6309,7 +6309,8 @@ export default function Home() {
     // ONE continuous frosted capsule; days are quiet typographic cells inside it and a
     // fluid lens slides under the active day. No per-pill borders.
     function dateStripHtml() {
-      const cells: string[] = [`<span class="dlens" id="dlens" aria-hidden="true"></span>`];
+      // (the sliding lens pane lived here — see positionLens for why it is gone)
+      const cells: string[] = [];
       const today = todayISO();
       let d = shiftDate(today, -13);
       if (d < minDate) d = minDate;
@@ -6330,15 +6331,14 @@ export default function Home() {
       return cells.join("");
     }
     // Slide the lens under the active day (it lives IN the scroll content, so it scrolls with the cells).
-    function positionLens() {
-      const strip = $("datestrip"), lens = $("dlens");
-      if (!strip || !lens) return;
-      const on = strip.querySelector(".dcell.on");
-      if (!on) { lens.style.opacity = "0"; return; }
-      lens.style.opacity = "1";
-      lens.style.width = on.offsetWidth + "px";
-      lens.style.transform = `translateX(${on.offsetLeft}px)`;
-    }
+    /* THE LENS IS RETIRED. It measured the selected day and slid a pane under it; the cell's
+       own text was white to sit on that pane. Until this function had run — a frame after
+       paint, and never at all if the strip is laid out while its tab is hidden — the pane was
+       opacity:0 and the selected date was white on white. It shipped invisible. The selected
+       cell paints its own capsule in CSS now (.dcell.on), which cannot get out of step with
+       the markup. Kept as a no-op: six call sites, and a silently-missing target is precisely
+       what the dead-click-target guard exists to stop us reintroducing. */
+    function positionLens() {}
 
     // Leagues sort by number of games (busiest first) by default; a saved user order (Settings)
     // pins preferred leagues to the front, remaining ones still fall in by game count.

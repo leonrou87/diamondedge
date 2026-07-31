@@ -487,7 +487,16 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;border-radius:0;background:transparent;border:0;box-shadow:none;scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain}
 .datestrip::-webkit-scrollbar{display:none}
 .datestrip .dcell{scroll-snap-align:center}
-.dlens{position:absolute;left:0;top:2px;bottom:2px;width:0;border-radius:10px;background:var(--ink);box-shadow:none;opacity:0;pointer-events:none;transition:transform .34s var(--ease),width .34s var(--ease),opacity .2s ease;will-change:transform}
+/* THE SELECTED DAY CARRIES ITS OWN CAPSULE.
+   It used to be drawn by .dlens — an absolutely-positioned pane that JavaScript measured
+   and slid under the active cell — with the cell's own text turned white to sit on it.
+   That is a rendering order the markup cannot guarantee: until positionLens() has run
+   (a rAF after paint, and never at all if the strip is laid out while hidden) the lens is
+   opacity:0 and the selected date is white text on white paper. It shipped invisible.
+   The capsule is now the cell's own background, so the day is legible the instant it
+   paints, and the lens is retired rather than left as a second source of truth. */
+.dlens{display:none}
+.dcell.on{background:var(--ink)}
 .dcell{position:relative;z-index:1;flex-shrink:0;display:inline-flex;flex-direction:row;align-items:baseline;justify-content:center;gap:5px;min-width:0;border:0;background:transparent;border-radius:10px;padding:7px 11px;cursor:pointer;transition:transform .2s var(--ease)}
 .dcell:active{transform:scale(.94)}
 .dcell .dc-wd{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);transition:color .2s ease}
@@ -681,6 +690,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    display type beneath it. A pass says "Pass" in neutral ink and is not dressed up. */
 .tl-verdict{display:flex;flex-direction:column;gap:3px;margin-top:auto;padding-top:8px;border-top:1px solid var(--line3)}
 .tl-verdict .tv-krow{display:flex;align-items:center;gap:6px;min-width:0}
+.tl-verdict .tv-krow .tv-q{margin-left:0}
 .tl-verdict .tv-k{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
 .tile.v-play .tv-k{color:var(--gold)}
 .tile.v-lean .tv-k{color:var(--ink3)}
@@ -697,7 +707,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tv-side.ou-under i{color:var(--under)}
 .tv-side em{font-style:normal;font-family:var(--mono);font-weight:600;font-size:12px;color:var(--ink3);letter-spacing:-.02em}
 .tv-side.tv-pass{font-weight:600;font-size:14px;color:var(--ink3)}
-.tv-q{margin-left:auto;display:inline-flex;align-items:center;flex-shrink:0}
+.tv-q{display:inline-flex;align-items:center;flex-shrink:0}
 .tv-q .qdia,.tv-q .bstar{font-size:9px}
 /* signed-out redaction: crisp dots, never a blur — see the redaction block at the foot */
 .tv-side.locked{align-items:center}
