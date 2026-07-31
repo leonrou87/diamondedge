@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-31T03:33:16Z",
+  "generated_utc": "2026-07-31T04:07:54Z",
   "dates": [
     "2026-07-30",
     "2026-07-31"
@@ -910,12 +910,12 @@
       "coverage_gap": "2026-06-11 .. 2026-07-01 NOT reconstructable (game DB frozen 2026-06-13; forward track began 2026-07-02) \u2014 absent, not interpolated"
     },
     "slate_status": {
-      "date": "2026-07-30",
-      "available": true,
-      "frozen_at": "2026-07-30T12:05:36.169906+00:00",
-      "n_slate": 10,
-      "n_tier_a": 0,
-      "n_tier_b": 0,
+      "date": "2026-07-31",
+      "available": false,
+      "frozen_at": null,
+      "n_slate": null,
+      "n_tier_a": null,
+      "n_tier_b": null,
       "n_plays_today": 0,
       "n_suppressed_by_champion_gates": 0,
       "note": "0 plays = the champion's own frozen policy found no qualifying totals divergence today (or its internal gates suppressed the candidates) \u2014 an empty board is honest, not broken"
@@ -2675,8 +2675,17 @@
     "engine": {
       "mode": "transparent_voice",
       "star_cap": 0,
-      "model": "simple-8 fundamentals residual model (fundamentals_baseline S1::residual; ridge-logistic on the logit(p_market) offset, lambda=300; walk-forward daily refit; priced once per game at the T-3h wall)",
+      "model": "simple-8 fundamentals residual model (fundamentals_baseline S1::residual; ridge-logistic on the logit(p_market) offset, lambda=300; walk-forward daily refit on T-3h rows; priced at EVERY wall T-24h/T-12h/T-6h/T-3h/T-1h from 2026-07-30 so no game is ever a no-read)",
       "decision_point": "T-3h",
+      "decision_points": [
+        "T-24h",
+        "T-12h",
+        "T-6h",
+        "T-3h",
+        "T-1h"
+      ],
+      "train_wall": "T-3h",
+      "wall_disclosure": "coefficients are fit on T-3h rows (the frozen prereg recipe, unchanged); at earlier walls those same coefficients are applied to that wall's as-of inputs. Each row stamps wall_train_serve_match so the seam is visible per row. SCOUT is a tracked lean, never a bet \u2014 nothing here is staked.",
       "inputs": [
         "sp_home_era_std",
         "sp_away_era_std",
@@ -2726,8 +2735,17 @@
       "engine": {
         "mode": "transparent_voice",
         "star_cap": 0,
-        "model": "simple-8 fundamentals residual model (fundamentals_baseline S1::residual; ridge-logistic on the logit(p_market) offset, lambda=300; walk-forward daily refit; priced once per game at the T-3h wall)",
+        "model": "simple-8 fundamentals residual model (fundamentals_baseline S1::residual; ridge-logistic on the logit(p_market) offset, lambda=300; walk-forward daily refit on T-3h rows; priced at EVERY wall T-24h/T-12h/T-6h/T-3h/T-1h from 2026-07-30 so no game is ever a no-read)",
         "decision_point": "T-3h",
+        "decision_points": [
+          "T-24h",
+          "T-12h",
+          "T-6h",
+          "T-3h",
+          "T-1h"
+        ],
+        "train_wall": "T-3h",
+        "wall_disclosure": "coefficients are fit on T-3h rows (the frozen prereg recipe, unchanged); at earlier walls those same coefficients are applied to that wall's as-of inputs. Each row stamps wall_train_serve_match so the seam is visible per row. SCOUT is a tracked lean, never a bet \u2014 nothing here is staked.",
         "inputs": [
           "sp_home_era_std",
           "sp_away_era_std",
@@ -2752,7 +2770,7 @@
       "separation": "this record counts ONLY scout-stamped rows from the stream's own ledger (state/scout_graded.jsonl), graded on/after 2026-07-30; it never contains a row from the totals, spread or simulator ledgers, and no other record ever contains a scout row \u2014 the stream never writes the shared board or the shared graded ledger at all (selftested here and in unified_model)"
     },
     "positioning": "SCOUT JOINS THE DESK (Leon, 2026-07-30) \u2014 the simple-8 fundamentals model as the traditionalist's voice on the analyst desk. The totals headline pick is UNCHANGED and SCOUT never influences it, never carries stars, and is never a bet: its validated result is that the market beat it. New stream: activation 2026-07-30, record starts 0-0-0, graded in public from day one, in its own ledger, never blended.",
-    "n_games": 6,
+    "n_games": 17,
     "games": {
       "823595": {
         "status": "LEAN",
@@ -2791,7 +2809,10 @@
         "suggested_units": null,
         "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
         "date": "2026-07-30",
-        "game_id": "2026-07-30-Miami Marlins-New York Mets-823595"
+        "game_id": "2026-07-30-Miami Marlins-New York Mets-823595",
+        "walls_priced": [
+          "T-3h"
+        ]
       },
       "824488": {
         "status": "LEAN",
@@ -2830,7 +2851,10 @@
         "suggested_units": null,
         "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
         "date": "2026-07-30",
-        "game_id": "2026-07-30-Pittsburgh Pirates-Cincinnati Reds-824488"
+        "game_id": "2026-07-30-Pittsburgh Pirates-Cincinnati Reds-824488",
+        "walls_priced": [
+          "T-3h"
+        ]
       },
       "824894": {
         "status": "LEAN",
@@ -2869,7 +2893,10 @@
         "suggested_units": null,
         "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
         "date": "2026-07-30",
-        "game_id": "2026-07-30-Washington Nationals-Atlanta Braves-824894"
+        "game_id": "2026-07-30-Washington Nationals-Atlanta Braves-824894",
+        "walls_priced": [
+          "T-3h"
+        ]
       },
       "823271": {
         "status": "LEAN",
@@ -2908,7 +2935,10 @@
         "suggested_units": null,
         "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
         "date": "2026-07-30",
-        "game_id": "2026-07-30-San Francisco Giants-San Diego Padres-823271"
+        "game_id": "2026-07-30-San Francisco Giants-San Diego Padres-823271",
+        "walls_priced": [
+          "T-3h"
+        ]
       },
       "824974": {
         "status": "LEAN",
@@ -2947,7 +2977,10 @@
         "suggested_units": null,
         "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
         "date": "2026-07-30",
-        "game_id": "2026-07-30-Boston Red Sox-Athletics-824974"
+        "game_id": "2026-07-30-Boston Red Sox-Athletics-824974",
+        "walls_priced": [
+          "T-3h"
+        ]
       },
       "823921": {
         "status": "LEAN",
@@ -2986,7 +3019,472 @@
         "suggested_units": null,
         "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
         "date": "2026-07-30",
-        "game_id": "2026-07-30-Seattle Mariners-Los Angeles Dodgers-823921"
+        "game_id": "2026-07-30-Seattle Mariners-Los Angeles Dodgers-823921",
+        "walls_priced": [
+          "T-3h"
+        ]
+      },
+      "822782": {
+        "status": "LEAN",
+        "side": "under",
+        "line": 7.5,
+        "vegas_line": 7.5,
+        "p_over": 0.5003,
+        "p_over_market": 0.5108,
+        "scout_edge": -0.0106,
+        "conviction": 0.4997,
+        "price": 105.0,
+        "best_book": "onexbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 2.7897,
+          "sp_away_era_std": 3.8571,
+          "bat_home_avg_r30": 0.2468,
+          "bat_away_avg_r30": 0.2665,
+          "pen_home_era_std": 3.146,
+          "pen_away_era_std": 4.2463,
+          "enr_park_run_factor_3y": 0.9996,
+          "wx_temp_f": 76.28
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-St. Louis Cardinals-Toronto Blue Jays-822782",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "822945": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5025,
+        "p_over_market": 0.4892,
+        "scout_edge": 0.0133,
+        "conviction": 0.5025,
+        "price": 105.0,
+        "best_book": "onexbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 2.61,
+          "sp_away_era_std": 4.4662,
+          "bat_home_avg_r30": 0.2607,
+          "bat_away_avg_r30": 0.2481,
+          "pen_home_era_std": 4.0204,
+          "pen_away_era_std": 3.5073,
+          "enr_park_run_factor_3y": 0.9395,
+          "wx_temp_f": 82.76
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Chicago White Sox-Tampa Bay Rays-822945",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "823111": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 7.5,
+        "vegas_line": 7.5,
+        "p_over": 0.5292,
+        "p_over_market": 0.523,
+        "scout_edge": 0.0062,
+        "conviction": 0.5292,
+        "price": 100.0,
+        "best_book": "betrivers",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 1.5105,
+          "sp_away_era_std": 4.4262,
+          "bat_home_avg_r30": 0.2254,
+          "bat_away_avg_r30": 0.2681,
+          "pen_home_era_std": 3.716,
+          "pen_away_era_std": 4.3165,
+          "enr_park_run_factor_3y": 0.8656,
+          "wx_temp_f": 77.54
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Minnesota Twins-Seattle Mariners-823111",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "823593": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.4915,
+        "p_over_market": 0.4892,
+        "scout_edge": 0.0023,
+        "conviction": 0.4915,
+        "price": 101.0,
+        "best_book": "onexbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 4.8147,
+          "sp_away_era_std": 4.8,
+          "bat_home_avg_r30": 0.2332,
+          "bat_away_avg_r30": 0.2689,
+          "pen_home_era_std": 3.3061,
+          "pen_away_era_std": 3.6318,
+          "enr_park_run_factor_3y": 0.9891,
+          "wx_temp_f": 79.52
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Miami Marlins-New York Mets-823593",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "823999": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 9.0,
+        "vegas_line": 9.0,
+        "p_over": 0.4955,
+        "p_over_market": 0.4892,
+        "scout_edge": 0.0064,
+        "conviction": 0.4955,
+        "price": 111.0,
+        "best_book": "nordicbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 5.5862,
+          "sp_away_era_std": 4.0909,
+          "bat_home_avg_r30": 0.2502,
+          "bat_away_avg_r30": 0.2707,
+          "pen_home_era_std": 3.9434,
+          "pen_away_era_std": 3.3477,
+          "enr_park_run_factor_3y": 1.037,
+          "wx_temp_f": 80.42
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Milwaukee Brewers-Los Angeles Angels-823999",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "824164": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5208,
+        "p_over_market": 0.4951,
+        "scout_edge": 0.0257,
+        "conviction": 0.5208,
+        "price": 109.0,
+        "best_book": "onexbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 3.375,
+          "sp_away_era_std": 4.0158,
+          "bat_home_avg_r30": 0.2374,
+          "bat_away_avg_r30": 0.2617,
+          "pen_home_era_std": 3.4605,
+          "pen_away_era_std": 3.2515,
+          "enr_park_run_factor_3y": 0.9357,
+          "wx_temp_f": 91.76
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "824325": {
+        "status": "LEAN",
+        "side": "under",
+        "line": 11.0,
+        "vegas_line": 11.0,
+        "p_over": 0.4957,
+        "p_over_market": 0.5108,
+        "scout_edge": -0.0151,
+        "conviction": 0.5043,
+        "price": 107.0,
+        "best_book": "nordicbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 4.8024,
+          "sp_away_era_std": 3.4535,
+          "bat_home_avg_r30": 0.2819,
+          "bat_away_avg_r30": 0.2544,
+          "pen_home_era_std": 5.2763,
+          "pen_away_era_std": 4.2894,
+          "enr_park_run_factor_3y": 1.2711,
+          "wx_temp_f": 84.38
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Kansas City Royals-Colorado Rockies-824325",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "824407": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.5253,
+        "p_over_market": 0.5082,
+        "scout_edge": 0.0171,
+        "conviction": 0.5253,
+        "price": -104.0,
+        "best_book": "lowvig",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 3.6938,
+          "sp_away_era_std": 3.0,
+          "bat_home_avg_r30": 0.2246,
+          "bat_away_avg_r30": 0.2212,
+          "pen_home_era_std": 3.1991,
+          "pen_away_era_std": 3.1294,
+          "enr_park_run_factor_3y": 0.9123,
+          "wx_temp_f": 83.84
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Arizona Diamondbacks-Cleveland Guardians-824407",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "824486": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 7.5,
+        "vegas_line": 7.5,
+        "p_over": 0.5359,
+        "p_over_market": 0.5119,
+        "scout_edge": 0.0241,
+        "conviction": 0.5359,
+        "price": 100.0,
+        "best_book": "betmgm",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 21.6,
+          "sp_away_era_std": 3.6186,
+          "bat_home_avg_r30": 0.2236,
+          "bat_away_avg_r30": 0.276,
+          "pen_home_era_std": 3.3504,
+          "pen_away_era_std": 4.3055,
+          "enr_park_run_factor_3y": 1.0306,
+          "wx_temp_f": 90.14
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Pittsburgh Pirates-Cincinnati Reds-824486",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "824892": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.526,
+        "p_over_market": 0.5217,
+        "scout_edge": 0.0043,
+        "conviction": 0.526,
+        "price": 103.0,
+        "best_book": "pinnacle",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 4.0135,
+          "sp_away_era_std": 2.8742,
+          "bat_home_avg_r30": 0.2229,
+          "bat_away_avg_r30": 0.2517,
+          "pen_home_era_std": 2.1675,
+          "pen_away_era_std": 4.0374,
+          "enr_park_run_factor_3y": 1.0086,
+          "wx_temp_f": 90.32
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Washington Nationals-Atlanta Braves-824892",
+        "walls_priced": [
+          "T-24h"
+        ]
+      },
+      "824975": {
+        "status": "LEAN",
+        "side": "under",
+        "line": 10.5,
+        "vegas_line": 10.5,
+        "p_over": 0.5113,
+        "p_over_market": 0.5123,
+        "scout_edge": -0.001,
+        "conviction": 0.4887,
+        "price": 105.0,
+        "best_book": "onexbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11060,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 5.7857,
+          "sp_away_era_std": 2.6308,
+          "bat_home_avg_r30": 0.2505,
+          "bat_away_avg_r30": 0.2446,
+          "pen_home_era_std": 4.7093,
+          "pen_away_era_std": 3.5909,
+          "enr_park_run_factor_3y": 1.1227,
+          "wx_temp_f": 79.52
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Detroit Tigers-Athletics-824975",
+        "walls_priced": [
+          "T-24h"
+        ]
       }
     }
   },

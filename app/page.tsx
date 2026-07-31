@@ -1175,6 +1175,139 @@ export default function Home() {
       nova: { name: "Nova", title: "The Quant", short: "Patterns across thousands of games", method: "Hunts repeatable patterns across thousands of graded games and only speaks when history rhymes." },
       scout: { name: "Scout", title: "The Traditionalist", short: "Matchups, form and parks", method: "Works the slate the old way — starters, recent form, ballparks and weather, one matchup at a time." },
     };
+    /* ═══════════════ THE CAST — four analysts, four visual identities ═══════════════
+       Leon: "give the models a name, a brief description… you really get to learn about each
+       personality — these are models, but they should come through like digital sports analysts."
+       Each persona carries: an accent, an authored first-person "how I see baseball", the edges
+       it hunts, and its real inputs. The inputs and engine strings are cross-checked against the
+       served analyst_desk_spec at render time, so the page never claims more than the backend.
+       PORTRAITS ARE DRAWN, NOT PHOTOGRAPHED — pure SVG sigils, no external assets and no
+       fabricated human faces. Each is a geometric emblem of what that analyst actually does. */
+    // one accent per analyst — these MUST match the --anc tokens in globals.css (.an-*)
+    const DESK_ACCENT: any = { vega: "#3fd0f0", atlas: "#eec258", nova: "#a78bfa", scout: "#2fd6a0" };
+    const DESK_BIO: any = {
+      vega: {
+        tagline: "The tape is the only opinion with money behind it.",
+        how: "I don't handicap the game — I handicap the number. Where a line opened, where it moved, which book moved first and which ones followed: that is a market telling on itself. When the tape says nothing, I say nothing. Silence is a position.",
+        edges: ["Line movement against the wall", "Price structure across books", "Books that disagree with each other", "Steam versus slow drift"],
+        inputs: ["Opening total vs the current number", "Per-book price spread", "Move timing relative to first pitch", "De-vigged market probability"],
+      },
+      atlas: {
+        tagline: "Build the game from first principles, then run it twenty thousand times.",
+        how: "Every plate appearance is a physical event — a pitcher, a batter, a park, an umpire's zone, the air the ball travels through. I rebuild all of it and simulate the game twenty thousand times. I'm not interested in what the room thinks the score will be. I'm interested in what the distribution says, including the tails a single average hides.",
+        edges: ["The full run distribution, not the mean", "Park and weather effects", "Umpire zone profiles", "Fat tails and blowout risk"],
+        inputs: ["Per-plate-appearance outcome matrices", "Park run factors", "Wind, temperature and air density", "Umpire zone tendencies", "Bullpen depth and rest", "20,000-run Monte Carlo"],
+      },
+      nova: {
+        tagline: "Every game gets a number — after the number survives calibration.",
+        how: "I'm the residual model behind the grid: I fit what the market systematically misses, then I make the model prove its own confidence is honest — walk-forward, on rows it has never seen. A 58% that is really a 51% is worse than having no number at all, so most of what I do is refusing to speak.",
+        edges: ["Calibrated residuals against the close", "Cells that clear walk-forward validation", "Discipline about its own confidence"],
+        inputs: ["The v4 residual grid", "Walk-forward probability calibration", "Per-wall lead-time features", "Star-tier gating on evidence quality"],
+      },
+      scout: {
+        tagline: "Eight numbers, refit every morning, no black box.",
+        how: "Both starters. Both lineups. Both bullpens. The park and the weather. That's the whole list. If I can't explain a call to you in one sentence standing at the ballpark, it isn't a call — it's a guess wearing math.",
+        edges: ["Starter form and workload", "Lineup quality top to bottom", "Bullpen fatigue", "Park and weather"],
+        inputs: ["Starter ERA and recent form", "Lineup run production", "Bullpen rest and innings load", "Park run index", "Wind and temperature"],
+      },
+    };
+    /* THE PORTRAITS — one drawn sigil per analyst, each an emblem of its method:
+         VEGA  the tape          — a price ladder with the move drawn through it
+         ATLAS the simulation    — a nucleus inside crossed orbits, scattered with particles
+         NOVA  the distribution  — a calibrated bell curve struck through by a quant's star
+         SCOUT the field         — a ballpark diamond read like a compass rose
+       `uid` namespaces the gradient ids so the same portrait can appear many times on a page. */
+    function deskPortrait(key: string, sz = 120, uid = "") {
+      const k = String(key || "").toLowerCase();
+      const c = DESK_ACCENT[k] || "#eec258";
+      const id = `p_${k}_${uid || Math.random().toString(36).slice(2, 7)}`;
+      const defs = `<defs>
+        <radialGradient id="${id}_g" cx="50%" cy="34%" r="72%">
+          <stop offset="0%" stop-color="${c}" stop-opacity=".34"/>
+          <stop offset="58%" stop-color="${c}" stop-opacity=".07"/>
+          <stop offset="100%" stop-color="${c}" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="${id}_s" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${c}" stop-opacity="1"/>
+          <stop offset="100%" stop-color="${c}" stop-opacity=".45"/>
+        </linearGradient>
+      </defs>`;
+      const ring = `<circle cx="60" cy="60" r="55" fill="url(#${id}_g)"/>
+        <circle cx="60" cy="60" r="49.5" fill="none" stroke="${c}" stroke-opacity=".28" stroke-width="1"/>
+        <circle cx="60" cy="60" r="55" fill="none" stroke="${c}" stroke-opacity=".13" stroke-width="1"/>`;
+      const S = `stroke="url(#${id}_s)" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+      let art = "";
+      if (k === "vega") {
+        // the tape: a ladder of prices with the move drawn straight through it
+        const bars = [[38, 74, 56], [48, 78, 44], [58, 80, 62], [68, 70, 34], [78, 76, 52]]
+          .map(([x, y0, h]) => `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y0 - h}" stroke="${c}" stroke-opacity=".22" stroke-width="5" stroke-linecap="round"/>`).join("");
+        art = `${bars}
+          <path d="M34 76 L48 62 L58 68 L70 44 L86 36" ${S} stroke-width="3.4"/>
+          <circle cx="86" cy="36" r="4.6" fill="${c}"/>
+          <circle cx="86" cy="36" r="9" fill="none" stroke="${c}" stroke-opacity=".35" stroke-width="1.4"/>
+          <line x1="30" y1="86" x2="90" y2="86" stroke="${c}" stroke-opacity=".22" stroke-width="1.6" stroke-linecap="round"/>`;
+      } else if (k === "atlas") {
+        // the simulation: one certain nucleus, three uncertain orbits, twenty thousand particles
+        const dots = [[42, 38], [80, 44], [36, 72], [86, 74], [60, 30], [60, 92], [30, 56], [92, 58]]
+          .map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i % 3 === 0 ? 2.6 : 1.7}" fill="${c}" fill-opacity="${i % 2 ? ".55" : ".85"}"/>`).join("");
+        art = `<ellipse cx="60" cy="60" rx="38" ry="15" ${S} stroke-width="2.4" stroke-opacity=".9"/>
+          <ellipse cx="60" cy="60" rx="38" ry="15" ${S} stroke-width="2.4" transform="rotate(60 60 60)"/>
+          <ellipse cx="60" cy="60" rx="38" ry="15" ${S} stroke-width="2.4" transform="rotate(120 60 60)"/>
+          ${dots}
+          <circle cx="60" cy="60" r="8" fill="${c}"/>
+          <circle cx="60" cy="60" r="13.5" fill="none" stroke="${c}" stroke-opacity=".4" stroke-width="1.4"/>`;
+      } else if (k === "nova") {
+        // the distribution: a bell built from calibrated strokes, struck by the quant's star
+        const cols = [30, 38, 46, 54, 62, 70, 78, 86, 94];
+        const bell = cols.map((x) => {
+          const h = Math.round(40 * Math.exp(-Math.pow((x - 62) / 17, 2)));
+          return h < 3 ? "" : `<line x1="${x}" y1="88" x2="${x}" y2="${88 - h}" stroke="${c}" stroke-opacity=".26" stroke-width="4.6" stroke-linecap="round"/>`;
+        }).join("");
+        art = `${bell}
+          <path d="M26 88 Q40 88 48 70 T62 44 T78 70 T96 88" ${S} stroke-width="3"/>
+          <g stroke="${c}" stroke-width="2.6" stroke-linecap="round" stroke-opacity=".95">
+            <line x1="62" y1="20" x2="62" y2="34"/><line x1="62" y1="34" x2="62" y2="34"/>
+            <line x1="48" y1="27" x2="57" y2="31"/><line x1="76" y1="27" x2="67" y2="31"/>
+          </g>
+          <circle cx="62" cy="41" r="4" fill="${c}"/>
+          <line x1="24" y1="88" x2="98" y2="88" stroke="${c}" stroke-opacity=".3" stroke-width="1.6" stroke-linecap="round"/>`;
+      } else {
+        // the field: a ballpark diamond read like a compass rose
+        art = `<path d="M28 96 Q60 40 92 96" stroke="${c}" stroke-opacity=".22" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M38 96 Q60 62 82 96" stroke="${c}" stroke-opacity=".16" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <g transform="rotate(45 60 63)">
+            <rect x="41" y="44" width="38" height="38" rx="4" ${S} stroke-width="2.8"/>
+          </g>
+          <path d="M60 90 L74 63 L60 36 L46 63 Z" fill="${c}" fill-opacity=".10"/>
+          <circle cx="60" cy="90" r="4.6" fill="${c}"/>
+          <circle cx="46" cy="63" r="3.4" fill="${c}" fill-opacity=".75"/>
+          <circle cx="74" cy="63" r="3.4" fill="${c}" fill-opacity=".75"/>
+          <circle cx="60" cy="36" r="3.4" fill="${c}" fill-opacity=".75"/>
+          <path d="M60 30 L67.5 52 L60 47 L52.5 52 Z" fill="${c}"/>
+          <path d="M60 30 L67.5 52 L60 47 L52.5 52 Z" fill="none" stroke="${c}" stroke-width="1"/>
+          <circle cx="60" cy="63" r="2.4" fill="${c}" fill-opacity=".55"/>`;
+      }
+      return `<svg class="anportrait an-art-${esc(k)}" viewBox="0 0 120 120" width="${sz}" height="${sz}" role="img" aria-hidden="true">${defs}${ring}${art}</svg>`;
+    }
+    // What the SERVED spec says about an analyst (engine, conviction basis, market view).
+    // Absent ⇒ {} and the roster falls back to the authored copy only.
+    function deskSpecFor(key: string) {
+      const k = String(key || "").toLowerCase();
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const sp = d && (d as any).analyst_desk_spec;
+        const list = sp && Array.isArray(sp.analysts) ? sp.analysts : null;
+        if (!list) continue;
+        const hit = list.find((a: any) => String((a && a.key) || "").toLowerCase() === k);
+        if (hit) return {
+          engine: humanNote(hit.engine),
+          basis: humanNote(hit.conviction_basis),
+          persona: humanNote(hit.persona_line),
+          calibrated: hit.conviction_calibrated === true,
+          margin: hit.has_margin_view === true,
+        };
+      }
+      return {} as any;
+    }
     function deskGlyph(key: string, sz = 14) {
       const common = `viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
       const body = key === "vega"
@@ -1351,10 +1484,294 @@ export default function Home() {
         const meter = !hide && a.conv != null
           ? `<span class="dsk-meter" aria-hidden="true"><i style="width:${Math.max(6, Math.min(100, a.conv * 100)).toFixed(0)}%"></i></span>` : "";
         const tag = interactive ? "button" : "span";
-        return `<${tag} class="dsk-cell an-${esc(a.key)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}` : ", no call yet"}"` : ""}>
-          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span><span class="dsk-callrow">${call}${conv}</span>${meter}</${tag}>`;
+        // EVERY READ CARRIES ITS LINE. An analyst's call is meaningless without the number
+        // it was priced against, so each cell states it: the analyst's own served line when
+        // there is one, otherwise the game's locked pregame total (the number they all saw).
+        const pg = pregameLine(g);
+        const priced = a.line != null ? a.line : (pg && pg.total && pg.total.line != null ? pg.total.line : null);
+        const at = !hide && priced != null
+          ? `<span class="dsk-at" title="the line this read was priced against">@ ${esc(lineStr(priced))}</span>` : "";
+        return `<${tag} class="dsk-cell an-${esc(a.key)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}${priced != null ? ` at ${lineStr(priced)}` : ""}` : ", no call yet"}"` : ""}>
+          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span><span class="dsk-callrow">${call}${conv}</span>${at}${meter}</${tag}>`;
       }).join("");
       return `<div class="dsk-row">${cells}</div>`;
+    }
+
+    /* ═════════════ THE PREGAME LINE — the number all four analysts were priced against ═════════════
+       Leon: "it's really unclear when looking at a game to know what the pregame line was."
+       So every game card now LEADS with it. The locked pregame line is the card's premise:
+       it never changes, it is what every read below was measured against, and it is what the
+       pick will eventually be graded at.
+
+       SOURCE ORDER (fully defensive — any field may be absent):
+         1. games[].pregame_line — the block the backend agent is shipping. Tolerated shapes:
+            {total:{line,price,over_price,under_price}, run_line|spread:{line,home_line,side,team,price},
+             book|sportsbook, locked_at|locked_at_utc, source}
+            …or a bare number (treated as the total).
+         2. derived from what has always been served: pick.vegas_line / pick.line (the exact
+            number the model judged), spread.vegas_line / spread.home_line, and
+            simulator.best_book for the book name, pick.locked_at_utc for the lock time.
+       Returns null only when there is genuinely no number anywhere. */
+    function pgSideBlock(x: any) {
+      if (x == null) return null;
+      if (typeof x === "number" || (typeof x === "string" && x !== "" && !isNaN(Number(x))))
+        return { line: Number(x), price: null, team: "", side: "" };
+      if (typeof x !== "object") return null;
+      const line = _fin(x.line != null ? x.line : (x.home_line != null ? x.home_line : (x.total != null ? x.total : x.number)));
+      const price = _fin(x.price != null ? x.price : (x.over_price != null ? x.over_price : x.american));
+      const team = String(x.team || x.side_team || "").trim();
+      const side = String(x.side || "").trim();
+      if (line == null && price == null) return null;
+      return { line, price, team, side };
+    }
+    function pregameLine(g: any) {
+      if (!g) return null;
+      const vg = v4GameFor(g);
+      const rawSrc = [g, vg].filter(Boolean);
+      let served: any = null;
+      for (const s of rawSrc) {
+        const p = (s as any).pregame_line;
+        if (p != null && (typeof p === "object" || typeof p === "number")) { served = p; break; }
+      }
+      const pk = (g && g.pick) || (vg && vg.pick) || null;
+      const sp = spreadBlockFor(g);
+      const sim = (g && g.simulator) || (vg && vg.simulator) || null;
+
+      let total: any = null, rl: any = null, book = "", lockedAt = "", source = "";
+      if (served != null) {
+        if (typeof served === "number") total = { line: served, price: null, team: "", side: "" };
+        else {
+          total = pgSideBlock(served.total != null ? served.total : (served.ou != null ? served.ou : null));
+          rl = pgSideBlock(served.run_line != null ? served.run_line : (served.spread != null ? served.spread : served.runline));
+          book = String(served.book || served.sportsbook || served.best_book || "").trim();
+          lockedAt = String(served.locked_at_utc || served.locked_at || served.timestamp || "").trim();
+          source = String(served.source || "").trim();
+        }
+      }
+      // derive whatever the served block didn't carry
+      if (!total && pk) {
+        const ln = _fin(pk.vegas_line != null ? pk.vegas_line : pk.line);
+        if (ln != null) total = { line: ln, price: _fin(pk.price), team: "", side: "" };
+      }
+      if (!rl && sp) {
+        const ln = _fin(sp.vegas_line != null ? sp.vegas_line : (sp.home_line != null ? sp.home_line : sp.line));
+        if (ln != null) rl = { line: ln, price: _fin(sp.price), team: String(sp.side_team || "").trim(), side: String(sp.side || "").trim() };
+      }
+      if (!book) book = String((sim && sim.best_book) || (sp && sp.best_book) || (pk && pk.best_book) || "").trim();
+      if (!lockedAt) lockedAt = String((pk && (pk.locked_at_utc || pk.timestamp)) || (sp && sp.locked_at_utc) || "").trim();
+      if (!total && !rl) return null;
+      return { total, rl, book, lockedAt, source, served: served != null };
+    }
+    // WHERE THE MARKET IS NOW — strictly secondary. The locked line NEVER changes; this is a
+    // labelled delta beside it. Served as games[].line_now (or pregame_line.now / vs_line.now).
+    function lineNow(g: any) {
+      if (!g) return null;
+      const vg = v4GameFor(g);
+      for (const s of [g, vg].filter(Boolean)) {
+        const raw = (s as any).line_now != null ? (s as any).line_now
+          : ((s as any).pregame_line && (s as any).pregame_line.now != null ? (s as any).pregame_line.now
+            : ((s as any).vs_line && (s as any).vs_line.now != null ? (s as any).vs_line.now : null));
+        if (raw == null) continue;
+        if (typeof raw === "number") return { total: { line: Number(raw), price: null }, rl: null };
+        if (typeof raw !== "object") continue;
+        const total = pgSideBlock(raw.total != null ? raw.total : raw);
+        const rl = pgSideBlock(raw.run_line != null ? raw.run_line : raw.spread);
+        if (total || rl) return { total, rl };
+      }
+      return null;
+    }
+    const lockTimeTxt = (iso: any) => {
+      if (!iso) return "";
+      const d = new Date(String(iso));
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    };
+    const bookTxt = (b: any) => {
+      const s = String(b || "").trim();
+      if (!s) return "";
+      const NICE: any = { matchbook: "Matchbook", pinnacle: "Pinnacle", draftkings: "DraftKings", fanduel: "FanDuel", betmgm: "BetMGM", caesars: "Caesars", circa: "Circa", bet365: "bet365", betfair: "Betfair" };
+      return NICE[s.toLowerCase()] || (s.charAt(0).toUpperCase() + s.slice(1));
+    };
+    // The run-line as a readable call: "TB −1.5" (team abbr + signed number).
+    function rlTxt(g: any, rl: any) {
+      if (!rl || rl.line == null) return "";
+      const homeAb = (g && (g.home_abbr || mlbAbbr(g.home))) || "HOME";
+      const awayAb = (g && (g.away_abbr || mlbAbbr(g.away))) || "AWAY";
+      // a served run line is quoted from the HOME side unless a side/team says otherwise
+      let ab = homeAb, ln = Number(rl.line);
+      if (/away/i.test(rl.side)) { ab = awayAb; }
+      else if (rl.team) { const t = mlbAbbr(rl.team); if (t) ab = t; }
+      return `${ab} ${sgn(ln)}`;
+    }
+    /* THE PREGAME LINE SLAB — the card's opening statement. Total is the hero number
+       (it is the market the desk actually bets), the run line rides beside it, and the
+       provenance strip says which book and when it was locked. A market move renders as a
+       clearly-labelled secondary delta — the locked number is never overwritten. */
+    function pregameLineBlock(g: any, size = "tile") {
+      const pg = pregameLine(g);
+      if (!pg) return "";
+      const now = lineNow(g);
+      const tl = pg.total && pg.total.line != null ? pg.total.line : null;
+      const nl = now && now.total && now.total.line != null ? now.total.line : null;
+      const moved = tl != null && nl != null && Math.abs(nl - tl) > 0.001;
+      const rlNowTxt = (() => {
+        if (!now || !now.rl || now.rl.line == null || !pg.rl || pg.rl.line == null) return "";
+        return Math.abs(Number(now.rl.line) - Number(pg.rl.line)) > 0.001 ? rlTxt(g, now.rl) : "";
+      })();
+      const prov = [
+        pg.book ? bookTxt(pg.book) : "",
+        lockTimeTxt(pg.lockedAt) ? `locked ${lockTimeTxt(pg.lockedAt)}` : "",
+      ].filter(Boolean).join(" · ");
+      const rlStr = rlTxt(g, pg.rl);
+      const moveChip = moved
+        ? `<span class="pgl-move ${nl > tl ? "up" : "dn"}" title="the market has moved since the desk was priced — the locked line above is what everything below is graded at">
+             <i aria-hidden="true">${nl > tl ? "▲" : "▼"}</i>now ${esc(lineStr(nl))}<em>market moved</em></span>`
+        : rlNowTxt ? `<span class="pgl-move" title="the run line has moved since lock">now ${esc(rlNowTxt)}<em>market moved</em></span>` : "";
+      return `<div class="pgline${size === "big" ? " pgl-big" : ""}">
+        <div class="pgl-k">${lockSvg}<span>Pregame line</span>${prov ? `<i class="pgl-prov">${esc(prov)}</i>` : ""}</div>
+        <div class="pgl-nums">
+          ${tl != null ? `<span class="pgl-tot"><b>${esc(lineStr(tl))}</b><i>total</i></span>` : ""}
+          ${rlStr ? `<span class="pgl-rl"><b>${esc(rlStr)}</b><i>run line</i></span>` : ""}
+          ${moveChip}
+        </div>
+        <div class="pgl-foot">Every read below was priced against this number.</div>
+      </div>`;
+    }
+
+    /* ═════════════ IN-PROGRESS: the game measured against the locked line ═════════════
+       Served as games[].live_progress (any of: {runs|total, inning, half, period, pace,
+       runs_vs_total|vs_line, needed, note}); derived from the live score + the locked total
+       when it isn't. The "probability it still hits" (p_hit_now) is rendered ONLY when the
+       payload marks it certified, is badged LIVE · DISPLAY ONLY, and never touches a record. */
+    function liveProgress(g: any) {
+      if (!g) return null;
+      const vg = v4GameFor(g);
+      let raw: any = null;
+      for (const s of [g, vg].filter(Boolean)) {
+        const p = (s as any).live_progress;
+        if (p && typeof p === "object") { raw = p; break; }
+      }
+      const pg = pregameLine(g);
+      const tot = pg && pg.total && pg.total.line != null ? Number(pg.total.line) : null;
+      const gs = gameState(g);
+      if (gs.kind !== "live") return null;
+      const scored = raw && _fin(raw.runs != null ? raw.runs : raw.total) != null
+        ? _fin(raw.runs != null ? raw.runs : raw.total)
+        : (gs.score && gs.score.total != null ? Number(gs.score.total) : null);
+      if (scored == null && !raw) return null;
+      const when = humanNote(raw && (raw.inning != null ? raw.inning : (raw.half != null ? raw.half : raw.period))) || String(gs.label || "").trim();
+      const pace = _fin(raw && raw.pace);
+      const note = humanNote(raw && raw.note);
+      const need = tot != null && scored != null ? Math.max(0, Math.ceil((tot + 0.5) - scored - 0.5)) : null;
+      return { scored, tot, when, pace, note, need, over: tot != null && scored != null && scored > tot };
+    }
+    function pHitNow(g: any) {
+      if (!g) return null;
+      const vg = v4GameFor(g);
+      for (const s of [g, vg].filter(Boolean)) {
+        const raw = (s as any).p_hit_now;
+        if (raw == null) continue;
+        if (typeof raw === "number") return null; // a bare number carries no certification — never shown
+        if (typeof raw !== "object") continue;
+        const certified = raw.certified === true || raw.is_certified === true;
+        let p = _fin(raw.p != null ? raw.p : (raw.prob != null ? raw.prob : raw.value));
+        if (p == null) continue;
+        if (p > 1) p = p / 100;
+        if (!certified) return null;   // uncertified ⇒ silent, never a soft claim
+        return { p, side: String(raw.side || "").trim(), note: humanNote(raw.note) };
+      }
+      return null;
+    }
+    // The live strip on a card: the score measured against the LOCKED total, plus — only when
+    // certified — the display-only "still hits" read, loudly badged so it can never be mistaken
+    // for a graded number.
+    function liveVsLineBlock(g: any) {
+      const lp = liveProgress(g);
+      if (!lp) return "";
+      const ph = pHitNow(g);
+      const pctW = lp.tot != null && lp.scored != null ? Math.max(3, Math.min(100, (lp.scored / Math.max(lp.tot + 2, 1)) * 100)) : 0;
+      const bits = [
+        lp.when ? esc(lp.when) : "",
+        lp.tot != null && lp.scored != null ? `${lp.scored} of ${esc(lineStr(lp.tot))}` : "",
+        lp.pace != null ? `on pace for ${num(lp.pace, 1)}` : "",
+        lp.need != null && !lp.over ? `${lp.need} more to go over` : "",
+        lp.over ? "over has cleared" : "",
+      ].filter(Boolean);
+      return `<div class="lvl${lp.over ? " cleared" : ""}">
+        <div class="lvl-k"><i class="lvl-dot" aria-hidden="true"></i>Live vs the locked line</div>
+        <div class="lvl-bar" aria-hidden="true">
+          <span class="lvl-fill" style="width:${pctW.toFixed(0)}%"></span>
+          ${lp.tot != null ? `<span class="lvl-mark" style="left:${Math.max(2, Math.min(98, (lp.tot / Math.max(lp.tot + 2, 1)) * 100)).toFixed(0)}%"></span>` : ""}
+        </div>
+        <div class="lvl-row">${bits.map((b) => `<span>${b}</span>`).join(`<i class="lvl-sep" aria-hidden="true">·</i>`)}</div>
+        ${ph ? `<div class="lvl-ph"><span class="lvl-badge">LIVE · DISPLAY ONLY</span><b>${Math.round(ph.p * 100)}%</b><span class="lvl-phtx">it still hits${ph.side ? ` (${esc(ph.side.toUpperCase())})` : ""} — never counted in any record</span></div>` : ""}
+        ${lp.note ? `<div class="lvl-note">${esc(lp.note)}</div>` : ""}
+      </div>`;
+    }
+
+    /* ═════════════ THE PREGAME DIAMONDEDGE PICK — the card's conclusion ═════════════
+       Visually the most important element on the card: after the locked line and after the
+       four reads, this is what the desk chief concluded. O/U call · run-line call ·
+       predicted final score · the pattern-grounded rationale line. Degrades field by field. */
+    function deCallBlock(g: any, locked = false) {
+      const chief = deskChief(g);
+      if (!chief) return "";
+      const pl = displayPick(g);
+      const pg = pregameLine(g);
+      const gs = gameState(g);
+      const st = pl ? playState(g, pl) : "open";
+      const state = pl && !locked ? pickStateTxt(g, pl, st) : null;
+      const act = chief.action || (pl && isPick(pl) ? "PLAY" : "AVOID");
+      const cls = act === "PLAY" ? "de-play" : act === "LEAN" ? "de-lean" : "de-avoid";
+      const word = act === "AVOID" ? "WE PASS" : act;
+      // the O/U call itself, at the line it was priced against
+      const side = pl && pl.side ? String(pl.side) : (chief.raw && chief.raw.side ? `${/under/i.test(String(chief.raw.side)) ? "UNDER" : "OVER"} ${chief.raw.line != null ? lineStr(chief.raw.line) : ""}`.trim() : "");
+      const dirCls = /under/i.test(side) ? "ou-under" : /over/i.test(side) ? "ou-over" : "";
+      const arrow = /under/i.test(side) ? "▼" : /over/i.test(side) ? "▲" : "";
+      const priced = (pl && pl.line != null) ? pl.line : (chief.raw && chief.raw.line != null ? chief.raw.line : (pg && pg.total ? pg.total.line : null));
+      // A PASS is never dressed as a bet. When the desk avoids, the headline IS "no bet on
+      // the total" and any directional lean rides underneath it, quiet and labelled.
+      const avoid = act === "AVOID";
+      const callHtml = locked
+        ? `<span class="de-side locked"><span class="de-dots" aria-hidden="true">●●●● ●</span></span>`
+        : avoid
+          ? `<span class="de-side de-pass">No bet on the total${side ? `<em class="de-leanonly">lean was ${esc(side)} — not played</em>` : ""}</span>`
+          : side
+            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(side)}</b>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}</span>`
+            : "";
+      // only state the priced line when the call itself doesn't already contain that number
+      const inSide = priced != null && side ? side.indexOf(lineStr(priced)) >= 0 : false;
+      const atLine = !locked && !avoid && priced != null && !inSide
+        ? `<span class="de-at">priced at ${esc(lineStr(priced))}</span>` : "";
+      // run line — a real second call, or an honest no-call
+      const sp = chief.spread;
+      const rlHtml = sp
+        ? (sp.side
+          ? `<div class="de-row"><span class="de-rk">Run line</span><b class="de-rv">${esc([(sp.side === "home" ? (g.home_abbr || mlbAbbr(sp.side_team)) : sp.side === "away" ? (g.away_abbr || mlbAbbr(sp.side_team)) : String(sp.side).toUpperCase()), sp.line != null ? sgn(sp.line) : ""].filter(Boolean).join(" "))}</b></div>`
+          : `<div class="de-row"><span class="de-rk">Run line</span><b class="de-rv nocall">No call</b></div>`)
+        : "";
+      const predHtml = chief.pred
+        ? `<div class="de-row"><span class="de-rk">Predicted final</span><b class="de-rv de-score">${esc(g.away_abbr || "AWY")} ${num(chief.pred.away, 0)} — ${num(chief.pred.home, 0)} ${esc(g.home_abbr || "HOM")}</b><i class="de-rsrc">by ${esc(chief.pred.source)}</i></div>`
+        : "";
+      const rat = chief.rationale || (sp && sp.rationale) || "";
+      // graded verdict — the past-tense sentence, so a finished pick doesn't collapse to a tick
+      let verdict = "";
+      if (pl && !locked && (st === "won" || st === "lost" || st === "pushed") && gs.kind === "final") {
+        const tr = liveTrackingRead(g, pl);
+        if (tr && tr.head) verdict = `<div class="de-verdict ${st}">${esc(tr.head)}</div>`;
+      }
+      // signed-out redaction is PRESERVED: the conclusion keeps its frame, the side becomes
+      // crisp dots (never a blur), and the whole block is the unlock affordance.
+      const quality = pl && !locked ? `<span class="de-q">${pickStars(pl)}${pickGrade(pl)}</span>` : "";
+      return `<section class="decall ${cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
+        <div class="de-head"><span class="de-brand"><i class="de-dia" aria-hidden="true">◆</i>The DiamondEdge Pick</span><span class="de-act">${esc(word)}</span>${state ? `<span class="de-res ${state.cls}">${state.txt}</span>` : ""}</div>
+        ${callHtml ? `<div class="de-callrow">${callHtml}${atLine}${quality}</div>` : ""}
+        ${locked ? `<div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : ""}
+        ${rlHtml || predHtml ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
+        ${rat && !locked ? `<p class="de-rat">${esc(rat)}</p>` : ""}
+        ${verdict}
+        ${!locked && pl ? signalRow(pl) : ""}
+      </section>`;
     }
     // The four VOICES on a matchup panel, folded behind one tap: the chief's rationale is
     // the primary read on the tile; expanding gives each analyst's persona-voice take on
@@ -1397,12 +1814,12 @@ export default function Home() {
     function deskBlockTile(g: any, locked = false) {
       const ans = deskAnalysts(g);
       if (!ans.length) return "";
-      const chief = deskChief(g);
+      // The chief's verdict has been PROMOTED out of this block into deCallBlock() — it is
+      // the card's conclusion now, not a row inside the desk's reads. This block is purely
+      // "what the four analysts said"; the conclusion renders after it.
       return `<div class="deskblk">
-        <div class="dsk-toprow">${consensusBanner(g, locked)}${simSaysChip(g)}</div>
+        <div class="dsk-toprow"><span class="dsk-lab">The desk reads it</span>${consensusBanner(g, locked)}${simSaysChip(g)}</div>
         ${deskChipRow(g, locked)}
-        ${chiefStrip(g, chief)}
-        ${chiefSpreadLine(g, chief)}
         ${deskVoicesFold(g, locked)}
       </div>`;
     }
@@ -1518,6 +1935,8 @@ export default function Home() {
     function openAnalystSheet(key: any) {
       const k = String(key || "").toLowerCase();
       const cast = DESK_CAST[k] || { name: k, title: "Analyst", method: "" };
+      const bio = DESK_BIO[k] || ({} as any);
+      const spec = deskSpecFor(k) as any;
       const rec = deskRecordRows().find((r: any) => r.key === k) || null;
       // recent calls: newest first across the live + history feeds, deduped by game
       const seen: any = {}; const calls: any[] = [];
@@ -1603,6 +2022,27 @@ export default function Home() {
           </div>`;
         }
       }
+      // WORST RECENT CALL — the page shows both directions or it isn't a record arc.
+      let worstCallHtml = "";
+      const rcWorst = deskRecapsAll().find((rc: any) => rc.worst && rc.worst.key === k);
+      if (rcWorst) {
+        const b = rcWorst.worst;
+        worstCallHtml = `<div class="anl-best worst">
+          <span class="anl-best-k">◆ Worst recent call${rcWorst.date ? ` · ${esc(recapDateTxt(rcWorst.date))}` : ""}</span>
+          <div class="anl-best-b">${b.mu ? `<span class="anl-mu">${esc(b.mu)}</span>` : ""}${b.call ? `<b class="anl-call ${/under/i.test(b.call) ? "ou-under" : /over/i.test(b.call) ? "ou-over" : ""}">${esc(b.call)}</b>` : ""}<span class="ppres lost">L</span></div>
+          ${b.txt ? `<p class="anl-take-say">“${esc(b.txt)}”</p>` : ""}
+        </div>`;
+      } else {
+        const bl = calls.filter(({ a }: any) => a.result === "loss")
+          .sort((x: any, y: any) => ((y.a.conv != null ? y.a.conv : 0) - (x.a.conv != null ? x.a.conv : 0)))[0];
+        if (bl) {
+          const aAb = bl.g.away_abbr || mlbAbbr(bl.g.away) || "—", hAb = bl.g.home_abbr || mlbAbbr(bl.g.home) || "—";
+          worstCallHtml = `<div class="anl-best worst">
+            <span class="anl-best-k">◆ Worst recent call${bl.g.date ? ` · ${esc(recapDateTxt(bl.g.date))}` : ""}</span>
+            <div class="anl-best-b"><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span><b class="anl-call ${bl.a.dir === "under" ? "ou-under" : "ou-over"}">${esc((bl.a.dir || bl.a.side).toUpperCase())}${bl.a.line != null ? ` ${lineStr(bl.a.line)}` : ""}</b>${bl.a.conv != null ? `<span class="anl-conv">${Math.round(bl.a.conv * 100)}% sure</span>` : ""}<span class="ppres lost">L</span></div>
+          </div>`;
+        }
+      }
       detail = { _record: true };
       // THE PATTERNS THEY STAR IN — pattern highlights naming this analyst.
       const myPats = patternHighlights().filter((it: any) => it.keys.indexOf(k) >= 0).slice(0, 3);
@@ -1620,18 +2060,28 @@ export default function Home() {
           <div class="gp-body anlp-body" id="gp-body">
             <header class="anlp-hero">
               <div class="anlp-aura" aria-hidden="true"></div>
-              <div class="anlp-glyph">${deskGlyph(k, 38)}</div>
+              <div class="anlp-art">${deskPortrait(k, 148, "page")}</div>
               <h2 class="anlp-name">${esc(String(cast.name || k).toUpperCase())}</h2>
               <div class="anlp-title">${esc(cast.title || "Analyst")}${crowned ? `<span class="anlp-crown">${crownSvg(13)} Analyst of the week</span>` : ""}</div>
-              ${cast.method ? `<p class="anlp-method">${esc(cast.method)}</p>` : ""}
+              ${bio.tagline ? `<p class="anlp-tag">“${esc(bio.tagline)}”</p>` : ""}
             </header>
+            ${bio.how ? `<section class="anlp-sec anlp-voice"><div class="anlp-sec-h">How I see baseball</div><p class="anlp-method">${esc(bio.how)}</p></section>` : (cast.method ? `<section class="anlp-sec"><p class="anlp-method">${esc(cast.method)}</p></section>` : "")}
             <section class="anlp-recwrap">
               ${recHero}
               ${arc ? `<div class="anlp-arcwrap">${arc}<span class="anlp-arc-k">last ${rec.last10.length} calls — the running arc</span></div>` : ""}
               ${graded ? "" : `<div class="anl-note">Every call ${esc(cast.name || "this analyst")} files is graded against the real final — the record builds here in public.</div>`}
             </section>
+            ${(bio.edges || bio.inputs || spec.engine) ? `<section class="anlp-sec anlp-method-sec">
+              <div class="anlp-sec-h">The method</div>
+              <div class="anlp-mcols">
+                ${bio.edges ? `<div class="anlp-mcol"><div class="anlp-mk">The edges I hunt</div><ul class="rost-list">${bio.edges.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
+                ${bio.inputs ? `<div class="anlp-mcol"><div class="anlp-mk">What I read</div><ul class="rost-list dim">${bio.inputs.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
+              </div>
+              ${spec.engine ? `<p class="anlp-engine"><b>Under the hood.</b> ${esc(spec.engine)}${spec.basis ? ` Conviction: ${esc(spec.basis)}` : ""}</p>` : ""}
+              ${spec.engine ? `<div class="anlp-flags">${spec.calibrated ? `<span class="anlp-flag ok">walk-forward calibrated</span>` : `<span class="anlp-flag">conviction not calibrated</span>`}${spec.margin ? `<span class="anlp-flag ok">has a run-line view</span>` : `<span class="anlp-flag">totals only</span>`}</div>` : ""}
+            </section>` : ""}
             ${takesHtml ? `<div class="anlp-sec"><div class="anlp-sec-h">Today at the desk</div><div class="anl-takes">${takesHtml}</div></div>` : ""}
-            ${bestCallHtml}
+            ${(bestCallHtml || worstCallHtml) ? `<div class="anlp-sec"><div class="anlp-sec-h">Best and worst</div><div class="anlp-bw">${bestCallHtml}${worstCallHtml}</div></div>` : ""}
             ${rivHtml ? `<div class="anlp-sec"><div class="anlp-sec-h">Rivalries</div><div class="anl-rivs">${rivHtml}</div></div>` : ""}
             ${patsHtml}
             ${rows ? `<div class="anlp-sec"><div class="anlp-sec-h">Recent calls</div><div class="anl-rows">${rows}</div></div>` : ""}
@@ -3092,7 +3542,7 @@ export default function Home() {
     // DEFAULT = GAMES (Leon, 2026-07-25): the app opens on the Games board — the product IS
     // the picks. The brand logo (and the dock's News tab) still goes to the News front.
     let tab = "games";              // "today" | "games" | "results" | "research" | "beta" | "settings" | "upgrade" | "account"
-    const TABS = ["today", "games", "results", "research", "beta", "settings", "upgrade", "account"];
+    const TABS = ["today", "games", "desk", "results", "research", "beta", "settings", "upgrade", "account"];
     let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
@@ -3984,10 +4434,13 @@ export default function Home() {
           <div class="t-teams">${tileRow(g, "away", gs)}${pitcherSub(g, "away")}${tileRow(g, "home", gs)}${pitcherSub(g, "home")}</div>
         </div>
         ${pre ? "" : totOnly}
+        ${pregameLineBlock(g)}
         ${atlasLiveChip(g)}
+        ${liveVsLineBlock(g)}
         ${deskHtml}
-        ${isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g)}
-        ${deskChf && deskChf.spread ? "" : spreadRowTile(g)}
+        ${deCallBlock(g, locked)}
+        ${deskChf ? "" : (isPick(pick) ? pickStrip(g, pick, st, locked, gs) : passStrip(g))}
+        ${deskChf ? "" : spreadRowTile(g)}
       </article>`;
     }
     // ===================== POSTPONED (VISIBLE-VOID) CARD =====================
@@ -5617,7 +6070,12 @@ export default function Home() {
       // Box score pane also carries the recap for a final game (folded in — no separate tab).
       const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${isFinal ? gameRecap(g) : ""}${boxScorePanel(g)}</div>` : "";
       const dePane = `<div class="gp-pane" data-pane="de" style="display:${detailTab === "de" ? "block" : "none"}">${diamondEdgeReasoning(g, lead, leadLocked)}</div>`;
-      return `${gameHero}${tabsBar}${previewPane}${dePane}${livePane}`;
+      // THE GAME PAGE LEADS WITH THE SAME THREE BEATS AS THE CARD: the locked pregame line
+      // (big), the live read measured against it, then the desk's conclusion — all above the
+      // tabs, so opening a game answers "what was the line, and what did we do about it?"
+      // before anything else on the page.
+      const gpLead = `${pregameLineBlock(g, "big")}${liveVsLineBlock(g)}${deCallBlock(g, leadLocked)}`;
+      return `${gameHero}${gpLead ? `<div class="gp-lead">${gpLead}</div>` : ""}${tabsBar}${previewPane}${dePane}${livePane}`;
       }
 
       // Wire the handlers that live INSIDE #gp-body (tabs). Called after every (re)build so a
@@ -8177,7 +8635,96 @@ export default function Home() {
       if (!labFreshTimer) labFreshTimer = setInterval(() => { try { tickLabFresh(); } catch {} }, 60000);
     }
 
-    const NAV_LABEL: any = { today: "News", games: "Games", results: "Insights", research: "The Lab", beta: "Totals", settings: "Settings" };
+    const NAV_LABEL: any = { today: "News", games: "Games", desk: "The Desk", results: "Insights", research: "The Lab", beta: "Totals", settings: "Settings" };
+    /* ══════════════════════ THE ANALYST ROSTER — a destination ══════════════════════
+       Four boxes, four drawn identities, four records. The whole point of the page is that
+       you leave it knowing who VEGA is and why SCOUT would never agree with ATLAS. Every
+       number on it comes from record.analysts (defensive: absent ⇒ the box says so plainly
+       and shows no fabricated record); every claim about method is cross-checked against
+       analyst_desk_spec when the spec is served. */
+    function anlTodayCount(key: string) {
+      const today = todayISO();
+      const seen: any = {};
+      let n = 0;
+      [livePayload, payload].forEach((src: any) => {
+        const games = (src && Array.isArray(src.games) ? src.games : []) as any[];
+        games.forEach((g) => {
+          const gid = String(g.game_id || g.game_pk || "");
+          if (!gid || seen[gid]) return;
+          if (gameLocalDay(g) !== today) return;     // TODAY's board only
+          seen[gid] = 1;
+          const a = deskAnalysts(g).find((x: any) => x.key === key);
+          if (a && a.dir) n++;
+        });
+      });
+      return n;
+    }
+    function rosterCard(k: string, rec: any) {
+      const cast = DESK_CAST[k] || { name: k, title: "Analyst" };
+      const bio = DESK_BIO[k] || {};
+      const spec = deskSpecFor(k);
+      const graded = rec && (rec.win + rec.loss + rec.push) > 0;
+      const wl = graded ? `${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}` : "";
+      const hit = graded && rec.hit != null ? `${(rec.hit * 100).toFixed(0)}%` : "";
+      const roi = graded && rec.roi != null ? `${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(1)}%` : "";
+      const dots = rec && rec.last10 && rec.last10.length
+        ? `<span class="rost-dots" aria-label="last ${rec.last10.length} calls">${rec.last10.map((r: string) => `<i class="d-${r.toLowerCase()}"></i>`).join("")}</span>` : "";
+      const today = anlTodayCount(k);
+      const edges = (bio.edges || []).slice(0, 4).map((e: string) => `<li>${esc(e)}</li>`).join("");
+      const inputs = (bio.inputs || []).slice(0, 4).map((e: string) => `<li>${esc(e)}</li>`).join("");
+      const moreInputs = (bio.inputs || []).length > 4 ? `<li class="rost-more">+${(bio.inputs || []).length - 4} more</li>` : "";
+      const how = bio.how || spec.persona || (cast.method || "");
+      return `<article class="rostcard an-${esc(k)}" data-an="${esc(k)}" role="button" tabindex="0"
+        aria-label="${esc(cast.name)} — ${esc(cast.title)}. Open the full profile.">
+        <div class="rost-aura" aria-hidden="true"></div>
+        <header class="rost-top">
+          <div class="rost-art">${deskPortrait(k, 104, "rost")}</div>
+          <div class="rost-idw">
+            <h3 class="rost-name">${esc(String(cast.name || k).toUpperCase())}</h3>
+            <div class="rost-title">${esc(cast.title || "Analyst")}</div>
+            ${today ? `<div class="rost-today"><i aria-hidden="true"></i>${today} call${today === 1 ? "" : "s"} on today's board</div>` : ""}
+          </div>
+        </header>
+        ${bio.tagline ? `<p class="rost-tag">“${esc(bio.tagline)}”</p>` : ""}
+        <div class="rost-rec${graded ? "" : " none"}">
+          ${graded ? `<span class="rost-wl"><b>${esc(wl)}</b><i>record</i></span>` : `<span class="rost-wl none"><b>0–0</b><i>no graded calls yet</i></span>`}
+          ${hit ? `<span class="rost-st"><b>${esc(hit)}</b><i>hit</i></span>` : ""}
+          ${roi ? `<span class="rost-st ${rec.roi >= 0 ? "pos" : "neg"}"><b>${esc(roi)}</b><i>roi</i></span>` : ""}
+          ${dots}
+        </div>
+        ${how ? `<p class="rost-how">${esc(how)}</p>` : ""}
+        <div class="rost-cols">
+          ${edges ? `<div class="rost-col"><div class="rost-ck">Hunts</div><ul class="rost-list">${edges}</ul></div>` : ""}
+          ${inputs ? `<div class="rost-col"><div class="rost-ck">Reads</div><ul class="rost-list dim">${inputs}${moreInputs}</ul></div>` : ""}
+        </div>
+        <div class="rost-cta">Meet ${esc(String(cast.name || k).toUpperCase())}<i aria-hidden="true">→</i></div>
+      </article>`;
+    }
+    function renderDesk() {
+      const v = $("desk-view"); if (!v) return;
+      const rows = deskRecordRows();
+      const byKey: any = {}; rows.forEach((r: any) => (byKey[r.key] = r));
+      const cards = DESK_ORDER.map((k) => rosterCard(k, byKey[k] || null)).join("");
+      const anyRec = rows.length > 0;
+      v.innerHTML = `
+        <section class="deskpage">
+          <header class="dp-mast">
+            <span class="dp-k">◆ The Desk</span>
+            <h2 class="dp-h">Four analysts.<br>One board.</h2>
+            <p class="dp-dek">Every game on DiamondEdge is argued by four independent models, each with its own way of seeing a baseball game and its own record kept in the open. They disagree constantly — that disagreement is the product. The desk chief weighs all four, and only the DiamondEdge call is ever played.</p>
+          </header>
+          <div class="dp-grid">${cards}</div>
+          <div class="dp-foot">
+            <p><b>How the competition is scored.</b> Each analyst's own calls are graded separately against the real final, at the line they were priced against — not against each other's opinions. ${anyRec ? "Records shown are graded calls only" : "Records start at 0–0 and build here in public"}; nothing is backfilled, and a call that never got a number is never counted as a win or a loss.</p>
+            ${patternsStrip()}
+          </div>
+        </section>`;
+      bindDeskTaps();
+      v.querySelectorAll(".rostcard").forEach((el: any) => {
+        el.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openAnalystSheet(el.dataset.an); } };
+      });
+      const ps = v.querySelector("[data-nav='results']") as any; if (ps) ps.onclick = () => switchTab("results");
+    }
     function renderShell() {
       // Primary nav = the destinations at EVERY width (the top bar is the nav on mobile too now
       // — the bottom nav is retired). The v4 model is now the DEFAULT pick everywhere; its
@@ -8205,6 +8752,7 @@ export default function Home() {
         <main>
           <div id="today-view" style="display:${tab === "today" ? "block" : "none"}"></div>
           <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
+          <div id="desk-view" style="display:none"></div>
           <div id="results-view" style="display:none"></div>
           <div id="research-view" style="display:none"></div>
           <div id="beta-view" style="display:none"></div>
@@ -8228,11 +8776,12 @@ export default function Home() {
       today: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M19 9h1.5v9.5a1.5 1.5 0 0 1-3 0"/><path d="M8 9h5M8 13h7M8 17h4"/></svg>`,
       games: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="5.5" y="5.5" width="13" height="13" rx="2.5" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>`,
       results: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V13M12 20V6M19 20v-9"/></svg>`,
+      desk: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="13" width="7.5" height="7.5" rx="2.2"/></svg>`,
       research: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5M10.2 3v6.2l-5.3 9A1.9 1.9 0 0 0 6.5 21h11a1.9 1.9 0 0 0 1.6-2.8l-5.3-9V3"/><path d="M7.2 15.4h9.6"/></svg>`,
     };
     function renderDock() {
       const el = $("dock"); if (!el) return;
-      el.innerHTML = ["today", "games", "results", "research"].map((t) => {
+      el.innerHTML = ["today", "games", "desk", "results", "research"].map((t) => {
         const on = tab === t;
         return `<button class="dock-item${on ? " on" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
           ${on ? `<span class="dock-pill" aria-hidden="true"></span>` : ""}
@@ -8351,6 +8900,7 @@ export default function Home() {
           if (!todayFresh) { renderToday(); todayFresh = true; }
           else if (newsMode === "stories" && $("stories")) startStoryTimer(); // resume the deck on return
         }
+        if (t === "desk") renderDesk();
         if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
         if (t === "research" && !$("research-view").innerHTML.trim()) renderResearch();
         if (t === "beta" && (Date.now() - betaBuiltAt > 60 * 1000 || !$("beta-view").innerHTML.trim())) renderBeta();
