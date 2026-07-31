@@ -4188,6 +4188,10 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .anlp-engine{margin-top:16px;padding-top:14px;border-top:1px solid rgba(var(--tintc),.1);
   font-family:var(--sans);font-size:13px;line-height:1.6;color:var(--ink3)}
 .anlp-engine b{color:var(--ink2)}
+/* the channel line LEADS the method block (it frames the list under it) rather than closing
+   it, so it drops the divider it wears when it sits last, and the list takes the gap */
+.anlp-engine.lead{margin-top:0;padding-top:0;border-top:0}
+.anlp-engine.lead + .anlp-mcols{margin-top:18px}
 .anlp-flags{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
 .anlp-flag{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
   border-radius:999px;padding:4px 10px;color:var(--ink3);background:rgba(var(--tintc),.06);

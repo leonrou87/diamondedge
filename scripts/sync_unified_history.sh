@@ -48,13 +48,34 @@ now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 json.dump([{"key":"picks_unified","payload":payload,"updated_at":now}],
           open(sys.argv[2],"w"))
 PY
-HTTP=$(curl -s -o /tmp/unified_history_sync_resp.txt -w "%{http_code}" \
-  -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
-  -H "apikey: $SUPABASE_SERVICE_KEY" \
-  -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-  -H "Content-Type: application/json" \
-  -H "Prefer: resolution=merge-duplicates" \
-  --data-binary "@$TMP")
+# RETRY WITH BACKOFF (2026-07-31). The upsert began returning 500 / 57014
+# ("canceling statement due to statement timeout") as this payload grew past
+# ~10 MB — intermittently, which is the worst kind: a single attempt fails,
+# the next one succeeds, and the Supabase `updated_at` rail never sees a
+# stale key, so the job walks up to the cliff invisibly. The real fix landed
+# upstream (v4/serve/analyst_desk.history_diamondedge halves the payload by
+# refusing to serialise the desk-invariant chief frame 392 times), and this
+# is the belt: three attempts, widening pause, and the run only reports
+# success if the row actually took. gzip is NOT used — PostgREST does not
+# negotiate a compressed request body, and the timeout is DB-side work on
+# the JSONB, not transfer time, so it would buy nothing.
+# Every attempt, including the ones that recover, is logged: an intermittent
+# failure is the early warning, and check_feed_freshness's sync-job rail
+# reads this stream for exactly that reason.
+HTTP=""
+for ATTEMPT in 1 2 3; do
+  HTTP=$(curl -s -o /tmp/unified_history_sync_resp.txt -w "%{http_code}" \
+    --max-time 120 \
+    -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    -H "Content-Type: application/json" \
+    -H "Prefer: resolution=merge-duplicates" \
+    --data-binary "@$TMP")
+  if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then break; fi
+  echo "$(date '+%F %T') unified history upsert attempt $ATTEMPT/3 http=$HTTP $(head -c 200 /tmp/unified_history_sync_resp.txt)" >&2
+  if [ "$ATTEMPT" != "3" ]; then sleep $((ATTEMPT * 15)); fi
+done
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   # VERIFY updated_at ROUND-TRIP — read the column back through the REST API so
   # every run leaves proof in the log that the freshness stamp actually moved.

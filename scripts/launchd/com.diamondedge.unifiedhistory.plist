@@ -10,7 +10,7 @@
   </array>
   <key>StartInterval</key><integer>300</integer>
   <key>RunAtLoad</key><true/>
-  <key>StandardOutPath</key><string>/Users/leonrou/Desktop/diamondedge/scripts/.unified_history_sync.log</string>
-  <key>StandardErrorPath</key><string>/Users/leonrou/Desktop/diamondedge/scripts/.unified_history_sync.log</string>
+  <key>StandardOutPath</key><string>/Users/leonrou/Library/Logs/diamondedge-sync/com.diamondedge.unifiedhistory.log</string>
+  <key>StandardErrorPath</key><string>/Users/leonrou/Library/Logs/diamondedge-sync/com.diamondedge.unifiedhistory.err</string>
 </dict>
 </plist>

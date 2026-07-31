@@ -1461,6 +1461,13 @@ export default function Home() {
       const dd = new Date(t + "T12:00:00");
       return isNaN(dd.getTime()) ? "" : dd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     };
+    /* Served sentences date themselves in ISO — "priced on 2026-07-31 … a training fence of
+       2026-06-30" — while every date the page draws itself reads "Jul 31, 2026". Two date
+       formats in one paragraph reads as a leak even when the sentence is perfectly good
+       English, so any bare ISO date inside reader prose is rewritten into the site's own
+       format. Nothing else about the sentence is touched. */
+    const proseDates = (t: any) => String(t == null ? "" : t)
+      .replace(/\b(\d{4}-\d{2}-\d{2})\b/g, (m) => stratDateTxt(m) || m);
     const stratWL = (b: any) => (b ? `${b.win}–${b.loss}${b.push ? `–${b.push}` : ""}` : "—");
     const stratPct = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
     const stratRoi = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
@@ -1617,6 +1624,90 @@ export default function Home() {
         };
       }
       return {} as any;
+    }
+    /* ═══════════ WHAT AN ANALYST *IS*, FROM THE ANALYST ═══════════
+       THE SAME BUG CLASS AS THE ERA CAPTION, one screen over. DESK_CAST/DESK_BIO above are
+       AUTHORED copy: titles, taglines, "how I see baseball", "the edges I hunt", "what I
+       read". They described four engines over one shared market-anchored feature space —
+       a champion, a Monte Carlo simulator, a residual grid and an eight-input fundamentals
+       model. On 2026-07-31 those four were re-architected into four DISJOINT slices, so
+       "The Quant … patterns across thousands of games" and "The Traditionalist … starters,
+       recent form, ballparks and weather" stopped being true of NOVA and SCOUT, and no test
+       anywhere would have caught it.
+
+       So the served slice wins wherever it exists. `analyst_v2_spec.slices[k]` carries the
+       title, the channel and the analyst's own thesis; the FITTED FORMULA carries the feature
+       list, which is the strongest possible answer to "what do you read" — it is the model's
+       own coefficients, and a feature the fit zeroed out is not read at all and is not shown.
+       Absent ⇒ {} and every surface falls back to the authored copy, byte for byte.
+
+       NOT read here: the slice's `note`. It is engineering prose (column prefixes, fill
+       rates, an ablation policy) written to pin the contract, not to be read — exactly what
+       the payload-documentation guard exists to keep off the page. */
+    const V2_FEATURE_LABEL: any = {
+      line_move: "How far the number has moved", move_pace: "How fast it moved",
+      time_since_move: "How long since the last move", book_disagreement: "How much the books disagree",
+      price_dispersion: "How far the prices spread", sharp_gap: "The gap to the sharpest book",
+      n_books: "How many books are up", stale_gap: "Books that haven't caught up",
+      park_run_factor: "The park's run factor", park_altitude: "Altitude", park_roof: "Roof, open or closed",
+      is_night: "Day or night", ump_runs: "How many runs this umpire's games produce",
+      ump_strikeouts: "The umpire's strikeout rate", ump_walks: "The umpire's walk rate",
+      bats_vs_hand: "The posted lineups against the hand they face", bats_woba: "How well the bats have hit",
+      bats_power: "Power in the lineup", bats_onbase: "Getting on base", bats_scoring_form: "How the offences have been scoring",
+      bats_strikeouts: "How often the bats strike out", bats_lineups_known: "Whether tonight's lineups are posted",
+      sp_fip: "What the starters have earned", sp_contact_quality: "The contact the starters allow",
+      sp_recent_form: "The starters' recent form", sp_length: "How deep the starters go",
+      sp_groundballs: "Ground balls induced", sp_rest: "Days of rest",
+      pen_era: "What the bullpens have given up", pen_workload: "Bullpen workload",
+      pen_back_to_back: "Arms used back to back", pen_closer_available: "Whether the closer is available",
+    };
+    function deskSliceFor(key: string) {
+      const k = String(key || "").toLowerCase();
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const sp = d && (d as any).analyst_v2_spec;
+        const s = sp && sp.slices && typeof sp.slices === "object" ? sp.slices[k] : null;
+        if (!s || typeof s !== "object") continue;
+        // the fitted formula → the features this analyst actually reads (zeroed ones are not read)
+        const inputs: string[] = [];
+        const seen: any = {};
+        String(s.formula == null ? "" : s.formula).replace(
+          /([+-]?\s*\d*\.?\d+)\s*\*\s*z\[([a-z0-9_]+)\]/gi,
+          (_m: string, c: string, name: string) => {
+            if (Math.abs(Number(String(c).replace(/\s+/g, "")) || 0) < 1e-9) return "";
+            const n = String(name).toLowerCase();
+            if (seen[n]) return ""; seen[n] = 1;
+            const lab = V2_FEATURE_LABEL[n] || sentence(deIdent(n));
+            if (lab) inputs.push(lab);
+            return "";
+          }
+        );
+        return {
+          title: humanNote(s.title),
+          channel: humanNote(s.channel),
+          thesis: humanNote(s.thesis),
+          inputs,
+        } as any;
+      }
+      return {} as any;
+    }
+    /* The analyst's own thesis, and the CARD-length cut of it. Every served thesis is built
+       "<why>, so I grade <what>: <the evidence>", which is three sentences of information in
+       one string. A roster card has room for about two short lines, so it takes the MIDDLE
+       clause — "I grade the arms and nothing else." — which is both the punchiest phrasing
+       available and the one that carries the actual news, that the four now read disjoint
+       slices. The whole sentence goes to the character page. Falls back through the head
+       clause, then the full thesis, then the authored tagline. */
+    function deskThesis(k: string, rec?: any) {
+      const sl = deskSliceFor(k) as any;
+      return (rec && rec.persona) || sl.thesis || "";
+    }
+    function deskEdgeLine(k: string, rec?: any) {
+      const t = deskThesis(k, rec);
+      if (!t) return (DESK_BIO[k] && DESK_BIO[k].tagline) || (DESK_CAST[k] && DESK_CAST[k].short) || "";
+      const head = t.split(":")[0].trim();
+      const m = head.match(/,\s*so\s+(.+)$/i);
+      if (m && m[1].length >= 15) return `${sentence(m[1].trim())}.`;
+      return head.length >= 20 && head.length < t.length ? `${head}.` : t;
     }
     function deskGlyph(key: string, sz = 14) {
       const common = `viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
@@ -2306,13 +2397,28 @@ export default function Home() {
           rows.push({
             key, cast,
             name: (nmParts[0] || nmRaw).trim(),
-            title: (nmParts.length > 1 ? nmParts.slice(1).join(" · ").trim() : "") || (cast && cast.title) || "",
+            /* The record now SERVES the analyst's title ("THE ARMS", "THE BATS", "THE
+               CONDITIONS", "THE PRICE") and it is read first. It used to be mined out of a
+               "VEGA · The Market Reader" name string and, failing that, taken from the
+               authored cast — which is how the board went on calling NOVA "The Quant" and
+               SCOUT "The Traditionalist" after both had been rebuilt around a different
+               slice of the game entirely. */
+            title: humanNote(r.title) || (nmParts.length > 1 ? nmParts.slice(1).join(" · ").trim() : "") || (cast && cast.title) || "",
             persona: humanNote(r.persona_line),
             n: Math.max(0, Math.round(Number(r.n) || 0)) || win + loss + push,
             win, loss, push,
             hit: _fin(r.hit_rate != null ? r.hit_rate : r.hit),
             roi: _fin(r.roi),
             last10,
+            /* HOW MUCH OF THIS RECORD WAS SERVED LIVE. The page used to answer that in a
+               hardcoded sentence — "Nothing is backfilled" — which was true of the ledgers
+               that existed when it was written and is not true of these: every row in the
+               current record was RECONSTRUCTED after the game by a model fitted before it
+               (out of sample, but not served). The split is served per analyst; it is read
+               here and stated in words, because a record that says nothing is backfilled
+               while being entirely reconstructed is the worst kind of wrong copy. */
+            nLive: Math.max(0, Math.round(Number(r.n_live) || 0)),
+            nRecon: Math.max(0, Math.round(Number(r.n_reconstructed_oos) || 0)),
             /* ── PROVENANCE: ONE RECORD, AND HOW BIG IT IS ──────────────────────────
                SIMPLIFIED 2026-07-31, on two instructions from Leon.
 
@@ -2334,10 +2440,14 @@ export default function Home() {
                Read defensively: that backend change is still landing, so a served
                `is_betting_record` is simply IGNORED rather than trusted, and a served
                `reconstructed` block is dropped on sight. */
-            activation: String(r.activation_date || "").slice(0, 10) || null,
-            firstGraded: String(r.first_graded_date || "").slice(0, 10) || null,
-            lastGraded: String(r.last_graded_date || "").slice(0, 10) || null,
-            basis: humanNote(r.basis),
+            // the rebuilt record names these `record_start` / `first_date` / `last_date`; the
+            // older keys are still accepted so a feed mid-rollout is never read as dateless
+            // (with neither, the provenance line silently dropped its "since …" and every
+            // record read as if it had no opening date at all)
+            activation: String(r.activation_date || r.record_start || "").slice(0, 10) || null,
+            firstGraded: String(r.first_graded_date || r.first_date || "").slice(0, 10) || null,
+            lastGraded: String(r.last_graded_date || r.last_date || "").slice(0, 10) || null,
+            basis: proseDates(humanNote(r.basis)),
             // the roster row's own copy of the measured-profile verdict. record.analyst_profiles
             // is the full block; these two are what a CARD needs, and they keep the honest
             // sentence on a card even if the block itself never arrives.
@@ -2362,7 +2472,74 @@ export default function Home() {
        could be). What is left is the count and the date it opened, which are the two facts
        that decide how the number may be read. */
     const ANALYST_MIN_N = 50;
-    const RECORD_ERA_TXT = "since July 2026";
+    /* WHEN THE RECORD OPENS is a fact about the backend, not about this file. It was a literal
+       ("since July 2026") — correct on the day it was typed, and correct only until the next
+       time the analysts are retrained and their ledgers restart, which is precisely the event
+       that produced it. The payload states it in three places; read it, and keep the literal
+       only as the last-resort fallback. */
+    function recordStartISO() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const r = d && (d as any).record;
+        const cand = [
+          r && r.analysts && (r.analysts as any).record_start,
+          r && r.patterns && (r.patterns as any).record_start,
+          d && (d as any).analyst_v2_spec && (d as any).analyst_v2_spec.record_start,
+        ];
+        for (const c of cand) {
+          const t = String(c == null ? "" : c).slice(0, 10);
+          if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+        }
+      }
+      return "";
+    }
+    // "July 2026" — the month the ledgers open, from the payload.
+    function recordEraMonth() {
+      const iso = recordStartISO();
+      if (!iso) return "July 2026";
+      const d = new Date(iso + "T12:00:00");
+      return isNaN(d.getTime()) ? "July 2026" : d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    }
+    const recordEraTxt = () => `since ${recordEraMonth()}`;
+    /* WHAT THE DESK RECORD ACTUALLY IS — one sentence, computed, never asserted.
+       The line under every desk record used to read "Nothing is backfilled, and nothing from
+       before the desk was rebuilt is counted." The second half is still true. The first half
+       is now false: the analysts were re-architected and retrained on 2026-07-31, and every
+       row of the record that followed was priced by those models for games that had already
+       been played. That is out of sample — the fence is real and it is worth saying — but it
+       is not a live record, and "nothing is backfilled" is exactly the sentence a reader would
+       use to conclude that it was. So the split is READ and STATED: how many rows were served
+       live, how many were reconstructed, and against which training fence. */
+    function trainedThroughTxt() {
+      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+        const r = d && (d as any).record;
+        const cand = [
+          r && r.analysts && (r.analysts as any).trained_through,
+          r && r.patterns && (r.patterns as any).trained_through,
+          d && (d as any).analyst_v2_spec && (d as any).analyst_v2_spec.trained_through,
+        ];
+        for (const c of cand) {
+          const t = String(c == null ? "" : c).slice(0, 10);
+          if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return stratDateTxt(t);
+        }
+      }
+      return "";
+    }
+    // ONE clause about provenance, written to sit after whatever sentence the surface already
+    // opened with — never repeating "graded against the real final", which every one of them
+    // says first.
+    function recordBasisLine() {
+      const rows = deskRecordRows().filter((r: any) => (r.nLive || 0) + (r.nRecon || 0) > 0);
+      if (!rows.length) return "Nothing from before the desk was rebuilt is counted.";
+      const live = rows.reduce((s: number, r: any) => s + (r.nLive || 0), 0);
+      const recon = rows.reduce((s: number, r: any) => s + (r.nRecon || 0), 0);
+      const fence = trainedThroughTxt();
+      const fenceTx = fence
+        ? `The models were fitted on games through ${fence} and never saw one of these, so the record is genuinely out of sample`
+        : `The record is genuinely out of sample`;
+      if (!recon) return "Every one of them was served before the game. Nothing is backfilled.";
+      if (!live) return `None of it has been served live yet: every row was reconstructed after the game by models rebuilt and retrained that day. ${fenceTx} — but it is a reconstruction, not a live ledger.`;
+      return `${live.toLocaleString("en-US")} of these were served before the game; the other ${recon.toLocaleString("en-US")} were reconstructed afterwards by the same fitted models. ${fenceTx}.`;
+    }
     function analystRecMeta(rec: any) {
       if (!rec) return null;
       const n = Math.max(0, Number(rec.n) || 0) || (rec.win + rec.loss + rec.push) || 0;
@@ -2376,7 +2553,7 @@ export default function Home() {
         n,
         young: n > 0 && n < ANALYST_MIN_N,
         none: n === 0,
-        bits: [`${n} graded`, since ? `since ${since}` : RECORD_ERA_TXT].filter(Boolean),
+        bits: [`${n} graded`, since ? `since ${since}` : recordEraTxt()].filter(Boolean),
         since,
       };
     }
@@ -2385,7 +2562,7 @@ export default function Home() {
       const m = analystRecMeta(rec);
       if (!m) return "";
       if (m.none) {
-        return `<div class="anprov none ${cls}"><span class="anprov-bits">0 graded · ${esc(m.since ? `opens ${m.since}` : RECORD_ERA_TXT)}</span></div>`;
+        return `<div class="anprov none ${cls}"><span class="anprov-bits">0 graded · ${esc(m.since ? `opens ${m.since}` : recordEraTxt())}</span></div>`;
       }
       const warn = m.young
         ? `<p class="anprov-young">Too small to rank — ${m.n} graded call${m.n === 1 ? "" : "s"}. A record needs roughly ${ANALYST_MIN_N} before a hit rate and an ROI separate skill from noise, so this one is listed but never ranked against the rest of the desk. Treat it as a running tally.</p>`
@@ -2455,7 +2632,7 @@ export default function Home() {
         id: "ranked", ranked: true, ordinals: ranked.length > 1, rows: ranked,
         head: ranked.length > 1 ? "Ranked" : "The one readable record",
         sub: ranked.length > 1
-          ? `${ANALYST_MIN_N}+ graded calls ${RECORD_ERA_TXT}, ordered by ROI.`
+          ? `${ANALYST_MIN_N}+ graded calls ${recordEraTxt()}, ordered by ROI.`
           : `The only record past ${ANALYST_MIN_N} graded calls — there is nothing comparable to rank it against yet.`,
       });
       if (early.length) out.push({
@@ -2484,7 +2661,9 @@ export default function Home() {
       let rows = deskRecordRows();
       const haveRec = rows.length > 0;
       if (!haveRec && !deskAnyAnalysts()) return "";
-      if (!haveRec) rows = DESK_ORDER.map((k) => ({ key: k, cast: DESK_CAST[k], name: DESK_CAST[k].name, title: DESK_CAST[k].title, n: 0, win: 0, loss: 0, push: 0, hit: null, roi: null, last10: [] }));
+      // no served records ⇒ empty rows, but the IDENTITY still prefers the served slice over
+      // the authored cast (see deskSliceFor) so an un-recorded desk is never mislabelled
+      if (!haveRec) rows = DESK_ORDER.map((k) => ({ key: k, cast: DESK_CAST[k], name: DESK_CAST[k].name, title: (deskSliceFor(k) as any).title || DESK_CAST[k].title, persona: deskThesis(k), n: 0, win: 0, loss: 0, push: 0, hit: null, roi: null, last10: [] }));
       const wk = weeklyStandingsData();
       const card = (r: any, grp: any, i: number) => {
         const graded = r.win + r.loss + r.push > 0;
@@ -2500,7 +2679,7 @@ export default function Home() {
         const rankTxt = grp.ranked
           ? (grp.ordinals ? `${i === 0 ? "◆ " : ""}${ordinal(i)}` : "◆ readable")
           : `<span class="dskst-unranked">unranked</span>`;
-        const aria = `${r.name} — ${r.title}, ${rec} over ${r.n} graded call${r.n === 1 ? "" : "s"} ${RECORD_ERA_TXT}`
+        const aria = `${r.name} — ${r.title}, ${rec} over ${r.n} graded call${r.n === 1 ? "" : "s"} ${recordEraTxt()}`
           + (grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : ", the only readable record") : ", too early to rank")
           + (wrow ? `, this week ${wrow.w} and ${wrow.l}` : "");
         return `<button class="dskst-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked && grp.ordinals && i === 0 ? " lead" : ""}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}" aria-label="${esc(aria)}">
@@ -2517,7 +2696,7 @@ export default function Home() {
           <div class="dskst-rail n${Math.min(4, grp.rows.length)}">${grp.rows.map((r: any, i: number) => card(r, grp, i)).join("")}</div>
         </div>`).join("");
       return `<section class="dskst" aria-label="Desk standings">
-        <div class="dskst-h"><span class="dskst-k">◆ Desk standings</span><span class="dskst-sub">Four analysts call every game, and every record here starts in July 2026. Only a record past ${ANALYST_MIN_N} graded calls is ranked — under that, a hit rate is noise and we say so instead of giving it a place.</span></div>
+        <div class="dskst-h"><span class="dskst-k">◆ Desk standings</span><span class="dskst-sub">Four analysts call every game, and every record here starts in ${recordEraMonth()}. Only a record past ${ANALYST_MIN_N} graded calls is ranked — under that, a hit rate is noise and we say so instead of giving it a place.</span></div>
         ${groups}
       </section>`;
     }
@@ -2549,6 +2728,18 @@ export default function Home() {
       const bio = DESK_BIO[k] || ({} as any);
       const spec = deskSpecFor(k) as any;
       const rec = deskRecordRows().find((r: any) => r.key === k) || null;
+      /* THE CHARACTER, FROM THE CHARACTER. `slice` is the served re-architected identity
+         (title, channel, thesis, the features the fit actually kept). When it is there it
+         OWNS the hero and the method block, and the authored DESK_BIO — which still describes
+         the pre-2026-07-31 engines — is not consulted at all. `spec` is the OLD
+         analyst_desk_spec: it names champion_v2 / the simulator / the v4 grid as the engine
+         behind each analyst, which stopped being true on the same day, so its engine
+         paragraph and its calibration flags are suppressed whenever a slice is served. What
+         replaces them is `rec.basis` — the record's own statement of exactly what it counts. */
+      const slice = deskSliceFor(k) as any;
+      const anTitle = (rec && rec.title) || slice.title || cast.title || "Analyst";
+      const anThesis = deskThesis(k, rec);
+      const useSlice = !!(slice.title || slice.inputs && slice.inputs.length || anThesis);
       // recent calls: newest first across the live + history feeds, deduped by game
       const seen: any = {}; const calls: any[] = [];
       [betaLiveData, betaData].forEach((d: any) => ((d && d.games) || []).forEach((g: any) => {
@@ -2581,8 +2772,8 @@ export default function Home() {
       // now carries the one fact that still governs the reading — when the record starts.
       const lkBanner = rec
         ? `<div class="anl-lkband">
-            <b>The graded record, ${RECORD_ERA_TXT}</b>
-            <span>Every call below is graded against the real final at the line it was priced against. Nothing is backfilled, and nothing from before the desk was rebuilt is counted.</span>
+            <b>The graded record, ${recordEraTxt()}</b>
+            <span>Every call below is graded against the real final at the line it was priced against. ${esc(recordBasisLine())}</span>
           </div>`
         : "";
       const recHero = rec
@@ -2702,25 +2893,36 @@ export default function Home() {
               <div class="anlp-aura" aria-hidden="true"></div>
               <div class="anlp-art">${deskPortrait(k, 148, "page")}</div>
               <h2 class="anlp-name">${esc(String(cast.name || k).toUpperCase())}</h2>
-              <div class="anlp-title">${esc(cast.title || "Analyst")}${crowned ? `<span class="anlp-crown">${crownSvg(13)} Analyst of the week${aiW && aiW.week ? ` · ${esc(aiW.week)}` : ""}</span>` : ""}</div>
-              ${bio.tagline ? `<p class="anlp-tag">“${esc(bio.tagline)}”</p>` : ""}
+              <div class="anlp-title">${esc(anTitle)}${crowned ? `<span class="anlp-crown">${crownSvg(13)} Analyst of the week${aiW && aiW.week ? ` · ${esc(aiW.week)}` : ""}</span>` : ""}</div>
+              ${anThesis ? `<p class="anlp-tag">“${esc(deskEdgeLine(k, rec))}”</p>` : (bio.tagline ? `<p class="anlp-tag">“${esc(bio.tagline)}”</p>` : "")}
             </header>
-            ${bio.how ? `<section class="anlp-sec anlp-voice"><div class="anlp-sec-h">How I see baseball</div><p class="anlp-method">${esc(bio.how)}</p></section>` : (cast.method ? `<section class="anlp-sec"><p class="anlp-method">${esc(cast.method)}</p></section>` : "")}
+            ${anThesis
+              ? `<section class="anlp-sec anlp-voice"><div class="anlp-sec-h">How I see baseball</div><p class="anlp-method">${esc(anThesis)}</p></section>`
+              : (bio.how ? `<section class="anlp-sec anlp-voice"><div class="anlp-sec-h">How I see baseball</div><p class="anlp-method">${esc(bio.how)}</p></section>` : (cast.method ? `<section class="anlp-sec"><p class="anlp-method">${esc(cast.method)}</p></section>` : ""))}
             ${anlProfileSection(k)}
             <section class="anlp-recwrap">
               ${recHero}
               ${arc ? `<div class="anlp-arcwrap">${arc}<span class="anlp-arc-k">last ${rec.last10.length} calls — the running arc</span></div>` : ""}
               ${graded ? "" : `<div class="anl-note">Every call ${esc(cast.name || "this analyst")} files is graded against the real final — the record builds here in public.</div>`}
             </section>
-            ${(bio.edges || bio.inputs || spec.engine) ? `<section class="anlp-sec anlp-method-sec">
-              <div class="anlp-sec-h">The method</div>
-              <div class="anlp-mcols">
-                ${bio.edges ? `<div class="anlp-mcol"><div class="anlp-mk">The edges I hunt</div><ul class="rost-list">${bio.edges.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
-                ${bio.inputs ? `<div class="anlp-mcol"><div class="anlp-mk">What I read</div><ul class="rost-list dim">${bio.inputs.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
-              </div>
-              ${spec.engine ? `<p class="anlp-engine"><b>Under the hood.</b> ${esc(spec.engine)}${spec.basis ? ` Conviction: ${esc(spec.basis)}` : ""}</p>` : ""}
-              ${spec.engine ? `<div class="anlp-flags">${spec.calibrated ? `<span class="anlp-flag ok">walk-forward calibrated</span>` : `<span class="anlp-flag">conviction not calibrated</span>`}${spec.margin ? `<span class="anlp-flag ok">has a run-line view</span>` : `<span class="anlp-flag">totals only</span>`}</div>` : ""}
-            </section>` : ""}
+            ${useSlice
+              ? ((slice.inputs && slice.inputs.length) || slice.channel || (rec && rec.basis) ? `<section class="anlp-sec anlp-method-sec">
+                  <div class="anlp-sec-h">The method</div>
+                  ${slice.channel ? `<p class="anlp-engine lead"><b>One channel, and only one.</b> ${esc(sentence(slice.channel))} — the four analysts read disjoint slices of the game, so nothing on this list reaches any of the other three.</p>` : ""}
+                  ${slice.inputs && slice.inputs.length ? `<div class="anlp-mcols">
+                    <div class="anlp-mcol"><div class="anlp-mk">What I read</div><ul class="rost-list">${slice.inputs.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul></div>
+                  </div>` : ""}
+                  ${rec && rec.basis ? `<details class="sgc-basis"><summary><span>Exactly what this record counts</span><span class="sgc-caret" aria-hidden="true">›</span></summary><p>${esc(rec.basis)}</p></details>` : ""}
+                </section>` : "")
+              : ((bio.edges || bio.inputs || spec.engine) ? `<section class="anlp-sec anlp-method-sec">
+                  <div class="anlp-sec-h">The method</div>
+                  <div class="anlp-mcols">
+                    ${bio.edges ? `<div class="anlp-mcol"><div class="anlp-mk">The edges I hunt</div><ul class="rost-list">${bio.edges.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
+                    ${bio.inputs ? `<div class="anlp-mcol"><div class="anlp-mk">What I read</div><ul class="rost-list dim">${bio.inputs.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul></div>` : ""}
+                  </div>
+                  ${spec.engine ? `<p class="anlp-engine"><b>Under the hood.</b> ${esc(spec.engine)}${spec.basis ? ` Conviction: ${esc(spec.basis)}` : ""}</p>` : ""}
+                  ${spec.engine ? `<div class="anlp-flags">${spec.calibrated ? `<span class="anlp-flag ok">walk-forward calibrated</span>` : `<span class="anlp-flag">conviction not calibrated</span>`}${spec.margin ? `<span class="anlp-flag ok">has a run-line view</span>` : `<span class="anlp-flag">totals only</span>`}</div>` : ""}
+                </section>` : "")}
             ${takesHtml ? `<div class="anlp-sec"><div class="anlp-sec-h">Today at the desk</div><div class="anl-takes">${takesHtml}</div></div>` : ""}
             ${(bestCallHtml || worstCallHtml) ? `<div class="anlp-sec"><div class="anlp-sec-h">Best and worst</div><div class="anlp-bw">${bestCallHtml}${worstCallHtml}</div></div>` : ""}
             ${rivHtml ? `<div class="anlp-sec"><div class="anlp-sec-h">Rivalries</div><div class="anl-rivs">${rivHtml}</div></div>` : ""}
@@ -2796,7 +2998,13 @@ export default function Home() {
         </div>` : "";
       return `<div class="stgy dskdb" id="stgy-panel">
         <div class="stgy-h"><span class="stgy-k">◆ The desk on this game</span>${consensusBanner(g, locked, "wide")}</div>
-        <p class="stgy-lede">Four analysts file <b>independent</b> calls on every game — then the desk chief weighs them. Agreement is a green light; a split desk is a pass.</p>
+        <!-- The second sentence used to read "Agreement is a green light; a split desk is a
+             pass." That was the four-way vote, and the vote was removed: it let three
+             near-coin-flip voices outvote the engine that served the bet, so a card could
+             serve a bet and say "we're passing" in the same breath. PLAY vs LEAN is the star
+             tier now, and where the desk lands is context, never a veto. Nothing on this page
+             may re-describe agreement as a gate. -->
+        <p class="stgy-lede">Four analysts file <b>independent</b> calls on every game, each over its own slice of it. Where they land is context on the bet the engine already served — never a veto, and never what creates one.</p>
         <div class="dskdb-rows">${rows}${chiefRow}</div>
         <div class="stgy-note">One desk, one bet: only the DiamondEdge call is ever played, and only it grades into the headline record. Every analyst's own calls are graded separately — that scoreboard lives on Insights.</div>
       </div>`;
@@ -3276,6 +3484,17 @@ export default function Home() {
     function analystRecordSection() {
       const rows = deskRecordRows();
       if (!rows.length) return "";
+      /* The lede used to assert "most of them are nowhere near a readable sample" as a
+         standing fact about the desk. It was true of the ledgers it was written for and is
+         not true of these — all four restarted together and all four are the same size — so
+         the sentence is now COUNTED off the same grouping the board below is built from,
+         and disappears entirely when nothing is too young to rank. */
+      const early = rows.filter((r: any) => !isRankable(r)).length;
+      const groupNote = !early
+        ? "They are all the same size, so the board can be read straight down."
+        : early >= rows.length
+          ? "None of them is near a readable sample yet, so the board ranks nothing."
+          : `${early} of the ${rows.length} ${early === 1 ? "is" : "are"} nowhere near a readable sample, so the board is grouped by what is actually comparable and a position only means something inside a group that says so.`;
       const groups = deskGroups(rows).map((grp: any) => {
         const cards = grp.rows.map((r: any, i: number) => {
           // the measured-profile verdict rides the row it belongs to — the ledger above it is
@@ -3290,10 +3509,10 @@ export default function Home() {
             ? `<span class="dskrec-prof on"><i>measured specialism</i>${esc(ph.line)}</span>` : "";
           return `
           <button class="dskrec-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked ? "" : " early"}${profTx ? " hasprof" : ""}" data-an="${esc(r.key)}"
-            aria-label="${esc(`${r.name} — ${r.win}-${r.loss}${r.push ? `-${r.push}` : ""} over ${r.n} graded calls ${RECORD_ERA_TXT}${grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : "") : ", too early to rank"}${ph && ph.line ? `. ${ph.line}` : ""}`)}">
+            aria-label="${esc(`${r.name} — ${r.win}-${r.loss}${r.push ? `-${r.push}` : ""} over ${r.n} graded calls ${recordEraTxt()}${grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : "") : ", too early to rank"}${ph && ph.line ? `. ${ph.line}` : ""}`)}">
             <span class="dskrec-rank">${grp.ranked && grp.ordinals ? ordinal(i) : `<i class="dskrec-norank">${grp.ranked ? "◆" : "—"}</i>`}</span>
             <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
-            <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i${grp.ranked ? "" : ` class="soft"`}>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? ledgerRoi(r, grp.ranked ? "" : "soft") : ""}<i class="dim">${r.n || 0} graded ${RECORD_ERA_TXT}</i></span>
+            <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i${grp.ranked ? "" : ` class="soft"`}>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? ledgerRoi(r, grp.ranked ? "" : "soft") : ""}<i class="dim">${r.n || 0} graded ${recordEraTxt()}</i></span>
             ${deskL10Dots(r.last10)}
             ${profTx}
           </button>`;
@@ -3310,11 +3529,11 @@ export default function Home() {
       }).join("");
       return `<div class="ixc dskrec" id="analyst-record">
         <div class="ixc-h">The desk board</div>
-        <div class="ixc-sub">Four analysts call every game independently, and every call is graded against the real final at the line it was priced against. Every record here starts in July 2026. What they cannot all do yet is share one league table — most of them are nowhere near a readable sample — so the board is grouped by what is actually comparable, and a position only means something inside a group that says so.</div>
+        <div class="ixc-sub">Four analysts call every game independently, each over its own slice of it, and every call is graded against the real final at the line it was priced against. Every record here starts in ${recordEraMonth()}. ${groupNote}</div>
         ${groups}
         ${deskProfileBlock()}
         <div class="dskrec-key">
-          <span class="dskrec-keytx">One record per analyst, all of it graded ${RECORD_ERA_TXT}. Nothing is backfilled and nothing from before the desk was rebuilt is counted.</span>
+          <span class="dskrec-keytx">One record per analyst, all of it graded ${recordEraTxt()}. ${esc(recordBasisLine())}</span>
         </div>
         ${chRows ? `<div class="chh"><div class="chh-h">When the desk agrees</div>${chRows}<div class="chh-note">The same games seen four ways — the states overlap with nothing else and are graded on the desk's own calls.</div></div>` : ""}
       </div>`;
@@ -3441,17 +3660,17 @@ export default function Home() {
       const p = patternsRaw();
       if (!p) return null;
       const h = p.headline && typeof p.headline === "object" ? p.headline : {};
-      const line = groupThousands(humanNote(h.line) || (typeof p.headline === "string" ? humanNote(p.headline) : ""));
+      const line = proseDates(groupThousands(humanNote(h.line) || (typeof p.headline === "string" ? humanNote(p.headline) : "")));
       const status = String(h.status || p.status || "").toLowerCase();
       const anyFinding = h.any_finding != null ? h.any_finding === true
         : (patternHighlights().length > 0);
       if (!line && !anyFinding) return null;
       return {
         line, anyFinding, status,
-        liveLine: humanNote(h.live_era_line),
-        reconLine: humanNote(h.reconstructed_era_line),
-        what: humanNote(h.what_this_table_is),
-        honest: humanNote(p.honest_note),
+        liveLine: proseDates(humanNote(h.live_era_line)),
+        reconLine: proseDates(humanNote(h.reconstructed_era_line)),
+        what: proseDates(humanNote(h.what_this_table_is)),
+        honest: proseDates(humanNote(p.honest_note)),
       };
     }
     const PAT_FAM: any = { UNANIMOUS_4: "All four agree", "MAJORITY_3-1": "3–1 majority", "SPLIT_2-2": "2–2 split" };
@@ -3528,15 +3747,36 @@ export default function Home() {
       ].filter((g) => g.rows.length);
       const sg = e.significance && typeof e.significance === "object" ? e.significance : {};
       const dr = Array.isArray(e.date_range) ? e.date_range : [];
+      /* WHAT AN ERA *IS* COMES FROM THE ERA (fix, 2026-07-31).
+         This used to hardcode both strings, and the reconstructed one said "the four engines
+         walked forward across history, before the desk existed". That sentence was true of a
+         backend that no longer exists: the four analysts were re-architected onto disjoint
+         feature slices and retrained through 2026-06-30, and the split between the two eras is
+         now each read's OWN `basis` — a read produced by a model fitted before the game was
+         played versus a read actually served before it was played — not a date range and not
+         pre-desk history. The page had no way to know that, and said the false thing quietly
+         for as long as it took someone to notice.
+         So the era now DESCRIBES ITSELF: era_label, era_sub and era_basis are served on both
+         eras and are read here. The fallbacks below are deliberately basis-shaped rather than
+         date-shaped or history-shaped, so that even the degraded path cannot re-acquire a
+         claim about when or how the models were built. */
+      const eraLabel = proseDates(humanNote(e.era_label)) || (eraKey === "live" ? "The live era" : "The reconstructed era");
+      const eraSub = proseDates(humanNote(e.era_sub)) || (eraKey === "live"
+        ? "reads that were served before the games were played"
+        : "reads from models fitted before the games were played, but assembled afterwards");
       return {
         key: eraKey,
-        label: eraKey === "live" ? "The live era" : "The reconstructed era",
-        sub: eraKey === "live"
-          ? "the desk's own graded ledgers, from the day the desk went live"
-          : "the four engines walked forward across history, before the desk existed",
+        label: eraLabel,
+        sub: eraSub,
+        basis: String(e.era_basis == null ? "" : e.era_basis).trim(),
         n: Math.max(0, Math.round(Number(e.n_games != null ? e.n_games : e.n) || 0)),
-        range: dr[0] && dr[1] ? `${stratDateTxt(String(dr[0]).slice(0, 10)) || dr[0]} – ${stratDateTxt(String(dr[1]).slice(0, 10)) || dr[1]}` : "",
-        line: groupThousands(humanNote(e.headline)),
+        // a one-day era is a DATE, not a range — "Jul 31, 2026 – Jul 31, 2026" reads as a bug
+        range: dr[0] && dr[1]
+          ? (String(dr[0]).slice(0, 10) === String(dr[1]).slice(0, 10)
+            ? `${stratDateTxt(String(dr[0]).slice(0, 10)) || dr[0]}`
+            : `${stratDateTxt(String(dr[0]).slice(0, 10)) || dr[0]} – ${stratDateTxt(String(dr[1]).slice(0, 10)) || dr[1]}`)
+          : "",
+        line: proseDates(groupThousands(humanNote(e.headline))),
         note: humanNote(e.note),
         groups,
         sig: {
@@ -3557,6 +3797,16 @@ export default function Home() {
         live: patternEraTable("live", p.live_era != null ? p.live_era : p.live),
         recon: patternEraTable("recon", p.reconstructed_era != null ? p.reconstructed_era : p.reconstructed),
       };
+    }
+    /* The little era CHIP on a pattern card said "replayed era", which is the same stale claim
+       as the caption above — nothing is replayed across history any more. The chip now borrows
+       the era's OWN served label, lowercased to sit as a chip, and falls back to a word that
+       only names the split rather than describing it. */
+    function patEraChipTxt(which: "live" | "reconstructed") {
+      const t = patternEraTables();
+      const era = which === "live" ? t.live : t.recon;
+      const lab = era && era.label ? String(era.label).replace(/^the\s+/i, "").trim() : "";
+      return lab || (which === "live" ? "live era" : "reconstructed era");
     }
     /* ONE SHARED SCALE per era. Every interval in an era is drawn against the same axis, so
        "wider" really means less certain and the 50% line runs straight down the whole table. */
@@ -3631,14 +3881,14 @@ export default function Home() {
       if (!era) return "";
       const head = `<div class="patera-h">
         <span class="patera-k ${esc(era.key)}">${esc(era.label)}</span>
-        <span class="patera-m">${era.n ? `${era.n.toLocaleString("en-US")} games` : "no games yet"}${era.range ? ` · ${esc(era.range)}` : ""}</span>
+        <span class="patera-m">${era.n ? `${era.n.toLocaleString("en-US")} game${era.n === 1 ? "" : "s"}` : "no games yet"}${era.range ? ` · ${esc(era.range)}` : ""}</span>
       </div>
       <div class="patera-sub">${esc(era.sub)}</div>`;
       if (!era.groups.length) {
         // an era with nothing in it is a STATE, not a hole — it says so in words
         return `<section class="patera empty">
           ${head}
-          <div class="patera-none"><b>Nothing measured here yet</b><span>${esc(era.line || "This era starts empty and accrues — every graded night adds to it, and the table above is what the reconstruction says in the meantime.")}</span></div>
+          <div class="patera-none"><b>Nothing measured here yet</b><span>${esc(era.line || "This era starts empty and accrues — every graded night adds to it. The other era on this page is the only thing measured so far, and it is labelled with what it is.")}</span></div>
         </section>`;
       }
       // the main axis is set by the always-visible groups only; the folded small-sample group
@@ -3683,8 +3933,8 @@ export default function Home() {
         ? `<span class="pat-glyphs">${it.keys.map((k: string) => `<i class="pat-g an-${esc(k)}">${deskGlyph(k, big ? 15 : 13)}</i>`).join("")}</span>`
         : `<span class="pat-glyphs all">${DESK_ORDER.map((k) => `<i class="pat-g an-${esc(k)}">${deskGlyph(k, big ? 12 : 10)}</i>`).join("")}</span>`;
       const eraChip = it.era === "live"
-        ? `<span class="pat-era live">live era</span>`
-        : it.era === "reconstructed" ? `<span class="pat-era recon">replayed era</span>` : "";
+        ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>`
+        : it.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : "";
       const nChip = it.n ? `<span class="pat-n">n = ${it.n} game${it.n === 1 ? "" : "s"}</span>` : "";
       const smalln = it.n > 0 && it.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample — a lean, not a law</span>` : "";
       const wlChip = it.wl ? `<span class="pat-wl">${it.wl.w}–${it.wl.l}${it.wl.p ? `–${it.wl.p}` : ""}</span>` : "";
@@ -3706,7 +3956,7 @@ export default function Home() {
         return `<section class="patstrip" aria-label="The patterns">
           <div class="pat-h">
             <span class="pat-k">◆ The Patterns</span>
-            <span class="pat-sub">What actually happens when the desk lines up — measured nightly, not vibes</span>
+            <span class="pat-sub">What actually happens when the desk lines up — measured against the real finals, not asserted</span>
             <button class="pat-all" data-nav="results" aria-label="Every pattern, on Insights">All patterns →</button>
           </div>
           <div class="pat-rail">${cards}</div>
@@ -3773,7 +4023,7 @@ export default function Home() {
           <div class="sts-kick"><span>◆ The Patterns</span></div>
           <div class="sts-patlead">${esc(patternLead(pick0))}</div>
           <h3 class="sts-head pat">${patternBody(pick0)}</h3>
-          <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">live era</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">replayed era</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample</span>` : ""}</div>
+          <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample</span>` : ""}</div>
           ${more}
           <button class="st-cta" data-go="results">Every pattern, graded →</button>
         </div>`;
@@ -3787,7 +4037,14 @@ export default function Home() {
         <div class="sts-kick"><span>◆ The Patterns</span></div>
         <div class="sts-patlead">THE ANSWER IS NO</div>
         <h3 class="sts-head pat">${esc(recon && recon.n ? `Across ${recon.n.toLocaleString("en-US")} games, the desk's agreement carries no measurable signal.` : "The desk's agreement carries no measurable signal.")}</h3>
-        <p class="sts-patbody">Agreement, dissent and splits all land at a coin flip. Every interval contains 50%, and nothing survives correcting for the whole table.</p>
+        <!-- "Every interval contains 50%" was hardcoded, and the repointed table contradicts
+             it: 4 of the 41 rows clear 50% on their own uncorrected interval. That is what
+             testing 41 overlapping buckets at 95% produces by chance — which is the point of
+             the correction — but the slide may not state the stronger claim. Counted, not
+             asserted. -->
+        <p class="sts-patbody">Agreement, dissent and splits all land at a coin flip. ${s && s.clear
+          ? `${s.clear} row${s.clear === 1 ? "" : "s"} drift${s.clear === 1 ? "s" : ""} clear of 50% on ${s.clear === 1 ? "its" : "their"} own interval — about what ${s.family || "a table this wide"} overlapping buckets produce by chance — and nothing survives correcting for the whole table.`
+          : `Every interval contains 50%, and nothing survives correcting for the whole table.`}</p>
         ${s && s.family ? `<div class="pat-meta center"><span class="pat-n">${s.family} configurations</span><span class="pat-n">${s.clear} clear of 50%</span><span class="pat-n">${s.survive} survive correction</span></div>` : ""}
         <button class="st-cta" data-go="results">See every interval →</button>
       </div>`;
@@ -3843,7 +4100,7 @@ export default function Home() {
        two extra passes finish the job: the ASCII cross in "analysts x axes" is a
        multiplication sign, and a de-identified `smallest_p_two_sided` has to become the
        English name of the thing rather than four loose words. */
-    const profProse = (t: any) => sentence(deIdent(humanNote(t)))
+    const profProse = (t: any) => proseDates(sentence(deIdent(humanNote(t))))
       .replace(/\bx\b/g, "×")
       .replace(/\bsmallest p two sided\b/gi, "the smallest two-sided p-value")
       .replace(/\bp two sided\b/gi, "two-sided p-value")
@@ -3928,9 +4185,18 @@ export default function Home() {
         order, profiles,
         headline: {
           line: groupThousands(profProse(hd.line)),
-          // served as a noun phrase ("a LIVE MEASUREMENT of…") — it needs a subject, not a
-          // capital letter, or it reads as a sentence that lost its opening
-          what: (() => { const w = profProse(hd.what_this_block_is); return w ? `This block is ${w.charAt(0).toLowerCase()}${w.slice(1)}` : ""; })(),
+          // Usually served as a noun phrase ("a LIVE MEASUREMENT of…") — that needs a
+          // subject, not a capital letter, or it reads as a sentence that lost its opening.
+          // But the reset payload serves a whole sentence in shouted caps ("THE MEASURED
+          // PROFILE HAS BEEN RESET…"), and lowering its first letter produced a literal
+          // "This block is tHE MEASURED PROFILE…" on the page. A phrase that opens with a
+          // shouted word is already a sentence and is left exactly as served.
+          what: (() => {
+            const w = profProse(hd.what_this_block_is);
+            if (!w) return "";
+            if (/^[A-Z][A-Z]/.test(w)) return w;
+            return `This block is ${w.charAt(0).toLowerCase()}${w.slice(1)}`;
+          })(),
         },
         family: {
           size: Math.max(0, Math.round(Number(fam.size) || 0)),
@@ -4075,7 +4341,7 @@ export default function Home() {
         : "";
       const figs = P.family.size ? `<div class="profblk-figs">
         <span><b>${P.family.size.toLocaleString("en-US")}</b><i>cells measured</i></span>
-        <span><b>${P.axesN || 11}</b><i>axes per analyst</i></span>
+        <span><b>${P.axesN}</b><i>axes per analyst</i></span>
         <span><b>${P.order.length}</b><i>analysts</i></span>
         <span class="${P.family.survive ? "on" : ""}"><b>${P.family.survive}</b><i>survive${P.family.survive === 1 ? "s" : ""} the correction</i></span>
       </div>` : "";
@@ -4123,7 +4389,12 @@ export default function Home() {
       </details>`;
       return `<section class="anlp-sec anlp-prof${p.chars.length ? " found" : ""}">
         <div class="anlp-sec-h">What the numbers say about me</div>
-        <p class="profsec-lede">The section above is what ${esc(nm)} says about itself. This one is what its own graded ledger says — recomputed every night, and the only place on this page allowed to claim ${esc(nm)} is better at anything.</p>
+        <!-- "recomputed every night" was a standing promise about a job that isn't running:
+             the profile was reset by the re-architecture and, per the payload, will not be
+             recomputed until the new record is deep enough to attribute. The cadence claim is
+             gone; what survives is the part that is true whatever the state — this is the
+             ledger's verdict, not the analyst's own. -->
+        <p class="profsec-lede">The section above is what ${esc(nm)} says about itself. This one is what its own graded ledger says, and it is the only place on this page allowed to claim ${esc(nm)} is better at anything.</p>
         ${profBaseFigs(p, "wide")}
         ${profBaseBar(p, sc)}
         ${p.baseline.n ? `<p class="profsec-basen">This is a separate, far longer ledger than the graded record further down the page: every call ${esc(nm)} has ever filed, including the training era. It is the yardstick everything in this section is measured against — never a record of bets.</p>` : ""}
@@ -9082,7 +9353,7 @@ export default function Home() {
         <div class="sts-kick"><span>◆ Desk Standings</span></div>
         <h3 class="sts-head deskhead">Four analysts.<br>Not one league table.</h3>
         <div class="sts-strows">${items}</div>
-        <div class="sts-substat">Every record starts in July 2026, and only a record past ${ANALYST_MIN_N} graded calls gets a place — tap an analyst for the full card.</div>
+        <div class="sts-substat">Every record starts in ${recordEraMonth()}, and only a record past ${ANALYST_MIN_N} graded calls gets a place — tap an analyst for the full card.</div>
         <button class="st-cta" data-go="results">See the full record →</button>
       </div>`;
     }
@@ -10322,18 +10593,23 @@ export default function Home() {
       const roi = graded && rec.roi != null ? `${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(1)}%` : "";
       const today = anlTodayCount(k);
       const meta = analystRecMeta(rec);
-      const nTx = rec && rec.n ? `${rec.n} graded ${RECORD_ERA_TXT}` : `no graded calls yet · opens July 2026`;
+      const nTx = rec && rec.n ? `${rec.n} graded ${recordEraTxt()}` : `no graded calls yet · opens ${recordEraMonth()}`;
       const young = !!(meta && meta.young);
+      // WHAT THIS ANALYST IS comes from the record and the served slice; the authored cast is
+      // the fallback, not the source. (See deskSliceFor — the four were re-architected and the
+      // authored titles and taglines went stale on the spot.)
+      const title = (rec && rec.title) || (deskSliceFor(k) as any).title || cast.title || "Analyst";
+      const edge = deskEdgeLine(k, rec) || bio.tagline || cast.short || "";
       return `<article class="rostcard an-${esc(k)}" data-an="${esc(k)}" role="button" tabindex="0"
-        aria-label="${esc(`${cast.name}, ${cast.title}. ${graded ? `${wl} over ${rec.n} graded calls ${RECORD_ERA_TXT}${young ? ", too early to rank" : ""}` : "no graded calls yet"}. ${today} call${today === 1 ? "" : "s"} on today's board. Open the full profile.`)}">
+        aria-label="${esc(`${cast.name}, ${title}. ${graded ? `${wl} over ${rec.n} graded calls ${recordEraTxt()}${young ? ", too early to rank" : ""}` : "no graded calls yet"}. ${today} call${today === 1 ? "" : "s"} on today's board. Open the full profile.`)}">
         <header class="rost-top">
           <span class="rost-art">${deskPortrait(k, 56, "rost")}</span>
           <span class="rost-idw">
             <h3 class="rost-name">${esc(String(cast.name || k).toUpperCase())}</h3>
-            <span class="rost-title">${esc(cast.title || "Analyst")}</span>
+            <span class="rost-title">${esc(title)}</span>
           </span>
         </header>
-        <p class="rost-tag">${esc(bio.tagline || cast.short || "")}</p>
+        <p class="rost-tag">${esc(edge)}</p>
         <div class="rost-rec${graded ? "" : " none"}${young ? " young" : ""}">
           <span class="rost-wl"><b>${esc(wl)}</b><i>W–L</i></span>
           <span class="rost-sts">${hit ? `<span class="rost-st">${esc(hit)} <i>hit</i></span>` : ""}${roi ? `<span class="rost-st ${rec.roi >= 0 ? "pos" : "neg"}">${esc(roi)} <i>ROI</i></span>` : ""}</span>
@@ -10389,8 +10665,12 @@ export default function Home() {
           </header>
           <div class="dp-grid" role="group" aria-label="The four analysts">${cards}</div>
           <div class="dp-foot">
-            <p><b>How the records work.</b> Each analyst's calls are graded on their own, against the real final, at the line they were priced against — never against each other's opinions. Every record here starts in <b>July 2026</b>, when the desk was rebuilt: nothing before that is counted and nothing is backfilled. A call that never got a number is never counted as a win or a loss.</p>
-            <p><b>Why some of them have no rank.</b> A record is only ranked once it passes ${ANALYST_MIN_N} graded calls. Under that, a hit rate and an ROI are noise, so we say so instead of giving it a place it hasn't earned. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
+            <p><b>How the records work.</b> Each analyst's calls are graded on their own, against the real final, at the line they were priced against — never against each other's opinions. Every record here starts in <b>${recordEraMonth()}</b>, when the desk was rebuilt: nothing from before that is counted. ${esc(recordBasisLine())} A call that never got a number is never counted as a win or a loss.</p>
+            <!-- This paragraph asserted that some of them have no rank. Whether any do is a
+                 fact about the served records, not about the page — all four restarted
+                 together and all four are currently past the bar — so it is now asked, not
+                 assumed. -->
+            <p><b>${rows.some((r: any) => !isRankable(r)) ? `Why some of them have no rank.` : `When a record earns a rank.`}</b> A record is only ranked once it passes ${ANALYST_MIN_N} graded calls. Under that, a hit rate and an ROI are noise, so we say so instead of giving it a place it hasn't earned. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
             <!-- BEHIND A SCREEN, NOT DELETED. The measured-profile block and the pattern
                  tables are two of the honest nulls this product is built on, and both are
                  preserved in full — but they are ~1,400 words of statistics that used to
