@@ -5016,8 +5016,11 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
   max-width:640px;margin:12px auto 0}
 .pdd.full{padding:16px 17px 15px}
 .pdd.inline{padding:11px 13px;display:flex;flex-direction:column;gap:5px;margin-top:11px}
-.pdd-flag{display:inline-block;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.19em;
-  text-transform:uppercase;color:#0b111e;background:var(--amber);border-radius:999px;padding:3px 9px}
+/* align-self keeps the pill hugging its text inside the inline variant's column flex —
+   without it the badge stretches the full width of the block and reads as a banner */
+.pdd-flag{display:inline-block;align-self:flex-start;font-family:var(--disp);font-weight:700;font-size:9.5px;
+  letter-spacing:.19em;text-transform:uppercase;color:#0b111e;background:var(--amber);border-radius:999px;
+  padding:3px 9px}
 .pdd-k{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:var(--disp);font-weight:700;
   font-size:15px;letter-spacing:-.005em;color:var(--ink)}
 .pdd.full p{margin:9px 0 0;font-family:var(--sans);font-size:13.5px;line-height:1.62;color:var(--ink2);
