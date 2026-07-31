@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-07-31T17:05:40Z",
+  "generated_utc": "2026-07-31T19:14:57Z",
   "dates": [
     "2026-07-31",
     "2026-08-01"
@@ -1066,9 +1066,82 @@
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.0% vs median break-even 52.4% at -110 (median ev -0.65% < +1.5% min); +EV at best -102 but gate-expansion picks measured -25% ROI \u2014 not a bet",
         "asof_utc": "2026-07-31T14:12:04Z"
+      },
+      {
+        "model": "champion_v2",
+        "source": "live",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-3h",
+        "date": "2026-07-31",
+        "game_pk": 822782,
+        "game_id": "2026-07-31-STL-TOR",
+        "matchup": "STL @ TOR",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-07-31T23:07:00Z",
+        "market_line": 7.5,
+        "pick_side": null,
+        "pick_line": 7.5,
+        "lean": {
+          "side": "over",
+          "line": 7.5
+        },
+        "our_prob": 0.5204,
+        "per_side_price": 100,
+        "best_book": "matchbook",
+        "median_price": -110,
+        "p_breakeven": 0.5,
+        "ev": 0.0408,
+        "ev_min": 0.015,
+        "take": false,
+        "playable": false,
+        "gate_price": -110,
+        "gate_ev": -0.0065,
+        "gate_p_breakeven": 0.5238,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.93,
+        "gate_reason": "negative_ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0204,
+          "signed_edge": 0.0204,
+          "side": "over",
+          "frozen_at": "2026-07-31T12:27:14.290468+00:00",
+          "morning_price": -110,
+          "nlines": 1
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0204,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "price": {
+          "basis": "served/graded at the BEST executable per-side price across books quoting the pick's line at the latest pregame snapshot (v4 odds store); the +EV GATE evaluates at the MEDIAN-in-decimal price at the same line (EXECUTION LAYER, Leon 2026-07-09 \u2014 gate at MEDIAN, price/grade at BEST: the proven config)",
+          "snapshot_ts": "2026-07-31T18:38:03Z",
+          "n_books_at_line": 23,
+          "best_price": 100,
+          "best_book": "matchbook",
+          "median_price": -110,
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.05
+        },
+        "informational_lean": "over",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 52.0% vs median break-even 52.4% at -110 (median ev -0.65% < +1.5% min); +EV at best 100 but gate-expansion picks measured -25% ROI \u2014 not a bet",
+        "asof_utc": "2026-07-31T18:41:02Z"
       }
     ],
-    "n_picks_on_board": 2,
+    "n_picks_on_board": 3,
     "n_voided": 0
   },
   "board_notice": null,
@@ -1077,7 +1150,7 @@
     "wall_rows_first_write_wins": true,
     "locked_this_cycle": {
       "n_locked_now": 0,
-      "n_locked_total": 24
+      "n_locked_total": 32
     },
     "note": "once now >= first_pitch_utc a game's rows are IMMUTABLE: locked:true, no re-evaluation, no side/price/line/star changes \u2014 the payload permanently carries the last PRE-START state (the judged Vegas line) and grading uses exactly that locked state. Each wall row is also first-write-wins: once written at its wall it is never overwritten by a later cycle. Game cards carry locked/locked_at (wall + utc + line) for the UI badge, e.g. 'Locked at T-1h \u00b7 O/U 8.5'."
   },
@@ -1095,6 +1168,21 @@
       },
       "playable": true,
       "all_pass": false
+    },
+    "2026-08-01": {
+      "featured_game_id": "2026-08-01-St. Louis Cardinals-Toronto Blue Jays-822781",
+      "game_pk": 822781,
+      "matchup": "St. Louis Cardinals @ Toronto Blue Jays",
+      "source_model": "residual_total_v1",
+      "stars": 1,
+      "score": 0.94,
+      "lean": {
+        "side": "over",
+        "line": 8.5
+      },
+      "playable": false,
+      "all_pass": true,
+      "note": "nothing playable today \u2014 featured is the highest-score 1-star PASS lean, shown for interest; it is NOT a bet"
     }
   },
   "featured_game_id": "2026-07-31-Milwaukee Brewers-Los Angeles Angels-823999",
@@ -1295,6 +1383,13 @@
         "n_fit": 7193,
         "n_fit_days": 122,
         "fit_max_date": "2026-07-29"
+      },
+      "2026-08-01": {
+        "active": true,
+        "s": 0.693646,
+        "n_fit": 7239,
+        "n_fit_days": 123,
+        "fit_max_date": "2026-07-30"
       }
     },
     "note": "SCORE BASIS CHANGE (activation-dated 2026-07-27, forward only): the model grid's served probability passes through a walk-forward market-anchored calibration map fitted on strictly-past graded picks before the (unchanged) EV gate and score pipeline. Locked picks, graded history and every past score/record are NEVER restated. A calibrated row can never flip sides \u2014 only its stated conviction changes. This does NOT create edge and no edge is claimed: it makes the confidence number mean what it says."
@@ -2240,24 +2335,24 @@
   "price_veto": {
     "this_cycle": {
       "n_vetoed_now": 0,
-      "n_already_vetoed": 7,
-      "n_vetoed_total": 7
+      "n_already_vetoed": 6,
+      "n_vetoed_total": 6
     },
     "note": "Until 2026-07-31 the v4 grid's per-side price was the best price across books at EACH BOOK'S OWN line, not at the pick's line, so a book on a different total donated its better price to a pick at the consensus number \u2014 an unobtainable price, and the one the +EV gate evaluated. Fixed at source (v4/assemble/odds_features.py). Walls captured before the fix are first-write-wins and keep their price: those rows are DEMOTED to a disclosed lean (pass_why=price_not_obtainable) carrying price_unobtainable={served_price, best_real_price_at_line, best_book, n_books_at_line}. Nothing is restated \u2014 pick, side, line, served price, our_prob and ev are shown exactly as written, and LOCKED rows are never touched at all. Expect a smaller board: fewer picks clear the gate at honest prices, which is the correct outcome, not a regression."
   },
   "board_census": {
-    "n_games": 15,
-    "n_rows": 29,
+    "n_games": 16,
+    "n_rows": 40,
     "n_voided": 0,
     "n_playable": 2,
     "n_takes": 2,
-    "n_passes": 27,
+    "n_passes": 38,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 1,
       "2": 1,
-      "1": 27
+      "1": 38
     }
   },
   "spread_stream": {
@@ -2313,7 +2408,7 @@
       "separation": "this record counts ONLY stream-stamped run-line rows graded on/after 2026-07-27; it never contains a totals row, and no totals record (overall, by_strategy, live_record, champion) ever contains a spread row \u2014 selftested in spread_stream, daily_cycle and unified_model"
     },
     "positioning": "SPREADS RETURN (Leon, 2026-07-26) \u2014 an ADDITIONAL, clearly labeled run-line section. The totals headline pick is UNCHANGED and stays the product; the spread row renders subordinate to it. New stream: activation 2026-07-27, record starts 0-0-0, graded in public from day one, no retro-credit, no backtest blended in.",
-    "n_games": 15,
+    "n_games": 16,
     "games": {
       "824486": {
         "status": "LEAN",
@@ -2322,16 +2417,16 @@
         "line": 1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": -147,
+        "price": -145,
         "best_book": null,
         "stars": 1,
-        "score": 1.39,
-        "our_prob": 0.6014,
-        "ev": 0.0104,
+        "score": 1.08,
+        "our_prob": 0.597,
+        "ev": 0.0087,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-6h",
+        "lead_time": "T-3h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2349,16 +2444,16 @@
         "line": -1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": 140,
+        "price": 121,
         "best_book": null,
         "stars": 1,
-        "score": 0.82,
-        "our_prob": 0.4189,
-        "ev": 0.0054,
+        "score": 0.24,
+        "our_prob": 0.447,
+        "ev": -0.0122,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2370,49 +2465,49 @@
         "game_id": "2026-07-31-St. Louis Cardinals-Toronto Blue Jays-822782"
       },
       "822945": {
-        "status": "PASS",
-        "side": null,
-        "side_team": null,
-        "line": 1.5,
+        "status": "LEAN",
+        "side": "home",
+        "side_team": "Tampa Bay Rays",
+        "line": -1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": 158,
+        "price": 160,
         "best_book": null,
         "stars": 1,
-        "score": 0.55,
-        "our_prob": 0.3912,
-        "ev": 0.0093,
+        "score": 0.95,
+        "our_prob": 0.3889,
+        "ev": 0.0111,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
         "new_tag": "NEW \u2014 graded from day one",
         "is_bet": false,
         "suggested_units": null,
-        "note": "no model read on the run line for this game",
+        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
         "date": "2026-07-31",
         "game_id": "2026-07-31-Chicago White Sox-Tampa Bay Rays-822945"
       },
       "823593": {
         "status": "LEAN",
-        "side": "away",
-        "side_team": "Miami Marlins",
-        "line": 1.5,
+        "side": "home",
+        "side_team": "New York Mets",
+        "line": -1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": -176,
+        "price": 168,
         "best_book": null,
         "stars": 1,
-        "score": 0.26,
-        "our_prob": 0.3699,
-        "ev": -0.0119,
+        "score": 1.24,
+        "our_prob": 0.3775,
+        "ev": 0.0116,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2425,21 +2520,21 @@
       },
       "824407": {
         "status": "LEAN",
-        "side": "away",
-        "side_team": "Arizona Diamondbacks",
-        "line": 1.5,
+        "side": "home",
+        "side_team": "Cleveland Guardians",
+        "line": -1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": -170,
+        "price": 155,
         "best_book": null,
         "stars": 1,
-        "score": 0.33,
-        "our_prob": 0.3773,
-        "ev": -0.011,
+        "score": 1.36,
+        "our_prob": 0.3966,
+        "ev": 0.0113,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2451,29 +2546,29 @@
         "game_id": "2026-07-31-Arizona Diamondbacks-Cleveland Guardians-824407"
       },
       "824892": {
-        "status": "LEAN",
-        "side": "away",
-        "side_team": "Washington Nationals",
-        "line": 1.5,
-        "home_line": -1.5,
-        "vegas_line": -1.5,
-        "price": -180,
+        "status": "PASS",
+        "side": null,
+        "side_team": null,
+        "line": 1.25,
+        "home_line": -1.25,
+        "vegas_line": -1.25,
+        "price": null,
         "best_book": null,
         "stars": 1,
-        "score": 0.25,
-        "our_prob": 0.3642,
-        "ev": -0.011,
+        "score": 0.0,
+        "our_prob": null,
+        "ev": null,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
         "new_tag": "NEW \u2014 graded from day one",
         "is_bet": false,
         "suggested_units": null,
-        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "note": "no model read on the run line for this game",
         "date": "2026-07-31",
         "game_id": "2026-07-31-Washington Nationals-Atlanta Braves-824892"
       },
@@ -2484,16 +2579,16 @@
         "line": -1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": 170,
+        "price": 173,
         "best_book": null,
         "stars": 1,
-        "score": 0.26,
-        "our_prob": 0.3657,
-        "ev": -0.0125,
+        "score": 0.29,
+        "our_prob": 0.3626,
+        "ev": -0.01,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2506,21 +2601,21 @@
       },
       "824325": {
         "status": "LEAN",
-        "side": "away",
-        "side_team": "Kansas City Royals",
-        "line": -1.5,
+        "side": "home",
+        "side_team": "Colorado Rockies",
+        "line": 1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": 144,
+        "price": -147,
         "best_book": null,
         "stars": 1,
-        "score": 0.91,
-        "our_prob": 0.587,
-        "ev": 0.0078,
+        "score": 1.68,
+        "our_prob": 0.6027,
+        "ev": 0.0126,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2614,21 +2709,21 @@
       },
       "824651": {
         "status": "LEAN",
-        "side": "home",
-        "side_team": "Chicago Cubs",
-        "line": -1.5,
+        "side": "away",
+        "side_team": "New York Yankees",
+        "line": 1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": 138,
+        "price": -140,
         "best_book": null,
         "stars": 1,
-        "score": 0.51,
-        "our_prob": 0.4189,
-        "ev": -0.003,
+        "score": 0.37,
+        "our_prob": 0.4218,
+        "ev": -0.0089,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "locked": true,
+        "locked_at_utc": "2026-07-31T18:41:02Z",
+        "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2640,29 +2735,29 @@
         "game_id": "2026-07-31-New York Yankees-Chicago Cubs-824651"
       },
       "824809": {
-        "status": "LEAN",
-        "side": "away",
-        "side_team": "Philadelphia Phillies",
-        "line": 1.5,
-        "home_line": -1.5,
-        "vegas_line": -1.5,
-        "price": -181,
+        "status": "PASS",
+        "side": null,
+        "side_team": null,
+        "line": 1.25,
+        "home_line": -1.25,
+        "vegas_line": -1.25,
+        "price": null,
         "best_book": null,
         "stars": 1,
-        "score": 0.04,
-        "our_prob": 0.3733,
-        "ev": -0.027,
+        "score": 0.0,
+        "our_prob": null,
+        "ev": null,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
         "new_tag": "NEW \u2014 graded from day one",
         "is_bet": false,
         "suggested_units": null,
-        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "note": "no model read on the run line for this game",
         "date": "2026-07-31",
         "game_id": "2026-07-31-Philadelphia Phillies-Baltimore Orioles-824809"
       },
@@ -2719,6 +2814,33 @@
         "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
         "date": "2026-07-31",
         "game_id": "2026-07-31-Boston Red Sox-Los Angeles Dodgers-823922"
+      },
+      "822781": {
+        "status": "LEAN",
+        "side": "away",
+        "side_team": "St. Louis Cardinals",
+        "line": 1.5,
+        "home_line": -1.5,
+        "vegas_line": -1.5,
+        "price": -159,
+        "best_book": null,
+        "stars": 1,
+        "score": 1.89,
+        "our_prob": 0.364,
+        "ev": 0.036,
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "lean_only",
+        "activation_date": "2026-07-27",
+        "is_new_stream": true,
+        "new_tag": "NEW \u2014 graded from day one",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "date": "2026-08-01",
+        "game_id": "2026-08-01-St. Louis Cardinals-Toronto Blue Jays-822781"
       }
     }
   },
@@ -2815,23 +2937,60 @@
       "separation": "this record counts ONLY sim-stamped rows from the stream's own ledger (state/sim_graded.jsonl), graded on/after 2026-07-28; it never contains a row from the totals or spread ledgers, and no totals/spread record ever contains a simulator row \u2014 the simulator never writes the shared board or the shared graded ledger at all (selftested in sim_stream, daily_cycle and unified_model)"
     },
     "positioning": "SIMULATOR JOINS THE BOARD (Leon, 2026-07-28) \u2014 a fully-physical Monte Carlo of each game, shown as a TRANSPARENT VOICE beside the product. The totals headline pick is UNCHANGED and the simulator never influences it, never rates above 1*, and is never a bet: its validated result is that it TIES the market (median within ~0.02 runs of the posted line). New stream: activation 2026-07-28, record starts 0-0-0, graded in public from day one, in its own ledger, never blended.",
-    "n_games": 15,
+    "n_games": 16,
     "games": {
       "824486": {
         "status": "LEAN",
         "side": "over",
         "line": 8.0,
         "vegas_line": 8.0,
-        "p_over": 0.6555,
-        "p_over_market": 0.4932,
-        "sim_edge": 0.1623,
-        "price": 101.0,
+        "p_over": 0.6187,
+        "p_over_market": 0.4892,
+        "sim_edge": 0.1295,
+        "price": 100.0,
         "best_book": "pinnacle",
         "stars": 1,
         "score": null,
-        "sim_mu": 10.172,
-        "sim_median": 10,
-        "sim_sd": 4.719,
+        "sim_mu": 9.75,
+        "sim_median": 9,
+        "sim_sd": 4.58,
+        "n_sims": 20000,
+        "hfa": "on",
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-3h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-28",
+        "is_new_stream": true,
+        "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "physics simulator \u2014 ties the market, no proven edge",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Pittsburgh Pirates-Cincinnati Reds-824486",
+        "walls_priced": [
+          "T-24h",
+          "T-12h",
+          "T-6h",
+          "T-3h"
+        ]
+      },
+      "822782": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 7.5,
+        "vegas_line": 7.5,
+        "p_over": 0.5467,
+        "p_over_market": 0.5,
+        "sim_edge": 0.0467,
+        "price": -102.0,
+        "best_book": "onexbet",
+        "stars": 1,
+        "score": null,
+        "sim_mu": 8.628,
+        "sim_median": 8,
+        "sim_sd": 4.331,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
@@ -2846,46 +3005,11 @@
         "suggested_units": null,
         "note": "physics simulator \u2014 ties the market, no proven edge",
         "date": "2026-07-31",
-        "game_id": "2026-07-31-Pittsburgh Pirates-Cincinnati Reds-824486",
+        "game_id": "2026-07-31-St. Louis Cardinals-Toronto Blue Jays-822782",
         "walls_priced": [
           "T-24h",
           "T-12h",
           "T-6h"
-        ]
-      },
-      "822782": {
-        "status": "LEAN",
-        "side": "over",
-        "line": 7.5,
-        "vegas_line": 7.5,
-        "p_over": 0.5505,
-        "p_over_market": 0.5,
-        "sim_edge": 0.0505,
-        "price": 102.0,
-        "best_book": "matchbook",
-        "stars": 1,
-        "score": null,
-        "sim_mu": 8.671,
-        "sim_median": 8,
-        "sim_sd": 4.328,
-        "n_sims": 20000,
-        "hfa": "on",
-        "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-12h",
-        "mode": "transparent_voice",
-        "activation_date": "2026-07-28",
-        "is_new_stream": true,
-        "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
-        "is_bet": false,
-        "suggested_units": null,
-        "note": "physics simulator \u2014 ties the market, no proven edge",
-        "date": "2026-07-31",
-        "game_id": "2026-07-31-St. Louis Cardinals-Toronto Blue Jays-822782",
-        "walls_priced": [
-          "T-24h",
-          "T-12h"
         ]
       },
       "822945": {
@@ -2893,22 +3017,22 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.5081,
-        "p_over_market": 0.485,
-        "sim_edge": 0.0231,
+        "p_over": 0.5072,
+        "p_over_market": 0.4792,
+        "sim_edge": 0.028,
         "price": 104.0,
-        "best_book": "matchbook",
+        "best_book": "onexbet",
         "stars": 1,
         "score": null,
-        "sim_mu": 8.96,
+        "sim_mu": 8.982,
         "sim_median": 9,
-        "sim_sd": 4.306,
+        "sim_sd": 4.344,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2920,7 +3044,8 @@
         "game_id": "2026-07-31-Chicago White Sox-Tampa Bay Rays-822945",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823593": {
@@ -2928,22 +3053,22 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.5457,
+        "p_over": 0.5673,
         "p_over_market": 0.4892,
-        "sim_edge": 0.0565,
+        "sim_edge": 0.0782,
         "price": 102.0,
-        "best_book": "matchbook",
+        "best_book": "lowvig",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.424,
+        "sim_mu": 9.643,
         "sim_median": 9,
-        "sim_sd": 4.453,
+        "sim_sd": 4.524,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2955,7 +3080,8 @@
         "game_id": "2026-07-31-Miami Marlins-New York Mets-823593",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "824407": {
@@ -2963,22 +3089,22 @@
         "side": "under",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.4103,
+        "p_over": 0.4042,
         "p_over_market": 0.5108,
-        "sim_edge": -0.1005,
+        "sim_edge": -0.1066,
         "price": 102.0,
         "best_book": "onexbet",
         "stars": 1,
         "score": null,
-        "sim_mu": 7.973,
+        "sim_mu": 7.896,
         "sim_median": 7,
-        "sim_sd": 4.115,
+        "sim_sd": 4.052,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2990,7 +3116,8 @@
         "game_id": "2026-07-31-Arizona Diamondbacks-Cleveland Guardians-824407",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "824892": {
@@ -2998,22 +3125,22 @@
         "side": "under",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.4713,
-        "p_over_market": 0.5065,
-        "sim_edge": -0.0352,
-        "price": -102.0,
-        "best_book": "lowvig",
+        "p_over": 0.4644,
+        "p_over_market": 0.5108,
+        "sim_edge": -0.0464,
+        "price": 100.0,
+        "best_book": "betmgm",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.212,
+        "sim_mu": 9.131,
         "sim_median": 9,
-        "sim_sd": 4.379,
+        "sim_sd": 4.343,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -3025,30 +3152,31 @@
         "game_id": "2026-07-31-Washington Nationals-Atlanta Braves-824892",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "824164": {
         "status": "LEAN",
         "side": "over",
-        "line": 8.0,
-        "vegas_line": 8.0,
-        "p_over": 0.5067,
-        "p_over_market": 0.4892,
-        "sim_edge": 0.0176,
-        "price": 100.0,
+        "line": 7.5,
+        "vegas_line": 7.5,
+        "p_over": 0.5378,
+        "p_over_market": 0.5,
+        "sim_edge": 0.0378,
+        "price": -105.0,
         "best_book": "pinnacle",
         "stars": 1,
         "score": null,
-        "sim_mu": 8.562,
+        "sim_mu": 8.528,
         "sim_median": 8,
-        "sim_sd": 4.276,
+        "sim_sd": 4.261,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -3060,30 +3188,31 @@
         "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "824325": {
         "status": "LEAN",
-        "side": "under",
+        "side": "over",
         "line": 11.0,
         "vegas_line": 11.0,
-        "p_over": 0.4819,
-        "p_over_market": 0.5108,
-        "sim_edge": -0.0289,
-        "price": 102.0,
-        "best_book": "pinnacle",
+        "p_over": 0.54,
+        "p_over_market": 0.5076,
+        "sim_edge": 0.0324,
+        "price": -110.0,
+        "best_book": "lowvig",
         "stars": 1,
         "score": null,
-        "sim_mu": 11.34,
+        "sim_mu": 12.016,
         "sim_median": 11,
-        "sim_sd": 5.036,
+        "sim_sd": 5.182,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -3095,7 +3224,8 @@
         "game_id": "2026-07-31-Kansas City Royals-Colorado Rockies-824325",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823999": {
@@ -3208,22 +3338,22 @@
         "side": "under",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.4526,
-        "p_over_market": 0.5108,
-        "sim_edge": -0.0582,
-        "price": 100.0,
-        "best_book": "betus",
+        "p_over": 0.4916,
+        "p_over_market": 0.4957,
+        "sim_edge": -0.0041,
+        "price": -106.0,
+        "best_book": "pinnacle",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.034,
+        "sim_mu": 9.414,
         "sim_median": 9,
-        "sim_sd": 4.342,
+        "sim_sd": 4.47,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "locked": true,
+        "locked_at_utc": "2026-07-31T18:41:02Z",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -3236,30 +3366,31 @@
         "walls_priced": [
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "824809": {
         "status": "LEAN",
         "side": "under",
-        "line": 9.0,
-        "vegas_line": 9.0,
-        "p_over": 0.473,
-        "p_over_market": 0.4948,
-        "sim_edge": -0.0218,
-        "price": -108.0,
-        "best_book": "betrivers",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.5052,
+        "p_over_market": 0.5217,
+        "sim_edge": -0.0165,
+        "price": 105.0,
+        "best_book": "betus",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.249,
+        "sim_mu": 8.98,
         "sim_median": 9,
-        "sim_sd": 4.426,
+        "sim_sd": 4.336,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -3270,7 +3401,8 @@
         "date": "2026-07-31",
         "game_id": "2026-07-31-Philadelphia Phillies-Baltimore Orioles-824809",
         "walls_priced": [
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823272": {
@@ -3339,6 +3471,40 @@
         "game_id": "2026-07-31-Boston Red Sox-Los Angeles Dodgers-823922",
         "walls_priced": [
           "T-12h"
+        ]
+      },
+      "822781": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.517,
+        "p_over_market": 0.485,
+        "sim_edge": 0.0319,
+        "price": 103.0,
+        "best_book": "lowvig",
+        "stars": 1,
+        "score": null,
+        "sim_mu": 9.06,
+        "sim_median": 9,
+        "sim_sd": 4.352,
+        "n_sims": 20000,
+        "hfa": "on",
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-28",
+        "is_new_stream": true,
+        "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "physics simulator \u2014 ties the market, no proven edge",
+        "date": "2026-08-01",
+        "game_id": "2026-08-01-St. Louis Cardinals-Toronto Blue Jays-822781",
+        "walls_priced": [
+          "T-24h"
         ]
       }
     }
@@ -3444,17 +3610,17 @@
       "separation": "this record counts ONLY scout-stamped rows from the stream's own ledger (state/scout_graded.jsonl), graded on/after 2026-07-30; it never contains a row from the totals, spread or simulator ledgers, and no other record ever contains a scout row \u2014 the stream never writes the shared board or the shared graded ledger at all (selftested here and in unified_model)"
     },
     "positioning": "SCOUT JOINS THE DESK (Leon, 2026-07-30) \u2014 the simple-8 fundamentals model as the traditionalist's voice on the analyst desk. The totals headline pick is UNCHANGED and SCOUT never influences it, never carries stars, and is never a bet: its validated result is that the market beat it. New stream: activation 2026-07-30, record starts 0-0-0, graded in public from day one, in its own ledger, never blended.",
-    "n_games": 15,
+    "n_games": 16,
     "games": {
       "822782": {
         "status": "LEAN",
         "side": "under",
         "line": 7.5,
         "vegas_line": 7.5,
-        "p_over": 0.4894,
+        "p_over": 0.4917,
         "p_over_market": 0.5,
-        "scout_edge": -0.0106,
-        "conviction": 0.5106,
+        "scout_edge": -0.0083,
+        "conviction": 0.5083,
         "price": -105.0,
         "best_book": "fanduel",
         "stars": null,
@@ -3469,12 +3635,12 @@
           "pen_home_era_std": 3.146,
           "pen_away_era_std": 4.2463,
           "enr_park_run_factor_3y": 0.9996,
-          "wx_temp_f": 76.28
+          "wx_temp_f": 78.08
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3486,7 +3652,8 @@
         "game_id": "2026-07-31-St. Louis Cardinals-Toronto Blue Jays-822782",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "822945": {
@@ -3494,12 +3661,12 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.4984,
-        "p_over_market": 0.485,
-        "scout_edge": 0.0134,
-        "conviction": 0.4984,
+        "p_over": 0.4924,
+        "p_over_market": 0.4792,
+        "scout_edge": 0.0132,
+        "conviction": 0.4924,
         "price": 104.0,
-        "best_book": "matchbook",
+        "best_book": "onexbet",
         "stars": null,
         "score": null,
         "n_train": 11063,
@@ -3512,12 +3679,12 @@
           "pen_home_era_std": 4.0204,
           "pen_away_era_std": 3.5073,
           "enr_park_run_factor_3y": 0.9395,
-          "wx_temp_f": 82.94
+          "wx_temp_f": 82.76
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3529,7 +3696,8 @@
         "game_id": "2026-07-31-Chicago White Sox-Tampa Bay Rays-822945",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823111": {
@@ -3580,12 +3748,12 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.4967,
+        "p_over": 0.4906,
         "p_over_market": 0.4892,
-        "scout_edge": 0.0075,
-        "conviction": 0.4967,
+        "scout_edge": 0.0015,
+        "conviction": 0.4906,
         "price": 102.0,
-        "best_book": "matchbook",
+        "best_book": "lowvig",
         "stars": null,
         "score": null,
         "n_train": 11063,
@@ -3598,12 +3766,12 @@
           "pen_home_era_std": 3.3061,
           "pen_away_era_std": 3.6318,
           "enr_park_run_factor_3y": 0.9891,
-          "wx_temp_f": 83.66
+          "wx_temp_f": 78.98
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3615,7 +3783,8 @@
         "game_id": "2026-07-31-Miami Marlins-New York Mets-823593",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823999": {
@@ -3664,13 +3833,13 @@
       "824164": {
         "status": "LEAN",
         "side": "over",
-        "line": 8.0,
-        "vegas_line": 8.0,
-        "p_over": 0.5138,
-        "p_over_market": 0.4892,
+        "line": 7.5,
+        "vegas_line": 7.5,
+        "p_over": 0.5246,
+        "p_over_market": 0.5,
         "scout_edge": 0.0246,
-        "conviction": 0.5138,
-        "price": 100.0,
+        "conviction": 0.5246,
+        "price": -105.0,
         "best_book": "pinnacle",
         "stars": null,
         "score": null,
@@ -3689,7 +3858,7 @@
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3701,7 +3870,8 @@
         "game_id": "2026-07-31-Texas Rangers-Houston Astros-824164",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "824325": {
@@ -3709,11 +3879,11 @@
         "side": "under",
         "line": 11.0,
         "vegas_line": 11.0,
-        "p_over": 0.5001,
-        "p_over_market": 0.5108,
-        "scout_edge": -0.0108,
-        "conviction": 0.4999,
-        "price": 102.0,
+        "p_over": 0.4978,
+        "p_over_market": 0.5076,
+        "scout_edge": -0.0098,
+        "conviction": 0.5022,
+        "price": -101.0,
         "best_book": "pinnacle",
         "stars": null,
         "score": null,
@@ -3727,93 +3897,7 @@
           "pen_home_era_std": 5.2763,
           "pen_away_era_std": 4.2894,
           "enr_park_run_factor_3y": 1.2711,
-          "wx_temp_f": 87.98
-        },
-        "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-12h",
-        "mode": "transparent_voice",
-        "activation_date": "2026-07-30",
-        "is_new_stream": true,
-        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
-        "is_bet": false,
-        "suggested_units": null,
-        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
-        "date": "2026-07-31",
-        "game_id": "2026-07-31-Kansas City Royals-Colorado Rockies-824325",
-        "walls_priced": [
-          "T-24h",
-          "T-12h"
-        ]
-      },
-      "824407": {
-        "status": "LEAN",
-        "side": "over",
-        "line": 8.5,
-        "vegas_line": 8.5,
-        "p_over": 0.526,
-        "p_over_market": 0.5108,
-        "scout_edge": 0.0151,
-        "conviction": 0.526,
-        "price": -110.0,
-        "best_book": "lowvig",
-        "stars": null,
-        "score": null,
-        "n_train": 11063,
-        "train_max_date": "2026-07-30",
-        "raw_inputs": {
-          "sp_home_era_std": 3.6938,
-          "sp_away_era_std": 3.0,
-          "bat_home_avg_r30": 0.2246,
-          "bat_away_avg_r30": 0.2212,
-          "pen_home_era_std": 3.1991,
-          "pen_away_era_std": 3.1294,
-          "enr_park_run_factor_3y": 0.9123,
-          "wx_temp_f": 82.4
-        },
-        "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-12h",
-        "mode": "transparent_voice",
-        "activation_date": "2026-07-30",
-        "is_new_stream": true,
-        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
-        "is_bet": false,
-        "suggested_units": null,
-        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
-        "date": "2026-07-31",
-        "game_id": "2026-07-31-Arizona Diamondbacks-Cleveland Guardians-824407",
-        "walls_priced": [
-          "T-24h",
-          "T-12h"
-        ]
-      },
-      "824486": {
-        "status": "LEAN",
-        "side": "over",
-        "line": 8.0,
-        "vegas_line": 8.0,
-        "p_over": 0.5176,
-        "p_over_market": 0.4932,
-        "scout_edge": 0.0244,
-        "conviction": 0.5176,
-        "price": 101.0,
-        "best_book": "pinnacle",
-        "stars": null,
-        "score": null,
-        "n_train": 11063,
-        "train_max_date": "2026-07-30",
-        "raw_inputs": {
-          "sp_home_era_std": 21.6,
-          "sp_away_era_std": 3.6186,
-          "bat_home_avg_r30": 0.2236,
-          "bat_away_avg_r30": 0.276,
-          "pen_home_era_std": 3.3504,
-          "pen_away_era_std": 4.3055,
-          "enr_park_run_factor_3y": 1.0306,
-          "wx_temp_f": 90.68
+          "wx_temp_f": 88.7
         },
         "result": null,
         "locked": false,
@@ -3827,11 +3911,100 @@
         "suggested_units": null,
         "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
         "date": "2026-07-31",
-        "game_id": "2026-07-31-Pittsburgh Pirates-Cincinnati Reds-824486",
+        "game_id": "2026-07-31-Kansas City Royals-Colorado Rockies-824325",
         "walls_priced": [
           "T-24h",
           "T-12h",
           "T-6h"
+        ]
+      },
+      "824407": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.5274,
+        "p_over_market": 0.5108,
+        "scout_edge": 0.0165,
+        "conviction": 0.5274,
+        "price": -110.0,
+        "best_book": "matchbook",
+        "stars": null,
+        "score": null,
+        "n_train": 11063,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 3.6938,
+          "sp_away_era_std": 3.0,
+          "bat_home_avg_r30": 0.2246,
+          "bat_away_avg_r30": 0.2212,
+          "pen_home_era_std": 3.1991,
+          "pen_away_era_std": 3.1294,
+          "enr_park_run_factor_3y": 0.9123,
+          "wx_temp_f": 83.48
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-6h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Arizona Diamondbacks-Cleveland Guardians-824407",
+        "walls_priced": [
+          "T-24h",
+          "T-12h",
+          "T-6h"
+        ]
+      },
+      "824486": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5117,
+        "p_over_market": 0.4892,
+        "scout_edge": 0.0225,
+        "conviction": 0.5117,
+        "price": 100.0,
+        "best_book": "pinnacle",
+        "stars": null,
+        "score": null,
+        "n_train": 11063,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 21.6,
+          "sp_away_era_std": 3.6186,
+          "bat_home_avg_r30": 0.2236,
+          "bat_away_avg_r30": 0.276,
+          "pen_home_era_std": 3.3504,
+          "pen_away_era_std": 4.3055,
+          "enr_park_run_factor_3y": 1.0306,
+          "wx_temp_f": 89.24
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-3h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-07-31",
+        "game_id": "2026-07-31-Pittsburgh Pirates-Cincinnati Reds-824486",
+        "walls_priced": [
+          "T-24h",
+          "T-12h",
+          "T-6h",
+          "T-3h"
         ]
       },
       "824892": {
@@ -3839,12 +4012,12 @@
         "side": "over",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.5093,
-        "p_over_market": 0.5065,
-        "scout_edge": 0.0028,
-        "conviction": 0.5093,
-        "price": -104.0,
-        "best_book": "betrivers",
+        "p_over": 0.5139,
+        "p_over_market": 0.5108,
+        "scout_edge": 0.0031,
+        "conviction": 0.5139,
+        "price": -108.0,
+        "best_book": "pinnacle",
         "stars": null,
         "score": null,
         "n_train": 11063,
@@ -3857,12 +4030,12 @@
           "pen_home_era_std": 2.1675,
           "pen_away_era_std": 4.0374,
           "enr_park_run_factor_3y": 1.0086,
-          "wx_temp_f": 89.24
+          "wx_temp_f": 89.42
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3874,7 +4047,8 @@
         "game_id": "2026-07-31-Washington Nationals-Atlanta Braves-824892",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "824975": {
@@ -3925,12 +4099,12 @@
         "side": "over",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.5218,
-        "p_over_market": 0.5108,
-        "scout_edge": 0.011,
-        "conviction": 0.5218,
-        "price": -111.0,
-        "best_book": "pinnacle",
+        "p_over": 0.5069,
+        "p_over_market": 0.4957,
+        "scout_edge": 0.0112,
+        "conviction": 0.5069,
+        "price": -103.0,
+        "best_book": "betrivers",
         "stars": null,
         "score": null,
         "n_train": 11063,
@@ -3943,12 +4117,12 @@
           "pen_home_era_std": 4.0663,
           "pen_away_era_std": 3.122,
           "enr_park_run_factor_3y": 0.9548,
-          "wx_temp_f": 78.26
+          "wx_temp_f": 78.44
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "locked": true,
+        "locked_at_utc": "2026-07-31T18:41:02Z",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3961,20 +4135,21 @@
         "walls_priced": [
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "824809": {
         "status": "LEAN",
         "side": "over",
-        "line": 9.0,
-        "vegas_line": 9.0,
-        "p_over": 0.5046,
-        "p_over_market": 0.4948,
-        "scout_edge": 0.0098,
-        "conviction": 0.5046,
-        "price": -104.0,
-        "best_book": "coolbet",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.5252,
+        "p_over_market": 0.5217,
+        "scout_edge": 0.0035,
+        "conviction": 0.5252,
+        "price": -109.0,
+        "best_book": "onexbet",
         "stars": null,
         "score": null,
         "n_train": 11063,
@@ -3987,12 +4162,12 @@
           "pen_home_era_std": 3.5797,
           "pen_away_era_std": 3.7733,
           "enr_park_run_factor_3y": 0.9932,
-          "wx_temp_f": 86.54
+          "wx_temp_f": 81.68
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -4003,7 +4178,8 @@
         "date": "2026-07-31",
         "game_id": "2026-07-31-Philadelphia Phillies-Baltimore Orioles-824809",
         "walls_priced": [
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823272": {
@@ -4088,6 +4264,48 @@
         "game_id": "2026-07-31-Boston Red Sox-Los Angeles Dodgers-823922",
         "walls_priced": [
           "T-12h"
+        ]
+      },
+      "822781": {
+        "status": "LEAN",
+        "side": "under",
+        "line": 8.5,
+        "vegas_line": 8.5,
+        "p_over": 0.4824,
+        "p_over_market": 0.485,
+        "scout_edge": -0.0026,
+        "conviction": 0.5176,
+        "price": -104.0,
+        "best_book": "onexbet",
+        "stars": null,
+        "score": null,
+        "n_train": 11063,
+        "train_max_date": "2026-07-30",
+        "raw_inputs": {
+          "sp_home_era_std": 4.1881,
+          "sp_away_era_std": null,
+          "bat_home_avg_r30": 0.2468,
+          "bat_away_avg_r30": 0.2665,
+          "pen_home_era_std": 3.146,
+          "pen_away_era_std": 4.2463,
+          "enr_park_run_factor_3y": 0.9996,
+          "wx_temp_f": 80.24
+        },
+        "result": null,
+        "locked": false,
+        "locked_at_utc": null,
+        "lead_time": "T-24h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-08-01",
+        "game_id": "2026-08-01-St. Louis Cardinals-Toronto Blue Jays-822781",
+        "walls_priced": [
+          "T-24h"
         ]
       }
     }
@@ -5101,7 +5319,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5152,7 +5371,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "price not obtainable \u2014 served at 115, but the best real quote on OVER 9 at this wall was -113 (lowvig). The stated edge was priced off a bet nobody could place, so this is an honest LEAN, not a recommendation. The pick, line and served price are shown exactly as written \u2014 nothing is restated.",
-          "pass_why": "price_not_obtainable"
+          "pass_why": "price_not_obtainable",
+          "locked": true,
+          "locked_at_utc": "2026-07-31T18:41:02Z"
         },
         {
           "lead_time": "T-6h",
@@ -5191,7 +5412,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 51.4% >= break-even 49.8% at 101 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-31T18:41:02Z"
         },
         {
           "lead_time": "T-3h",
@@ -5230,10 +5453,60 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 50.9% >= break-even 50.0% at 100 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-31T18:41:02Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -106,
+          "our_prob": 0.4947,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4947,
+          "p_breakeven": 0.5146,
+          "ev": -0.018,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.21,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0018,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "pinnacle",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.5% < break-even 51.5% at -106 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-07-31T18:41:02Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-07-31T18:41:02Z",
+        "line": 9.0,
+        "label": "Locked at T-1h \u00b7 O/U 9.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-07-31-Pittsburgh Pirates-Cincinnati Reds-824486",
@@ -5245,7 +5518,8 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5364,6 +5638,45 @@
           "informational_lean": "under",
           "pass_reason": "model 48.6% < break-even 52.4% at -110 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "per_side_price": -105,
+          "our_prob": 0.4777,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4777,
+          "p_breakeven": 0.5122,
+          "ev": 0.0196,
+          "tier": "Lean",
+          "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+          "stars": 1,
+          "score": 1.87,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.0
+          },
+          "take": true,
+          "result": null,
+          "edge": -0.0162,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "cell is degenerately one-sided on the latest walk (junk evidence) \u2014 rated 1-star PASS, not a bet",
+          "pass_why": "junk_cell"
         }
       ],
       "locked": false
@@ -5376,7 +5689,8 @@
       "home": "Baltimore Orioles",
       "first_pitch_utc": "2026-07-31T23:05:00+00:00",
       "walls_populated": [
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5418,6 +5732,45 @@
           "informational_lean": "under",
           "pass_reason": "model 49.4% < break-even 51.9% at -108 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 105,
+          "our_prob": 0.5159,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5159,
+          "p_breakeven": 0.4878,
+          "ev": -0.0075,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.32,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0008,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "betus",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 51.6% >= break-even 48.8% at 105 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -5431,7 +5784,8 @@
       "first_pitch_utc": "2026-07-31T23:07:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5522,6 +5876,45 @@
           "informational_lean": "under",
           "pass_reason": "model 48.7% < break-even 51.2% at -105 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -105,
+          "our_prob": 0.4957,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4957,
+          "p_breakeven": 0.5122,
+          "ev": -0.0154,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.19,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 7.5
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0008,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "fanduel",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.6% < break-even 51.2% at -105 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -5535,7 +5928,8 @@
       "first_pitch_utc": "2026-07-31T23:10:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5615,6 +6009,45 @@
           "informational_lean": "under",
           "pass_reason": "model 51.0% >= break-even 49.5% at 102 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 102,
+          "our_prob": 0.5134,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5134,
+          "p_breakeven": 0.495,
+          "ev": -0.0171,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.15,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0007,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 51.3% >= break-even 49.5% at 102 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -5628,7 +6061,8 @@
       "first_pitch_utc": "2026-07-31T23:10:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5719,6 +6153,45 @@
           "informational_lean": "over",
           "pass_reason": "model 49.1% >= break-even 49.0% at 104 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -113,
+          "our_prob": 0.4792,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4792,
+          "p_breakeven": 0.5305,
+          "ev": -0.0183,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.15,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.001,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 47.9% < break-even 53.0% at -113 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -5732,7 +6205,8 @@
       "first_pitch_utc": "2026-07-31T23:10:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5812,6 +6286,45 @@
           "informational_lean": "over",
           "pass_reason": "model 50.0% >= break-even 49.5% at 102 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": -108,
+          "our_prob": 0.4871,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4871,
+          "p_breakeven": 0.5192,
+          "ev": -0.0122,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.25,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.001,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "mybookieag",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 48.7% < break-even 51.9% at -108 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -5825,7 +6338,8 @@
       "first_pitch_utc": "2026-07-31T23:15:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -5905,6 +6419,45 @@
           "informational_lean": "under",
           "pass_reason": "model 49.8% < break-even 50.5% at -102 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": 100,
+          "our_prob": 0.5085,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5085,
+          "p_breakeven": 0.5,
+          "ev": -0.017,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.16,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0009,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "betmgm",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 50.8% >= break-even 50.0% at 100 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -5918,7 +6471,8 @@
       "first_pitch_utc": "2026-08-01T00:15:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -6009,6 +6563,45 @@
           "informational_lean": "over",
           "pass_reason": "model 50.2% >= break-even 50.0% at 100 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "per_side_price": -102,
+          "our_prob": 0.5027,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5027,
+          "p_breakeven": 0.505,
+          "ev": -0.0152,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.19,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 7.5
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0008,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 50.3% < break-even 50.5% at -102 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -6022,7 +6615,8 @@
       "first_pitch_utc": "2026-08-01T00:40:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -6112,6 +6706,45 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 51.5% >= break-even 49.5% at 102 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.0,
+          "per_side_price": -101,
+          "our_prob": 0.5095,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5095,
+          "p_breakeven": 0.5025,
+          "ev": -0.0239,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.08,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 11.0
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0008,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "pinnacle",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 50.9% >= break-even 50.2% at -101 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
         }
       ],
@@ -6532,6 +7165,60 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 51.7% >= break-even 51.2% at -105 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        }
+      ],
+      "locked": false
+    },
+    {
+      "game_id": "2026-08-01-St. Louis Cardinals-Toronto Blue Jays-822781",
+      "game_pk": 822781,
+      "date": "2026-08-01",
+      "away": "St. Louis Cardinals",
+      "home": "Toronto Blue Jays",
+      "first_pitch_utc": "2026-08-01T19:07:00+00:00",
+      "walls_populated": [
+        "T-24h"
+      ],
+      "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
+      "grid": [
+        {
+          "lead_time": "T-24h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "per_side_price": 103,
+          "our_prob": 0.4969,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4969,
+          "p_breakeven": 0.4926,
+          "ev": 0.0086,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.94,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "edge": 0.0054,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 335,
+            "one_sided": false
+          },
+          "best_book": "lowvig",
+          "price_convention": "best_at_pick_line_v2",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 49.7% >= break-even 49.3% at 103 \u2014 edge below +EV min",
           "pass_why": "ev_gate"
         }
       ],

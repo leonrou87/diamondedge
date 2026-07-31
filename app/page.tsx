@@ -91,6 +91,99 @@ export default function Home() {
           `<i>handler bound to markup that isn't rendered — see the console</i>`;
       }, 0);
     }
+
+    /* ═════════════ PAYLOAD-DOCUMENTATION GUARD — a spec note must never reach a reader ═════════════
+       THE BUG CLASS THIS EXISTS TO KILL. The feeds are self-documenting: `positioning`,
+       `overlap_note`, `honest_note`, `model_notes`, `live_progress.note` and a dozen more
+       carry prose the backend wrote to pin its own contract — backticks, raw field names,
+       and a "(Leon, YYYY-MM-DD)" byline. Rendering one of them is a one-character mistake
+       (`${x.note}`) that produces no error, no warning and no visual alarm — it just quietly
+       hands the reader an engineering document. It has now happened twice: served notes
+       quoting `this_week` and `record.analysts` in prose, then a 120-word live_progress spec
+       rendered into every in-progress card, where it laid out as a 2,105px blank column.
+
+       THE GUARD. In development we re-read the PAINTED DOM — the only place that can prove
+       what a reader actually sees — and fail loudly on the leak signature:
+         · a backtick                 → nothing written for a reader is ever marked up in code
+         · a snake_case identifier    → a field name, not a word
+         · a dated internal byline    → "(Leon, 2026-07-30)": addressed to one person
+       A hit gets a console.error naming the element and quoting the text, plus a fixed red
+       banner. In production it is not installed at all — byte-for-byte the old behaviour, so
+       the guard can never take the live site down. Same contract as bindClick's.
+
+       Escape hatch, deliberately narrow: put data-devtext="<why>" on an element whose text
+       legitimately contains one of these (a code sample, a schema table). The reason is
+       required, so it cannot become a lazy way to re-silence this. */
+    const LEAK_SIG: { what: string; re: RegExp }[] = [
+      { what: "a backtick — copy is never marked up in code", re: /`/ },
+      { what: "a snake_case field name", re: /(?:^|[\s("'])[a-z][a-z0-9]*(?:_[a-z0-9]+)+(?=$|[\s)."',;:])/ },
+      { what: "a dated internal byline", re: /\([^)]*\bleon\b[^)]*\d{4}-\d{2}-\d{2}[^)]*\)|\([^)]*\d{4}-\d{2}-\d{2}[^)]*\bleon\b[^)]*\)/i },
+    ];
+    const leakSeen = new Set<string>();
+    let leakBannerT = 0;
+    function elPath(el: any) {
+      const out: string[] = [];
+      for (let x = el; x && x.tagName && out.length < 4; x = x.parentElement) {
+        const c = String(x.className || "").trim().split(/\s+/)[0];
+        out.unshift(`${String(x.tagName).toLowerCase()}${x.id ? `#${x.id}` : c ? `.${c}` : ""}`);
+      }
+      return out.join(" > ");
+    }
+    function scanForLeaks(rootNode: any) {
+      if (!DEV || !rootNode || !document.body) return;
+      const walk = document.createTreeWalker(rootNode, NodeFilter.SHOW_TEXT);
+      const nodes: any[] = [];
+      if (rootNode.nodeType === 3) nodes.push(rootNode); else { let n: any; while ((n = walk.nextNode())) nodes.push(n); }
+      for (const n of nodes) {
+        const txt = String(n.nodeValue || "").trim();
+        if (txt.length < 3) continue;
+        const el = n.parentElement;
+        if (!el || /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/.test(String(el.tagName))) continue;
+        if (el.closest("[data-devtext]") || el.closest(".dev-deadbar,.dev-leakbar")) continue;
+        const hit = LEAK_SIG.find((s) => s.re.test(txt));
+        if (!hit) continue;
+        const key = `${elPath(el)}|${txt.slice(0, 60)}`;
+        if (leakSeen.has(key)) continue;
+        leakSeen.add(key);
+        // eslint-disable-next-line no-console
+        console.error(
+          `[DiamondEdge] PAYLOAD DOCUMENTATION IN THE DOM\n` +
+          `  at  ${elPath(el)}\n` +
+          `  contains ${hit.what}\n` +
+          `  text: ${JSON.stringify(txt.slice(0, 220))}\n` +
+          `  A payload note/spec field is being rendered. Those exist to document the\n` +
+          `  contract, not to be read. Stop rendering the field, or route it through\n` +
+          `  humanNote() — which drops contract notes and de-identifies what survives.`
+        );
+        if (leakBannerT) continue;
+        leakBannerT = window.setTimeout(() => {
+          leakBannerT = 0;
+          if (!document.body) return;
+          let bar = $("dev-leakbar");
+          if (!bar) { bar = document.createElement("div"); bar.id = "dev-leakbar"; bar.className = "dev-deadbar dev-leakbar"; document.body.appendChild(bar); }
+          bar.innerHTML =
+            `<b>PAYLOAD DOC IN THE DOM</b>` +
+            Array.from(leakSeen).slice(0, 6).map((k) => `<span>${k.split("|")[0]}</span>`).join("") +
+            `<i>spec/note text is rendering to readers — see the console</i>`;
+        }, 0);
+      }
+    }
+    // Installed once, in development only: one full sweep after first paint, then every
+    // subtree the app injects afterwards (sheets, re-renders, late feeds) as it lands.
+    if (DEV && typeof MutationObserver !== "undefined") {
+      const pending: any[] = [];
+      let sweepT = 0;
+      const drain = () => { sweepT = 0; const q = pending.splice(0); q.forEach(scanForLeaks); };
+      const queue = (n: any) => { pending.push(n); if (!sweepT) sweepT = window.setTimeout(drain, 200); };
+      new MutationObserver((recs) => {
+        for (const r of recs) {
+          if (r.type === "characterData") queue(r.target);
+          else r.addedNodes.forEach((n: any) => { if (n.nodeType === 1 || n.nodeType === 3) queue(n); });
+        }
+      }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+      window.setTimeout(() => scanForLeaks(document.body), 1200);
+    }
+
     type BindOpts = { optional?: string; keyboard?: boolean };
     // Attach `fn` to `id`'s `evt`. Returns the element, or null (loudly, in dev) if it's missing.
     function bindOn(id: string, evt: string, fn: (e?: any) => any, opts?: BindOpts) {
@@ -1153,13 +1246,63 @@ export default function Home() {
       const t = String(s == null ? "" : s).toUpperCase();
       return t === "PICK" ? "PICK" : t === "NO_VIEW" || t === "NOVIEW" ? "NO_VIEW" : "PASS";
     };
-    // Machine codes ("ev_gate", "junk_cell") never reach a reader; real phrases ("Strong",
-    // "Priced out — no value at the real price") pass through untouched.
+    /* ═══════════════════════ THE READER GATE ═══════════════════════
+       WHY THIS EXISTS. The payload is self-documenting: nearly every block carries prose
+       written by the backend FOR THE BACKEND — `live_progress.note`, `strategies_spec
+       .overlap_note`, `positioning`, `model_notes` — complete with backticks, raw field
+       names and a "(Leon, YYYY-MM-DD)" byline. Those fields exist to pin the contract, not
+       to be read by anyone using the site. Twice now one of them has walked straight into
+       the DOM: first as prose quoting `this_week` and `record.analysts`, then as a 120-word
+       spec note rendered into a game card.
+
+       THE RULE. Every payload string that becomes copy passes through humanNote(), and
+       humanNote() applies two tests:
+
+         1. IS IT A DOCUMENT? A dated internal byline, a spec heading ("READ THIS BEFORE…",
+            "DISPLAY ONLY, FOREVER"), or a field-list ("games[].strategies[] = [{…") means
+            the sentence was addressed to an engineer. It is DROPPED — not cleaned up, not
+            truncated, dropped. There is no reader-facing edit of a contract note.
+         2. WHAT SURVIVES IS DE-IDENTIFIED. Incidental identifiers inside otherwise human
+            prose (a stray `backtest`, a served_record) are spoken as words by deIdent(),
+            so no raw identifier and no backtick can reach a reader even from a sentence
+            that was meant for one.
+
+       devAssertReaderText() (further down) re-reads the painted DOM in development and
+       fails loudly if anything matching the leak signature made it through anyway. */
+    const DOC_SIGNATURE: RegExp[] = [
+      /\([^)]*\bleon\b[^)]*\d{4}-\d{2}-\d{2}[^)]*\)/i,   // "(Leon, 2026-07-30)"
+      /\([^)]*\d{4}-\d{2}-\d{2}[^)]*\bleon\b[^)]*\)/i,   // "(2026-07-07, same day, Leon)"
+      /\bREAD THIS BEFORE\b/i,
+      /\bDISPLAY ONLY,\s*FOREVER\b/i,
+      /\b(?:games|record|analysts|strategies|profiles)\[\]/,  // "games[].strategies[] = …"
+      /\b[a-z_]+\s*=\s*[[{]/,                                 // "record.analysts = {order, …"
+    ];
+    // Is this string a contract note rather than a sentence for a reader?
+    function isDocText(raw: any) {
+      const t = String(raw == null ? "" : raw);
+      return DOC_SIGNATURE.some((r) => r.test(t));
+    }
+    // Served notes sometimes quote their own field names ("this_week", "record.analysts").
+    // Those are engineering identifiers, not English, and on the page they read as a leak.
+    // (A function declaration, not a const: humanNote() sits above it and must be able to
+    // call it from anywhere without a temporal-dead-zone hazard.)
+    function deIdent(t: any) {
+      return String(t == null ? "" : t)
+        .replace(/\brecord\.analysts\b/g, "the season ledgers")
+        .replace(/\banalyst_of_the_week\b/g, "the Analyst of the Week")
+        .replace(/\bis_betting_record\b/g, "the staked-or-lean flag")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/`/g, "")
+        .replace(/\b[a-z0-9]+(?:_[a-z0-9]+)+\b/g, (m) => m.replace(/_/g, " "));
+    }
+    // Machine codes ("ev_gate", "junk_cell") never reach a reader; contract notes are dropped
+    // whole; real phrases ("Strong", "Priced out — no value at the real price") pass through.
     function humanNote(raw: any) {
       const t = String(raw == null ? "" : raw).trim();
       if (!t) return "";
       if (/^[a-z0-9]+(_[a-z0-9]+)+$/.test(t)) return "";
-      return t;
+      if (isDocText(t)) return "";
+      return deIdent(t);
     }
     // The spec block, from whichever loaded feed carries it.
     function strategiesSpec() {
@@ -1884,10 +2027,21 @@ export default function Home() {
     }
 
     /* ═════════════ IN-PROGRESS: the game measured against the locked line ═════════════
-       Served as games[].live_progress (any of: {runs|total, inning, half, period, pace,
-       runs_vs_total|vs_line, needed, note}); derived from the live score + the locked total
-       when it isn't. The "probability it still hits" (p_hit_now) is rendered ONLY when the
-       payload marks it certified, is badged LIVE · DISPLAY ONLY, and never touches a record. */
+       Served as games[].live_progress. FOUR FACTS AND NO FIFTH: where the game is (top of
+       the 4th), the runs so far measured against the LOCKED pregame total (1 of 9), and how
+       many more the game still needs (8 more to go over). That is the whole surface.
+
+       WHAT WE DELIBERATELY DO NOT READ off this block:
+         · `note` — a 120-word contract note addressed to the author, backticks and all. It
+           was rendered verbatim into every live card until 2026-07-31. Documentation is not
+           copy; the reader gate now drops it on sight and nothing here asks for it.
+         · `projected_final_runs` / `pace_runs_per_inning` — a linear extrapolation of a
+           3-inning sample. In the 2nd inning of a 0–0 game it computes to 0.0, which is not
+           a forecast of anything. We do not print a projection off a pace this thin, at any
+           point in the game, so neither field is wired to a surface.
+
+       The "probability it still hits" (p_hit_now) renders ONLY where the live simulator
+       marks it CERTIFIED, is badged LIVE · DISPLAY ONLY, and never touches a record. */
     function liveProgress(g: any) {
       if (!g) return null;
       const vg = v4GameFor(g);
@@ -1897,24 +2051,52 @@ export default function Home() {
         if (p && typeof p === "object") { raw = p; break; }
       }
       const pg = pregameLine(g);
-      const tot = pg && pg.total && pg.total.line != null ? Number(pg.total.line) : null;
       const gs = gameState(g);
       if (gs.kind !== "live") return null;
-      const scored = raw && _fin(raw.runs != null ? raw.runs : raw.total) != null
-        ? _fin(raw.runs != null ? raw.runs : raw.total)
-        : (gs.score && gs.score.total != null ? Number(gs.score.total) : null);
+      // the locked pregame total: our own pregame slab first, the block's own copy of it second
+      const tot = pg && pg.total && pg.total.line != null ? Number(pg.total.line)
+        : _fin(raw && raw.pregame_total);
+      /* THE LIVE FEED LEADS. live_progress is stamped `as_of` and is rebuilt on the payload's
+         cycle; the score poller runs every few seconds. Reading runs and inning off the
+         served block therefore lets this strip say "1 of 9 · Top 4th" directly underneath a
+         card header reading 2–0, TOP 6TH — the same card contradicting itself. So the live
+         score and its period label lead, and the served block is the fallback for a game the
+         poller has no score for yet. */
+      const liveRuns = gs.score && gs.score.total != null ? Number(gs.score.total) : null;
+      const liveWhenTx = String(gs.label || "").trim();
+      const scored = liveRuns != null ? liveRuns
+        : _fin(raw && (raw.runs_so_far != null ? raw.runs_so_far : (raw.runs != null ? raw.runs : raw.total)));
       if (scored == null && !raw) return null;
-      const when = humanNote(raw && (raw.inning != null ? raw.inning : (raw.half != null ? raw.half : raw.period))) || String(gs.label || "").trim();
-      const pace = _fin(raw && raw.pace);
-      const note = humanNote(raw && raw.note);
-      const need = tot != null && scored != null ? Math.max(0, Math.ceil((tot + 0.5) - scored - 0.5)) : null;
-      return { scored, tot, when, pace, note, need, over: tot != null && scored != null && scored > tot };
+      const when = (liveRuns != null && liveWhenTx && !/^live$/i.test(liveWhenTx) ? liveWhenTx : "") || liveWhen(raw) || liveWhenTx;
+      // How many more runs the over still needs. Recomputed from whatever `scored` we are
+      // actually printing — the served count belongs to the served runs, and pairing one
+      // with the other is how a card starts publishing arithmetic that does not add up.
+      const need = tot != null && scored != null ? Math.max(0, Math.ceil((tot + 0.5) - scored - 0.5))
+        : (liveRuns == null ? _fin(raw && raw.runs_still_needed_for_over) : null);
+      return { scored, tot, when, need, over: tot != null && scored != null && scored > tot };
+    }
+    // "top" + 4 → "Top 4th". A bare inning number is not a reading of where the game is.
+    const ORD = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"}`;
+    function liveWhen(raw: any) {
+      if (!raw) return "";
+      const inn = _fin(raw.inning != null ? raw.inning : raw.period);
+      const half = String(raw.half == null ? "" : raw.half).trim().toLowerCase();
+      if (inn != null && inn > 0) {
+        const h = /^t/.test(half) ? "Top " : /^(b|m)/.test(half) ? "Bottom " : /^(e|mid)/.test(half) ? "Middle " : "";
+        return `${h}${ORD(Math.round(inn))}`;
+      }
+      return humanNote(raw.inning != null ? raw.inning : (raw.half != null ? raw.half : raw.period));
     }
     function pHitNow(g: any) {
       if (!g) return null;
       const vg = v4GameFor(g);
       for (const s of [g, vg].filter(Boolean)) {
-        const raw = (s as any).p_hit_now;
+        // served either on the game or inside its live_progress block
+        const lp = (s as any).live_progress;
+        const raw = (s as any).p_hit_now != null ? (s as any).p_hit_now
+          : (lp && typeof lp === "object" && lp.p_hit_now != null
+            ? { p: lp.p_hit_now, side: lp.p_hit_side, certified: lp.p_hit_certified === true }
+            : null);
         if (raw == null) continue;
         if (typeof raw === "number") return null; // a bare number carries no certification — never shown
         if (typeof raw !== "object") continue;
@@ -1923,7 +2105,7 @@ export default function Home() {
         if (p == null) continue;
         if (p > 1) p = p / 100;
         if (!certified) return null;   // uncertified ⇒ silent, never a soft claim
-        return { p, side: String(raw.side || "").trim(), note: humanNote(raw.note) };
+        return { p, side: String(raw.side || "").trim() };
       }
       return null;
     }
@@ -1938,7 +2120,6 @@ export default function Home() {
       const bits = [
         lp.when ? esc(lp.when) : "",
         lp.tot != null && lp.scored != null ? `${lp.scored} of ${esc(lineStr(lp.tot))}` : "",
-        lp.pace != null ? `on pace for ${num(lp.pace, 1)}` : "",
         lp.need != null && !lp.over ? `${lp.need} more to go over` : "",
         lp.over ? "over has cleared" : "",
       ].filter(Boolean);
@@ -1950,7 +2131,6 @@ export default function Home() {
         </div>
         <div class="lvl-row">${bits.map((b) => `<span>${b}</span>`).join(`<i class="lvl-sep" aria-hidden="true">·</i>`)}</div>
         ${ph ? `<div class="lvl-ph"><span class="lvl-badge">LIVE · DISPLAY ONLY</span><b>${Math.round(ph.p * 100)}%</b><span class="lvl-phtx">it still hits${ph.side ? ` (${esc(ph.side.toUpperCase())})` : ""} — never counted in any record</span></div>` : ""}
-        ${lp.note ? `<div class="lvl-note">${esc(lp.note)}</div>` : ""}
       </div>`;
     }
 
@@ -2208,14 +2388,8 @@ export default function Home() {
        Every ranked surface — home strip, story slide, Insights board, the weekly board, the
        rivalry cards, the quad, the character pages — reads its order from deskGroups(). */
     const H2H_MIN_N = 20;               // disagreements needed before a feud has a score
-    // Served notes sometimes quote their own field names ("this_week", "record.analysts").
-    // Those are engineering identifiers, not English, and on the page they read as a leak.
-    const deIdent = (t: any) => String(t == null ? "" : t)
-      .replace(/\brecord\.analysts\b/g, "the season ledgers")
-      .replace(/\banalyst_of_the_week\b/g, "the Analyst of the Week")
-      .replace(/\bis_betting_record\b/g, "the staked-or-lean flag")
-      .replace(/`([^`]+)`/g, "$1")
-      .replace(/\b[a-z0-9]+(?:_[a-z0-9]+)+\b/g, (m) => m.replace(/_/g, " "));
+    // deIdent() / isDocText() / humanNote() — the reader gate — live above, next to the
+    // note-normalisers they serve.
     // served sentences quote raw counts ("Across 2972 games") — group the thousands so the
     // number reads at a glance, without touching years, decimals or ids
     const groupThousands = (t: any) => String(t == null ? "" : t)
@@ -3668,7 +3842,7 @@ export default function Home() {
        two extra passes finish the job: the ASCII cross in "analysts x axes" is a
        multiplication sign, and a de-identified `smallest_p_two_sided` has to become the
        English name of the thing rather than four loose words. */
-    const profProse = (t: any) => sentence(deIdent(String(t == null ? "" : t).trim()))
+    const profProse = (t: any) => sentence(deIdent(humanNote(t)))
       .replace(/\bx\b/g, "×")
       .replace(/\bsmallest p two sided\b/gi, "the smallest two-sided p-value")
       .replace(/\bp two sided\b/gi, "two-sided p-value")
@@ -8154,8 +8328,11 @@ export default function Home() {
     function strategyRecordSection(d: any) {
       const rows = strategyRecords(d);
       if (!rows.length) return "";
-      const spec = strategiesSpec();
-      const overlap = humanNote(spec && spec.overlap_note) || humanNote(d && d.record && d.record.by_strategy_note);
+      // NO RAW METHODOLOGY NOTE. `strategies_spec.overlap_note` / `record.by_strategy_note`
+      // open "READ THIS BEFORE COMPARING STRATEGIES" and go on to name expanded_band and
+      // served_record in backticks — a contract note to the engine's author, not something a
+      // reader should ever be handed "unedited". Every point it makes is already stated in
+      // .stgyrec-warn below, in English, above the fold rather than folded away.
       return `<div class="ixc stgyrec" id="strategy-record">
         <div class="ixc-h">Strategy by strategy</div>
         <div class="ixc-sub">Every rule-set we run, each with its own record — the ones losing money as well as the ones making it.</div>
@@ -8166,7 +8343,6 @@ export default function Home() {
         </div>
         <div class="stgyrec-order">Listed in the model's own order, the served product first. Deliberately <b>not</b> ranked by returns — a leaderboard would bury the losers.</div>
         <div class="stgyrec-list">${rows.map(strategyCard).join("")}</div>
-        ${overlap ? `<details class="stgyrec-full"><summary><span>The full methodology note, unedited</span><span class="sgc-caret" aria-hidden="true">›</span></summary><p>${esc(overlap)}</p></details>` : ""}
         <button class="sb-more" id="sb-more" aria-haspopup="dialog">See every graded pick by strength →</button>
       </div>`;
     }
@@ -9973,7 +10149,12 @@ export default function Home() {
       const result = it.result && (grp === "shipped" || grp === "grave")
         ? `<div class="lab-result ${grp}">${esc(it.result)}</div>` : "";
       const detail = it.detail ? `<div class="lab-detail">${esc(it.detail)}</div>` : `<div class="lab-detail dim">More detail lands as this one progresses.</div>`;
-      return `<details class="lab-card ${grp}">
+      // THE ONE PLACE ENGINEERING VOCABULARY IS THE POINT. The Lab publishes the build log
+      // itself — "every idea we test, in public" — so a card's prose names the modules,
+      // columns and scripts a piece of work touched. That is the subject matter, not a
+      // contract note that escaped into a betting surface, so the payload-documentation
+      // guard is told so explicitly here and nowhere else on the site.
+      return `<details class="lab-card ${grp}" data-devtext="the research log's subject is the engineering work; module and column names are its content">
         <summary>
           <div class="lab-top">${chip}${eta && grp === "fire" ? `<span class="lab-eta">${esc(eta)}</span>` : ""}${it.category ? `<span class="lab-cat">${esc(it.category)}</span>` : ""}<span class="lab-caret" aria-hidden="true">›</span></div>
           <div class="lab-title">${esc(it.title || it.id || "Untitled")}</div>

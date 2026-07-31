@@ -1,9 +1,9 @@
 {
- "generated_utc": "2026-07-31T07:12:44Z",
+ "generated_utc": "2026-07-31T18:11:51Z",
  "summary": {
-  "shipped": 20,
+  "shipped": 24,
   "testing": 2,
-  "accruing": 5,
+  "accruing": 6,
   "queued": 0,
   "closed": 32
  },
@@ -765,6 +765,71 @@
    "latest": "2026-07-30: nova walked back across 2022-2023 (407 days, leakage-audited); all-four corpus 325 -> 2,972 games; 'fade the unanimous desk' did NOT survive — and the product now leads with that null instead of a cherry-picked percentage",
    "detail": "The desk's consensus table asks what happens when all four analysts agree, when three outvote one, and when they split two-two. On the small corpus it looked like the desk was WORST when unanimous (41%) and BEST when split (56%) — a striking shape, but built on only 34 unanimous games. One analyst (nova) had no history before 2026, which capped the whole table. We reconstructed nova's point-in-time read for every day of 2022 and 2023 using the same engine and the same train-on-the-past-only rule, hand-auditing two reads end to end plus a deliberate-leak control. The sealed 2024-2026 data was never opened, and 2021 is not reconstructible at all. The measurement also changed how the product talks: nothing gets quoted as a reason unless it clears correction for the whole table, and the desk's agreement no longer nudges what you see.",
    "result": "NULL — with 13.5x the sample the shape washed out: unanimous 47.3% (was 41.2%), 3-1 majority 50.6% (was 46.0%), 2-2 split 50.0% (was 55.7%). Across 41 measured configurations not one 95% interval excludes a coin flip and nothing survives multiple-testing correction. The old surface ranked cells by how far they sat from 50% and printed the top three — a finding generator on a null table; it now serves the negative result as the headline, an empty highlight list, and every row's interval in view. The corpus stays as permanent infrastructure."
+  },
+  {
+   "id": "at_line_pricing_defect",
+   "title": "The prices we were betting into did not exist",
+   "tagline": "Our best-price lookup took the best number across books at each book's OWN total, not at the total we were actually betting. Half the picks we served were selected on an edge that was never available.",
+   "status": "shipped",
+   "category": "infra",
+   "progress_pct": 100,
+   "started": "2026-07-31",
+   "eta": "fixed forward 2026-07-31",
+   "latest": "2026-07-31: found, measured and fixed. 34 of 58 served graded picks had been priced better than anything real at their line (mean +0.077 decimal). Because that inflated price is what the +EV gate evaluates, mean gate EV fell from +5.29% to +1.65% at honest prices and 29 of the 58 would never have been served at all. The board went from 3 picks to 0 the day it landed.",
+   "detail": "A book quoting UNDER 7.5 at +109 was donating that price to a pick placed at 8.0, where the real best was -105. The rule was stated correctly in the code's own docstring and never implemented. Fixed forward only: every historical pick keeps the price it was served at (write-once), unlocked pregame rows that were provably unobtainable were demoted with their evidence attached, and the historical re-pricing script now refuses to run without an explicit restate-history flag. A guard checks every priced row against the best real quote at its own line AT ITS OWN DECISION WALL - comparing at any later instant both clears real defects and condemns honest rows. The published record is preserved as served and carries a disclosure naming the defect: -15.2% as served, -18.7% at executable prices, nothing restated.",
+   "result": "Live. The single most consequential defect found in the program: the measured edge that made these picks look like bets was substantially an artifact of the pricing bug."
+  },
+  {
+   "id": "outcome_verification_rail",
+   "title": "Two sources must agree before a game is graded",
+   "tagline": "Grading had exactly one authority, read twice. It now refuses to grade a game whose final disagrees across sources - and every July final is independently confirmed.",
+   "status": "shipped",
+   "category": "infra",
+   "progress_pct": 100,
+   "started": "2026-07-31",
+   "eta": "live - shipped 2026-07-31",
+   "latest": "2026-07-31: shipped. 280 of 280 July finals agree, and all 280 are confirmed by ESPN - a genuinely separate editorial pipeline from MLB. An offline audit of the full research corpus back to March 2022 compared 11,026 finals with zero disagreements and zero orientation mismatches.",
+   "detail": "Grading read finals from MLB's Stats API, and the local database that looked like a second opinion was fed from the same Stats API. Agreement between them was consistent with a single source compared against itself. The rail now reconciles the label store against a same-feed replica (labelled as exactly that - it cannot catch a wrong MLB feed, only parse, join, doubleheader and gamePk-reuse bugs) and against ESPN. Disagreement means the game is not graded, not pruned, and stays on the board; a broken rail degrades to grading-with-disclosure rather than taking the cycle down. A 45-minute ambiguity guard returns no match rather than guessing when a stale first-pitch time sits equidistant between two candidate events. Champion's own value store was later added as a fourth axis - zero disagreements there too.",
+   "result": "Live. Every outcome the records rest on is now independently corroborated rather than self-consistent."
+  },
+  {
+   "id": "moved_game_resolver",
+   "title": "Games that move to another date no longer vanish",
+   "tagline": "A rained-out game rescheduled for tomorrow left a served pick pending forever - silently leaving its own denominator.",
+   "status": "shipped",
+   "category": "infra",
+   "progress_pct": 100,
+   "started": "2026-07-31",
+   "eta": "fixed forward 2026-07-31",
+   "latest": "2026-07-31: fixed forward. A moved game now reaches a terminal state - voided if postponed or played far from its served first pitch, graded against its real result if played close to it - resolved by game_pk rather than by date, with the postponement shell checked before any makeup final because MLB reuses the gamePk. A pending-too-long rail now raises instead of letting a row sit quietly.",
+   "detail": "Grading only ever runs for yesterday, so once a date rolled past nothing revisited it, and the postponement rescue itself only shipped on 2026-07-27 - after the affected games had already moved. An earlier rainout that was voided correctly was timing luck, not coverage. 24 board rows across 5 games were found stranded; they are REPORTED, not repaired, because write-once is absolute. Under the normal void policy resolving them leaves the record unchanged - only the void count moves - which is why that is the recommended treatment over grading them against their makeup results.",
+   "result": "Live forward. The 24 historical rows await a human decision."
+  },
+  {
+   "id": "vega_tau_candidate",
+   "title": "The lab's first candidate: stop betting every game",
+   "tagline": "VEGA proposed demanding a real disagreement with the market before betting. It cleared every statistical gate - and turned out to be untestable.",
+   "status": "accruing",
+   "category": "model",
+   "progress_pct": 60,
+   "started": "2026-07-31",
+   "eta": "blocked - no clean confirmation window exists",
+   "latest": "2026-07-31: ADOPTABLE but NOT promoted. 2,985 bets at +4.38% against the incumbent's -0.34% over 719 days, paired day-clustered interval [+0.56%, +3.47%], surviving anti-trivial, drop-your-best-bet and Benjamini-Hochberg correction. Then the out-of-sample check found it cannot be tested forward at all.",
+   "detail": "The candidate was scored on the backtest track, which logs every game - median disagreement with the market of 0.014, with only 37% clearing the proposed threshold. The live track only logged games where the engine already emitted a lean, and every one of those already sits above the threshold. The candidate retains an identical pick set: 0 of 24 gradable games differ. A proposal titled 'stop betting every game' cannot be tested on a population that already never bets every game. Separately, 61% of its evidence sits inside date windows the program had sealed for confirmation - the file-token seal was never violated, but it never guarded dates. A date seal was considered and rejected on measured grounds: it would remove 55% of three analysts' history and leave a wider interval than the effect being claimed.",
+   "result": "Parked as a hypothesis. Every lab candidate now carries a field stating that lab evidence spans sealed dates and can never constitute confirmation. The live track was changed to log every game so a threshold proposal becomes testable in future."
+  },
+  {
+   "id": "vega_live_grading_gap",
+   "title": "VEGA had never been graded in its live track",
+   "tagline": "Not since June - since inception. Its outcomes came from a store that ends before its first live row exists.",
+   "status": "shipped",
+   "category": "infra",
+   "progress_pct": 100,
+   "started": "2026-07-31",
+   "eta": "live - shipped 2026-07-31",
+   "latest": "2026-07-31: fixed. VEGA was the only analyst with no outcome fallback of its own, so every live row it has ever produced landed unsettled and was dropped at load. Its graded history now runs through 2026-07-29 instead of stopping at 06-11.",
+   "detail": "Its labels came solely from the research label store, which ends 2026-07-04, while every live VEGA row starts 2026-07-08. The answer was in the champion's own ledger the whole time; 24 cells moved from unsettled to decided, verified byte-consistent against that ledger on all 88 rows with zero conflicts, and no decided outcome may ever be overwritten with a different one. The June 12 to July 7 stretch is genuinely empty and nothing was invented to fill it. A companion measurement track now logs VEGA's read on every game (15 of 15, previously 1 of 15) as rows that cannot become picks by construction - proven by 103 files and both payloads being byte-identical before and after a real serve and grade.",
+   "result": "Live. A nightly per-analyst coverage ratio now makes this class of gap visible instead of silent."
   }
  ]
 }

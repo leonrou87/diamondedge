@@ -512,8 +512,17 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* GRID layout: ONE clean full-width schedule column on phones (the theScore pattern —
    a 2-up grid at 375px left ~166px per card and clipped form chips, pick sides and the
    lean sub-line). Two-up returns at ≥700px where each card gets a real ~330px+. */
-.slate{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media(max-width:699px){.slate{grid-template-columns:minmax(0,1fr);gap:10px}}
+/* THE BOARD DROPS COLUMNS, IT DOES NOT SHRINK THEM. This was `repeat(2,minmax(0,1fr))` —
+   an explicit ZERO floor, which says "always two columns, however narrow they have to be".
+   Combined with .tile{min-width:0} that floor is passed straight down to every card, so a
+   narrow container produced slivers rather than a reflow, and a sliver card is where the
+   0px-wide / 2,105px-tall text block on 2026-07-31 came from. auto-fill with a real minimum
+   inverts it: a track is never narrower than a card is designed to be (340px), and when the
+   board cannot fit two of those it drops to one instead of halving them. The min() keeps a
+   genuinely narrow phone from overflowing sideways. Column counts at every real width are
+   unchanged — two up to 1044px (the max content width), one below ~700px. */
+.slate{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:12px}
+@media(max-width:699px){.slate{gap:10px}}
 
 /* ---- WIDE GAME CARD: a calm flat resting card (--e0). Header (league tag + state chip),
    body (team rows | O/U + Spread columns), then the DiamondEdge pick strip. ---- */
@@ -3846,7 +3855,14 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* ─────────── 3 · LIVE, MEASURED AGAINST THE LOCKED LINE ─────────── */
-.lvl{border-radius:14px;padding:11px 13px 10px;
+/* THE STRIP HAS A FLOOR. It is a border-box with 26px of horizontal padding and a 1px
+   border, so its CONTENT box hits zero the moment its column is ≤28px wide — and at zero
+   content width normal wrapping puts one word per line, which turned a long string into a
+   2,105px-tall stack of invisible text on 2026-07-31. min-width stops that failure mode
+   dead: below ~240px the strip keeps its own width and .tile's overflow:hidden clips it,
+   so the worst case is a clipped strip, never an unbounded column. At every real width
+   (the narrowest card is ~305px at 375px viewport) this changes nothing. */
+.lvl{border-radius:14px;padding:11px 13px 10px;min-width:240px;
   background:linear-gradient(180deg,rgba(217,44,71,.09),rgba(217,44,71,.03));
   border:1px solid rgba(255,77,104,.22)}
 .lvl.cleared{background:linear-gradient(180deg,rgba(25,197,138,.11),rgba(25,197,138,.03));
@@ -3870,7 +3886,8 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   border-radius:999px;padding:3px 9px;color:#0b111e;background:#f0b23c;white-space:nowrap}
 .lvl-ph b{font-family:var(--mono);font-weight:700;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
 .lvl-phtx{font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--ink3);flex:1;min-width:140px}
-.lvl-note{margin-top:7px;font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--ink4)}
+/* (.lvl-note deleted 2026-07-31 — it existed only to print live_progress.note, which is a
+   contract note addressed to the author, not copy. Nothing renders into it any more.) */
 
 /* ─────────── 4 · THE DIAMONDEDGE PICK — the conclusion ─────────── */
 .decall{position:relative;overflow:hidden;border-radius:16px;padding:14px 15px 13px;
@@ -5123,6 +5140,13 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
 .dev-deadbar span{font-family:var(--mono);font-weight:700;font-size:12px;color:#fff;
   background:rgba(255,92,119,.22);border-radius:6px;padding:2px 7px}
 .dev-deadbar i{font-style:normal;flex-basis:100%;font-size:11px;color:#ffb3c0}
+/* Same banner, second offence: payload documentation (a spec/note field, a backtick, a
+   snake_case identifier, a dated internal byline) rendering where a reader can read it.
+   Amber rather than red so the two dev failures are told apart at a glance. */
+.dev-leakbar{bottom:auto;top:8px;border-color:#f0b23c;background:#3a2705;color:#ffe7bd}
+.dev-leakbar b{color:#f7c766}
+.dev-leakbar span{background:rgba(240,178,60,.22);max-width:100%;overflow-wrap:anywhere}
+.dev-leakbar i{color:#e8c68a}
 /* per-block backtest ROIs listed in the not-live footnote (they are never combined) */
 .rblv-foot i{font-style:normal;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700}
 .rblv-foot i.pos{color:var(--green)}
