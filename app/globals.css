@@ -5045,3 +5045,88 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
   .pdd-k{font-size:16.5px}
   .pdd.full p{font-size:14.5px}
 }
+
+/* ═══════════════ THE RECORD CHIP AS AN OBVIOUS DOOR ═══════════════
+   This chip opens the record-breakdown sheet, so it has to LOOK like a door and not like a
+   status readout. It gains the gold hairline the rest of the record furniture carries, an
+   arrow that slides on hover, a pressed state, and a real focus ring — the sheet is fully
+   reachable by keyboard (it is a <button>: Tab to it, Enter/Space opens, Esc closes). */
+.recchip.perf{border-color:var(--goldline);background:linear-gradient(180deg,var(--goldbg),var(--glass-hi) 78%)}
+.recchip .rc-arw{transition:transform .22s var(--spring)}
+.recchip:hover .rc-arw{transform:translateX(3px)}
+.recchip:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.recchip.perf:active{transform:scale(.975)}
+.res-breakdown:focus-visible,.sb-more:focus-visible,.rb-full:focus-visible,.rb-share:focus-visible,
+.ix-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* ═══════════════ RECORD SHEET · LIVE-SERVED vs BACKTESTED ═══════════════
+   Two columns, deliberately never one total. The live column carries the product's green/red
+   ROI treatment; the not-live column is desaturated and hairlined so it can never be mistaken
+   for a served number. Figures are monospace; every word around them is not. */
+.rblv{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 4px}
+.rblv-col{display:flex;flex-direction:column;gap:3px;padding:12px 13px;border-radius:13px;
+  border:1px solid var(--line3);background:var(--glass-hi)}
+.rblv-col.live{border-color:var(--goldline);background:linear-gradient(165deg,var(--goldbg),var(--glass-hi) 70%)}
+.rblv-col.notlive{opacity:.82}
+.rblv-tag{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+.rblv-col.live .rblv-tag{color:var(--golddeep)}
+.rblv-wl{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:21px;
+  line-height:1.15;color:var(--ink);letter-spacing:-.02em}
+.rblv-sub{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;color:var(--ink2)}
+.rblv-sub i{font-style:normal;font-family:var(--mono);font-weight:700}
+.rblv-sub i.pos{color:var(--green)}
+.rblv-sub i.neg{color:#ff7d93}
+.rblv-n{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:11px;color:var(--ink3)}
+.rblv-foot{margin-top:5px;padding-top:7px;border-top:1px solid var(--line3);
+  font-family:var(--sans);font-size:11.5px;line-height:1.45;color:var(--ink3);text-wrap:pretty}
+.rblv-rule{margin:10px 16px 14px;padding:10px 12px;border-radius:10px;border:1px solid var(--line3);
+  background:var(--glass);font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink2);text-wrap:pretty}
+.rblv-rule b{color:var(--ink);font-weight:700}
+@media(max-width:399px){.rblv{grid-template-columns:1fr}}
+
+/* ═══════════════ RECORD SHEET · STRATEGY BY STRATEGY ═══════════════
+   One row per rule-set, in the payload's own order — never ranked by returns, because a
+   leaderboard buries the losers. The served product is marked; nothing is ever summed. */
+.rbs-list{padding:6px 16px 0}
+.rbs-row{padding:11px 0;border-top:1px solid var(--line3)}
+.rbs-row:first-child{border-top:0}
+.rbs-lab{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.rbs-lab b{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.01em;color:var(--ink)}
+.rbs-dia{color:var(--gold);font-size:11px}
+.rbs-prod,.rbs-lean{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;
+  letter-spacing:.11em;text-transform:uppercase;border-radius:999px;padding:2px 7px}
+.rbs-prod{color:var(--golddeep);background:var(--goldbg)}
+.rbs-lean{color:var(--ink3);background:var(--glass-hi);border:1px solid var(--line3)}
+.rbs-nums{display:flex;align-items:baseline;gap:9px;margin-top:5px;
+  font-family:var(--mono);font-variant-numeric:tabular-nums}
+.rbs-wl{font-weight:700;font-size:16px;color:var(--ink);letter-spacing:-.01em}
+.rbs-hit{font-weight:700;font-size:12.5px;color:var(--ink2)}
+.rbs-roi{font-weight:700;font-size:12.5px;color:var(--ink3)}
+.rbs-roi.pos{color:var(--green)}
+.rbs-roi.neg{color:#ff7d93}
+.rbs-none{font-family:var(--sans);font-size:12.5px;color:var(--ink3)}
+.rbs-foot{margin-top:3px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--ink3)}
+.rbs-bt{color:var(--ink4,var(--ink3));opacity:.85}
+.rbs-warn{margin:12px 16px 14px;padding:10px 12px;border-radius:10px;border:1px solid var(--line3);
+  background:var(--glass);font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink2);text-wrap:pretty}
+.rbs-warn b{color:var(--ink);font-weight:700}
+.sh-body .sb-more{margin-top:10px}
+
+/* ═══════════════ DEV-ONLY: THE DEAD-CLICK-TARGET BANNER ═══════════════
+   Never rendered in production — it only appears when bindClick/bindOn is handed an id that
+   isn't in the DOM. Loud on purpose: a dead handler used to be completely invisible. */
+.dev-deadbar{position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;display:flex;align-items:center;
+  gap:8px;flex-wrap:wrap;padding:9px 13px;border-radius:11px;border:1px solid #ff5c77;
+  background:#3a0512;color:#ffd9e0;box-shadow:0 10px 34px rgba(0,0,0,.5);
+  font-family:var(--sans);font-size:12px;line-height:1.4;pointer-events:none}
+.dev-deadbar b{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:#ff8ea3}
+.dev-deadbar span{font-family:var(--mono);font-weight:700;font-size:12px;color:#fff;
+  background:rgba(255,92,119,.22);border-radius:6px;padding:2px 7px}
+.dev-deadbar i{font-style:normal;flex-basis:100%;font-size:11px;color:#ffb3c0}
+/* per-block backtest ROIs listed in the not-live footnote (they are never combined) */
+.rblv-foot i{font-style:normal;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700}
+.rblv-foot i.pos{color:var(--green)}
+.rblv-foot i.neg{color:#ff7d93}
+.rblv-btlist{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+.rblv-btrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  padding:4px 7px;border-radius:7px;background:var(--glass);font-size:11px;color:var(--ink3)}

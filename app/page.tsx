@@ -44,6 +44,76 @@ export default function Home() {
 
     // ===================== HELPERS =====================
     const $ = (id: string) => document.getElementById(id) as any;
+
+    /* ═════════════ DEAD-CLICK-TARGET GUARD — a broken surface must never be silent ═════════════
+       THE BUG CLASS THIS EXISTS TO KILL. Every handler in this file used to be attached by
+       looking the id up and guarding the result — "if the element is there, wire it up" — and
+       that guard is a silencer. Delete or rename the markup — as happened to
+       #res-breakdown (removed 2026, "Production redesign") and #sb-more (removed in the
+       post-unification dead-symbol sweep) — and the binding keeps running, finds nothing,
+       and the surface it opened is simply gone. No error, no warning, nothing on screen.
+       The record-breakdown sheet (and the pricing-defect disclosure inside it) was
+       unreachable for months exactly this way.
+
+       THE FIX. bindClick()/bindOn() are now the ONLY way a handler is attached by id. A
+       missing target is reported LOUDLY in development — console.error plus a fixed red
+       banner naming every dead id — and is a silent no-op in production, byte-for-byte the
+       old behaviour, so a guard bug can never take the live site down.
+
+       Targets that legitimately come and go with state pass { optional: "<why>" }. The
+       reason is required, so "optional" can never become a lazy way to re-silence this. */
+    const DEV = process.env.NODE_ENV !== "production";
+    const deadTargets = new Map<string, string>();
+    let deadBannerRaf = 0;
+    function reportDeadTarget(id: string, what: string) {
+      if (!DEV || deadTargets.has(id)) return;
+      deadTargets.set(id, what);
+      // eslint-disable-next-line no-console
+      console.error(
+        `[DiamondEdge] DEAD CLICK TARGET  #${id}\n` +
+        `  ${what} is bound to an element that is not in the DOM.\n` +
+        `  The markup was removed, renamed, or never rendered — and the binding was never updated.\n` +
+        `  Fix the markup or delete the binding. If the element is genuinely conditional, pass\n` +
+        `  { optional: "why it can be absent" } to bindClick/bindOn.`
+      );
+      // setTimeout, NOT requestAnimationFrame: rAF is throttled to nothing in a background or
+      // inactive tab, and a warning that only appears when someone happens to be watching is
+      // the exact silence this guard exists to end.
+      if (deadBannerRaf) return;
+      deadBannerRaf = window.setTimeout(() => {
+        deadBannerRaf = 0;
+        if (!document.body) return;
+        let bar = $("dev-deadbar");
+        if (!bar) { bar = document.createElement("div"); bar.id = "dev-deadbar"; bar.className = "dev-deadbar"; document.body.appendChild(bar); }
+        bar.innerHTML =
+          `<b>DEAD CLICK TARGET${deadTargets.size > 1 ? "S" : ""}</b>` +
+          Array.from(deadTargets.keys()).map((k) => `<span>#${k}</span>`).join("") +
+          `<i>handler bound to markup that isn't rendered — see the console</i>`;
+      }, 0);
+    }
+    type BindOpts = { optional?: string; keyboard?: boolean };
+    // Attach `fn` to `id`'s `evt`. Returns the element, or null (loudly, in dev) if it's missing.
+    function bindOn(id: string, evt: string, fn: (e?: any) => any, opts?: BindOpts) {
+      const el = $(id);
+      if (!el) { if (!(opts && opts.optional)) reportDeadTarget(id, `the "${evt}" handler`); return null; }
+      el["on" + evt] = fn;
+      return el;
+    }
+    // Click binding + a real keyboard path. Anything that isn't natively focusable gets
+    // role/tabindex/Enter+Space, so "it opens a sheet" always implies "you can reach it".
+    function bindClick(id: string, fn: (e?: any) => any, opts?: BindOpts) {
+      const el = bindOn(id, "click", fn, opts);
+      // A non-focusable element that acts like a button becomes one. Opt out with
+      // { keyboard: false } for things that must NOT be in the tab order — a modal backdrop
+      // is a click-to-dismiss convenience, not a control: Esc and the ✕ are its real path.
+      if (el && opts && opts.keyboard === false) return el;
+      if (el && !/^(BUTTON|A|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(String(el.tagName))) {
+        if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "0");
+        if (!el.getAttribute("role")) el.setAttribute("role", "button");
+        el.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(e); } };
+      }
+      return el;
+    }
     const esc = (s: any) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => (({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as any)[c]));
     const num = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : Number(v).toFixed(d));
     const sgn = (v: any, d = 1) => { if (v == null || isNaN(Number(v))) return "—"; const n = Number(v); return (n > 0 ? "+" : "") + n.toFixed(d); };
@@ -2490,10 +2560,10 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
-      $("gp-back").onclick = () => closeDetail();
-      const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
-      const ins = $("anl-insights"); if (ins) ins.onclick = () => { closeDetail(); switchTab("results"); };
-      const pAll = $("anl-pat-all"); if (pAll) pAll.onclick = () => { closeDetail(); switchTab("results"); };
+      bindClick("gp-back", () => closeDetail());
+      bindClick("gp-brand", () => { closeDetail(); switchTab("today"); });
+      bindClick("anl-insights", () => { closeDetail(); switchTab("results"); });
+      bindClick("anl-pat-all", () => { closeDetail(); switchTab("results"); });
     }
     // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
     // card — tiles, the standings strip, the debate panel — without touching each binder.
@@ -4469,7 +4539,7 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); });
-      $("gp-back").onclick = () => closeDetail();
+      bindClick("gp-back", () => closeDetail());
     }
     // one delegated click for every pitcher chip/line anywhere in the app
     document.addEventListener("click", async (e: any) => {
@@ -6092,7 +6162,10 @@ export default function Home() {
         const voidBit = (t as any).nv ? `<span class="pf-voidn">· ${(t as any).nv} void</span>` : "";
         inner = `<span class="pf-k">${esc(dayLab)}'s record</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${voidBit}${extra}`;
       }
-      const chip = `<button class="recchip perf" id="recchip" aria-label="See the full pick record, broken down by confidence level">${inner}<span class="rc-arw">→</span></button>`;
+      // The chip is a DOOR, not a readout — it opens the record-breakdown sheet. It says so to
+      // assistive tech (aria-haspopup="dialog" + a label that names what opens), and being a real
+      // <button> it is in the tab order with Enter/Space opening and Esc closing the sheet.
+      const chip = `<button class="recchip perf" id="recchip" aria-haspopup="dialog" aria-label="Open the full record — every pick by strength tier, by strategy, and live-served versus backtested">${inner}<span class="rc-arw" aria-hidden="true">→</span></button>`;
       // "All picks →" opens the model's deep-dive view (record + every pick, lead-by-lead).
       return `<div class="metarow">${chip}<button class="howlink strong" id="allpicks">All picks · record →</button><span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
@@ -6303,10 +6376,12 @@ export default function Home() {
           loadBeta().then(() => { try { if (!rangeMode && tab === "games") renderSlate(true); } catch {} }).catch(() => {});
         }
         const ppdGames = ppdGamesFor(curDate, games);
+        // REPAINT ⇒ REBIND (see the boot warm-up): every path out of renderSlate below must
+        // reach a bindMeta(), or the record chip this line just re-created has no handler.
         if (meta) meta.innerHTML = metaRow();
         // Feeds still in flight → hold the shimmer skeletons; the empty state only ever
         // renders once the loaders have RESOLVED empty (no more "No games" flash at boot).
-        if (!games.length && dayLoading) { body.innerHTML = skeletonSlate(); return; }
+        if (!games.length && dayLoading) { body.innerHTML = skeletonSlate(); bindMeta(); return; }
         if (!games.length && ppdGames.length) {
           // a day whose ONLY games were postponed still shows them, voided
           body.innerHTML = `<div class="slate-sec ppdsec"><div class="sec-hd"><span class="sec-lab">Postponed</span><span class="sec-n">${ppdGames.length}</span></div><div class="slate">${ppdGames.map((g: any, i: number) => ppdCard(g, i)).join("")}</div></div>
@@ -6385,12 +6460,13 @@ export default function Home() {
     }
 
     function bindMeta() {
-      const rc = $("recchip"); if (rc) rc.onclick = () => openRecordBreakdown();
-      const ap = $("allpicks"); if (ap) ap.onclick = () => switchTab("beta");
-      const hl = $("howlink"); if (hl) hl.onclick = () => switchTab("beta");
+      bindClick("recchip", () => openRecordBreakdown());
+      bindClick("allpicks", () => switchTab("beta"));
+      bindClick("howlink", () => switchTab("beta"));
       // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
       // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
-      const rgb = $("rng-back"); if (rgb) rgb.onclick = () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); };
+      bindClick("rng-back", () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); },
+        { optional: "only rendered by renderRangeBody() when a range scan comes back empty" });
     }
 
     function bindScoresChrome() {
@@ -6411,17 +6487,29 @@ export default function Home() {
         di.onclick = (e: any) => { e.stopPropagation(); try { di.showPicker(); } catch {} };
         cal.onclick = () => { try { di.showPicker(); } catch { try { di.focus(); di.click(); } catch {} } };
       }
-      const hb = $("hist-btn");
-      if (hb) hb.onclick = () => { histOpen = !histOpen; const ha = $("hist-area"); if (ha) { ha.innerHTML = histOpen ? histPanel() : ""; bindHist(); } hb.classList.toggle("on", histOpen || rangeMode); };
+      /* KNOWN DEAD ENTRY POINT — #hist-btn (reported, deliberately not revived here).
+         The button that toggled the history / date-range panel was dropped from the date-tools
+         markup in the "Frontend mega-round" redesign; only the calendar button survived. Nothing
+         can set histOpen = true any more, so histPanel() and every binding in bindHist() are
+         unreachable. The machinery is left intact — reviving the range scan is a product call,
+         not a bug fix — but it is flagged here rather than left looking wired up. */
+      bindClick("hist-btn", () => {
+        histOpen = !histOpen;
+        const ha = $("hist-area");
+        if (ha) { ha.innerHTML = histOpen ? histPanel() : ""; bindHist(); }
+        const hb = $("hist-btn"); if (hb) hb.classList.toggle("on", histOpen || rangeMode);
+      }, { optional: "the history/range toggle button is not currently rendered — see the note above" });
       bindHist();
       bindMeta();
       window.addEventListener("resize", () => { positionInk(); positionLens(); recenterStrip(false); });
     }
     function bindHist() {
-      const rf = $("range-from"); if (rf) rf.onchange = () => (rangeFrom = rf.value);
-      const rt = $("range-to"); if (rt) rt.onchange = () => (rangeTo = rt.value);
-      const rg = $("range-go"); if (rg) rg.onclick = () => runRange();
-      const rc = $("range-clear"); if (rc) rc.onclick = () => { rangeMode = false; refreshStrip(); renderSlate(); };
+      // The range panel only exists while it's open, so every target here is genuinely optional.
+      const OPT = { optional: "only in the DOM while the history/range panel is open" };
+      bindOn("range-from", "change", (e: any) => (rangeFrom = e.target.value), OPT);
+      bindOn("range-to", "change", (e: any) => (rangeTo = e.target.value), OPT);
+      bindClick("range-go", () => runRange(), OPT);
+      bindClick("range-clear", () => { rangeMode = false; refreshStrip(); renderSlate(); }, OPT);
     }
     function recenterStrip(smooth = true) {
       const strip = $("datestrip");
@@ -6458,7 +6546,7 @@ export default function Home() {
     }
 
     function bindCards() {
-      const tlh = $("tl-how"); if (tlh) tlh.onclick = (e: any) => { e.stopPropagation(); switchTab("beta"); };
+      bindClick("tl-how", (e: any) => { e.stopPropagation(); switchTab("beta"); });
       root.querySelectorAll(".tile[data-gid], .feat[data-gid], .tpk[data-gid]").forEach((bx: any) => {
         const open = (e: any) => {
           if (e && e.target && e.target.closest && e.target.closest("[data-up]")) { openUnlock(); return; }
@@ -7361,13 +7449,14 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); positionDetailInk(); });
-      $("gp-back").onclick = () => closeDetail();
+      bindClick("gp-back", () => closeDetail());
       // The DiamondEdge logo goes HOME (News) from anywhere — the back button goes back a step.
-      const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
-      const unl = $("cc-unlock");
-      if (unl) unl.onclick = () => { closeDetail(); openUnlock(); };
-      const shTlh = $("tl-how"); if (shTlh) shTlh.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => switchTab("beta"), 120); };
-      const shShare = $("gp-share"); if (shShare) shShare.onclick = (e: any) => { e.stopPropagation(); shareGame(g); };
+      bindClick("gp-brand", () => { closeDetail(); switchTab("today"); });
+      // (#cc-unlock's binding lived here until 2026-07-31. The locked-pick CTA lost that id in
+      //  the "Scorify nav" round and every unlock affordance now carries [data-up], which the
+      //  delegated handler above already covers — so the binding was dead weight, not a gate.)
+      bindClick("tl-how", (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => switchTab("beta"), 120); });
+      bindClick("gp-share", (e: any) => { e.stopPropagation(); shareGame(g); });
       // tab switching (no re-fetch; just show/hide + move the ink)
       wireBody();
       // if opened on a live game, pull the box score right away
@@ -7517,8 +7606,8 @@ export default function Home() {
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
-      $("sheet-close").onclick = () => closeDetail();
-      $("sheet-bg").onclick = () => closeDetail();
+      bindClick("sheet-close", () => closeDetail());
+      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
     // The pick-record breakdown — TODAY (with how many are still live/to-come) and THIS MONTH,
@@ -7614,22 +7703,109 @@ export default function Home() {
           : `<div class="rb-sub">${scope.empty}</div>`;
         return `<div class="dsec"><div class="dsec-h">${scope.lab} · the record ladder</div>${body}</div>`;
       };
+      /* ── LIVE vs BACKTESTED, and STRATEGY BY STRATEGY ───────────────────────────────
+         The sheet is "the record", so the two cuts that decide how to read a record belong
+         in it alongside the tiers: how much of it was ever actually served, and which
+         rule-set produced it. Both read from the same by_strategy block Insights uses, from
+         whichever feed has landed, and both return "" when nothing is served — the sheet
+         degrades to exactly the tier ladder it showed before. Nothing is ever summed
+         across streams and nothing live is ever blended with a backtest. */
+      const stratSrc = [betaData, betaLiveData, livePayload, payload].find((d: any) => strategyRecords(d).length) || betaData;
+      const hlRec = headlineStrategyRecord(stratSrc);
+      const hlLive = (hlRec || ({} as any)).live;
+      const liveVsBacktest = (() => {
+        if (!hlRec || !hlRec.live) return "";
+        const lv = hlRec.live;
+        const btN = (hlRec.backtests || []).reduce((a: number, b: any) => a + (b.n || 0), 0);
+        const cmb = hlRec.combined;
+        const notLive = btN || (cmb && cmb.n > lv.n ? cmb.n - lv.n : 0);
+        if (!notLive) return "";
+        const since = stratDateTxt(hlRec.activation);
+        const col = (cls: string, tag: string, b: any, foot: string) => `
+          <div class="rblv-col ${cls}">
+            <span class="rblv-tag">${esc(tag)}</span>
+            <b class="rblv-wl">${esc(stratWL(b))}</b>
+            <span class="rblv-sub">${b.hit != null ? `${stratPct(b.hit)} hit` : "—"}${b.roi != null ? ` · <i class="${b.roi >= 0 ? "pos" : "neg"}">${stratRoi(b.roi)}</i> ROI` : ""}</span>
+            <span class="rblv-n">${b.n} graded</span>
+            <span class="rblv-foot">${foot}</span>
+          </div>`;
+        /* Aggregating the backtest blocks HONESTLY. Wins, losses, pushes and n are counts, so
+           they sum. Hit rate is then exact from those sums. ROI is NOT summable — it's a
+           return on staked units, and this stream carries two blocks whose ROIs point in
+           opposite directions (walk-forward vs pre-activation reconstruction). Averaging or,
+           worse, showing the last one and labelling it as the total would be precisely the
+           kind of number this product refuses to publish. So a single block shows its own ROI,
+           and multiple blocks show none — each is broken out underneath instead. */
+        const bts = hlRec.backtests || [];
+        const btAgg = bts.reduce((a: any, b: any) => ({
+          n: a.n + (b.n || 0), win: a.win + (b.win || 0), loss: a.loss + (b.loss || 0), push: a.push + (b.push || 0),
+        }), { n: 0, win: 0, loss: 0, push: 0 });
+        const btDec = btAgg.win + btAgg.loss;
+        btAgg.hit = btDec ? btAgg.win / btDec : null;
+        btAgg.roi = bts.length === 1 ? bts[0].roi : null;
+        // The payload's `label` for each block is a full paragraph, so name the blocks by their
+        // short machine `kind` here and let the strategy card downstairs carry the prose.
+        const BT_KIND: any = {
+          walk_forward_backtest: "Walk-forward backtest",
+          rolling_origin_walk_forward: "Walk-forward backtest",
+          pre_activation_reconstruction: "Pre-activation reconstruction",
+          labeled_backtest: "Labelled backtest",
+        };
+        const btName = (b: any) => BT_KIND[String(b.kind || "")] ||
+          String(b.kind || "Backtest").replace(/_/g, " ").replace(/^./, (c: string) => c.toUpperCase());
+        const btFoot = bts.length > 1
+          ? `Replayed backwards, never served to anyone. These blocks don't share a return, so no single ROI is shown:` +
+            `<span class="rblv-btlist">${bts.map((b: any) => `<span class="rblv-btrow">${esc(btName(b))}<i class="${b.roi == null ? "" : b.roi >= 0 ? "pos" : "neg"}">${stratRoi(b.roi)}</i></span>`).join("")}</span>`
+          : "Reconstructed &amp; walk-forward backtest — replayed backwards, never served to anyone.";
+        const right = btAgg.n
+          ? col("notlive", "Not live", btAgg, btFoot)
+          : `<div class="rblv-col notlive"><span class="rblv-tag">Not live</span><b class="rblv-wl">${notLive}</b><span class="rblv-sub">rows</span><span class="rblv-n">never served</span><span class="rblv-foot">Reconstruction &amp; backtest carried in the combined total.</span></div>`;
+        return `<div class="dsec"><div class="dsec-h">Live-served vs backtested</div>
+          <div class="rblv">
+            ${col("live", "Live-served", lv, since ? `Every pick served since ${esc(since)}, graded at the price we published.` : "Every pick we actually served, graded at the price we published.")}
+            ${right}
+          </div>
+          <div class="rblv-rule">These are <b>never added together</b>. Only the left-hand number ever described a real bankroll; the right-hand one is the same rules replayed over history. The picks in it are real — the record is not a served one.</div>
+        </div>`;
+      })();
+      const perStrategy = (() => {
+        const rows = strategyRecords(stratSrc);
+        if (!rows.length) return "";
+        const row = (r: any) => {
+          const lv = r.live;
+          const btN = (r.backtests || []).reduce((a: number, b: any) => a + (b.n || 0), 0);
+          const nums = lv
+            ? `<b class="rbs-wl">${esc(stratWL(lv))}</b><span class="rbs-hit">${lv.hit != null ? stratPct(lv.hit) : "—"}</span><span class="rbs-roi ${lv.roi == null ? "" : lv.roi >= 0 ? "pos" : "neg"}">${stratRoi(lv.roi)}</span>`
+            : `<span class="rbs-none">0–0 · nothing graded live yet</span>`;
+          return `<div class="rbs-row${r.headline ? " headline" : ""}">
+            <div class="rbs-lab">${r.headline ? `<span class="rbs-dia">◆</span>` : ""}<b>${esc(r.label)}</b>${r.headline ? `<i class="rbs-prod">the product</i>` : ""}${r.leanLedger ? `<i class="rbs-lean">leans, not bets</i>` : ""}</div>
+            <div class="rbs-nums">${nums}</div>
+            <div class="rbs-foot">${lv ? `${lv.n} live-served &amp; graded` : "no live-served picks yet"}${btN ? ` · <span class="rbs-bt">${btN} backtested rows, kept out</span>` : ""}</div>
+          </div>`;
+        };
+        return `<div class="dsec"><div class="dsec-h">Strategy by strategy</div>
+          <div class="rbs-list">${rows.map(row).join("")}</div>
+          <div class="rbs-warn">Live-served picks only. <b>They overlap — never add them up:</b> the same game shows up in more than one stream, so these are the same bets from different angles. The samples are small and none of this is an edge claim.</div>
+        </div>`;
+      })();
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
-        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="rb-title">
           <div class="sh-grab" id="sh-grab"><span></span></div>
           <div class="sh-head gold">
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
             <div class="sh-sport">DiamondEdge</div>
-            <div class="rcp-title"><span class="pl-vdia">◆</span>The record</div>
-            <div class="sh-meta">wins–losses by pick strength · graded against real final scores</div>
+            <div class="rcp-title" id="rb-title"><span class="pl-vdia">◆</span>The record</div>
+            <div class="sh-meta">by pick strength, by strategy, live vs backtested · graded against real final scores</div>
           </div>
           <div class="sh-body">
             <div class="rbt-howread">More stars, more conviction — every pick lands in a tier and gets graded by the final score. Tap a tier to see the exact picks.</div>
             ${block(scopes[0])}
             ${block(scopes[1])}
+            ${liveVsBacktest}
+            ${perStrategy}
             <div class="dsec"><div class="dsec-b rcp"><p><b>Every call freezes before first pitch</b> — the side, the line and the price — and the final score does the judging. The full running record, tier by tier, lives on the Insights tab.</p></div></div>
-            ${priceDefectNote("full", (headlineStrategyRecord(betaData) || {} as any).live)}
+            ${priceDefectNote("full", hlLive)}
             <button class="rb-full" id="rb-full">See the full record &amp; charts →</button>
             <button class="rb-share" id="rb-share">Share our record ↗</button>
           </div>
@@ -7638,15 +7814,15 @@ export default function Home() {
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
-      $("sheet-close").onclick = () => closeDetail();
-      $("sheet-bg").onclick = () => closeDetail();
-      const full = $("rb-full"); if (full) full.onclick = () => { closeDetail(); switchTab("results"); };
-      const rbs = $("rb-share"); if (rbs) rbs.onclick = async () => {
+      bindClick("sheet-close", () => closeDetail());
+      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
+      bindClick("rb-full", () => { closeDetail(); switchTab("results"); });
+      bindClick("rb-share", async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
         const txt = shareTagline();
         if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied — paste it anywhere"); } catch { toast(url); }
-      };
+      });
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
     document.addEventListener("keydown", (e: any) => { if (e.key === "Escape" && detail) closeDetail(); });
@@ -7991,6 +8167,7 @@ export default function Home() {
         <div class="stgyrec-order">Listed in the model's own order, the served product first. Deliberately <b>not</b> ranked by returns — a leaderboard would bury the losers.</div>
         <div class="stgyrec-list">${rows.map(strategyCard).join("")}</div>
         ${overlap ? `<details class="stgyrec-full"><summary><span>The full methodology note, unedited</span><span class="sgc-caret" aria-hidden="true">›</span></summary><p>${esc(overlap)}</p></details>` : ""}
+        <button class="sb-more" id="sb-more" aria-haspopup="dialog">See every graded pick by strength →</button>
       </div>`;
     }
     // ── PAST PICKS (Leon, 2026-07-25): a browsable day-by-day archive on Insights —
@@ -8087,6 +8264,7 @@ export default function Home() {
             ? `Every pick we <b>serve</b> is graded against the final at the real price. The live-served record leads. Anything reconstructed or backtested is labelled as such and never blended into it — including on the charts below, which cover the combined history.`
             : `Every pregame totals pick we publish, graded against the final at the real price. Wins, losses, and the record they add up to — no cherry-picking.`}</p>
           <div class="ix-mast-act">
+            <button class="ix-btn primary" id="res-breakdown" aria-haspopup="dialog">See every pick by strength →</button>
             <button class="ix-btn" id="res-share">Share the record ↗</button>
           </div>
         </div>
@@ -8113,13 +8291,13 @@ export default function Home() {
 
       animateCounters(view);
       // past-picks bindings: expandable days, row tap-through, show-more pagination
-      const ppm = $("pp-more"); if (ppm) ppm.onclick = () => { ppShown += 14; renderResults(); };
+      bindClick("pp-more", () => { ppShown += 14; renderResults(); });
       view.querySelectorAll(".pp-row[data-ppgid]").forEach((b: any) => (b.onclick = () => {
         const gid = b.dataset.ppgid;
         const bg = (betaLiveData && (betaLiveData.games || []).find((g: any) => String(g.game_id) === gid)) || ((betaData && betaData.games) || []).find((g: any) => String(g.game_id) === gid);
         if (bg) openBetaGame(bg);
       }));
-      const iu2 = $("ins-upsell2"); if (iu2) iu2.onclick = () => openUnlock();
+      bindClick("ins-upsell2", () => openUnlock());
       // Share the headline record — honest text + the branded OG card renders from the URL.
       const rs = $("res-share");
       if (rs) rs.onclick = async () => {
@@ -8128,13 +8306,14 @@ export default function Home() {
         if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
       };
-      const rbk = $("res-breakdown");
-      if (rbk) rbk.onclick = () => openRecordBreakdown();
-      const iap = $("ins-allpicks"); if (iap) iap.onclick = () => switchTab("beta");
-      const iu = $("ins-upsell");
-      if (iu) iu.onclick = () => { accountMode = isSignedIn() ? "subscribe" : "signin"; switchTab("account"); };
-      const sbm = $("sb-more");
-      if (sbm) sbm.onclick = () => openRecordBreakdown();
+      // The two restored ways into the record-breakdown sheet: the Insights masthead action and
+      // the foot of the strategy-by-strategy card. Both had their markup deleted out from under
+      // these bindings — bindClick now makes that failure mode impossible to ship silently.
+      bindClick("res-breakdown", () => openRecordBreakdown());
+      bindClick("ins-allpicks", () => switchTab("beta"));
+      // (#ins-upsell's binding lived here until 2026-07-31 — the button was renamed #ins-upsell2
+      //  in the post-unification sweep and rebound above, so this one had been a no-op since.)
+      bindClick("sb-more", () => openRecordBreakdown());
       // Recent-scores rows open the game detail (same path as the board cards).
       view.querySelectorAll(".gs-row[data-gid]").forEach((bx: any) => {
         const open = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
@@ -8351,8 +8530,8 @@ export default function Home() {
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
-      $("sheet-close").onclick = () => closeDetail();
-      $("sheet-bg").onclick = () => closeDetail();
+      bindClick("sheet-close", () => closeDetail());
+      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
       // The whole "Our take" row is the pick affordance — clicking it ALWAYS opens the game's
       // full pick. Resolve the game at click-time (state may have loaded since render), mirroring
       // the article-row handlers: live/loaded slate → openDetail; otherwise jump the board to it.
@@ -8794,7 +8973,7 @@ export default function Home() {
     }
     function bindStories(view: any) {
       const wrap = $("stories"), stage = $("st-stage");
-      const gb = $("st-gridbtn"); if (gb) gb.onclick = (e: any) => { e.stopPropagation(); setNewsMode("grid"); };
+      bindClick("st-gridbtn", (e: any) => { e.stopPropagation(); setNewsMode("grid"); });
       view.querySelectorAll("[data-go]").forEach((b: any) => {
         b.onclick = (e: any) => {
           e.stopPropagation();
@@ -8939,16 +9118,16 @@ export default function Home() {
           <div class="news-foot">${esc(recordStrip())}</div>
         </div>`;
       // ---- bindings ----
-      const stb = $("st-storiesbtn"); if (stb) stb.onclick = () => setNewsMode("stories");
-      const sn = $("soc-native"); if (sn) sn.onclick = async () => {
+      bindClick("st-storiesbtn", () => setNewsMode("stories"));
+      bindClick("soc-native", async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
         if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge", text: shareTagline(), url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${shareTagline()} ${url}`); toast("Copied — paste it anywhere"); } catch { toast(url); }
-      };
-      const sc = $("soc-copy"); if (sc) sc.onclick = async () => {
+      });
+      bindClick("soc-copy", async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
         try { await navigator.clipboard.writeText(url); toast("Link copied to clipboard"); } catch { toast(url); }
-      };
+      });
       const nav = (el: any) => { const d = el.dataset.nav; if (d) switchTab(d); };
       view.querySelectorAll("[data-nav]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); nav(b); }));
       // storyline expand + jump
@@ -8981,35 +9160,11 @@ export default function Home() {
       view.querySelectorAll(".nf-story[data-nf]").forEach((a: any) => {
         a.onclick = (e: any) => { e.preventDefault(); openArticleSheet(newsStoryByKey(a.dataset.nf), a.dataset.nf); };
       });
-      // carousel dots: track the snapped card, click to go
-      const rail = $("tdy-picks"), dots = $("tp-dots");
-      if (rail && dots) {
-        const cards = Array.from(rail.querySelectorAll(".hero")) as any[];
-        const setDot = (i: number) => dots.querySelectorAll(".tp-dot").forEach((d: any, k: number) => d.classList.toggle("on", k === i));
-        // PERF: pre-measure card centers once (+ on resize) so the scroll handler never reads
-        // layout (offsetLeft/Width) per frame — that was a forced reflow on every scroll tick.
-        let centers: number[] = [];
-        const measure = () => { centers = cards.map((c: any) => c.offsetLeft + c.offsetWidth / 2); };
-        measure();
-        window.addEventListener("resize", measure, { passive: true });
-        let raf = 0;
-        rail.addEventListener("scroll", () => {
-          if (raf) return;
-          raf = requestAnimationFrame(() => {
-            raf = 0;
-            const mid = rail.scrollLeft + rail.clientWidth / 2;
-            let best = 0, bd = Infinity;
-            for (let k = 0; k < centers.length; k++) { const d = Math.abs(centers[k] - mid); if (d < bd) { bd = d; best = k; } }
-            setDot(best);
-          });
-        }, { passive: true });
-        dots.querySelectorAll(".tp-dot").forEach((d: any) => (d.onclick = (e: any) => {
-          e.stopPropagation();
-          const i = Number(d.dataset.dot);
-          const c = cards[i];
-          if (c) rail.scrollTo({ left: c.offsetLeft - (rail.clientWidth - c.offsetWidth) / 2, behavior: REDUCE ? "auto" : "smooth" });
-        }));
-      }
+      // (The #tdy-picks / #tp-dots carousel-dot wiring lived here until 2026-07-31. Both ids left
+      //  the markup in the "UX/News overhaul" that replaced the picks carousel with the top-games
+      //  grid, so the whole `if (rail && dots)` block — dot tracking, its scroll listener and a
+      //  permanent window resize listener — had been unreachable ever since. Removed, not
+      //  silenced: it is in git if the carousel ever comes back.)
       animateCounters(view);
     }
     // Theme tap: switch to the Games tab, select the right league/date, highlight the games.
@@ -9069,15 +9224,15 @@ export default function Home() {
           <button class="set-link" id="set-upgrade">DiamondEdge Premium<em>→</em></button>
           <div class="set-about" style="margin-top:10px">Every DiamondEdge Pick is graded in the open against real final scores — games the model never saw in advance. Win rates always travel with prices and returns. That transparency is the whole product.</div>
         </div>`;
-      $("prem-switch").onclick = () => {
+      bindClick("prem-switch", () => {
         setPremium(!isPremium());
         renderSettings();
         renderToday();
         if ($("slate-body")) renderSlate();
-      };
-      $("set-how").onclick = () => openRecipeSheet();
-      $("set-results").onclick = () => switchTab("results");
-      $("set-upgrade").onclick = () => switchTab("upgrade");
+      });
+      bindClick("set-how", () => openRecipeSheet());
+      bindClick("set-results", () => switchTab("results"));
+      bindClick("set-upgrade", () => switchTab("upgrade"));
       const moveLeague = (lg: string, dir: number) => {
         const cur = orderedLeagues(livePayload || payload);
         const i = cur.indexOf(lg), j = i + dir;
@@ -9088,7 +9243,7 @@ export default function Home() {
       };
       view.querySelectorAll(".lg-up").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, -1)));
       view.querySelectorAll(".lg-dn").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, 1)));
-      const lr = $("lg-reset"); if (lr) lr.onclick = () => { try { localStorage.removeItem("de_league_order"); } catch {} renderSettings(); };
+      bindClick("lg-reset", () => { try { localStorage.removeItem("de_league_order"); } catch {} renderSettings(); });
     }
 
     // ===================== UPGRADE (stub checkout — no real payments) =====================
@@ -9120,13 +9275,13 @@ export default function Home() {
         <button class="up-cta" id="up-sub">Unlock DiamondEdge</button>
         <button class="up-back" id="up-back">Not now — keep the free picks</button>
         <div class="up-honest">Straight talk: the ${(rh.hit * 100).toFixed(1)}% is a real, rigorous backtest over ${rh.n.toLocaleString()} graded picks — but in-sample, so we plan around the honest ~55% (the ${'56.9%'} out-of-sample slice is the cleanest evidence)${fwd ? `. Since going live the record is ${fwd.wins || 0}-${fwd.losses || 0} — still a tiny sample` : ""}. Every future pick is graded the same way, in the open, win or lose.</div>`;
-      $("up-sub").onclick = () => {
+      bindClick("up-sub", () => {
         // The buy-flow lives on the Account screen's payment step (Card / Apple Pay / …).
         // Sign-in gates checkout; the payment stub sets the de_premium entitlement there.
         accountMode = isSignedIn() ? "subscribe" : "signin";
         switchTab("account");
-      };
-      $("up-back").onclick = () => switchTab("today");
+      });
+      bindClick("up-back", () => switchTab("today"));
     }
 
     // ===================== ACCOUNT / SIGN-IN / SUBSCRIBE (stubs) =====================
@@ -9186,12 +9341,12 @@ export default function Home() {
           <button class="acct-signout" id="acct-signout">Sign out</button>
           <div class="acct-foot">Signed in since ${esc(a.since || todayISO())}. Your account and membership live on this device for now — real sign-in and billing wire in at the marked points in the code.</div>
         </div>`;
-      const upg = $("acct-upgrade"); if (upg) upg.onclick = () => { accountMode = "subscribe"; renderSubscribe(); };
-      const mng = $("acct-manage"); if (mng) mng.onclick = () => { accountMode = "subscribe"; renderSubscribe(); };
-      $("acct-prefs").onclick = () => switchTab("settings");
-      $("acct-record").onclick = () => switchTab("results");
-      $("acct-how").onclick = () => openRecipeSheet();
-      $("acct-signout").onclick = () => { signOut(); refreshAccountButton(); accountMode = "signin"; renderSignIn(); };
+      bindClick("acct-upgrade", () => { accountMode = "subscribe"; renderSubscribe(); });
+      bindClick("acct-manage", () => { accountMode = "subscribe"; renderSubscribe(); });
+      bindClick("acct-prefs", () => switchTab("settings"));
+      bindClick("acct-record", () => switchTab("results"));
+      bindClick("acct-how", () => openRecipeSheet());
+      bindClick("acct-signout", () => { signOut(); refreshAccountButton(); accountMode = "signin"; renderSignIn(); });
     }
     // SIGN-IN gateway: social buttons (Google/Apple/Facebook/X) + email — all functional
     // STUBS that set a mock session and persist it. NO real OAuth (wire-in points marked).
@@ -9219,7 +9374,7 @@ export default function Home() {
           </form>
           <div class="sgn-legal">By continuing you agree these are demo sign-in stubs — no real account is created and no password is stored. Wire-in points for real OAuth and email auth are marked in the source.</div>
         </div>`;
-      $("sgn-close").onclick = () => { if (isSignedIn()) { accountMode = "menu"; renderAccount(); } else switchTab("today"); };
+      bindClick("sgn-close", () => { if (isSignedIn()) { accountMode = "menu"; renderAccount(); } else switchTab("today"); });
       view.querySelectorAll(".sgn-btn").forEach((b: any) => (b.onclick = () => {
         // OAUTH WIRE-IN POINT (per provider): replace mockSignIn with the real provider flow,
         // then persist the returned profile via setAccount and confirm entitlement server-side.
@@ -9299,9 +9454,9 @@ export default function Home() {
           <div class="sub-honest">The record above is real — ${rh.n.toLocaleString()} picks graded against final scores on games the model never saw in advance. No real charge is made in this demo; on Subscribe your Premium entitlement flips on. Real billing wires in at the marked points.</div>
         </div>`;
       view.querySelectorAll(".pay-m").forEach((b: any) => (b.onclick = () => { payMethod = b.dataset.pm; renderSubscribe(); }));
-      $("sub-close").onclick = () => { accountMode = "menu"; renderAccount(); };
-      $("sub-skip").onclick = () => { accountMode = "menu"; renderAccount(); };
-      $("sub-go").onclick = () => {
+      bindClick("sub-close", () => { accountMode = "menu"; renderAccount(); });
+      bindClick("sub-skip", () => { accountMode = "menu"; renderAccount(); });
+      bindClick("sub-go", () => {
         // STRIPE / APPLE PAY / PAYPAL WIRE-IN POINT: run the selected gateway here. On a
         // confirmed charge (webhook/callback), set the entitlement — mirror server-side.
         setPremium(true);
@@ -9318,7 +9473,7 @@ export default function Home() {
           renderToday();
           renderAccount();
         }, REDUCE ? 300 : 1600);
-      };
+      });
     }
 
     // ===================== HEADER / SHELL =====================
@@ -9645,8 +9800,8 @@ export default function Home() {
           </div>
         </div>`;
       view.querySelectorAll(".beta-tab").forEach((b: any) => (b.onclick = () => { betaTab = b.dataset.btab; renderBeta(); }));
-      const tg = $("beta-togg"); if (tg) tg.onclick = () => { betaOnlyTakes = !betaOnlyTakes; betaShown = 24; renderBeta(); };
-      const mo = $("beta-more"); if (mo) mo.onclick = () => { betaShown += 36; renderBeta(); requestAnimationFrame(() => { const el = $("beta-more"); if (el) el.scrollIntoView({ block: "center" }); }); };
+      bindClick("beta-togg", () => { betaOnlyTakes = !betaOnlyTakes; betaShown = 24; renderBeta(); });
+      bindClick("beta-more", () => { betaShown += 36; renderBeta(); requestAnimationFrame(() => { const el = $("beta-more"); if (el) el.scrollIntoView({ block: "center" }); }); });
       // card clicks resolve against BOTH feeds (live board first, then the historical walk)
       betaBuiltAt = Date.now();
       view.querySelectorAll(".beta-gcard[data-bgid]").forEach((b: any) => (b.onclick = () => {
@@ -9713,8 +9868,8 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
-      $("gp-back").onclick = () => closeDetail();
-      const gpb = $("gp-brand"); if (gpb) gpb.onclick = () => { closeDetail(); switchTab("today"); };
+      bindClick("gp-back", () => closeDetail());
+      bindClick("gp-brand", () => { closeDetail(); switchTab("today"); });
     }
 
     // ===================== RESEARCH — "THE LAB" (public roadmap of every idea we test) =====================
@@ -10095,8 +10250,8 @@ export default function Home() {
         </main>
         <nav class="dockwrap" aria-label="Primary"><div class="dock" id="dock"></div></nav>`;
       renderDock();
-      $("brand").onclick = () => switchTab("today");
-      const ab = $("acctbtn"); if (ab) ab.onclick = () => switchTab("account");
+      bindClick("brand", () => switchTab("today"));
+      bindClick("acctbtn", () => switchTab("account"));
       // (dock item clicks are wired inside renderDock)
       const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
       bindHeaderScroll();
@@ -10317,8 +10472,13 @@ export default function Home() {
       loadPitchers().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // ERAs onto tiles once the feed lands
       loadTeams().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // team records + streaks onto tiles (degrades if the feed is absent)
       loadBetaLive().catch(() => {}); // warm the pick feed at boot — tiles are v4-only now, this is their source
-      // warm the historical payload too so any prior day's record chip (by_date_record) populates
-      loadBeta().then(() => { try { const m = $("meta-area"); if (m) m.innerHTML = metaRow(); } catch {} }).catch(() => {});
+      // warm the historical payload too so any prior day's record chip (by_date_record) populates.
+      // REPAINT ⇒ REBIND. This repaint replaces the record chip's markup, which ORPHANS the
+      // handler bindMeta() attached at boot. Whether the chip stayed clickable used to come down
+      // to which feed resolved last — loadPitchers/loadTeams re-render the slate (and rebind),
+      // loadBeta did not — so on a slow connection the chip went dead and stayed dead, and the
+      // record-breakdown sheet with it. Never repaint #meta-area without bindMeta().
+      loadBeta().then(() => { try { const m = $("meta-area"); if (m) { m.innerHTML = metaRow(); bindMeta(); } } catch {} }).catch(() => {});
       // ── PULL-TO-REFRESH (mobile): drag down from the very top → full refresh ──
       // A hard reload re-fetches every feed (and any new deploy). Indicator shows pull
       // progress; fires past 70px. Desktop unaffected (touch-only).
