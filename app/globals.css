@@ -378,7 +378,8 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 /* the explainer link keeps to the right edge whether or not the row wraps under the
    record chip — a corner link, never an orphan sitting under the chip's left edge */
 .metarow .howlink,.metarow .howlink.strong{white-space:nowrap;margin-left:auto}
-.mr-sp{flex:1}
+/* (.mr-sp — the meta row's flex spacer — went with the duplicate "All picks · record"
+   button; the how-it-works link keeps to the right on its own margin-left:auto now.) */
 .recchip{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px;color:var(--ink2);background:var(--paper);border:1px solid var(--line2);border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:var(--e0);transition:.2s ease}
 .recchip b{color:var(--ink);font-weight:700}
 .recchip:hover{color:var(--ink);box-shadow:var(--e1)}
@@ -744,7 +745,8 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    two different languages and share nothing: a bet is caps, ink-black, 16px display type
    with a filled mark and a price. A call is sentence case, ink2, 15px, a HOLLOW mark and
    no price at all — and the kicker beside it says NO BET in as many words. */
-.tv-call{display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:600;font-size:15px;color:var(--ink2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tv-call{display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:600;font-size:15px;color:var(--ink2);min-width:0;white-space:nowrap}
+.tv-call>b{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .tv-call .tv-mk{background:transparent;clip-path:none;width:8px;height:8px;align-self:center;
   border-left:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg);margin:0 1px 2px 1px}
 .tv-call.ou-over .tv-mk{color:var(--over)}
