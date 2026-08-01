@@ -260,7 +260,11 @@ header#app-header{position:sticky;top:0;z-index:65;padding-top:var(--sat);
   background:var(--chrome-bg);
   -webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
   box-shadow:0 1px 0 var(--chrome-line);transition:box-shadow .3s ease}
-header#app-header.scrolled{box-shadow:0 1px 0 var(--line),0 6px 18px var(--sh1)}
+/* SCROLLED ⇒ OPAQUE. At rest there is nothing behind the masthead and the frosted
+   translucency is just a nice surface; once the board is running under it, .82 alpha plus
+   a blur is not frosting, it is a team abbreviation faintly legible through the wordmark.
+   A sticky bar that lets content read through it is worse than no sticky bar. */
+header#app-header.scrolled{background:var(--paper);box-shadow:0 1px 0 var(--line),0 6px 18px var(--sh1)}
 .hbar{max-width:var(--wide);margin:0 auto;padding:11px max(18px,var(--sal)) 11px max(18px,var(--sar));display:flex;align-items:center;gap:16px}
 .brand-tx{overflow:hidden}
 .brand{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer}
@@ -370,8 +374,10 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 
 /* ---- the meta row above the board: record chip + "how picks work" ---- */
 .meta-area{margin:10px 0 0}
-.metarow{display:flex;align-items:center;gap:6px 10px;margin:0 0 10px;padding:0 2px;flex-wrap:wrap}
-.metarow .howlink,.metarow .howlink.strong{white-space:nowrap}
+.metarow{display:flex;align-items:center;justify-content:space-between;gap:2px 10px;margin:0 0 10px;padding:0 2px;flex-wrap:wrap}
+/* the explainer link keeps to the right edge whether or not the row wraps under the
+   record chip — a corner link, never an orphan sitting under the chip's left edge */
+.metarow .howlink,.metarow .howlink.strong{white-space:nowrap;margin-left:auto}
 .mr-sp{flex:1}
 .recchip{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px;color:var(--ink2);background:var(--paper);border:1px solid var(--line2);border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:var(--e0);transition:.2s ease}
 .recchip b{color:var(--ink);font-weight:700}
@@ -382,10 +388,12 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .boardsum{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px;margin:0 0 14px;padding:11px 14px;
   background:var(--paper);border-radius:var(--r-sm);box-shadow:var(--e0)}
 .boardsum .bs-k{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);flex-shrink:0}
-.boardsum .bs-nums{font-family:var(--sans);font-size:14px;color:var(--ink2);display:inline-flex;align-items:baseline;gap:7px}
+/* the counts WRAP AS UNITS. "12 calls, no bet" was breaking after "no", leaving a lone
+   "bet" on the next line — a flex row whose items were words, not facts. */
+.boardsum .bs-nums{font-family:var(--sans);font-size:14px;color:var(--ink2);display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:2px 7px}
+.boardsum .bs-nums>span{white-space:nowrap}
 .boardsum .bs-nums b{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
 .boardsum .bs-nums i{font-style:normal;color:var(--ink4)}
-.boardsum .bs-note{flex-basis:100%;font-family:var(--sans);font-size:13px;line-height:1.45;color:var(--ink3);margin-top:3px}
 .rb-sub{font-family:var(--sans);font-size:14px;color:var(--ink3);line-height:1.5}
 .rb-full{width:100%;border:0;border-radius:14px;padding:12px;margin-top:4px;font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.02em;color:var(--ink);background:var(--glass-hi);border:1px solid var(--glass-brd);box-shadow:var(--shadow);cursor:pointer;transition:box-shadow .2s ease}
 .rb-full:hover{box-shadow:var(--shadow-hi)}
@@ -497,7 +505,12 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    paints, and the lens is retired rather than left as a second source of truth. */
 .dlens{display:none}
 .dcell.on{background:var(--ink)}
-.dcell{position:relative;z-index:1;flex-shrink:0;display:inline-flex;flex-direction:row;align-items:baseline;justify-content:center;gap:5px;min-width:0;border:0;background:transparent;border-radius:10px;padding:7px 11px;cursor:pointer;transition:transform .2s var(--ease)}
+.dcell{position:relative;z-index:1;flex-shrink:0;display:inline-flex;flex-direction:row;align-items:baseline;justify-content:center;gap:5px;min-width:0;border:0;background:transparent;border-radius:9px;padding:5px 10px;cursor:pointer;transition:transform .2s var(--ease)}
+/* THE HIT AREA IS NOT THE BOX. A day cell needs 44px of thumb on a phone and about 30px
+   of ink; making the BOX 44px tall is what built the ledge the strip used to carry. The
+   box is now the size of its type and the reach is bought back with an invisible overlay,
+   so the row is short and the target is not. Same trick on the calendar button below. */
+.dcell::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
 .dcell:active{transform:scale(.94)}
 .dcell .dc-wd{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);transition:color .2s ease}
 .dcell .dc-d{font-family:var(--disp);font-weight:700;font-size:16px;color:var(--ink2);line-height:1;font-variant-numeric:tabular-nums;transition:color .2s ease}
@@ -525,6 +538,15 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .future-note .fn-body span b{font-weight:700;color:var(--ink)}
 .datetools{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative}
 .dtool{font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--line2);background:var(--paper);color:var(--ink2);min-width:38px;height:36px;padding:0 9px;border-radius:11px;cursor:pointer;transition:.2s var(--ease);box-shadow:var(--e0);display:inline-grid;place-items:center}
+/* THE CALENDAR BUTTON WAS THE LEDGE. It was a raised 38×44 paper chip with a border and a
+   drop, parked at the end of a row of flat typographic day cells: it was taller than the
+   dates, so it set the height of the whole strip, and its box read as a step. It is now a
+   borderless icon of the same optical height as a day cell — chrome, not a control panel —
+   and it keeps a full 44px of reach through the same invisible overlay the cells use. */
+.datebar.lead .dtool.cal{border:0;background:transparent;box-shadow:none;min-width:30px;width:30px;height:30px;border-radius:9px;color:var(--ink3);position:relative}
+.datebar.lead .dtool.cal::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%)}
+.datebar.lead .dtool.cal svg{width:19px;height:19px;stroke-width:1.7}
+.datebar.lead .dtool.cal:hover{color:var(--ink);background:rgba(var(--rimc),.06);box-shadow:none}
 .dtool svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .dtool:hover{color:var(--ink);box-shadow:var(--shadow-hi)}
 .dtool:active{transform:scale(.92)}
@@ -701,10 +723,35 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tv-res.pushed{color:var(--push);background:var(--pushbg)}
 .tv-res.inplay{color:var(--green);background:var(--greenbg);font-family:var(--mono)}
 .tl-verdict .tv-callrow{display:flex;align-items:baseline;gap:6px;min-width:0}
-.tv-side{display:inline-flex;align-items:baseline;gap:4px;font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;color:var(--ink);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tv-side i{font-style:normal;font-size:12px;line-height:1}
-.tv-side.ou-over i{color:var(--over)}
-.tv-side.ou-under i{color:var(--under)}
+/* THE PRICE IS NOT THE OVERFLOW. This row used to clip its own tail — `overflow:hidden`
+   on a flex CONTAINER does not ellipsize, it just cuts, and what got cut was the last
+   item: "UNDER 10.5 +105" shipped as "UNDER 10.5 +10". The side is the thing allowed to
+   shrink; the mark and the price never are. */
+.tv-side{display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.01em;color:var(--ink);min-width:0;white-space:nowrap}
+.tv-side>b{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.tv-side>em,.tv-side>.tv-mk{flex-shrink:0}
+/* two-across at 375 leaves ~138px for mark + side + price. "UNDER 10.5 +105" is the
+   worst case and it must fit WHOLE — a truncated line ("UNDER 1…") or a truncated price
+   is a wrong number, which is worse than a small one. */
+@media(max-width:719px){.tv-side{font-size:14.5px;gap:4px}.tv-side>em{font-size:11px}.tv-side>.tv-mk{width:9px;height:7px}}
+/* THE BET MARK — a SOLID triangle. Its hollow twin (.tv-mk.hollow, below) is the desk's
+   call, and the fill is the whole difference: filled means money is on it. */
+.tv-mk{flex-shrink:0;align-self:center;width:10px;height:8px;background:currentColor;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.tv-side.ou-over .tv-mk{color:var(--over)}
+.tv-side.ou-under .tv-mk{color:var(--under);clip-path:polygon(0 0,100% 0,50% 100%)}
+/* ══ A CALL IS NOT A BET ══
+   The desk has a direction on every game; we bet a fraction of them. These two facts get
+   two different languages and share nothing: a bet is caps, ink-black, 16px display type
+   with a filled mark and a price. A call is sentence case, ink2, 15px, a HOLLOW mark and
+   no price at all — and the kicker beside it says NO BET in as many words. */
+.tv-call{display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:600;font-size:15px;color:var(--ink2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tv-call .tv-mk{background:transparent;clip-path:none;width:8px;height:8px;align-self:center;
+  border-left:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg);margin:0 1px 2px 1px}
+.tv-call.ou-over .tv-mk{color:var(--over)}
+.tv-call.ou-under .tv-mk{color:var(--under);transform:rotate(225deg);margin:2px 1px 0 1px}
+.tv-nb{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);
+  border:1px solid var(--line);border-radius:999px;padding:1.5px 7px;white-space:nowrap;flex-shrink:0}
+.tl-verdict.is-call .tv-k{color:var(--ink3)}
 .tv-side em{font-style:normal;font-family:var(--mono);font-weight:600;font-size:12px;color:var(--ink3);letter-spacing:-.02em}
 .tv-side.tv-pass{font-weight:600;font-size:14px;color:var(--ink3)}
 .tv-q{display:inline-flex;align-items:center;flex-shrink:0}
@@ -729,15 +776,31 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* the locked number never truncates — it is one of the four facts the tile exists for */
 .tl-tot{font-family:var(--sans);font-weight:500;font-size:11px;letter-spacing:.02em;color:var(--ink3);white-space:nowrap;flex:0 0 auto}
 .tl-tot b{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
-/* THE SIGIL ROW. Four 14px marks in each analyst's own accent — the desk's signature.
-   Direction rides as tone: an OVER read sits on a green wash, an UNDER on a red one,
-   the mark itself always staying the analyst's colour so identity survives. */
-.tsigs{display:inline-flex;align-items:center;gap:3px;flex-shrink:0}
-.tsig{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;color:var(--anc);background:var(--anbg);font-style:normal}
-.tsig svg{width:14px;height:14px}
-.tsig.s-over{box-shadow:inset 0 -2px 0 rgba(var(--greenc),.55)}
-.tsig.s-under{box-shadow:inset 0 -2px 0 rgba(var(--redc),.5)}
-@media(max-width:400px){.tsig{width:18px;height:18px;border-radius:5px}.tsig svg{width:13px;height:13px}}
+/* ══ THE DESK ROW — WHO SAID IT, AND WHAT THEY SAID ══
+   Four units on one baseline. Each is the analyst's sigil in their own accent with a
+   DIRECTION MARK beneath it: a solid triangle, apex up for over, apex down for under.
+   Read the row of triangles and you have "three up, one down" without reading a word.
+
+   The chips are gone. They were four tinted boxes stacked against two team crests and a
+   verdict, and all they bought was a background; the accent lives in the mark itself.
+   DIRECTION IS FORM. The triangle carries it and the green/red only confirms it, so the
+   row survives greyscale, every kind of colour blindness, and a 13px render. */
+.tsigs{display:inline-flex;align-items:flex-end;gap:13px;flex-shrink:0}
+.tsig{display:inline-flex;flex-direction:column;align-items:center;gap:3px;color:var(--anc);font-style:normal}
+.tsig svg{width:18px;height:18px;display:block}
+.tsig-d{display:block;width:9px;height:6px;background:currentColor;flex-shrink:0}
+.tsig.s-over .tsig-d{color:var(--over);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.tsig.s-under .tsig-d{color:var(--under);clip-path:polygon(0 0,100% 0,50% 100%)}
+/* a thin read — the backend flagged low conviction, or it was filed before the lineup or
+   the umpire was known. Same shape, less of it: conviction without a number. */
+.tsig.s-thin .tsig-d{width:7px;height:4.5px;margin-bottom:1px}
+/* no call, and a locked pick: two more silhouettes, neither of which is a triangle */
+/* --ink3, not --ink4: "this one filed no call" is a real state and has to be readable.
+   Measured 5.66:1 on light paper, 5.80:1 on dark — ink4 was 3.51:1 in dark. */
+.tsig.s-none .tsig-d{width:9px;height:2.5px;border-radius:2px;color:var(--ink3)}
+.tsig.s-lock .tsig-d{width:5px;height:5px;border-radius:50%;color:var(--ink3)}
+.tsig.s-none svg,.tsig.s-lock svg{opacity:.55}
+@media(max-width:400px){.tsigs{gap:11px}.tsig svg{width:17px;height:17px}}
 
 /* live-score refresh: swap tiles in place without re-running the entrance animation */
 #slate-body.still .tile,#slate-body.still .feat{animation:none}
@@ -1758,7 +1821,11 @@ details.more .more-body{padding-top:12px}
 .mt-tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .mt-tbl th{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:0 8px 7px 0;border-bottom:1px solid var(--line2)}
 .mt-tbl th:last-child{text-align:right;padding-right:0}
-.mt-tbl td{padding:10px 8px 10px 0;border-bottom:1px solid var(--line3);vertical-align:middle}
+/* TOP-ALIGNED, not middle. A pass cell carries a full sentence of reasoning and wraps to
+   five or six lines at 375px; middle alignment then floated "Total (O/U)" and "8.5" in
+   the vertical centre of a tall row, so the table read as three stray words with a hole
+   in it. The row's facts line up with the first line of the explanation. */
+.mt-tbl td{padding:10px 8px 10px 0;border-bottom:1px solid var(--line3);vertical-align:top}
 .mt-tbl tbody tr:last-child td{border-bottom:0}
 .mt-mk{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap}
 .mt-line{font-family:var(--mono);font-size:14px;color:var(--ink2);white-space:nowrap}
@@ -2154,15 +2221,15 @@ details.more .more-body{padding-top:12px}
 .cvp-side i{font-style:normal;color:var(--ink3);font-weight:600}
 
 /* ══ GAMES CHROME DIFFERENTIATION (Leon: the 3 bars blended together) ══
-   Bar 1 (primary nav): light glass pill — unchanged.
-   Bar 2 (date strip): DARK navy band — the anchored, scores-app control.
-   Bar 3 (leagues): bare typographic row with a sliding green underline. */
-/* (The date bar's frosted-capsule overrides lived here. It is a plain scroller now.) */
+   The three bands are now separated by SURFACE, in the .games-chrome block near the foot
+   of this sheet — masthead on paper, date band recessed, league rail back on paper. What
+   is left here is the type inside the date band. */
 .datebar.lead .dcell.on .dc-wd,.datebar.lead .dcell.on .dc-d{color:var(--paper)}
 .datebar.lead .dcell.today .dc-wd{color:var(--ink2)}
-.datebar.lead .dtool:hover{background:rgba(var(--rimc),.16)}
-.datebar.lead .dtool.hist.on{background:rgba(var(--rimc),.2);color:#fff}
-.datebar.lead .datetools .calwrap input{color-scheme:dark}
+.datebar.lead .dtool.hist.on{background:var(--ink);color:var(--paper)}
+/* the native date picker follows the app, not a dark theme this app no longer has */
+.datebar.lead .datetools .calwrap input{color-scheme:light}
+@media (prefers-color-scheme:dark){.datebar.lead .datetools .calwrap input{color-scheme:dark}}
 /* leagues: kill the chip look entirely — quiet uppercase text + a sliding underline ink */
 .subhead.subtle{border-bottom:1px solid var(--line3);padding-bottom:0;margin-bottom:12px}
 .subhead.subtle .sporttabs{padding:0;gap:0;
@@ -2421,17 +2488,38 @@ main{padding-bottom:calc(env(safe-area-inset-bottom) + 78px) !important}
 body.sheet-open .dockwrap{opacity:0;transform:translateY(18px);pointer-events:none}
 @media (prefers-reduced-motion:reduce){.dockwrap{transition:none}}
 
-/* ══ STICKY GAMES CHROME — date strip + league rail pinned under the app header ══
-   One sticky wrapper (frosted glass backing) so tiles scroll UNDER both control rows.
-   z 55 = below the header (65), sheets (90+) and the dock (340); above the tiles. */
-.games-chrome{position:sticky;top:calc(var(--hdr-h,0px) - 2px);z-index:55;margin:0 -6px;padding:7px 6px 0;
-  background:linear-gradient(180deg,rgba(var(--panec),.96) 88%,rgba(var(--panec),.7));
-  -webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
-  box-shadow:0 12px 18px -16px var(--sh5)}
-.games-chrome .datebar.lead{margin:0 0 8px}
-.games-chrome .subhead.subtle{margin-bottom:0}
+/* ══ STICKY GAMES CHROME — THREE BANDS, THREE SURFACES ══
+   Leon: "should be sticky header… the sport team row also should be a different
+   background… the background colour of [the date strip] should be different."
+
+   The header, the date band and the league rail used to be the same near-white on the
+   same near-white, so the top of the screen read as one undifferentiated slab with words
+   floating in it. They are now a short tonal ladder, lightest at the top:
+
+     #app-header      --chrome-bg   paper, translucent           (the masthead)
+     .datebar.lead    --sunken      the deepest step, recessed   (the date band)
+     .subhead.subtle  --wash        one step back up + hairline  (the league rail)
+     the board        --bg          the field the tiles sit on
+
+   LAYERING, which is the part that goes wrong. The wrapper is FULL-BLEED (it used to be
+   inset by the page gutter, so a strip of page showed either side of a bar that is
+   supposed to be chrome) and it is OPAQUE at the bottom edge: the old gradient faded to
+   70% over the last 12% of its height, so tiles ghosted through the bar as they scrolled
+   under it. Content passes beneath, never through. z 55 = below the header (65), sheets
+   (90+) and the dock (340); above the tiles. */
+.games-chrome{position:sticky;top:calc(var(--hdr-h,0px) - 1px);z-index:55;padding-block:0;
+  margin-inline:calc(-1 * max(18px,var(--sal))) calc(-1 * max(18px,var(--sar)));
+  padding-inline:max(18px,var(--sal)) max(18px,var(--sar));
+  background:var(--paper);box-shadow:0 1px 0 var(--line2),0 10px 16px -14px var(--sh5)}
+.games-chrome .datebar.lead{margin-block:0;padding-block:3px;
+  margin-inline:calc(-1 * max(18px,var(--sal))) calc(-1 * max(18px,var(--sar)));
+  padding-inline:max(18px,var(--sal)) max(18px,var(--sar));
+  background:var(--sunken);box-shadow:inset 0 -1px 0 var(--line2)}
+.games-chrome .subhead.subtle{margin-bottom:0;background:var(--wash);
+  margin-inline:calc(-1 * max(18px,var(--sal))) calc(-1 * max(18px,var(--sar)));
+  padding-inline:max(18px,var(--sal)) max(18px,var(--sar))}
 /* breathing room for the first row that scrolls under the pinned chrome */
-.games-chrome + .meta-area{margin-top:10px}
+.games-chrome + .meta-area{margin-top:12px}
 
 /* ══ "WHAT'S LIGHTING UP" — plain-English context signals (render only when served) ══ */
 /* tile: one muted · separated line at the foot of the pick strip, dir-tinted subtly */
@@ -3700,6 +3788,17 @@ body.stories-on main{padding:0 !important;max-width:none}
   background:linear-gradient(135deg,rgba(var(--goldc),.14),var(--anbg,rgba(var(--panec),.5)) 70%);
   box-shadow:inset 0 0 0 1px rgba(var(--goldc),.34),inset 0 1.5px 0 rgba(var(--goldlic),.2)}
 .wkr-champ b{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+/* THE CROWN BLOCK'S THREE ROWS, which had no styles at all — the markup was rewritten to
+   .wkr-champ-top / -w / -b and the sheet was never given them. The result: a crowned name
+   jammed straight against its own award line ("NOVAAnalyst of the Week"), and the whole
+   block — award, week and basis paragraph — inheriting the analyst's accent, so a caveat
+   about sample size was printing in the same purple as the prize. Same bug class as the
+   legend below it. */
+.wkr-champ{flex-direction:column;align-items:flex-start;gap:5px}
+.wkr-champ-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}
+.wkr-champ-top>span:last-child{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+.wkr-champ-w{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink2)}
+.wkr-champ-b{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3)}
 .wkr-champ span:last-child{font-family:var(--sans);font-weight:500;font-size:13px;color:var(--ink2)}
 .wkr-crown{line-height:0;display:inline-flex}
 .wkr-rows{display:flex;flex-direction:column;gap:6px;margin-top:10px}
@@ -3869,9 +3968,13 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .feat{padding:16px 18px 16px}
 .dsec,.ixc,.lab-card,.beta-card{padding:16px 18px}
 
-/* C3. Touch targets — nothing interactive under 44px of vertical reach on a phone. */
+/* C3. Touch targets — nothing interactive under 44px of vertical REACH on a phone.
+   Reach, not box height: the date strip's cells and its calendar button buy their 44px
+   with an invisible ::after overlay (see the date-strip block) so the visible row can be
+   as short as its type. Forcing min-height on them is what built the ledge Leon flagged. */
 @media(max-width:719px){
-  .dsk-cell,.dtool,.tk-item,.gp-tab,.ix-btn,.pat-all,.dock-item,.dcell{min-height:44px}
+  .dsk-cell,.tk-item,.gp-tab,.ix-btn,.pat-all,.dock-item{min-height:44px}
+  .datetools .dtool:not(.cal){min-height:44px}
   .dsk-cell,.dcell{justify-content:center}
 }
 
@@ -4489,7 +4592,14 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
 }
 /* the quad's kind chip: mark and label share a line, the count sits under it */
 .qd-lkr{display:inline-flex;align-items:center;gap:5px}
-/* the legend swatches live outside .wkr-bar, so they need their own fills */
+/* THE WEEKLY TALLY'S KEY. It shipped as "wonpushlost": the swatches had a fill and
+   nothing else — no display, no size, no margin — so three zero-width <i> elements sat
+   between three words and the row read as one nonsense string. The key is now a real
+   flex row of swatch+word pairs, and the swatches are actual squares. */
+.wkr-legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;margin-top:12px;
+  font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.wkr-legend span{display:inline-flex;align-items:center;gap:6px}
+.wkr-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;flex-shrink:0}
 .wkr-legend i.wb-w{background:var(--green)}
 .wkr-legend i.wb-p{background:rgba(var(--slatec),.7)}
 .wkr-legend i.wb-l{background:var(--red)}

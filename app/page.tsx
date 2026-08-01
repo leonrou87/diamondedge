@@ -1525,62 +1525,73 @@ export default function Home() {
         inputs: ["Starter ERA and recent form", "Lineup run production", "Bullpen rest and innings load", "Park run index", "Wind and temperature"],
       },
     };
-    /* ═══════════ THE FOUR MARKS — ONE SYSTEM, DRAWN FROM WHAT EACH ONE READS ═══════════
-       REDRAWN 2026-07-31, and for the same reason the era caption was rewritten a screen
-       up: the old marks described an architecture that no longer exists. ATLAS was a
-       nucleus inside crossed orbits because ATLAS was a 20,000-run Monte Carlo; NOVA was a
-       calibrated bell curve because NOVA was a residual-quant stack; SCOUT was a ballpark
-       diamond because SCOUT was the fundamentals model that read the park. Since the four
-       were re-cut onto DISJOINT slices, every one of those pictures was teaching something
-       false — and a mark teaches harder than a sentence, because it is never read twice.
+    /* ═══════════ THE FOUR MARKS — ONE SYSTEM, DRAWN AS THEIR OWN SUBJECT ═══════════
+       REDRAWN AGAIN, 2026-08-01. The previous cut was honest about what each analyst reads
+       but abstract about it — a dot between two uprights, a bowl under a lid, three ranks,
+       a ball with stepped arms. As a geometric system it held together; as iconography it
+       failed the only test that matters on a board, which Leon put plainly: a reader should
+       be able to look at the four and guess what each one cares about, with no label. An
+       abstraction nobody can decode is a decoration, and four decorations on a tile are
+       four things to ignore. So each mark is now RECOGNISABLY ITS OWN SUBJECT.
 
-       THE CHANNELS, AS THEY ACTUALLY STAND (analyst_v2_spec.slices):
+       THE CHANNELS, AS THEY ACTUALLY STAND (analyst_v2_spec.slices), and the object each
+       one is now drawn as:
          VEGA  · THE PRICE      market structure — where it opened, how far it moved, how
                                 much the books disagree, what the two sides cost
+                                ⇒ THE MARKET'S OWN LINE, with the current number marked
          ATLAS · THE CONDITIONS environment — the park's run factor, its altitude and roof,
                                 and how many runs this plate umpire's games produce
+                                ⇒ THE BALLPARK, from above: foul lines, wall, infield, plate
          NOVA  · THE BATS       run production — the nine names posted tonight and how the
                                 two offences have actually been scoring
+                                ⇒ A BAT, barrel-heavy, and the ball it meets
          SCOUT · THE ARMS       run prevention — the two starters who open the game and the
                                 bullpens behind them
+                                ⇒ THE BALL ITSELF, seams and all
 
-       THE CONSTRUCTION RULE, so the four read as a set and not as four drawings:
-         · one 24×24 field, one stroke weight (2.2), round caps, nothing on a half-pixel
-         · every mark is ONE STRUCTURE the channel measures, plus ONE FILLED MARK — the
-           thing inside that structure which decides the game
-         · four different silhouettes, because at 20px on a game tile the only reliable
-           discriminators are orientation and openness, never detail:
-             VEGA  a solid point held between two unequal uprights   (a measured gap)
-             ATLAS a bowl under a lid, with the plate solid inside   (an enclosure, curved)
-             NOVA  a bullet and three ranks running across           (horizontal striping)
-             SCOUT a ball and three arms stepping down and away      (vertical striping)
-           NOVA and SCOUT are deliberately each other's ninety degrees: the bats read across
-           the card, the arms stand up in the order they are used. Same structure, turned.
+       WHAT KEEPS THEM A SET rather than four clip-art picks:
+         · one 24×24 field, one stroke weight, round caps and joins, optically centred
+         · every mark reads at 20px — the size it is actually used at on a game tile —
+           which is why each one resolves to a single silhouette and never to detail:
+             VEGA  a jagged rising line with a weighted point   (diagonal, open)
+             ATLAS a quarter of a field                         (a filled quadrant)
+             NOVA  a bat across the field                       (one heavy diagonal)
+             SCOUT a circle with two seams                      (the only closed round form)
+           NOVA and SCOUT stay each other's counterpart, as before, but now legibly: the
+           bat is what the offence does to the ball, the ball is what the arms do with it.
+         · NOVA's bat is the one mark whose stroke changes weight along its length, because
+           a bat is thicker at the barrel and a uniform stroke reads as a slash. It is a
+           taper, not a second weight: barrel and handle are the same line.
 
        WHAT IS DELIBERATELY *NOT* DRAWN. ATLAS's `is_night` and NOVA's `bats_vs_hand` are
        named in their own theses but their fitted coefficients are 0.0000 — the models do
-       not read them. So day/night is not in ATLAS's mark and the opposing hand is not in
-       NOVA's. The mark may not claim more than the fit does; that is the whole point of
-       having redrawn them. */
+       not read them. So there is no sun or moon on ATLAS's park and no handedness on
+       NOVA's bat. A mark may not claim more than the fit does; that rule survived the
+       redraw and outranks any amount of extra charm. */
     // The geometry itself, in 24-space, shared by the small mark and the big portrait so
     // that a 13px chip and a 148px hero are provably the SAME drawing and not two of them.
     function deskMarkBody(k: string, sw = 2.2) {
       const S = `stroke="currentColor" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"`;
       if (k === "vega")
-        // the number, held between two books that do not agree by the same amount
-        return `<g ${S}><path d="M5.2 5.4V18.6"/><path d="M18.8 9.2V14"/></g>`
-          + `<circle cx="12.5" cy="12" r="2.9" fill="currentColor"/>`;
+        // the market's own line — where it opened, where it went, and the number it is at now
+        return `<g ${S}><path d="M3.8 16.9 8.6 11.3 13.2 14.6 19.4 7.4"/></g>`
+          + `<circle cx="19.4" cy="7.4" r="2.8" fill="currentColor"/>`;
       if (k === "atlas")
-        // the roof, the bowl beneath it, and the plate the umpire stands behind
-        return `<g ${S}><path d="M5.8 6.4H18.2"/><path d="M4.6 19.2A7.4 7.4 0 0 1 19.4 19.2"/></g>`
-          + `<path d="M9.1 19.2A2.9 2.9 0 0 1 14.9 19.2Z" fill="currentColor"/>`;
+        // the park from above: the two foul lines, the outfield wall, the infield, the plate
+        // (the infield is a SQUARE, not a second arc — two concentric quarter-arcs off the
+        //  same corner turn the whole mark into a wifi glyph at roster size)
+        return `<g ${S}><path d="M5.8 18.8V5.4"/><path d="M5.8 18.8H19.6"/>`
+          + `<path d="M5.8 5.4A13.4 13.4 0 0 1 19.6 18.8"/><path d="M5.8 12.6H12V18.8"/></g>`
+          + `<circle cx="5.8" cy="18.8" r="2.3" fill="currentColor"/>`;
       if (k === "nova")
-        // tonight's card, posted: the order running across, unequal because form is
-        return `<g ${S}><path d="M11 6.4H19.4"/><path d="M4.6 12H16.4"/><path d="M4.6 17.6H12.8"/></g>`
-          + `<circle cx="5.6" cy="6.4" r="2.5" fill="currentColor"/>`;
-      // the ball, and the arms stepping down behind it in the order they are used
-      return `<g ${S}><path d="M5.4 7.6V13.8"/><path d="M11.8 10V16.2"/><path d="M18.2 12.4V18.6"/></g>`
-        + `<circle cx="5.4" cy="5" r="2.5" fill="currentColor"/>`;
+        // the bat, barrel-heavy, and the ball
+        return `<g stroke="currentColor" fill="none" stroke-linecap="round">`
+          + `<path d="M13.6 12.2 18.4 7.4" stroke-width="${(sw * 2.09).toFixed(2)}"/>`
+          + `<path d="M6.4 19.4 13.8 12" stroke-width="${sw}"/></g>`
+          + `<circle cx="6.4" cy="8.2" r="2.9" fill="currentColor"/>`;
+      // the ball itself — the thing the arms throw
+      return `<g ${S}><circle cx="12" cy="12" r="7.7"/>`
+        + `<path d="M6.9 6.6A7.3 7.3 0 0 1 6.9 17.4"/><path d="M17.1 6.6A7.3 7.3 0 0 0 17.1 17.4"/></g>`;
     }
     /* THE PORTRAIT is the same mark at the size where it can afford a chorus: the small
        one abbreviates, the big one shows the full count the abbreviation stands for —
@@ -1607,21 +1618,18 @@ export default function Home() {
       const F = `stroke="${c}" fill="none" stroke-linecap="round" stroke-width="4.4" stroke-opacity=".22"`;
       let chorus = "";
       if (k === "vega") {
-        // the rest of the board, quoting the same game at different numbers
-        chorus = [[40, 47, 73], [47, 53, 67], [77, 51, 69], [84, 45, 75]]
-          .map(([x, y0, y1]) => `<path d="M${x} ${y0}V${y1}" ${F}/>`).join("");
+        // the rest of the board, quoting the same game at a different number
+        chorus = `<path d="M24 79 45 63 65 72 93 51" ${F}/><path d="M24 94 45 84 65 89 93 74" ${F}/>`;
       } else if (k === "atlas") {
-        // the park's own rings, inside the bowl
-        chorus = `<path d="M35 91.7A25 25 0 0 1 85 91.7" ${F}/><path d="M41.5 91.7A18.5 18.5 0 0 1 78.5 91.7" ${F}/>`;
+        // the base paths out of the plate. NOT more arcs: concentric quarter-circles behind
+        // a mark that already carries a wall and an infield turn the park into a wifi glyph.
+        chorus = `<path d="M35 88 83 60" ${F}/><path d="M35 88 62 39" ${F}/>`;
       } else if (k === "nova") {
-        // six more ranks, so the card carries its nine
-        chorus = [[27.2, 47, 88], [43.6, 47, 80], [51.8, 27.4, 86], [68.2, 27.4, 75], [76.4, 27.4, 90], [92.8, 27.4, 70]]
-          .map(([y, x0, x1]) => `<path d="M${x0} ${y}H${x1}" ${F}/>`).join("");
+        // the rest of the order, waiting behind the man at the plate
+        chorus = `<path d="M32 96 62 66" ${F}/><path d="M50 100 80 70" ${F}/>`;
       } else {
-        // the rest of the staff, waiting in the same order
-        chorus = [[45.1, 46, 74], [73.2, 56, 84], [59.1, 30, 44], [87.3, 40, 55]]
-          .map(([x, y0, y1], i) => i < 2 ? `<path d="M${x} ${y0}V${y1}" ${F}/>` : "").join("")
-          + `<path d="M101 67V95" ${F}/>`;
+        // the rest of the staff, out beyond the man on the mound
+        chorus = `<circle cx="60" cy="60" r="46" ${F}/>`;
       }
       // the mark itself, the 24-field scaled to fill the ring
       const mark = `<g transform="translate(60 60) scale(4.4) translate(-12 -12)">${deskMarkBody(k, 2.2)}</g>`;
@@ -1779,6 +1787,13 @@ export default function Home() {
         take: humanNote(a.take != null ? a.take : a.take_line),
         side: sideRaw, dir,
         p_over: pOver, conv,
+        /* HOW MUCH THE READ HAD TO GO ON. Every analyst now files on every game at every
+           wall, so an empty seat no longer signals "this one couldn't see the game" — the
+           signal moved into the row itself. `low_conviction` is the backend's own flag;
+           `information_missing` names what wasn't knowable yet (no lineup, no umpire).
+           Both are optional: absent ⇒ false / [] and every surface reads as before. */
+        lowConv: a.low_conviction === true,
+        infoGaps: Array.isArray(a.information_missing) ? a.information_missing.filter((s: any) => typeof s === "string") : [],
         locked: a.locked === true,
         wall: String(a.wall == null ? "" : a.wall).trim(),
         line: _fin(a.line),
@@ -1889,8 +1904,8 @@ export default function Home() {
     /* "SIM SAYS 5–3" — the most likely final from the 20,000-run physical simulator.
        THE ATLAS MARK CAME OFF THIS CHIP (2026-07-31). The scoreline comes from the Monte
        Carlo stream (sim_stream_spec: 20,000 sims a game, re-priced at every wall), which is
-       a different engine from the ATLAS slice — and ATLAS's mark now draws a ballpark under
-       a roof, because ATLAS reads park, altitude, roof and the plate umpire and simulates
+       a different engine from the ATLAS slice — and ATLAS's mark now draws the ballpark
+       itself, because ATLAS reads park, altitude, roof and the plate umpire and simulates
        nothing. Wearing that mark here would teach that the conditions model rolls out
        games. The served `source` string still names whatever the backend says produced it,
        in the tooltip, where it is a fact rather than an identity. */
@@ -3383,7 +3398,11 @@ export default function Home() {
           : `<span class="wkr-bar none" aria-hidden="true"></span>`;
         return `<button class="wkr an-${esc(r.key)} ${ledgerCls(lk)}" data-an="${esc(r.key)}"
           aria-label="${esc(`${nm} — ${played ? `${rec} this week` : "no graded calls this week"}`)}">
-          <span class="wkr-mark ${ledgerCls(lk)}" aria-hidden="true">${ledgerMark(lk)}</span>
+          <!-- CUT: a bare ◆ in its own column at the head of every row. ledgerMark() was
+               neutralised to a decorative diamond when the staked-vs-leans distinction was
+               collapsed, and it has meant nothing since — four rows, four identical marks,
+               each sitting directly beside the analyst's own sigil, which is the mark that
+               actually identifies the row. -->
           <span class="wkr-id">${deskGlyph(r.key, 14)}<b>${esc(nm)}</b></span>
           ${split}
           <span class="wkr-rec">${played ? `<b>${rec}</b>` : `<b class="none">0–0</b>`}${played ? ledgerRoi(r, "") : `<i class="dim">no calls</i>`}</span>
@@ -3402,7 +3421,7 @@ export default function Home() {
         <div class="ixc-sub">${esc(w.label || "This week")}, in progress. A week is a few dozen calls at most — nowhere near enough to rank anyone — so this is a tally and not a race: no places, listed by calls made, and each bar is that analyst's own win-loss split rather than a comparison.</div>
         ${champ}
         <div class="wkr-rows">${rows}</div>
-        <div class="wkr-legend"><i class="wb-w"></i>won<i class="wb-p"></i>push<i class="wb-l"></i>lost</div>
+        <div class="wkr-legend"><span><i class="wb-w"></i>won</span><span><i class="wb-p"></i>push</span><span><i class="wb-l"></i>lost</span></div>
         ${w.note ? `<div class="chh-note">${esc(deIdent(w.note))}</div>` : ""}
       </div>`;
     }
@@ -4287,7 +4306,7 @@ export default function Home() {
        teaches the old desk to whoever runs it. What it fabricates now:
          · the survivor sits on ATLAS, because a BALLPARK cell belongs to the analyst that
            actually reads the park — planting it on an arbitrary analyst is the same error
-           as drawing a Monte Carlo nucleus over a model that reads the plate umpire
+           as drawing a market line over a model that reads the plate umpire
          · the axis count is COUNTED from the axes the mock says it swept, never asserted
          · the family size is counted from the cells per analyst, never a leftover constant
          · the sample is a plausible two seasons of one park, not four hundred calls in a
@@ -6112,6 +6131,37 @@ export default function Home() {
       const withUs = ourDir ? ans.filter((a: any) => a.dir === ourDir).length : null;
       return { state: st, ...meta, n: ans.length, withUs, ourDir };
     }
+    /* ════════ THE DESK'S CALL, WHICH IS NOT THE BET ════════
+       A directional view now exists on EVERY game, whether or not a ticket was written on
+       it. "The desk likes the over here, but not at this price" is a normal, common,
+       honest state — and until this pass the board had no way to say it: 13 of 17 tiles
+       read "NO BET / Pass" and stopped, which tells a reader nothing about what we think.
+
+       THE ONE RULE THIS SURFACE EXISTS TO PROTECT: a reader must never mistake a CALL for
+       a BET. They are drawn in two different languages and share no styling —
+         a BET  is a filled triangle, the side in caps, and a price:   ▲ OVER 8.5  −110
+         a CALL is a hollow triangle, sentence case, and no price:     ▽ Over 8.5
+       and the kicker above a call says NO BET in as many words. Nothing about a call is
+       ever rendered in the bet's type, and a call never carries a price, a star or a stake.
+
+       Read defensively, newest field first: an explicit served `desk_call`/`call` block
+       wins; otherwise a PASS game's own `side` + `line` IS the desk's direction (that is
+       what the field has always meant on a no-bet row — see `is_bet`). Nothing served,
+       or a served bet ⇒ null, and the tile falls back to the plain "Pass" it shows today. */
+    function deskCall(g: any) {
+      const chief = deskChief(g);
+      const raw = chief && chief.raw ? chief.raw : null;
+      if (!raw) return null;
+      const blk = (raw.desk_call && typeof raw.desk_call === "object") ? raw.desk_call
+        : (raw.call && typeof raw.call === "object") ? raw.call
+          : (raw.is_bet === false || String(raw.status || "").toUpperCase() === "PASS") ? raw : null;
+      if (!blk) return null;
+      const s = String(blk.side == null ? "" : blk.side);
+      const dir = /under/i.test(s) ? "under" : /over/i.test(s) ? "over" : "";
+      if (!dir) return null;
+      const ln = _fin(blk.line != null ? blk.line : raw.line);
+      return { dir, line: ln, txt: `${dir === "over" ? "Over" : "Under"}${ln != null ? ` ${lineStr(ln)}` : ""}` };
+    }
     function deskAgreementRow(g: any, locked = false) {
       if (locked) return "";                  // the count implies the side
       const a = deskAgreement(g);
@@ -6125,20 +6175,44 @@ export default function Home() {
         <span class="dag-note">Context, not a veto — only the ticket is a bet.</span>
       </div>`;
     }
-    /* THE DESK'S SIGNATURE ON A TILE. Leon: the four sigils should work the way a team
-       crest does — the instant, wordless mark of who is speaking. Each analyst who filed a
-       read on this game gets their glyph in their own accent, with their direction carried
-       as the mark's tone. Four 15px sigils say "the desk read this, and here is who" in
-       the width of one word. Renders nothing when the desk was not served, and on a locked
-       pick redacts DIRECTION but never IDENTITY — who spoke is not the paywalled part. */
-    function tileSigilRow(g: any, locked = false) {
-      const ans = deskAnalysts(g).filter((a: any) => a.dir || a.side);
+    /* ════════ THE DESK ROW — WHAT THE FOUR SAID, NOT JUST THAT THEY SPOKE ════════
+       LEON, AND THE WHOLE POINT OF THIS PASS: "the main screen it's really hard to know
+       what picks the models have… the icons need some symbol of over (up) under (down)."
+
+       The row used to carry four accent-tinted chips that identified WHO filed a read and
+       nothing about WHAT they said — direction was a 2px inset shadow along the bottom of
+       a 20px chip, which is to say invisible. You had to open the game to learn the one
+       fact the row exists to carry. Now every mark is a two-part unit stacked in a 20px
+       column: the analyst's own sigil above, and beneath it a SOLID TRIANGLE — apex up for
+       over, apex down for under. Four of them side by side put four arrowheads on one
+       baseline, so "three up, one down on this game" is a shape you read without reading.
+
+       DIRECTION IS FORM, NEVER COLOUR ALONE. The triangle is the carrier; the over-green
+       and under-red are confirmation for the readers who get them. A no-call degrades to a
+       flat bar and a locked pick to a dot — three distinguishable silhouettes at 20px, all
+       of which survive greyscale and every kind of colour blindness.
+
+       DEFENSIVE BY CONSTRUCTION. The backend now files a read from every analyst on every
+       game at every wall, so the common case is four marks; a missing seat still renders
+       (flat bar), a game with no desk at all renders nothing, and a read the backend flags
+       as thin — `low_conviction`, or one built while the lineup or the umpire was still
+       unknown — gets a smaller triangle, so conviction is legible without a number.
+       A locked pick redacts DIRECTION but never IDENTITY: who spoke is not the paywall. */
+    function tileDeskRow(g: any, locked = false) {
+      const ans = deskAnalysts(g);
       if (!ans.length) return "";
+      const words: string[] = [];
       const marks = ans.map((a: any) => {
-        const d = locked ? "" : a.dir === "over" ? " s-over" : a.dir === "under" ? " s-under" : "";
-        return `<i class="tsig an-${esc(a.key)}${d}" title="${esc(a.name)}${locked || !a.dir ? "" : ` — ${a.dir.toUpperCase()}`}">${deskGlyph(a.key, 15)}</i>`;
+        const dir = locked ? "" : a.dir === "over" ? "over" : a.dir === "under" ? "under" : "";
+        const state = locked ? "lock" : dir || "none";
+        const thin = dir && (a.lowConv || (a.infoGaps && a.infoGaps.length)) ? " s-thin" : "";
+        const said = locked ? "call locked" : dir === "over" ? "over" : dir === "under" ? "under" : "no call";
+        words.push(`${a.name} ${said}`);
+        const why = !locked && thin && a.infoGaps.length ? ` (read without the ${esc(a.infoGaps.join(" or "))})` : "";
+        return `<i class="tsig an-${esc(a.key)} s-${state}${thin}" title="${esc(a.name)} — ${esc(said)}${why}">`
+          + `${deskGlyph(a.key, 18)}<b class="tsig-d" aria-hidden="true"></b></i>`;
       }).join("");
-      return `<span class="tsigs" aria-label="${esc(ans.map((a: any) => a.name).join(", "))} read this game">${marks}</span>`;
+      return `<span class="tsigs" role="img" aria-label="The desk: ${esc(words.join(", "))}">${marks}</span>`;
     }
 
     /* ════════════════════════ THE BOARD TILE ════════════════════════
@@ -6155,10 +6229,17 @@ export default function Home() {
        IT IS NOW A TILE, and it carries four things and no fifth:
          1. where and when     — league, and kick-off time / live state / Final
          2. who                — two crests, two abbreviations, the score once it exists
-         3. the locked number  — the pregame total everything below is graded against
-         4. the desk's verdict — the play, the lean or the pass, and who read it
+         3. what we think      — the desk's direction and the number, and whether that view
+                                 is a BET or only a CALL (the two are drawn differently and
+                                 the difference is the point — see deskCall)
+         4. what the four said — one sigil each with its own over / under / no-call mark
        Everything else moved to the game page: one tap away, and where a reader who wants
-       the argument was always going to go. */
+       the argument was always going to go.
+
+       CUT IN THIS PASS: the standalone "O/U 8.5" chip in the foot. Every tile that carries
+       a verdict now names its own number inside the call — "OVER 8.5", "Over 8.5" — so the
+       chip was the same figure twice, and it was eating the width the direction marks
+       needed. It survives only as a fallback on a tile whose verdict has no number at all. */
     function gameCard(g: any, idx: number) {
       const gs = gameState(g);
       const pick = displayPick(g);
@@ -6179,28 +6260,40 @@ export default function Home() {
       const agRow = ag && ag.state !== "ALIGNED"
         ? `<div class="tl-ag ${ag.cls}">${esc(ag.lab)}${ag.withUs != null && ag.n ? ` · ${ag.withUs}/${ag.n} with us` : ""}</div>`
         : "";
+      // THE CALL WE DID NOT BET. On a pass the desk still has a direction, and it is now
+      // stated — in the call language, never the bet language (hollow mark, sentence case,
+      // no price). Null on a served bet and on any game the backend gave no direction for.
+      const dc = vd && vd.kind === "pass" ? deskCall(g) : null;
       // THE VERDICT LINE. Locked ⇒ crisp dots, never a blur, and the whole tile becomes the
       // unlock affordance — the signed-out redaction contract is unchanged.
       const callHtml = !vd ? ""
         : locked && vd.kind !== "pass"
           ? `<span class="tv-side locked"><span class="tv-dots" aria-hidden="true">●●●● ●</span></span>`
           : vd.kind === "pass"
-            ? `<span class="tv-side tv-pass">Pass</span>`
-            : `<span class="tv-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(vd.side || "—")}</b>${vd.price != null ? `<em>${fmtOdds(vd.price)}</em>` : ""}</span>`;
+            ? (dc
+              ? `<span class="tv-call ou-${dc.dir}"><i class="tv-mk hollow" aria-hidden="true"></i><b>${esc(dc.txt)}</b></span>`
+              : `<span class="tv-side tv-pass">Pass</span>`)
+            : `<span class="tv-side ${dirCls}">${arrow ? `<i class="tv-mk" aria-hidden="true"></i>` : ""}<b>${esc(vd.side || "—")}</b>${vd.price != null ? `<em>${fmtOdds(vd.price)}</em>` : ""}</span>`;
+      // the kicker names the register: a bet says what kind of bet, a call says DESK CALL
+      // and wears a NO BET chip so the two can never be read as the same thing
+      const kick = vd && vd.kind === "pass" && dc ? "Desk call" : vd ? vd.word : "";
       const verdictBlk = vd
-        ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-krow"><span class="tv-k">${esc(vd.word)}</span>${!locked && pick && vd.kind !== "pass" ? `<span class="tv-q">${pickStars(pick)}</span>` : ""}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
+        ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}${dc ? " is-call" : ""}"${locked ? ` data-up="1"` : ""}>
+             <div class="tv-krow"><span class="tv-k">${esc(kick)}</span>${!locked && pick && vd.kind !== "pass" ? `<span class="tv-q">${pickStars(pick)}</span>` : ""}${dc ? `<span class="tv-nb">No bet</span>` : ""}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
              <div class="tv-callrow">${callHtml}</div>
              ${agRow}
              ${locked ? `<span class="tv-unlock">${lockSvg}${esc(unlockCtaTxt())}</span>` : ""}
            </div>`
         : "";
+      // the number rides inside the call now; the chip is the fallback for a tile whose
+      // verdict carries no figure of its own (a bare "Pass", or no verdict at all)
+      const needTot = !vd || (vd.kind === "pass" && !dc);
       const footBits = [
-        lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
-        tileSigilRow(g, locked),
+        needTot && lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
+        tileDeskRow(g, locked),
       ].filter(Boolean).join("");
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (locked && vd.kind !== "pass" ? " — the desk's call is locked" : vd.kind === "pass" ? " — the desk passed" : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (locked && vd.kind !== "pass" ? " — the desk's call is locked" : vd.kind === "pass" ? (dc ? ` — no bet; the desk calls the ${esc(dc.dir)}` : " — the desk passed") : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
         <div class="tl-top">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="tl-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${verdictBlk}
@@ -6427,15 +6520,22 @@ export default function Home() {
       const plays = rows.filter((r: any) => r.vd.kind === "play").length;
       const leans = rows.filter((r: any) => r.vd.kind === "lean").length;
       const isToday = curDate === todayISO();
+      // the desk now calls a direction on games it will not bet, and that count is the
+      // interesting one: it is the difference between "we had no view" and "we had a view
+      // and the price was wrong", which is the whole product
+      const calls = rows.filter((r: any) => r.vd.kind === "pass" && deskCall(r.g)).length;
       const bits = [
         `<b>${plays}</b> play${plays === 1 ? "" : "s"}`,
         leans ? `<b>${leans}</b> lean${leans === 1 ? "" : "s"}` : "",
-        `<b>${rows.length}</b> game${rows.length === 1 ? "" : "s"} read`,
-      ].filter(Boolean).join('<i aria-hidden="true">·</i>');
+        calls ? `<b>${calls}</b> call${calls === 1 ? "" : "s"}, no bet` : "",
+        `<b>${rows.length}</b> read`,
+      ].filter(Boolean).map((s) => `<span>${s}</span>`).join('<i aria-hidden="true">·</i>');
+      /* CUT: "Every verdict is on its own tile — tap a game for the argument." It was an
+         instruction for a board that now states its verdict in type on every tile, on a
+         line a reader cannot act on. */
       return `<div class="boardsum">
         <span class="bs-k">${isToday ? "The desk today" : "The desk"}</span>
         <span class="bs-nums">${bits}</span>
-        <span class="bs-note">Every verdict is on its own tile — tap a game for the argument.</span>
       </div>`;
     }
 
@@ -6652,8 +6752,12 @@ export default function Home() {
       // assistive tech (aria-haspopup="dialog" + a label that names what opens), and being a real
       // <button> it is in the tab order with Enter/Space opening and Esc closing the sheet.
       const chip = `<button class="recchip perf" id="recchip" aria-haspopup="dialog" aria-label="Open the full record — every pick by strength tier, by strategy, and live-served versus backtested">${inner}<span class="rc-arw" aria-hidden="true">→</span></button>`;
-      // "All picks →" opens the model's deep-dive view (record + every pick, lead-by-lead).
-      return `<div class="metarow">${chip}<button class="howlink strong" id="allpicks">All picks · record →</button><span class="mr-sp"></span><button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
+      /* CUT: the "All picks · record →" link that used to sit between the chip and the
+         how-it-works link. It ran `switchTab("beta")` — the SAME destination as the
+         "How picks work" link beside it — so the row offered two differently-worded
+         buttons to one place, next to a record chip that opens the record itself. One
+         door per destination. */
+      return `<div class="metarow">${chip}<button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
     }
 
     // ===================== GAMES TAB =====================
@@ -6950,7 +7054,6 @@ export default function Home() {
 
     function bindMeta() {
       bindClick("recchip", () => openRecordBreakdown());
-      bindClick("allpicks", () => switchTab("beta"));
       bindClick("howlink", () => switchTab("beta"));
       // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
       // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
