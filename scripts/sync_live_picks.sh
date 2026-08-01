@@ -35,21 +35,28 @@ fi
 # cycle — picks_v4_beta_live sat at 2026-07-06 while syncing fine. A freshness
 # signal that lies is worse than no signal: the watchdog cannot see a real
 # outage on a key that is always stale. See RUNBOOK "Watchdog" gotcha.
-BODY=$(python3 - "$FILE" <<'PY'
+# BODY GOES TO A FILE, NEVER TO argv. `--data-binary "$BODY"` puts the whole
+# payload on curl's argument list, and macOS caps that at 1 MiB (ARG_MAX): the
+# moment the payload crosses it the sync dies with "Argument list too long" —
+# a hard cliff with no warning shoulder, which is exactly how sync_unified_live
+# broke on 2026-07-31. `@file` streams it instead, so size stops being a cliff.
+BODYFILE=$(mktemp -t live_picks_sync_body)
+trap 'rm -f "$BODYFILE"' EXIT
+python3 - "$FILE" "$BODYFILE" <<'PY'
 import datetime,json,sys
 payload=json.load(open(sys.argv[1]))
 now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-print(json.dumps([{"key":"picks_v4_beta_live","payload":payload,
-                   "updated_at":now}]))
+with open(sys.argv[2],"w") as fh:
+    json.dump([{"key":"picks_v4_beta_live","payload":payload,
+                "updated_at":now}], fh)
 PY
-)
 HTTP=$(curl -s -o /tmp/live_picks_sync_resp.txt -w "%{http_code}" \
   -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
   -H "apikey: $SUPABASE_SERVICE_KEY" \
   -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
   -H "Content-Type: application/json" \
   -H "Prefer: resolution=merge-duplicates" \
-  --data-binary "$BODY")
+  --data-binary "@$BODYFILE")
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   echo "$SHA" > "$STAMP"
   # VERIFY updated_at ROUND-TRIP — read the column back through the REST API so

@@ -9,6 +9,16 @@ set -euo pipefail
 DIR="$HOME/Desktop/diamondedge"
 FILE="$DIR/public/picks_unified_live.json"
 STAMP="$DIR/scripts/.unified_live_sync.sha"
+# STREAM THE BODY FROM A FILE, NEVER FROM argv (2026-07-31). This script used to
+# build the request body into a shell variable and pass it as `--data-binary
+# "$BODY"`, which puts the entire payload on curl's ARGUMENT LIST. macOS caps
+# that at 1 MiB for argv+env combined, so the job died with
+# "/usr/bin/curl: Argument list too long" the first cycle the live board crossed
+# it — a hard cliff with no warning shoulder, and one the sync would have walked
+# into on its own as the board grew. sync_unified_history.sh has always streamed
+# from a file for exactly this reason; this now matches it.
+TMP="$(mktemp /tmp/unified_live_sync_body.XXXXXX.json)"
+trap 'rm -f "$TMP"' EXIT
 [ -f "$FILE" ] || exit 0
 # creds: read from disk, never printed
 set -a; source "$HOME/.kytepush-platform.env"; set +a
@@ -35,21 +45,20 @@ fi
 # cycle — picks_unified_live sat at 2026-07-21 while syncing fine. A freshness
 # signal that lies is worse than no signal: the watchdog cannot see a real
 # outage on a key that is always stale. See RUNBOOK "Watchdog" gotcha.
-BODY=$(python3 - "$FILE" <<'PY'
+python3 - "$FILE" "$TMP" <<'PY'
 import datetime,json,sys
 payload=json.load(open(sys.argv[1]))
 now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-print(json.dumps([{"key":"picks_unified_live","payload":payload,
-                   "updated_at":now}]))
+json.dump([{"key":"picks_unified_live","payload":payload,"updated_at":now}],
+          open(sys.argv[2],"w"))
 PY
-)
 HTTP=$(curl -s -o /tmp/unified_live_sync_resp.txt -w "%{http_code}" \
   -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
   -H "apikey: $SUPABASE_SERVICE_KEY" \
   -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
   -H "Content-Type: application/json" \
   -H "Prefer: resolution=merge-duplicates" \
-  --data-binary "$BODY")
+  --data-binary "@$TMP")
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   echo "$SHA" > "$STAMP"
   # VERIFY updated_at ROUND-TRIP — read the column back through the REST API so

@@ -1525,23 +1525,73 @@ export default function Home() {
         inputs: ["Starter ERA and recent form", "Lineup run production", "Bullpen rest and innings load", "Park run index", "Wind and temperature"],
       },
     };
-    /* THE PORTRAITS — one drawn sigil per analyst, each an emblem of its method:
-         VEGA  the tape          — a price ladder with the move drawn through it
-         ATLAS the simulation    — a nucleus inside crossed orbits, scattered with particles
-         NOVA  the distribution  — a calibrated bell curve struck through by a quant's star
-         SCOUT the field         — a ballpark diamond read like a compass rose
-       `uid` namespaces the gradient ids so the same portrait can appear many times on a page. */
+    /* ═══════════ THE FOUR MARKS — ONE SYSTEM, DRAWN FROM WHAT EACH ONE READS ═══════════
+       REDRAWN 2026-07-31, and for the same reason the era caption was rewritten a screen
+       up: the old marks described an architecture that no longer exists. ATLAS was a
+       nucleus inside crossed orbits because ATLAS was a 20,000-run Monte Carlo; NOVA was a
+       calibrated bell curve because NOVA was a residual-quant stack; SCOUT was a ballpark
+       diamond because SCOUT was the fundamentals model that read the park. Since the four
+       were re-cut onto DISJOINT slices, every one of those pictures was teaching something
+       false — and a mark teaches harder than a sentence, because it is never read twice.
+
+       THE CHANNELS, AS THEY ACTUALLY STAND (analyst_v2_spec.slices):
+         VEGA  · THE PRICE      market structure — where it opened, how far it moved, how
+                                much the books disagree, what the two sides cost
+         ATLAS · THE CONDITIONS environment — the park's run factor, its altitude and roof,
+                                and how many runs this plate umpire's games produce
+         NOVA  · THE BATS       run production — the nine names posted tonight and how the
+                                two offences have actually been scoring
+         SCOUT · THE ARMS       run prevention — the two starters who open the game and the
+                                bullpens behind them
+
+       THE CONSTRUCTION RULE, so the four read as a set and not as four drawings:
+         · one 24×24 field, one stroke weight (2.2), round caps, nothing on a half-pixel
+         · every mark is ONE STRUCTURE the channel measures, plus ONE FILLED MARK — the
+           thing inside that structure which decides the game
+         · four different silhouettes, because at 20px on a game tile the only reliable
+           discriminators are orientation and openness, never detail:
+             VEGA  a solid point held between two unequal uprights   (a measured gap)
+             ATLAS a bowl under a lid, with the plate solid inside   (an enclosure, curved)
+             NOVA  a bullet and three ranks running across           (horizontal striping)
+             SCOUT a ball and three arms stepping down and away      (vertical striping)
+           NOVA and SCOUT are deliberately each other's ninety degrees: the bats read across
+           the card, the arms stand up in the order they are used. Same structure, turned.
+
+       WHAT IS DELIBERATELY *NOT* DRAWN. ATLAS's `is_night` and NOVA's `bats_vs_hand` are
+       named in their own theses but their fitted coefficients are 0.0000 — the models do
+       not read them. So day/night is not in ATLAS's mark and the opposing hand is not in
+       NOVA's. The mark may not claim more than the fit does; that is the whole point of
+       having redrawn them. */
+    // The geometry itself, in 24-space, shared by the small mark and the big portrait so
+    // that a 13px chip and a 148px hero are provably the SAME drawing and not two of them.
+    function deskMarkBody(k: string, sw = 2.2) {
+      const S = `stroke="currentColor" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"`;
+      if (k === "vega")
+        // the number, held between two books that do not agree by the same amount
+        return `<g ${S}><path d="M5.2 5.4V18.6"/><path d="M18.8 9.2V14"/></g>`
+          + `<circle cx="12.5" cy="12" r="2.9" fill="currentColor"/>`;
+      if (k === "atlas")
+        // the roof, the bowl beneath it, and the plate the umpire stands behind
+        return `<g ${S}><path d="M5.8 6.4H18.2"/><path d="M4.6 19.2A7.4 7.4 0 0 1 19.4 19.2"/></g>`
+          + `<path d="M9.1 19.2A2.9 2.9 0 0 1 14.9 19.2Z" fill="currentColor"/>`;
+      if (k === "nova")
+        // tonight's card, posted: the order running across, unequal because form is
+        return `<g ${S}><path d="M11 6.4H19.4"/><path d="M4.6 12H16.4"/><path d="M4.6 17.6H12.8"/></g>`
+          + `<circle cx="5.6" cy="6.4" r="2.5" fill="currentColor"/>`;
+      // the ball, and the arms stepping down behind it in the order they are used
+      return `<g ${S}><path d="M5.4 7.6V13.8"/><path d="M11.8 10V16.2"/><path d="M18.2 12.4V18.6"/></g>`
+        + `<circle cx="5.4" cy="5" r="2.5" fill="currentColor"/>`;
+    }
+    /* THE PORTRAIT is the same mark at the size where it can afford a chorus: the small
+       one abbreviates, the big one shows the full count the abbreviation stands for —
+       nine ranks on NOVA's card, the rest of the board behind VEGA's number, the park's
+       rings inside ATLAS's bowl, the rest of the staff behind SCOUT's ball. The chorus is
+       drawn in the same colour at low opacity and carries no information the small mark
+       contradicts. `uid` namespaces the gradient ids so one portrait can appear many
+       times on a page. Everything still paints in `currentColor`, so the accent is decided
+       in ONE place — .an-* in globals.css — and stays theme-aware. */
     function deskPortrait(key: string, sz = 120, uid = "") {
       const k = String(key || "").toLowerCase();
-      /* THE SIGILS, RELIT FOR PAPER. Every stroke used to be painted with a hard-coded
-         luminous hex (VEGA #3fd0f0, ATLAS #eec258, NOVA #a78bfa, SCOUT #2fd6a0) chosen to
-         glow on near-black. Dropped unchanged onto white they read as highlighter.
-         The art now paints entirely in `currentColor`, so the ONE place the accent is
-         decided is CSS (.an-* → --anc), which means the same drawing is a deep readable
-         mark on paper and the original luminous one under prefers-color-scheme: dark.
-         Weights are up a touch too — a 1px hairline that reads as delicate on black
-         disappears on white. `uid` still namespaces the gradient ids so one portrait can
-         appear many times on a page. */
       const c = "currentColor";
       const id = `p_${k}_${uid || Math.random().toString(36).slice(2, 7)}`;
       const defs = `<defs>
@@ -1553,58 +1603,29 @@ export default function Home() {
       </defs>`;
       const ring = `<circle cx="60" cy="60" r="55" fill="url(#${id}_g)"/>
         <circle cx="60" cy="60" r="55" fill="none" stroke="${c}" stroke-opacity=".16" stroke-width="1.2"/>`;
-      const S = `stroke="${c}" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
-      let art = "";
+      // the chorus: same ink, a fifth of the weight of presence, drawn in 120-space
+      const F = `stroke="${c}" fill="none" stroke-linecap="round" stroke-width="4.4" stroke-opacity=".22"`;
+      let chorus = "";
       if (k === "vega") {
-        // the tape: a ladder of prices with the move drawn straight through it
-        const bars = [[38, 74, 56], [48, 78, 44], [58, 80, 62], [68, 70, 34], [78, 76, 52]]
-          .map(([x, y0, h]) => `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y0 - h}" stroke="${c}" stroke-opacity=".16" stroke-width="5" stroke-linecap="round"/>`).join("");
-        art = `${bars}
-          <path d="M34 76 L48 62 L58 68 L70 44 L86 36" ${S} stroke-width="3.6"/>
-          <circle cx="86" cy="36" r="4.8" fill="${c}"/>
-          <circle cx="86" cy="36" r="9" fill="none" stroke="${c}" stroke-opacity=".4" stroke-width="1.5"/>
-          <line x1="30" y1="86" x2="90" y2="86" stroke="${c}" stroke-opacity=".3" stroke-width="1.8" stroke-linecap="round"/>`;
+        // the rest of the board, quoting the same game at different numbers
+        chorus = [[40, 47, 73], [47, 53, 67], [77, 51, 69], [84, 45, 75]]
+          .map(([x, y0, y1]) => `<path d="M${x} ${y0}V${y1}" ${F}/>`).join("");
       } else if (k === "atlas") {
-        // the simulation: one certain nucleus, three uncertain orbits, twenty thousand particles
-        const dots = [[42, 38], [80, 44], [36, 72], [86, 74], [60, 30], [60, 92], [30, 56], [92, 58]]
-          .map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i % 3 === 0 ? 2.6 : 1.8}" fill="${c}" fill-opacity="${i % 2 ? ".5" : ".85"}"/>`).join("");
-        art = `<ellipse cx="60" cy="60" rx="38" ry="15" ${S} stroke-width="2.6" stroke-opacity=".9"/>
-          <ellipse cx="60" cy="60" rx="38" ry="15" ${S} stroke-width="2.6" stroke-opacity=".7" transform="rotate(60 60 60)"/>
-          <ellipse cx="60" cy="60" rx="38" ry="15" ${S} stroke-width="2.6" stroke-opacity=".7" transform="rotate(120 60 60)"/>
-          ${dots}
-          <circle cx="60" cy="60" r="8" fill="${c}"/>
-          <circle cx="60" cy="60" r="13.5" fill="none" stroke="${c}" stroke-opacity=".45" stroke-width="1.5"/>`;
+        // the park's own rings, inside the bowl
+        chorus = `<path d="M35 91.7A25 25 0 0 1 85 91.7" ${F}/><path d="M41.5 91.7A18.5 18.5 0 0 1 78.5 91.7" ${F}/>`;
       } else if (k === "nova") {
-        // the distribution: a bell built from calibrated strokes, struck by the quant's star
-        const cols = [30, 38, 46, 54, 62, 70, 78, 86, 94];
-        const bell = cols.map((x) => {
-          const h = Math.round(40 * Math.exp(-Math.pow((x - 62) / 17, 2)));
-          return h < 3 ? "" : `<line x1="${x}" y1="88" x2="${x}" y2="${88 - h}" stroke="${c}" stroke-opacity=".18" stroke-width="4.6" stroke-linecap="round"/>`;
-        }).join("");
-        art = `${bell}
-          <path d="M26 88 Q40 88 48 70 T62 44 T78 70 T96 88" ${S} stroke-width="3.2"/>
-          <g stroke="${c}" stroke-width="2.8" stroke-linecap="round" stroke-opacity=".95">
-            <line x1="62" y1="20" x2="62" y2="34"/>
-            <line x1="48" y1="27" x2="57" y2="31"/><line x1="76" y1="27" x2="67" y2="31"/>
-          </g>
-          <circle cx="62" cy="41" r="4.2" fill="${c}"/>
-          <line x1="24" y1="88" x2="98" y2="88" stroke="${c}" stroke-opacity=".34" stroke-width="1.8" stroke-linecap="round"/>`;
+        // six more ranks, so the card carries its nine
+        chorus = [[27.2, 47, 88], [43.6, 47, 80], [51.8, 27.4, 86], [68.2, 27.4, 75], [76.4, 27.4, 90], [92.8, 27.4, 70]]
+          .map(([y, x0, x1]) => `<path d="M${x0} ${y}H${x1}" ${F}/>`).join("");
       } else {
-        // the field: a ballpark diamond read like a compass rose
-        art = `<path d="M28 96 Q60 40 92 96" stroke="${c}" stroke-opacity=".18" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-          <path d="M38 96 Q60 62 82 96" stroke="${c}" stroke-opacity=".13" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-          <g transform="rotate(45 60 63)">
-            <rect x="41" y="44" width="38" height="38" rx="4" ${S} stroke-width="3"/>
-          </g>
-          <path d="M60 90 L74 63 L60 36 L46 63 Z" fill="${c}" fill-opacity=".07"/>
-          <circle cx="60" cy="90" r="4.8" fill="${c}"/>
-          <circle cx="46" cy="63" r="3.4" fill="${c}" fill-opacity=".72"/>
-          <circle cx="74" cy="63" r="3.4" fill="${c}" fill-opacity=".72"/>
-          <circle cx="60" cy="36" r="3.4" fill="${c}" fill-opacity=".72"/>
-          <path d="M60 30 L67.5 52 L60 47 L52.5 52 Z" fill="${c}"/>
-          <circle cx="60" cy="63" r="2.4" fill="${c}" fill-opacity=".5"/>`;
+        // the rest of the staff, waiting in the same order
+        chorus = [[45.1, 46, 74], [73.2, 56, 84], [59.1, 30, 44], [87.3, 40, 55]]
+          .map(([x, y0, y1], i) => i < 2 ? `<path d="M${x} ${y0}V${y1}" ${F}/>` : "").join("")
+          + `<path d="M101 67V95" ${F}/>`;
       }
-      return `<svg class="anportrait an-art-${esc(k)} an-${esc(k)}" viewBox="0 0 120 120" width="${sz}" height="${sz}" role="img" aria-hidden="true">${defs}${ring}${art}</svg>`;
+      // the mark itself, the 24-field scaled to fill the ring
+      const mark = `<g transform="translate(60 60) scale(4.4) translate(-12 -12)">${deskMarkBody(k, 2.2)}</g>`;
+      return `<svg class="anportrait an-art-${esc(k)} an-${esc(k)}" viewBox="0 0 120 120" width="${sz}" height="${sz}" role="img" aria-hidden="true">${defs}${ring}${chorus}${mark}</svg>`;
     }
     // What the SERVED spec says about an analyst (engine, conviction basis, market view).
     // Absent ⇒ {} and the roster falls back to the authored copy only.
@@ -1709,16 +1730,14 @@ export default function Home() {
       if (m && m[1].length >= 15) return `${sentence(m[1].trim())}.`;
       return head.length >= 20 && head.length < t.length ? `${head}.` : t;
     }
+    /* THE MARK AT READING SIZE. Same geometry as the portrait, straight out of
+       deskMarkBody — the only difference between a 12px chip and a 148px hero is the
+       chorus the big one can afford. Used at 10–30px all over the site, so the body is
+       drawn for the smallest of those: nothing thinner than 2.2, no two strokes closer
+       than 4.8 units, and every filled mark at least r=2.3 so it survives at 11px. */
     function deskGlyph(key: string, sz = 14) {
-      const common = `viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
-      const body = key === "vega"
-        ? `<path d="M3 16l4.5-6 3.4 3.4L16 6.6 21 12"/><path d="M21 6.6v5.4h-5.4"/>`
-        : key === "atlas"
-        ? `<circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><ellipse cx="12" cy="12" rx="9" ry="3.8"/><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(64 12 12)"/>`
-        : key === "nova"
-        ? `<path d="M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3.2 3.2M14.8 14.8L18 18M18 6l-3.2 3.2M9.2 14.8L6 18"/>`
-        : `<circle cx="12" cy="12" r="8.6"/><path d="M15.4 8.6l-2.1 4.7-4.7 2.1 2.1-4.7z"/>`;
-      return `<svg ${common}>${body}</svg>`;
+      const k = String(key || "").toLowerCase();
+      return `<svg viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" aria-hidden="true">${deskMarkBody(k, 2.2)}</svg>`;
     }
     // one analyst row, whatever shape it arrived in → a stable object (or null)
     function normAnalystRow(a: any) {
@@ -1867,12 +1886,19 @@ export default function Home() {
       const sizeCls = size === "mini" ? " cons-mini" : size === "wide" ? " cons-wide" : "";
       return `<span class="cons ${cls}${sizeCls}"><i class="cons-dot" aria-hidden="true"></i>${esc(txt)}${sub}</span>`;
     }
-    // "SIM SAYS 5–3" — ATLAS's most likely final, a concrete scoreline chip.
+    /* "SIM SAYS 5–3" — the most likely final from the 20,000-run physical simulator.
+       THE ATLAS MARK CAME OFF THIS CHIP (2026-07-31). The scoreline comes from the Monte
+       Carlo stream (sim_stream_spec: 20,000 sims a game, re-priced at every wall), which is
+       a different engine from the ATLAS slice — and ATLAS's mark now draws a ballpark under
+       a roof, because ATLAS reads park, altitude, roof and the plate umpire and simulates
+       nothing. Wearing that mark here would teach that the conditions model rolls out
+       games. The served `source` string still names whatever the backend says produced it,
+       in the tooltip, where it is a fact rather than an identity. */
     function simSaysChip(g: any, size = "tile") {
       const chief = deskChief(g);
       const p = chief && chief.pred;
       if (!p) return "";
-      return `<span class="simsays${size === "big" ? " ss-big" : ""}" title="${esc(p.source)} — most likely final score from 20,000 simulations"><span class="ss-g an-atlas">${deskGlyph("atlas", 11)}</span>SIM SAYS ${num(p.away, 0)}–${num(p.home, 0)}</span>`;
+      return `<span class="simsays${size === "big" ? " ss-big" : ""}" title="${esc(p.source)} — most likely final score from 20,000 simulations">SIM SAYS ${num(p.away, 0)}–${num(p.home, 0)}</span>`;
     }
     // The chief's run-line second read (replaces the generic spread row when served).
     function chiefSpreadLine(g: any, chief: any) {
@@ -3266,13 +3292,18 @@ export default function Home() {
           ${r.note ? `<div class="vs-note">${esc(deIdent(r.note))}</div>` : ""}
         </div>`;
       }
+      // THE VERDICT LINE CARRIES THE WINNER'S MARK. Both faces above are marked, but the
+      // sentence underneath names ONE of them and was the only place on the card where you
+      // had to read a word to learn who is ahead. The mark goes in front of the name and
+      // nowhere else on the line — the kicker above ("When Vega and Nova disagree") stays
+      // plain text, because marking two names inside a sentence is decoration, not identity.
       const verdict = lead
-        ? `${esc((DESK_CAST[lead] || {}).name || lead)} leads the feud ${Math.max(r.aw, r.bw)}–${Math.min(r.aw, r.bw)}`
+        ? `<span class="vs-lead an-${esc(lead)}">${deskGlyph(lead, 13)}<b>${esc((DESK_CAST[lead] || {}).name || lead)}</b></span> leads the feud ${Math.max(r.aw, r.bw)}–${Math.min(r.aw, r.bw)}`
         : `Dead even at ${r.aw}–${r.bw}`;
       return `<div class="vscard">
         <div class="vs-k">When ${esc(nmA)} and ${esc(nmB)} disagree</div>
         <div class="vs-face">${side(r.a, r.aw, lkA)}<span class="vs-mid"><b>${r.aw}–${r.bw}</b><i>VS</i></span>${side(r.b, r.bw, lkB)}</div>
-        <div class="vs-foot">${esc(verdict)}${r.push ? ` · ${r.push} push${r.push === 1 ? "" : "es"}` : ""} · ${r.n} head-to-head game${r.n === 1 ? "" : "s"}</div>
+        <div class="vs-foot">${verdict}${r.push ? ` · ${r.push} push${r.push === 1 ? "" : "es"}` : ""} · ${r.n} head-to-head game${r.n === 1 ? "" : "s"}</div>
         ${mixed}
         ${r.note ? `<div class="vs-note">${esc(deIdent(r.note))}</div>` : ""}
       </div>`;
@@ -3722,6 +3753,12 @@ export default function Home() {
       };
       const dissentKeys = (k: string) => { const m = String(k).match(/dissent=(\w+)/); return m ? [anKeyOf(m[1])].filter(Boolean) : []; };
       const splitKeys = (k: string) => { const m = String(k).match(/over=([\w+]+)/); return m ? m[1].split("+").map(anKeyOf).filter(Boolean) : []; };
+      /* THE FOLDED GROUP GETS ITS MARKS TOO. "Every configuration, side included" repeats
+         the same labels the two groups above it use — "VEGA dissents", "VEGA + NOVA on the
+         over" — but it was built with no keyer, so its rows were the one place on the page
+         where an analyst is named in the label and carries no mark beside it. A config key
+         can be either shape, so this reads both. */
+      const configKeys = (k: string) => { const d = dissentKeys(k); return d.length ? d : splitKeys(k); };
       // pairwise arrives as { "vega~atlas": { agree:{…}, disagree:{…}, note } } — two rows each
       const pw: any[] = [];
       if (e.pairwise && typeof e.pairwise === "object") {
@@ -3743,7 +3780,7 @@ export default function Home() {
         { key: "dissent", head: "By who dissents", sub: "3–1 boards, split by which analyst is the one holding out", rows: rows(e.by_dissenter, dissentKeys) },
         { key: "split", head: "By which pair takes the over", sub: "every way a 2–2 board can divide", rows: rows(e.by_split_pair, splitKeys) },
         { key: "pairwise", head: "Pair by pair", sub: "each duo when they agree, and when they don't", rows: pw },
-        { key: "config", head: "Every configuration, side included", sub: "the same boards again with the side they called", rows: rows(e.by_config), fold: true },
+        { key: "config", head: "Every configuration, side included", sub: "the same boards again with the side they called", rows: rows(e.by_config, configKeys), fold: true },
       ].filter((g) => g.rows.length);
       const sg = e.significance && typeof e.significance === "object" ? e.significance : {};
       const dr = Array.isArray(e.date_range) ? e.date_range : [];
@@ -4051,13 +4088,21 @@ export default function Home() {
     }
 
     /* ═══════════ THE MEASURED PROFILE — record.analyst_profiles ═══════════
-       An analyst's "profile" used to be written flavour. It is now a MEASUREMENT: every
-       night the lab re-scores each analyst's own graded history across eleven axes (park,
-       total band, starter quality, day/night, lead time, its own conviction, how lopsided
-       the market was, month, season, day of week, side) and tests every eligible cell
-       against THAT SAME ANALYST'S OWN complement — never against 50%, never against another
-       analyst. Hundreds of cells are rendered at once, so a single Benjamini-Hochberg pass
-       is applied across the WHOLE family before any cell may be called a characteristic.
+       An analyst's "profile" used to be written flavour. It is now a MEASUREMENT: the lab
+       re-scores each analyst's own graded history across a set of axes (park, total band,
+       starter quality, day/night, lead time, its own conviction, how lopsided the market
+       was, month, season, day of week, side) and tests every eligible cell against THAT
+       SAME ANALYST'S OWN complement — never against 50%, never against another analyst.
+       Hundreds of cells are rendered at once, so a single Benjamini-Hochberg pass is
+       applied across the WHOLE family before any cell may be called a characteristic.
+       HOW MANY AXES IS NEVER ASSERTED HERE — `out.axesN` counts them off the served
+       profiles, because the count is a fact about the payload and not about this file.
+
+       AS OF 2026-07-31 THE BLOCK IS SERVED RESET (status reset_by_rearchitecture): the four
+       analysts were re-cut onto disjoint slices and retrained, so the history the previous
+       profile was computed from belongs to four different models. Baseline, axes and cells
+       all arrive empty and the block renders the reset, at full confidence, exactly as it
+       rendered the null before it.
 
        THREE RAILS, which this module enforces in code and not in prose:
          1. `characteristics[]` is the ONLY list that may be presented as something an
@@ -4230,26 +4275,54 @@ export default function Home() {
     /* DEV-ONLY (?profmock=1 on localhost): promotes one synthetic surviving characteristic so
        the "a cell finally cleared the desk-wide correction" path is provable BEFORE the
        backend ever has one. Never active in production (hostname-gated), and it refuses to
-       run at all once the real payload carries a survivor — served truth always wins. */
+       run at all once the real payload carries a survivor — served truth always wins.
+
+       REWRITTEN 2026-07-31, same defect class as the desk mock. This fixture described the
+       PREVIOUS measurement: an eleven-axis error attribution over a 353-cell family, hung
+       on whichever analyst happened to sit second in the order, with n=412 graded calls in
+       one ballpark. All four of those are now false. The served profile has been RESET —
+       the analysts were re-architected onto disjoint slices on 2026-07-31, so the old
+       measurement described four different models and the payload now carries no baseline,
+       no axes and no cells at all. A fixture that fills that hole with the old numbers
+       teaches the old desk to whoever runs it. What it fabricates now:
+         · the survivor sits on ATLAS, because a BALLPARK cell belongs to the analyst that
+           actually reads the park — planting it on an arbitrary analyst is the same error
+           as drawing a Monte Carlo nucleus over a model that reads the plate umpire
+         · the axis count is COUNTED from the axes the mock says it swept, never asserted
+         · the family size is counted from the cells per analyst, never a leftover constant
+         · the sample is a plausible two seasons of one park, not four hundred calls in a
+           record that is three hundred and thirty deep */
     const PROF_MOCK = typeof location !== "undefined" && /[?&]profmock=1/.test(location.search)
       && /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
     function applyProfMock(o: any) {
       if (!PROF_MOCK || !o || o.any) return o;
-      const k = o.order[1] || o.order[0];
+      const k = o.profiles.atlas ? "atlas" : (o.order[0] || "");
       const p = o.profiles[k]; if (!p) return o;
-      const base = p.baseline.hit != null ? p.baseline.hit : 0.51;
-      const hit = Math.min(0.74, base + 0.078), lo = Math.max(0.02, hit - 0.043), hi = Math.min(0.98, hit + 0.043);
       const nm = p.short || String(k).toUpperCase();
+      const base = p.baseline.hit != null ? p.baseline.hit : 0.507;
+      const n = 148;
+      const hit = Math.min(0.74, base + 0.078), lo = Math.max(0.02, hit - 0.043), hi = Math.min(0.98, hit + 0.043);
+      // the reset payload serves no baseline and no axes, so the mock has to supply both
+      // before it can pretend to have found something inside them
+      if (!p.axes.length) p.axes = ["park", "total_band", "daynight", "lead_time", "own_conviction", "month", "side"];
+      if (p.baseline.hit == null) {
+        p.baseline.hit = base; p.baseline.lo = base - 0.026; p.baseline.hi = base + 0.026;
+        p.baseline.n = 1180; p.baseline.win = Math.round(1180 * base); p.baseline.loss = 1180 - Math.round(1180 * base);
+        p.baseline.from = "2026-07-01"; p.baseline.to = todayISO();
+      }
+      if (!p.nCells) p.nCells = 96;
       p.chars = [{
-        axis: "park", cell: "Coors Field", n: 412, hit, lo, hi, base,
+        axis: "park", cell: "Coors Field", n, hit, lo, hi, base,
         delta: hit - base, dir: "above", p: 0.00021, sig: true, roi: 0.079,
-        line: `${nm} has hit ${profPct(hit)} in Coors Field on n=412 graded calls there, 95% CI ${profPct(lo)}–${profPct(hi)} — against its own ${profPct(base)} baseline. It is the one cell on the whole desk that survives the correction.`,
+        line: `${nm} has hit ${profPct(hit)} in Coors Field on n=${n} graded calls there, 95% CI ${profPct(lo)}–${profPct(hi)} — against its own ${profPct(base)} baseline. It is the one cell on the whole desk that survives the correction.`,
       }];
       p.any = true;
       p.headline = `One place is measurably different from the rest of ${nm}'s record: the ballpark axis, at Coors Field.`;
       o.any = true;
       o.family.survive = 1;
-      o.headline.line = `Across ${(o.family.size || 353).toLocaleString("en-US")} measured cells — four analysts across eleven axes of their own graded history — exactly one clears the desk-wide correction (Benjamini-Hochberg q=0.1). ${nm} in Coors Field is the desk's first measured specialism; everything else still sits inside noise of its own baseline.`;
+      o.family.size = o.family.size || o.order.length * (p.nCells || 96);
+      o.axesN = Math.max(o.axesN || 0, p.axes.length);
+      o.headline.line = `Across ${o.family.size.toLocaleString("en-US")} measured cells — ${o.order.length} analysts across ${o.axesN} axes of their own graded history — exactly one clears the desk-wide correction (Benjamini-Hochberg q=0.1). ${nm} in Coors Field is the desk's first measured specialism; everything else still sits inside noise of its own baseline.`;
       o.mock = true;
       return o;
     }
@@ -4410,6 +4483,43 @@ export default function Home() {
     // production — gated on hostname. Real served fields always win (mock skips games that
     // already carry analysts).
     const DESK_MOCK = typeof location !== "undefined" && /[?&]deskmock=1/.test(location.search) && /^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname);
+    /* THE MOCK MAY BE FAKE. IT MAY NOT BE WRONG ABOUT THE ARCHITECTURE (fix, 2026-07-31).
+       These fixtures were written for the four engines that shared one market-anchored
+       feature space, and they were still putting "my twenty thousand sims keep clearing
+       this total" in ATLAS's mouth and "games with this exact profile have cleared the
+       number for three straight seasons" in NOVA's — a simulator and a pattern engine, and
+       neither exists. Anyone who ran ?deskmock=1 to exercise this UI was being taught the
+       old desk. Every line below now speaks from the analyst's ACTUAL slice, the same one
+       analyst_v2_spec serves:
+         VEGA  the price      · where it opened, how far it moved, how much the books disagree
+         ATLAS the conditions · park, altitude, roof, and the plate umpire's run environment
+         NOVA  the bats       · the nine posted tonight, and how the offences have scored
+         SCOUT the arms       · the two starters and the two bullpens behind them */
+    const MOCK_SLICE_TITLE: any = { vega: "The Price", atlas: "The Conditions", nova: "The Bats", scout: "The Arms" };
+    const MOCK_PERSONA: any = {
+      vega: "The books disagree about this number — I bet the disagreement, not the level.",
+      atlas: "The park and the man behind the plate decide how many runs are available.",
+      nova: "The nine names are posted and I grade the bats, nothing else.",
+      scout: "Weak arms mean runs. I grade the two staffs and nothing else.",
+    };
+    const MOCK_TAKE: any = {
+      vega: {
+        over: "The board is still split on this number and the de-vigged price sits under where I read it — I'm buying the disagreement, not the level.",
+        under: "Every book that has moved has moved the same way, and the sharpest one led. I go where the price went.",
+      },
+      atlas: {
+        over: "Small yard, thin air, roof open, and a plate umpire whose games run hot — the conditions are handing out runs tonight.",
+        under: "Deep park at sea level with the roof shut, and a plate umpire who works a wide zone. The place suppresses runs.",
+      },
+      nova: {
+        over: "Both cards are posted and both are heavy through the middle — these two offences have been scoring, and I read runs.",
+        under: "Neither card has any power in it and both offences have gone quiet. I don't see the runs in these bats.",
+      },
+      scout: {
+        over: "Two starters getting barrelled and two bullpens with nothing left in them — weak arms mean runs, and I lean over.",
+        under: "Two starters missing barrels and two rested pens behind them. These arms are good enough to hold it down.",
+      },
+    };
     function applyDeskMock(d: any) {
       if (!DESK_MOCK || !d || !Array.isArray(d.games)) return d;
       try {
@@ -4424,13 +4534,7 @@ export default function Home() {
             const k = String(a.key || "").toLowerCase();
             const side = /under/i.test(String(a.side || "")) ? "under" : /over/i.test(String(a.side || "")) ? "over" : "";
             if (!side) return;
-            const T: any = {
-              vega: side === "over" ? "Three sharp books ticked this number up before breakfast — the money already voted over." : "The steam is all on the under side of this number — I go where the sharp money went.",
-              atlas: side === "over" ? "My twenty thousand sims keep clearing this total — the runs are in the distribution." : "The sims keep landing short of this line — the run environment just isn't there.",
-              nova: side === "over" ? "Games with this exact profile have cleared the number for three straight seasons." : "This profile has died under the total for years — I trust the pattern.",
-              scout: side === "over" ? "Two tired arms, a short porch and wind blowing out — that's a runs day." : "Two live arms and a big yard — this has 'pitchers duel' written on it.",
-            };
-            if (T[k]) a.take = T[k];
+            if (MOCK_TAKE[k]) a.take = MOCK_TAKE[k][side];
           });
           // unified rows carry no status — treat "started in the last ~5h, no final yet" as live
           const fp0 = Date.parse(String(g.first_pitch_utc || ""));
@@ -4456,13 +4560,7 @@ export default function Home() {
           g.analysts = DESK_ORDER.map((k) => {
             const p = Math.max(0.35, Math.min(0.68, k === "atlas" && simP != null ? simP : pBase + offs[k]));
             const side = p >= 0.5 ? "over" : "under";
-            const takes: any = {
-              vega: side === "over" ? "Three sharp books ticked this number up before breakfast — the money already voted over." : "The steam is all on the under side of this number — I go where the sharp money went.",
-              atlas: side === "over" ? "My twenty thousand sims keep clearing this total — the runs are in the distribution." : "The sims keep landing short of this line — the run environment just isn't there.",
-              nova: side === "over" ? "Games with this exact profile have cleared the number for three straight seasons." : "This profile has died under the total for years — I trust the pattern.",
-              scout: side === "over" ? "Two tired arms, a short porch and wind blowing out — that's a runs day." : "Two live arms and a big yard — this has 'pitchers duel' written on it.",
-            };
-            return { key: k, name: DESK_CAST[k].name, persona_line: { vega: "The sharp books moved first — I follow the money.", atlas: "Twenty thousand sims say the runs are there.", nova: "This profile has cashed for years.", scout: "Two tired arms and a short porch — I like runs." }[k], take: takes[k], side, p_over: p, conviction: p >= 0.5 ? p : 1 - p, locked: !!pk.locked, wall: pk.lead_time || "T-3h" };
+            return { key: k, name: `${DESK_CAST[k].name} · ${MOCK_SLICE_TITLE[k]}`, persona_line: MOCK_PERSONA[k], take: MOCK_TAKE[k][side], side, p_over: p, conviction: p >= 0.5 ? p : 1 - p, locked: !!pk.locked, wall: pk.lead_time || "T-3h" };
           });
           // ATLAS LIVE mock: live games get the in-game sim read on the atlas row
           if (String(g.status || "").toLowerCase() === "live") {
@@ -4514,9 +4612,11 @@ export default function Home() {
           const mkNight = (dt: string, w: string, seedN: number) => ({
             date: dt, winner: w,
             headline: `${DESK_CAST[w].name} takes the night.`,
-            analysts: DESK_ORDER.map((k, i) => ({ key: k, win: 2 + ((seedN + i) % 3), loss: (seedN + i * 2) % 3, line: k === w ? "Read the slate like a book." : ["Half a run short all night.", "The pattern held — the prices didn't.", "Two bullpens betrayed the read."][i % 3] })),
+            // the night lines speak from each analyst's own slice, never from a shared one:
+            // a miss is a miss in the channel that analyst actually reads
+            analysts: DESK_ORDER.map((k, i) => ({ key: k, win: 2 + ((seedN + i) % 3), loss: (seedN + i * 2) % 3, line: k === w ? "Read the slate like a book." : ({ vega: "The books agreed all night and there was nothing to buy.", atlas: "Three of my parks played nothing like their run factor.", nova: "Two cards came out with the bench in them and the bats went quiet.", scout: "Two bullpens betrayed the read." } as any)[k] })),
             best_call: { analyst: w, matchup: "NYY @ BOS", side: "over", line: 9.5, result: "win", note: "Called the runs before the books moved — final 12." },
-            worst_call: { analyst: DESK_ORDER[(DESK_ORDER.indexOf(w) + 2) % 4], matchup: "LAD @ SD", side: "under", line: 8, result: "loss", note: "Owned it: the wind report was wrong and so was I." },
+            worst_call: { analyst: DESK_ORDER[(DESK_ORDER.indexOf(w) + 2) % 4], matchup: "LAD @ SD", side: "under", line: 8, result: "loss", note: "Owned it: I read that staff as good enough and it wasn't." },
             consensus_note: "The desk went 3-for-4 when at least three voices agreed.",
           });
           d.record.desk_recaps = [0, 1, 2, 3, 4].map((i) => mkNight(shiftDate(todayISO(), -(i + 1)), DESK_ORDER[(h(String(i * 13)) >>> 2) % 4], (h(String(i)) >>> 3) % 7));
@@ -10662,6 +10762,14 @@ export default function Home() {
             <span class="dp-k">The Desk</span>
             <h2 class="dp-h">Four analysts.<br>One board.</h2>
             <p class="dp-dek">Four independent models argue every game, each with its own way of reading it and its own record kept in the open. They disagree constantly — that disagreement is the product.</p>
+            <!-- A LEGEND ROW WAS BUILT HERE AND TAKEN BACK OUT. Four marks with their
+                 channel names, sitting between the dek and the grid — and the grid
+                 directly underneath is already exactly that: mark, name, channel, four
+                 times, at a size you can actually read. The row was the same information
+                 twice, and on a 375 phone it cost the roster its place above the fold,
+                 which is the one thing this page has to get right. The marks are used more
+                 across the site (the rivalry verdict, the folded pattern rows) — but not
+                 here, where the answer is the cards. -->
           </header>
           <div class="dp-grid" role="group" aria-label="The four analysts">${cards}</div>
           <div class="dp-foot">

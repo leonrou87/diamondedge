@@ -729,15 +729,15 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* the locked number never truncates — it is one of the four facts the tile exists for */
 .tl-tot{font-family:var(--sans);font-weight:500;font-size:11px;letter-spacing:.02em;color:var(--ink3);white-space:nowrap;flex:0 0 auto}
 .tl-tot b{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
-/* THE SIGIL ROW. Four 15px marks in each analyst's own accent — the desk's signature.
+/* THE SIGIL ROW. Four 14px marks in each analyst's own accent — the desk's signature.
    Direction rides as tone: an OVER read sits on a green wash, an UNDER on a red one,
    the mark itself always staying the analyst's colour so identity survives. */
 .tsigs{display:inline-flex;align-items:center;gap:3px;flex-shrink:0}
 .tsig{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;color:var(--anc);background:var(--anbg);font-style:normal}
-.tsig svg{width:13px;height:13px}
+.tsig svg{width:14px;height:14px}
 .tsig.s-over{box-shadow:inset 0 -2px 0 rgba(var(--greenc),.55)}
 .tsig.s-under{box-shadow:inset 0 -2px 0 rgba(var(--redc),.5)}
-@media(max-width:400px){.tsig{width:18px;height:18px;border-radius:5px}.tsig svg{width:12px;height:12px}}
+@media(max-width:400px){.tsig{width:18px;height:18px;border-radius:5px}.tsig svg{width:13px;height:13px}}
 
 /* live-score refresh: swap tiles in place without re-running the entrance animation */
 #slate-body.still .tile,#slate-body.still .feat{animation:none}
@@ -3274,11 +3274,12 @@ body.stories-on main{padding:0 !important;max-width:none}
 .cons.cons-mini .cons-dot{width:4.5px;height:4.5px}
 .cons.cons-wide{font-size:13px;padding:5px 13px}
 
-/* ---- "SIM SAYS 5–3" — ATLAS's predicted final as a concrete scoreline chip ---- */
+/* ---- "SIM SAYS 5–3" — the 20,000-run simulator's predicted final, as a scoreline chip.
+     It carries no analyst mark: the scoreline is not ATLAS's, and ATLAS's mark now says
+     "park, roof, altitude, umpire", which is not a thing that predicts a final score. ---- */
 .simsays{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-weight:700;font-size:12px;
   letter-spacing:.05em;color:var(--a4);background:rgba(var(--goldc),.10);border-radius:999px;padding:3.5px 9px;
   box-shadow:inset 0 0 0 1px rgba(var(--goldc),.26);white-space:nowrap}
-.simsays .ss-g{display:inline-flex;color:var(--anc,var(--a3));opacity:.9}
 .simsays.ss-big{font-size:13px;padding:5px 12px;gap:6px}
 
 /* ---- the desk block on a game tile ---- */
@@ -3688,6 +3689,9 @@ body.stories-on main{padding:0 !important;max-width:none}
 .vs-mid b{font-family:var(--mono);font-weight:700;font-size:16px;color:var(--ink)}
 .vs-mid i{font-style:normal;font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.18em;color:var(--ink4)}
 .vs-foot{margin-top:8px;font-family:var(--sans);font-weight:500;font-size:12px;color:var(--ink3)}
+/* the winner's mark rides inline with the name, on the sentence's baseline */
+.vs-lead{display:inline-flex;align-items:center;gap:4px;vertical-align:-2px;color:var(--anc,var(--ink2))}
+.vs-lead b{font-family:var(--disp);font-weight:700;font-size:12px;color:var(--anc,var(--ink2))}
 .vs-note{margin-top:5px;font-family:var(--sans);font-size:12px;color:var(--ink4)}
 
 /* ---- INSIGHTS: the weekly race ---- */
@@ -4094,6 +4098,13 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .rost-aura{display:none}
 
 .rost-top{display:flex;align-items:center;gap:10px;min-width:0}
+/* THE MARK CARRIES ITS OWN INK. The four sigils paint in currentColor so the accent is
+   decided once, by .an-<key>. That only works if something actually sets `color` from
+   --anc — and nothing did on the character-page hero, so the 148px portrait had been
+   rendering in near-black ink on every analyst page while the 56px roster copy of the
+   same drawing was correctly coloured. Setting it on .anportrait itself fixes it at the
+   drawing, for every present and future call site, rather than one container at a time. */
+.anportrait{color:var(--anc)}
 .rost-art{flex-shrink:0;line-height:0;color:var(--anc)}
 .rost-idw{min-width:0;display:flex;flex-direction:column;gap:3px}
 .rost-name{font-family:var(--disp);font-weight:800;font-size:21px;line-height:1;letter-spacing:-.01em;color:var(--ink)}
