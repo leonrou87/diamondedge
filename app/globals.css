@@ -5302,3 +5302,123 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
 .lab-fold>summary .lab-sect-head{margin:0}
 .lab-fold>summary .sgc-caret{margin-left:auto;color:var(--ink4);transition:transform .2s var(--ease)}
 .lab-fold[open]>summary .sgc-caret{transform:rotate(90deg)}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LIGHT GLASS CORRECTION — keep DiamondEdge in the original app's bright iPhone register.
+   This layer intentionally wins over the older dark-mode and dark-glass polish blocks above.
+   ══════════════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#f8fbff;
+  --paper:rgba(255,255,255,.86);
+  --paper2:rgba(255,255,255,.76);
+  --sunken:rgba(236,244,252,.76);
+  --wash:rgba(247,251,255,.82);
+  --panec:255,255,255;
+  --paperc:255,255,255;
+  --rimc:20,31,46;
+  --tintc:20,31,46;
+  --ink:#0b1220; --ink2:#334155; --ink3:#667085; --ink4:#7a8797;
+  --line:rgba(20,31,46,.10); --line2:rgba(20,31,46,.07); --line3:rgba(20,31,46,.045);
+  --glass:rgba(255,255,255,.62);
+  --glass-hi:rgba(255,255,255,.76);
+  --glass-brd:rgba(255,255,255,.68);
+  --glass-brd2:rgba(20,31,46,.07);
+  --glass-blur:saturate(180%) blur(24px);
+  --chrome-blur:saturate(190%) blur(28px);
+  --chrome-bg:rgba(255,255,255,.72);
+  --chrome-line:rgba(20,31,46,.075);
+  --sh1:rgba(20,31,46,.018); --sh2:rgba(20,31,46,.032); --sh3:rgba(20,31,46,.052);
+  --sh4:rgba(20,31,46,.075); --sh5:rgba(20,31,46,.10); --sh6:rgba(20,31,46,.13);
+  --shadow:0 1px 0 rgba(255,255,255,.72) inset,0 8px 26px rgba(20,31,46,.06);
+  --shadow-hi:0 1px 0 rgba(255,255,255,.82) inset,0 16px 44px rgba(20,31,46,.10);
+  --e0:0 1px 0 rgba(255,255,255,.68) inset,0 0 0 1px rgba(20,31,46,.045),0 4px 14px rgba(20,31,46,.035);
+  --e1:0 1px 0 rgba(255,255,255,.76) inset,0 0 0 1px rgba(20,31,46,.055),0 10px 30px rgba(20,31,46,.055);
+  --e2:0 1px 0 rgba(255,255,255,.82) inset,0 0 0 1px rgba(20,31,46,.065),0 18px 48px rgba(20,31,46,.085);
+  --e3:0 1px 0 rgba(255,255,255,.86) inset,0 0 0 1px rgba(20,31,46,.07),0 26px 70px rgba(20,31,46,.11);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#f8fbff;
+    --paper:rgba(255,255,255,.86);
+    --paper2:rgba(255,255,255,.76);
+    --sunken:rgba(236,244,252,.76);
+    --wash:rgba(247,251,255,.82);
+    --panec:255,255,255;
+    --paperc:255,255,255;
+    --rimc:20,31,46;
+    --tintc:20,31,46;
+    --ink:#0b1220; --ink2:#334155; --ink3:#667085; --ink4:#7a8797;
+    --line:rgba(20,31,46,.10); --line2:rgba(20,31,46,.07); --line3:rgba(20,31,46,.045);
+    --slatec:112,126,148;
+    --goldc:166,114,8; --goldlic:166,114,8; --greenc:6,124,84; --redc:196,32,58;
+    --bluec:20,86,214; --violetc:91,63,206; --cyanc:8,116,158; --mintc:6,132,92;
+    --g0:#04452f; --g1:#065b3e; --g2:#066a4a; --g3:#077250; --g4:#046a4a;
+    --a0:#43300a; --a1:#6d4c06; --a2:#7d5706; --a3:#845c06; --a4:#7a5506;
+    --r0:#571020; --r1:#8e1a30; --r2:#a81f38; --r3:#b8213c; --r4:#a81f38;
+    --b0:#0c2f6e; --b1:#154a9e; --b2:#1a5bc4; --b3:#1c5fd0; --b4:#1a56bd;
+    --n1:#0d1420; --n2:#3c4759; --n3:#697588;
+    --green:#07734f; --greenbg:rgba(6,124,84,.10); --greenline:rgba(6,124,84,.26);
+    --red:#c02038; --redsoft:rgba(196,32,58,.09);
+    --blue:#1a5bc4; --bluebg:rgba(20,86,214,.09);
+    --amber:#8a5f06; --amberbg:rgba(166,114,8,.11);
+    --slate:#5c6879; --slatebg:rgba(105,117,136,.10);
+    --over:#07734f; --under:#c02038;
+    --hit:#07734f; --hitbg:rgba(6,124,84,.10); --hitline:rgba(6,124,84,.28);
+    --miss:#c02038; --missbg:rgba(196,32,58,.09); --missline:rgba(196,32,58,.24);
+    --push:#697588; --pushbg:rgba(105,117,136,.10); --pushline:rgba(105,117,136,.24);
+    --pick:#1a5bc4; --pickbg:rgba(20,86,214,.08); --pickline:rgba(20,86,214,.24);
+    --navy:#3c4759; --navy2:#697588; --acc:#07734f; --acc2:#066a4a;
+    --gold:#8a5f06; --golddeep:#6d4c06;
+    --goldbg:rgba(166,114,8,.10); --goldline:rgba(166,114,8,.26);
+    --brandgrad:linear-gradient(140deg,#f6c745,#d99a12 52%,#b0730a);
+    --glass:rgba(255,255,255,.62);
+    --glass-hi:rgba(255,255,255,.76);
+    --glass-brd:rgba(255,255,255,.68);
+    --glass-brd2:rgba(20,31,46,.07);
+    --glass-blur:saturate(180%) blur(24px);
+    --chrome-blur:saturate(190%) blur(28px);
+    --chrome-bg:rgba(255,255,255,.72);
+    --chrome-line:rgba(20,31,46,.075);
+    --sh1:rgba(20,31,46,.018); --sh2:rgba(20,31,46,.032); --sh3:rgba(20,31,46,.052);
+    --sh4:rgba(20,31,46,.075); --sh5:rgba(20,31,46,.10); --sh6:rgba(20,31,46,.13);
+    --shadow:0 1px 0 rgba(255,255,255,.72) inset,0 8px 26px rgba(20,31,46,.06);
+    --shadow-hi:0 1px 0 rgba(255,255,255,.82) inset,0 16px 44px rgba(20,31,46,.10);
+    --e0:0 1px 0 rgba(255,255,255,.68) inset,0 0 0 1px rgba(20,31,46,.045),0 4px 14px rgba(20,31,46,.035);
+    --e1:0 1px 0 rgba(255,255,255,.76) inset,0 0 0 1px rgba(20,31,46,.055),0 10px 30px rgba(20,31,46,.055);
+    --e2:0 1px 0 rgba(255,255,255,.82) inset,0 0 0 1px rgba(20,31,46,.065),0 18px 48px rgba(20,31,46,.085);
+    --e3:0 1px 0 rgba(255,255,255,.86) inset,0 0 0 1px rgba(20,31,46,.07),0 26px 70px rgba(20,31,46,.11);
+    color-scheme:light;
+  }
+}
+body{background:linear-gradient(180deg,#fcfdff 0%,#f7fbff 44%,#eef5fb 100%) fixed;color:var(--ink)}
+input[type=text],input[type=email],input[type=date],input[type=tel],
+.datebar.lead .datetools .calwrap input{color-scheme:light!important}
+
+header#app-header,.games-chrome,.dockwrap,.pitcherpage .gp-bar{
+  background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:var(--chrome-blur)!important;backdrop-filter:var(--chrome-blur)!important;
+  box-shadow:0 1px 0 rgba(20,31,46,.07),0 18px 44px -34px rgba(20,31,46,.26);
+}
+header#app-header.scrolled{background:rgba(255,255,255,.86)}
+.brand,.toptabs,.recchip,.dtool,.tile,.feat,.tpk,.histpanel,.strec-l7,.strec-card,.ixc,.lab-card,.beta-card,
+.sigcard,.decall,.dsk-cell,.rostcard,.callcard,.whycard,.mkt-table,.ix-fold,.future-note,.nextup{
+  background-color:var(--glass-hi);
+  border-color:var(--glass-brd);
+  -webkit-backdrop-filter:var(--glass-blur)!important;backdrop-filter:var(--glass-blur)!important;
+  box-shadow:var(--e1);
+}
+.games-chrome .datebar.lead{background:rgba(236,244,252,.62);-webkit-backdrop-filter:var(--glass-blur)!important;backdrop-filter:var(--glass-blur)!important}
+.games-chrome .subhead.subtle{background:rgba(255,255,255,.58);-webkit-backdrop-filter:var(--glass-blur)!important;backdrop-filter:var(--glass-blur)!important}
+.dcell.on{background:rgba(255,255,255,.82);box-shadow:0 1px 0 rgba(255,255,255,.88) inset,0 0 0 1px rgba(20,31,46,.075),0 6px 16px rgba(20,31,46,.055)}
+.sporttab.on .sport-ic{background:rgba(255,255,255,.88);color:var(--ink);box-shadow:0 0 0 1px rgba(20,31,46,.07),0 4px 12px rgba(20,31,46,.045)}
+
+.tpk,.nextup{color:var(--ink2);background:rgba(255,255,255,.76);background-image:linear-gradient(180deg,rgba(255,255,255,.70),rgba(255,255,255,.34) 68%)}
+.tpk:hover{box-shadow:var(--e2)}
+.tpk-mu,.tpk-side,.nextup .nu-mu,.nextup .nu-cd b{color:var(--ink)}
+.tpk-rank,.tpk-when,.tpk .pk-count{color:var(--ink3);background:rgba(20,31,46,.055)}
+.tpk-side i{color:var(--ink3)}
+.tpk-foot .bstars i.e{color:rgba(20,31,46,.22)}
+.tpk-foot .pgrade{color:var(--golddeep)}
+.tpk-hero{background-image:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.42) 70%)!important}
+.tpk-crest{background:rgba(255,255,255,.78);box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 0 0 1px rgba(20,31,46,.06),0 10px 24px rgba(20,31,46,.075)}
