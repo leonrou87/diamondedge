@@ -617,6 +617,15 @@ export default function Home() {
         ${deltaTxt ? `<div class="lho-foot">${deltaTxt}</div>` : ""}
       </div>`;
     }
+    function liveCashChip(g: any, pl: any) {
+      const ls = liveStatusOf(g, pl);
+      if (!ls) return "";
+      const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
+      const prob = ls.prob != null ? `${Math.round(ls.prob * 100)}%` : "Live";
+      return `<div class="tv-livecash dir-${meta.cls}" title="Live chance for the DiamondEdge pick to cash">
+        <span>${esc(prob)} to cash</span><i>${esc(meta.short)}</i>
+      </div>`;
+    }
 
     // ===================== LIVE TRACKING READ (honest, from real live fields ONLY) =====================
     // "Is our pick on course to cash?" — computed from live score/inning fields the payload
@@ -1272,8 +1281,16 @@ export default function Home() {
     // This keeps generated feed copy renderable without mutating the live JSON.
     function readerCopy(t: any) {
       return String(t == null ? "" : t)
+        .replace(/\bThat(?:'|’)s a under\b/gi,
+          "That is an under")
+        .replace(/\bThat(?:'|’)s a over\b/gi,
+          "That is an over")
         .replace(/\bNo plate assignment yet,\s*so this is the ballpark on its own:/gi,
           "The plate umpire has not been posted yet, so ATLAS is using the ballpark by itself:")
+        .replace(/\bNo plate assignment yet\b/gi,
+          "The plate umpire has not been posted yet")
+        .replace(/\bNo lineup card yet\s*—\s*/gi,
+          "Lineups are not posted yet, so NOVA is using projected bats and team offense for now. ")
         .replace(/\bThe umpire can still move it\./gi,
           "The umpire can still change this read.")
         .replace(/\bI'll take the plate umpire when they post one\./gi,
@@ -1504,10 +1521,10 @@ export default function Home() {
     // existing layout, byte for byte.
     const DESK_ORDER = ["vega", "atlas", "nova", "scout"];
     const DESK_CAST: any = {
-      vega: { name: "Vega", title: "The Market Reader", short: "Reads the sharpest books", method: "Reads the sharpest books on the planet and prices every number against where the smart money already sits." },
-      atlas: { name: "Atlas", title: "The Physicist", short: "Simulates every game 20,000 times", method: "Rebuilds the game from first principles — then simulates it 20,000 times and reads the distribution." },
-      nova: { name: "Nova", title: "The Quant", short: "Patterns across thousands of games", method: "Hunts repeatable patterns across thousands of graded games and only speaks when history rhymes." },
-      scout: { name: "Scout", title: "The Traditionalist", short: "Matchups, form and parks", method: "Works the slate the old way — starters, recent form, ballparks and weather, one matchup at a time." },
+      vega: { name: "Vega", title: "The Price", short: "Prices the market, not the matchup", method: "Prices the board against book disagreement, stale quotes, price spread and de-vig probability." },
+      atlas: { name: "Atlas", title: "The Conditions", short: "Reads the park and plate", method: "Reads the run environment: park factor, altitude, roof state and plate-umpire run tendency when posted." },
+      nova: { name: "Nova", title: "The Bats", short: "Reads run production", method: "Prices the bats: posted lineups when available, projected bats before that, and how each offense has actually been producing runs." },
+      scout: { name: "Scout", title: "The Arms", short: "Reads run prevention", method: "Prices the staffs: starters, contact quality, rest, length and bullpen workload." },
     };
     /* ═══════════════ THE CAST — four analysts, four visual identities ═══════════════
        Leon: "give the models a name, a brief description… you really get to learn about each
@@ -1523,27 +1540,27 @@ export default function Home() {
     const DESK_BIO: any = {
       vega: {
         tagline: "The tape is the only opinion with money behind it.",
-        how: "I don't handicap the game — I handicap the number. Where a line opened, where it moved, which book moved first and which ones followed: that is a market telling on itself. When the tape says nothing, I say nothing. Silence is a position.",
-        edges: ["Line movement against the wall", "Price structure across books", "Books that disagree with each other", "Steam versus slow drift"],
-        inputs: ["Opening total vs the current number", "Per-book price spread", "Move timing relative to first pitch", "De-vigged market probability"],
+        how: "I don't handicap teams. I mark the number. If books cluster, I pass; if they split, lag or misprice the de-vig, I take the side the market is discounting.",
+        edges: ["Book disagreement", "Price spread across the board", "Stale quotes", "Fair price versus de-vig"],
+        inputs: ["Current total across books", "Per-book price spread", "Stale-gap checks", "De-vigged market probability"],
       },
       atlas: {
-        tagline: "Build the game from first principles, then run it twenty thousand times.",
-        how: "Every plate appearance is a physical event — a pitcher, a batter, a park, an umpire's zone, the air the ball travels through. I rebuild all of it and simulate the game twenty thousand times. I'm not interested in what the room thinks the score will be. I'm interested in what the distribution says, including the tails a single average hides.",
-        edges: ["The full run distribution, not the mean", "Park and weather effects", "Umpire zone profiles", "Fat tails and blowout risk"],
-        inputs: ["Per-plate-appearance outcome matrices", "Park run factors", "Wind, temperature and air density", "Umpire zone tendencies", "Bullpen depth and rest", "20,000-run Monte Carlo"],
+        tagline: "The ballpark changes the number before a lineup ever does.",
+        how: "Runs are physical. I price the place first: park factor, altitude, roof state and the plate zone. If the umpire is not posted yet, I say so and keep that lever neutral until it lands.",
+        edges: ["Park run factor", "Altitude effects", "Roof state", "Plate-umpire run environment"],
+        inputs: ["Park run factors", "Altitude", "Roof state", "Umpire zone tendencies"],
       },
       nova: {
-        tagline: "Every game gets a number — after the number survives calibration.",
-        how: "I'm the residual model behind the grid: I fit what the market systematically misses, then I make the model prove its own confidence is honest — walk-forward, on rows it has never seen. A 58% that is really a 51% is worse than having no number at all, so most of what I do is refusing to speak.",
-        edges: ["Calibrated residuals against the close", "Cells that clear walk-forward validation", "Discipline about its own confidence"],
-        inputs: ["The v4 residual grid", "Walk-forward probability calibration", "Per-wall lead-time features", "Star-tier gating on evidence quality"],
+        tagline: "Runs start with the bats that are actually in the box.",
+        how: "I read run production. Posted lineups get the cleanest number; projected lineups get a thinner one. Power, on-base pressure, platoon shape and scoring form decide whether the bats can push this total.",
+        edges: ["Posted lineup quality", "Projected lineup penalty", "Power and on-base pressure", "Recent scoring form"],
+        inputs: ["Posted or projected lineups", "Bats versus handedness", "Team offense form", "Run-production indicators"],
       },
       scout: {
-        tagline: "Eight numbers, refit every morning, no black box.",
-        how: "Both starters. Both lineups. Both bullpens. The park and the weather. That's the whole list. If I can't explain a call to you in one sentence standing at the ballpark, it isn't a call — it's a guess wearing math.",
-        edges: ["Starter form and workload", "Lineup quality top to bottom", "Bullpen fatigue", "Park and weather"],
-        inputs: ["Starter ERA and recent form", "Lineup run production", "Bullpen rest and innings load", "Park run index", "Wind and temperature"],
+        tagline: "The total starts with the staffs asked to keep it down.",
+        how: "I read run prevention. The starters set the shape: command, contact, length and rest. The bullpens finish it: workload, back-to-backs and who is actually available.",
+        edges: ["Starter form and command", "Contact quality allowed", "Starter length and rest", "Bullpen fatigue and availability"],
+        inputs: ["Starter run-prevention form", "Contact quality allowed", "Projected starter length", "Bullpen workload"],
       },
     };
     /* ═══════════ THE FOUR MARKS — ONE SYSTEM, DRAWN AS THEIR OWN SUBJECT ═══════════
@@ -1594,25 +1611,26 @@ export default function Home() {
     function deskMarkBody(k: string, sw = 2.2) {
       const S = `stroke="currentColor" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"`;
       if (k === "vega")
-        // the market's own line — where it opened, where it went, and the number it is at now
-        return `<g ${S}><path d="M3.8 16.9 8.6 11.3 13.2 14.6 19.4 7.4"/></g>`
-          + `<circle cx="19.4" cy="7.4" r="2.8" fill="currentColor"/>`;
+        // the order book: two quote rails, a spread gap and the current-price pin
+        return `<g ${S}><path d="M4.2 7.2H12.8"/><path d="M11.2 16.8H19.8"/><path d="M8.4 11.2H15.6"/></g>`
+          + `<path d="M16.8 8.7l2.6 2.6-2.6 2.6-2.6-2.6z" fill="currentColor"/>`;
       if (k === "atlas")
         // the park from above: the two foul lines, the outfield wall, the infield, the plate
         // (the infield is a SQUARE, not a second arc — two concentric quarter-arcs off the
         //  same corner turn the whole mark into a wifi glyph at roster size)
-        return `<g ${S}><path d="M5.8 18.8V5.4"/><path d="M5.8 18.8H19.6"/>`
-          + `<path d="M5.8 5.4A13.4 13.4 0 0 1 19.6 18.8"/><path d="M5.8 12.6H12V18.8"/></g>`
-          + `<circle cx="5.8" cy="18.8" r="2.3" fill="currentColor"/>`;
+        return `<path d="M5.6 18.8V6.2A12.8 12.8 0 0 1 18.6 18.8H5.6Z" fill="currentColor" opacity=".20"/>`
+          + `<g ${S}><path d="M5.6 18.8V6.2"/><path d="M5.6 18.8H18.6"/>`
+          + `<path d="M5.6 6.2A12.8 12.8 0 0 1 18.6 18.8"/><path d="M5.6 12.7H11.8V18.8"/></g>`
+          + `<path d="M4.7 19.7h1.8v-1.8H4.7z" fill="currentColor"/>`;
       if (k === "nova")
         // the bat, barrel-heavy, and the ball
-        return `<g stroke="currentColor" fill="none" stroke-linecap="round">`
-          + `<path d="M13.6 12.2 18.4 7.4" stroke-width="${(sw * 2.09).toFixed(2)}"/>`
-          + `<path d="M6.4 19.4 13.8 12" stroke-width="${sw}"/></g>`
-          + `<circle cx="6.4" cy="8.2" r="2.9" fill="currentColor"/>`;
+        return `<path d="M5.5 18.6l8.9-8.9 2.8 2.8-8.9 8.9c-.7.7-1.8.7-2.5 0l-.3-.3c-.7-.7-.7-1.8 0-2.5Z" fill="currentColor"/>`
+          + `<g ${S}><path d="M14.2 6.4l3.4 3.4"/></g>`
+          + `<circle cx="6.9" cy="7.3" r="2.4" fill="currentColor"/>`;
       // the ball itself — the thing the arms throw
       return `<g ${S}><circle cx="12" cy="12" r="7.7"/>`
-        + `<path d="M6.9 6.6A7.3 7.3 0 0 1 6.9 17.4"/><path d="M17.1 6.6A7.3 7.3 0 0 0 17.1 17.4"/></g>`;
+        + `<path d="M6.9 6.6A7.3 7.3 0 0 1 6.9 17.4"/><path d="M17.1 6.6A7.3 7.3 0 0 0 17.1 17.4"/>`
+        + `<path d="M8.2 8.4h2.4M8.2 15.6h2.4M13.4 8.4h2.4M13.4 15.6h2.4"/></g>`;
     }
     /* THE PORTRAIT is the same mark at the size where it can afford a chorus: the small
        one abbreviates, the big one shows the full count the abbreviation stands for —
@@ -1639,18 +1657,19 @@ export default function Home() {
       const F = `stroke="${c}" fill="none" stroke-linecap="round" stroke-width="4.4" stroke-opacity=".22"`;
       let chorus = "";
       if (k === "vega") {
-        // the rest of the board, quoting the same game at a different number
-        chorus = `<path d="M24 79 45 63 65 72 93 51" ${F}/><path d="M24 94 45 84 65 89 93 74" ${F}/>`;
+        // the rest of the book: posted price levels, not another chart
+        chorus = `<path d="M25 45H95" ${F}/><path d="M25 60H75" ${F}/><path d="M45 76H95" ${F}/><path d="M25 92H84" ${F}/>`;
       } else if (k === "atlas") {
-        // the base paths out of the plate. NOT more arcs: concentric quarter-circles behind
-        // a mark that already carries a wall and an infield turn the park into a wifi glyph.
-        chorus = `<path d="M35 88 83 60" ${F}/><path d="M35 88 62 39" ${F}/>`;
+        // air / roof bands behind the park plan
+        chorus = `<path d="M25 42c17-10 51-10 70 0" ${F}/><path d="M20 60c22-12 58-12 80 0" ${F}/><path d="M33 85H87" ${F}/>`;
       } else if (k === "nova") {
         // the rest of the order, waiting behind the man at the plate
-        chorus = `<path d="M32 96 62 66" ${F}/><path d="M50 100 80 70" ${F}/>`;
+        chorus = `<circle cx="32" cy="40" r="3" fill="${c}" fill-opacity=".22"/><circle cx="60" cy="40" r="3" fill="${c}" fill-opacity=".22"/><circle cx="88" cy="40" r="3" fill="${c}" fill-opacity=".22"/>`
+          + `<circle cx="32" cy="64" r="3" fill="${c}" fill-opacity=".22"/><circle cx="60" cy="64" r="3" fill="${c}" fill-opacity=".22"/><circle cx="88" cy="64" r="3" fill="${c}" fill-opacity=".22"/>`
+          + `<circle cx="32" cy="88" r="3" fill="${c}" fill-opacity=".22"/><circle cx="60" cy="88" r="3" fill="${c}" fill-opacity=".22"/><circle cx="88" cy="88" r="3" fill="${c}" fill-opacity=".22"/>`;
       } else {
         // the rest of the staff, out beyond the man on the mound
-        chorus = `<circle cx="60" cy="60" r="46" ${F}/>`;
+        chorus = `<path d="M24 88c24-20 48-20 72 0" ${F}/><path d="M30 36c20 14 40 14 60 0" ${F}/>`;
       }
       // the mark itself, the 24-field scaled to fill the ring
       const mark = `<g transform="translate(60 60) scale(4.4) translate(-12 -12)">${deskMarkBody(k, 2.2)}</g>`;
@@ -1766,16 +1785,20 @@ export default function Home() {
        than 4.8 units, and every filled mark at least r=2.3 so it survives at 11px. */
     function deskGlyph(key: string, sz = 14) {
       const k = String(key || "").toLowerCase();
-      return `<svg viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" aria-hidden="true">${deskMarkBody(k, 2.2)}</svg>`;
+      return `<svg class="anmark" viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" aria-hidden="true">${deskMarkBody(k, 2.2)}</svg>`;
     }
     // one analyst row, whatever shape it arrived in → a stable object (or null)
     function normAnalystRow(a: any) {
       if (!a || typeof a !== "object") return null;
       const key = String(a.key == null ? "" : a.key).toLowerCase().trim();
       if (!key) return null;
+      if (DESK_ORDER.indexOf(key) < 0) return null;
       const cast = DESK_CAST[key] || null;
-      const sideRaw = String(a.side == null ? "" : a.side).trim();
-      const dir = /under/i.test(sideRaw) ? "under" : /over/i.test(sideRaw) ? "over" : "";
+      const takeKind = String(a.take_kind || a.takeKind || "").toLowerCase();
+      const noRead = takeKind === "no_read" || a.has_row === false || a.no_read === true;
+      let sideRaw = String(a.side == null ? "" : a.side).trim();
+      let dir = /under/i.test(sideRaw) ? "under" : /over/i.test(sideRaw) ? "over" : "";
+      if (noRead) { sideRaw = ""; dir = ""; }
       const pOver = _fin(a.p_over);
       let conv = _fin(a.conviction);
       if (conv != null && conv > 1) conv = conv / 100; // tolerate 0-100 scales
@@ -1808,6 +1831,14 @@ export default function Home() {
         take: humanNote(a.take != null ? a.take : a.take_line),
         side: sideRaw, dir,
         p_over: pOver, conv,
+        takeKind, noRead,
+        hasRow: a.has_row !== false,
+        infoCompleteness: _fin(a.information_completeness),
+        completenessNote: humanNote(a.completeness_note),
+        informationRead: Array.isArray(a.information_read) ? a.information_read.filter((s: any) => typeof s === "string") : [],
+        neutralLevers: Array.isArray(a.levers_neutral_filled) ? a.levers_neutral_filled.filter((s: any) => typeof s === "string") : [],
+        lineupPosted: a.lineup_posted === true ? true : a.lineup_posted === false ? false : null,
+        umpireAssigned: a.umpire_assigned === true ? true : a.umpire_assigned === false ? false : null,
         /* HOW MUCH THE READ HAD TO GO ON. Every analyst now files on every game at every
            wall, so an empty seat no longer signals "this one couldn't see the game" — the
            signal moved into the row itself. `low_conviction` is the backend's own flag;
@@ -1817,7 +1848,7 @@ export default function Home() {
         infoGaps: Array.isArray(a.information_missing) ? a.information_missing.filter((s: any) => typeof s === "string") : [],
         locked: a.locked === true,
         wall: String(a.wall == null ? "" : a.wall).trim(),
-        line: _fin(a.line),
+        line: _fin(a.vs_line != null ? a.vs_line : a.line),
         result: /^(win|loss|push)$/i.test(String(a.result || "")) ? String(a.result).toLowerCase() : null,
       };
     }
@@ -2385,7 +2416,7 @@ export default function Home() {
     // pick — the takes argue a side).
     function deskVoicesFold(g: any, locked = false) {
       if (locked) return "";
-      const voiced = deskAnalysts(g).filter((a: any) => a.take);
+      const voiced = deskAnalysts(g).filter((a: any) => a.take && !a.noRead);
       if (!voiced.length) return "";
       const rows = voiced.map((a: any) => `<div class="dskv an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
           <span class="dskv-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b>${a.dir ? `<i class="dskv-dir ${a.dir === "over" ? "ou-over" : "ou-under"}">${a.dir === "over" ? "▲" : "▼"}</i>` : ""}</span>
@@ -2402,7 +2433,7 @@ export default function Home() {
     // quote argues the side). "" when no takes are served — every surface degrades.
     function deskStarTake(g: any, locked = false) {
       if (locked) return "";
-      const voiced = deskAnalysts(g).filter((a: any) => a.take);
+      const voiced = deskAnalysts(g).filter((a: any) => a.take && !a.noRead);
       if (!voiced.length) return "";
       const star = voiced.slice().sort((x: any, y: any) => ((y.conv != null ? y.conv : 0) - (x.conv != null ? x.conv : 0)))[0];
       const dirCls = star.dir === "over" ? "ou-over" : star.dir === "under" ? "ou-under" : "";
@@ -3036,12 +3067,24 @@ export default function Home() {
       const rows = ans.map((a: any) => {
         const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
         const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        const missingLabel = a.key === "atlas" && a.umpireAssigned === false
+          ? "Plate pending"
+          : a.key === "nova" && (a.noRead || a.lineupPosted === false)
+            ? "Lineup pending"
+            : "No call yet";
+        const note = !hide && (a.key === "atlas" && a.umpireAssigned === false)
+          ? "ATLAS is holding the umpire lever neutral until the plate assignment posts."
+          : !hide && a.key === "nova" && (a.noRead || a.lineupPosted === false)
+            ? "NOVA is waiting on the lineup card; projected bats make this a thinner read."
+            : !hide && a.noRead
+              ? "This analyst did not have enough served information to make a clean call."
+              : "";
         const call = hide
           ? `<span class="dsk-dots" aria-hidden="true">●●●</span>`
           : a.side
             ? `<b class="dbt-side ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</b>`
-            : `<b class="dbt-side none">No call yet</b>`;
-        const conv = !hide && a.conv != null ? `<span class="dbt-conv">${Math.round(a.conv * 100)}% sure</span>` : "";
+            : `<b class="dbt-side none">${esc(missingLabel)}</b>`;
+        const conv = !hide && a.conv != null && a.dir ? `<span class="dbt-conv">${Math.round(a.conv * 100)}% lean</span>` : "";
         const res = a.result === "win" ? `<span class="sgr-res won">RIGHT</span>` : a.result === "loss" ? `<span class="sgr-res lost">WRONG</span>` : a.result === "push" ? `<span class="sgr-res pushed">PUSH</span>` : "";
         // THE VOICE: the analyst's per-game take is the speech bubble — their persona line
         // only stands in while the backend take hasn't landed yet.
@@ -3049,6 +3092,7 @@ export default function Home() {
         return `<div class="dbt an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
           <div class="dbt-id">${deskGlyph(a.key, 15)}<span class="dbt-nm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${deskRecChip(a.key)}</div>
           <div class="dbt-call">${call}${conv}${a.wall ? `<span class="dbt-wall">${esc(a.wall)}</span>` : ""}${res}</div>
+          ${note ? `<p class="dbt-src">${esc(note)}</p>` : ""}
           ${say ? `<p class="dbt-say${a.take ? " is-take" : ""}">“${esc(say)}”</p>` : ""}
         </div>`;
       }).join("");
@@ -6032,6 +6076,11 @@ export default function Home() {
       const dayTag = gameLocalDay(g) && gameLocalDay(g) !== curDate && gs.si.date ? `${esc(gs.si.date)} · ` : "";
       return `<span class="statechip pre">${dayTag}${esc(t)}</span>`;
     }
+    function tileStartChip(g: any, gs: any) {
+      if (!g || !gs || gs.kind !== "pre") return "";
+      const t = gs.si && gs.si.hasTime && gs.si.time ? String(gs.si.time).replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : "";
+      return t ? `<span class="tl-start">Start ${esc(t)}</span>` : "";
+    }
     // A scores-app team line: logo · ABBR · form(L15 + streak) · this side's spread(px) + ML · SCORE.
     // The odds live WITH the team so the card needs no separate stacked market strip.
     // Pre-game shows odds; live/final shows the score. Everything degrades independently.
@@ -6343,13 +6392,16 @@ export default function Home() {
               ? `<span class="tv-call ou-${dc.dir}"><i class="tv-mk hollow" aria-hidden="true"></i><b>${esc(dc.txt)}</b></span>`
               : `<span class="tv-side tv-pass">Pass</span>`)
             : `<span class="tv-side ${dirCls}">${arrow ? `<i class="tv-mk" aria-hidden="true"></i>` : ""}<b>${esc(vd.side || "—")}</b>${vd.price != null ? `<em>${fmtOdds(vd.price)}</em>` : ""}</span>`;
+      const starHtml = !locked && pick && vd && vd.kind !== "pass" ? `<span class="tv-q">${pickStars(pick)}</span>` : "";
+      const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
       // the kicker names the register: a bet says what kind of bet, a call says DESK CALL
       // and wears a NO BET chip so the two can never be read as the same thing
       const kick = vd && vd.kind === "pass" && dc ? "Desk call" : vd ? vd.word : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}${dc ? " is-call" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-krow"><span class="tv-k">${esc(kick)}</span>${!locked && pick && vd.kind !== "pass" ? `<span class="tv-q">${pickStars(pick)}</span>` : ""}${dc ? `<span class="tv-nb">No bet</span>` : ""}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
+             <div class="tv-krow"><span class="tv-k">${esc(kick)}</span>${starHtml}${dc ? `<span class="tv-nb">No bet</span>` : ""}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
              <div class="tv-callrow">${callHtml}</div>
+             ${liveCash}
              ${agRow}
              ${locked ? `<span class="tv-unlock">${lockSvg}${esc(unlockCtaTxt())}</span>` : ""}
            </div>`
@@ -6358,6 +6410,7 @@ export default function Home() {
       // verdict carries no figure of its own (a bare "Pass", or no verdict at all)
       const needTot = !vd || (vd.kind === "pass" && !dc);
       const footBits = [
+        tileStartChip(g, gs),
         needTot && lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
         tileDeskRow(g, locked),
       ].filter(Boolean).join("");
@@ -6808,25 +6861,25 @@ export default function Home() {
       const t = dayPicksTally();
       let inner: string;
       if (!t.n) {
-        inner = `<span class="pf-k">${esc(dayLab)}'s picks</span><span class="pf-v pending">${isToday ? "graded as games finish" : "no picks this day"}</span>`;
+        inner = `<span class="pf-k">${esc(dayLab)}</span><span class="pf-v pending">${isToday ? "picks grading live" : "no picks"}</span>`;
       } else {
         // per-day record: W–L(–P) + hit% / ROI when we have it (historical days carry both)
         const roiTxt = (t as any).roi != null ? `<span class="pf-roi ${(t as any).roi >= 0 ? "pos" : "neg"}">${((t as any).roi >= 0 ? "+" : "") + ((t as any).roi * 100).toFixed(0)}%</span>` : "";
         const extra = (t.sw + t.sl) ? `<span class="pf-top">★ Top ${t.sw}–${t.sl}</span>` : roiTxt;
         // a postponed day says so: "· 1 void" — shown, never counted in the W–L
         const voidBit = (t as any).nv ? `<span class="pf-voidn">· ${(t as any).nv} void</span>` : "";
-        inner = `<span class="pf-k">${esc(dayLab)}'s record</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${voidBit}${extra}`;
+        inner = `<span class="pf-k">${esc(dayLab)}</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${voidBit}${extra}`;
       }
       // The chip is a DOOR, not a readout — it opens the record-breakdown sheet. It says so to
       // assistive tech (aria-haspopup="dialog" + a label that names what opens), and being a real
       // <button> it is in the tab order with Enter/Space opening and Esc closing the sheet.
-      const chip = `<button class="recchip perf" id="recchip" aria-haspopup="dialog" aria-label="Open the full record — every pick by strength tier, by strategy, and live-served versus backtested">${inner}<span class="rc-arw" aria-hidden="true">→</span></button>`;
+      const chip = `<button class="dayrec" id="recchip" aria-haspopup="dialog" aria-label="Open the full record — every pick by strength tier, by strategy, and live-served versus backtested">${inner}</button>`;
       /* CUT: the "All picks · record →" link that used to sit between the chip and the
          how-it-works link. It ran `switchTab("beta")` — the SAME destination as the
          "How picks work" link beside it — so the row offered two differently-worded
          buttons to one place, next to a record chip that opens the record itself. One
          door per destination. */
-      return `<div class="metarow">${chip}<button class="howlink" id="howlink">ⓘ How picks work</button></div>`;
+      return `<div class="metarow">${chip}</div>`;
     }
 
     // ===================== GAMES TAB =====================
@@ -6911,7 +6964,7 @@ export default function Home() {
         const cnt = lgGames.length;
         // a pulsing dot when a league has a game in progress right now (drives users to the live board)
         const live = lgGames.some((g: any) => gameState(g).kind === "live");
-        return `<button class="sporttab ${lg === league ? "on" : ""}${live ? " haslive" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}">${SPORT_LABEL[lg]}${live ? `<span class="livedot" aria-label="live games"></span>` : ""}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
+        return `<button class="sporttab ${lg === league ? "on" : ""}${live ? " haslive" : ""}" data-lg="${lg}" data-ic="${SPORT_ICON[lg] || ""}"><span class="sport-ic" aria-hidden="true">${esc(SPORT_ICON[lg] || "◆")}</span><span class="sport-lab">${SPORT_LABEL[lg]}</span>${live ? `<span class="livedot" aria-label="live games"></span>` : ""}<span class="cnt" id="cnt-${lg}">${cnt || ""}</span></button>`;
       }).join("");
       // STICKY GAMES CHROME: the date strip + league rail live in ONE sticky wrapper pinned
       // under the app header (glass backing, tiles scroll beneath). Snap-scroll + fade masks
@@ -7062,7 +7115,7 @@ export default function Home() {
           // NOTHING CLEARED: the slot never just vanishes. When the board was priced and every
           // game came back a pass, the pass board takes the slot and says so, with the count
           // of each reason. A future slate has no reads yet, so it keeps its own banner.
-          const rail = anyPick ? boardSummaryBar(games) : (isFuture ? "" : passBoardPanel(games));
+          const rail = anyPick ? "" : (isFuture ? "" : passBoardPanel(games));
           // Reference "Live & Upcoming": group the cards by game phase so LIVE games
           // sit under a live subhead, upcoming below, finals last. gameState already gives phase.
           const grp: any = { live: [], pre: [], final: [] };
@@ -7123,7 +7176,6 @@ export default function Home() {
 
     function bindMeta() {
       bindClick("recchip", () => openRecordBreakdown());
-      bindClick("howlink", () => switchTab("beta"));
       // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
       // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
       bindClick("rng-back", () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); },
@@ -9587,13 +9639,14 @@ export default function Home() {
         const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
         const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
         const call = hide ? `<span class="dsk-dots" aria-hidden="true">●●</span>`
-          : a.side ? `<b class="sts-dcall ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}</b>` : `<b class="sts-dcall none">—</b>`;
-        return `<div class="sts-drow an-${esc(a.key)}">${deskGlyph(a.key, 14)}<span class="sts-dnm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${call}${!hide && a.conv != null ? `<span class="sts-dconv">${Math.round(a.conv * 100)}%</span>` : ""}</div>`;
+          : a.side ? `<b class="sts-dcall ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}</b>` : `<b class="sts-dcall none">No read</b>`;
+        return `<div class="sts-drow an-${esc(a.key)}">${deskGlyph(a.key, 14)}<span class="sts-dnm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${call}${!hide && a.conv != null && a.dir ? `<span class="sts-dconv">${Math.round(a.conv * 100)}%</span>` : ""}</div>`;
       }).join("");
       const ticket = !locked && isBet(pl) ? ticketLabel(pl) : "";
+      const stars = !locked && isBet(pl) ? pickStars(pl) : "";
       const why = !locked ? deskTicketWhy(g) : "";
       const verdict = chief && chief.action
-        ? `<div class="sts-chief ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}"><b>◆ ${chief.action === "AVOID" ? "WE PASS" : chief.action}</b>${ticket ? `<i>Ticket: ${esc(ticket)}</i>` : ""}${(why || chief.rationale) ? `<span>${esc(why || chief.rationale)}</span>` : ""}</div>`
+        ? `<div class="sts-chief ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}"><b>◆ ${chief.action === "AVOID" ? "WE PASS" : chief.action}</b>${ticket ? `<i>Ticket: ${esc(ticket)}</i>` : ""}${stars ? `<em class="sts-stars">${stars}</em>` : ""}${(why || chief.rationale) ? `<span>${esc(why || chief.rationale)}</span>` : ""}</div>`
         : "";
       const stCls = state === "UNANIMOUS" ? "unan" : state === "MAJORITY" ? "maj" : "split";
       return `<div class="sts sts-desk cons-${stCls}">

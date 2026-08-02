@@ -257,23 +257,24 @@ button{font-family:inherit}
    was the single busiest element on a first screen that Leon said carried far
    too much. The scores live on the board, one tap away. */
 header#app-header{position:sticky;top:0;z-index:65;padding-top:var(--sat);
-  background:var(--chrome-bg);
+  background:linear-gradient(180deg,rgba(var(--paperc),.96),rgba(var(--paperc),.9));
   -webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
-  box-shadow:0 1px 0 var(--chrome-line);transition:box-shadow .3s ease}
+  box-shadow:0 1px 0 var(--chrome-line),0 10px 26px -24px var(--sh5);transition:box-shadow .3s ease,background .3s ease}
 /* SCROLLED ⇒ OPAQUE. At rest there is nothing behind the masthead and the frosted
    translucency is just a nice surface; once the board is running under it, .82 alpha plus
    a blur is not frosting, it is a team abbreviation faintly legible through the wordmark.
    A sticky bar that lets content read through it is worse than no sticky bar. */
 header#app-header.scrolled{background:var(--paper);box-shadow:0 1px 0 var(--line),0 6px 18px var(--sh1)}
-.hbar{max-width:var(--wide);margin:0 auto;padding:11px max(18px,var(--sal)) 11px max(18px,var(--sar));display:flex;align-items:center;gap:16px}
+.hbar{max-width:var(--wide);margin:0 auto;padding:9px max(18px,var(--sal)) 9px max(18px,var(--sar));display:flex;align-items:center;gap:14px}
 .brand-tx{overflow:hidden}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer}
+.brand{display:flex;align-items:center;gap:9px;flex-shrink:0;cursor:pointer;border-radius:16px;padding:5px 7px 5px 5px;
+  background:linear-gradient(180deg,rgba(var(--rimc),.08),rgba(var(--rimc),.025));box-shadow:inset 0 0 0 1px rgba(var(--rimc),.08)}
 /* the mark keeps its real gold — a solid metallic shape reads beautifully on
    white, where gold TEXT would not (see --gold / --golddeep) */
-.diamond{width:24px;height:24px;transform:rotate(45deg);border-radius:6px;background:var(--brandgrad);position:relative;
-  box-shadow:0 1px 2px rgba(140,92,6,.34)}
+.diamond{width:25px;height:25px;transform:rotate(45deg);border-radius:7px;background:var(--brandgrad);position:relative;
+  box-shadow:0 1px 2px rgba(140,92,6,.34),0 8px 18px -10px rgba(var(--goldc),.9)}
 .diamond::after{content:"";position:absolute;inset:6.5px;border:2px solid rgba(255,255,255,.92);border-radius:2px}
-.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase;line-height:1;color:var(--ink)}
+.brand h1{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:.055em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .brand h1 b{color:var(--gold)}
 .brand .tag{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-top:3px}
 .hspacer{flex:1}
@@ -360,14 +361,17 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .subhead{position:sticky;top:calc(var(--hdr-h,0px) - 1px);z-index:60;padding:0;margin:0;
   background:var(--chrome-bg);-webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
   box-shadow:0 1px 0 var(--line2)}
-.sporttabs{position:relative;display:flex;gap:2px;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.sporttabs{position:relative;display:flex;gap:2px;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain;overscroll-behavior-y:none;touch-action:pan-x}
 .sporttabs::-webkit-scrollbar{display:none}
 .sporttabs .sporttab{scroll-snap-align:start}
-.sporttab{position:relative;z-index:1;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:40px;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.07em;text-transform:uppercase;border:0;background:transparent;color:var(--ink3);padding:6px 12px;border-radius:0;cursor:pointer;transition:color .2s ease;white-space:nowrap}
+.sporttab{position:relative;z-index:1;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;font-family:var(--disp);font-weight:650;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:0;background:transparent;color:var(--ink3);padding:6px 12px;border-radius:0;cursor:pointer;transition:color .2s ease;white-space:nowrap}
 .sporttab::before{display:none}
 .sporttab:hover{color:var(--ink2)}
 .sporttab.on{color:var(--ink)}
 .sporttab .cnt{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;color:var(--ink4);margin-left:1px}
+.sport-ic{width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;flex:0 0 auto;font-size:10px;line-height:1;
+  background:rgba(var(--tintc),.075);color:var(--ink3);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.08)}
+.sporttab.on .sport-ic{background:var(--ink);color:var(--paper);box-shadow:none}
 .sporttab .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite;margin-left:1px}
 .sporttab.on .cnt{color:var(--ink3)}
 .tab-ink{position:absolute;z-index:0;left:0;bottom:0;top:auto;height:2.5px;width:0;border-radius:2px;background:var(--ink);box-shadow:none;transition:transform .3s var(--ease),width .3s var(--ease),opacity .2s ease}
@@ -487,13 +491,20 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .recchip.perf .pf-v{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
 .recchip.perf .pf-v.pending{font-family:var(--sans);font-weight:500;font-size:12px;color:var(--ink3);letter-spacing:0}
 .recchip.perf .pf-top{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.02em;color:var(--golddeep);background:var(--goldbg);border-radius:999px;padding:2px 8px}
+.dayrec{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--ink2);padding:4px 2px;cursor:pointer;
+  font-family:var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dayrec .pf-k{font-family:var(--disp);font-weight:650;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink4)}
+.dayrec .pf-v{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--ink)}
+.dayrec .pf-v.pending{font-family:var(--sans);font-weight:500;font-size:12px;color:var(--ink3)}
+.dayrec .pf-top{font-family:var(--disp);font-weight:700;font-size:11px;color:var(--golddeep);background:rgba(var(--goldc),.1);border-radius:999px;padding:1px 6px}
+.dayrec:hover .pf-k,.dayrec:hover .pf-v{color:var(--ink)}
 /* COMPACT inline date strip — weekday + day number on ONE line per cell (reclaims vertical
    space vs the stacked "weekday-above-number" layout), a sliding emerald lens under the
    active day, a Today dot marker. Slimmer capsule to match. */
 /* The date strip is a plain scroller of typographic cells with ONE dark capsule under the
    selected day — the iOS segmented idiom. The old emerald "liquid lens" (a glowing green
    pane sliding under the days) was the single most futuristic element on the first screen. */
-.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;border-radius:0;background:transparent;border:0;box-shadow:none;scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain}
+.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;border-radius:0;background:transparent;border:0;box-shadow:none;scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain;overscroll-behavior-y:none;touch-action:pan-x}
 .datestrip::-webkit-scrollbar{display:none}
 .datestrip .dcell{scroll-snap-align:center}
 /* THE SELECTED DAY CARRIES ITS OWN CAPSULE.
@@ -505,18 +516,18 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    The capsule is now the cell's own background, so the day is legible the instant it
    paints, and the lens is retired rather than left as a second source of truth. */
 .dlens{display:none}
-.dcell.on{background:var(--ink)}
-.dcell{position:relative;z-index:1;flex-shrink:0;display:inline-flex;flex-direction:row;align-items:baseline;justify-content:center;gap:5px;min-width:0;border:0;background:transparent;border-radius:9px;padding:5px 10px;cursor:pointer;transition:transform .2s var(--ease)}
+.dcell.on{background:rgba(var(--tintc),.1);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.1)}
+.dcell{position:relative;z-index:1;flex-shrink:0;display:inline-flex;flex-direction:row;align-items:baseline;justify-content:center;gap:5px;min-width:0;border:0;background:transparent;border-radius:8px;padding:4px 8px;cursor:pointer;transition:transform .2s var(--ease),background .2s ease}
 /* THE HIT AREA IS NOT THE BOX. A day cell needs 44px of thumb on a phone and about 30px
    of ink; making the BOX 44px tall is what built the ledge the strip used to carry. The
    box is now the size of its type and the reach is bought back with an invisible overlay,
    so the row is short and the target is not. Same trick on the calendar button below. */
 .dcell::after{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
 .dcell:active{transform:scale(.94)}
-.dcell .dc-wd{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);transition:color .2s ease}
-.dcell .dc-d{font-family:var(--disp);font-weight:700;font-size:16px;color:var(--ink2);line-height:1;font-variant-numeric:tabular-nums;transition:color .2s ease}
+.dcell .dc-wd{font-family:var(--disp);font-weight:600;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink4);transition:color .2s ease}
+.dcell .dc-d{font-family:var(--disp);font-weight:650;font-size:15px;color:var(--ink3);line-height:1;font-variant-numeric:tabular-nums;transition:color .2s ease}
 .dcell.today .dc-wd{color:var(--ink2)}
-.dcell.on .dc-wd,.dcell.on .dc-d{color:var(--paper)}
+.dcell.on .dc-wd,.dcell.on .dc-d{color:var(--ink)}
 /* Future days (up to 5 out) — dimmed until selected, so "ahead of the schedule" reads clearly. */
 .dcell.future:not(.on) .dc-wd,.dcell.future:not(.on) .dc-d{color:var(--ink4)}
 .dcell.future:not(.on){opacity:.85}
@@ -570,7 +581,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 
 /* quality diamonds: ◆◆◆ Strong / ◆◆◇ Good / ◆◇◇ Lean — filled vs hollow reads as a scale */
 /* confidence STARS — one gold scale (count = conviction); empty stars faint */
-.qdia{display:inline-flex;gap:1px;font-size:13px;line-height:1}
+.qdia{display:inline-flex;gap:1px;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;line-height:1}
 .qdia i{font-style:normal}
 .qdia i.f{color:var(--gold);text-shadow:0 1px 4px rgba(var(--goldc),.4)}
 .qdia i.e{color:rgba(var(--tintc),.2)}
@@ -757,7 +768,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tv-side em{font-style:normal;font-family:var(--mono);font-weight:600;font-size:12px;color:var(--ink3);letter-spacing:-.02em}
 .tv-side.tv-pass{font-weight:600;font-size:14px;color:var(--ink3)}
 .tv-q{display:inline-flex;align-items:center;flex-shrink:0}
-.tv-q .qdia,.tv-q .bstar{font-size:9px}
+.tv-q .qdia,.tv-q .bstars{font-size:9px}
 /* signed-out redaction: crisp dots, never a blur — see the redaction block at the foot */
 .tv-side.locked{align-items:center}
 .tv-unlock{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-top:1px}
@@ -772,12 +783,19 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tl-ag::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;vertical-align:1px;background:var(--ink4)}
 .tl-ag.ag-mixed::before{background:var(--amber)}
 .tl-ag.ag-against::before{background:var(--blue)}
+.tv-livecash{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;margin-top:1px;border-radius:999px;padding:2px 7px;
+  font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:10.5px;font-weight:700;line-height:1.2;background:rgba(var(--tintc),.055);color:var(--ink3);white-space:nowrap}
+.tv-livecash i{font-style:normal;font-weight:600;color:currentColor;opacity:.72}
+.tv-livecash.dir-hit{background:var(--greenbg);color:var(--g3)}
+.tv-livecash.dir-close{background:var(--amberbg);color:var(--a3)}
+.tv-livecash.dir-miss{background:var(--missbg);color:var(--r3)}
 
 /* ---- row 4: the locked number, and who read the game ---- */
 .tl-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
 /* the locked number never truncates — it is one of the four facts the tile exists for */
 .tl-tot{font-family:var(--sans);font-weight:500;font-size:11px;letter-spacing:.02em;color:var(--ink3);white-space:nowrap;flex:0 0 auto}
 .tl-tot b{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.tl-start{margin-right:auto;font-family:var(--mono);font-weight:700;font-size:10.5px;letter-spacing:.01em;color:var(--ink3);white-space:nowrap;flex:0 0 auto}
 /* ══ THE DESK ROW — WHO SAID IT, AND WHAT THEY SAID ══
    Four units on one baseline. Each is the analyst's sigil in their own accent with a
    DIRECTION MARK beneath it: a solid triangle, apex up for over, apex down for under.
@@ -788,6 +806,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    DIRECTION IS FORM. The triangle carries it and the green/red only confirms it, so the
    row survives greyscale, every kind of colour blindness, and a 13px render. */
 .tsigs{display:inline-flex;align-items:flex-end;gap:13px;flex-shrink:0}
+.anmark{display:block;flex:0 0 auto}
 .tsig{display:inline-flex;flex-direction:column;align-items:center;gap:3px;color:var(--anc);font-style:normal}
 .tsig svg{width:18px;height:18px;display:block}
 .tsig-d{display:block;width:9px;height:6px;background:currentColor;flex-shrink:0}
@@ -2157,7 +2176,7 @@ details.more .more-body{padding-top:12px}
 .bt-n{font-family:var(--mono);font-size:14px;color:var(--ink2)}
 .bt-wl{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--ink)}
 /* star glyphs */
-.bstars{display:inline-flex;gap:1px;font-size:15px;line-height:1;white-space:nowrap}
+.bstars{display:inline-flex;gap:1px;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1;white-space:nowrap}
 .bstars i{font-style:normal}
 .bstars i.f{color:var(--a3)}.bstars i.e{color:rgba(var(--tintc),.18)}
 .bc-empty{font-family:var(--sans);font-size:14px;color:var(--ink3);padding:6px 0}
@@ -2228,7 +2247,7 @@ details.more .more-body{padding-top:12px}
    The three bands are now separated by SURFACE, in the .games-chrome block near the foot
    of this sheet — masthead on paper, date band recessed, league rail back on paper. What
    is left here is the type inside the date band. */
-.datebar.lead .dcell.on .dc-wd,.datebar.lead .dcell.on .dc-d{color:var(--paper)}
+.datebar.lead .dcell.on .dc-wd,.datebar.lead .dcell.on .dc-d{color:var(--ink)}
 .datebar.lead .dcell.today .dc-wd{color:var(--ink2)}
 .datebar.lead .dtool.hist.on{background:var(--ink);color:var(--paper)}
 /* the native date picker follows the app, not a dark theme this app no longer has */
@@ -3340,14 +3359,14 @@ body.stories-on main{padding:0 !important;max-width:none}
    pair stays low so a card tinted by an analyst still reads as white paper with a
    coloured mark on it. The dark ramp keeps the original luminous values. */
 .an-vega{--anc:#0d6f93;--anrgb:13,111,147;--anbg:rgba(13,111,147,.09);--anline:rgba(13,111,147,.28)}
-.an-atlas{--anc:#8a5f06;--anrgb:138,95,6;--anbg:rgba(138,95,6,.10);--anline:rgba(138,95,6,.28)}
+.an-atlas{--anc:#6f6b12;--anrgb:111,107,18;--anbg:rgba(111,107,18,.10);--anline:rgba(111,107,18,.28)}
 .an-nova{--anc:#5b3fcf;--anrgb:91,63,207;--anbg:rgba(91,63,207,.09);--anline:rgba(91,63,207,.26)}
-.an-scout{--anc:#07734f;--anrgb:7,115,79;--anbg:rgba(7,115,79,.09);--anline:rgba(7,115,79,.26)}
+.an-scout{--anc:#0b5e68;--anrgb:11,94,104;--anbg:rgba(11,94,104,.09);--anline:rgba(11,94,104,.26)}
 @media (prefers-color-scheme:dark){
   .an-vega{--anc:#3fd0f0;--anrgb:63,208,240;--anbg:rgba(63,208,240,.12);--anline:rgba(63,208,240,.36)}
-  .an-atlas{--anc:#eec258;--anrgb:238,194,88;--anbg:rgba(238,194,88,.13);--anline:rgba(238,194,88,.4)}
+  .an-atlas{--anc:#d8d06a;--anrgb:216,208,106;--anbg:rgba(216,208,106,.13);--anline:rgba(216,208,106,.4)}
   .an-nova{--anc:#a78bfa;--anrgb:167,139,250;--anbg:rgba(167,139,250,.13);--anline:rgba(167,139,250,.38)}
-  .an-scout{--anc:#2fd6a0;--anrgb:47,214,160;--anbg:rgba(47,214,160,.12);--anline:rgba(47,214,160,.36)}
+  .an-scout{--anc:#35c7d2;--anrgb:53,199,210;--anbg:rgba(53,199,210,.12);--anline:rgba(53,199,210,.36)}
 }
 
 /* ---- consensus headline chip: "4–0 OVER · UNANIMOUS" / "SPLIT 2–2" ---- */
@@ -3375,7 +3394,7 @@ body.stories-on main{padding:0 !important;max-width:none}
 .simsays.ss-big{font-size:13px;padding:5px 12px;gap:6px}
 
 /* ---- the desk block on a game tile ---- */
-.deskblk{display:flex;flex-direction:column;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid var(--line3)}
+.deskblk{display:flex;flex-direction:column;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid var(--line3);container-type:inline-size}
 .dsk-toprow{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;min-width:0}
 .dsk-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;min-width:0}
 .dsk-cell{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;cursor:pointer;
@@ -3479,6 +3498,7 @@ body.stories-on main{padding:0 !important;max-width:none}
 .dbt-conv{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;color:var(--ink3)}
 .dbt-wall{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--ink4);
   background:rgba(var(--tintc),.06);border-radius:999px;padding:2px 7px}
+.dbt-src{margin:5px 0 0;font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--ink3)}
 .dbt-say{margin:6px 0 0;font-family:var(--sans);font-weight:500;font-style:italic;font-size:13px;line-height:1.5;color:var(--ink2)}
 .dbt-say.chief{font-style:normal;font-weight:600}
 .dbt.chiefrow{cursor:default;background:linear-gradient(180deg,rgba(var(--panec),.62),rgba(var(--panec),.5))}
@@ -3549,6 +3569,8 @@ body.stories-on main{padding:0 !important;max-width:none}
   padding:10px 16px;max-width:340px}
 .sts-chief b{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.14em;text-transform:uppercase}
 .sts-chief i{font-style:normal;font-family:var(--mono);font-weight:800;font-size:12px;letter-spacing:.03em;color:var(--ink)}
+.sts-chief .sts-stars{font-style:normal;display:inline-flex}
+.sts-chief .sts-stars .bstars{font-size:13px}
 .sts-chief span{font-family:var(--sans);font-weight:500;font-size:13px;line-height:1.45;color:var(--ink2);text-align:center}
 .sts-chief.ch-play{background:rgba(var(--goldc),.08);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.3)}
 .sts-chief.ch-play b{color:var(--gold)}
@@ -4361,8 +4383,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .pat-kick{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .pat-glyphs{display:inline-flex;align-items:center;gap:3px}
 .pat-g{display:inline-grid;place-items:center;line-height:0}
-.pat-g.an-vega{color:var(--b3)}.pat-g.an-atlas{color:var(--a3)}
-.pat-g.an-nova{color:var(--b3)}.pat-g.an-scout{color:var(--g3)}
+.pat-g.an-vega,.pat-g.an-atlas,.pat-g.an-nova,.pat-g.an-scout{color:var(--anc)}
 .pat-lead{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.17em;text-transform:uppercase;
   color:var(--ink3)}
 .patcard.kind-contrarian .pat-lead{color:var(--r3)}
