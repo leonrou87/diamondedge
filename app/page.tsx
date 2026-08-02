@@ -5622,7 +5622,7 @@ export default function Home() {
     // feed is still in flight — dark shimmer skeletons hold the space until the day's
     // load actually resolves (empty OR full). True until the first loadDay settles.
     let dayLoading = true;
-    let newsMode: "stories" | "grid" = (() => { try { return localStorage.getItem("de_newsmode_v2") === "stories" ? "stories" : "grid"; } catch { return "grid"; } })();
+    let newsMode = "stories";
     let newsFeed: any = null;       // live sports-news feed (news_feed key, ~20-min refresh)
     let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
     let indexData: any = null;      // pregame_picks_index
@@ -9520,11 +9520,12 @@ export default function Home() {
       const gres = g && gameState(g).kind === "final" && gpick && gpick.action === "TAKE" ? pickResult(g, gpick) : null;
       const artRes = gres ? `<span class="art-res ${gres}">${gres === "hit" ? "✓ Hit" : gres === "miss" ? "✗ Missed" : "Push"}</span>` : "";
       const html = `
-        <div class="sheet-bg" id="sheet-bg"></div>
-        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+        <div class="sheet-bg article-bg" id="sheet-bg"></div>
+        <div class="sheet article-story" id="sheet" role="dialog" aria-modal="true">
           <div class="sh-grab" id="sh-grab"><span></span></div>
           <div class="sh-head">
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            ${s.image_url ? `<div class="art-visual"><img src="${esc(String(s.image_url))}" alt="" onload="if(!this.naturalWidth||this.naturalWidth<260){this.parentElement.classList.add('is-fallback')}" onerror="this.parentElement.classList.add('is-fallback')"></div>` : g ? `<div class="art-visual art-vs">${gCrest(g, "away", "art-hero-crest")}<span>vs</span>${gCrest(g, "home", "art-hero-crest")}</div>` : `<div class="art-visual is-fallback"><span>◆</span></div>`}
             <div class="sh-sport">${lab} · DiamondEdge</div>
             <div class="art-title">${esc(s.headline || s.title)}</div>
             ${s.dek ? `<div class="sh-meta">${esc(cleanBlurb(s.dek))}</div>` : ""}
@@ -9644,7 +9645,7 @@ export default function Home() {
     // news stories, yesterday's record recap, and a top-picks summary. A small grid
     // button escapes to the classic scrollable front (accessibility + preference).
     const STORY_MS = 7000;
-    const STORY_MAX = 14;
+    const STORY_MAX = 24;
     let storyIdx = 0, storyLen = 0, storyRafId = 0, storyT0 = 0, storyAcc = 0, storyHold = false;
     function stopStories() {
       if (storyRafId) cancelAnimationFrame(storyRafId);
@@ -9654,9 +9655,9 @@ export default function Home() {
       try { document.body.classList.remove("stories-on"); } catch {}
     }
     function setNewsMode(m: "stories" | "grid") {
-      newsMode = m;
-      try { localStorage.setItem("de_newsmode_v2", m); } catch {}
-      if (m !== "stories") stopStories();
+      newsMode = "stories";
+      try { localStorage.setItem("de_newsmode_v2", "stories"); } catch {}
+      if (m !== "stories") { stopStories(); switchTab("games"); return; }
       todayFresh = false;
       renderToday();
       if (tab === "today") todayFresh = true;
@@ -9671,8 +9672,8 @@ export default function Home() {
         .sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
       return { date: y, rec: r, games: games.slice(0, 5) };
     }
-    // Assemble the day's slide deck: flagship pick → yesterday recap → interwoven
-    // news + remaining picks → the top-picks summary. Capped so a tap-through stays short.
+    // Assemble the day's slide deck: flagship pick → desk/recap intelligence →
+    // every deduped news item → a compact hand-off to the games board.
     function buildStorySlides() {
       const src = livePayload || payload;
       const pool = (((src || {}) as any).games || []).filter((g0: any) => {
@@ -9695,8 +9696,8 @@ export default function Home() {
       }
       const slides: any[] = [];
       if (picks[0]) slides.push({ t: "pick", g: picks[0].g, pl: picks[0].pl, rank: 1 });
-      // PACING. The deck is allowed to be richer now, but news-led: more league stories,
-      // fewer repeated pick cards, and still a hard cap so it does not turn into a feed.
+      // PACING. News is now the only Today surface, so every deduped headline gets a slide.
+      // Picks and desk intelligence are still interwoven, but there is no separate news grid.
       // ANALYST DESK slide: the day's strongest consensus is the strongest possible story —
       // "all four analysts agree" leads; a 3–1 majority still makes the deck; a split gets
       // the "desk divided" treatment only when nothing stronger exists.
@@ -9720,8 +9721,8 @@ export default function Home() {
       const recap = yesterdayRecap();
       if (recap) slides.push({ t: "recap", ...recap });
       let pi = 1, ni = 0;
-      while ((pi < Math.min(picks.length, 2) || ni < Math.min(news.length, 8)) && slides.length < STORY_MAX) {
-        if (ni < Math.min(news.length, 8)) slides.push({ t: "news", ...news[ni++] });
+      while ((pi < Math.min(picks.length, 2) || ni < news.length) && slides.length < STORY_MAX) {
+        if (ni < news.length) slides.push({ t: "news", ...news[ni++] });
         if (pi < Math.min(picks.length, 2) && slides.length < STORY_MAX) { slides.push({ t: "pick", g: picks[pi].g, pl: picks[pi].pl, rank: pi + 1 }); pi++; }
       }
       // the board summary always closes the deck — it is the hand-off to the games tab
@@ -10085,7 +10086,8 @@ export default function Home() {
          and the dock slide away in CSS), and the top-right control is a 40px X that says
          what it does — it drops you onto the readable Today front page. Tap zones, swipe,
          hold-to-pause, arrow keys and the reduced-motion contract are all unchanged; Escape
-         now leaves too, because on a full-screen surface a keyboard user expects it to. */
+         now leaves too, because on a full-screen surface a keyboard user expects it to.
+         The old scrollable news front is gone; close hands off to the Games board. */
       view.innerHTML = `
         <div class="stories" id="stories" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Today at DiamondEdge — the morning briefing">
           <div class="st-top">
@@ -10112,7 +10114,9 @@ export default function Home() {
     function renderToday() {
       const view = $("today-view");
       if (!view) return;
-      if (newsMode === "stories") { renderStories(view); if (tab !== "today") todayFresh = false; return; }
+      renderStories(view);
+      if (tab !== "today") todayFresh = false;
+      return;
       stopStories();
       const db = briefSource() || fallbackBrief();
       if (!db) { view.innerHTML = skeletonNews(); return; }
