@@ -1497,11 +1497,17 @@ export default function Home() {
       const win = s.window_days ? `${s.window_days}d` : "4w";
       const tier = adaptiveTier(s);
       const ci = adaptiveCiText(s);
-      return `<div class="daystrat" title="${esc(line)}">
-        <span class="ds-k">Today's strategy</span>
-        <span class="ds-copy"><b>${esc(label)}</b><i>${tier ? `<em class="ds-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}${rec ? `${esc(rec)} · ` : ""}${ci ? `CI ${esc(ci)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
-        <button class="ds-eye" id="daystrat-eye" aria-haspopup="dialog" aria-label="Learn why this is today's strategy">${icon("eye", "sm")}</button>
-      </div>`;
+      return `<details class="daystrat" title="${esc(line)}">
+        <summary>
+          <span class="ds-k">Today's strategy</span>
+          <span class="ds-copy"><b>${esc(label)}</b><i>${tier ? `<em class="ds-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}${rec ? `${esc(rec)} · ` : ""}${ci ? `CI ${esc(ci)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
+          <span class="ds-caret" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="ds-more">
+          <p>${esc(line || `Before this slate, DiamondEdge picked one rule from strictly prior games and applies it to today's board.`)}</p>
+          <button class="ds-learn" id="daystrat-eye" type="button">Learn on The Desk →</button>
+        </div>
+      </details>`;
     }
     function adaptiveStrategySheetCopy(s: any, dateISO: string) {
       const label = humanNote(s && s.label) || "Adaptive strategy";
@@ -7404,7 +7410,7 @@ export default function Home() {
 
     function bindMeta() {
       bindClick("recchip", () => openRecordBreakdown());
-      bindClick("daystrat-eye", (e: any) => { if (e) e.stopPropagation(); openAdaptiveStrategySheet(curDate); },
+      bindClick("daystrat-eye", (e: any) => { if (e) e.stopPropagation(); switchTab("desk"); },
         { optional: "only rendered for MLB/all dates with an adaptive day strategy" });
       // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
       // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
@@ -9228,8 +9234,6 @@ export default function Home() {
         </div>
         ${betaData ? betaDashboard(betaData) : `<div class="beta-skel">Loading the record…</div>`}
         ${betaData ? `
-          ${adaptiveStrategyInsight(betaData)}
-          ${analystRecordSection()}
           ${pastPicksSection(betaData)}
           <!-- ═══ EVERYTHING BELOW OPENS ON A TAP ═══
                This page used to run 41,000px. In one column, unfolded, in this order: the
@@ -9258,10 +9262,6 @@ export default function Home() {
               ${chartCard("Month by month", "Net units each month — hot months and cold months alike.", monthlySvg(betaData))}
               ${streaksBlock(betaData)}
             </div>
-          </details>
-          <details class="ix-fold">
-            <summary><span>Strategy by strategy</span><span class="ixf-sub">each stream's own graded record</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
-            <div class="ix-fold-body">${strategyRecordSection(betaData)}</div>
           </details>
         ` : ""}
         <button class="board-all" id="ins-allpicks">Browse every graded pick →</button>
@@ -11104,10 +11104,20 @@ export default function Home() {
         <div class="lab-wrap">
           <div class="ix-masthead">
             <div class="ix-eyebrow">DiamondEdge · The Lab</div>
-            <h2 class="ix-mast-h">Every idea we test, in public</h2>
-            <p class="ix-mast-sub">This is the whole roadmap — every model, data build and experiment, from first spark to graded verdict. Most die. The survivors earn their stars.</p>
+            <h2 class="ix-mast-h">A research program, not a picks list</h2>
+            <p class="ix-mast-sub">The Lab is where DiamondEdge treats sports markets like an empirical literature: every hypothesis needs a preregistered test, a holdout, a null result, and a reason to survive into production.</p>
             ${chips ? `<div class="lab-counts">${chips}</div>` : ""}
             ${fresh}
+          </div>
+          <div class="lab-thesis">
+            <div class="lab-thesis-k">Methodological frame</div>
+            <p>We are not asking for one clever angle. We are building a stack of falsifiable claims: market microstructure, lineup reaction, pitcher-state priors, weather and park context, model disagreement, calibration, and price validity. A module graduates only when it improves the served decision under time-ordering, not when it finds a pretty backtest.</p>
+            <div class="lab-principles">
+              <span><b>Prior work</b><i>What signal family is being tested.</i></span>
+              <span><b>Identification</b><i>Why it should be causal or tradable.</i></span>
+              <span><b>Holdout</b><i>Whether it survives unseen games.</i></span>
+              <span><b>Nulls</b><i>What we killed and why.</i></span>
+            </div>
           </div>
           ${items.length ? "" : `<div class="state"><div class="big">Nothing on the bench yet</div><div class="sm">The roadmap fills in as experiments launch.</div></div>`}
           ${labSection("In the fire", "Being built or tested right now — the ideas fighting for a spot on the board.", fire.map(labCard), "fire")}
@@ -11233,8 +11243,27 @@ export default function Home() {
         ${p.baseline.n ? `<p class="rost-prof-n">Its own baseline across every call it has filed${p.baseline.from ? ` since ${esc(p.baseline.from.slice(0, 4))}` : ""} — a longer, separate ledger from the graded record, and the yardstick everything here is measured against.</p>` : ""}
       </div>`;
     }
+    function deskRecordHero() {
+      const hr = headlineStrategyRecord(betaData);
+      const lv = hr && hr.live;
+      const tr = trackRecord();
+      const ov = (tr && tr.overall) || {};
+      const rec = lv ? stratWL(lv) : bWL(ov);
+      const hit = lv && lv.hit != null ? stratPct(lv.hit) : ov.hit_rate != null ? bPct(ov.hit_rate, 1) : "";
+      const roi = lv && lv.roi != null ? stratRoi(lv.roi) : ov.roi != null ? bRoi(ov.roi) : "";
+      const n = lv && lv.n != null ? lv.n : ov.n || 0;
+      const since = hr && hr.activation ? stratDateTxt(hr.activation) : recordEraMonth();
+      return `<div class="dp-recordhero">
+        <div class="dpr-k">DiamondEdge record</div>
+        <div class="dpr-main"><b>${esc(rec)}</b>${hit ? `<span>${esc(hit)} hit</span>` : ""}${roi ? `<span class="${String(roi).startsWith("-") ? "neg" : "pos"}">${esc(roi)} ROI</span>` : ""}</div>
+        <p>Every official STRONG pick is graded against the final at the real price. ${n ? `${esc(String(n))} served and graded` : "The public ledger builds"}${since ? ` since ${esc(since)}` : ""}; leans and research reads stay out of this number.</p>
+      </div>`;
+    }
     function renderDesk() {
       const v = $("desk-view"); if (!v) return;
+      if (!betaData) {
+        loadBeta().then(() => { if (tab === "desk") renderDesk(); }).catch(() => {});
+      }
       const rows = deskRecordRows();
       const byKey: any = {}; rows.forEach((r: any) => (byKey[r.key] = r));
       const cards = DESK_ORDER.map((k) => rosterCard(k, byKey[k] || null)).join("");
@@ -11247,8 +11276,9 @@ export default function Home() {
         <section class="deskpage">
           <header class="dp-mast">
             <span class="dp-k">The Desk</span>
-            <h2 class="dp-h">Four analysts.<br>One board.</h2>
-            <p class="dp-dek">Four independent models argue every game, each with its own way of reading it and its own record kept in the open. They disagree constantly — that disagreement is the product.</p>
+            <h2 class="dp-h">The record comes first.</h2>
+            <p class="dp-dek">DiamondEdge is judged by the pick it publishes, not by whichever analyst sounded smartest after the game. The four analysts create the evidence; the daily strategy decides when that evidence is strong enough to become an official play.</p>
+            ${deskRecordHero()}
             <!-- A LEGEND ROW WAS BUILT HERE AND TAKEN BACK OUT. Four marks with their
                  channel names, sitting between the dek and the grid — and the grid
                  directly underneath is already exactly that: mark, name, channel, four
@@ -11258,8 +11288,20 @@ export default function Home() {
                  across the site (the rivalry verdict, the folded pattern rows) — but not
                  here, where the answer is the cards. -->
           </header>
+          <div class="dp-section-k">The four analysis engines</div>
           <div class="dp-grid" role="group" aria-label="The four analysts">${cards}</div>
           <div class="dp-foot">
+            <div class="dp-system">
+              <div class="dp-system-k">How DiamondEdge chooses from them</div>
+              <p>Before each slate, the system looks only backward: strictly prior games over trailing lookback windows. It tests single analysts, pairs, exact 4-model vote shapes, probability-weighted blends, stacked rules, logistic meta-models, and shallow neural-style interactions. One strategy is locked for that day, then applied forward to every game on that slate.</p>
+              ${betaData ? adaptiveStrategyInsight(betaData) : `<div class="ixc adapt-insight"><div class="ixc-h">Adaptive DiamondEdge strategy</div><div class="ixc-sub">Loading the daily strategy ledger…</div></div>`}
+              <details class="dp-more">
+                <summary><span>Strategy research space</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
+                <div class="dp-more-body">
+                  ${betaData ? strategyRecordSection(betaData) : `<div class="state"><div class="sm">Strategy records load with the pick ledger.</div></div>`}
+                </div>
+              </details>
+            </div>
             <p><b>How the records work.</b> Each analyst's calls are graded on their own, against the real final, at the line they were priced against — never against each other's opinions. Every record here starts in <b>${recordEraMonth()}</b>, when the desk was rebuilt: nothing from before that is counted. ${esc(recordBasisLine())} A call that never got a number is never counted as a win or a loss.</p>
             <!-- This paragraph asserted that some of them have no rank. Whether any do is a
                  fact about the served records, not about the page — all four restarted

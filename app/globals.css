@@ -382,17 +382,24 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 /* the explainer link keeps to the right edge whether or not the row wraps under the
    record chip — a corner link, never an orphan sitting under the chip's left edge */
 .metarow .howlink,.metarow .howlink.strong{white-space:nowrap;margin-left:auto}
-.daystrat{display:inline-grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px;min-width:0;max-width:min(100%,590px);
+.daystrat{display:block;min-width:0;max-width:min(100%,640px);
   margin-left:auto;padding:6px 7px 6px 10px;border-radius:14px;background:linear-gradient(135deg,rgba(var(--bluec),.085),rgba(var(--goldc),.075));
   border:1px solid rgba(var(--bluec),.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.76),0 8px 22px rgba(25,35,58,.055);
   color:var(--ink2);font-family:var(--sans);font-size:12px;line-height:1.25}
+.daystrat>summary{list-style:none;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px;cursor:pointer}
+.daystrat>summary::-webkit-details-marker{display:none}
 .daystrat .ds-k{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.72);
   color:var(--b3);box-shadow:inset 0 0 0 1px rgba(var(--bluec),.12);
   font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap}
 .daystrat .ds-copy{display:inline-flex;align-items:center;gap:6px;min-width:0}
-.daystrat b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.daystrat b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
 .daystrat i{font-style:normal;color:var(--ink4);white-space:nowrap}
 .daystrat i .ds-tier{margin-right:5px}
+.ds-caret{font-family:var(--disp);font-weight:900;color:var(--ink4);transition:transform .18s var(--ease)}
+.daystrat[open] .ds-caret{transform:rotate(180deg)}
+.ds-more{padding:8px 4px 2px 0;margin-left:0}
+.ds-more p{margin:0;font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--ink3)}
+.ds-learn{margin-top:7px;border:0;background:transparent;color:var(--b3);font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:0;cursor:pointer}
 .ds-tier,.ads-tier{display:inline-flex;align-items:center;justify-content:center;height:18px;padding:0 6px;border-radius:999px;
   font-family:var(--disp);font-style:normal;font-weight:850;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
 .ds-tier.is-strong,.ads-tier.is-strong{color:#fff;background:linear-gradient(135deg,var(--green),#1e9f75);box-shadow:0 5px 12px rgba(var(--greenc),.16)}
@@ -3111,6 +3118,15 @@ body.stories-on{background:#050710}
    Same glass recipe as Insights cards; gold = alive, emerald = earned, dim = dead.
    ══════════════════════════════════════════════════════════════════════════ */
 .lab-wrap{max-width:760px;margin:0 auto}
+.lab-thesis{margin:12px 0 20px;padding:16px 18px;border-radius:18px;background:linear-gradient(145deg,rgba(var(--slatec),.09),rgba(var(--panec),.82));
+  border:1px solid rgba(var(--rimc),.08);box-shadow:var(--e1)}
+.lab-thesis-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink3)}
+.lab-thesis p{margin:9px 0 0;font-family:var(--sans);font-size:15px;line-height:1.65;color:var(--ink2);text-wrap:pretty}
+.lab-principles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:13px}
+.lab-principles span{display:flex;flex-direction:column;gap:3px;padding:10px 11px;border-radius:12px;background:rgba(var(--panec),.62);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.06)}
+.lab-principles b{font-family:var(--disp);font-weight:800;font-size:12px;color:var(--ink)}
+.lab-principles i{font-style:normal;font-family:var(--sans);font-size:12px;line-height:1.35;color:var(--ink3)}
+@media(max-width:680px){.lab-principles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* hero count chips — the whole story in one line */
 .lab-counts{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
 .lab-count{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;
@@ -4415,12 +4431,21 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
    four coloured rectangles. The colour now lives in the sigil and a 3px top rule.
    ══════════════════════════════════════════════════════════════════════════════ */
 .deskpage{padding:8px 0 20px;max-width:900px;margin:0 auto}
-.dp-mast{margin:0 0 16px;max-width:64ch}
+.dp-mast{margin:0 0 16px;max-width:760px}
 .dp-k{display:inline-block;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.2em;
   text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
 .dp-h{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.04;letter-spacing:-.035em;
   color:var(--ink);margin-bottom:10px}
 .dp-dek{font-family:var(--sans);font-size:16px;line-height:1.6;color:var(--ink2);max-width:58ch}
+.dp-recordhero{margin:15px 0 0;padding:16px 17px;border-radius:18px;background:linear-gradient(145deg,rgba(var(--goldc),.16),rgba(var(--panec),.84) 64%);
+  border:1px solid rgba(var(--goldc),.28);box-shadow:var(--e1)}
+.dpr-k{font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--golddeep)}
+.dpr-main{display:flex;align-items:baseline;gap:9px 14px;flex-wrap:wrap;margin-top:5px}
+.dpr-main b{font-family:var(--mono);font-weight:800;font-size:36px;letter-spacing:-.06em;color:var(--ink);font-variant-numeric:tabular-nums}
+.dpr-main span{font-family:var(--disp);font-weight:800;font-size:14px;color:var(--ink2);white-space:nowrap}
+.dpr-main span.pos{color:var(--g3)}.dpr-main span.neg{color:var(--r3)}
+.dp-recordhero p{margin:8px 0 0;font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink3);max-width:64ch}
+.dp-section-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:18px 2px 9px}
 @media(max-width:559px){.dp-h{font-size:27px}.dp-dek{font-size:14px;line-height:1.5}.dp-k{font-size:10px;margin-bottom:8px}.deskpage{padding-top:4px}}
 
 /* TWO COLUMNS AT EVERY WIDTH — that is the requirement. All four analysts are visible on
@@ -4548,6 +4573,11 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .dp-foot{margin-top:32px}
 .dp-foot p{font-family:var(--sans);font-size:14px;line-height:1.62;color:var(--ink3);max-width:70ch}
 .dp-foot p b{color:var(--ink2)}
+.dp-system{margin:0 0 18px;padding:16px 17px;border-radius:18px;background:rgba(var(--panec),.7);border:1px solid rgba(var(--rimc),.07);box-shadow:var(--e0)}
+.dp-system-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--b3)}
+.dp-system>p{margin:8px 0 12px;color:var(--ink2)}
+.dp-system .adapt-insight{margin-top:10px}
+.dp-system .stgyrec{margin-top:10px}
 
 /* ══════════════════════════════════════════════════════════════════════════════
    THE ANALYST PAGE — the full character destination behind each roster box.
