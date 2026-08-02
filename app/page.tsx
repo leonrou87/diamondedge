@@ -10617,8 +10617,9 @@ export default function Home() {
     const teamShort = (name: any) => { const s = String(name || "").trim(); const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
     function bStars(n: any) {
       const k = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
+      const meaning = k >= 4 ? "strongest priced ticket" : k === 3 ? "solid board pick" : k >= 1 ? "light lean" : "no rated edge";
       let h = ""; for (let i = 0; i < 5; i++) h += `<i class="${i < k ? "f" : "e"}">${i < k ? "★" : "☆"}</i>`;
-      return `<span class="bstars s${k}" aria-label="${k} of 5 stars">${h}</span>`;
+      return `<span class="bstars s${k}" aria-label="${k} of 5 stars — ${meaning}" title="${k} of 5 stars — ${meaning}. More stars means a stronger DiamondEdge ticket at this posted number and price.">${h}</span>`;
     }
     const bPct = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) * 100).toFixed(d) + "%");
     const bRoi = (v: any) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
