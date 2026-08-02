@@ -2042,6 +2042,29 @@ export default function Home() {
       out.sort((a, b) => idx(a.key) - idx(b.key));
       return out;
     }
+    function analystMotionVars(a: any) {
+      const raw = a && a.conv != null ? Number(a.conv) : null;
+      const c = raw != null && isFinite(raw) ? Math.max(0.5, Math.min(0.72, raw)) : 0.5;
+      const k = Math.max(0, Math.min(1, (c - 0.5) / 0.12));
+      const amp = 0.45 + 0.95 * k;
+      return [
+        `--an-dur:${(3.75 - 1.55 * k).toFixed(2)}s`,
+        `--an-glow:${(0.14 + 0.24 * k).toFixed(2)}`,
+        `--an-glow-hi:${(0.26 + 0.24 * k).toFixed(2)}`,
+        `--an-lift:${(-4 * amp).toFixed(1)}px`,
+        `--an-hop:${(-6 * amp).toFixed(1)}px`,
+        `--an-drop:${(2 * amp).toFixed(1)}px`,
+        `--an-shift:${(3 * amp).toFixed(1)}px`,
+        `--an-shift-neg:${(-2 * amp).toFixed(1)}px`,
+        `--an-smallshift:${(1.5 * amp).toFixed(1)}px`,
+        `--an-smalllift:${(-1.5 * amp).toFixed(1)}px`,
+        `--an-rot:${(6 * amp).toFixed(1)}deg`,
+        `--an-rot-neg:${(-4 * amp).toFixed(1)}deg`,
+        `--an-bigrot:${(14 * amp).toFixed(1)}deg`,
+        `--an-bigrot-neg:${(-9 * amp).toFixed(1)}deg`,
+        `--an-pop:${(1 + 0.075 * amp).toFixed(3)}`,
+      ].join(";");
+    }
     const CONS_STATES = ["UNANIMOUS", "MAJORITY", "SPLIT", "PENDING"];
     function normConsensusBlock(c: any) {
       if (!c || typeof c !== "object") return null;
@@ -2213,7 +2236,7 @@ export default function Home() {
         const priced = a.line != null ? a.line : (pg && pg.total && pg.total.line != null ? pg.total.line : null);
         const at = !hide && priced != null
           ? `<span class="dsk-at" title="the line this read was priced against">@ ${esc(lineStr(priced))}</span>` : "";
-        return `<${tag} class="dsk-cell an-${esc(a.key)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}${priced != null ? ` at ${lineStr(priced)}` : ""}` : ", no call yet"}"` : ""}>
+        return `<${tag} class="dsk-cell an-${esc(a.key)}" style="${analystMotionVars(a)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}${priced != null ? ` at ${lineStr(priced)}` : ""}` : ", no call yet"}"` : ""}>
           <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span><span class="dsk-callrow">${call}${conv}</span>${at}${meter}</${tag}>`;
       }).join("");
       return `<div class="dsk-row">${cells}</div>`;
@@ -5811,23 +5834,26 @@ export default function Home() {
     // ISO/absent formats that broke plain string compares — finals especially), string
     // compare only as the last resort for same/unknown timestamps.
     const startMsOf = (g: any) => { const t = firstPitchTs(g); return t != null ? t : Number.MAX_SAFE_INTEGER; };
+    const statusOrder = (g: any) => {
+      const k = gameState(g).kind;
+      return k === "live" ? 0 : k === "pre" ? 1 : k === "final" ? 2 : 3;
+    };
     function byStartTime(a: any, b: any) {
       const d = startMsOf(a) - startMsOf(b);
       if (d) return d;
+      const s = statusOrder(a) - statusOrder(b);
+      if (s) return s;
       const ta = String(a.start_ts || a.start_time || ""), tb = String(b.start_ts || b.start_time || "");
       return ta < tb ? -1 : ta > tb ? 1 : 0;
     }
     function gamesForLeague(p: any, lg: string, dateISO?: string) {
       const forDate = dateISO || curDate;
       const all = (p && p.games) || [];
-      // "All" — the merged board across every league, live-first. Reuse the per-league
-      // path (date filtering + live-first sort already applied per league), then re-merge
-      // and re-sort so LIVE games from any sport rise to the top of one combined list.
+      // "All" — the merged board across every league. Reuse the per-league
+      // path for date filtering, then re-merge and keep one first-pitch timeline.
       if (lg === "all") {
         const merged = SPORTS.flatMap((s) => gamesForLeague(p, s, dateISO));
-        const ord: any = { live: 0, pre: 1, final: 2 };
-        merged.sort((a: any, b: any) =>
-          ((ord[(a.status || "pre").toLowerCase()] ?? 1) - (ord[(b.status || "pre").toLowerCase()] ?? 1)) || byStartTime(a, b));
+        merged.sort(byStartTime);
         return merged;
       }
       let inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
@@ -5866,11 +5892,9 @@ export default function Home() {
           return gameLocalDay(g) === t;
         });
       }
-      // Sports-app order: LIVE first, then upcoming, then finals — every section in
-      // first-pitch order ascending (finals included: earliest game of the day first).
-      const ord: any = { live: 0, pre: 1, final: 2 };
-      inLg.sort((a: any, b: any) =>
-        ((ord[(a.status || "pre").toLowerCase()] ?? 1) - (ord[(b.status || "pre").toLowerCase()] ?? 1)) || byStartTime(a, b));
+      // Day order: always first-pitch time ascending. Status still renders on each tile, but
+      // it never pulls a later game above an earlier game on the schedule.
+      inLg.sort(byStartTime);
       return inLg;
     }
 
@@ -6562,7 +6586,7 @@ export default function Home() {
         const said = locked ? "call locked" : dir === "over" ? "over" : dir === "under" ? "under" : "no call";
         words.push(`${a.name} ${said}`);
         const why = !locked && thin && a.infoGaps.length ? ` (read without the ${esc(a.infoGaps.join(" or "))})` : "";
-        return `<i class="tsig an-${esc(a.key)} s-${state}${thin}" title="${esc(a.name)} — ${esc(said)}${why}">`
+        return `<i class="tsig an-${esc(a.key)} s-${state}${thin}" style="${analystMotionVars(a)}" title="${esc(a.name)} — ${esc(said)}${why}">`
           + `${deskGlyph(a.key, 18)}<b class="tsig-d" aria-hidden="true"></b></i>`;
       }).join("");
       return `<span class="tsigs" role="img" aria-label="The desk: ${esc(words.join(", "))}">${marks}</span>`;
@@ -7192,7 +7216,7 @@ export default function Home() {
     }
     function renderScoresChrome() {
       const tabSrc = livePayload || payload;
-      // "All" leads the rail (merged, live-first), then each league by game count.
+      // "All" leads the rail (merged, first-pitch order), then each league by game count.
       const tabsHtml = ["all", ...orderedLeagues(tabSrc)].map((lg) => {
         const lgGames = tabSrc ? gamesForLeague(tabSrc, lg) : [];
         const cnt = lgGames.length;
@@ -7350,10 +7374,6 @@ export default function Home() {
           // game came back a pass, the pass board takes the slot and says so, with the count
           // of each reason. A future slate has no reads yet, so it keeps its own banner.
           const rail = anyPick ? "" : (isFuture ? "" : passBoardPanel(games));
-          // Reference "Live & Upcoming": group the cards by game phase so LIVE games
-          // sit under a live subhead, upcoming below, finals last. gameState already gives phase.
-          const grp: any = { live: [], pre: [], final: [] };
-          games.forEach((g: any) => { const k = gameState(g).kind; (grp[k] || grp.pre).push(g); });
           let n = 0;
           const section = (label: string, arr: any[], cls = "") => arr.length
             ? `<div class="slate-sec ${cls}"><div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div><div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
@@ -7364,7 +7384,9 @@ export default function Home() {
           const ppdSec = ppdGames.length
             ? `<div class="slate-sec ppdsec"><div class="sec-hd"><span class="sec-lab">Postponed</span><span class="sec-n">${ppdGames.length}</span></div><div class="slate">${ppdGames.map((g: any) => ppdCard(g, pn++)).join("")}</div></div>`
             : "";
-          const grouped = `${section("Live", grp.live, "live")}${section(grp.live.length ? "Upcoming" : "Live & Upcoming", grp.pre)}${section("Final", grp.final, "final")}${ppdSec}`;
+          const byPhase = games.reduce((m: any, g: any) => { const k = gameState(g).kind; m[k] = (m[k] || 0) + 1; return m; }, {});
+          const phaseLine = [byPhase.live ? `${byPhase.live} live` : "", byPhase.pre ? `${byPhase.pre} upcoming` : "", byPhase.final ? `${byPhase.final} final` : ""].filter(Boolean).join(" · ");
+          const grouped = `${section(phaseLine ? `Time order · ${phaseLine}` : "Live & Upcoming", games.slice().sort(byStartTime), byPhase.live ? "live mixed" : "mixed")}${ppdSec}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
           // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
           const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
