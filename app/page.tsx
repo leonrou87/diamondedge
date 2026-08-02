@@ -6309,13 +6309,6 @@ export default function Home() {
       const dayTag = gameLocalDay(g) && gameLocalDay(g) !== curDate && gs.si.date ? `${esc(gs.si.date)} · ` : "";
       return `<span class="statechip pre">${dayTag}${esc(t)}</span>`;
     }
-    function tileStartChip(g: any, gs: any) {
-      if (!g || !gs) return "";
-      const t = gs.si && gs.si.hasTime && gs.si.time ? String(gs.si.time).replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : "";
-      if (!t) return "";
-      const pre = gs.kind === "pre" ? "Start" : gs.kind === "live" ? "Started" : "";
-      return `<span class="tl-start">${pre ? `${pre} ` : ""}${esc(t)}</span>`;
-    }
     function tilePitcherMeta(g: any, which: "away" | "home") {
       if (!g || String(g.sport || "").toLowerCase() !== "mlb") return "";
       const pit = (g.pregame_intel && g.pregame_intel.pitchers) || {};
@@ -6659,7 +6652,6 @@ export default function Home() {
       // verdict carries no figure of its own (a bare "Pass", or no verdict at all)
       const needTot = !vd || (vd.kind === "pass" && !dc);
       const footBits = [
-        tileStartChip(g, gs),
         needTot && lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
         tileDeskRow(g, locked),
       ].filter(Boolean).join("");
