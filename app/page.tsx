@@ -1509,6 +1509,59 @@ export default function Home() {
     const stratWL = (b: any) => (b ? `${b.win}–${b.loss}${b.push ? `–${b.push}` : ""}` : "—");
     const stratPct = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
     const stratRoi = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
+    function adaptiveStrategyRoot(src: any) {
+      const r = src && src.adaptive_strategy_record;
+      return r && typeof r === "object" ? r : null;
+    }
+    function adaptiveDayStrategy(dateISO: string) {
+      const srcs = [livePayload, betaLiveData, betaData, payload].filter(Boolean);
+      for (const src of srcs) {
+        const by = src && src.adaptive_strategy_by_date;
+        const s = by && by[dateISO];
+        if (s && typeof s === "object") return s;
+        const root = adaptiveStrategyRoot(src);
+        const s2 = root && root.strategy_by_date && root.strategy_by_date[dateISO];
+        if (s2 && typeof s2 === "object") return s2;
+      }
+      return null;
+    }
+    function adaptiveOverall(src: any) {
+      const r = adaptiveStrategyRoot(src);
+      const o = r && r.overall;
+      return o && typeof o === "object" ? stratBlock(o) : null;
+    }
+    function adaptiveDayStrategyHtml(dateISO: string) {
+      if (!(league === "all" || league === "mlb")) return "";
+      const s = adaptiveDayStrategy(dateISO);
+      if (!s || s.status === "ERROR") return "";
+      const label = humanNote(s.label) || "Adaptive strategy";
+      const rec = humanNote(s.record);
+      const line = humanNote(s.summary_line || s.reason || s.plain_english_rule);
+      const fam = humanNote(s.rule_family || "");
+      const win = s.window_days ? `${s.window_days}d` : "4w";
+      return `<div class="daystrat" title="${esc(line)}"><span class="ds-info" aria-hidden="true">(i)</span><span class="ds-copy"><b>${esc(label)}</b><i>${rec ? `${esc(rec)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span></div>`;
+    }
+    function adaptiveStrategyInsight(d: any) {
+      const root = adaptiveStrategyRoot(d);
+      const overall = adaptiveOverall(d);
+      if (!root || !overall) return "";
+      const by = root.strategy_by_date || {};
+      const days = Object.keys(by).filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+      const latestKey = days.filter((k) => k <= todayISO()).pop() || days[days.length - 1];
+      const latest = latestKey ? by[latestKey] : null;
+      const ruleCount = new Set(days.map((k) => by[k] && by[k].rule_key).filter(Boolean)).size;
+      const since = stratDateTxt(root.record_start) || "July 2026";
+      const thru = stratDateTxt(root.through) || "today";
+      const label = latest ? humanNote(latest.label) : "Daily adaptive strategy";
+      const line = latest ? humanNote(latest.summary_line || latest.plain_english_rule) : humanNote(root.note);
+      return `<div class="ixc adapt-insight">
+        <div class="ixc-h">Adaptive DiamondEdge strategy</div>
+        <div class="ixc-sub">One strategy per slate, refreshed daily from the trailing four weeks.</div>
+        <div class="adap-big"><b>${esc(stratWL(overall))}</b><span>${overall.hit != null ? `${esc(stratPct(overall.hit))} hit` : ""}${overall.roi != null ? ` · <i class="${overall.roi >= 0 ? "pos" : "neg"}">${esc(stratRoi(overall.roi))} ROI</i>` : ""}</span></div>
+        <div class="adap-now"><span class="ds-info" aria-hidden="true">(i)</span><p><b>${esc(latestKey ? `Latest: ${label}` : label)}</b>${line ? ` ${esc(line)}` : ""}</p></div>
+        <div class="adap-foot">${esc(since)} to ${esc(thru)} · ${overall.n} graded picks · ${ruleCount || 0} distinct daily rule${ruleCount === 1 ? "" : "s"} selected.</div>
+      </div>`;
+    }
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
     // ═══════════════════ THE ANALYST DESK — four named models on every game ═══════════════════
     // The home screen is THE ANALYST DESK: four named analysts (VEGA · ATLAS · NOVA · SCOUT)
@@ -2379,16 +2432,6 @@ export default function Home() {
       const predHtml = chief && chief.pred
         ? `<div class="de-row"><span class="de-rk">Predicted final</span><b class="de-rv de-score">${esc(g.away_abbr || "AWY")} ${num(chief.pred.away, 0)} — ${num(chief.pred.home, 0)} ${esc(g.home_abbr || "HOM")}</b><i class="de-rsrc">by ${esc(chief.pred.source)}</i></div>`
         : "";
-      const strat = chief && chief.strategy;
-      const stratMeta = strat
-        ? [strat.summary, strat.rule ? `Rule: ${strat.rule}` : ""].filter(Boolean).join(" ")
-        : "";
-      const stratLabel = strat
-        ? [strat.label || "Adaptive desk rule", strat.record ? `${strat.record}${strat.windowDays ? ` last ${strat.windowDays}d` : ""}` : ""].filter(Boolean).join(" · ")
-        : "";
-      const stratHtml = strat && !locked
-        ? `<div class="de-strat ${strat.matched ? "matched" : "passed"}" title="${esc(stratMeta)}"><span class="de-info" aria-hidden="true">(i)</span><span>${esc(stratLabel)}</span></div>`
-        : "";
       const rat = (chief && chief.rationale) || (sp && sp.rationale) || "";
       // graded verdict — the past-tense sentence, so a finished pick doesn't collapse to a tick
       let verdict = "";
@@ -2405,7 +2448,6 @@ export default function Home() {
         ${locked ? `<div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : ""}
         ${locked ? "" : unobtainableRow(g)}
         ${locked ? "" : deskAgreementRow(g, locked)}
-        ${stratHtml}
         ${rlHtml || predHtml ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
         ${rat && !locked ? `<p class="de-rat">${esc(rat)}</p>` : ""}
         ${locked ? "" : coherenceBlock(chief)}
@@ -6904,7 +6946,7 @@ export default function Home() {
          "How picks work" link beside it — so the row offered two differently-worded
          buttons to one place, next to a record chip that opens the record itself. One
          door per destination. */
-      return `<div class="metarow">${chip}</div>`;
+      return `<div class="metarow">${chip}${adaptiveDayStrategyHtml(curDate)}</div>`;
     }
 
     // ===================== GAMES TAB =====================
@@ -9027,6 +9069,7 @@ export default function Home() {
         </div>
         ${betaData ? betaDashboard(betaData) : `<div class="beta-skel">Loading the record…</div>`}
         ${betaData ? `
+          ${adaptiveStrategyInsight(betaData)}
           ${analystRecordSection()}
           ${pastPicksSection(betaData)}
           <!-- ═══ EVERYTHING BELOW OPENS ON A TAP ═══
