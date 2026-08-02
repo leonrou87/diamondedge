@@ -1539,7 +1539,107 @@ export default function Home() {
       const line = humanNote(s.summary_line || s.reason || s.plain_english_rule);
       const fam = humanNote(s.rule_family || "");
       const win = s.window_days ? `${s.window_days}d` : "4w";
-      return `<div class="daystrat" title="${esc(line)}"><span class="ds-info" aria-hidden="true">(i)</span><span class="ds-copy"><b>${esc(label)}</b><i>${rec ? `${esc(rec)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span></div>`;
+      return `<div class="daystrat" title="${esc(line)}">
+        <span class="ds-k">Today's strategy</span>
+        <span class="ds-copy"><b>${esc(label)}</b><i>${rec ? `${esc(rec)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
+        <button class="ds-eye" id="daystrat-eye" aria-haspopup="dialog" aria-label="Learn why this is today's strategy">${icon("eye", "sm")}</button>
+      </div>`;
+    }
+    function adaptiveStrategySheetCopy(s: any, dateISO: string) {
+      const label = humanNote(s && s.label) || "Adaptive strategy";
+      const rule = humanNote((s && (s.plain_english_rule || s.reason)) || label).replace(/\.$/, "");
+      const days = s && s.window_days ? Number(s.window_days) : 28;
+      const start = stratDateTxt(shiftDate(dateISO, -days)) || `${days} days back`;
+      const end = stratDateTxt(shiftDate(dateISO, -1)) || "yesterday";
+      const decided = s && s.decided != null ? Number(s.decided) : null;
+      const training = s && s.training_games != null ? Number(s.training_games) : null;
+      const pickedPct = s && s.pick_rate != null ? stratPct(Number(s.pick_rate)) : "";
+      const passedPct = s && s.pick_rate != null ? stratPct(1 - Number(s.pick_rate)) : "";
+      const hit = s && s.hit_rate != null ? stratPct(Number(s.hit_rate)) : "";
+      const units = s && s.units != null ? `${Number(s.units) >= 0 ? "+" : ""}${num(Number(s.units), 0)} net wins` : "";
+      const summary = humanNote(s && s.summary_line);
+      return { label, rule, days, start, end, decided, training, pickedPct, passedPct, hit, units, summary };
+    }
+    function adaptiveStrategyFamilyRows(s: any) {
+      const fam = String((s && s.rule_family) || "").toLowerCase();
+      const key = String((s && s.rule_key) || "").toLowerCase();
+      const rows = [
+        { k: "single", lab: "Single analyst", txt: "Follow or fade one analyst when that model has been the clearest recent signal." },
+        { k: "pair", lab: "Analyst pairs", txt: "Follow or fade two analysts when their agreement has separated from the field." },
+        { k: "consensus", lab: "Full desk consensus", txt: "Use the board's 3-1 or 4-0 direction when recent results say agreement is predictive." },
+        { k: "split", lab: "Disagreement rules", txt: "Treat split desks as their own pattern instead of forcing every game into a bet." },
+        { k: "pass", lab: "Pass discipline", txt: "Skip games when the best trailing rule does not fire cleanly." },
+      ];
+      return rows.map((r) => {
+        const on = fam === r.k || key.indexOf(r.k) >= 0 || (r.k === "pair" && key.indexOf(":") > 0);
+        return `<div class="ads-fam${on ? " on" : ""}"><span>${on ? "◆" : "◇"}</span><b>${esc(r.lab)}</b><i>${esc(r.txt)}</i></div>`;
+      }).join("");
+    }
+    function adaptiveStrategyExamples(s: any) {
+      const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
+      if (!ex.length) return "";
+      return `<div class="ads-ex">${ex.map((e: any) => {
+        const d = stratDateTxt(e.date) || String(e.date || "").slice(5) || "Prior";
+        const res = String(e.result || "").toLowerCase();
+        return `<span class="${res === "win" ? "won" : res === "loss" ? "lost" : "push"}"><b>${esc(d)}</b><i>${esc(String(e.side || "").toUpperCase())}</i><em>${esc(res || "graded")}</em></span>`;
+      }).join("")}</div>`;
+    }
+    function openAdaptiveStrategySheet(dateISO = curDate) {
+      const s = adaptiveDayStrategy(dateISO);
+      if (!s || s.status === "ERROR") { toast("No day strategy served for this slate yet"); return; }
+      detail = { _adaptive: true };
+      const c = adaptiveStrategySheetCopy(s, dateISO);
+      const dateTxt = stratDateTxt(dateISO) || "this slate";
+      const byline = `${c.start} to ${c.end}`;
+      const volume = [c.training != null ? `${c.training} games checked` : "", c.decided != null ? `${c.decided} times the rule fired` : "", c.pickedPct ? `${c.pickedPct} pick rate` : ""].filter(Boolean).join(" · ");
+      const html = `
+        <div class="sheet-bg" id="sheet-bg"></div>
+        <div class="sheet strategy-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="ads-title">
+          <div class="sh-grab" id="sh-grab"><span></span></div>
+          <div class="sh-head gold">
+            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <div class="sh-sport">Today's strategy · ${esc(dateTxt)}</div>
+            <div class="rcp-title" id="ads-title"><span class="pl-vdia">◆</span>${esc(c.label)}</div>
+            <div class="sh-meta">chosen from the trailing ${c.days} days · ${esc(byline)}</div>
+          </div>
+          <div class="sh-body">
+            <div class="dsec ads-hero">
+              <div class="ads-rule"><span>Use today</span><b>${esc(c.rule)}</b></div>
+              <div class="ads-rec">
+                <span><b>${esc(humanNote(s.record) || "—")}</b><i>record</i></span>
+                <span><b>${esc(c.hit || "—")}</b><i>hit rate</i></span>
+                <span><b class="${Number(s.units || 0) >= 0 ? "pos" : "neg"}">${esc(c.units || "—")}</b><i>edge</i></span>
+              </div>
+              ${volume ? `<div class="ads-volume">${esc(volume)}${c.passedPct ? ` · passed ${esc(c.passedPct)}` : ""}</div>` : ""}
+            </div>
+            <div class="dsec">
+              <div class="dsec-h">Why this rule today</div>
+              <div class="dsec-b rcp">
+                <p>${esc(c.summary || `Over the last ${c.days} days, this was the best trailing rule for the slate.`)}</p>
+                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It looks back over the recent window, tests useful combinations of the four analyst reads, keeps rules that fire often enough to matter, and uses the one with the best recent record for this day.</p>
+                <p>Once the day is locked, that rule is applied forward to every game on the slate. If the pattern is not present, the game can still be a pass.</p>
+              </div>
+            </div>
+            <div class="dsec">
+              <div class="dsec-h">What gets compared</div>
+              <div class="ads-fams">${adaptiveStrategyFamilyRows(s)}</div>
+            </div>
+            <div class="dsec">
+              <div class="dsec-h">Recent evidence</div>
+              <div class="dsec-b rcp">
+                <p>These are examples from the same trailing window the selector used. They are not cherry-picked as today's plays; they show the kind of historical rows behind the rule.</p>
+                ${adaptiveStrategyExamples(s)}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      bindClick("sheet-close", () => closeDetail());
+      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
+      bindSheetDrag($("sheet"), $("sh-grab"));
     }
     function adaptiveStrategyInsight(d: any) {
       const root = adaptiveStrategyRoot(d);
@@ -4863,6 +4963,7 @@ export default function Home() {
       venue: `<svg viewBox="0 0 24 24"><path d="M12 21s-7-5.6-7-11a7 7 0 0 1 14 0c0 5.4-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>`,
       h2h: `<svg viewBox="0 0 24 24"><path d="M7 4v16M17 4v16M7 8h10M7 16h10"/></svg>`,
       form: `<svg viewBox="0 0 24 24"><path d="M4 19V9M9.5 19V5M15 19v-8M20.5 19V8"/></svg>`,
+      eye: `<svg viewBox="0 0 24 24"><path d="M2.8 12s3.4-6 9.2-6 9.2 6 9.2 6-3.4 6-9.2 6-9.2-6-9.2-6z"/><circle cx="12" cy="12" r="2.7"/></svg>`,
     };
     const icon = (name: string, cls = "") => `<span class="eic ${cls}" aria-hidden="true">${IC[name] || IC.trend}</span>`;
     // Match a storyline/fact to its icon by keywords.
@@ -7276,6 +7377,8 @@ export default function Home() {
 
     function bindMeta() {
       bindClick("recchip", () => openRecordBreakdown());
+      bindClick("daystrat-eye", (e: any) => { if (e) e.stopPropagation(); openAdaptiveStrategySheet(curDate); },
+        { optional: "only rendered for MLB/all dates with an adaptive day strategy" });
       // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
       // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
       bindClick("rng-back", () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); },
