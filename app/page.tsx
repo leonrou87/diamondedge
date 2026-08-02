@@ -1914,6 +1914,20 @@ export default function Home() {
       const pred = psRaw && _fin(psRaw.away) != null && _fin(psRaw.home) != null
         ? { away: Number(psRaw.away), home: Number(psRaw.home), source: String(psRaw.source || "ATLAS").toUpperCase() }
         : null;
+      const stRaw = src.adaptive_strategy && typeof src.adaptive_strategy === "object" ? src.adaptive_strategy
+        : src.chief && src.chief.adaptive_strategy && typeof src.chief.adaptive_strategy === "object" ? src.chief.adaptive_strategy
+        : null;
+      const strategy = stRaw
+        ? {
+            label: humanNote(stRaw.label),
+            rule: humanNote(stRaw.plain_english_rule),
+            summary: humanNote(stRaw.summary_line),
+            record: humanNote(stRaw.record),
+            windowDays: stRaw.window_days != null ? Number(stRaw.window_days) : null,
+            units: stRaw.units != null ? Number(stRaw.units) : null,
+            matched: stRaw.game_matched_rule === true,
+          }
+        : null;
       /* THE COHERENCE BLOCK. The chief now reconciles what the desk majority said, what the
          weighted combination said and what ATLAS's predicted score implied against the bet
          that was actually placed — each marked same or opposite, and each explicitly NOT a
@@ -1932,8 +1946,8 @@ export default function Home() {
           }).filter(Boolean)
         : [];
       const coherence = cohRows.length ? { rows: cohRows, note: humanNote(cohRaw && cohRaw.note) } : null;
-      if (!action && !sc && !pred && !coherence) return null;
-      return { action, rationale: humanNote(src.rationale_line), spread: sc, pred, coherence, raw: src };
+      if (!action && !sc && !pred && !coherence && !strategy) return null;
+      return { action, rationale: humanNote(src.rationale_line), spread: sc, pred, coherence, strategy, raw: src };
     }
     // "4–0 OVER · UNANIMOUS" — the consensus headline. Locked mode keeps the count + state
     // but redacts the side (the side is the product).
@@ -2365,6 +2379,16 @@ export default function Home() {
       const predHtml = chief && chief.pred
         ? `<div class="de-row"><span class="de-rk">Predicted final</span><b class="de-rv de-score">${esc(g.away_abbr || "AWY")} ${num(chief.pred.away, 0)} — ${num(chief.pred.home, 0)} ${esc(g.home_abbr || "HOM")}</b><i class="de-rsrc">by ${esc(chief.pred.source)}</i></div>`
         : "";
+      const strat = chief && chief.strategy;
+      const stratMeta = strat
+        ? [strat.summary, strat.rule ? `Rule: ${strat.rule}` : ""].filter(Boolean).join(" ")
+        : "";
+      const stratLabel = strat
+        ? [strat.label || "Adaptive desk rule", strat.record ? `${strat.record}${strat.windowDays ? ` last ${strat.windowDays}d` : ""}` : ""].filter(Boolean).join(" · ")
+        : "";
+      const stratHtml = strat && !locked
+        ? `<div class="de-strat ${strat.matched ? "matched" : "passed"}" title="${esc(stratMeta)}"><span class="de-info" aria-hidden="true">(i)</span><span>${esc(stratLabel)}</span></div>`
+        : "";
       const rat = (chief && chief.rationale) || (sp && sp.rationale) || "";
       // graded verdict — the past-tense sentence, so a finished pick doesn't collapse to a tick
       let verdict = "";
@@ -2381,6 +2405,7 @@ export default function Home() {
         ${locked ? `<div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : ""}
         ${locked ? "" : unobtainableRow(g)}
         ${locked ? "" : deskAgreementRow(g, locked)}
+        ${stratHtml}
         ${rlHtml || predHtml ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
         ${rat && !locked ? `<p class="de-rat">${esc(rat)}</p>` : ""}
         ${locked ? "" : coherenceBlock(chief)}

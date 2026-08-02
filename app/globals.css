@@ -4147,6 +4147,16 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .de-rv.nocall{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--ink3)}
 .de-rv.de-score{letter-spacing:.01em}
 .de-rsrc{font-style:normal;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.1em;color:var(--ink4)}
+.de-strat{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:12px;
+  background:rgba(var(--rimc),.54);border:1px solid rgba(var(--bluec),.16);
+  color:var(--ink2);font-family:var(--sans);font-size:12px;line-height:1.35;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}
+.de-strat.matched{border-color:rgba(var(--greenc),.20)}
+.de-strat.passed{border-color:rgba(var(--tintc),.14)}
+.de-info{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  width:24px;height:18px;border-radius:999px;background:rgba(var(--bluec),.12);
+  color:var(--b3);font-family:var(--disp);font-size:10px;font-weight:800;
+  letter-spacing:.02em}
 .de-rat{font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--ink2);max-width:58ch}
 .de-verdict{font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.45;
   padding-top:9px;border-top:1px solid rgba(var(--tintc),.09)}
