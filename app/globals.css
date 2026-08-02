@@ -2421,12 +2421,13 @@ details.more .more-body{padding-top:12px}
 .feat .pk-count{margin:6px 0 0 2px}
 
 /* pull-to-refresh indicator */
-.ptr-bar{position:fixed;top:-56px;left:50%;margin-left:-72px;width:144px;z-index:400;display:flex;align-items:center;justify-content:center;gap:7px;
-  background:rgba(var(--panec),.94);border:1px solid rgba(var(--rimc),.14);border-radius:999px;padding:9px 14px;box-shadow:0 6px 18px var(--sh5);
-  font-family:var(--sans);font-size:14px;color:var(--ink);opacity:0;pointer-events:none;transition:opacity .15s}
+.ptr-bar{position:fixed;top:-56px;left:50%;margin-left:-74px;width:148px;height:38px;z-index:400;display:flex;align-items:center;justify-content:center;gap:7px;
+  background:rgba(var(--panec),.94);border:1px solid rgba(var(--rimc),.14);border-radius:999px;padding:0 13px;box-shadow:0 6px 18px var(--sh5);
+  font-family:var(--sans);font-size:13px;font-weight:650;color:var(--ink);opacity:0;pointer-events:none;transition:opacity .15s;white-space:nowrap;line-height:1}
 .ptr-bar.show{opacity:1}
 .ptr-bar.go .ptr-ic{color:var(--green,var(--g1));transform:rotate(180deg)}
-.ptr-ic{font-size:16px;transition:transform .2s}
+.ptr-ic{font-size:15px;line-height:1;transition:transform .2s;flex:0 0 auto}
+.ptr-t{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1}
 .ptr-bar.spin .ptr-ic{animation:ptrspin .8s linear infinite}
 @keyframes ptrspin{to{transform:rotate(360deg)}}
 

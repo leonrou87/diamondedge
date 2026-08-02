@@ -11278,7 +11278,7 @@ export default function Home() {
           bar.style.transform = `translateY(${pull}px)`;
           armed = pull >= 70;
           bar.classList.toggle("go", armed);
-          (bar.querySelector(".ptr-t") as any).textContent = armed ? "Release to refresh" : "Pull to refresh";
+          (bar.querySelector(".ptr-t") as any).textContent = armed ? "Release" : "Pull to refresh";
         }, { passive: true });
         document.addEventListener("touchend", () => {
           if (!pulling) return;
