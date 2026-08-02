@@ -2041,6 +2041,8 @@ details.more .more-body{padding-top:12px}
 .lpg-res.push{color:var(--ink2);background:var(--pan2,rgba(var(--tintc),.14))}
 .lpg-detail{margin-top:7px;font-size:16px;color:var(--ink2)}
 .lpg-detail b{color:var(--ink);font-variant-numeric:tabular-nums}
+.lpg-why{margin-top:9px;padding-top:8px;border-top:1px solid var(--line3);font-size:12px;line-height:1.45;color:var(--ink3)}
+.lpg-why b{color:var(--ink);font-weight:800}
 /* ---- LIVE TRACKING READ ("is our pick on course to cash?") ---- */
 .ltrack{padding:12px 15px 13px;border-radius:14px;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--glass-shadow)}
 .ltr-k{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
@@ -3546,6 +3548,7 @@ body.stories-on main{padding:0 !important;max-width:none}
 .sts-chief{display:flex;flex-direction:column;align-items:center;gap:4px;margin:12px auto 0;border-radius:13px;
   padding:10px 16px;max-width:340px}
 .sts-chief b{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.14em;text-transform:uppercase}
+.sts-chief i{font-style:normal;font-family:var(--mono);font-weight:800;font-size:12px;letter-spacing:.03em;color:var(--ink)}
 .sts-chief span{font-family:var(--sans);font-weight:500;font-size:13px;line-height:1.45;color:var(--ink2);text-align:center}
 .sts-chief.ch-play{background:rgba(var(--goldc),.08);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.3)}
 .sts-chief.ch-play b{color:var(--gold)}
@@ -5176,6 +5179,7 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
 .deskag .dag-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.03em;color:var(--ink)}
 .deskag .dag-n{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
 .deskag .dag-note{flex-basis:100%;font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--ink3)}
+.deskag .dag-note b{font-weight:800;color:var(--ink)}
 .deskag.ag-with .dag-k{color:var(--green)}
 .deskag.ag-mixed .dag-k{color:var(--amber)}
 .deskag.ag-against .dag-k{color:var(--blue)}

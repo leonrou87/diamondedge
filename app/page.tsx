@@ -1268,6 +1268,27 @@ export default function Home() {
         .replace(/`/g, "")
         .replace(/\b[a-z0-9]+(?:_[a-z0-9]+)+\b/g, (m) => m.replace(/_/g, " "));
     }
+    // Translate technically-correct backend phrases into the way a bettor would say them.
+    // This keeps generated feed copy renderable without mutating the live JSON.
+    function readerCopy(t: any) {
+      return String(t == null ? "" : t)
+        .replace(/\bNo plate assignment yet,\s*so this is the ballpark on its own:/gi,
+          "The plate umpire has not been posted yet, so ATLAS is using the ballpark by itself:")
+        .replace(/\bThe umpire can still move it\./gi,
+          "The umpire can still change this read.")
+        .replace(/\bI'll take the plate umpire when they post one\./gi,
+          "When the umpire is posted, ATLAS will fold it into this read.")
+        .replace(/\bthat is where the price edge is\./gi,
+          "that is where the number and price are worth a bet.")
+        .replace(/\bon the price edge\b/gi,
+          "because the number and price are worth a bet")
+        .replace(/\bThat disagreement is context,\s*not a veto\s*—\s*no consensus configuration has separated from chance,\s*so it does not move the bet\./gi,
+          "Plain English: the desk reads are useful background, but the ticket is priced separately. We are betting the posted number, not taking a simple analyst vote.")
+        .replace(/\bThat disagreement is context,\s*not a veto\./gi,
+          "Plain English: the desk reads are useful background, but the ticket is priced separately.")
+        .replace(/\bThe split is context,\s*not a veto\./gi,
+          "Plain English: a split desk does not cancel a bet when the number and price are still worth playing.");
+    }
     // Machine codes ("ev_gate", "junk_cell") never reach a reader; contract notes are dropped
     // whole; real phrases ("Strong", "Priced out — no value at the real price") pass through.
     function humanNote(raw: any) {
@@ -1275,7 +1296,7 @@ export default function Home() {
       if (!t) return "";
       if (/^[a-z0-9]+(_[a-z0-9]+)+$/.test(t)) return "";
       if (isDocText(t)) return "";
-      return deIdent(t);
+      return readerCopy(deIdent(t));
     }
     // The spec block, from whichever loaded feed carries it.
     function strategiesSpec() {
@@ -4610,12 +4631,21 @@ export default function Home() {
           const ourDir = bet ? (/under/i.test(String(pk.side)) ? "under" : "over") : "";
           const nWith = ourDir ? g.analysts.filter((a: any) => a.side === ourDir).length : 0;
           const agree = !bet ? "NO_BET" : nWith === 4 ? "ALIGNED" : nWith <= 1 ? "AGAINST" : "MIXED";
+          const ticketTxt = bet ? `${String(pk.side).toLowerCase()}${pk.line != null ? ` ${lineStr(pk.line)}` : ""}${pk.price != null ? ` at ${fmtOdds(pk.price)}` : ""}` : "";
+          const plainWhy = !bet ? ""
+            : agree === "ALIGNED"
+              ? ` The desk points the same way, and ${ticketTxt} still clears the number and price.`
+              : agree === "AGAINST"
+                ? (ourDir === "under"
+                  ? ` The analyst reads say this game can score; the ticket says the posted total is high enough, at this price, to bet under.`
+                  : ` The analyst reads say runs look light; the ticket says the posted total is low enough, at this price, to bet over.`)
+                : ` The desk is split, so this comes down to the number and price on ${ticketTxt}.`;
           g.diamondedge = {
             action: !bet ? "AVOID" : stars >= 3 ? "PLAY" : "LEAN",
             desk_agreement: agree,
             rationale_line: !bet
               ? "No number cleared the bar here, so there is no bet on this game."
-              : `We're taking the ${String(pk.side).toLowerCase()}${pk.line != null ? ` ${lineStr(pk.line)}` : ""}${pk.price != null ? ` at ${fmtOdds(pk.price)}` : ""} (${stars}★) — that is where the price edge is.${agree === "ALIGNED" ? " All four analysts with a read are on the same side." : agree === "AGAINST" ? " The desk disagrees: most of the analysts with a read lean the other way. That disagreement is context, not a veto." : " The desk is split on it. That disagreement is context, not a veto."}`,
+              : `We're taking the ${ticketTxt} (${stars}★) — that is where the number and price are worth a bet.${plainWhy}`,
             spread_call: g.spread && g.spread.side ? { side: g.spread.side, line: g.spread.line, rationale_line: "The run line follows the same read." } : null,
             predicted_score: { away: aw, home: hm, source: "ATLAS" },
           };
@@ -6131,6 +6161,45 @@ export default function Home() {
       const withUs = ourDir ? ans.filter((a: any) => a.dir === ourDir).length : null;
       return { state: st, ...meta, n: ans.length, withUs, ourDir };
     }
+    function deskAgreementWhy(g: any, a: any) {
+      const pl = displayPick(g);
+      const sideTxt = a && a.ourDir ? a.ourDir : pl && /under/i.test(String(pl.side || "")) ? "under" : pl && /over/i.test(String(pl.side || "")) ? "over" : "";
+      const lineTxt = pl && pl.line != null ? ` ${lineStr(pl.line)}` : "";
+      const priceTxt = pl && pl.price != null ? ` at ${fmtOdds(pl.price)}` : "";
+      const ticket = sideTxt ? `${sideTxt}${lineTxt}${priceTxt}` : "the ticket above";
+      const other = sideTxt === "under" ? "over" : sideTxt === "over" ? "under" : "the other way";
+      if (a && a.state === "AGAINST") {
+        if (sideTxt === "under") {
+          return `${a.withUs === 0 && a.n ? `All ${a.n} desk voices lean ${other}, but ` : ""}the ticket is ${ticket}. They are saying this game can score; we are saying this total is high enough, at this price, to bet under.`;
+        }
+        if (sideTxt === "over") {
+          return `${a.withUs === 0 && a.n ? `All ${a.n} desk voices lean ${other}, but ` : ""}the ticket is ${ticket}. They are saying runs look light; we are saying this total is low enough, at this price, to bet over.`;
+        }
+        return "The desk reads lean the other way, but the ticket is priced separately. We are betting the posted number, not taking a simple analyst vote.";
+      }
+      if (a && a.state === "MIXED") {
+        return sideTxt
+          ? `The desk is split, so this comes down to the number: ${ticket} is the side our price says is worth playing.`
+          : "The desk is split. That is background, not a bet by itself.";
+      }
+      if (a && a.state === "ALIGNED") {
+        return sideTxt
+          ? `The desk and the ticket point the same way. The bet still has to clear the number and price: ${ticket}.`
+          : "The desk points the same way as the ticket, but only the ticket above is the bet.";
+      }
+      return "Only the DiamondEdge ticket above is the bet.";
+    }
+    function ticketLabel(pl: any) {
+      if (!pl) return "";
+      const side = String(pl.side || "").trim();
+      const line = pl.line != null && side && !/\d/.test(side) ? ` ${lineStr(pl.line)}` : "";
+      const price = pl.price != null ? ` ${fmtOdds(pl.price)}` : "";
+      return `${side}${line}${price}`.trim();
+    }
+    function deskTicketWhy(g: any) {
+      const a = deskAgreement(g);
+      return a ? deskAgreementWhy(g, a) : "";
+    }
     /* ════════ THE DESK'S CALL, WHICH IS NOT THE BET ════════
        A directional view now exists on EVERY game, whether or not a ticket was written on
        it. "The desk likes the over here, but not at this price" is a normal, common,
@@ -6172,7 +6241,7 @@ export default function Home() {
       return `<div class="deskag ${a.cls}">
         <span class="dag-k">${esc(a.lab)}</span>
         ${count ? `<span class="dag-n">${esc(count)}</span>` : ""}
-        <span class="dag-note">Context, not a veto — only the ticket is a bet.</span>
+        <span class="dag-note"><b>Plain English:</b> ${esc(deskAgreementWhy(g, a))}</span>
       </div>`;
     }
     /* ════════ THE DESK ROW — WHAT THE FOUR SAID, NOT JUST THAT THEY SPOKE ════════
@@ -7504,7 +7573,8 @@ export default function Home() {
           const finalTotal = (gs.score && gs.score.away != null && gs.score.home != null) ? Number(gs.score.away) + Number(gs.score.home) : null;
           const rlab = r === "hit" ? "Hit ✓" : r === "miss" ? "Missed" : "Push";
           const showTot = pl.market === "total" && finalTotal != null;
-          rows.push(`<div class="lp-graded ${r}"><div class="lpg-top"><span class="lpg-lab">The DiamondEdge Pick — graded</span><span class="lpg-res ${r}">${rlab}</span></div><div class="lpg-detail"><b>${esc(pl.side || "")}</b>${showTot ? ` · final total <b>${finalTotal}</b>` : ""}</div></div>`);
+          const why = deskTicketWhy(g);
+          rows.push(`<div class="lp-graded ${r}"><div class="lpg-top"><span class="lpg-lab">The DiamondEdge Pick — graded</span><span class="lpg-res ${r}">${rlab}</span></div><div class="lpg-detail"><b>${esc(ticketLabel(pl) || pl.side || "")}</b>${showTot ? ` · final total <b>${finalTotal}</b>` : ""}</div>${why ? `<div class="lpg-why"><b>Why that was the pick:</b> ${esc(why)}</div>` : ""}</div>`);
         }
       }
       // (a) current game state banner (live only)
@@ -7763,11 +7833,13 @@ export default function Home() {
       const pl = displayPick(g);
       if (isPick(pl)) {
         const st = playState(g, pl);
-        const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
+        const sideTxt = ticketLabel(pl) || (String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : ""));
         const low = isLowConf(pl) ? "low-confidence " : "";
         if (st === "won") bits.push(`Our ${low}pick — <b>${esc(sideTxt)}</b> — cashed.`);
         else if (st === "lost") bits.push(`Our ${low}pick — <b>${esc(sideTxt)}</b> — came up short.`);
         else if (st === "pushed") bits.push(`Our pick — <b>${esc(sideTxt)}</b> — pushed.`);
+        const why = deskTicketWhy(g);
+        if (why) bits.push(`<b>Why that was the pick:</b> ${esc(why)}`);
       }
       const art = gameArticle(g);
       const recapRaw = art && (art as any).recap;
@@ -8184,9 +8256,9 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">Strong / Good / Lean</div>
               <div class="dsec-b rcp">
-                <p><b>◆◆◆ Strong</b> — our best kind of call. Every signal we track fired at full strength.</p>
-                <p><b>◆◆ Good</b> — the same idea, slightly weaker signal.</p>
-                <p><b>◆ Lean</b> — the model likes it, but the edge is thin. Fine to skip.</p>
+                <p><b>◆◆◆ Strong</b> — our best ticket. The DiamondEdge number and the real price both cleared the highest bar.</p>
+                <p><b>◆◆ Good</b> — the same priced-edge idea, with a little less cushion.</p>
+                <p><b>◆ Lean</b> — the ticket has an edge, but it is thin. Fine to skip.</p>
                 <p>Everything else is a <b>PASS</b>. Most games are a pass — that's the discipline that keeps the record honest.</p>
               </div>
             </div>
@@ -8263,7 +8335,7 @@ export default function Home() {
       // expandable to the actual picks. Leans (spread/ML) live in the Lean tier — visibly separated
       // from the totals edge (Strong/Good), so a bare "0–3" reads as "which tier, and normal variance".
       const TIER_META: any = {
-        strong: { lab: "Strong", note: "4–5★ — our highest-conviction calls" },
+        strong: { lab: "Strong", note: "4–5★ — our strongest priced tickets" },
         good: { lab: "Solid", note: "3★ — firmly on the board" },
         lean: { lab: "Lean", note: "1–2★ — the lightest calls, graded all the same" },
       };
@@ -8405,7 +8477,7 @@ export default function Home() {
             <div class="sh-meta">by pick strength, by strategy, live vs backtested · graded against real final scores</div>
           </div>
           <div class="sh-body">
-            <div class="rbt-howread">More stars, more conviction — every pick lands in a tier and gets graded by the final score. Tap a tier to see the exact picks.</div>
+            <div class="rbt-howread">More stars means a stronger DiamondEdge ticket at the posted number and price. The analyst desk can still agree, split, or lean the other way.</div>
             ${block(scopes[0])}
             ${block(scopes[1])}
             ${liveVsBacktest}
@@ -9506,7 +9578,9 @@ export default function Home() {
       const chief = deskChief(g);
       const state = (c && c.state) || "PENDING";
       const sideWord = locked ? "" : String((c && c.side) || "").toUpperCase();
-      const head = state === "UNANIMOUS" ? (sideWord ? `All four say ${sideWord}.` : "All four analysts agree.")
+      const plDir = !locked && pl ? (/under/i.test(String(pl.side || "")) ? "UNDER" : /over/i.test(String(pl.side || "")) ? "OVER" : "") : "";
+      const deskVsTicket = plDir && sideWord && plDir !== sideWord;
+      const head = state === "UNANIMOUS" ? (sideWord ? (deskVsTicket ? `All four say ${sideWord}. Ticket is ${plDir}.` : `All four say ${sideWord}.`) : "All four analysts agree.")
         : state === "MAJORITY" ? `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)}${sideWord ? ` ${sideWord}` : ""} — the desk leans.`
         : state === "SPLIT" ? "The desk is divided." : "The desk convenes soon.";
       const rows = ans.map((a: any) => {
@@ -9516,8 +9590,10 @@ export default function Home() {
           : a.side ? `<b class="sts-dcall ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}</b>` : `<b class="sts-dcall none">—</b>`;
         return `<div class="sts-drow an-${esc(a.key)}">${deskGlyph(a.key, 14)}<span class="sts-dnm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${call}${!hide && a.conv != null ? `<span class="sts-dconv">${Math.round(a.conv * 100)}%</span>` : ""}</div>`;
       }).join("");
+      const ticket = !locked && isBet(pl) ? ticketLabel(pl) : "";
+      const why = !locked ? deskTicketWhy(g) : "";
       const verdict = chief && chief.action
-        ? `<div class="sts-chief ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}"><b>◆ ${chief.action === "AVOID" ? "WE PASS" : chief.action}</b>${chief.rationale ? `<span>${esc(chief.rationale)}</span>` : ""}</div>`
+        ? `<div class="sts-chief ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}"><b>◆ ${chief.action === "AVOID" ? "WE PASS" : chief.action}</b>${ticket ? `<i>Ticket: ${esc(ticket)}</i>` : ""}${(why || chief.rationale) ? `<span>${esc(why || chief.rationale)}</span>` : ""}</div>`
         : "";
       const stCls = state === "UNANIMOUS" ? "unan" : state === "MAJORITY" ? "maj" : "split";
       return `<div class="sts sts-desk cons-${stCls}">
