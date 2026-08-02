@@ -944,67 +944,6 @@ export default function Home() {
     // A real pick of ANY strength (shown on every game — even the slightest lean).
     const isPick = (pl: any) => !!(pl && pl.action === "TAKE" && pl.side);
 
-    /* ═══════════════════ THE PRICING-DEFECT DISCLOSURE (found 2026-07-31) ═══════════════════
-       ONE SWITCH. Set SHOW_PRICE_DEFECT_DISCLOSURE = false and every trace of this disclosure
-       disappears from the product — the record hero, the record-breakdown sheet, the strategy
-       card, the All-picks header, the footer strip and the share text all fall back, byte for
-       byte, to what they rendered before. Nothing else changes: no number anywhere is derived
-       from this block, and no historical figure is ever rewritten by it.
-
-       WHAT IT DISCLOSES. odds_features.py was taking the best price across books at each
-       book's OWN posted line, with no filter to the line the pick was actually made at — so a
-       pick at 8.0 could inherit a better price a book was quoting at 7.5. That inflated price
-       is what the +EV gate evaluated, so the gate was selecting on edge that did not exist.
-       Fixed forward only, 2026-07-31. WRITE-ONCE IS ABSOLUTE: not one historical pick, price
-       or record row was restated. The live record therefore still reads exactly as served —
-       and it UNDERSTATES the loss. Both numbers are stated, in plain language, in the open.
-
-       The served figures below are only fallbacks: every surface prefers the live record it
-       already reads out of the payload, so the disclosure can never drift from the record it
-       sits beside. `executableRoi` is the backend's re-grade of the same picks at prices that
-       were genuinely available, and is the one number that lives only here. */
-    const SHOW_PRICE_DEFECT_DISCLOSURE = true;
-    const PRICE_DEFECT = {
-      foundOn: "2026-07-31",
-      foundTxt: "July 31, 2026",
-      servedWL: "24–33–1",
-      servedRoi: -0.152,
-      executableRoi: -0.187,
-    };
-    // Same glyphs as stratRoi() — the disclosure sits inches from the record it qualifies,
-    // so the two must format a percentage identically or they read as different numbers.
-    const pdRoi = (v: number) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`;
-    // The served side of the disclosure, taken from the live record on screen where possible
-    // so the two can never disagree. `lv` = a headlineStrategyRecord(...).live block.
-    function pdFigures(lv?: any) {
-      const wl = lv && lv.win != null ? `${lv.win}–${lv.loss}${lv.push ? `–${lv.push}` : ""}` : PRICE_DEFECT.servedWL;
-      const roi = lv && lv.roi != null ? Number(lv.roi) : PRICE_DEFECT.servedRoi;
-      return { wl, served: pdRoi(roi), executable: pdRoi(PRICE_DEFECT.executableRoi) };
-    }
-    /* The disclosure itself. Three sizes, same facts, never a tooltip:
-         "full"  — the block that sits under the record hero and in the record sheet
-         "inline"— one visible sentence beside a smaller ROI figure
-         "share" — the sentence appended to any record we hand someone to publish     */
-    function priceDefectNote(kind: "full" | "inline" | "share" = "full", lv?: any) {
-      if (!SHOW_PRICE_DEFECT_DISCLOSURE) return "";
-      const f = pdFigures(lv);
-      if (kind === "share") {
-        return ` Disclosure: a pricing defect found ${PRICE_DEFECT.foundTxt} means some of those picks were graded at prices better than were truly available. The record stands exactly as served (${f.served}); at executable prices it is ${f.executable}.`;
-      }
-      if (kind === "inline") {
-        return `<div class="pdd inline"><span class="pdd-flag">Disclosure</span><span class="pdd-line">A pricing defect found ${esc(PRICE_DEFECT.foundTxt)} graded some of these picks at prices better than were truly available. Served: <b>${esc(f.served)}</b>. At executable prices: <b class="neg">${esc(f.executable)}</b>. Nothing has been restated.</span></div>`;
-      }
-      return `<div class="pdd full">
-        <div class="pdd-k"><span class="pdd-flag">Disclosure</span>The record above understates the loss</div>
-        <p>On <b>${esc(PRICE_DEFECT.foundTxt)}</b> we found a defect in how we read prices: for each pick we were taking the best price across books <b>without checking it was quoted at our own line</b>. A pick at 8.0 could inherit a better price a book was posting at 7.5 — and that inflated price is what our +EV gate judged. Some picks were selected on edge that was never really there, and every one of them was then graded at that same too-good price.</p>
-        <div class="pdd-nums">
-          <span class="pdd-num"><i>${esc(f.served)}</i><em>ROI as served — unchanged</em></span>
-          <span class="pdd-num bad"><i class="neg">${esc(f.executable)}</i><em>ROI at executable prices</em></span>
-        </div>
-        <p class="pdd-tail">The same <b>${esc(f.wl)}</b> either way — this is a price correction, not a re-grade of wins and losses. <b>We have not rewritten a single number.</b> What we published is what we published, and it stays on the page as served. The defect is fixed going forward; the honest figure is the second one.</p>
-      </div>`;
-    }
-
     /* ═══════════ WHY A GAME WAS PASSED — the machine reason, read defensively ═══════════
        The unified feed stamps every pick with `pass_why` (a stable machine code) alongside
        `pass_reason` (the desk's own prose). Absent ⇒ "" and every surface degrades. */
@@ -7818,9 +7757,7 @@ export default function Home() {
       const hr = headlineStrategyRecord(betaData);
       if (hr && hr.live) {
         const since = stratDateTxt(hr.activation);
-        // The disclosure travels WITH the number. A record we hand someone to publish is the
-        // last place it can be left off — so the share text carries it in the same sentence.
-        return `DiamondEdge — every pick star-rated 1–5 and graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.${priceDefectNote("share", hr.live)}`;
+        return `DiamondEdge — every pick star-rated 1–5 and graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.`;
       }
       return "DiamondEdge — every sports pick star-rated 1–5 and graded in the open.";
     }
@@ -8778,7 +8715,6 @@ export default function Home() {
             ${liveVsBacktest}
             ${perStrategy}
             <div class="dsec"><div class="dsec-b rcp"><p><b>Every call freezes before first pitch</b> — the side, the line and the price — and the final score does the judging. The full running record, tier by tier, lives on the Insights tab.</p></div></div>
-            ${priceDefectNote("full", hlLive)}
             <button class="rb-full" id="rb-full">See the full record &amp; charts →</button>
             <button class="rb-share" id="rb-share">Share our record ↗</button>
           </div>
@@ -9084,7 +9020,6 @@ export default function Home() {
             ${stratNumsHtml(lv)}
             ${strategyBarsSvg(lv, r.label)}
             <div class="sgc-axis"><span>hit rate · dashed = break-even 52.4%</span><span>ROI · centre = 0, scale ±25%</span></div>
-            ${r.headline ? priceDefectNote("inline", lv) : ""}
           </div>`
         : `<div class="sgc-live none"><div class="sgc-livek"><span class="sgc-tag live none">Live-served</span></div>
             <div class="sgc-empty">No live-served picks graded yet${act ? ` — activated ${esc(act)}` : ""}. The record starts at 0–0.</div></div>`;
@@ -9382,10 +9317,7 @@ export default function Home() {
       const hr = headlineStrategyRecord(betaData);
       if (hr && hr.live) {
         const since = stratDateTxt(hr.activation);
-        const pd = SHOW_PRICE_DEFECT_DISCLOSURE
-          ? ` A pricing defect found ${PRICE_DEFECT.foundTxt} means the served figure understates the loss: ${pdRoi(PRICE_DEFECT.executableRoi)} at executable prices, nothing restated.`
-          : "";
-        return `Live-served picks, graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}. Backtested history is reported separately.${pd}`;
+        return `Live-served picks, graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}. Backtested history is reported separately.`;
       }
       return `Every pick graded in the open, win or lose.`;
     }
@@ -10737,7 +10669,6 @@ export default function Home() {
           </div>
           <div class="strec-sub">${since ? `Every pick served since ${esc(since)}, when the current pick rule went live` : "Every pick we've actually served"} — graded against the final at the real price. Backtested history is kept separate, below.</div>
         </div>
-        ${priceDefectNote("full", lv)}
         ${combinedBlock}
         ${last7Strip}
         <div class="strec-card">
@@ -10811,7 +10742,7 @@ export default function Home() {
       const lvHr = headlineStrategyRecord(lv) || headlineStrategyRecord(betaData);
       const lvB = lvHr && lvHr.live;
       const recBit = lvB
-        ? `<div class="beta-liverec">Live-served record${lvHr.activation ? ` since ${esc(stratDateTxt(lvHr.activation) || lvHr.activation)}` : ""}: <b>${esc(stratWL(lvB))}</b>${lvB.hit != null ? ` · ${stratPct(lvB.hit)}` : ""}${lvB.roi != null ? ` · ${stratRoi(lvB.roi)} ROI` : ""}</div>${priceDefectNote("inline", lvB)}`
+        ? `<div class="beta-liverec">Live-served record${lvHr.activation ? ` since ${esc(stratDateTxt(lvHr.activation) || lvHr.activation)}` : ""}: <b>${esc(stratWL(lvB))}</b>${lvB.hit != null ? ` · ${stratPct(lvB.hit)}` : ""}${lvB.roi != null ? ` · ${stratRoi(lvB.roi)} ROI` : ""}</div>`
         : ov.n
         ? `<div class="beta-liverec">Season record: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""}</div>`
         : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;

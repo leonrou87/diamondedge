@@ -5299,43 +5299,6 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
   color:var(--ink4);flex:0 0 auto}
 .unob-note{font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink3);text-wrap:pretty}
 
-/* ═══════════════ THE PRICING-DEFECT DISCLOSURE — additive, never a tooltip ═══════════════
-   Sits directly under whatever ROI figure it qualifies. Amber, bordered, full-width and
-   fully open at rest — no <details>, no hover, nothing to discover. */
-.pdd{position:relative;text-align:left;border-radius:var(--r-md);border:1px solid rgba(var(--goldc),.28);
-  background:rgba(var(--goldc),.06);max-width:640px;margin:12px auto 0}
-.pdd.full{padding:16px 17px 15px}
-.pdd.inline{padding:11px 13px;display:flex;flex-direction:column;gap:5px;margin-top:11px}
-/* align-self keeps the pill hugging its text inside the inline variant's column flex —
-   without it the badge stretches the full width of the block and reads as a banner */
-.pdd-flag{display:inline-block;align-self:flex-start;font-family:var(--disp);font-weight:700;font-size:10px;
-  letter-spacing:.18em;text-transform:uppercase;color:#fff;background:var(--amber);border-radius:999px;
-  padding:3px 9px}
-.pdd-k{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:var(--disp);font-weight:700;
-  font-size:15px;letter-spacing:-.005em;color:var(--ink)}
-.pdd.full p{margin:9px 0 0;font-family:var(--sans);font-size:13.5px;line-height:1.62;color:var(--ink2);
-  text-wrap:pretty}
-.pdd.full p b{color:var(--ink)}
-.pdd-line{font-family:var(--sans);font-size:13px;line-height:1.6;color:var(--ink2);text-wrap:pretty}
-.pdd-line b{color:var(--ink);font-family:var(--mono);font-weight:700;font-size:12.5px;
-  font-variant-numeric:tabular-nums}
-.pdd-line b.neg,.pdd-nums .neg{color:var(--red)}
-.pdd-nums{display:flex;gap:9px;margin:13px 0 0;flex-wrap:wrap}
-.pdd-num{flex:1 1 140px;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;
-  background:var(--paper);border:1px solid var(--line3)}
-.pdd-num i{font-style:normal;font-family:var(--mono);font-weight:700;font-size:21px;line-height:1.15;
-  font-variant-numeric:tabular-nums;color:var(--ink)}
-.pdd-num em{font-style:normal;font-family:var(--sans);font-weight:600;font-size:11px;line-height:1.4;
-  color:var(--ink3)}
-.pdd-num.bad{border-color:rgba(var(--redc),.32);background:rgba(var(--redc),.07)}
-.pdd-tail{border-top:1px solid rgba(var(--goldc),.20);padding-top:11px}
-.pdd.full .pdd-tail{margin-top:13px}
-@media(min-width:720px){
-  .pdd.full{padding:20px 22px 18px}
-  .pdd-k{font-size:16.5px}
-  .pdd.full p{font-size:14.5px}
-}
-
 /* ═══════════════ THE RECORD CHIP AS AN OBVIOUS DOOR ═══════════════
    This chip opens the record-breakdown sheet, so it has to LOOK like a door and not like a
    status readout. It gains the gold hairline the rest of the record furniture carries, an
