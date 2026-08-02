@@ -1593,13 +1593,27 @@ export default function Home() {
       if (!top.length) return `<div class="dsec-b rcp"><p>No ranked candidates were served for this day.</p></div>`;
       return `<div class="ads-board">${top.map((r: any, i: number) => {
         const hit = r.hit_rate != null ? stratPct(Number(r.hit_rate)) : "—";
+        const vhit = r.validation_hit_rate != null ? stratPct(Number(r.validation_hit_rate)) : "";
         const score = r.score != null ? num(Number(r.score), 2) : "—";
         return `<div class="ads-cand${i === 0 ? " winner" : ""}">
-          <span class="ads-rank">${i === 0 ? "Live" : `#${i + 1}`}</span>
-          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i>${esc(r.record || "—")} · ${esc(hit)} · score ${esc(score)}</i></span>
+          <span class="ads-rank">${i === 0 ? "Selected #1" : `#${i + 1}`}</span>
+          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i><em>${esc(r.record || "—")} full</em><em>${esc(hit)}</em>${r.validation_record ? `<em>${esc(r.validation_record)} validation${vhit ? ` · ${esc(vhit)}` : ""}</em>` : ""}<em>score ${esc(score)}</em></i></span>
           <span class="ads-famtag">${esc(String(r.rule_family || "").replace(/_/g, " "))}</span>
         </div>`;
       }).join("")}</div>`;
+    }
+    function adaptiveStrategySelectionLine(s: any, c: any) {
+      const top = s && s.strategy_research && Array.isArray(s.strategy_research.top_candidates)
+        ? s.strategy_research.top_candidates : [];
+      const selected = top.find((r: any) => r && r.rule_key === s.rule_key) || top[0] || null;
+      const score = selected && selected.score != null ? num(Number(selected.score), 2) : null;
+      const full = selected && selected.record ? selected.record : humanNote(s.record);
+      const hit = selected && selected.hit_rate != null ? stratPct(Number(selected.hit_rate)) : c.hit;
+      const val = selected && selected.validation_record ? selected.validation_record : s.validation_record;
+      const vhit = selected && selected.validation_hit_rate != null ? stratPct(Number(selected.validation_hit_rate)) : (s.validation_hit_rate != null ? stratPct(Number(s.validation_hit_rate)) : "");
+      const fired = c.decided != null ? `${c.decided} fires` : "enough fires";
+      const tail = [full ? `${full} full-window` : "", hit || "", val ? `${val} validation${vhit ? ` (${vhit})` : ""}` : "", score ? `score ${score}` : ""].filter(Boolean).join(" · ");
+      return `Chosen because it ranked #1 for this slate after sample-size, pick-rate and validation checks: ${tail || fired}.`;
     }
     function adaptiveStrategyExamples(s: any) {
       const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
@@ -1641,6 +1655,7 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">Why this rule today</div>
               <div class="dsec-b rcp">
+                <p>${esc(adaptiveStrategySelectionLine(s, c))}</p>
                 <p>${esc(c.summary || `Over the last ${c.days} days, this was the best trailing rule for the slate.`)}</p>
                 ${s.selected_reason ? `<p>${esc(humanNote(s.selected_reason))}</p>` : ""}
                 <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It looks back over the recent window, tests useful combinations of the four analyst reads, keeps rules that fire often enough to matter, and uses the one with the best recent record for this day.</p>
@@ -1649,10 +1664,12 @@ export default function Home() {
             </div>
             <div class="dsec">
               <div class="dsec-h">What gets compared</div>
+              <div class="ads-note">Counts are candidate rules tested in the same trailing window. The highlighted family produced today's selected rule.</div>
               <div class="ads-fams">${adaptiveStrategyFamilyRows(s)}</div>
             </div>
             <div class="dsec">
               <div class="dsec-h">Top candidates</div>
+              <div class="ads-note">Ranked by the nested validation score for this slate, not by all-time return.</div>
               ${adaptiveStrategyLeaderboard(s)}
             </div>
             <div class="dsec">
@@ -10522,7 +10539,7 @@ export default function Home() {
     let betaTab: "today" | "record" | "games" = "today";
     let betaShown = 24;        // games list pagination
     let betaOnlyTakes = true;  // default: games where the model actually made a pick
-    const UNIFIED_HISTORY_MIN_UTC = "2026-08-02T16:33:05Z";
+    const UNIFIED_HISTORY_MIN_UTC = "2026-08-02T18:43:22Z";
     function feedStampMs(src: any) {
       const t = Date.parse(String((src && (src.generated_utc || src.generated_at || src.as_of)) || ""));
       return Number.isFinite(t) ? t : 0;

@@ -8,7 +8,7 @@ set -euo pipefail
 DIR="$HOME/Desktop/diamondedge"
 FILE="$DIR/public/picks_unified.json"
 STAMP="$DIR/scripts/.unified_history_sync.sha"
-TMP="$(mktemp /tmp/unified_history_sync_body.XXXXXX.json)"
+TMP="$(mktemp "${TMPDIR:-/tmp}/unified_history_sync_body.XXXXXX")"
 trap 'rm -f "$TMP"' EXIT
 [ -f "$FILE" ] || exit 0
 set -a; source "$HOME/.kytepush-platform.env"; set +a

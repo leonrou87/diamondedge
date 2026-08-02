@@ -17,7 +17,7 @@ STAMP="$DIR/scripts/.unified_live_sync.sha"
 # it — a hard cliff with no warning shoulder, and one the sync would have walked
 # into on its own as the board grew. sync_unified_history.sh has always streamed
 # from a file for exactly this reason; this now matches it.
-TMP="$(mktemp /tmp/unified_live_sync_body.XXXXXX.json)"
+TMP="$(mktemp "${TMPDIR:-/tmp}/unified_live_sync_body.XXXXXX")"
 trap 'rm -f "$TMP"' EXIT
 [ -f "$FILE" ] || exit 0
 # creds: read from disk, never printed
