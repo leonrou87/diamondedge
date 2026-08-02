@@ -718,7 +718,8 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 @keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
 
 /* ---- row 2: the two teams. Crest · abbreviation · score. ---- */
-.tl-teams,.t-teams{display:flex;flex-direction:column;gap:5px;min-width:0}
+.tl-teams,.t-teams{display:flex;flex-direction:column;gap:7px;min-width:0}
+.t-teamblock{display:flex;flex-direction:column;gap:1px;min-width:0}
 .t-row{display:flex;align-items:center;gap:7px;min-width:0;min-height:26px}
 /* The crest sits on a neutral chip, NOT on a dark plate. The old rule filled it with
    near-black so white-marked logos would show; on paper that plate is the loudest
@@ -726,12 +727,17 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .t-crest{flex-shrink:0;display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line3)}
 .t-crest img,.t-crest .crest{width:19px;height:19px;object-fit:contain}
 .t-crest .crest{border-radius:5px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:10px;color:var(--ink2);background:transparent}
-.t-ab{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.015em;color:var(--ink);flex-shrink:0;overflow:hidden;text-overflow:ellipsis}
+.t-id{display:flex;align-items:baseline;gap:5px;min-width:0;overflow:hidden}
+.t-ab{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.015em;color:var(--ink);flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.t-rec{display:inline-flex;align-items:baseline;gap:3px;min-width:0;flex:1 1 auto;
+  font-family:var(--mono);font-weight:600;font-size:10.5px;letter-spacing:-.02em;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-rec i{font-style:normal;font-family:var(--disp);font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--ink4)}
+.t-rec i.hot{color:var(--green)}
 .t-rsp{flex:1;min-width:1px}
 .t-score{font-family:var(--mono);font-weight:700;font-size:17px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;flex-shrink:0;text-align:right}
 .t-score.live{color:var(--ink)}
 .t-row.winner .t-ab{font-weight:800}
-.t-row.loser .t-ab,.t-row.loser .t-score{color:var(--ink3)}
+.t-row.loser .t-ab,.t-row.loser .t-score,.t-teamblock.loser .t-rec,.t-teamblock.loser .t-pitchsub{color:var(--ink3)}
 .t-row.loser .t-crest{opacity:.55}
 
 /* ---- row 3: THE VERDICT — the tile's whole reason to exist ----
@@ -2668,10 +2674,10 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
    a gold bloom under a floating capsule. The dock is a solid tab bar now; see THE DOCK.) */
 
 /* ══ (10) PITCHERS UNDER TEAMS — quiet last-name + ERA line under each team row ══ */
-.t-pitchsub{display:flex;align-items:baseline;gap:6px;min-width:0;margin:-3px 0 0 40px;padding:0;
-  font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--ink3);cursor:pointer}
+.t-pitchsub{display:flex;align-items:baseline;gap:5px;min-width:0;margin:-2px 0 0 34px;padding:0;
+  font-family:var(--sans);font-size:10.5px;line-height:1.25;color:var(--ink4);cursor:pointer}
 .t-pitchsub .tps-nm{font-weight:600;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.t-pitchsub .tps-era{font-family:var(--sans);font-weight:600;font-size:12px;color:var(--ink4);white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
+.t-pitchsub .tps-era{font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink4);white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
 .t-pitchsub:hover .tps-nm{color:var(--ink2)}
 
 /* ══ (7) TOP PICKS — #1 full-width cinematic hero + #2–#5 compact 2×2 grid ══ */

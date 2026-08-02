@@ -5203,8 +5203,23 @@ export default function Home() {
       if (d && d.by_game) { pitchersData = d; pitchersAt = Date.now(); try { renderSlate(true); } catch {} }
       return pitchersData;
     }
-    const pitcherFeedFor = (g: any, side: "away" | "home") =>
-      (pitchersData && pitchersData.by_game && pitchersData.by_game[String(g.game_id)] || {})[side] || null;
+    function gameFeedKeys(g: any) {
+      const keys: string[] = [];
+      const add = (v: any) => { const s = String(v == null ? "" : v).trim(); if (s && !keys.includes(s)) keys.push(s); };
+      add(g && g.game_pk);
+      add(g && g.game_id);
+      const tail = String((g && g.game_id) || "").match(/(\d{5,})$/);
+      if (tail) add(tail[1]);
+      return keys;
+    }
+    function pitcherFeedFor(g: any, side: "away" | "home") {
+      if (!pitchersData || !pitchersData.by_game) return null;
+      for (const k of gameFeedKeys(g)) {
+        const row = pitchersData.by_game[k];
+        if (row && row[side]) return row[side];
+      }
+      return null;
+    }
 
     // ---- TEAM RECORDS feed (teams_v4) — season record + streak per team abbr ----
     // Schema: { by_team: { ABBR: { record:"52-38", pct, last10:"6-4", streak:"W3", ... } } }.
@@ -5224,8 +5239,10 @@ export default function Home() {
     // form. Returns { rec, recIsL15, streak, hot } | null (same shape teamForm returns) so the
     // tile renderer can consume either source uniformly.
     function teamRecordFor(g: any, which: "home" | "away") {
-      const ab = which === "away" ? g.away_abbr : g.home_abbr;
-      const t = teamsData && teamsData.by_team ? (teamsData.by_team[ab] || teamsData.by_team[String(ab || "").toUpperCase()]) : null;
+      const raw = which === "away" ? (g.away_abbr || mlbAbbr(g.away_name || g.away)) : (g.home_abbr || mlbAbbr(g.home_name || g.home));
+      const ab = String(raw || "").toUpperCase();
+      const aliases = ab === "CWS" ? [ab, "CHW"] : ab === "CHW" ? [ab, "CWS"] : ab === "ATH" ? [ab, "OAK"] : ab === "OAK" ? [ab, "ATH"] : [ab];
+      const t = teamsData && teamsData.by_team ? aliases.map((k) => teamsData.by_team[k]).find(Boolean) : null;
       if (t && typeof t === "object") {
         const rec = typeof t.record === "string" && /^\d+-\d+$/.test(t.record) ? t.record : null;
         const streak = typeof t.streak === "string" && /^[WL]\d+$/.test(t.streak) ? t.streak : null;
@@ -5270,7 +5287,7 @@ export default function Home() {
       e.stopPropagation(); e.preventDefault();
       const [gid, side] = String(el.dataset.pitcher).split("|");
       await loadPitchers();
-      const P = (pitchersData && pitchersData.by_game && pitchersData.by_game[gid] || {})[side];
+      const P = pitcherFeedFor({ game_id: gid, game_pk: gid }, side as "away" | "home");
       if (P) openPitcherSheet(P);
     }, true);
 
@@ -6144,20 +6161,33 @@ export default function Home() {
       return `<span class="statechip pre">${dayTag}${esc(t)}</span>`;
     }
     function tileStartChip(g: any, gs: any) {
-      if (!g || !gs || gs.kind !== "pre") return "";
+      if (!g || !gs) return "";
       const t = gs.si && gs.si.hasTime && gs.si.time ? String(gs.si.time).replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : "";
-      return t ? `<span class="tl-start">Start ${esc(t)}</span>` : "";
+      if (!t) return "";
+      const pre = gs.kind === "pre" ? "Start" : gs.kind === "live" ? "Started" : "";
+      return `<span class="tl-start">${pre ? `${pre} ` : ""}${esc(t)}</span>`;
     }
-    // A scores-app team line: logo · ABBR · form(L15 + streak) · this side's spread(px) + ML · SCORE.
-    // The odds live WITH the team so the card needs no separate stacked market strip.
-    // Pre-game shows odds; live/final shows the score. Everything degrades independently.
-    /* ONE TEAM LINE on a board tile: crest · abbreviation · (score once the game starts).
-       CUT (2026-07-31 light rewrite): the win-loss record and the hot/cold streak chip that
-       used to ride every row. Two tiles now sit side by side in a 168px column, and a
-       reader scanning a board is not comparing season records — they are finding a game.
-       Both still render in full on the game page hero. */
+    function tilePitcherMeta(g: any, which: "away" | "home") {
+      if (!g || String(g.sport || "").toLowerCase() !== "mlb") return "";
+      const pit = (g.pregame_intel && g.pregame_intel.pitchers) || {};
+      const served = pit[which] || {};
+      const fd = pitcherFeedFor(g, which);
+      const name = served.name || (fd && fd.name);
+      if (!name) return "";
+      const era = served.era != null ? served.era : (fd && fd.era != null ? fd.era : null);
+      const throws = served.throws || (fd && fd.throws);
+      const bits = [`${throws ? `${String(throws).toUpperCase()}HP ` : ""}${String(name).trim()}`, era != null ? `${num(era, 2)} ERA` : ""].filter(Boolean);
+      const key = gameFeedKeys(g)[0] || String(g.game_id || "");
+      return `<span class="t-pitchsub" data-pitcher="${esc(key)}|${which}" role="button" tabindex="0"><span class="tps-nm">${esc(bits[0])}</span>${bits[1] ? `<span class="tps-era">${esc(bits[1])}</span>` : ""}</span>`;
+    }
+    /* ONE TEAM LINE on a board tile: crest · abbreviation · record/streak · score once
+       started. MLB also gets the probable starter + ERA beneath the team in tiny type:
+       enough matchup context for the board without turning the tile back into a preview. */
     function tileRow(g: any, which: "away" | "home", gs: any, hideScore = false) {
       const ab = which === "away" ? g.away_abbr : g.home_abbr;
+      const f = teamRecordFor(g, which);
+      const rec = f && f.rec ? `<span class="t-rec">${esc(f.rec)}${f.streak ? `<i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : "";
+      const pitcher = tilePitcherMeta(g, which);
       const sc = gs.score;
       const started = gs.kind !== "pre";
       let scoreHtml = "", winner = false, loser = false;
@@ -6168,11 +6198,14 @@ export default function Home() {
         loser = gs.kind === "final" && mine < other;
         if (!hideScore) scoreHtml = `<span class="t-score${gs.kind === "live" ? " live" : ""}">${num(mine, 0)}</span>`;
       }
-      return `<div class="t-row ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
-        <span class="t-crest">${gCrest(g, which)}</span>
-        <span class="t-ab">${esc(ab)}</span>
-        <span class="t-rsp"></span>
-        ${scoreHtml}
+      return `<div class="t-teamblock ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
+        <div class="t-row ${winner ? "winner" : ""} ${loser ? "loser" : ""}">
+          <span class="t-crest">${gCrest(g, which)}</span>
+          <span class="t-id"><span class="t-ab">${esc(ab)}</span>${rec}</span>
+          <span class="t-rsp"></span>
+          ${scoreHtml}
+        </div>
+        ${pitcher}
       </div>`;
     }
 
