@@ -5637,7 +5637,7 @@ export default function Home() {
     // feed is still in flight — dark shimmer skeletons hold the space until the day's
     // load actually resolves (empty OR full). True until the first loadDay settles.
     let dayLoading = true;
-    let newsMode: "stories" | "grid" = (() => { try { return localStorage.getItem("de_newsmode") === "grid" ? "grid" : "stories"; } catch { return "stories"; } })();
+    let newsMode: "stories" | "grid" = (() => { try { return localStorage.getItem("de_newsmode_v2") === "stories" ? "stories" : "grid"; } catch { return "grid"; } })();
     let newsFeed: any = null;       // live sports-news feed (news_feed key, ~20-min refresh)
     let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
     let indexData: any = null;      // pregame_picks_index
@@ -9445,6 +9445,22 @@ export default function Home() {
         <h3 class="nf-title">${esc(s.title || s.headline)}</h3>
         ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(cleanBlurb(s.dek || s.summary))}</p>` : ""}</div></a>`;
     }
+    function newsMiniStory(s: any, key = "", tone = "") {
+      if (!s || !(s.headline || s.title)) return "";
+      const lab = esc((SPORT_LABEL[s.sport] || s.sport || "Story").toUpperCase());
+      const sc = esc(String(s.sport || "gen").toLowerCase().replace(/[^a-z]/g, ""));
+      const gid = s.angle && typeof s.angle === "object" ? s.angle.game_id : null;
+      const g = gid ? findGameLive(gid) : null;
+      const crestRow = g ? `<span class="nf-vs-row">${gCrest(g, "away", "nf-crest")}<span class="nf-vs-x">vs</span>${gCrest(g, "home", "nf-crest")}</span>` : "";
+      const mline = s.angle && typeof s.angle === "object" && s.angle.matchup ? esc(String(s.angle.matchup)) : "";
+      const photo = s.image_url
+        ? `<img class="nf-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onload="if(!this.naturalWidth||this.naturalWidth<180){this.classList.add('bad')}" onerror="this.classList.add('bad')">`
+        : "";
+      return `<a class="nf-mini ${esc(tone)}" href="#" data-nf="${esc(key)}" rel="noopener">
+        <span class="nf-mini-img nf-img nf-gen s-${sc}">${crestRow || `<span class="nf-gen-lab">${lab}</span>`}${mline ? `<span class="nf-gen-mu">${mline}</span>` : ""}${photo}</span>
+        <span class="nf-mini-body"><i>${lab}</i><b>${esc(s.title || s.headline)}</b></span>
+      </a>`;
+    }
     // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
     // render and the article reader's prev/next nav so keys/order always agree.
     function newsDedupedHeadlines(): any[] {
@@ -9475,8 +9491,11 @@ export default function Home() {
         : (updTxt ? `<span class="nf-upd">Updated ${esc(updTxt)}</span>` : "");
       return `<section class="newsfront">
         <div class="nf-head"><span class="nf-lab">Around the league</span>${head}</div>
-        ${newsStory(nf.lead, true, "L")}
-        ${hl.length ? `<div class="nf-list">${hl.map((s) => newsStory(s, false, String((nf.headlines || []).indexOf(s)))).join("")}</div>` : ""}
+        <div class="nf-topline">
+          ${newsStory(nf.lead, true, "L")}
+          ${hl.length ? `<div class="nf-momentum">${hl.slice(0, 3).map((s, i) => newsMiniStory(s, String((nf.headlines || []).indexOf(s)), i === 0 ? "hot" : i === 1 ? "move" : "watch")).join("")}</div>` : ""}
+        </div>
+        ${hl.length > 3 ? `<div class="nf-list">${hl.slice(3).map((s) => newsStory(s, false, String((nf.headlines || []).indexOf(s)))).join("")}</div>` : ""}
       </section>`;
     }
     // Resolve a story card back to its object, then open OUR article reader.
@@ -9646,7 +9665,7 @@ export default function Home() {
     }
     function setNewsMode(m: "stories" | "grid") {
       newsMode = m;
-      try { localStorage.setItem("de_newsmode", m); } catch {}
+      try { localStorage.setItem("de_newsmode_v2", m); } catch {}
       if (m !== "stories") stopStories();
       todayFresh = false;
       renderToday();
@@ -10154,7 +10173,8 @@ export default function Home() {
       const headDek = ""; // the read lives in the hero + game page; the nameplate stays one clean line
       view.innerHTML = `
         <div class="news">
-          <div class="masthead lead">
+          ${newsFront() || ""}
+          <div class="masthead lead board-head">
             <div class="mh-kicker"><span class="lk-tag">DiamondEdge Desk</span><button class="st-modebtn" id="st-storiesbtn" aria-label="Switch to stories view">▸ Stories</button></div>
             <h2 class="lead-head">${esc(tightHead)}</h2>
             ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
@@ -10166,7 +10186,6 @@ export default function Home() {
           ${nextUpBanner()}
           <section class="ng-lead front-hero">${leadStory}</section>
           ${flag2 ? `<section class="ng-lead front-hero second">${flag2}</section>` : ""}
-          ${newsFront() ? `<div class="front-wire">${newsFront()}</div>` : ""}
           ${socialShareBar()}
           <div class="news-foot">${esc(recordStrip())}</div>
         </div>`;
@@ -11521,7 +11540,7 @@ export default function Home() {
       (() => {
         let sy = 0, pulling = false, armed = false;
         const bar = document.createElement("div");
-        bar.className = "ptr-bar"; bar.innerHTML = `<span class="ptr-ic">↻</span><span class="ptr-t">Pull to refresh</span>`;
+        bar.className = "ptr-bar"; bar.innerHTML = `<span class="ptr-ring"><span class="ptr-ic">↻</span></span><span class="ptr-t">Pull down</span><span class="ptr-meter"><i></i></span>`;
         document.body.appendChild(bar);
         const scroller = () => document.scrollingElement || document.documentElement;
         document.addEventListener("touchstart", (e: any) => {
@@ -11533,10 +11552,11 @@ export default function Home() {
           if (dy <= 0 || scroller().scrollTop > 0) { bar.style.transform = ""; bar.classList.remove("show", "go"); armed = false; return; }
           const pull = Math.min(110, dy * 0.55);
           bar.classList.add("show");
+          (bar as any).style.setProperty("--ptrp", String(Math.min(1, pull / 76)));
           bar.style.transform = `translateY(${pull}px)`;
           armed = pull >= 70;
           bar.classList.toggle("go", armed);
-          (bar.querySelector(".ptr-t") as any).textContent = armed ? "Release" : "Pull to refresh";
+          (bar.querySelector(".ptr-t") as any).textContent = armed ? "Let go" : "Pull down";
         }, { passive: true });
         document.addEventListener("touchend", () => {
           if (!pulling) return;
