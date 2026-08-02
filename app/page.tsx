@@ -1563,17 +1563,43 @@ export default function Home() {
     function adaptiveStrategyFamilyRows(s: any) {
       const fam = String((s && s.rule_family) || "").toLowerCase();
       const key = String((s && s.rule_key) || "").toLowerCase();
+      const research = s && s.strategy_research;
+      const win = research && research.windows && research.windows[String(s.window_days || "")];
+      const counts = (win && win.families) || {};
+      const countFor = (keys: string[]) => keys.reduce((sum, k) => sum + Number(counts[k] || 0), 0);
+      const countTag = (keys: string[]) => {
+        const n = countFor(keys);
+        return n ? `<em>${n}</em>` : "";
+      };
       const rows = [
-        { k: "single", lab: "Single analyst", txt: "Follow or fade one analyst when that model has been the clearest recent signal." },
-        { k: "pair", lab: "Analyst pairs", txt: "Follow or fade two analysts when their agreement has separated from the field." },
-        { k: "consensus", lab: "Full desk consensus", txt: "Use the board's 3-1 or 4-0 direction when recent results say agreement is predictive." },
-        { k: "split", lab: "Disagreement rules", txt: "Treat split desks as their own pattern instead of forcing every game into a bet." },
-        { k: "pass", lab: "Pass discipline", txt: "Skip games when the best trailing rule does not fire cleanly." },
+        { keys: ["single"], lab: "Single analyst", txt: "Follow or fade one analyst when that model has been the clearest recent signal." },
+        { keys: ["pair", "split_pair"], lab: "Analyst pairs", txt: "Follow, fade, or isolate two-analyst split patterns when they have separated from the field." },
+        { keys: ["group_agree"], lab: "Analyst blocks", txt: "Use 2- or 3-model blocks, not just one fixed pair." },
+        { keys: ["vote_count"], lab: "Vote counts", txt: "Treat 4-0, 3-1 and 2-2 boards as different betting situations." },
+        { keys: ["signature"], lab: "Desk shapes", txt: "Test exact four-model formations, so an OVER can still be faded when that shape has been poor." },
+        { keys: ["desk_prob", "majority_prob_disagree"], lab: "Probability gaps", txt: "Compare the vote count against the analysts' stated probabilities and only fire when the gap matters." },
+        { keys: ["weighted_form"], lab: "Form weights", txt: "Weight each analyst by its recent results, then pass when the blended vote is thin." },
+        { keys: ["prob_weighted"], lab: "Probability weights", txt: "Use each analyst's stated probability, with recent right/wrong probability behavior setting the weights." },
+        { keys: ["stacked_rules"], lab: "Stacked models", txt: "Combine several positive trailing rules. Researched now; held out of live selection until independently validated." },
       ];
       return rows.map((r) => {
-        const on = fam === r.k || key.indexOf(r.k) >= 0 || (r.k === "pair" && key.indexOf(":") > 0);
-        return `<div class="ads-fam${on ? " on" : ""}"><span>${on ? "◆" : "◇"}</span><b>${esc(r.lab)}</b><i>${esc(r.txt)}</i></div>`;
+        const on = r.keys.includes(fam) || r.keys.some((k) => key.indexOf(k) >= 0);
+        return `<div class="ads-fam${on ? " on" : ""}"><span>${on ? "◆" : "◇"}</span><b>${esc(r.lab)}${countTag(r.keys)}</b><i>${esc(r.txt)}</i></div>`;
       }).join("");
+    }
+    function adaptiveStrategyLeaderboard(s: any) {
+      const top = s && s.strategy_research && Array.isArray(s.strategy_research.top_candidates)
+        ? s.strategy_research.top_candidates.slice(0, 6) : [];
+      if (!top.length) return `<div class="dsec-b rcp"><p>No ranked candidates were served for this day.</p></div>`;
+      return `<div class="ads-board">${top.map((r: any, i: number) => {
+        const hit = r.hit_rate != null ? stratPct(Number(r.hit_rate)) : "—";
+        const score = r.score != null ? num(Number(r.score), 2) : "—";
+        return `<div class="ads-cand${i === 0 ? " winner" : ""}">
+          <span class="ads-rank">${i === 0 ? "Live" : `#${i + 1}`}</span>
+          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i>${esc(r.record || "—")} · ${esc(hit)} · score ${esc(score)}</i></span>
+          <span class="ads-famtag">${esc(String(r.rule_family || "").replace(/_/g, " "))}</span>
+        </div>`;
+      }).join("")}</div>`;
     }
     function adaptiveStrategyExamples(s: any) {
       const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
@@ -1616,6 +1642,7 @@ export default function Home() {
               <div class="dsec-h">Why this rule today</div>
               <div class="dsec-b rcp">
                 <p>${esc(c.summary || `Over the last ${c.days} days, this was the best trailing rule for the slate.`)}</p>
+                ${s.selected_reason ? `<p>${esc(humanNote(s.selected_reason))}</p>` : ""}
                 <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It looks back over the recent window, tests useful combinations of the four analyst reads, keeps rules that fire often enough to matter, and uses the one with the best recent record for this day.</p>
                 <p>Once the day is locked, that rule is applied forward to every game on the slate. If the pattern is not present, the game can still be a pass.</p>
               </div>
@@ -1623,6 +1650,10 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">What gets compared</div>
               <div class="ads-fams">${adaptiveStrategyFamilyRows(s)}</div>
+            </div>
+            <div class="dsec">
+              <div class="dsec-h">Top candidates</div>
+              ${adaptiveStrategyLeaderboard(s)}
             </div>
             <div class="dsec">
               <div class="dsec-h">Recent evidence</div>
@@ -10491,6 +10522,11 @@ export default function Home() {
     let betaTab: "today" | "record" | "games" = "today";
     let betaShown = 24;        // games list pagination
     let betaOnlyTakes = true;  // default: games where the model actually made a pick
+    const UNIFIED_HISTORY_MIN_UTC = "2026-08-02T16:33:05Z";
+    function feedStampMs(src: any) {
+      const t = Date.parse(String((src && (src.generated_utc || src.generated_at || src.as_of)) || ""));
+      return Number.isFinite(t) ? t : 0;
+    }
     async function loadBeta() {
       if (betaData) return betaData;
       // FRESH source = Supabase (slate_snapshots key 'picks_unified'), synced every cycle from
@@ -10499,10 +10535,11 @@ export default function Home() {
       // all-PASS" bug: the static file only updated on git push, so recent days went missing.)
       let fresh: any = null;
       try { fresh = await Promise.race([snap("picks_unified"), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
-      if (!fresh || !fresh.games) {
+      if (!fresh || !fresh.games || feedStampMs(fresh) < feedStampMs({ generated_utc: UNIFIED_HISTORY_MIN_UTC })) {
         const r = await fetch(`/picks_unified.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
         if (!r.ok) throw new Error("history fetch " + r.status);
-        fresh = await r.json();
+        const bundled = await r.json();
+        if (!fresh || !fresh.games || feedStampMs(bundled) >= feedStampMs(fresh)) fresh = bundled;
       }
       betaData = applyDeskMock(fresh);
       return betaData;

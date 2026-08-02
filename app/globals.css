@@ -420,14 +420,32 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .ads-fam.on{background:rgba(var(--goldc),.1);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.22);color:var(--ink2)}
 .ads-fam span{font-family:var(--disp);font-weight:800;color:var(--golddeep)}
 .ads-fam b{font-family:var(--disp);font-weight:750;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.ads-fam b em{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:17px;margin-left:7px;padding:0 6px;border-radius:999px;
+  background:rgba(255,255,255,.68);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.14);
+  font-family:var(--mono);font-size:10.5px;font-style:normal;letter-spacing:0;color:var(--ink4);vertical-align:1px}
+.ads-fam.on b em{background:rgba(var(--goldc),.14);color:var(--golddeep);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.22)}
 .ads-fam i{font-style:normal;font-family:var(--sans);font-size:13px;line-height:1.4;color:var(--ink3)}
+.ads-board{display:flex;flex-direction:column;gap:7px}
+.ads-cand{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:9px;padding:9px 10px;border-radius:12px;
+  background:rgba(255,255,255,.58);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.12),0 8px 18px rgba(25,35,58,.04)}
+.ads-cand.winner{background:linear-gradient(135deg,rgba(var(--bluec),.095),rgba(var(--goldc),.105));
+  box-shadow:inset 0 0 0 1px rgba(var(--bluec),.16),0 10px 22px rgba(var(--bluec),.075)}
+.ads-rank{display:inline-flex;align-items:center;justify-content:center;height:24px;border-radius:999px;background:rgba(var(--tintc),.055);
+  box-shadow:inset 0 0 0 1px rgba(var(--rimc),.12);font-family:var(--disp);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink4);white-space:nowrap}
+.ads-cand.winner .ads-rank{background:var(--blue);color:white;box-shadow:0 5px 12px rgba(var(--bluec),.18)}
+.ads-cmain{display:flex;flex-direction:column;min-width:0;gap:2px}
+.ads-cmain b{font-family:var(--sans);font-size:13px;line-height:1.22;font-weight:700;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ads-cmain i{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ads-famtag{justify-self:end;max-width:118px;padding:5px 8px;border-radius:999px;background:rgba(var(--tintc),.055);
+  box-shadow:inset 0 0 0 1px rgba(var(--rimc),.12);font-family:var(--disp);font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ads-ex{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
 .ads-ex span{display:flex;align-items:center;gap:6px;min-width:0;padding:7px 8px;border-radius:10px;background:rgba(var(--tintc),.05);
   font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink3)}
 .ads-ex span.won{background:var(--greenbg);color:var(--green)}.ads-ex span.lost{background:var(--missbg);color:var(--r3)}
 .ads-ex b{font-family:var(--mono);font-weight:700;color:currentColor;white-space:nowrap}.ads-ex i{font-style:normal;font-weight:700;color:currentColor}
 .ads-ex em{font-style:normal;margin-left:auto;color:currentColor;opacity:.72;text-transform:capitalize}
-@media(max-width:520px){.ads-rec{grid-template-columns:1fr}.ads-fam{grid-template-columns:18px 1fr}.ads-fam i{grid-column:2}.ads-ex{grid-template-columns:1fr}}
+@media(max-width:520px){.ads-rec{grid-template-columns:1fr}.ads-fam{grid-template-columns:18px 1fr}.ads-fam i{grid-column:2}.ads-cand{grid-template-columns:42px minmax(0,1fr)}.ads-famtag{grid-column:2;justify-self:start;max-width:100%}.ads-ex{grid-template-columns:1fr}}
 /* (.mr-sp — the meta row's flex spacer — went with the duplicate "All picks · record"
    button; the how-it-works link keeps to the right on its own margin-left:auto now.) */
 .recchip{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px;color:var(--ink2);background:var(--paper);border:1px solid var(--line2);border-radius:999px;padding:6px 13px;cursor:pointer;box-shadow:var(--e0);transition:.2s ease}
