@@ -1579,7 +1579,7 @@ export default function Home() {
     function openAdaptiveStrategySheet(dateISO = curDate) {
       const s = adaptiveDayStrategy(dateISO);
       if (!s || s.status === "ERROR") { toast("No day strategy served for this slate yet"); return; }
-      detail = { _adaptive: true };
+      detail = detailWithGameReturn({ _adaptive: true });
       const c = adaptiveStrategySheetCopy(s, dateISO);
       const dateTxt = stratDateTxt(dateISO) || "this slate";
       const byline = `${c.start} to ${c.end}`;
@@ -3149,7 +3149,7 @@ export default function Home() {
           </div>`;
         }
       }
-      detail = { _record: true };
+      detail = detailWithGameReturn({ _record: true });
       // THE PATTERNS THEY STAR IN — pattern highlights naming this analyst.
       const myPats = patternHighlights().filter((it: any) => it.keys.indexOf(k) >= 0).slice(0, 3);
       const patsHtml = myPats.length
@@ -3223,9 +3223,9 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
       bindClick("gp-back", () => closeDetail());
-      bindClick("gp-brand", () => { closeDetail(); switchTab("today"); });
-      bindClick("anl-insights", () => { closeDetail(); switchTab("results"); });
-      bindClick("anl-pat-all", () => { closeDetail(); switchTab("results"); });
+      bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
+      bindClick("anl-insights", () => { closeDetail(false, true); switchTab("results"); });
+      bindClick("anl-pat-all", () => { closeDetail(false, true); switchTab("results"); });
     }
     // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
     // card — tiles, the standings strip, the debate panel — without touching each binder.
@@ -5386,6 +5386,7 @@ export default function Home() {
     // The pitcher sheet: header (name/team/hand + season line) + the recent-starts table.
     function openPitcherSheet(P: any) {
       if (!P) return;
+      detail = detailWithGameReturn({ _pitcher: true });
       const starts = (P.starts || []).slice(0, 8);
       const rows = starts.map((s: any) => `<tr>
         <td>${esc((s.date || "").slice(5))}</td><td>${s.at === "H" ? "vs" : "@"} ${esc(s.opp || "")}</td>
@@ -5630,6 +5631,25 @@ export default function Home() {
     let liveScores: any = null;     // latest live_scores snapshot (fresh score overlay)
     let liveDetail: any = null;     // latest live_detail snapshot (box scores) — polled while live
     let liveDetailTried = false;    // avoid hammering a missing live_detail key
+
+    function isGameDetail(d: any) {
+      return !!(d && !d._recipe && !d._record && !d._article && !d._adaptive && !d._pitcher && d.game_id != null);
+    }
+    function currentGameReturn() {
+      if (detail && detail._backToGame) return detail._backToGame;
+      return isGameDetail(detail) ? { game: detail, tab: detailTab } : null;
+    }
+    function detailWithGameReturn(d: any) {
+      const back = currentGameReturn();
+      if (back) d._backToGame = back;
+      return d;
+    }
+    function restoreGameDetail(back: any) {
+      const g = back && back.game;
+      if (!g || g.game_id == null) return false;
+      openDetail(g, undefined, true, back.tab || undefined);
+      return true;
+    }
 
     let minDate = "2020-09-11";
     let maxDate = todayISO();
@@ -8134,13 +8154,13 @@ export default function Home() {
         ${recapParas.length ? `<div class="de-sec"><div class="de-h">The story</div>${recapParas.map((p: any) => `<p>${mdBold(cleanBlurb(String(p)))}</p>`).join("")}</div>` : ""}
       </div>`;
     }
-    function openDetail(g: any, focusMk?: string, fromHistory = false) {
+    function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
       // Live & finished games open straight to "How it's going" (box score); only pre-game
       // games default to the Preview narrative.
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
       // final + live → Box score (recap folds into it); pre-game → Preview narrative.
-      detailTab = _gsk === "final" || _gsk === "live" ? "live" : "preview";
+      detailTab = restoreTab || (_gsk === "final" || _gsk === "live" ? "live" : "preview");
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       // Everything the detail body renders is derived FROM g (+ the live feeds by key), so it's
@@ -8413,11 +8433,11 @@ export default function Home() {
       requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); positionDetailInk(); });
       bindClick("gp-back", () => closeDetail());
       // The DiamondEdge logo goes HOME (News) from anywhere — the back button goes back a step.
-      bindClick("gp-brand", () => { closeDetail(); switchTab("today"); });
+      bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
       // (#cc-unlock's binding lived here until 2026-07-31. The locked-pick CTA lost that id in
       //  the "Scorify nav" round and every unlock affordance now carries [data-up], which the
       //  delegated handler above already covers — so the binding was dead weight, not a gate.)
-      bindClick("tl-how", (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => switchTab("beta"), 120); });
+      bindClick("tl-how", (e: any) => { e.stopPropagation(); closeDetail(false, true); setTimeout(() => switchTab("beta"), 120); });
       bindClick("gp-share", (e: any) => { e.stopPropagation(); shareGame(g); });
       // tab switching (no re-fetch; just show/hide + move the ink)
       wireBody();
@@ -8458,8 +8478,9 @@ export default function Home() {
       positionDetailInk();
       if (t === "live") { pollLiveDetail(); const b = $("gp-body"); if (b) b.scrollTop = b.scrollTop; }
     }
-    function closeDetail(fromHistory = false) {
-      const wasGame = detail && !detail._recipe && detail.game_id != null;
+    function closeDetail(fromHistory = false, forceRoot = false) {
+      if (!fromHistory && !forceRoot && detail && detail._backToGame && restoreGameDetail(detail._backToGame)) return;
+      const wasGame = isGameDetail(detail) || !!(forceRoot && detail && detail._backToGame && detail._backToGame.game && detail._backToGame.game.game_id != null);
       try { document.title = DEF_TITLE; } catch {}   // restore the base tab title on close
       // Back-arrow / user close pops the ?g= URL by walking browser history so the native
       // back button and the arrow behave identically (a real page navigation). We DON'T
@@ -8525,7 +8546,7 @@ export default function Home() {
 
     // ===================== "HOW PICKS WORK" SHEET (the ⓘ link) =====================
     function openRecipeSheet() {
-      detail = { _recipe: true };
+      detail = detailWithGameReturn({ _recipe: true });
       const html = `
         <div class="sheet-bg" id="sheet-bg"></div>
         <div class="sheet" id="sheet" role="dialog" aria-modal="true">
@@ -8597,7 +8618,7 @@ export default function Home() {
       return rows.length ? `<div class="rbp-list">${rows.join("")}</div>` : `<div class="rbp-empty">No picks in this tier for this window.</div>`;
     }
     function openRecordBreakdown() {
-      detail = { _record: true };
+      detail = detailWithGameReturn({ _record: true });
       // Scope the breakdown to the DATE being viewed on the strip (curDate), not always today.
       // When curDate IS today, keep the familiar "Today" / "This month" labels; when it's a past
       // date, label the day with that date (e.g. "Fri, Jul 3") and the month with its month name.
@@ -8776,7 +8797,7 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       bindClick("sheet-close", () => closeDetail());
       bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
-      bindClick("rb-full", () => { closeDetail(); switchTab("results"); });
+      bindClick("rb-full", () => { closeDetail(false, true); switchTab("results"); });
       bindClick("rb-share", async () => {
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
         const txt = shareTagline();
@@ -9473,7 +9494,7 @@ export default function Home() {
     }
     function openArticleSheet(s: any, key = "") {
       if (!s) return;
-      detail = { _article: true };
+      detail = detailWithGameReturn({ _article: true });
       try { const h = String(s.headline || s.title || ""); document.title = /diamondedge/i.test(h) ? h : `${h} — DiamondEdge`; } catch {}  // avoid double-branding; closeDetail restores base
       const navKeys = newsDisplayKeys();
       const ci = key ? navKeys.indexOf(key) : -1;
@@ -9529,7 +9550,7 @@ export default function Home() {
       if (gow && gid != null) {
         const openPick = () => {
           const gg = findGameLive(gid) || findGame(gid) || gameById(gid) || g;
-          closeDetail();
+          closeDetail(false, true);
           // closeDetail wipes #sheet-layer after its 320ms exit animation — openDetail renders
           // into that SAME layer, so it must run AFTER the wipe or its DOM gets erased (the race
           // that made the pick "do nothing"). 360ms clears the teardown; jumpToGames is unaffected.
@@ -10864,6 +10885,7 @@ export default function Home() {
     // ---- the per-game pick card: the one DiamondEdge Pick (or the honest pass + its reason) ----
     function openBetaGame(g: any) {
       if (!g) return;
+      detail = detailWithGameReturn({ _betaGame: true });
       const fin = g.final || {};
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
       const p = g.pick || null;
@@ -10918,7 +10940,7 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
       bindClick("gp-back", () => closeDetail());
-      bindClick("gp-brand", () => { closeDetail(); switchTab("today"); });
+      bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
     }
 
     // ===================== RESEARCH — "THE LAB" (public roadmap of every idea we test) =====================
