@@ -1448,6 +1448,17 @@ export default function Home() {
     const stratWL = (b: any) => (b ? `${b.win}–${b.loss}${b.push ? `–${b.push}` : ""}` : "—");
     const stratPct = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
     const stratRoi = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
+    function adaptiveTier(s: any) {
+      const t = String((s && (s.confidence_tier || s.game_confidence_tier)) || "").toUpperCase();
+      return t === "STRONG" || t === "LEAN" || t === "PASS" ? t : "";
+    }
+    function adaptiveCiText(s: any, key = "hit_rate_ci") {
+      const ci = s && Array.isArray(s[key]) ? s[key] : null;
+      const lo = ci && ci[0] != null ? Number(ci[0]) : s && key === "hit_rate_ci" && s.hit_rate_lower != null ? Number(s.hit_rate_lower) : null;
+      const hi = ci && ci[1] != null ? Number(ci[1]) : s && key === "hit_rate_ci" && s.hit_rate_upper != null ? Number(s.hit_rate_upper) : null;
+      if (!Number.isFinite(lo) || !Number.isFinite(hi)) return "";
+      return `${stratPct(lo)}-${stratPct(hi)}`;
+    }
     function adaptiveStrategyRoot(src: any) {
       const r = src && src.adaptive_strategy_record;
       return r && typeof r === "object" ? r : null;
@@ -1478,9 +1489,11 @@ export default function Home() {
       const line = humanNote(s.summary_line || s.reason || s.plain_english_rule);
       const fam = humanNote(s.rule_family || "");
       const win = s.window_days ? `${s.window_days}d` : "4w";
+      const tier = adaptiveTier(s);
+      const ci = adaptiveCiText(s);
       return `<div class="daystrat" title="${esc(line)}">
         <span class="ds-k">Today's strategy</span>
-        <span class="ds-copy"><b>${esc(label)}</b><i>${rec ? `${esc(rec)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
+        <span class="ds-copy"><b>${esc(label)}</b><i>${tier ? `<em class="ds-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}${rec ? `${esc(rec)} · ` : ""}${ci ? `CI ${esc(ci)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
         <button class="ds-eye" id="daystrat-eye" aria-haspopup="dialog" aria-label="Learn why this is today's strategy">${icon("eye", "sm")}</button>
       </div>`;
     }
@@ -1495,9 +1508,12 @@ export default function Home() {
       const pickedPct = s && s.pick_rate != null ? stratPct(Number(s.pick_rate)) : "";
       const passedPct = s && s.pick_rate != null ? stratPct(1 - Number(s.pick_rate)) : "";
       const hit = s && s.hit_rate != null ? stratPct(Number(s.hit_rate)) : "";
+      const tier = adaptiveTier(s) || (s && s.status === "PASS_ALL" ? "PASS" : "");
+      const ci = adaptiveCiText(s);
+      const vci = adaptiveCiText(s, "validation_hit_rate_ci");
       const units = s && s.units != null ? `${Number(s.units) >= 0 ? "+" : ""}${num(Number(s.units), 0)} net wins` : "";
       const summary = humanNote(s && s.summary_line);
-      return { label, rule, days, start, end, decided, training, pickedPct, passedPct, hit, units, summary };
+      return { label, rule, days, start, end, decided, training, pickedPct, passedPct, hit, tier, ci, vci, units, summary };
     }
     function adaptiveStrategyFamilyRows(s: any) {
       const fam = String((s && s.rule_family) || "").toLowerCase();
@@ -1534,9 +1550,11 @@ export default function Home() {
         const hit = r.hit_rate != null ? stratPct(Number(r.hit_rate)) : "—";
         const vhit = r.validation_hit_rate != null ? stratPct(Number(r.validation_hit_rate)) : "";
         const score = r.score != null ? num(Number(r.score), 2) : "—";
+        const tier = adaptiveTier(r);
+        const ci = adaptiveCiText(r);
         return `<div class="ads-cand${i === 0 ? " winner" : ""}">
           <span class="ads-rank">${i === 0 ? "Selected #1" : `#${i + 1}`}</span>
-          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i><em>${esc(r.record || "—")} full</em><em>${esc(hit)}</em>${r.validation_record ? `<em>${esc(r.validation_record)} validation${vhit ? ` · ${esc(vhit)}` : ""}</em>` : ""}<em>score ${esc(score)}</em></i></span>
+          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i>${tier ? `<em class="ads-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}<em>${esc(r.record || "—")} full</em><em>${esc(hit)}${ci ? ` CI ${esc(ci)}` : ""}</em>${r.validation_record ? `<em>${esc(r.validation_record)} validation${vhit ? ` · ${esc(vhit)}` : ""}</em>` : ""}<em>score ${esc(score)}</em></i></span>
           <span class="ads-famtag">${esc(String(r.rule_family || "").replace(/_/g, " "))}</span>
         </div>`;
       }).join("")}</div>`;
@@ -1548,11 +1566,13 @@ export default function Home() {
       const score = selected && selected.score != null ? num(Number(selected.score), 2) : null;
       const full = selected && selected.record ? selected.record : humanNote(s.record);
       const hit = selected && selected.hit_rate != null ? stratPct(Number(selected.hit_rate)) : c.hit;
+      const tier = adaptiveTier(selected || s);
+      const ci = adaptiveCiText(selected || s);
       const val = selected && selected.validation_record ? selected.validation_record : s.validation_record;
       const vhit = selected && selected.validation_hit_rate != null ? stratPct(Number(selected.validation_hit_rate)) : (s.validation_hit_rate != null ? stratPct(Number(s.validation_hit_rate)) : "");
       const fired = c.decided != null ? `${c.decided} fires` : "enough fires";
-      const tail = [full ? `${full} full-window` : "", hit || "", val ? `${val} validation${vhit ? ` (${vhit})` : ""}` : "", score ? `score ${score}` : ""].filter(Boolean).join(" · ");
-      return `Chosen because it ranked #1 for this slate after sample-size, pick-rate and validation checks: ${tail || fired}.`;
+      const tail = [tier ? `${tier} confidence` : "", full ? `${full} full-window` : "", hit || "", ci ? `80% CI ${ci}` : "", val ? `${val} validation${vhit ? ` (${vhit})` : ""}` : "", score ? `score ${score}` : ""].filter(Boolean).join(" · ");
+      return `Chosen because it ranked #1 for this slate after sample-size, pick-rate, validation and confidence-interval checks: ${tail || fired}.`;
     }
     function adaptiveStrategyExamples(s: any) {
       const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
@@ -1583,8 +1603,14 @@ export default function Home() {
           </div>
           <div class="sh-body">
             <div class="dsec ads-hero">
+              <div class="ads-tierline">
+                ${c.tier ? `<span class="ads-tier is-${String(c.tier).toLowerCase()}">${esc(c.tier)}</span>` : ""}
+                ${c.ci ? `<i>80% hit-rate range ${esc(c.ci)}</i>` : ""}
+                ${c.vci ? `<i>validation range ${esc(c.vci)}</i>` : ""}
+              </div>
               <div class="ads-rule"><span>Use today</span><b>${esc(c.rule)}</b></div>
               <div class="ads-rec">
+                <span><b>${esc(c.tier || "—")}</b><i>confidence</i></span>
                 <span><b>${esc(humanNote(s.record) || "—")}</b><i>record</i></span>
                 <span><b>${esc(c.hit || "—")}</b><i>hit rate</i></span>
                 <span><b class="${Number(s.units || 0) >= 0 ? "pos" : "neg"}">${esc(c.units || "—")}</b><i>edge</i></span>
@@ -1597,8 +1623,8 @@ export default function Home() {
                 <p>${esc(adaptiveStrategySelectionLine(s, c))}</p>
                 <p>${esc(c.summary || `Over the last ${c.days} days, this was the best trailing rule for the slate.`)}</p>
                 ${s.selected_reason ? `<p>${esc(humanNote(s.selected_reason))}</p>` : ""}
-                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It looks back over the recent window, tests useful combinations of the four analyst reads, keeps rules that fire often enough to matter, and uses the one with the best recent record for this day.</p>
-                <p>Once the day is locked, that rule is applied forward to every game on the slate. If the pattern is not present, the game can still be a pass.</p>
+                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It looks back over the recent window, tests useful combinations of the four analyst reads, keeps rules that fire often enough to matter, and then favors the rule whose lower confidence bound is strongest.</p>
+                <p>STRONG means the trailing record, validation slice and today's signal all cleared the bar. LEAN means the direction is visible but not sturdy enough for the official graded card. PASS means the model did not find enough separation.</p>
               </div>
             </div>
             <div class="dsec">
@@ -1608,7 +1634,7 @@ export default function Home() {
             </div>
             <div class="dsec">
               <div class="dsec-h">Top candidates</div>
-              <div class="ads-note">Ranked by the nested validation score for this slate, not by all-time return.</div>
+              <div class="ads-note">Ranked confidence-first, then by nested validation score for this slate, not by all-time return.</div>
               ${adaptiveStrategyLeaderboard(s)}
             </div>
             <div class="dsec">
