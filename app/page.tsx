@@ -765,27 +765,13 @@ export default function Home() {
     }
     const Q_LABEL: any = { strong: "Strong", good: "Good", lean: "Lean" };
     const Q_RANK: any = { strong: 0, good: 1, lean: 2 };
-    // Confidence = STARS (universal), filled ★ vs empty ☆, count = conviction. One gold
-    // scale everywhere so ★★★ / ★★☆ / ★☆☆ reads instantly as Strong / Good / Lean.
     const qDiamonds = (q: any) => {
-      const n = q === "strong" ? 3 : q === "good" ? 2 : 1;
-      let h = "";
-      for (let i = 0; i < 3; i++) h += `<i class="${i < n ? "f" : "e"}">${i < n ? "★" : "☆"}</i>`;
-      return `<span class="qdia q-${q}" aria-hidden="true">${h}</span>`;
+      return "";
     };
     // A small, always-legible tier legend — states what each word means so "Good vs Lean"
     // is never ambiguous. Rendered on the board and inside the detail sheet.
     function tierLegend(compact = false) {
-      // The NEW five-star scale (the v4 model). Every star requires beating the real price.
-      const item = (q: string, n: number, lab: string, desc: string) =>
-        `<span class="tl-item q-${q}">${bStars(n)}<b>${lab}</b>${compact ? "" : `<i>${desc}</i>`}</span>`;
-      return `<div class="tierlegend${compact ? " compact" : ""}">
-        ${item("strong", 5, "Proven", "")}
-        ${item("strong", 4, "Strong", "")}
-        ${item("good", 3, "Solid", "")}
-        ${item("lean", 2, "Lean", "")}
-        <button class="tl-how" id="tl-how" aria-label="How picks work">How picks work →</button>
-      </div>`;
+      return "";
     }
     // Gold = the headline plays: any winning-recipe (VALUE) play + the surest accuracy tier.
     const isGold = (pl: any) => !!pl && pl.action === "TAKE" && (pl.value_tier || pl.tier === "featured");
@@ -2541,7 +2527,7 @@ export default function Home() {
       const state = pl && !locked ? pickStateTxt(g, pl, st) : null;
       const act = vd ? (vd.kind === "play" ? "PLAY" : vd.kind === "lean" ? "LEAN" : "AVOID") : "AVOID";
       const cls = act === "PLAY" ? "de-play" : act === "LEAN" ? "de-lean" : "de-avoid";
-      const word = act === "AVOID" ? "WE PASS" : act === "LEAN" ? "LEAN ONLY" : "THE PLAY";
+      const word = act === "PLAY" ? "PICK" : "NO PICK";
       // the O/U call itself, at the line it was priced against
       const side = (vd && (vd.side || vd.leanSide)) || (pl && pl.side ? String(pl.side) : "");
       const dirCls = /under/i.test(side) ? "ou-under" : /over/i.test(side) ? "ou-over" : "";
@@ -2580,7 +2566,7 @@ export default function Home() {
       }
       // signed-out redaction is PRESERVED: the conclusion keeps its frame, the side becomes
       // crisp dots (never a blur), and the whole block is the unlock affordance.
-      const quality = pl && !locked ? `<span class="de-q">${pickStars(pl)}${pickGrade(pl)}</span>` : "";
+      const quality = "";
       return `<section class="decall ${cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
         <div class="de-head"><span class="de-brand"><i class="de-dia" aria-hidden="true">◆</i>The DiamondEdge Pick</span><span class="de-act">${esc(word)}</span>${state ? `<span class="de-res ${state.cls}">${state.txt}</span>` : ""}</div>
         ${callHtml ? `<div class="de-callrow">${callHtml}${atLine}${quality}</div>` : ""}
@@ -4891,11 +4877,11 @@ export default function Home() {
                   : ` The analyst reads say runs look light; the ticket says the posted total is low enough, at this price, to bet over.`)
                 : ` The desk is split, so this comes down to the number and price on ${ticketTxt}.`;
           g.diamondedge = {
-            action: !bet ? "AVOID" : stars >= 3 ? "PLAY" : "LEAN",
+            action: !bet ? "AVOID" : "PLAY",
             desk_agreement: agree,
             rationale_line: !bet
               ? "No number cleared the bar here, so there is no bet on this game."
-              : `We're taking the ${ticketTxt} (${stars}★) — that is where the number and price are worth a bet.${plainWhy}`,
+              : `We're taking the ${ticketTxt} — that is where the number and price are worth a bet.${plainWhy}`,
             spread_call: g.spread && g.spread.side ? { side: g.spread.side, line: g.spread.line, rationale_line: "The run line follows the same read." } : null,
             predicted_score: { away: aw, home: hm, source: "ATLAS" },
           };
@@ -4952,28 +4938,27 @@ export default function Home() {
     }
     // Universal star renderer: unified picks use the 5-star scale; any legacy pick keeps 3.
     function pickStars(pl: any) {
-      if (pl && pl.stars != null) return bStars(pl.stars);
-      return qDiamonds(qualityOf(pl));
+      return "";
     }
     // The decimal CONFIDENCE SCORE chip ("3.72") shown beside the stars everywhere a pick
     // renders — the model's continuous 0–5 grade (payload `score`), formatted to 2 decimals.
     // Ranks every pick against every other, across and within star tiers.
     function pickGrade(pl: any) {
       if (!pl || pl.grade == null || !(pl.grade > 0)) return "";
-      return `<i class="pgrade">${Number(pl.grade).toFixed(2)}</i>`;
+      return "";
     }
     function pickStrengthPill(pl: any, compact = false) {
       const n = pl && pl.stars != null && isFinite(Number(pl.stars))
         ? Math.max(1, Math.min(5, Math.round(Number(pl.stars)))) : null;
       const q = n == null ? qualityOf(pl) : n >= 4 ? "strong" : n === 3 ? "good" : "lean";
       const lab = n == null ? (Q_LABEL[q] || "Read") : n >= 4 ? "Strong" : n === 3 ? "Solid" : "Lean";
-      const txt = n == null ? lab : `${n}★${compact ? "" : ` ${lab}`}`;
-      return `<span class="str-pill q-${q}${compact ? " compact" : ""}" title="${esc(n == null ? lab : `${n} of 5 stars — ${lab}`)}">${esc(txt)}</span>`;
+      const txt = q === "lean" ? "No pick" : "Pick";
+      return `<span class="str-pill q-${q}${compact ? " compact" : ""}" title="${esc(txt)}">${esc(txt)}</span>`;
     }
     // A pass's sub-2.00 score, muted — passes carry a score too (the model rates every row).
     function passGrade(scoreVal: any) {
       if (scoreVal == null || isNaN(Number(scoreVal)) || !(Number(scoreVal) > 0)) return "";
-      return `<i class="pgrade muted">${Number(scoreVal).toFixed(2)}</i>`;
+      return "";
     }
     // The score for a game whether or not it's a playable pick — the model rates every game, so
     // passes can show their muted score on tiles too.
@@ -6418,14 +6403,14 @@ export default function Home() {
       // stars decide play-vs-lean. The served action is honoured when it agrees with the
       // ticket; where it does not, the ticket is the fact and the star tier is the split.
       const stars = pl && pl.stars != null ? Math.round(Number(pl.stars)) : null;
-      const byStars = stars != null && stars >= 3 ? "play" : "lean";
+      const byStars = isBet(pl) ? "play" : "lean";
       const kind = !served
         ? (pl || chief ? "pass" : null)
         : (act === "PLAY" || act === "LEAN" ? (act === "PLAY" ? "play" : "lean") : byStars);
       if (!kind) return null;
       return {
         kind,
-        word: kind === "play" ? "The play" : kind === "lean" ? "Lean" : "No bet",
+        word: kind === "play" ? "Pick" : "No pick",
         side: kind === "pass" ? "" : side,
         leanSide: kind === "pass" ? side : "",
         cls: `v-${kind}`,
@@ -6642,7 +6627,7 @@ export default function Home() {
               ? `<span class="tv-call ou-${dc.dir}"><i class="tv-mk hollow" aria-hidden="true"></i><b>${esc(dc.txt)}</b></span>`
               : `<span class="tv-side tv-pass">Pass</span>`)
             : `<span class="tv-side ${dirCls}">${arrow ? `<i class="tv-mk" aria-hidden="true"></i>` : ""}<b>${esc(vd.side || "—")}</b>${vd.price != null ? `<em>${fmtOdds(vd.price)}</em>` : ""}</span>`;
-      const starHtml = !locked && pick && vd && vd.kind !== "pass" ? `<span class="tv-q">${pickStars(pick)}</span>` : "";
+      const starHtml = "";
       const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
       // the kicker names the register: a bet says what kind of bet, a call says DESK CALL
       // and wears a NO BET chip so the two can never be read as the same thing
@@ -7114,7 +7099,7 @@ export default function Home() {
       } else {
         // per-day record: W–L(–P) + hit% / ROI when we have it (historical days carry both)
         const roiTxt = (t as any).roi != null ? `<span class="pf-roi ${(t as any).roi >= 0 ? "pos" : "neg"}">${((t as any).roi >= 0 ? "+" : "") + ((t as any).roi * 100).toFixed(0)}%</span>` : "";
-        const extra = (t.sw + t.sl) ? `<span class="pf-top">★ Top ${t.sw}–${t.sl}</span>` : roiTxt;
+        const extra = (t.sw + t.sl) ? `<span class="pf-top">Picks ${t.sw}–${t.sl}</span>` : roiTxt;
         // a postponed day says so: "· 1 void" — shown, never counted in the W–L
         const voidBit = (t as any).nv ? `<span class="pf-voidn">· ${(t as any).nv} void</span>` : "";
         inner = `<span class="pf-k">${esc(dayLab)}</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${voidBit}${extra}`;
@@ -7824,9 +7809,9 @@ export default function Home() {
       const hr = headlineStrategyRecord(betaData);
       if (hr && hr.live) {
         const since = stratDateTxt(hr.activation);
-        return `DiamondEdge — every pick star-rated 1–5 and graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.`;
+        return `DiamondEdge — every official pick graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.`;
       }
-      return "DiamondEdge — every sports pick star-rated 1–5 and graded in the open.";
+      return "DiamondEdge — every official sports pick graded in the open.";
     }
     function socialShareBar() {
       const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.origin + location.pathname; } })();
@@ -7950,7 +7935,7 @@ export default function Home() {
             ? `<span class="mt-lock" data-up="1">${lockSvg} ${esc(unlockCtaTxt())}</span>`
             : `<span class="mt-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span>`;
           const conf = locked
-            ? `<span class="mt-conf blur" aria-hidden="true">★★★</span>`
+            ? `<span class="mt-conf blur" aria-hidden="true">•••</span>`
             : `<span class="mt-conf">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : `<i>${esc(confWord(pl))}</i>`}</span>`;
           return `<tr class="mt-take q-${q} ${st}${low ? " low" : ""}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
         }
@@ -7974,7 +7959,7 @@ export default function Home() {
           const up = lead.p > be;
           return `<div class="de-diverge ${up ? "over" : "under"}">
             <div class="dd-pair"><div class="dd-cell ours"><span class="dd-k">Our win chance</span><b>${(lead.p * 100).toFixed(0)}%</b></div><div class="dd-vs">vs</div><div class="dd-cell"><span class="dd-k">Break-even at ${fmtOdds(lead.price)}</span><b>${(be * 100).toFixed(0)}%</b></div></div>
-            <div class="dd-gap">We clear the price by <b>${((lead.p - be) * 100).toFixed(1)} points</b> — that margin is the bet${lead.stars != null ? `, rated <b>${"★".repeat(Math.max(1, Math.min(5, lead.stars)))}</b>` : ""}.</div>
+            <div class="dd-gap">We clear the price by <b>${((lead.p - be) * 100).toFixed(1)} points</b> — that margin is why it is a pick.</div>
           </div>`;
         }
       }
@@ -8553,12 +8538,11 @@ export default function Home() {
           </div>
           <div class="sh-body">
             <div class="dsec">
-              <div class="dsec-h">Strong / Good / Lean</div>
+              <div class="dsec-h">Pick / No pick</div>
               <div class="dsec-b rcp">
-                <p><b>◆◆◆ Strong</b> — our best ticket. The DiamondEdge number and the real price both cleared the highest bar.</p>
-                <p><b>◆◆ Good</b> — the same priced-edge idea, with a little less cushion.</p>
-                <p><b>◆ Lean</b> — the ticket has an edge, but it is thin. Fine to skip.</p>
-                <p>Everything else is a <b>PASS</b>. Most games are a pass — that's the discipline that keeps the record honest.</p>
+                <p><b>PICK</b> means DiamondEdge found a real edge at the actual line and price, and it is on the official record.</p>
+                <p><b>NO PICK</b> means we either passed completely or only saw a lean that was not worth grading.</p>
+                <p>Most games are a <b>NO PICK</b>. Passing is part of the system, not a missing prediction.</p>
               </div>
             </div>
             <div class="dsec">
@@ -8573,7 +8557,7 @@ export default function Home() {
               <div class="dsec-h">The receipts</div>
               <div class="dsec-b rcp">
                 <p><b>Every pick is graded in public.</b> The side, the line and the price freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Insights tab.</p>
-                <p><b>Every star is earned against the real price.</b> A pick only makes the board when our number beats what the bet actually costs — and four seasons of graded history back the system's profitable record.</p>
+                <p><b>Every pick must clear the real price.</b> A side can look right and still be a no-pick if the book already priced it correctly.</p>
                 <p><b>Win rate always travels with the price.</b> That's why every number we show you carries its return right next to it.</p>
               </div>
             </div>
@@ -8634,9 +8618,9 @@ export default function Home() {
       // expandable to the actual picks. Leans (spread/ML) live in the Lean tier — visibly separated
       // from the totals edge (Strong/Good), so a bare "0–3" reads as "which tier, and normal variance".
       const TIER_META: any = {
-        strong: { lab: "Strong", note: "4–5★ — our strongest priced tickets" },
-        good: { lab: "Solid", note: "3★ — firmly on the board" },
-        lean: { lab: "Lean", note: "1–2★ — the lightest calls, graded all the same" },
+        strong: { lab: "Pick", note: "official DiamondEdge picks" },
+        good: { lab: "Pick", note: "official DiamondEdge picks" },
+        lean: { lab: "No pick", note: "leans and thin edges, not the main record" },
       };
       const tierRow = (rec: any, q: string, filt: (g: any) => boolean) => {
         const o = rec[q]; const dec = o.w + o.l; const pct = dec ? Math.round((o.w / dec) * 100) : null;
@@ -8668,12 +8652,12 @@ export default function Home() {
         const overall = rec && (gradedAny || outAny)
           ? `<div class="rbt-overall"><span class="rbt-overall-lab">Overall</span><b>${rec.w} won · ${rec.l} lost</b>${outAny ? `<span class="rbt-out">${rec.live ? `${rec.live} live` : ""}${rec.live && rec.up ? " · " : ""}${rec.up ? `${rec.up} to come` : ""}</span>` : ""}</div>`
           : "";
-        // Two groups by conviction: the headline calls (3★+) and the light calls (1–2★).
+        // Two groups: official picks and lighter non-pick leans.
         const edgeGroup = rec
-          ? `${groupHead("The calls — 3★ and up", "the picks we lead with", ["strong", "good"], rec)}${["strong", "good"].map((q) => tierRow(rec, q, scope.filt)).join("")}`
+          ? `${groupHead("Official picks", "the calls we grade as the main record", ["strong", "good"], rec)}${["strong", "good"].map((q) => tierRow(rec, q, scope.filt)).join("")}`
           : "";
         const leanGroup = rec
-          ? `${groupHead("Light calls — 1–2★", "small edges, graded all the same", ["lean"], rec)}${tierRow(rec, "lean", scope.filt)}`
+          ? `${groupHead("No-pick leans", "directional reads that are not the main record", ["lean"], rec)}${tierRow(rec, "lean", scope.filt)}`
           : "";
         const body = rec && (gradedAny || outAny)
           ? `${overall}<div class="rbt-group">${edgeGroup}</div><div class="rbt-group">${leanGroup}</div>`
@@ -8776,7 +8760,7 @@ export default function Home() {
             <div class="sh-meta">by pick strength, by strategy, live vs backtested · graded against real final scores</div>
           </div>
           <div class="sh-body">
-            <div class="rbt-howread">More stars means a stronger DiamondEdge ticket at the posted number and price. The analyst desk can still agree, split, or lean the other way.</div>
+            <div class="rbt-howread">The record is binary: official pick or no pick. Directional leans can still appear, but they are not the headline record.</div>
             ${block(scopes[0])}
             ${block(scopes[1])}
             ${liveVsBacktest}
@@ -9267,10 +9251,9 @@ export default function Home() {
                recaps are desk material and now live on The Desk, which is where a reader
                who cares about the four analysts already is. -->
           <details class="ix-fold">
-            <summary><span>The charts</span><span class="ixf-sub">equity curve · stars vs wins · calibration · month by month · streaks</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
+            <summary><span>The charts</span><span class="ixf-sub">equity curve · calibration · month by month · streaks</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
             <div class="ix-fold-body">
               ${chartCard("Season equity curve", "Cumulative units, day by day, at the real prices.", equityCurveSvg(betaData), headlineStrategyRecord(betaData) ? "Covers the <b>combined</b> ledger — live-served picks plus the reconstructed and backtested days. Only the tail is a served record; the split is spelled out under the hero above." : "")}
-              ${chartCard("Do more stars win more?", "Hit rate by star tier — the scale only means something if the higher tiers deliver.", starPerfSvg(betaData), "Dashed line = break-even (52.4%) at −110 pricing. Counts under each bar.")}
               ${chartCard("Calibration", "When the model says a number, does reality agree? Predicted vs realized win rate.", calibrationSvg(betaData))}
               ${chartCard("Month by month", "Net units each month — hot months and cold months alike.", monthlySvg(betaData))}
               ${streaksBlock(betaData)}
@@ -10615,10 +10598,7 @@ export default function Home() {
     }
     const teamShort = (name: any) => { const s = String(name || "").trim(); const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
     function bStars(n: any) {
-      const k = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
-      const meaning = k >= 4 ? "strongest priced ticket" : k === 3 ? "solid board pick" : k >= 1 ? "light lean" : "no rated edge";
-      let h = ""; for (let i = 0; i < 5; i++) h += `<i class="${i < k ? "f" : "e"}">${i < k ? "★" : "☆"}</i>`;
-      return `<span class="bstars s${k}" aria-label="${k} of 5 stars — ${meaning}" title="${k} of 5 stars — ${meaning}. More stars means a stronger DiamondEdge ticket at this posted number and price.">${h}</span>`;
+      return "";
     }
     const bPct = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) * 100).toFixed(d) + "%");
     const bRoi = (v: any) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
@@ -10640,7 +10620,7 @@ export default function Home() {
       const lv = hr && hr.live;
       const range = dates.length ? `Graded ${esc(dates[0])} → ${esc(dates[dates.length - 1])}${n ? ` · ${n} graded rows` : ""}${lv ? ` · ${lv.n} of them served live` : ""}` : "";
       return `<div class="beta-frame">
-        <p class="bf-lede">Pregame totals, star-rated and graded in the open — win or lose.</p>
+        <p class="bf-lede">Pregame totals, graded in the open — win or lose.</p>
         <div class="bf-note">${range}</div>
       </div>`;
     }
@@ -10733,10 +10713,10 @@ export default function Home() {
         ${combinedBlock}
         ${last7Strip}
         <div class="strec-card">
-          <div class="strec-ch">Record by star tier</div>
-          <div class="strec-csub">A star is a conviction band. It only means something if the higher tiers win more — so here's each tier, graded.</div>
+          <div class="strec-ch">Record by pick type</div>
+          <div class="strec-csub">Official picks lead. Lighter leans stay separate so the headline record stays clean.</div>
           <div class="strec-rows">${rows}</div>
-          <div class="strec-mixnote">These tiers bucket the <b>combined</b> history above — live and reconstructed together. Read them as a shape check on the star scale, not as a live record.</div>
+          <div class="strec-mixnote">These buckets include the <b>combined</b> history above — live and reconstructed together. Read them as a shape check, not as the live record.</div>
           ${gatedNote}
         </div>`;
       }
@@ -10754,8 +10734,8 @@ export default function Home() {
         </div>
         ${last7Strip}
         <div class="strec-card">
-          <div class="strec-ch">Record by star tier</div>
-          <div class="strec-csub">A star is a conviction band. It only means something if the higher tiers win more — so here's each tier, graded.</div>
+          <div class="strec-ch">Record by pick type</div>
+          <div class="strec-csub">Official picks lead. Lighter leans stay separate so the headline record stays clean.</div>
           <div class="strec-rows">${rows}</div>
           ${gatedNote}
         </div>`;
@@ -10852,7 +10832,7 @@ export default function Home() {
           <div class="beta-masthead">
             <div class="bm-kick">DiamondEdge <span class="bm-badge">Pregame Totals</span></div>
             <h2 class="bm-h">Totals picks, graded in the open</h2>
-            <p class="bm-sub">One market, done right: pregame over/unders — price-aware, +EV-gated, star-rated. One DiamondEdge Pick per game, graded at the real price, with the record accruing in public.</p>
+            <p class="bm-sub">One market, done right: pregame over/unders — price-aware and +EV-gated. One DiamondEdge Pick per game, graded at the real price, with the record accruing in public.</p>
           </div>
           ${betaFrame(d)}
           <div class="beta-tabs" role="tablist">

@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-02T21:30:48Z",
+  "generated_utc": "2026-08-02T22:46:26Z",
   "dates": [
     "2026-08-02",
     "2026-08-03"
@@ -5467,7 +5467,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-02T21:30:49Z",
+      "updated": "2026-08-02T22:46:26Z",
       "order": [
         "vega",
         "atlas",
@@ -6416,7 +6416,7 @@
     "note": "ONE record over the unified product: exactly one graded pick per (date, game_pk) \u2014 champion-sourced picks have priority, model leans fill games the champion did not play; expanded-band fills (2026-07-24 on) are graded separately under expanded_band.served_record and fold into by_star_tier with includes_expanded_n. by_source is DIAGNOSTIC ONLY; the champion subset is the champion's own graded ledger over the one-pick-per-GAME population (it is not the champion headline, which counts one row per game x stream at the last decision wall \u2014 a different population, reconciled to a zero residual), the model subset is the honest fill, and the two sum to overall. No pick is counted twice. by_star_tier buckets ALL history under the CURRENT frozen v3.3 display bands (re-derived from each row's stored score; ledgers on disk untouched)."
   },
   "adaptive_strategy_record": {
-    "version": "adaptive_desk_v15",
+    "version": "adaptive_desk_v18",
     "record_start": "2026-07-01",
     "through": "2026-08-02",
     "overall": {
@@ -6442,11 +6442,11 @@
         "push": 0,
         "hit_rate": 1.0,
         "strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-07-30",
           "status": "ACTIVE",
           "rule_key": "vote_count:2:under",
-          "label": "When exactly 2 of 4 say OVER, take UNDER",
+          "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
           "mode": "under",
           "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
           "rule_family": "vote_count",
@@ -6508,7 +6508,7 @@
           "locked": true,
           "summary_line": "Trailing 35 days, this strong rule went 69-46-2 (60% hit, +23 net wins).",
           "strategy_research": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "windows": {
               "10": {
                 "candidate_count": 175,
@@ -6724,7 +6724,7 @@
             "top_candidates": [
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 21,
                 "decided": 81,
@@ -6789,7 +6789,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 14,
                 "decided": 57,
@@ -6984,7 +6984,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 35,
                 "decided": 115,
@@ -7546,11 +7546,11 @@
         "push": 0,
         "hit_rate": 1.0,
         "strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-07-31",
           "status": "ACTIVE",
           "rule_key": "vote_count:2:under",
-          "label": "When exactly 2 of 4 say OVER, take UNDER",
+          "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
           "mode": "under",
           "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
           "rule_family": "vote_count",
@@ -7612,7 +7612,7 @@
           "locked": true,
           "summary_line": "Trailing 35 days, this strong rule went 72-46-2 (61% hit, +26 net wins).",
           "strategy_research": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "windows": {
               "10": {
                 "candidate_count": 175,
@@ -7828,7 +7828,7 @@
             "top_candidates": [
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 28,
                 "decided": 109,
@@ -7893,7 +7893,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 14,
                 "decided": 60,
@@ -7958,7 +7958,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 21,
                 "decided": 79,
@@ -8650,11 +8650,11 @@
         "push": 1,
         "hit_rate": 0.5,
         "strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-01",
           "status": "ACTIVE",
           "rule_key": "vote_count:2:under",
-          "label": "When exactly 2 of 4 say OVER, take UNDER",
+          "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
           "mode": "under",
           "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
           "rule_family": "vote_count",
@@ -8716,7 +8716,7 @@
           "locked": true,
           "summary_line": "Trailing 28 days, this strong rule went 68-39-2 (64% hit, +29 net wins).",
           "strategy_research": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "windows": {
               "10": {
                 "candidate_count": 175,
@@ -8932,7 +8932,7 @@
             "top_candidates": [
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 28,
                 "decided": 107,
@@ -8997,7 +8997,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 21,
                 "decided": 79,
@@ -9062,7 +9062,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 14,
                 "decided": 62,
@@ -9127,7 +9127,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 10,
                 "decided": 46,
@@ -9387,7 +9387,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 35,
                 "decided": 121,
@@ -9754,7 +9754,7 @@
         "push": 0,
         "hit_rate": 1.0,
         "strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -10295,7 +10295,7 @@
           "locked": true,
           "summary_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins).",
           "strategy_research": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "windows": {
               "10": {
                 "candidate_count": 175,
@@ -10576,7 +10576,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 28,
                 "decided": 106,
@@ -10641,7 +10641,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 21,
                 "decided": 76,
@@ -10706,7 +10706,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 14,
                 "decided": 60,
@@ -10836,7 +10836,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 10,
                 "decided": 45,
@@ -11031,7 +11031,7 @@
               },
               {
                 "rule_key": "vote_count:2:under",
-                "label": "When exactly 2 of 4 say OVER, take UNDER",
+                "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
                 "rule_family": "vote_count",
                 "window_days": 35,
                 "decided": 124,
@@ -11329,11 +11329,11 @@
     },
     "strategy_by_date": {
       "2026-07-30": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "date": "2026-07-30",
         "status": "ACTIVE",
         "rule_key": "vote_count:2:under",
-        "label": "When exactly 2 of 4 say OVER, take UNDER",
+        "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
         "mode": "under",
         "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
         "rule_family": "vote_count",
@@ -11395,7 +11395,7 @@
         "locked": true,
         "summary_line": "Trailing 35 days, this strong rule went 69-46-2 (60% hit, +23 net wins).",
         "strategy_research": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "windows": {
             "10": {
               "candidate_count": 175,
@@ -11611,7 +11611,7 @@
           "top_candidates": [
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 21,
               "decided": 81,
@@ -11676,7 +11676,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 14,
               "decided": 57,
@@ -11871,7 +11871,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 35,
               "decided": 115,
@@ -12426,11 +12426,11 @@
         "stability_stable_enough": true
       },
       "2026-07-31": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "date": "2026-07-31",
         "status": "ACTIVE",
         "rule_key": "vote_count:2:under",
-        "label": "When exactly 2 of 4 say OVER, take UNDER",
+        "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
         "mode": "under",
         "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
         "rule_family": "vote_count",
@@ -12492,7 +12492,7 @@
         "locked": true,
         "summary_line": "Trailing 35 days, this strong rule went 72-46-2 (61% hit, +26 net wins).",
         "strategy_research": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "windows": {
             "10": {
               "candidate_count": 175,
@@ -12708,7 +12708,7 @@
           "top_candidates": [
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 28,
               "decided": 109,
@@ -12773,7 +12773,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 14,
               "decided": 60,
@@ -12838,7 +12838,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 21,
               "decided": 79,
@@ -13523,11 +13523,11 @@
         "stability_stable_enough": true
       },
       "2026-08-01": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "date": "2026-08-01",
         "status": "ACTIVE",
         "rule_key": "vote_count:2:under",
-        "label": "When exactly 2 of 4 say OVER, take UNDER",
+        "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
         "mode": "under",
         "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
         "rule_family": "vote_count",
@@ -13589,7 +13589,7 @@
         "locked": true,
         "summary_line": "Trailing 28 days, this strong rule went 68-39-2 (64% hit, +29 net wins).",
         "strategy_research": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "windows": {
             "10": {
               "candidate_count": 175,
@@ -13805,7 +13805,7 @@
           "top_candidates": [
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 28,
               "decided": 107,
@@ -13870,7 +13870,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 21,
               "decided": 79,
@@ -13935,7 +13935,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 14,
               "decided": 62,
@@ -14000,7 +14000,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 10,
               "decided": 46,
@@ -14260,7 +14260,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 35,
               "decided": 121,
@@ -14620,7 +14620,7 @@
         "stability_stable_enough": true
       },
       "2026-08-02": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "date": "2026-08-02",
         "status": "ACTIVE",
         "rule_key": "neural_tanh:l20.12:th0.54",
@@ -15161,7 +15161,7 @@
         "locked": true,
         "summary_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins).",
         "strategy_research": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "windows": {
             "10": {
               "candidate_count": 175,
@@ -15442,7 +15442,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 28,
               "decided": 106,
@@ -15507,7 +15507,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 21,
               "decided": 76,
@@ -15572,7 +15572,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 14,
               "decided": 60,
@@ -15702,7 +15702,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 10,
               "decided": 45,
@@ -15897,7 +15897,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 35,
               "decided": 124,
@@ -16192,7 +16192,7 @@
         "stability_stable_enough": true
       },
       "2026-08-03": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "date": "2026-08-03",
         "status": "ACTIVE",
         "rule_key": "neural_tanh:l20.12:th0.54",
@@ -16733,7 +16733,7 @@
         "locked": true,
         "summary_line": "Trailing 35 days, this strong rule went 120-55-5 (69% hit, +65 net wins).",
         "strategy_research": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "windows": {
             "10": {
               "candidate_count": 175,
@@ -17014,7 +17014,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 28,
               "decided": 107,
@@ -17144,7 +17144,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 21,
               "decided": 67,
@@ -17404,7 +17404,7 @@
             },
             {
               "rule_key": "vote_count:2:under",
-              "label": "When exactly 2 of 4 say OVER, take UNDER",
+              "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
               "rule_family": "vote_count",
               "window_days": 14,
               "decided": 58,
@@ -17768,11 +17768,11 @@
   },
   "adaptive_strategy_by_date": {
     "2026-07-30": {
-      "version": "adaptive_desk_v15",
+      "version": "adaptive_desk_v18",
       "date": "2026-07-30",
       "status": "ACTIVE",
       "rule_key": "vote_count:2:under",
-      "label": "When exactly 2 of 4 say OVER, take UNDER",
+      "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
       "mode": "under",
       "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
       "rule_family": "vote_count",
@@ -17834,7 +17834,7 @@
       "locked": true,
       "summary_line": "Trailing 35 days, this strong rule went 69-46-2 (60% hit, +23 net wins).",
       "strategy_research": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "windows": {
           "10": {
             "candidate_count": 175,
@@ -18050,7 +18050,7 @@
         "top_candidates": [
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 21,
             "decided": 81,
@@ -18115,7 +18115,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 14,
             "decided": 57,
@@ -18310,7 +18310,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 35,
             "decided": 115,
@@ -18865,11 +18865,11 @@
       "stability_stable_enough": true
     },
     "2026-07-31": {
-      "version": "adaptive_desk_v15",
+      "version": "adaptive_desk_v18",
       "date": "2026-07-31",
       "status": "ACTIVE",
       "rule_key": "vote_count:2:under",
-      "label": "When exactly 2 of 4 say OVER, take UNDER",
+      "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
       "mode": "under",
       "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
       "rule_family": "vote_count",
@@ -18931,7 +18931,7 @@
       "locked": true,
       "summary_line": "Trailing 35 days, this strong rule went 72-46-2 (61% hit, +26 net wins).",
       "strategy_research": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "windows": {
           "10": {
             "candidate_count": 175,
@@ -19147,7 +19147,7 @@
         "top_candidates": [
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 28,
             "decided": 109,
@@ -19212,7 +19212,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 14,
             "decided": 60,
@@ -19277,7 +19277,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 21,
             "decided": 79,
@@ -19962,11 +19962,11 @@
       "stability_stable_enough": true
     },
     "2026-08-01": {
-      "version": "adaptive_desk_v15",
+      "version": "adaptive_desk_v18",
       "date": "2026-08-01",
       "status": "ACTIVE",
       "rule_key": "vote_count:2:under",
-      "label": "When exactly 2 of 4 say OVER, take UNDER",
+      "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
       "mode": "under",
       "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
       "rule_family": "vote_count",
@@ -20028,7 +20028,7 @@
       "locked": true,
       "summary_line": "Trailing 28 days, this strong rule went 68-39-2 (64% hit, +29 net wins).",
       "strategy_research": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "windows": {
           "10": {
             "candidate_count": 175,
@@ -20244,7 +20244,7 @@
         "top_candidates": [
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 28,
             "decided": 107,
@@ -20309,7 +20309,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 21,
             "decided": 79,
@@ -20374,7 +20374,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 14,
             "decided": 62,
@@ -20439,7 +20439,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 10,
             "decided": 46,
@@ -20699,7 +20699,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 35,
             "decided": 121,
@@ -21059,7 +21059,7 @@
       "stability_stable_enough": true
     },
     "2026-08-02": {
-      "version": "adaptive_desk_v15",
+      "version": "adaptive_desk_v18",
       "date": "2026-08-02",
       "status": "ACTIVE",
       "rule_key": "neural_tanh:l20.12:th0.54",
@@ -21600,7 +21600,7 @@
       "locked": true,
       "summary_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins).",
       "strategy_research": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "windows": {
           "10": {
             "candidate_count": 175,
@@ -21881,7 +21881,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 28,
             "decided": 106,
@@ -21946,7 +21946,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 21,
             "decided": 76,
@@ -22011,7 +22011,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 14,
             "decided": 60,
@@ -22141,7 +22141,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 10,
             "decided": 45,
@@ -22336,7 +22336,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 35,
             "decided": 124,
@@ -22631,7 +22631,7 @@
       "stability_stable_enough": true
     },
     "2026-08-03": {
-      "version": "adaptive_desk_v15",
+      "version": "adaptive_desk_v18",
       "date": "2026-08-03",
       "status": "ACTIVE",
       "rule_key": "neural_tanh:l20.12:th0.54",
@@ -23172,7 +23172,7 @@
       "locked": true,
       "summary_line": "Trailing 35 days, this strong rule went 120-55-5 (69% hit, +65 net wins).",
       "strategy_research": {
-        "version": "adaptive_desk_v15",
+        "version": "adaptive_desk_v18",
         "windows": {
           "10": {
             "candidate_count": 175,
@@ -23453,7 +23453,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 28,
             "decided": 107,
@@ -23583,7 +23583,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 21,
             "decided": 67,
@@ -23843,7 +23843,7 @@
           },
           {
             "rule_key": "vote_count:2:under",
-            "label": "When exactly 2 of 4 say OVER, take UNDER",
+            "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
             "rule_family": "vote_count",
             "window_days": 14,
             "decided": 58,
@@ -24414,7 +24414,7 @@
         "pass_reason": "Today's trailing rule did not fire for this analyst pattern.",
         "pass_why": "adaptive_rule_no_fire",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -24850,13 +24850,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is over 7.5 at 51%. Thinner read, stated as such.",
-          "take_kind": "standard",
-          "live_p_over": 0.5525,
-          "live_state_note": "Top 6th, 5 runs in \u2014 my number's moved to 55% over.",
-          "as_of": "2026-08-02T21:03:46Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -25018,7 +25012,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -25053,7 +25047,7 @@
         "confidence_rank": 1,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game showed VEGA OVER, ATLAS OVER, NOVA UNDER, SCOUT UNDER, so DiamondEdge passes instead of forcing a ticket.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -25462,7 +25456,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -25922,34 +25916,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 6,
-        "half": "top",
-        "outs": 0,
-        "away_score": 5,
-        "home_score": 0,
-        "runs_so_far": 5,
-        "pregame_total": 8.0,
-        "runs_vs_pregame_total": -3.0,
-        "runs_still_needed_for_over": 3,
-        "innings_elapsed": 5.5,
-        "pace_runs_per_inning": 0.91,
-        "projected_final_runs": 8.2,
-        "p_hit_now": 0.5525,
-        "p_hit_side": "over",
-        "p_hit_side_basis": "engine_pick",
-        "p_hit_certified": true,
-        "p_hit_basis": "certified conditional rest-of-game engine (buckets: LATE)",
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "Top 6th, 5 runs in \u2014 my number's moved to 55% over.",
-        "live_p_over": 0.5525,
-        "as_of": "2026-08-02T21:03:46Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-02-Washington Nationals-Atlanta Braves-824891",
@@ -25984,7 +25951,7 @@
         "pass_reason": "Today's trailing rule did not fire for this analyst pattern.",
         "pass_why": "adaptive_rule_no_fire",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -26582,7 +26549,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -26617,7 +26584,7 @@
         "confidence_rank": 1,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game showed VEGA OVER, ATLAS OVER, NOVA OVER, SCOUT UNDER, so DiamondEdge passes instead of forcing a ticket.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -27026,7 +26993,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -27519,7 +27486,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -28108,7 +28075,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -28143,7 +28110,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT OVER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is UNDER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -28558,7 +28525,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -29052,7 +29019,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -29479,13 +29446,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.04 runs below an average night \u2014 8.0 against 8.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 6th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-02T21:03:46Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -29646,7 +29607,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -29681,7 +29642,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -30136,7 +30097,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -30597,34 +30558,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 6,
-        "half": "bottom",
-        "outs": 3,
-        "away_score": 0,
-        "home_score": 5,
-        "runs_so_far": 5,
-        "pregame_total": 8.0,
-        "runs_vs_pregame_total": -3.0,
-        "runs_still_needed_for_over": 3,
-        "innings_elapsed": 6.0,
-        "pace_runs_per_inning": 0.83,
-        "projected_final_runs": 7.5,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-02T21:03:46Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-02-Chicago White Sox-Tampa Bay Rays-822943",
@@ -30657,7 +30591,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -31250,7 +31184,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -31285,7 +31219,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA OVER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -31740,7 +31674,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -32234,7 +32168,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -32833,7 +32767,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -32868,7 +32802,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS OVER, NOVA OVER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -33323,7 +33257,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -33819,7 +33753,7 @@
         "pass_reason": "Today's trailing rule did not fire for this analyst pattern.",
         "pass_why": "adaptive_rule_no_fire",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -34407,7 +34341,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -34442,7 +34376,7 @@
         "confidence_rank": 1,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game showed VEGA OVER, ATLAS UNDER, NOVA OVER, SCOUT UNDER, so DiamondEdge passes instead of forcing a ticket.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -34891,7 +34825,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -35384,7 +35318,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -35816,13 +35750,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "No plate assignment yet, so this is the ballpark on its own: 0.94 runs below a neutral night, 7.6 against 8.5. The umpire can still move it.",
-          "take_kind": "standard",
-          "live_p_over": 1.0,
-          "live_state_note": "Bot 8th, 10 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-02T21:03:46Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -35984,7 +35912,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -36019,7 +35947,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -36474,7 +36402,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -36935,35 +36863,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 8,
-        "half": "bottom",
-        "outs": 3,
-        "away_score": 3,
-        "home_score": 7,
-        "runs_so_far": 10,
-        "pregame_total": 8.5,
-        "runs_vs_pregame_total": 1.5,
-        "runs_still_needed_for_over": 0,
-        "innings_elapsed": 8.0,
-        "pace_runs_per_inning": 1.25,
-        "projected_final_runs": 11.2,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": "final-total already past the pregame line",
-        "p_hit_buckets": [
-          "LATE",
-          "HOT"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": 1.0,
-        "as_of": "2026-08-02T21:03:46Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-02-New York Yankees-Chicago Cubs-824648",
@@ -36998,7 +36898,7 @@
         "pass_reason": "Today's trailing rule did not fire for this analyst pattern.",
         "pass_why": "adaptive_rule_no_fire",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -37438,13 +37338,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is under 6.5 at 51%. Thinner read, stated as such.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 9th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-02T21:03:46Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -37606,7 +37500,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -37641,7 +37535,7 @@
         "confidence_rank": 1,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game showed VEGA OVER, ATLAS UNDER, NOVA OVER, SCOUT UNDER, so DiamondEdge passes instead of forcing a ticket.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -38090,7 +37984,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -38550,34 +38444,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 9,
-        "half": "bottom",
-        "outs": 1,
-        "away_score": 2,
-        "home_score": 1,
-        "runs_so_far": 3,
-        "pregame_total": 6.5,
-        "runs_vs_pregame_total": -3.5,
-        "runs_still_needed_for_over": 4,
-        "innings_elapsed": 9.0,
-        "pace_runs_per_inning": 0.33,
-        "projected_final_runs": 3.0,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-02T21:03:46Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-02-Kansas City Royals-Colorado Rockies-824323",
@@ -38612,7 +38479,7 @@
         "pass_reason": "Today's trailing rule did not fire for this analyst pattern.",
         "pass_why": "adaptive_rule_no_fire",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -39050,13 +38917,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The park is the half of my slice that is knowable this early, and on the park alone it is over 11.5 at 65%. I'll take the plate umpire when they post one.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 7th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-02T21:03:46Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -39218,7 +39079,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "STRONG",
@@ -39253,7 +39114,7 @@
         "confidence_rank": 1,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game showed VEGA OVER, ATLAS OVER, NOVA OVER, SCOUT OVER, so DiamondEdge passes instead of forcing a ticket.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -39662,7 +39523,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -40167,36 +40028,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 7,
-        "half": "bottom",
-        "outs": 0,
-        "away_score": 1,
-        "home_score": 8,
-        "runs_so_far": 9,
-        "pregame_total": 11.5,
-        "runs_vs_pregame_total": -2.5,
-        "runs_still_needed_for_over": 3,
-        "innings_elapsed": 7.0,
-        "pace_runs_per_inning": 1.29,
-        "projected_final_runs": 11.6,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE",
-          "HIGH",
-          "HOT"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-02T21:03:46Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-02-Milwaukee Brewers-Los Angeles Angels-823996",
@@ -40229,7 +40061,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -40668,13 +40500,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The park is the half of my slice that is knowable this early, and on the park alone it is over 7.5 at 52%. I'll take the plate umpire when they post one.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Top 8th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-02T21:03:46Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -40836,7 +40662,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -40871,7 +40697,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS OVER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -41326,7 +41152,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -41832,34 +41658,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 8,
-        "half": "top",
-        "outs": 1,
-        "away_score": 0,
-        "home_score": 2,
-        "runs_so_far": 2,
-        "pregame_total": 7.5,
-        "runs_vs_pregame_total": -5.5,
-        "runs_still_needed_for_over": 6,
-        "innings_elapsed": 7.5,
-        "pace_runs_per_inning": 0.27,
-        "projected_final_runs": 2.4,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-02T21:03:46Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-02-Detroit Tigers-Athletics-824971",
@@ -41892,7 +41691,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -42333,8 +42132,8 @@
           "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is over 11 at 55%. Thinner read, stated as such.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 4th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-02T21:03:46Z",
+          "live_state_note": "Bot 6th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-02T22:16:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -42499,7 +42298,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -42534,7 +42333,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS OVER, NOVA OVER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -42949,7 +42748,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -43457,29 +43256,30 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 4,
-        "half": "top",
-        "outs": 1,
-        "away_score": 2,
+        "inning": 6,
+        "half": "bottom",
+        "outs": 3,
+        "away_score": 6,
         "home_score": 0,
-        "runs_so_far": 2,
+        "runs_so_far": 6,
         "pregame_total": 10.0,
-        "runs_vs_pregame_total": -8.0,
-        "runs_still_needed_for_over": 8,
-        "innings_elapsed": 3.5,
-        "pace_runs_per_inning": 0.57,
-        "projected_final_runs": 5.1,
+        "runs_vs_pregame_total": -4.0,
+        "runs_still_needed_for_over": 4,
+        "innings_elapsed": 6.0,
+        "pace_runs_per_inning": 1.0,
+        "projected_final_runs": 9.0,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
         "p_hit_certified": false,
         "p_hit_basis": null,
         "p_hit_buckets": [
+          "LATE",
           "HIGH"
         ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-02T21:03:46Z",
+        "as_of": "2026-08-02T22:16:00Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -43517,7 +43317,7 @@
         "pass_reason": "Today's trailing rule did not fire for this analyst pattern.",
         "pass_why": "adaptive_rule_no_fire",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -43956,9 +43756,9 @@
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is under 7 at 56%. Thinner read, stated as such.",
           "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Top 4th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-02T21:03:46Z",
+          "live_p_over": 1.0,
+          "live_state_note": "Top 8th, 8 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-02T22:16:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -44123,7 +43923,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "CLEAR",
@@ -44158,7 +43958,7 @@
         "confidence_rank": 1,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game showed VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, so DiamondEdge passes instead of forcing a ticket.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -44607,7 +44407,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -45114,27 +44914,29 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 4,
+        "inning": 8,
         "half": "top",
-        "outs": 0,
-        "away_score": 0,
-        "home_score": 2,
-        "runs_so_far": 2,
+        "outs": 1,
+        "away_score": 2,
+        "home_score": 6,
+        "runs_so_far": 8,
         "pregame_total": 7.0,
-        "runs_vs_pregame_total": -5.0,
-        "runs_still_needed_for_over": 5,
-        "innings_elapsed": 3.5,
-        "pace_runs_per_inning": 0.57,
-        "projected_final_runs": 5.1,
+        "runs_vs_pregame_total": 1.0,
+        "runs_still_needed_for_over": 0,
+        "innings_elapsed": 7.5,
+        "pace_runs_per_inning": 1.07,
+        "projected_final_runs": 9.6,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
         "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [],
+        "p_hit_basis": "final-total already past the pregame line",
+        "p_hit_buckets": [
+          "LATE"
+        ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-02T21:03:46Z",
+        "live_p_over": 1.0,
+        "as_of": "2026-08-02T22:16:00Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -45172,7 +44974,7 @@
         "pass_reason": "Today's trailing rule did not fire for this analyst pattern.",
         "pass_why": "adaptive_rule_no_fire",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -45612,8 +45414,8 @@
           "take": "No plate assignment yet, so this is the ballpark on its own: 0.19 runs below a neutral night, 7.8 against 8. The umpire can still move it.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 3rd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-02T21:03:46Z",
+          "live_state_note": "Top 7th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-02T22:16:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -45778,7 +45580,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -45813,7 +45615,7 @@
         "confidence_rank": 1,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game showed VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, so DiamondEdge passes instead of forcing a ticket.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -46262,7 +46064,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
@@ -46769,27 +46571,30 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 3,
+        "inning": 7,
         "half": "top",
-        "outs": 3,
-        "away_score": 0,
-        "home_score": 4,
-        "runs_so_far": 4,
+        "outs": 0,
+        "away_score": 3,
+        "home_score": 5,
+        "runs_so_far": 8,
         "pregame_total": 8.0,
-        "runs_vs_pregame_total": -4.0,
-        "runs_still_needed_for_over": 4,
-        "innings_elapsed": 2.5,
-        "pace_runs_per_inning": 1.6,
-        "projected_final_runs": 14.4,
+        "runs_vs_pregame_total": 0.0,
+        "runs_still_needed_for_over": 0,
+        "innings_elapsed": 6.5,
+        "pace_runs_per_inning": 1.23,
+        "projected_final_runs": 11.1,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
         "p_hit_certified": false,
         "p_hit_basis": null,
-        "p_hit_buckets": [],
+        "p_hit_buckets": [
+          "LATE",
+          "HOT"
+        ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-02T21:03:46Z",
+        "as_of": "2026-08-02T22:16:00Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -46825,7 +46630,7 @@
         "expanded_band": false,
         "certified": false,
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -47151,7 +46956,7 @@
         "run_line_price_home": 122.0,
         "run_line_price_away": -128.0,
         "book": "lowvig",
-        "captured_at": "2026-08-02T21:03:45Z",
+        "captured_at": "2026-08-02T22:15:59Z",
         "wall": "T-3h",
         "locked_at": null,
         "game_pk": 823919,
@@ -47184,7 +46989,7 @@
           "total_price_under": -118.0
         },
         "n_books": 22,
-        "as_of": "2026-08-02T21:27:26Z",
+        "as_of": "2026-08-02T22:37:42Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -47442,7 +47247,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-02T21:30:39Z",
+          "asof_utc": "2026-08-02T22:46:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -47477,7 +47282,7 @@
         "confidence_rank": 3,
         "rationale_line": "Trailing 35 days, this strong rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS OVER, NOVA OVER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
         "adaptive_strategy": {
-          "version": "adaptive_desk_v15",
+          "version": "adaptive_desk_v18",
           "date": "2026-08-02",
           "status": "ACTIVE",
           "rule_key": "neural_tanh:l20.12:th0.54",
@@ -47932,7 +47737,7 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": {
-            "version": "adaptive_desk_v15",
+            "version": "adaptive_desk_v18",
             "date": "2026-08-02",
             "status": "ACTIVE",
             "rule_key": "neural_tanh:l20.12:th0.54",
