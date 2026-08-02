@@ -1496,15 +1496,14 @@ export default function Home() {
       const fam = humanNote(s.rule_family || "");
       const win = s.window_days ? `${s.window_days}d` : "4w";
       const tier = adaptiveTier(s);
-      const ci = adaptiveCiText(s);
       return `<details class="daystrat" title="${esc(line)}">
         <summary>
           <span class="ds-k">Today's strategy</span>
-          <span class="ds-copy"><b>${esc(label)}</b><i>${tier ? `<em class="ds-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}${rec ? `${esc(rec)} · ` : ""}${ci ? `CI ${esc(ci)} · ` : ""}${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
+          <span class="ds-copy"><b>${esc(label)}</b><i>${tier ? `<em class="ds-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}${rec ? `${esc(rec)} · ` : ""}last ${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
           <span class="ds-caret" aria-hidden="true">⌄</span>
         </summary>
         <div class="ds-more">
-          <p>${esc(line || `Before this slate, DiamondEdge picked one rule from strictly prior games and applies it to today's board.`)}</p>
+          <p>${esc(line || `Before this slate, DiamondEdge looked at recent finished games, picked the rule that had been helping most, and uses that rule for today's board.`)}</p>
           <button class="ds-learn" id="daystrat-eye" type="button">Learn on The Desk →</button>
         </div>
       </details>`;
@@ -1539,15 +1538,15 @@ export default function Home() {
         return n ? `<em>${n}</em>` : "";
       };
       const rows = [
-        { keys: ["single"], lab: "Single analyst", txt: "Follow or fade one analyst when that model has been the clearest recent signal." },
-        { keys: ["pair", "split_pair"], lab: "Analyst pairs", txt: "Follow, fade, or isolate two-analyst split patterns when they have separated from the field." },
-        { keys: ["group_agree"], lab: "Analyst blocks", txt: "Use 2- or 3-model blocks, not just one fixed pair." },
+        { keys: ["single"], lab: "Single analyst", txt: "Follow or fade one analyst when that voice has been the clearest recent signal." },
+        { keys: ["pair", "split_pair"], lab: "Analyst pairs", txt: "Watch two analysts together when that pair has recently spotted the right games." },
+        { keys: ["group_agree"], lab: "Analyst blocks", txt: "Compare small groups of analysts instead of trusting one fixed favorite." },
         { keys: ["vote_count"], lab: "Vote counts", txt: "Treat 4-0, 3-1 and 2-2 boards as different betting situations." },
-        { keys: ["signature"], lab: "Desk shapes", txt: "Test exact four-model formations, so an OVER can still be faded when that shape has been poor." },
-        { keys: ["desk_prob", "majority_prob_disagree"], lab: "Probability gaps", txt: "Compare the vote count against the analysts' stated probabilities and only fire when the gap matters." },
-        { keys: ["weighted_form"], lab: "Form weights", txt: "Weight each analyst by its recent results, then pass when the blended vote is thin." },
-        { keys: ["prob_weighted"], lab: "Probability weights", txt: "Use each analyst's stated probability, with recent right/wrong probability behavior setting the weights." },
-        { keys: ["stacked_rules"], lab: "Stacked models", txt: "Combine several positive trailing rules. Researched now; held out of live selection until independently validated." },
+        { keys: ["signature"], lab: "Desk shapes", txt: "Remember exact four-analyst patterns, so four OVER reads can still become an UNDER when that pattern has been bad." },
+        { keys: ["desk_prob", "majority_prob_disagree"], lab: "How sure they were", txt: "Separate a loud lean from a barely-there lean, even when the vote count looks the same." },
+        { keys: ["weighted_form"], lab: "Recent form", txt: "Give more trust to analysts that have been useful lately, then pass when the blend is thin." },
+        { keys: ["prob_weighted"], lab: "Confidence habits", txt: "Check whether an analyst's high-confidence reads have actually been worth trusting lately." },
+        { keys: ["stacked_rules"], lab: "Combo recipes", txt: "Combine several helpful clues, then hold them back until they prove they work outside the first batch." },
       ];
       return rows.map((r) => {
         const on = r.keys.includes(fam) || r.keys.some((k) => key.indexOf(k) >= 0);
@@ -1561,12 +1560,10 @@ export default function Home() {
       return `<div class="ads-board">${top.map((r: any, i: number) => {
         const hit = r.hit_rate != null ? stratPct(Number(r.hit_rate)) : "—";
         const vhit = r.validation_hit_rate != null ? stratPct(Number(r.validation_hit_rate)) : "";
-        const score = r.score != null ? num(Number(r.score), 2) : "—";
         const tier = adaptiveTier(r);
-        const ci = adaptiveCiText(r);
         return `<div class="ads-cand${i === 0 ? " winner" : ""}">
           <span class="ads-rank">${i === 0 ? "Selected #1" : `#${i + 1}`}</span>
-          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i>${tier ? `<em class="ads-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}<em>${esc(r.record || "—")} full</em><em>${esc(hit)}${ci ? ` CI ${esc(ci)}` : ""}</em>${r.validation_record ? `<em>${esc(r.validation_record)} validation${vhit ? ` · ${esc(vhit)}` : ""}</em>` : ""}<em>score ${esc(score)}</em></i></span>
+          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i>${tier ? `<em class="ads-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}<em>${esc(r.record || "—")} recent</em><em>${esc(hit)} hit rate</em>${r.validation_record ? `<em>${esc(r.validation_record)} second check${vhit ? ` · ${esc(vhit)}` : ""}</em>` : ""}</i></span>
           <span class="ads-famtag">${esc(String(r.rule_family || "").replace(/_/g, " "))}</span>
         </div>`;
       }).join("")}</div>`;
@@ -1575,16 +1572,14 @@ export default function Home() {
       const top = s && s.strategy_research && Array.isArray(s.strategy_research.top_candidates)
         ? s.strategy_research.top_candidates : [];
       const selected = top.find((r: any) => r && r.rule_key === s.rule_key) || top[0] || null;
-      const score = selected && selected.score != null ? num(Number(selected.score), 2) : null;
       const full = selected && selected.record ? selected.record : humanNote(s.record);
       const hit = selected && selected.hit_rate != null ? stratPct(Number(selected.hit_rate)) : c.hit;
       const tier = adaptiveTier(selected || s);
-      const ci = adaptiveCiText(selected || s);
       const val = selected && selected.validation_record ? selected.validation_record : s.validation_record;
       const vhit = selected && selected.validation_hit_rate != null ? stratPct(Number(selected.validation_hit_rate)) : (s.validation_hit_rate != null ? stratPct(Number(s.validation_hit_rate)) : "");
       const fired = c.decided != null ? `${c.decided} fires` : "enough fires";
-      const tail = [tier ? `${tier} confidence` : "", full ? `${full} full-window` : "", hit || "", ci ? `80% CI ${ci}` : "", val ? `${val} validation${vhit ? ` (${vhit})` : ""}` : "", score ? `score ${score}` : ""].filter(Boolean).join(" · ");
-      return `Chosen because it ranked #1 for this slate after sample-size, pick-rate, validation and confidence-interval checks: ${tail || fired}.`;
+      const proof = [tier ? `${tier} signal` : "", full ? `${full} recent record` : "", hit ? `${hit} hit rate` : "", val ? `${val} second check${vhit ? ` (${vhit})` : ""}` : "", fired].filter(Boolean).join(" · ");
+      return `Chosen because it was the cleanest rule before today's slate: it had enough past examples, beat the other useful rules, and still passed on games where the edge looked thin. ${proof || ""}`;
     }
     function adaptiveStrategyExamples(s: any) {
       const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
@@ -1611,15 +1606,11 @@ export default function Home() {
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
             <div class="sh-sport">Today's strategy · ${esc(dateTxt)}</div>
             <div class="rcp-title" id="ads-title"><span class="pl-vdia">◆</span>${esc(c.label)}</div>
-            <div class="sh-meta">chosen from the trailing ${c.days} days · ${esc(byline)}</div>
+            <div class="sh-meta">picked from finished games · ${esc(byline)}</div>
           </div>
           <div class="sh-body">
             <div class="dsec ads-hero">
-              <div class="ads-tierline">
-                ${c.tier ? `<span class="ads-tier is-${String(c.tier).toLowerCase()}">${esc(c.tier)}</span>` : ""}
-                ${c.ci ? `<i>80% hit-rate range ${esc(c.ci)}</i>` : ""}
-                ${c.vci ? `<i>validation range ${esc(c.vci)}</i>` : ""}
-              </div>
+              ${c.tier ? `<div class="ads-tierline"><span class="ads-tier is-${String(c.tier).toLowerCase()}">${esc(c.tier)}</span></div>` : ""}
               <div class="ads-rule"><span>Use today</span><b>${esc(c.rule)}</b></div>
               <div class="ads-rec">
                 <span><b>${esc(c.tier || "—")}</b><i>confidence</i></span>
@@ -1635,24 +1626,24 @@ export default function Home() {
                 <p>${esc(adaptiveStrategySelectionLine(s, c))}</p>
                 <p>${esc(c.summary || `Over the last ${c.days} days, this was the best trailing rule for the slate.`)}</p>
                 ${s.selected_reason ? `<p>${esc(humanNote(s.selected_reason))}</p>` : ""}
-                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It looks back over the recent window, tests useful combinations of the four analyst reads, keeps rules that fire often enough to matter, and then favors the rule whose lower confidence bound is strongest.</p>
-                <p>STRONG means the trailing record, validation slice and today's signal all cleared the bar. LEAN means the direction is visible but not sturdy enough for the official graded card. PASS means the model did not find enough separation.</p>
+                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It asks which kinds of analyst agreements have actually helped lately. Sometimes that means following the room, sometimes fading a pattern that has been wrong, and sometimes passing because the books already priced it correctly.</p>
+                <p>STRONG means the recent proof is clean enough to put on the official card. LEAN means the game is pointing that way, but not strongly enough to grade as the main pick. PASS means the smartest move is leaving the game alone.</p>
               </div>
             </div>
             <div class="dsec">
               <div class="dsec-h">What gets compared</div>
-              <div class="ads-note">Counts are candidate rules tested in the same trailing window. The highlighted family produced today's selected rule.</div>
+              <div class="ads-note">These are the kinds of rules checked against recent finished games. The highlighted row is the family today's rule came from.</div>
               <div class="ads-fams">${adaptiveStrategyFamilyRows(s)}</div>
             </div>
             <div class="dsec">
               <div class="dsec-h">Top candidates</div>
-              <div class="ads-note">Ranked confidence-first, then by nested validation score for this slate, not by all-time return.</div>
+              <div class="ads-note">Ranked by what looked strongest before today's games, not by picking a winner after the fact.</div>
               ${adaptiveStrategyLeaderboard(s)}
             </div>
             <div class="dsec">
               <div class="dsec-h">Recent evidence</div>
               <div class="dsec-b rcp">
-                <p>These are examples from the same trailing window the selector used. They are not cherry-picked as today's plays; they show the kind of historical rows behind the rule.</p>
+                <p>These are recent examples from the same window used before today's slate. They are not today's plays; they show the kind of past games behind the rule.</p>
                 ${adaptiveStrategyExamples(s)}
               </div>
             </div>
@@ -1681,7 +1672,7 @@ export default function Home() {
       const line = latest ? humanNote(latest.summary_line || latest.plain_english_rule) : humanNote(root.note);
       return `<div class="ixc adapt-insight">
         <div class="ixc-h">Adaptive DiamondEdge strategy</div>
-        <div class="ixc-sub">One strategy per slate, refreshed daily from the trailing four weeks.</div>
+        <div class="ixc-sub">One rule is picked before the slate from recent completed games, then used for that whole day.</div>
         <div class="adap-big"><b>${esc(stratWL(overall))}</b><span>${overall.hit != null ? `${esc(stratPct(overall.hit))} hit` : ""}${overall.roi != null ? ` · <i class="${overall.roi >= 0 ? "pos" : "neg"}">${esc(stratRoi(overall.roi))} ROI</i>` : ""}</span></div>
         <div class="adap-now"><span class="ds-info" aria-hidden="true">(i)</span><p><b>${esc(latestKey ? `Latest: ${label}` : label)}</b>${line ? ` ${esc(line)}` : ""}</p></div>
         <div class="adap-foot">${esc(since)} to ${esc(thru)} · ${overall.n} graded picks · ${ruleCount || 0} distinct daily rule${ruleCount === 1 ? "" : "s"} selected.</div>
@@ -11315,7 +11306,7 @@ export default function Home() {
           <div class="dp-foot">
             <div class="dp-system">
               <div class="dp-system-k">How DiamondEdge chooses from them</div>
-              <p>Before each slate, the system looks only backward: strictly prior games over trailing lookback windows. It tests single analysts, pairs, exact 4-model vote shapes, probability-weighted blends, stacked rules, logistic meta-models, and shallow neural-style interactions. One strategy is locked for that day, then applied forward to every game on that slate.</p>
+              <p>Before each slate, DiamondEdge only uses games that are already finished. It checks which recent analyst patterns have been helping: one analyst getting hot, two analysts working well together, a 4-0 room that should be trusted, or a 4-0 room that has actually been worth fading. Then it locks one rule for the day and applies that rule to every game before any results are known.</p>
               ${betaData ? adaptiveStrategyInsight(betaData) : `<div class="ixc adapt-insight"><div class="ixc-h">Adaptive DiamondEdge strategy</div><div class="ixc-sub">Loading the daily strategy ledger…</div></div>`}
               <details class="dp-more">
                 <summary><span>Strategy research space</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
