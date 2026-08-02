@@ -9647,6 +9647,7 @@ export default function Home() {
     // news stories, yesterday's record recap, and a top-picks summary. A small grid
     // button escapes to the classic scrollable front (accessibility + preference).
     const STORY_MS = 7000;
+    const STORY_MAX = 14;
     let storyIdx = 0, storyLen = 0, storyRafId = 0, storyT0 = 0, storyAcc = 0, storyHold = false;
     function stopStories() {
       if (storyRafId) cancelAnimationFrame(storyRafId);
@@ -9697,11 +9698,8 @@ export default function Home() {
       }
       const slides: any[] = [];
       if (picks[0]) slides.push({ t: "pick", g: picks[0].g, pl: picks[0].pl, rank: 1 });
-      // PACING. Leon: "it's very hard to follow the full stories." The deck ran to twelve
-      // slides at seven seconds each — a 90-second sit for a morning briefing, with four or
-      // five near-identical pick slides in the middle of it. It is capped at SEVEN below,
-      // and the interleave that used to alternate pick/news/pick/news until it ran out of
-      // both now takes two of each at most. Same content, a third of the sitting.
+      // PACING. The deck is allowed to be richer now, but news-led: more league stories,
+      // fewer repeated pick cards, and still a hard cap so it does not turn into a feed.
       // ANALYST DESK slide: the day's strongest consensus is the strongest possible story —
       // "all four analysts agree" leads; a 3–1 majority still makes the deck; a split gets
       // the "desk divided" treatment only when nothing stronger exists.
@@ -9725,13 +9723,13 @@ export default function Home() {
       const recap = yesterdayRecap();
       if (recap) slides.push({ t: "recap", ...recap });
       let pi = 1, ni = 0;
-      while ((pi < Math.min(picks.length, 2) || ni < Math.min(news.length, 2)) && slides.length < 7) {
-        if (ni < Math.min(news.length, 2)) slides.push({ t: "news", ...news[ni++] });
-        if (pi < Math.min(picks.length, 2)) { slides.push({ t: "pick", g: picks[pi].g, pl: picks[pi].pl, rank: pi + 1 }); pi++; }
+      while ((pi < Math.min(picks.length, 2) || ni < Math.min(news.length, 8)) && slides.length < STORY_MAX) {
+        if (ni < Math.min(news.length, 8)) slides.push({ t: "news", ...news[ni++] });
+        if (pi < Math.min(picks.length, 2) && slides.length < STORY_MAX) { slides.push({ t: "pick", g: picks[pi].g, pl: picks[pi].pl, rank: pi + 1 }); pi++; }
       }
       // the board summary always closes the deck — it is the hand-off to the games tab
-      if (picks.length >= 2) slides.push({ t: "summary", picks });
-      return slides.slice(0, 7);
+      if (picks.length >= 2 && slides.length < STORY_MAX) slides.push({ t: "summary", picks });
+      return slides.slice(0, STORY_MAX);
     }
     // THE VOICES on a pick slide: the strongest agreeing analyst gets quoted under the call;
     // a lone dissenter gets their dissent quoted out loud ("NOVA disagrees: …"). Nothing
@@ -10014,6 +10012,13 @@ export default function Home() {
     function bindStories(view: any) {
       const wrap = $("stories"), stage = $("st-stage");
       bindClick("st-gridbtn", (e: any) => { e.stopPropagation(); setNewsMode("grid"); });
+      bindClick("st-sharebtn", async (e: any) => {
+        e.stopPropagation();
+        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.origin + location.pathname; } })();
+        const text = shareTagline();
+        if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the briefing", text, url }); return; } catch {} }
+        try { await navigator.clipboard.writeText(`${text} ${url}`); toast("Copied — spread the word"); } catch { toast(url); }
+      });
       view.querySelectorAll("[data-go]").forEach((b: any) => {
         b.onclick = (e: any) => {
           e.stopPropagation();
@@ -10091,6 +10096,7 @@ export default function Home() {
             <div class="st-bar">
               <span class="st-brand"><span class="st-dia" aria-hidden="true">◆</span>The Briefing</span>
               <span class="st-date">${esc(dateTxt)}</span>
+              <button class="st-sharebtn" id="st-sharebtn" aria-label="Share the briefing" title="Share"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button>
               <button class="st-gridbtn" id="st-gridbtn" aria-label="Close the briefing" title="Close"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
             </div>
           </div>

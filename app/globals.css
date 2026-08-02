@@ -2793,7 +2793,8 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
 body.stories-on{overflow:hidden}
 body.stories-on header#app-header,body.stories-on .dockwrap{opacity:0;pointer-events:none;transform:translateY(-8px)}
 body.stories-on .dockwrap{transform:translateY(16px)}
-body.stories-on main{padding:0 !important;max-width:none}
+body.stories-on main{position:fixed;inset:0;z-index:399;width:100vw;height:100dvh;margin:0;padding:0 !important;max-width:none;overflow:hidden}
+body.stories-on #today-view{animation:none!important;transform:none!important}
 
 .stories{position:fixed;inset:0;z-index:400;height:100dvh;min-height:0;max-height:none;margin:0;max-width:none;
   border-radius:0;overflow:hidden;background:var(--bg);border:0;box-shadow:none;
@@ -2910,6 +2911,78 @@ body.stories-on main{padding:0 !important;max-width:none}
 .sts-srank{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:11px;color:var(--ink3);background:var(--sunken);border-radius:5px;padding:2px 6px;flex-shrink:0}
 .sts-skel{gap:12px;justify-content:center;align-items:flex-start}
 .sts-skel .sk-line{height:16px;display:block}
+
+/* Briefing v3: story-only night mode. The app stays light; the full-screen deck becomes
+   a dark sports broadcast layer with active glass, tighter top spacing and more motion. */
+body.stories-on{background:#050710}
+.stories{background:#050710;color:#f7fbff}
+.stories::before{content:"";position:absolute;inset:-18%;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(115deg,rgba(61,179,255,.22),transparent 30%,rgba(245,190,66,.16) 54%,transparent 76%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 18px);
+  opacity:.9;animation:briefingSweep 13s ease-in-out infinite alternate}
+.stories::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 18%,transparent 78%,rgba(0,0,0,.42)),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 6px);
+  mix-blend-mode:screen;opacity:.6}
+@keyframes briefingSweep{from{transform:translate3d(-4%,-2%,0) rotate(-2deg)}to{transform:translate3d(4%,2%,0) rotate(2deg)}}
+.stories .st-top{padding:calc(var(--sat) + 4px) max(12px,var(--sar)) 10px max(12px,var(--sal));
+  background:linear-gradient(180deg,rgba(5,7,16,.98) 0%,rgba(5,7,16,.76) 64%,transparent 100%)}
+.stories .st-progress{gap:3px;margin-bottom:8px}
+.stories .st-seg{height:3px;background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.stories .st-fill{background:linear-gradient(90deg,#7ddcff,#f5be42,#ff4f86);box-shadow:0 0 12px rgba(125,220,255,.75)}
+.stories .st-bar{gap:8px}
+.stories .st-brand{color:#fff;text-shadow:0 0 18px rgba(125,220,255,.42)}
+.stories .st-brand .st-dia{color:#f5be42;filter:drop-shadow(0 0 9px rgba(245,190,66,.6));animation:briefingPulse 2.8s ease-in-out infinite}
+.stories .st-date{color:rgba(235,244,255,.66)}
+.st-sharebtn,.stories .st-gridbtn{pointer-events:auto;display:grid;place-items:center;width:39px;height:39px;border-radius:50%;cursor:pointer;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);color:#f8fbff;
+  -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
+  box-shadow:0 10px 30px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.16);transition:.18s var(--ease)}
+.st-sharebtn{margin-left:auto}.stories .st-gridbtn{margin-left:0}
+.st-sharebtn:hover,.stories .st-gridbtn:hover{background:rgba(255,255,255,.17);transform:translateY(-1px)}
+.st-sharebtn:active,.stories .st-gridbtn:active{transform:scale(.93)}
+.stories .st-stage{z-index:1}
+.stories .st-slide.on .sts>*:not(.sts-bg):not(.sts-photo):not(.sts-scrim){animation:briefingRise .52s var(--ease) both}
+.stories .st-slide.on .sts>*:nth-child(3){animation-delay:.04s}
+.stories .st-slide.on .sts>*:nth-child(4){animation-delay:.08s}
+.stories .st-slide.on .sts>*:nth-child(5){animation-delay:.12s}
+@keyframes briefingRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes briefingPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 7px rgba(245,190,66,.45))}50%{transform:scale(1.12);filter:drop-shadow(0 0 16px rgba(245,190,66,.78))}}
+.stories .st-hint{bottom:calc(var(--sab) + 10px)}
+.stories .st-hint span{color:rgba(235,244,255,.66);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.stories .sts{z-index:2;max-width:680px;padding:calc(var(--sat) + 54px) max(22px,var(--sal)) calc(var(--sab) + 58px) max(22px,var(--sar));gap:16px}
+.stories .sts-bg{background:transparent}
+.stories .sts-pick .sts-bg::before{height:4px;box-shadow:0 0 18px currentColor}
+.stories .sts-kick,.stories .sts-when,.stories .sts-substat,.stories .sts .ps-signals,.stories .sts .pk-made{color:rgba(235,244,255,.68)}
+.stories .sts-head,.stories .sts-team b,.stories .sts-score,.stories .sts-bigwl,.stories .sts-rmu,.stories .sts-smu,.stories .sts-strec b,.stories .sts-stnm{color:#f8fbff}
+.stories .sts-head{font-size:clamp(30px,8vw,54px);line-height:1.02;letter-spacing:0;text-wrap:balance;text-shadow:0 12px 34px rgba(0,0,0,.38)}
+.stories .sts-head.sm{font-size:clamp(24px,6vw,38px)}
+.stories .sts-dek{color:rgba(235,244,255,.76);font-size:16px}
+.stories .sts-crest,.stories .sts-rrow,.stories .sts-srow,.stories .sts-strow{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 30px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.13)}
+.stories .sts-crest{animation:briefingFloat 4.5s ease-in-out infinite}
+.stories .sts-team:nth-child(3) .sts-crest{animation-delay:-1.4s}
+@keyframes briefingFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(1.5deg)}}
+.stories .sts-team i,.stories .sts-rside,.stories .sts-sside,.stories .sts-strank,.stories .sts-strow2 i{color:rgba(235,244,255,.62)}
+.stories .sts-call{font-size:clamp(40px,13vw,72px);color:#f8fbff;text-shadow:0 0 26px rgba(125,220,255,.24)}
+.stories .sts-call.ou-over{color:#32df97}.stories .sts-call.ou-under{color:#ff4277}
+.stories .sts-meta .pgrade,.stories .sts .pk-count,.stories .sts-srank{background:rgba(255,255,255,.1);color:rgba(245,251,255,.82)}
+.stories .st-cta{background:linear-gradient(135deg,#f8fbff,#cde9ff);color:#07101d;box-shadow:0 14px 34px rgba(125,220,255,.22),inset 0 1px 0 rgba(255,255,255,.8)}
+.stories .st-cta.lock{background:linear-gradient(135deg,#f5be42,#ff6a9a);color:#090b14}
+.stories .sts-news .sts-bg::before{content:"";position:absolute;inset:72px 16px auto;height:44vh;border-radius:24px;
+  background:linear-gradient(135deg,rgba(125,220,255,.18),rgba(245,190,66,.12),rgba(255,79,134,.16));
+  filter:blur(26px);opacity:.72;animation:briefingGlow 5.8s ease-in-out infinite alternate}
+.stories .sts-photo{max-height:46vh;border-radius:18px;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 52px rgba(0,0,0,.38);
+  animation:briefingPhoto 7s ease-in-out infinite alternate;transform-origin:center}
+.stories .sts-photo.lowres{max-height:34vh}
+@keyframes briefingPhoto{from{transform:translateY(0) scale(1)}to{transform:translateY(-4px) scale(1.018)}}
+@keyframes briefingGlow{from{transform:translate3d(-2%,-1%,0);opacity:.55}to{transform:translate3d(2%,2%,0);opacity:.88}}
+.stories .sts-news{justify-content:flex-start}
+.stories .sts-newsbody{padding:2px 0 0}
+.stories .sts-voice,.stories .sts-chief{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.13);box-shadow:0 14px 32px rgba(0,0,0,.24)}
+@media(prefers-reduced-motion:reduce){
+  .stories::before,.stories .st-brand .st-dia,.stories .sts-crest,.stories .sts-photo,.stories .sts-news .sts-bg::before,.stories .st-slide.on .sts>*{animation:none!important}
+}
 
 /* ══ (6+11) INSIGHTS — charts, streak tiles, why-framing, past picks, upsell ══ */
 .ix-wrap{max-width:760px;margin:0 auto}
