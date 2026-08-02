@@ -735,10 +735,16 @@ export default function Home() {
       const done = tr.cls === "done-hit" || tr.cls === "done-miss";
       const dirCls = tr.cls === "hit" || tr.cls === "done-hit" ? "dir-hit" : tr.cls === "miss" || tr.cls === "done-miss" ? "dir-miss" : "dir-close";
       const kick = tr.kind === "total" ? (live ? "Tracking our pick — live" : "Our pick — graded") : (live ? "Live scoreboard read" : "Our lean — result");
+      const heroHead = !hero ? tr.head
+        : tr.cls === "done-hit" ? "✓ Pick cashed"
+        : tr.cls === "done-miss" ? "✕ Pick missed"
+        : tr.cls === "hit" ? "Trending our way"
+        : tr.cls === "miss" ? "Against us"
+        : "Still close";
       // Hero = compact at-a-glance (the honesty note + sub-line live on the full pane card below).
       return `<div class="ltrack ${dirCls}${done ? " is-done" : ""}${hero ? " ltrack-hero" : ""}" role="status">
         <div class="ltr-k">${live ? `<span class="livedot"></span>` : ""}${esc(kick)}</div>
-        <div class="ltr-head">${esc(tr.head)}</div>
+        <div class="ltr-head">${esc(heroHead)}</div>
         ${!hero && tr.sub ? `<div class="ltr-sub">${esc(tr.sub)}</div>` : ""}
         ${!hero && live ? `<div class="ltr-note">Context on how it's going — the graded morning play is unchanged.</div>` : ""}
       </div>`;
@@ -4936,6 +4942,14 @@ export default function Home() {
       if (!pl || pl.grade == null || !(pl.grade > 0)) return "";
       return `<i class="pgrade">${Number(pl.grade).toFixed(2)}</i>`;
     }
+    function pickStrengthPill(pl: any, compact = false) {
+      const n = pl && pl.stars != null && isFinite(Number(pl.stars))
+        ? Math.max(1, Math.min(5, Math.round(Number(pl.stars)))) : null;
+      const q = n == null ? qualityOf(pl) : n >= 4 ? "strong" : n === 3 ? "good" : "lean";
+      const lab = n == null ? (Q_LABEL[q] || "Read") : n >= 4 ? "Strong" : n === 3 ? "Solid" : "Lean";
+      const txt = n == null ? lab : `${n}★${compact ? "" : ` ${lab}`}`;
+      return `<span class="str-pill q-${q}${compact ? " compact" : ""}" title="${esc(n == null ? lab : `${n} of 5 stars — ${lab}`)}">${esc(txt)}</span>`;
+    }
     // A pass's sub-2.00 score, muted — passes carry a score too (the model rates every row).
     function passGrade(scoreVal: any) {
       if (scoreVal == null || isNaN(Number(scoreVal)) || !(Number(scoreVal) > 0)) return "";
@@ -5067,7 +5081,7 @@ export default function Home() {
         return `<div class="hpc hpc-${size} q-${q} tease"><div class="hpc-scrim"></div>
           <div class="hpc-line">
             <span class="hpc-k">◆ ${esc(kick)}</span>
-            <div class="hpc-pickrow"><span class="hpc-stars">${pickStars(pl)}${pickGrade(pl)}</span>${selTxt ? `<b class="hpc-txt">${selTxt}</b>` : ""}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
+            <div class="hpc-pickrow">${pickStrengthPill(pl)}${selTxt ? `<b class="hpc-txt">${selTxt}</b>` : ""}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
           </div></div>`;
       }
       // Prefer the FROZEN display pick's full side+line+price — the served pick_headline
@@ -5084,7 +5098,7 @@ export default function Home() {
       return `<div class="hpc hpc-${size} q-${q}"><div class="hpc-scrim"></div>
         <div class="hpc-line">
           <span class="hpc-k">◆ ${esc(kick)}</span>
-          <div class="hpc-pickrow"><b class="hpc-txt">${bare}</b><span class="hpc-stars">${pickStars(pl)}</span>${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
+          <div class="hpc-pickrow"><b class="hpc-txt">${bare}</b>${pickStrengthPill(pl, true)}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
         </div></div>`;
     }
     // A hero/matchup headline that HYPES the game WITHOUT revealing the pick. Prefers the
@@ -6156,10 +6170,10 @@ export default function Home() {
       </div>`;
     }
 
-    // The pick's state, phrased for the banner: "✓ WON" / "✗ LOST" / "6 of 8 · Bot 5th".
+    // The pick's state, phrased for the banner: clear result after final, compact direction live.
     function pickStateTxt(g: any, pl: any, st: string) {
-      if (st === "won") return { txt: `${condCheck} WON`, cls: "won" };
-      if (st === "lost") return { txt: "✗ LOST", cls: "lost" };
+      if (st === "won") return { txt: "✓ RIGHT", cls: "won" };
+      if (st === "lost") return { txt: "✕ WRONG", cls: "lost" };
       if (st === "pushed") return { txt: "PUSH", cls: "pushed" };
       if (st === "clinched") return { txt: `${condCheck} CLINCHED`, cls: "won" };
       // NOT "LINE PASSED" — that read as "we passed on this line" (the product's other,
@@ -6168,12 +6182,20 @@ export default function Home() {
       if (st === "cooked") return { txt: "✗ NOT LANDING", cls: "lost" };
       if (st === "inplay") {
         const ca = g.current_actuals || {};
-        const per = ca.period_label ? esc(ca.period_label) : "";
         if (pl.market === "total" && ca.total_so_far != null) {
           const line = pl.line != null ? pl.line : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
-          if (line != null) return { txt: `${num(Number(ca.total_so_far), 0)} of ${lineStr(line)}${per ? ` · ${per}` : ""}`, cls: "inplay" };
+          if (line != null) {
+            const total = Number(ca.total_so_far);
+            const over = /over/i.test(String(pl.side || ""));
+            const cushion = Number(line) - total;
+            if (over) {
+              const need = Math.floor(Number(line)) + 1 - total;
+              return { txt: need <= 2 ? "OUR WAY" : "CHASING", cls: "inplay" };
+            }
+            return { txt: cushion >= 3 ? "OUR WAY" : cushion >= 1 ? "HOLDING" : "TIGHT", cls: "inplay" };
+          }
         }
-        return { txt: `IN PLAY${per ? ` · ${per}` : ""}`, cls: "inplay" };
+        return { txt: "IN PLAY", cls: "inplay" };
       }
       return null;
     }
@@ -10746,10 +10768,10 @@ export default function Home() {
         : vp ? `${/over/i.test(String(vp.side)) ? "OVER" : "UNDER"} ${vp.line != null ? lineStr(vp.line) : ""}`.trim() : "";
       const badge = isPpd
         ? (vp
-          ? `<span class="bg-pick voidppd">${bStars(vp.stars)}<span class="bg-side">${esc(sideTxt)}${vp.price != null ? ` ${fmtOdds(vp.price)}` : ""}</span><span class="bg-res void">PPD</span></span>`
+          ? `<span class="bg-pick voidppd">${pickStrengthPill(vp, true)}<span class="bg-side">${esc(sideTxt)}${vp.price != null ? ` ${fmtOdds(vp.price)}` : ""}</span><span class="bg-res void">PPD</span></span>`
           : `<span class="bg-nopick">postponed</span>`)
         : best
-        ? `<span class="bg-pick ${best.result || "open"}">${bStars(best.stars)}<span class="bg-side">${esc(sideTxt)}${best.price != null ? ` ${fmtOdds(best.price)}` : ""}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✗" : "P"}</span>` : ""}</span>`
+        ? `<span class="bg-pick ${best.result || "open"}">${pickStrengthPill(best, true)}<span class="bg-side">${esc(sideTxt)}${best.price != null ? ` ${fmtOdds(best.price)}` : ""}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✕" : "P"}</span>` : ""}</span>`
         : `<span class="bg-nopick">${hasFinal ? "pass" : "no pick"}</span>`;
       return `<button class="beta-gcard" data-bgid="${esc(g.game_id)}">
         <span class="bg-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></span>
@@ -10777,7 +10799,7 @@ export default function Home() {
       const cvSlate = todayPicks.length
         ? `<div class="beta-cvslate">${todayPicks.slice(0, 12).map((g: any) => { const p = bestBetaCell(g); const side = `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim(); return `
             <div class="cvp"><span class="cvp-mu">${esc(teamShort(g.away || ""))} @ ${esc(teamShort(g.home || ""))}</span>
-              ${bStars(p.stars)}<span class="cvp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span></div>`; }).join("")}</div>`
+              ${pickStrengthPill(p, true)}<span class="cvp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span></div>`; }).join("")}</div>`
         : `<div class="beta-cvslate none">No pick today — the board only fires when our number and the price both clear.</div>`;
       const upd = lv.generated_utc ? new Date(lv.generated_utc).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
       const byDate: any = {};
@@ -10858,17 +10880,17 @@ export default function Home() {
       const isVoid = p && String(p.status || "").toUpperCase() === "VOID";
       const side = (isPick || (isVoid && p.side)) ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
       const resTag = isPick && p.result && p.result !== "push"
-        ? `<span class="bcell-res ${p.result}">${p.result === "win" ? "WIN" : "LOSS"}</span>`
+        ? `<span class="bcell-res ${p.result}">${p.result === "win" ? "✓ RIGHT" : "✕ WRONG"}</span>`
         : isPick && p.result === "push" ? `<span class="bcell-res push">PUSH</span>` : "";
       const scoreChip = p && p.score != null ? `<i class="pgrade">${Number(p.score).toFixed(2)}</i>` : "";
       const pickCard = isVoid
         ? `<div class="bcell voidppd" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
-             ${p.side ? `<span class="bcell-stars">${bStars(p.stars)}</span>${scoreChip}<span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>` : ""}<span class="void-chip">VOID — no action</span>
+             ${p.side ? `${pickStrengthPill(p)}<span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>` : ""}<span class="void-chip">VOID — no action</span>
            </div>
            <div class="bgrid-legend">${esc((g.postponed && g.postponed.note) || "Postponed — pick void, no action")} The pick stays exactly as served; it counts in no record.</div>`
         : isPick
         ? `<div class="bcell take s${p.stars} ${p.result || ""}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
-             <span class="bcell-stars">${bStars(p.stars)}</span>${scoreChip}
+             ${pickStrengthPill(p)}
              <span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>${resTag}
            </div>
            ${p.vegas_line != null ? `<div class="bgrid-legend">vs Vegas O/U ${esc(lineStr(p.vegas_line))}${p.lead_time ? ` · locked at ${esc(p.lead_time)}` : ""}.</div>` : ""}`

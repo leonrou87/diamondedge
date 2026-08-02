@@ -1253,12 +1253,20 @@ details.more .more-body{padding-top:12px}
 .hpc-card .hpc-txt em{font-size:.66em;margin-left:3px}
 .hpc-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
 /* pick + confidence stars on ONE line (no separate meta row) */
-.hpc-pickrow{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.hpc-pickrow{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;min-width:0}
 .hpc-stars .qdia{font-size:17px;gap:1px}
 .hpc-card .hpc-pickrow{gap:6px}
 .hpc-card .hpc-stars .qdia{font-size:14px}
 .hpc-stars .qdia i.f{color:var(--a4);text-shadow:0 1px 5px var(--sh5)}
 .hpc-stars .qdia i.e{color:rgba(var(--rimc),.34)}
+.str-pill{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 8px;border-radius:999px;
+  font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;
+  color:#fff;background:rgba(var(--slatec),.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 4px 12px rgba(0,0,0,.08)}
+.str-pill.compact{height:20px;padding:0 7px;font-size:10.5px;letter-spacing:.02em;text-transform:none}
+.str-pill.q-strong{color:var(--a0);background:linear-gradient(135deg,var(--a4),var(--a3))}
+.str-pill.q-good{background:linear-gradient(135deg,var(--g2),var(--g1))}
+.str-pill.q-lean{background:linear-gradient(135deg,var(--blue),#55a4ff)}
+.hpc-card .str-pill{height:19px;padding:0 7px;font-size:10px}
 .hpc-res{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;color:#fff}
 .hpc-card .hpc-res{font-size:11px;padding:2px 8px}
 .hpc-res.won{background:linear-gradient(135deg,var(--g2),var(--g2))}
@@ -2178,7 +2186,7 @@ details.more .more-body{padding-top:12px}
 .ltrack.is-done .ltr-head{font-size:16px}
 /* hero variant — compact, sits in the fused game header */
 .ltrack-hero{padding:9px 12px 10px;border-radius:12px;box-shadow:var(--glass-shadow)}
-.ltrack-hero .ltr-head{font-size:15px;margin-top:4px}
+.ltrack-hero .ltr-head{font-size:15px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gp-trend .ltrack-hero{margin-top:0}
 
 /* --- Article reader: graded result on the pick (final games) --- */
@@ -2297,6 +2305,7 @@ details.more .more-body{padding-top:12px}
   .bg-pick{margin-left:auto}
 }
 .bg-pick{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;font-family:var(--disp)}
+.bg-pick .str-pill{height:19px;padding:0 6px;font-size:10px}
 .bg-pick .bstars{font-size:13px}
 .bg-side{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink2)}
 .bg-res{font-weight:800;font-size:13px}
@@ -2324,8 +2333,9 @@ details.more .more-body{padding-top:12px}
 .bcell.take.loss{background:var(--missbg);box-shadow:inset 0 0 0 1px var(--missline)}
 .bcell-stars .bstars{font-size:12px}
 .bcell-side{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--ink);text-transform:uppercase;letter-spacing:.02em}
-.bcell-res{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.04em}
-.bcell-res.win{color:var(--hit)}.bcell-res.loss{color:var(--miss)}.bcell-res.push{color:var(--push)}
+.bcell-res{display:inline-flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.05em;
+  border-radius:999px;padding:3px 8px;white-space:nowrap}
+.bcell-res.win{color:#fff;background:var(--green)}.bcell-res.loss{color:#fff;background:var(--red)}.bcell-res.push{color:var(--push);background:var(--pushbg)}
 .bgrid-legend{font-family:var(--sans);font-size:13px;color:var(--ink3);margin-top:11px}
 .bpass-why{font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--ink2)}
 
@@ -2342,6 +2352,7 @@ details.more .more-body{padding-top:12px}
 .cvp-mu{font-family:var(--sans);font-weight:700;font-size:15px}
 .cvp-side{font-family:var(--mono);font-weight:700;font-size:15px}
 .cvp-side i{font-style:normal;color:var(--ink3);font-weight:600}
+.cvp .str-pill{height:20px;padding:0 7px;font-size:10px}
 
 /* ══ GAMES CHROME DIFFERENTIATION (Leon: the 3 bars blended together) ══
    The three bands are now separated by SURFACE, in the .games-chrome block near the foot
