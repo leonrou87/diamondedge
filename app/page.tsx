@@ -267,6 +267,19 @@ export default function Home() {
       const raw = String(g.date || "").slice(0, 10);
       return isISO(raw) ? raw : null;
     }
+    function isFutureDate(dateISO: any) {
+      const d = String(dateISO || "").slice(0, 10);
+      return isISO(d) && d > todayISO();
+    }
+    function gameDateISO(g: any) {
+      const direct = String((g && g.date) || "").slice(0, 10);
+      if (isISO(direct)) return direct;
+      return gameLocalDay(g) || "";
+    }
+    function isFutureGame(g: any) {
+      const d = gameDateISO(g);
+      return d ? isFutureDate(d) : isFutureDate(curDate);
+    }
 
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
@@ -461,7 +474,7 @@ export default function Home() {
       if (vg) {
         const out4: any = {};
         MARKETS.forEach((mk) => {
-          const c = v4CellFor(vg, mk);
+          const c = isFutureGame(g) ? null : v4CellFor(vg, mk);
           out4[mk] = c ? v4ToPlay(g, c)
             : { market: mk, action: "PASS", side: null, line: null, price: null, p: null, tier: null, why: [], result: null, src: "v4" };
         });
@@ -1318,6 +1331,7 @@ export default function Home() {
     // own display order), with the headline pinned first — never re-ranked by who looks best.
     function gameStrategies(g: any) {
       if (!g) return [];
+      if (isFutureGame(g)) return [];
       const src = Array.isArray(g.strategies) ? g : (v4GameFor(g) || g);
       const raw = Array.isArray(src.strategies) ? src.strategies : null;
       if (!Array.isArray(raw) || !raw.length) return [];
@@ -1472,6 +1486,7 @@ export default function Home() {
       return r && typeof r === "object" ? r : null;
     }
     function adaptiveDayStrategy(dateISO: string) {
+      if (isFutureDate(dateISO)) return null;
       const srcs = [livePayload, betaLiveData, betaData, payload].filter(Boolean);
       for (const src of srcs) {
         const by = src && src.adaptive_strategy_by_date;
@@ -1490,6 +1505,7 @@ export default function Home() {
     }
     function adaptiveDayStrategyHtml(dateISO: string) {
       if (!(league === "all" || league === "mlb")) return "";
+      if (isFutureDate(dateISO)) return "";
       const s = adaptiveDayStrategy(dateISO);
       if (!s || s.status === "ERROR") return "";
       const label = humanNote(s.label) || "Adaptive strategy";
@@ -2028,6 +2044,7 @@ export default function Home() {
     // Every analyst's call on ONE game (board game or unified game), in cast order. [] when unserved.
     function deskAnalysts(g: any): any[] {
       if (!g) return [];
+      if (isFutureGame(g)) return [];
       const src = Array.isArray(g.analysts) ? g : (v4GameFor(g) || g);
       const raw = Array.isArray(src.analysts) ? src.analysts : null;
       if (!raw || !raw.length) return [];
@@ -2079,6 +2096,7 @@ export default function Home() {
     // rows when the block is missing but the calls are there. Null when there is no desk.
     function deskConsensus(g: any) {
       if (!g) return null;
+      if (isFutureGame(g)) return null;
       const src = (g.consensus && typeof g.consensus === "object") ? g : (v4GameFor(g) || g);
       const served = normConsensusBlock(src && src.consensus);
       const spread = normConsensusBlock(src && src.consensus && (src.consensus as any).spread);
@@ -2095,6 +2113,7 @@ export default function Home() {
     // and ATLAS's predicted final score. Null when unserved.
     function deskChief(g: any) {
       if (!g) return null;
+      if (isFutureGame(g)) return null;
       const src = (g.diamondedge && typeof g.diamondedge === "object") ? g.diamondedge
         : (() => { const vg = v4GameFor(g); return vg && vg.diamondedge && typeof vg.diamondedge === "object" ? vg.diamondedge : null; })();
       if (!src) return null;
@@ -6117,6 +6136,7 @@ export default function Home() {
     // once the game starts — the box is the honest record of what we said pre-game.
     const lineStr = (v: any) => (Number(v) % 1 ? num(v, 1) : num(v, 0));
     function displayPick(g: any) {
+      if (isFutureGame(g)) return null;
       // ONE pick per game: the unified feed's single pick IS the DiamondEdge Pick. If it covers
       // the game and the pick is a PASS, the game is an honest PASS.
       const vg = v4GameFor(g);
@@ -7334,19 +7354,8 @@ export default function Home() {
     // Banner for a FUTURE date — picks aren't published yet. `full` = standalone (no schedule
     // to show); otherwise a compact strip above the known schedule, with a picks countdown.
     function futureNote(dispDate: string, full: boolean, games?: any[]) {
-      // Picks publish as the ~24h decision point approaches; count down to that from first pitch.
-      let countdown = "";
-      const list = games || [];
-      let earliest: number | null = null;
-      list.forEach((g: any) => { const ts = firstPitchTs(g); if (ts != null && (earliest == null || ts < earliest)) earliest = ts; });
-      if (earliest != null) {
-        const dropAt = earliest - 24 * 3600 * 1000;
-        const ms = dropAt - Date.now();
-        countdown = ms > 6 * 60 * 1000
-          ? `<div class="fn-countdown"><span class="fnc-k">Picks drop in</span><b class="fnc-val" data-drop="${dropAt}">${fmtCountdown(ms)}</b></div>`
-          : `<div class="fn-countdown soon"><span class="fnc-k">Picks expected soon</span></div>`;
-      }
-      const body = `<div class="fn-body"><b>Picks aren't out yet for ${esc(dispDate)}</b><span>First look lands as books post — about <b>24 hours before each first pitch</b> — then every pick firms up through five checks (T-24h → T-1h) and locks about an hour out.${full ? "" : " Here's the schedule as it stands."}</span></div>`;
+      const countdown = `<div class="fn-countdown soon"><span class="fnc-k">Overnight ML run</span><b class="fnc-val">2:00 AM PT → 6:00 AM PT</b></div>`;
+      const body = `<div class="fn-body"><b>Schedule only for ${esc(dispDate)}</b><span>The strategy and DiamondEdge picks are not selected yet. The 2:00 AM PT job waits for the latest settled results, runs the model search, then publishes the board by <b>6:00 AM PT</b>.${full ? "" : " Here's the schedule as it stands."}</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     function renderSlate(quiet = false) {
@@ -7366,7 +7375,7 @@ export default function Home() {
         // (~T-24h) — synthesize minimal tiles from it so picks show the moment they exist.
         if (isFuture && !games.length && betaLiveData && (league === "all" || league === "mlb")) {
           games = (betaLiveData.games || []).filter((vg: any) => vg.date === curDate).map((vg: any) => ({
-            game_id: String(vg.game_pk), sport: "mlb",
+            game_id: String(vg.game_pk), sport: "mlb", date: vg.date,
             // Resolve the FULL team name → abbr so the crest renderer (keyed on abbr) shows a
             // real logo on future/tomorrow tiles, not just today's snapshot games.
             away_abbr: mlbAbbr(vg.away), home_abbr: mlbAbbr(vg.home),
@@ -10698,10 +10707,11 @@ export default function Home() {
     const bWL = (r: any) => (r && r.n ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0");
     // The game's single pick when it's an actionable PICK — used to headline it in the list.
     function bestBetaCell(g: any) {
+      if (isFutureDate(g && g.date)) return null;
       const p = g && g.pick;
       return p && String(p.status || "").toUpperCase() === "PICK" ? p : null;
     }
-    const betaTakeCount = (g: any) => (g && g.pick && String(g.pick.status || "").toUpperCase() === "PICK" ? 1 : 0);
+    const betaTakeCount = (g: any) => (!isFutureDate(g && g.date) && g && g.pick && String(g.pick.status || "").toUpperCase() === "PICK" ? 1 : 0);
 
     // ---- honest framing (no hype): the record accrues in public ----
     function betaFrame(d: any) {
@@ -10882,6 +10892,7 @@ export default function Home() {
         : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;
       // Today's picks (the actionable ones), or an honest no-play note.
       const todayPicks = games.filter((g: any) => bestBetaCell(g)).sort((a: any, b: any) => ((bestBetaCell(b) || {}).score || 0) - ((bestBetaCell(a) || {}).score || 0));
+      const visiblePickCount = todayPicks.length;
       const cvSlate = todayPicks.length
         ? `<div class="beta-cvslate">${todayPicks.slice(0, 12).map((g: any) => { const p = bestBetaCell(g); const side = `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim(); return `
             <div class="cvp"><span class="cvp-mu">${esc(teamShort(g.away || ""))} @ ${esc(teamShort(g.home || ""))}</span>
@@ -10903,7 +10914,7 @@ export default function Home() {
           <div class="bcard-sub">Picks firm up as game time nears — a game without one yet may earn one later.${upd ? ` Updated ${esc(upd)}.` : ""}</div>
           ${cvSlate}
           ${recBit}
-          <div class="bcard-foot">${bc.n_picks || 0} pick${(bc.n_picks || 0) === 1 ? "" : "s"} across ${bc.n_games || games.length} games so far.</div>
+          <div class="bcard-foot">${visiblePickCount} pick${visiblePickCount === 1 ? "" : "s"} across ${bc.n_games || games.length} games so far.</div>
         </div>
         ${sections}`;
     }
@@ -10919,7 +10930,7 @@ export default function Home() {
       const list = (betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0) : games)
         .slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
       const shown = list.slice(0, betaShown);
-      const liveTakes = lv ? ((lv.board_census || {}).n_takes || 0) : 0;
+      const liveTakes = lv ? ((lv.games || []).filter((g: any) => bestBetaCell(g)).length) : 0;
       view.innerHTML = `
         <div class="beta-wrap">
           <div class="beta-masthead">
@@ -10961,10 +10972,11 @@ export default function Home() {
       const fin = g.final || {};
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
       const p = g.pick || null;
-      const isPick = p && String(p.status || "").toUpperCase() === "PICK";
+      const future = isFutureDate(g.date);
+      const isPick = !future && p && String(p.status || "").toUpperCase() === "PICK";
       // VISIBLE-VOID: a postponed game's sheet shows the frozen pick with a
       // neutral VOID chip — the pick never changes and never grades.
-      const isVoid = p && String(p.status || "").toUpperCase() === "VOID";
+      const isVoid = !future && p && String(p.status || "").toUpperCase() === "VOID";
       const side = (isPick || (isVoid && p.side)) ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
       const resTag = isPick && p.result && p.result !== "push"
         ? `<span class="bcell-res ${p.result}">${p.result === "win" ? "✓ RIGHT" : "✕ WRONG"}</span>`
@@ -10981,6 +10993,8 @@ export default function Home() {
              <span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>${resTag}
            </div>
            ${p.vegas_line != null ? `<div class="bgrid-legend">vs Vegas O/U ${esc(lineStr(p.vegas_line))}${p.lead_time ? ` · locked at ${esc(p.lead_time)}` : ""}.</div>` : ""}`
+        : future
+        ? `<div class="bcell pass" style="padding:14px 16px"><span class="bcell-pass">Schedule only</span> <span class="bpass-why">Strategy and DiamondEdge picks publish by 6:00 AM PT after the 2:00 AM PT model run.</span></div>`
         : `<div class="bcell pass" style="padding:14px 16px"><span class="bcell-pass">O/U ${esc(p && p.line != null ? lineStr(p.line) : "")}</span> <span class="bpass-why">${esc(p ? plainPassReason(v4ToPlay(g, p).v4pass) : "No DiamondEdge Pick on this game.")}</span></div>`;
       const html = `
         <div class="gamepage betapage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.away)} at ${esc(g.home)}">

@@ -26,12 +26,19 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   # (a tiny PATCH, no payload, negligible egress). CONTRACT: updated_at is the
   # LIVENESS signal — when the sync last confirmed this key current. The CONTENT
   # age lives inside the payload (generated_utc), where it always has.
-  curl -s -o /dev/null -X PATCH \
+  HB_HTTP=$(curl -s -o /tmp/unified_history_heartbeat_resp.txt -w "%{http_code}" \
+    --max-time 30 -X PATCH \
     "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?key=eq.picks_unified" \
     -H "apikey: $SUPABASE_SERVICE_KEY" \
     -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
     -H "Content-Type: application/json" -H "Prefer: return=minimal" \
-    --data-binary "{\"updated_at\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\"}" || true
+    --data-binary "{\"updated_at\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\"}")
+  if [ "$HB_HTTP" = "200" ] || [ "$HB_HTTP" = "204" ]; then
+    echo "$(date '+%F %T') synced unified history heartbeat ($HB_HTTP) sha=$SHA"
+  else
+    echo "$(date '+%F %T') UNIFIED HISTORY HEARTBEAT FAILED http=$HB_HTTP $(head -c 200 /tmp/unified_history_heartbeat_resp.txt)" >&2
+    exit 1
+  fi
   exit 0
 fi
 # updated_at IS SET EXPLICITLY (2026-07-31). PostgREST's
