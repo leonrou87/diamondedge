@@ -393,7 +393,7 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
   font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap}
 .daystrat .ds-copy{display:inline-flex;align-items:center;gap:6px;min-width:0}
 .daystrat b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
-.daystrat i{font-style:normal;color:var(--ink4);white-space:nowrap}
+.daystrat i{font-style:normal;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .daystrat i .ds-tier{margin-right:5px}
 .ds-caret{font-family:var(--disp);font-weight:900;color:var(--ink4);transition:transform .18s var(--ease)}
 .daystrat[open] .ds-caret{transform:rotate(180deg)}
@@ -402,7 +402,7 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .ds-learn{margin-top:7px;border:0;background:transparent;color:var(--b3);font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:0;cursor:pointer}
 .ds-tier,.ads-tier{display:inline-flex;align-items:center;justify-content:center;height:18px;padding:0 6px;border-radius:999px;
   font-family:var(--disp);font-style:normal;font-weight:850;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
-.ds-tier.is-strong,.ads-tier.is-strong{color:#fff;background:linear-gradient(135deg,var(--green),#1e9f75);box-shadow:0 5px 12px rgba(var(--greenc),.16)}
+.ds-tier.is-strong,.ads-tier.is-strong{color:var(--g3);background:rgba(var(--greenc),.10);box-shadow:inset 0 0 0 1px rgba(var(--greenc),.18)}
 .ds-tier.is-lean,.ads-tier.is-lean{color:#fff;background:linear-gradient(135deg,var(--blue),#55a4ff);box-shadow:0 5px 12px rgba(var(--bluec),.16)}
 .ds-tier.is-pass,.ads-tier.is-pass{color:var(--ink3);background:rgba(var(--tintc),.08);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.12)}
 .ds-eye{display:inline-grid;place-items:center;width:28px;height:28px;border:0;border-radius:10px;background:rgba(255,255,255,.76);
@@ -2537,6 +2537,7 @@ details.more .more-body{padding-top:12px}
 }
 .strec-l7 .l7k{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);flex-shrink:0}
 .strec-l7 .l7row{display:flex;align-items:center;gap:14px;margin-left:auto}
+.strec-l7 .l7note{flex-basis:100%;margin:0;font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--ink4)}
 .strec-l7 .l7d{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0}
 .strec-l7 .l7d i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4)}
 .strec-l7 .l7d b{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums;line-height:1.2}
@@ -2671,25 +2672,29 @@ details.more .more-body{padding-top:12px}
    over white and the bloom is the most futuristic thing on screen. It is now the iOS tab
    bar it always wanted to be: a white surface pinned to the bottom edge with a hairline
    top rule, the active tab in ink with its label, the rest in grey. */
-.dockwrap{position:fixed;inset-inline:0;bottom:0;z-index:340;display:flex;justify-content:center;
-  padding:0 0 env(safe-area-inset-bottom);pointer-events:none;
-  background:var(--chrome-bg);-webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
-  box-shadow:0 -1px 0 var(--line2)}
-.dock{pointer-events:auto;display:flex;align-items:stretch;justify-content:center;gap:0;width:100%;max-width:var(--wide);
-  padding:0;border-radius:0;background:transparent;border:0;box-shadow:none;
+.dockwrap{position:fixed;inset-inline:0;bottom:calc(var(--sab) + 12px);z-index:340;display:flex;justify-content:center;
+  padding:0 max(14px,var(--sar)) 0 max(14px,var(--sal));pointer-events:none;background:transparent;
+  -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+.dock{pointer-events:auto;display:flex;align-items:center;justify-content:center;gap:4px;width:auto;
+  max-width:calc(100vw - max(28px,var(--sal)) - max(28px,var(--sar)));
+  padding:6px;border-radius:999px;background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.72);
+  -webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 0 0 1px rgba(20,31,46,.045),0 18px 48px rgba(20,31,46,.16);
   animation:dockIn .4s var(--ease-out) both}
 @keyframes dockIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.dock-item{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  border:0;background:transparent;cursor:pointer;color:var(--ink3);border-radius:0;padding:9px 4px 10px;min-height:52px;
-  transition:color .2s ease}
+.dock-item{position:relative;flex:0 0 auto;width:44px;height:44px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;
+  border:0;background:transparent;cursor:pointer;color:var(--ink3);border-radius:999px;padding:0;
+  transition:color .2s ease,background .2s ease,width .24s var(--ease-out),padding .24s var(--ease-out),transform .18s var(--ease-out)}
 .dock-item:active{color:var(--ink2)}
-.dock-item.on{color:var(--ink)}
+.dock-item.on{width:auto;padding:0 14px;color:var(--ink);background:rgba(255,255,255,.78);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.86),0 6px 18px rgba(20,31,46,.08)}
 .dock-pill{display:none}
 .dock-ic{position:relative;z-index:1;display:grid;place-items:center}
-.dock-lab{position:relative;z-index:1;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.02em;white-space:nowrap}
+.dock-lab{display:none;position:relative;z-index:1;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.02em;white-space:nowrap}
+.dock-item.on .dock-lab{display:inline}
 @media (prefers-reduced-motion:reduce){.dock{animation:none}}
 /* content must clear the dock */
-main{padding-bottom:calc(env(safe-area-inset-bottom) + 78px) !important}
+main{padding-bottom:calc(var(--sab) + 86px) !important}
 /* MODALS OWN THE SCREEN: a sheet / game page slides the dock away. */
 .dockwrap{transition:opacity .22s ease,transform .26s var(--ease-out)}
 body.sheet-open .dockwrap{opacity:0;transform:translateY(18px);pointer-events:none}
@@ -3273,7 +3278,7 @@ body.stories-on{background:#050710}
 .lab-detail.dim{color:var(--ink4)}
 @media(prefers-reduced-motion:reduce){.lab-detail{animation:none}}
 /* 4-icon dock still overflow-clean on the narrowest phones */
-@media(max-width:392px){.dock-item{padding:8px 2px 9px}.dock-lab{font-size:10px}}
+@media(max-width:392px){.dock{gap:2px;padding:5px}.dock-item{width:42px;height:42px;min-height:42px}.dock-item.on{padding:0 11px}.dock-item.on .dock-lab{font-size:10px}}
 
 /* ══════════════════════════════════════════════════════════════════════════════
    PICK PRESENTATION — ELEGANCE PASS  (Leon, 2026-07-26)
@@ -4455,6 +4460,13 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .dsk-cell{gap:5px;padding:9px 10px 8px;border-radius:12px;
   background:rgba(var(--tintc),.045);border:1px solid rgba(var(--tintc),.07)}
 .dsk-cell .dsk-callrow{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;min-width:0}
+.dsk-cell .dsk-callrow i{font-style:normal;font-family:var(--disp);font-weight:800;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4)}
+.dsk-cell .dsk-line{font-family:var(--mono);font-weight:800;font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dsk-cell .dsk-callpill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;
+  font-family:var(--disp);font-weight:850;font-size:10px;letter-spacing:.09em;text-transform:uppercase;background:rgba(var(--tintc),.07);color:var(--ink3)}
+.dsk-cell .dsk-callpill.ou-over{background:rgba(var(--greenc),.10);color:var(--over);box-shadow:inset 0 0 0 1px rgba(var(--greenc),.18)}
+.dsk-cell .dsk-callpill.ou-under{background:rgba(var(--redc),.09);color:var(--under);box-shadow:inset 0 0 0 1px rgba(var(--redc),.16)}
+.dsk-cell .dsk-callpill.none{background:rgba(var(--slatec),.08);color:var(--ink3)}
 .dsk-cell .dsk-side{font-size:14px}
 .dsk-cell .dsk-conv{font-size:12px}
 .dsk-cell .dsk-meter{display:block;width:100%;height:3px;border-radius:999px;
@@ -5660,7 +5672,7 @@ body{background:linear-gradient(180deg,#fcfdff 0%,#f7fbff 44%,#eef5fb 100%) fixe
 input[type=text],input[type=email],input[type=date],input[type=tel],
 .datebar.lead .datetools .calwrap input{color-scheme:light!important}
 
-header#app-header,.games-chrome,.dockwrap,.pitcherpage .gp-bar{
+header#app-header,.games-chrome,.pitcherpage .gp-bar{
   background:rgba(255,255,255,.72);
   -webkit-backdrop-filter:var(--chrome-blur)!important;backdrop-filter:var(--chrome-blur)!important;
   box-shadow:0 1px 0 rgba(20,31,46,.07),0 18px 44px -34px rgba(20,31,46,.26);

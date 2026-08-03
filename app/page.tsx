@@ -1484,12 +1484,13 @@ export default function Home() {
       const tier = adaptiveTier(s);
       return `<details class="daystrat" title="${esc(line)}">
         <summary>
-          <span class="ds-k">Today's strategy</span>
-          <span class="ds-copy"><b>${esc(label)}</b><i>${tier ? `<em class="ds-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}${rec ? `${esc(rec)} · ` : ""}last ${esc(win)}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
+          <span class="ds-k">Today's rule</span>
+          <span class="ds-copy"><b>${esc(label)}</b><i>${rec ? `Lookback evidence ${esc(rec)} · ` : ""}last ${esc(win)}${tier ? ` · rule confidence ${esc(tier.toLowerCase())}` : ""}${fam ? ` · ${esc(fam.replace(/_/g, " "))}` : ""}</i></span>
           <span class="ds-caret" aria-hidden="true">⌄</span>
         </summary>
         <div class="ds-more">
-          <p>${esc(line || `Before this slate, DiamondEdge looked at recent finished games, picked the rule that had been helping most, and uses that rule for today's board.`)}</p>
+          <p>${esc(line || `Before the first game, DiamondEdge looked only at finished games, picked the recent rule that had been helping most, and locked it for today's board.`)}</p>
+          <p>The number above is lookback evidence for choosing the rule. It is not today's result and not the official DiamondEdge Pick record.</p>
           <button class="ds-learn" id="daystrat-eye" type="button">Learn on The Desk →</button>
         </div>
       </details>`;
@@ -1565,7 +1566,7 @@ export default function Home() {
       const vhit = selected && selected.validation_hit_rate != null ? stratPct(Number(selected.validation_hit_rate)) : (s.validation_hit_rate != null ? stratPct(Number(s.validation_hit_rate)) : "");
       const fired = c.decided != null ? `${c.decided} fires` : "enough fires";
       const proof = [tier ? `${tier} signal` : "", full ? `${full} recent record` : "", hit ? `${hit} hit rate` : "", val ? `${val} second check${vhit ? ` (${vhit})` : ""}` : "", fired].filter(Boolean).join(" · ");
-      return `Chosen because it was the cleanest rule before today's slate: it had enough past examples, beat the other useful rules, and still passed on games where the edge looked thin. ${proof || ""}`;
+      return `Chosen before today's slate because it had enough past examples, beat the other useful rules, and still passed on games where the edge looked thin. The proof is lookback evidence, not today's result. ${proof || ""}`;
     }
     function adaptiveStrategyExamples(s: any) {
       const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
@@ -1599,8 +1600,8 @@ export default function Home() {
               ${c.tier ? `<div class="ads-tierline"><span class="ads-tier is-${String(c.tier).toLowerCase()}">${esc(c.tier)}</span></div>` : ""}
               <div class="ads-rule"><span>Use today</span><b>${esc(c.rule)}</b></div>
               <div class="ads-rec">
-                <span><b>${esc(c.tier || "—")}</b><i>confidence</i></span>
-                <span><b>${esc(humanNote(s.record) || "—")}</b><i>record</i></span>
+                <span><b>${esc(c.tier || "—")}</b><i>rule confidence</i></span>
+                <span><b>${esc(humanNote(s.record) || "—")}</b><i>lookback evidence</i></span>
                 <span><b>${esc(c.hit || "—")}</b><i>hit rate</i></span>
                 <span><b class="${Number(s.units || 0) >= 0 ? "pos" : "neg"}">${esc(c.units || "—")}</b><i>edge</i></span>
               </div>
@@ -1612,8 +1613,8 @@ export default function Home() {
                 <p>${esc(adaptiveStrategySelectionLine(s, c))}</p>
                 <p>${esc(c.summary || `Over the last ${c.days} days, this was the best trailing rule for the slate.`)}</p>
                 ${s.selected_reason ? `<p>${esc(humanNote(s.selected_reason))}</p>` : ""}
-                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on this one game. It asks which kinds of analyst agreements have actually helped lately. Sometimes that means following the room, sometimes fading a pattern that has been wrong, and sometimes passing because the books already priced it correctly.</p>
-                <p>STRONG means the recent proof is clean enough to put on the official card. LEAN means the game is pointing that way, but not strongly enough to grade as the main pick. PASS means the smartest move is leaving the game alone.</p>
+                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on one game. It asks which kinds of analyst patterns have actually helped lately. Sometimes that means following the room, sometimes fading a pattern that has been wrong, and sometimes passing because the books already priced it correctly.</p>
+                <p>Rule confidence describes the rule we chose for the day. It is not a second class of “super pick.” A game becomes an official DiamondEdge Pick only when that rule fires and the real price clears our bar.</p>
               </div>
             </div>
             <div class="dsec">
@@ -1657,11 +1658,11 @@ export default function Home() {
       const label = latest ? humanNote(latest.label) : "Daily adaptive strategy";
       const line = latest ? humanNote(latest.summary_line || latest.plain_english_rule) : humanNote(root.note);
       return `<div class="ixc adapt-insight">
-        <div class="ixc-h">Adaptive DiamondEdge strategy</div>
-        <div class="ixc-sub">One rule is picked before the slate from recent completed games, then used for that whole day.</div>
+        <div class="ixc-h">Daily strategy record</div>
+        <div class="ixc-sub">One rule is picked before each slate. Only games that became official DiamondEdge Picks count here.</div>
         <div class="adap-big"><b>${esc(stratWL(overall))}</b><span>${overall.hit != null ? `${esc(stratPct(overall.hit))} hit` : ""}${overall.roi != null ? ` · <i class="${overall.roi >= 0 ? "pos" : "neg"}">${esc(stratRoi(overall.roi))} ROI</i>` : ""}</span></div>
         <div class="adap-now"><span class="ds-info" aria-hidden="true">(i)</span><p><b>${esc(latestKey ? `Latest: ${label}` : label)}</b>${line ? ` ${esc(line)}` : ""}</p></div>
-        <div class="adap-foot">${esc(since)} to ${esc(thru)} · ${overall.n} graded picks · ${ruleCount || 0} distinct daily rule${ruleCount === 1 ? "" : "s"} selected.</div>
+        <div class="adap-foot">${esc(since)} to ${esc(thru)} · ${overall.n} official picks · rules selected before results.</div>
       </div>`;
     }
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
@@ -2196,11 +2197,10 @@ export default function Home() {
         const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
         const arrow = a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : "•";
         const sideTxt = a.dir ? a.dir.toUpperCase() : (a.side ? esc(a.side.toUpperCase()) : "—");
+        const callWord = a.dir === "over" ? "OVER" : a.dir === "under" ? "UNDER" : "PASS";
         const call = hide
           ? `<span class="dsk-dots" aria-hidden="true">●●</span>`
-          : a.side
-            ? `<span class="dsk-side ${dirCls}">${arrow} ${sideTxt}</span>`
-            : `<span class="dsk-side none">—</span>`;
+          : `<span class="dsk-callpill ${dirCls || "none"}">${esc(callWord)}</span>`;
         const conv = !hide && a.conv != null ? `<span class="dsk-conv">${Math.round(a.conv * 100)}%</span>` : "";
         // conviction as LIGHT: a hairline meter in the analyst's own accent under the call
         const meter = !hide && a.conv != null
@@ -2212,9 +2212,9 @@ export default function Home() {
         const pg = pregameLine(g);
         const priced = a.line != null ? a.line : (pg && pg.total && pg.total.line != null ? pg.total.line : null);
         const at = !hide && priced != null
-          ? `<span class="dsk-at" title="the line this read was priced against">@ ${esc(lineStr(priced))}</span>` : "";
+          ? `<span class="dsk-line" title="the line this read was priced against">Line ${esc(lineStr(priced))}</span>` : "";
         return `<${tag} class="dsk-cell an-${esc(a.key)}" style="${analystMotionVars(a)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}${priced != null ? ` at ${lineStr(priced)}` : ""}` : ", no call yet"}"` : ""}>
-          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span><span class="dsk-callrow">${call}${conv}</span>${at}${meter}</${tag}>`;
+          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span>${at}<span class="dsk-callrow"><i>Call</i>${call}${conv}</span>${meter}</${tag}>`;
       }).join("");
       return `<div class="dsk-row">${cells}</div>`;
     }
@@ -6448,9 +6448,9 @@ export default function Home() {
        AGAINST is never styled as a warning: taking a price the room dislikes is the job.
        Unserved / NO_BET / PENDING ⇒ null and every surface degrades. */
     const AGREE_COPY: any = {
-      ALIGNED: { lab: "The desk agrees", cls: "ag-with" },
-      MIXED: { lab: "The desk is split on it", cls: "ag-mixed" },
-      AGAINST: { lab: "The desk disagrees", cls: "ag-against" },
+      ALIGNED: { lab: "Ticket matches desk read", cls: "ag-with" },
+      MIXED: { lab: "Mixed desk read", cls: "ag-mixed" },
+      AGAINST: { lab: "Ticket vs desk read", cls: "ag-against" },
     };
     function deskAgreement(g: any) {
       const chief = deskChief(g);
@@ -6474,22 +6474,22 @@ export default function Home() {
       const other = sideTxt === "under" ? "over" : sideTxt === "over" ? "under" : "the other way";
       if (a && a.state === "AGAINST") {
         if (sideTxt === "under") {
-          return `${a.withUs === 0 && a.n ? `All ${a.n} desk voices lean ${other}, but ` : ""}the ticket is ${ticket}. They are saying this game can score; we are saying this total is high enough, at this price, to bet under.`;
+          return `The ticket is ${ticket}. Some analyst reads see scoring, but the price says this total is high enough to bet under.`;
         }
         if (sideTxt === "over") {
-          return `${a.withUs === 0 && a.n ? `All ${a.n} desk voices lean ${other}, but ` : ""}the ticket is ${ticket}. They are saying runs look light; we are saying this total is low enough, at this price, to bet over.`;
+          return `The ticket is ${ticket}. Some analyst reads see fewer runs, but the price says this total is low enough to bet over.`;
         }
-        return "The desk reads lean the other way, but the ticket is priced separately. We are betting the posted number, not taking a simple analyst vote.";
+        return "The analyst reads are context. The ticket is priced separately against the posted number.";
       }
       if (a && a.state === "MIXED") {
         return sideTxt
-          ? `The desk is split, so this comes down to the number: ${ticket} is the side our price says is worth playing.`
-          : "The desk is split. That is background, not a bet by itself.";
+          ? `The analyst reads are mixed, so this comes down to the number: ${ticket} is the side our price says is worth playing.`
+          : "The analyst reads are mixed. That is background, not a bet by itself.";
       }
       if (a && a.state === "ALIGNED") {
         return sideTxt
-          ? `The desk and the ticket point the same way. The bet still has to clear the number and price: ${ticket}.`
-          : "The desk points the same way as the ticket, but only the ticket above is the bet.";
+          ? `The analyst reads and the ticket point the same way. The bet still has to clear the number and price: ${ticket}.`
+          : "The analyst reads point the same way as the ticket, but only the ticket above is the bet.";
       }
       return "Only the DiamondEdge ticket above is the bet.";
     }
@@ -6539,12 +6539,8 @@ export default function Home() {
       if (locked) return "";                  // the count implies the side
       const a = deskAgreement(g);
       if (!a) return "";
-      const count = a.withUs != null && a.n
-        ? (a.withUs === a.n ? `all ${a.n} with us` : a.withUs === 0 ? `${a.n} of ${a.n} the other way` : `${a.withUs} of ${a.n} with us`)
-        : "";
       return `<div class="deskag ${a.cls}">
         <span class="dag-k">${esc(a.lab)}</span>
-        ${count ? `<span class="dag-n">${esc(count)}</span>` : ""}
         <span class="dag-note"><b>Plain English:</b> ${esc(deskAgreementWhy(g, a))}</span>
       </div>`;
     }
@@ -8072,7 +8068,7 @@ export default function Home() {
       const nNo = list.filter((s: any) => s.status === "NO_VIEW").length;
       const counts = [`${nPick} would bet it`, nPass ? `${nPass} passed` : "", nNo ? `${nNo} had no view` : ""].filter(Boolean).join(" · ");
       return `<div class="stgy" id="stgy-panel">
-        <div class="stgy-h"><span class="stgy-k">◆ Every strategy on this game</span><span class="stgy-count">${list.length} streams${counts ? ` · ${esc(counts)}` : ""}</span></div>
+        <div class="stgy-h"><span class="stgy-k">◆ Research reads on this game</span><span class="stgy-count">${list.length} streams${counts ? ` · ${esc(counts)}` : ""}</span></div>
         <p class="stgy-lede">These are the separate rule-sets we run over the same game. <b>Exactly one is served as the DiamondEdge Pick</b> — it's marked below. The others are here so the calls we <i>didn't</i> make, and why, are on the record too.</p>
         <div class="stgy-rows">${list.map(strategyRowHtml).join("")}</div>
         <div class="stgy-note"><b>These overlap — never add them up.</b> The same game shows up in more than one stream, so these are the same bets seen from different angles, not four independent bets. Each lifetime line above is that stream's <b>live-served</b> record from its own start date; anything backtested is counted separately and never blended in. And reading down this list afterwards to find whichever one got it right isn't a strategy, it's hindsight — we serve one pick per game, before the game, and grade that one.</div>
@@ -9140,8 +9136,8 @@ export default function Home() {
       // reader should ever be handed "unedited". Every point it makes is already stated in
       // .stgyrec-warn below, in English, above the fold rather than folded away.
       return `<div class="ixc stgyrec" id="strategy-record">
-        <div class="ixc-h">Strategy by strategy</div>
-        <div class="ixc-sub">Every rule-set we run, each with its own record — the ones losing money as well as the ones making it.</div>
+        <div class="ixc-h">Strategy ledgers, not extra picks</div>
+        <div class="ixc-sub">These show what each rule-set would have done. They are transparency ledgers, not additional official plays.</div>
         <div class="stgyrec-warn">
           <p><b>Live-served picks only, at the top of every card.</b> That is the only kind of number that ever described a real bankroll. Anything reconstructed or backtested sits below a rule, is labelled, and is never added in.</p>
           <p><b>They overlap — never add them up.</b> The same game appears in more than one stream, so these are the same bets from different angles, not independent bets. And choosing whichever stream currently looks best is not a strategy: with four overlapping streams over a few dozen graded picks, one of them looks good by construction.</p>
@@ -10699,7 +10695,7 @@ export default function Home() {
         return `<span class="l7d ${dir}" title="${esc(k)} · ${r.n_graded} graded${roiTxt ? ` · ${roiTxt} ROI` : ""}"><i>${esc(day)}</i><b>${wl}</b>${roiTxt ? `<em>${roiTxt}</em>` : ""}</span>`;
       }).join("");
       const last7Strip = l7dates.length
-        ? `<div class="strec-l7"><span class="l7k">Last 7 days</span><div class="l7row">${l7}</div></div>`
+        ? `<div class="strec-l7"><span class="l7k">Daily results</span><div class="l7row">${l7}</div><p class="l7note">Each chip is that day's official picks only, not the trailing evidence used to choose the rule.</p></div>`
         : "";
       const gatedNote = `<div class="strec-gate">Every pick has to beat the actual price it's judged at — a call that's on the right side of the number but priced out is an honest pass, not a bet.</div>`;
       // ═══ THE HERO LEADS WITH THE LIVE-SERVED RECORD ═══
@@ -10738,8 +10734,8 @@ export default function Home() {
         ${combinedBlock}
         ${last7Strip}
         <div class="strec-card">
-          <div class="strec-ch">Record by pick type</div>
-          <div class="strec-csub">Official picks lead. Lighter leans stay separate so the headline record stays clean.</div>
+          <div class="strec-ch">Official picks by confidence score</div>
+          <div class="strec-csub">These are official picks only. Leans and research examples are not included.</div>
           <div class="strec-rows">${rows}</div>
           <div class="strec-mixnote">These buckets include the <b>combined</b> history above — live and reconstructed together. Read them as a shape check, not as the live record.</div>
           ${gatedNote}
@@ -10759,8 +10755,8 @@ export default function Home() {
         </div>
         ${last7Strip}
         <div class="strec-card">
-          <div class="strec-ch">Record by pick type</div>
-          <div class="strec-csub">Official picks lead. Lighter leans stay separate so the headline record stays clean.</div>
+          <div class="strec-ch">Official picks by confidence score</div>
+          <div class="strec-csub">These are official picks only. Leans and research examples are not included.</div>
           <div class="strec-rows">${rows}</div>
           ${gatedNote}
         </div>`;
@@ -11275,7 +11271,7 @@ export default function Home() {
       return `<div class="dp-recordhero">
         <div class="dpr-k">DiamondEdge record</div>
         <div class="dpr-main"><b>${esc(rec)}</b>${hit ? `<span>${esc(hit)} hit</span>` : ""}${roi ? `<span class="${String(roi).startsWith("-") ? "neg" : "pos"}">${esc(roi)} ROI</span>` : ""}</div>
-        <p>Every official STRONG pick is graded against the final at the real price. ${n ? `${esc(String(n))} served and graded` : "The public ledger builds"}${since ? ` since ${esc(since)}` : ""}; leans and research reads stay out of this number.</p>
+        <p>Every official DiamondEdge Pick is graded against the final at the real price. ${n ? `${esc(String(n))} served and graded` : "The public ledger builds"}${since ? ` since ${esc(since)}` : ""}; leans, research reads, and lookback examples stay out of this number.</p>
       </div>`;
     }
     function renderDesk() {
@@ -11312,10 +11308,10 @@ export default function Home() {
           <div class="dp-foot">
             <div class="dp-system">
               <div class="dp-system-k">How DiamondEdge chooses from them</div>
-              <p>Before each slate, DiamondEdge only uses games that are already finished. It checks which recent analyst patterns have been helping: one analyst getting hot, two analysts working well together, a 4-0 room that should be trusted, or a 4-0 room that has actually been worth fading. Then it locks one rule for the day and applies that rule to every game before any results are known.</p>
+              <p>Before the first game of each slate, DiamondEdge only uses games that are already finished. It checks which recent analyst patterns have been helping: one analyst getting hot, two analysts working well together, a room that should be trusted, or a room that has actually been worth fading. Then it locks one rule for the day and applies that rule before any results are known.</p>
               ${betaData ? adaptiveStrategyInsight(betaData) : `<div class="ixc adapt-insight"><div class="ixc-h">Adaptive DiamondEdge strategy</div><div class="ixc-sub">Loading the daily strategy ledger…</div></div>`}
               <details class="dp-more">
-                <summary><span>Strategy research space</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
+                <summary><span>Research ledgers</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
                 <div class="dp-more-body">
                   ${betaData ? strategyRecordSection(betaData) : `<div class="state"><div class="sm">Strategy records load with the pick ledger.</div></div>`}
                 </div>
