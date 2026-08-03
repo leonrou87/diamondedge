@@ -144,14 +144,32 @@ export default function Home() {
        stale bundle against a new payload, and a fresh bundle against a cached old payload,
        are the same problem seen from two sides; every reader below accepts the old AND the
        new field name, so neither direction can produce a blank. */
-    const REC_HEADLINE_FIELDS: { path: string; alts: string[] }[] = [
+    /* THE HEADLINE BLOCK HAS EXACTLY ONE NAME, AND THIS LIST STAYS HONEST ABOUT THAT.
+       The first pass at fixing this guard added `overall`, `summary`, `product_record` and
+       `top` here on the theory that a sibling block could stand in for a renamed headline.
+       The served payload disproves it immediately: `record.overall` is a DIFFERENT block with
+       a different schema — it carries `units_flat`/`units_weighted` and no `record` string at
+       all — so resolving to it produced two brand-new false alarms on a completely healthy
+       feed ("record.overall.units — none of [units, net_units]"). A speculative alias is not
+       a safety net; it is a second false-alarm generator wearing one. If the backend ever
+       genuinely renames the block, the message below prints every key `record` actually
+       carries, which is enough to add the real name here in one edit. */
+    const REC_HEADLINE_BLOCKS = ["headline"];
+    /* `text: true` marks the ONE genuinely free-form field. Everything else is a number the
+       renderers do arithmetic on, and the old check exempted every string from the numeric
+       test — `typeof v !== "string" && !isFinite(Number(v))` — so `win: "abc"` sailed through
+       the guard and reached the DOM. Numbers-as-strings are legitimate (`win: "65"` parses
+       fine and always has), so the rule is not "must be typeof number"; it is "must survive
+       Number()". That catches the corrupt value without inventing a violation for the wire
+       format. */
+    const REC_HEADLINE_FIELDS: { path: string; alts: string[]; text?: boolean }[] = [
       { path: "record.headline.win", alts: ["win", "wins", "w"] },
       { path: "record.headline.loss", alts: ["loss", "losses", "l"] },
       { path: "record.headline.push", alts: ["push", "pushes", "p"] },
       { path: "record.headline.n", alts: ["n", "n_graded", "graded"] },
       { path: "record.headline.hit_rate", alts: ["hit_rate", "hit"] },
       { path: "record.headline.units", alts: ["units", "net_units"] },
-      { path: "record.headline.record", alts: ["record", "wl"] },
+      { path: "record.headline.record", alts: ["record", "wl"], text: true },
     ];
     const recIssues = new Set<string>();
     let recBannerT = 0;
@@ -163,8 +181,10 @@ export default function Home() {
         `[DiamondEdge] RECORD CONTRACT  ${what}\n` +
         `  A field the record renderers consume is missing, unparseable, or NaN.\n` +
         `  In production the module falls back to the last good rendering or hides —\n` +
-        `  it will NOT print NaN — but the reader loses a surface. Fix the payload or\n` +
-        `  add the new field name to REC_HEADLINE_FIELDS / normDayBlock's alias list.`
+        `  it will NOT print NaN — but the reader loses a surface. The line above names the\n` +
+        `  check that failed and the value it saw. If the backend RENAMED the field, add the\n` +
+        `  new name to REC_HEADLINE_BLOCKS / REC_HEADLINE_FIELDS / normDayBlock's alias list —\n` +
+        `  a rename is not a violation, and this guard must never report one as if it were.`
       );
       if (recBannerT) return;
       recBannerT = window.setTimeout(() => {
@@ -179,21 +199,48 @@ export default function Home() {
       }, 0);
     }
     /* Runs on every payload that lands. Cheap, and it is the only thing standing between a
-       contract change and a wrong number on the surface this product is sold on. */
+       contract change and a wrong number on the surface this product is sold on.
+
+       …AND IT ONLY RUNS ON A PAYLOAD THAT ACTUALLY ARRIVED. A feed row is not atomic from
+       the client's point of view: a sync mid-write, a truncated body, an error envelope from
+       PostgREST and a warm-up placeholder all arrive as "an object with a `record` key" and
+       none of them is a contract violation — they are a payload that has not landed yet.
+       Asserting on those is how a guard earns a reputation for crying wolf, and a guard
+       nobody reads protects nobody. The arrival test is the same one every consumer in this
+       file uses to decide a feed is real: a games array AND a generation stamp. No stamp or
+       no games ⇒ nothing to assert against, so we say nothing and wait for the real one. */
+    function recordPayloadArrived(d: any) {
+      const stamped = !!(d && (d.generated_utc || d.generated_at || d.as_of));
+      return stamped && Array.isArray(d.games) && d.games.length > 0;
+    }
     function checkRecordContract(d: any, src = "payload") {
       if (!DEV || !d || typeof d !== "object") return;
+      if (!recordPayloadArrived(d)) return;   // still in flight / partial — not a violation
       const at = (m: string) => `${src}: ${m}`;
       const rec = d.record;
       if (rec == null) { reportRecordIssue(at("record — absent from the payload")); return; }
-      if (typeof rec !== "object") { reportRecordIssue(at("record — not an object")); return; }
-      const h = rec.headline;
-      if (h == null || typeof h !== "object") reportRecordIssue(at("record.headline — absent"));
-      else {
-        REC_HEADLINE_FIELDS.forEach(({ path, alts }) => {
+      if (typeof rec !== "object") { reportRecordIssue(at(`record — not an object (saw ${typeof rec})`)); return; }
+      /* THE HEADLINE BLOCK, BY ALIAS — and when it genuinely cannot be found, the message
+         says what it looked for AND what was actually there, because "absent" on its own is
+         what made this exact warning take a payload dump and a console probe to diagnose. */
+      const hKey = REC_HEADLINE_BLOCKS.find((k) => rec[k] && typeof rec[k] === "object" && !Array.isArray(rec[k]) && Object.keys(rec[k]).length > 0);
+      const h = hKey ? rec[hKey] : null;
+      if (!h) {
+        const shapes = REC_HEADLINE_BLOCKS
+          .map((k) => `${k}=${k in rec ? (rec[k] === null ? "null" : Array.isArray(rec[k]) ? "array" : typeof rec[k] === "object" ? "empty object" : typeof rec[k]) : "missing"}`)
+          .join(", ");
+        reportRecordIssue(at(`record.headline — no usable block. Looked for [${REC_HEADLINE_BLOCKS.join(", ")}] and saw {${shapes}}; record actually carries [${Object.keys(rec).slice(0, 12).join(", ")}]`));
+      } else {
+        // the resolved block's real name travels into every leaf message, so a rename reads
+        // as a rename ("record.overall.win") rather than as a mystery
+        REC_HEADLINE_FIELDS.forEach(({ path, alts, text }) => {
+          const leaf = path.split(".").pop();
+          const where = `record.${hKey}.${leaf}`;
           const key = alts.find((a) => h[a] != null);
-          if (!key) { reportRecordIssue(at(`${path} — none of [${alts.join(", ")}]`)); return; }
+          if (!key) { reportRecordIssue(at(`${where} — none of [${alts.join(", ")}]; block carries [${Object.keys(h).slice(0, 12).join(", ")}]`)); return; }
           const v = h[key];
-          if (typeof v !== "string" && !isFinite(Number(v))) reportRecordIssue(at(`${path} — NaN (${String(v)})`));
+          if (text) { if (typeof v !== "string" && !isFinite(Number(v))) reportRecordIssue(at(`${where} — neither text nor a number (${key}=${JSON.stringify(v)})`)); return; }
+          if (!isFinite(Number(v))) reportRecordIssue(at(`${where} — does not survive Number() (${key}=${JSON.stringify(v)})`));
         });
       }
       const daily = rec.daily;
@@ -201,14 +248,24 @@ export default function Home() {
       if (daily == null && legacy == null) { reportRecordIssue(at("record.daily — absent, and no by_date_record to fall back on")); return; }
       if (daily != null && !Array.isArray(daily) && typeof daily !== "object")
         reportRecordIssue(at("record.daily — neither an array of day blocks nor a map keyed by date"));
-      // the rows have to PARSE, not merely exist — a daily block nobody can read is what
-      // empties the record screen while everything around it still looks healthy
-      const map = dayRecordMap();
-      const parsed = Object.keys(map).length;
-      const rawN = Array.isArray(daily) ? daily.length
-        : daily && typeof daily === "object" ? Object.keys(daily).length
-        : legacy && typeof legacy === "object" ? Object.keys(legacy).length : 0;
-      if (rawN > 0 && parsed === 0) reportRecordIssue(at(`record.daily — ${rawN} day blocks served, 0 parseable (win/loss aliases changed?)`));
+      /* The rows have to PARSE, not merely exist — a daily block nobody can read is what
+         empties the record screen while everything around it still looks healthy.
+
+         IT PARSES *THIS* PAYLOAD'S ROWS NOW. It used to count `d`'s raw rows and then compare
+         them against `dayRecordMap()`, which does not read `d` at all — it reads the module
+         globals (`betaData`, `recordRoot()`). So checking the LIVE feed asked "how many rows
+         did live serve?" and "how many did HISTORY parse?" and reported a violation when the
+         two disagreed. Before history landed that is rawN > 0 with parsed === 0 on a
+         perfectly good payload: a guard reporting a load-order race as a contract break.
+         Same question, asked of one object. */
+      const rows: any[] = Array.isArray(daily) ? daily
+        : daily && typeof daily === "object" ? Object.keys(daily).map((k) => daily[k])
+        : legacy && typeof legacy === "object" ? Object.keys(legacy).map((k) => legacy[k]) : [];
+      const parsed = rows.filter((x) => !!normDayBlock(x)).length;
+      if (rows.length > 0 && parsed === 0) {
+        const sample = rows[0] && typeof rows[0] === "object" ? Object.keys(rows[0]).slice(0, 12).join(", ") : String(rows[0]);
+        reportRecordIssue(at(`record.daily — ${rows.length} day blocks served, 0 parseable (win/loss aliases changed?); first row carries [${sample}]`));
+      }
     }
     /* THE PRODUCTION HALF. A dev banner helps whoever is looking; this is what protects the
        reader who is not. Every record figure goes through here: a value that cannot be made
@@ -12765,8 +12822,23 @@ export default function Home() {
       let fresh: any = null;
       try { fresh = await Promise.race([snap("picks_unified"), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
       if (!fresh || !fresh.games || feedStampMs(fresh) < feedStampMs({ generated_utc: UNIFIED_HISTORY_MIN_UTC })) {
-        // deadlined like every other read — a stalled static fetch is the same hang
-        const bundled = await fetchJson(`/picks_unified.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
+        /* ═══ A DAY-GRANULAR CACHE KEY CANNOT BUST A FILE THAT CHANGES HOURLY ═══
+           THIS WAS A REAL STALENESS BUG, and the record-contract guard is what found it.
+           `force-cache` returns the cached body WITHOUT revalidating whenever the URL
+           matches, and the URL's only variable was `?v=<YYYY-MM-DD>` — one new key per day.
+           But this file is rewritten several times a day by the sync scripts. So the first
+           load of the morning pinned that hour's body in the browser cache and every load
+           for the rest of the day got it back, unrevalidated: a 01:02Z generation still
+           being served at 09:11Z, whose `record` block genuinely has no `headline` in it.
+           The record surfaces then rendered from a hours-old copy (or hid, via recordSafe),
+           and the contract guard dutifully blamed the PAYLOAD for what was a client-cache
+           bug — which is exactly why checking the live feed found nothing wrong with it.
+
+           `no-cache` is the correct semantic here and costs almost nothing: it still uses
+           the cached body, it simply REVALIDATES first, so an unchanged file comes back 304
+           with no payload transfer and a changed one can never be missed. `force-cache` is
+           only ever right for a genuinely immutable URL, and this one is not. */
+        const bundled = await fetchJson(`/picks_unified.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "no-cache" });
         if (!fresh || !fresh.games || feedStampMs(bundled) >= feedStampMs(fresh)) fresh = bundled;
       }
       betaData = applyDeskMock(fresh);
@@ -13694,9 +13766,9 @@ export default function Home() {
       let usedFallback = false;
       if (!fresh || !Array.isArray(fresh.items)) {
         usedFallback = true;
-        const r = await fetch(`/research_roadmap.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
-        if (!r.ok) throw new Error("roadmap fetch " + r.status);
-        fresh = await r.json();
+        // same day-granular-key trap as the history feed above — this file is re-synced
+        // during the day too, so it revalidates rather than trusting a pinned body
+        fresh = await fetchJson(`/research_roadmap.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "no-cache" });
       }
       if (!fresh || !Array.isArray(fresh.items)) throw new Error("roadmap payload malformed");
       roadmapData = fresh;

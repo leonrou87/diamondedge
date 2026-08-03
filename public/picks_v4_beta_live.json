@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-03T16:13:34Z",
+  "generated_utc": "2026-08-03T16:49:12Z",
   "dates": [
     "2026-08-03"
   ],
@@ -1044,9 +1044,82 @@
           "stale_hours": 0.0
         },
         "asof_utc": "2026-08-03T12:40:24Z"
+      },
+      {
+        "model": "champion_v2",
+        "source": "live",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-6h",
+        "date": "2026-08-03",
+        "game_pk": 825095,
+        "game_id": "2026-08-03-SD-AZ",
+        "matchup": "SD @ AZ",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-08-04T01:40:00Z",
+        "market_line": 9.0,
+        "pick_side": null,
+        "pick_line": 8.5,
+        "lean": {
+          "side": "over",
+          "line": 8.5
+        },
+        "our_prob": 0.5434,
+        "per_side_price": -121,
+        "best_book": "onexbet",
+        "median_price": -138,
+        "p_breakeven": 0.5475,
+        "ev": -0.0075,
+        "ev_min": 0.015,
+        "take": false,
+        "playable": false,
+        "gate_price": -138,
+        "gate_ev": -0.0628,
+        "gate_p_breakeven": 0.5798,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.44,
+        "gate_reason": "negative_ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0294,
+          "signed_edge": 0.0294,
+          "side": "over",
+          "frozen_at": "2026-08-03T12:12:57.352941+00:00",
+          "morning_price": -117,
+          "nlines": 1
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0294,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "price": {
+          "basis": "served/graded at the BEST executable per-side price across books quoting the pick's line at the latest pregame snapshot (v4 odds store); the +EV GATE evaluates at the MEDIAN-in-decimal price at the same line (EXECUTION LAYER, Leon 2026-07-09 \u2014 gate at MEDIAN, price/grade at BEST: the proven config)",
+          "snapshot_ts": "2026-08-03T16:46:57Z",
+          "n_books_at_line": 6,
+          "best_price": -121,
+          "best_book": "onexbet",
+          "median_price": -138,
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.04
+        },
+        "informational_lean": "over",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.3% vs median break-even 58.0% at -138 (median ev -6.28% < +1.5% min)",
+        "asof_utc": "2026-08-03T16:49:09Z"
       }
     ],
-    "n_picks_on_board": 1,
+    "n_picks_on_board": 2,
     "n_voided": 0
   },
   "board_notice": null,
@@ -2186,17 +2259,17 @@
   },
   "board_census": {
     "n_games": 8,
-    "n_rows": 16,
+    "n_rows": 17,
     "n_voided": 0,
     "n_playable": 0,
     "n_takes": 0,
-    "n_passes": 16,
+    "n_passes": 17,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 0,
       "2": 0,
-      "1": 16
+      "1": 17
     }
   },
   "spread_stream": {
@@ -2256,21 +2329,21 @@
     "games": {
       "823431": {
         "status": "LEAN",
-        "side": "home",
-        "side_team": "Philadelphia Phillies",
-        "line": -1.5,
+        "side": "away",
+        "side_team": "Washington Nationals",
+        "line": 1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": 140,
+        "price": -139,
         "best_book": null,
         "stars": 1,
-        "score": 0.32,
-        "our_prob": 0.4111,
-        "ev": -0.0135,
+        "score": 0.47,
+        "our_prob": 0.4205,
+        "ev": -0.0036,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2569,25 +2642,25 @@
     "games": {
       "823431": {
         "status": "LEAN",
-        "side": "under",
-        "line": 9.5,
-        "vegas_line": 9.5,
-        "p_over": 0.4635,
-        "p_over_market": 0.4783,
-        "sim_edge": -0.0148,
+        "side": "over",
+        "line": 9.0,
+        "vegas_line": 9.0,
+        "p_over": 0.5329,
+        "p_over_market": 0.5184,
+        "sim_edge": 0.0145,
         "price": -117.0,
-        "best_book": "onexbet",
+        "best_book": "pinnacle",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.67,
+        "sim_mu": 9.84,
         "sim_median": 9,
-        "sim_sd": 4.501,
+        "sim_sd": 4.597,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2599,7 +2672,8 @@
         "game_id": "2026-08-03-Washington Nationals-Philadelphia Phillies-823431",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823520": {
@@ -2955,32 +3029,32 @@
       "823431": {
         "status": "LEAN",
         "side": "over",
-        "line": 9.5,
-        "vegas_line": 9.5,
-        "p_over": 0.4816,
-        "p_over_market": 0.4783,
-        "scout_edge": 0.0033,
-        "conviction": 0.4816,
-        "price": 108.0,
-        "best_book": "onexbet",
+        "line": 9.0,
+        "vegas_line": 9.0,
+        "p_over": 0.5229,
+        "p_over_market": 0.5184,
+        "scout_edge": 0.0045,
+        "conviction": 0.5229,
+        "price": -117.0,
+        "best_book": "pinnacle",
         "stars": null,
         "score": null,
         "n_train": 11106,
         "train_max_date": "2026-08-02",
         "raw_inputs": {
           "sp_home_era_std": 6.0353,
-          "sp_away_era_std": null,
+          "sp_away_era_std": 3.0,
           "bat_home_avg_r30": 0.2651,
           "bat_away_avg_r30": 0.2517,
           "pen_home_era_std": 3.8571,
           "pen_away_era_std": 3.6928,
           "enr_park_run_factor_3y": 1.0233,
-          "wx_temp_f": 78.62
+          "wx_temp_f": 78.8
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-12h",
+        "lead_time": "T-6h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -2992,7 +3066,8 @@
         "game_id": "2026-08-03-Washington Nationals-Philadelphia Phillies-823431",
         "walls_priced": [
           "T-24h",
-          "T-12h"
+          "T-12h",
+          "T-6h"
         ]
       },
       "823520": {
@@ -4360,7 +4435,8 @@
       "first_pitch_utc": "2026-08-03T22:40:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -4440,6 +4516,45 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 47.1% < break-even 53.9% at -117 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -117,
+          "our_prob": 0.5261,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.5261,
+          "p_breakeven": 0.5392,
+          "ev": -0.0243,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.09,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": null,
+          "edge": 0.0011,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "pinnacle",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "informational_lean": "over",
+          "pass_reason": "model 52.6% < break-even 53.9% at -117 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
         }
       ],
