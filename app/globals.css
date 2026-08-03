@@ -1151,6 +1151,21 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .state .big{font-family:var(--disp);font-weight:600;font-size:18px;color:var(--ink);text-transform:uppercase;letter-spacing:.05em}
 .state .sm{font-size:14px;margin-top:6px;color:var(--ink3)}
+/* ── THE FAILED-SURFACE STATE ──────────────────────────────────────────────────────────────
+   Every contained failure lands here (see the ERROR CONTAINMENT block in page.tsx). It is a
+   designed state, not an error message: it names what did not load in a reader's words, says
+   what is UNaffected, and always offers the way back. No raw error string ever reaches a
+   reader — "failure occurred" is not a thing this app is allowed to say. */
+.failstate{padding:56px 22px}
+.state-retry{margin-top:16px;padding:10px 20px;border-radius:999px;cursor:pointer;
+  font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--ink);
+  background:var(--paper);border:1px solid rgba(var(--rimc),.14);box-shadow:var(--e0)}
+.state-retry:active{background:var(--wash);transform:scale(.97)}
+/* A single slide that failed inside an otherwise healthy deck — it keeps the reader moving. */
+.sts-skip{display:flex;align-items:center;justify-content:center;text-align:center}
+.sts-skip-k{font-family:var(--disp);font-weight:700;font-size:19px;color:#fff;margin-bottom:8px}
+.sts-skip p{font-family:var(--sans);font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.72);margin:0;max-width:30ch}
+.sheet.artfail .sh-head{padding-bottom:22px}
 .refnote{text-align:center;font-size:12px;color:var(--ink3);margin-top:18px;font-family:var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
 /* ============ DETAIL SHEET (bottom sheet) ============ */
@@ -7078,29 +7093,52 @@ main.swiping{transition:none !important;will-change:transform}
   background:linear-gradient(90deg,var(--ink) 0 42px,rgba(var(--rimc),.16) 42px)}
 @media(max-width:559px){.labmast-h{font-size:27px}.labmast-sub{font-size:15px}}
 
-/* THE FEATURED PAPER + THE LIBRARY */
-.lab-flag{margin-bottom:24px}
+/* ══════════════ THE FEATURED PAPER + THE LIBRARY ══════════════
+   The index is a SHELF, not a feed: the flagship gets the whole width and says "start here",
+   then each category carries its own one-line blurb before its cards. The card leads with the
+   VERDICT because on this corpus the verdict is the news — most of these papers conclude that
+   something did not work, and a library that hides that behind a title is selling. */
+.lab-flag{margin-bottom:26px}
 .lab-lib{margin-bottom:24px}
-.lib-cat{margin-top:18px}
-.lib-cat-k{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ink3);margin-bottom:9px}
+.lib-cat{margin-top:22px}
+.lib-cat-k{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:800;font-size:11.5px;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--ink2);margin-bottom:5px}
+.lib-cat-k i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:10px;letter-spacing:0;
+  color:var(--ink4);padding:2px 7px;border-radius:999px;background:rgba(var(--tintc),.07)}
+.lib-cat-k::after{content:"";flex:1;height:1px;background:var(--line3)}
+.lib-cat-b{font-family:var(--sans);font-size:13.5px;line-height:1.5;color:var(--ink3);margin:0 0 11px;max-width:56ch}
 .lib-grid{display:grid;grid-template-columns:1fr;gap:9px}
 @media(min-width:760px){.lib-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
-.papercard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;text-align:left;cursor:pointer;
-  padding:15px 16px;border-radius:16px;background:var(--paper);border:1px solid rgba(var(--rimc),.10);box-shadow:var(--e0)}
-.papercard:active{background:var(--wash)}
-.pc-cat{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
-.pc-title{font-family:var(--research-disp);font-weight:700;font-size:18px;line-height:1.24;letter-spacing:-.02em;color:var(--ink)}
-.pc-abs{font-family:var(--research-serif);font-size:14px;line-height:1.58;color:var(--ink3)}
-.pc-foot{display:flex;align-items:baseline;gap:8px;width:100%;margin-top:3px;
-  font-family:var(--sans);font-size:11.5px;color:var(--ink4)}
-.pc-foot em{font-style:normal;margin-left:auto;font-weight:700;color:var(--gold)}
-.papercard.flagship{padding:22px 20px;gap:9px;
-  background:linear-gradient(158deg,rgba(var(--goldc),.10),rgba(var(--panec),.94) 58%);
+.papercard{display:flex;flex-direction:column;align-items:flex-start;gap:7px;width:100%;text-align:left;cursor:pointer;
+  padding:14px 15px 13px;border-radius:16px;background:var(--paper);border:1px solid rgba(var(--rimc),.10);
+  box-shadow:var(--e0);transition:box-shadow .18s var(--ease),transform .18s var(--ease)}
+.papercard:active{background:var(--wash);transform:scale(.992)}
+@media(hover:hover){.papercard:hover{box-shadow:var(--e1)}}
+.pc-top{display:flex;align-items:center;gap:8px;width:100%}
+/* THE VERDICT CHIP — tone is derived from the wording, never served, so a null can never be
+   dressed up as a finding and a shipped module can never be dressed down. */
+.pc-verd{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  line-height:1.35;padding:4px 8px;border-radius:7px;background:rgba(var(--tintc),.07);color:var(--ink2)}
+.pc-verd.null{background:rgba(var(--slatec),.14);color:var(--n2);box-shadow:inset 0 0 0 1px rgba(var(--slatec),.26)}
+.pc-verd.retired{background:rgba(var(--redc),.09);color:var(--r1);box-shadow:inset 0 0 0 1px rgba(var(--redc),.20)}
+.pc-verd.shipped{background:rgba(var(--greenc),.10);color:var(--g1);box-shadow:inset 0 0 0 1px rgba(var(--greenc),.24)}
+.pc-verd.progress{background:rgba(var(--goldc),.12);color:var(--golddeep);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.26)}
+.pc-verd.rule{background:rgba(var(--bluec),.09);color:var(--b1);box-shadow:inset 0 0 0 1px rgba(var(--bluec),.22)}
+.pc-min{margin-left:auto;flex-shrink:0;font-family:var(--sans);font-weight:600;font-size:11.5px;color:var(--ink4)}
+.pc-flag{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--golddeep)}
+.pc-title{font-family:var(--disp);font-weight:700;font-size:18px;line-height:1.22;letter-spacing:-.022em;color:var(--ink)}
+.pc-abs{font-family:var(--sans);font-size:13.5px;line-height:1.55;color:var(--ink3);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pc-foot{display:flex;align-items:baseline;gap:8px;width:100%;margin-top:2px;padding-top:9px;
+  border-top:1px solid var(--line3);font-family:var(--sans);font-size:11.5px;color:var(--ink4)}
+.pc-foot em{font-style:normal;margin-left:auto;font-weight:700;color:var(--gold);white-space:nowrap}
+.papercard.flagship{padding:20px 19px 17px;gap:9px;
+  background:linear-gradient(158deg,rgba(var(--goldc),.11),rgba(var(--panec),.94) 60%);
   border-color:rgba(var(--goldc),.26);box-shadow:var(--e1)}
-.papercard.flagship .pc-title{font-size:25px;line-height:1.18}
-.papercard.flagship .pc-abs{font-size:15px}
-@media(max-width:559px){.papercard.flagship .pc-title{font-size:21px}}
+.papercard.flagship .pc-title{font-size:26px;line-height:1.14}
+.papercard.flagship .pc-abs{font-size:15px;line-height:1.55;-webkit-line-clamp:4;color:var(--ink2)}
+.papercard.flagship .pc-foot{border-top-color:rgba(var(--goldc),.22)}
+@media(max-width:559px){.papercard.flagship .pc-title{font-size:22px}}
 
 /* THE NULL-RESULTS CREDENTIAL — its own block, not a fold label */
 .lab-nulls{margin:22px 0;padding:19px 18px;border-radius:18px;
@@ -7112,25 +7150,293 @@ main.swiping{transition:none !important;will-change:transform}
 .lab-notes-k{margin-top:26px;padding-top:16px;border-top:1px solid var(--line3)}
 .lab-count.total{background:rgba(var(--tintc),.07);color:var(--ink2)}
 
-/* ══ A PAPER, AS A READING VIEW ══
-   Real typographic care: a capped measure, serif body, sections that breathe. */
+/* ══════════════════ A PAPER, AS A READING VIEW ══════════════════
+   Not a modal of chips — an article, with a capped measure, a real heading spine and figures
+   set into the sections they belong to. The register is the app's own faces (Outfit / Figtree
+   / JetBrains on figures only); what makes it read as a paper is STRUCTURE — a verdict stamped
+   at the top, an abstract set apart, a numbered evidence strip, then the argument. */
 .paperpage .gp-body{background:var(--paper)}
-.paper{max-width:68ch;margin:0 auto;padding:6px 2px 40px}
-.pp-cat{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
-.pp-title{font-family:var(--research-disp);font-weight:700;font-size:31px;line-height:1.1;letter-spacing:-.03em;
-  color:var(--ink);margin:10px 0 8px}
-.pp-byline{font-family:var(--sans);font-size:13px;color:var(--ink3);padding-bottom:16px;border-bottom:1px solid var(--line3)}
-.pp-abstract{margin:18px 0;padding:16px 17px;border-radius:14px;background:var(--sunken)}
-.pp-seck{display:block;font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--ink3);margin-bottom:7px}
-.pp-abstract p{font-family:var(--research-serif);font-size:16px;line-height:1.68;color:var(--ink);margin:0}
-.pp-sec{margin-top:24px}
-.pp-sec h2{font-family:var(--research-disp);font-weight:700;font-size:21px;letter-spacing:-.022em;color:var(--ink);margin-bottom:9px}
-.pp-sec p{font-family:var(--research-serif);font-size:16.5px;line-height:1.72;color:var(--ink2);margin:0 0 13px}
-.pp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line3)}
-.pp-tags span{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--ink3);
+.rpaper{max-width:66ch;margin:0 auto;padding:4px 2px 48px}
+.rp-kick{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.rp-cat{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--gold)}
+.rp-min{margin-left:auto;font-family:var(--sans);font-weight:600;font-size:11.5px;color:var(--ink4)}
+.rp-title{font-family:var(--disp);font-weight:700;font-size:32px;line-height:1.08;letter-spacing:-.032em;
+  color:var(--ink);margin:0 0 10px}
+.rp-deck{font-family:var(--sans);font-size:16.5px;line-height:1.5;color:var(--ink2);margin:0 0 14px;font-weight:450}
+.rp-byline{font-family:var(--sans);font-size:12.5px;color:var(--ink4);padding-bottom:16px;border-bottom:1px solid var(--line3)}
+/* THE VERDICT, STAMPED. It leads the paper for the same reason it leads the card. */
+.rp-verdict{position:relative;margin:18px 0;padding:14px 16px 14px 17px;border-radius:14px;
+  background:rgba(var(--tintc),.05);border:1px solid var(--line3);overflow:hidden}
+.rp-verdict::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--ink3)}
+.rp-verdict-k{display:block;font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink4);margin-bottom:6px}
+.rp-verdict p{font-family:var(--disp);font-weight:650;font-size:16px;line-height:1.42;color:var(--ink);margin:0}
+.rp-verdict.null{background:rgba(var(--slatec),.09)}
+.rp-verdict.null::before{background:var(--n3)}
+.rp-verdict.retired{background:rgba(var(--redc),.06)}
+.rp-verdict.retired::before{background:var(--r2)}
+.rp-verdict.shipped{background:rgba(var(--greenc),.07)}
+.rp-verdict.shipped::before{background:var(--g2)}
+.rp-verdict.progress{background:rgba(var(--goldc),.09)}
+.rp-verdict.progress::before{background:var(--gold)}
+.rp-verdict.rule{background:rgba(var(--bluec),.06)}
+.rp-verdict.rule::before{background:var(--b2)}
+.rp-abstract{margin:18px 0;padding:16px 17px;border-radius:14px;background:var(--sunken)}
+.rp-seck{display:block;font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:8px}
+.rp-abstract p{font-family:var(--sans);font-size:15.5px;line-height:1.66;color:var(--ink);margin:0}
+/* THE EVIDENCE STRIP — key_figures, which are prose-shaped numbers ("54.8% on 997 picks across
+   205 nights"), so they are set as a ledger rather than as a row of giant digits. */
+.rp-figs{margin:22px 0 4px}
+.rp-fig{position:relative;padding:11px 0 12px 14px;border-top:1px solid var(--line3)}
+.rp-fig:first-of-type{border-top:0}
+.rp-fig::before{content:"";position:absolute;left:0;top:13px;bottom:14px;width:3px;border-radius:2px;
+  background:linear-gradient(180deg,rgba(var(--goldc),.75),rgba(var(--goldc),.22))}
+.rp-fig-k{font-family:var(--sans);font-weight:600;font-size:12px;line-height:1.4;color:var(--ink4);margin-bottom:3px}
+.rp-fig-v{font-family:var(--disp);font-weight:700;font-size:17px;line-height:1.32;letter-spacing:-.015em;
+  color:var(--ink);font-variant-numeric:tabular-nums}
+.rp-fig-n{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3);margin-top:4px}
+/* THE ARGUMENT */
+.rp-sec{margin-top:30px}
+.rp-sec>h2{font-family:var(--disp);font-weight:700;font-size:22px;line-height:1.2;letter-spacing:-.024em;
+  color:var(--ink);margin:0 0 11px;padding-top:14px;border-top:2px solid var(--ink)}
+.rp-prose p{font-family:var(--sans);font-size:16px;line-height:1.7;color:var(--ink2);margin:0 0 14px}
+.rp-prose b{font-weight:700;color:var(--ink)}
+.rp-prose i{font-style:italic}
+.rp-prose code{font-family:var(--mono);font-size:.86em;padding:1px 5px;border-radius:5px;
+  background:rgba(var(--tintc),.07);color:var(--ink)}
+.rp-h{font-family:var(--disp);font-weight:700;font-size:17px;line-height:1.3;letter-spacing:-.018em;
+  color:var(--ink);margin:22px 0 9px}
+.rp-ul,.rp-ol{margin:0 0 15px;padding-left:19px}
+.rp-ul li,.rp-ol li{font-family:var(--sans);font-size:15.5px;line-height:1.62;color:var(--ink2);margin-bottom:7px}
+.rp-ul li::marker{color:var(--gold)}
+.rp-ol li::marker{color:var(--ink4);font-weight:700}
+.rp-quote{margin:18px 0;padding:2px 0 2px 16px;border-left:3px solid rgba(var(--goldc),.45);
+  font-family:var(--disp);font-weight:600;font-size:17px;line-height:1.48;color:var(--ink);letter-spacing:-.012em}
+.rp-code{margin:0 0 15px;padding:13px 14px;border-radius:12px;background:var(--sunken);border:1px solid var(--line3);
+  font-family:var(--mono);font-size:11.5px;line-height:1.62;color:var(--ink2);white-space:pre;overflow-x:auto}
+.rp-tablewrap{margin:0 0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  border:1px solid var(--line3);border-radius:12px}
+.rp-table{border-collapse:collapse;width:100%;min-width:min(100%,320px)}
+.rp-table th{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);text-align:left;padding:9px 11px;background:var(--sunken);white-space:nowrap}
+.rp-table td{font-family:var(--sans);font-size:13px;line-height:1.45;color:var(--ink2);padding:9px 11px;
+  border-top:1px solid var(--line3);font-variant-numeric:tabular-nums}
+.rp-table tbody tr td:first-child{color:var(--ink);font-weight:600}
+/* THE PULL-OUT — role:takeaway, and the only block on the page in the brand's gold */
+.rp-take{margin:30px 0 6px;padding:19px 18px;border-radius:18px;
+  background:linear-gradient(158deg,rgba(var(--goldc),.13),rgba(var(--panec),.9) 62%);
+  border:1px solid rgba(var(--goldc),.26)}
+.rp-take .rp-seck{color:var(--golddeep)}
+.rp-take .rp-prose p{font-family:var(--disp);font-weight:600;font-size:17px;line-height:1.5;color:var(--ink);
+  letter-spacing:-.012em}
+.rp-take .rp-prose p:last-child{margin-bottom:0}
+.rp-take .rp-prose b{font-weight:800}
+/* role:extra folds — depth that is genuinely optional */
+.rp-extra,.rp-srcs{margin-top:18px;border:1px solid var(--line3);border-radius:14px;background:var(--paper)}
+.rp-extra>summary,.rp-srcs>summary{list-style:none;display:flex;align-items:center;gap:9px;padding:13px 15px;cursor:pointer}
+.rp-extra>summary::-webkit-details-marker,.rp-srcs>summary::-webkit-details-marker{display:none}
+.rp-extra-k{font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--ink)}
+.rp-extra>summary .sgc-caret,.rp-srcs>summary .sgc-caret{margin-left:auto;color:var(--ink4);font-size:17px;
+  transition:transform .2s var(--ease)}
+.rp-extra[open]>summary .sgc-caret,.rp-srcs[open]>summary .sgc-caret{transform:rotate(90deg)}
+.rp-extra .lazy-body,.rp-srcs .lazy-body{padding:0 15px 14px}
+.rp-srcs-sub{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3);margin:0 0 9px}
+.rp-srcs ul{list-style:none;margin:0;padding:0}
+.rp-srcs li{font-family:var(--mono);font-size:11px;line-height:1.5;color:var(--ink3);padding:6px 0;
+  border-top:1px solid var(--line3);word-break:break-all}
+.rp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:26px;padding-top:16px;border-top:1px solid var(--line3)}
+.rp-tags span{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--ink3);
   padding:4px 10px;border-radius:999px;background:rgba(var(--tintc),.06)}
-@media(max-width:559px){.pp-title{font-size:26px}.pp-sec p{font-size:16px}}
+.rp-rel{margin-top:26px}
+.rp-relcard{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;margin-bottom:8px;
+  padding:12px 14px;border-radius:14px;background:var(--paper);border:1px solid rgba(var(--rimc),.10);box-shadow:var(--e0)}
+.rp-relcard:active{background:var(--wash)}
+.rp-relcat{flex-shrink:0;font-family:var(--disp);font-weight:800;font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink4);max-width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rp-reltitle{flex:1;min-width:0;font-family:var(--disp);font-weight:650;font-size:14px;line-height:1.3;color:var(--ink)}
+.rp-relgo{flex-shrink:0;color:var(--gold);font-weight:700}
+@media(max-width:559px){
+  .rp-title{font-size:27px}
+  .rp-deck{font-size:15.5px}
+  .rp-sec>h2{font-size:20px}
+  .rp-prose p{font-size:15.5px}
+  .rp-relcat{display:none}
+}
+
+/* ══════════════════════════ THE FIGURE SYSTEM ══════════════════════════
+   Sixty-four charts across the corpus, seven types, drawn in CSS and one SVG against the app's
+   own tokens — no chart library, nothing fetched, both themes for free.
+
+   THE HOUSE RULE OF THE HOUSE CHARTS: the drawing never says more than the number does. Bars
+   are zero-based; ranges are drawn at their true width; two results that cannot be told apart
+   are left looking identical, because on this corpus that is usually the finding. Colour is
+   spent in exactly two places — the brand's gold on the row a paper is about, and the
+   green/slate/red of an INTERVAL against its reference line, which is the one encoding that
+   carries an argument: a range that clears the line is separated from it, a range that crosses
+   it is not, and the legend says so in words underneath. */
+.rvz{margin:22px 0;padding:16px 15px 14px;border-radius:18px;background:var(--paper);
+  border:1px solid rgba(var(--rimc),.10);box-shadow:var(--e0)}
+.rvz-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.rvz-n{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.04em;color:var(--golddeep)}
+.rvz-kind{font-family:var(--disp);font-weight:800;font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink4);padding:3px 7px;border-radius:6px;background:rgba(var(--tintc),.06)}
+.rvz-title{font-family:var(--disp);font-weight:700;font-size:15.5px;line-height:1.3;letter-spacing:-.018em;
+  color:var(--ink);margin:0 0 3px}
+.rvz-unit{font-family:var(--sans);font-size:11.5px;line-height:1.4;color:var(--ink4);margin-bottom:11px}
+.rvz-title+.rvz-body{margin-top:12px}
+.rvz-cap{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink3);margin:13px 0 0;
+  padding-top:11px;border-top:1px solid var(--line3)}
+.rvz-src{font-family:var(--mono);font-size:9.5px;line-height:1.4;color:var(--ink4);margin:7px 0 0;word-break:break-all}
+.rvi-legend{display:flex;align-items:center;gap:7px;margin-bottom:12px;
+  font-family:var(--sans);font-weight:600;font-size:11.5px;color:var(--ink3)}
+.rvi-swatch{width:22px;height:0;border-top:2px dashed var(--ink3);flex-shrink:0}
+
+/* ── INTERVAL — the signature ── */
+.rvi-rows{display:flex;flex-direction:column;gap:14px}
+.rvi-lab{font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.38;color:var(--ink);margin-bottom:6px}
+.rvi-row.hl .rvi-lab{color:var(--golddeep);font-weight:700}
+.rvi-body{display:flex;align-items:center;gap:11px}
+.rvi-track{position:relative;flex:1;min-width:0;height:20px}
+.rvi-track::before{content:"";position:absolute;left:0;right:0;top:9px;height:2px;border-radius:1px;
+  background:rgba(var(--tintc),.06)}
+.rvi-ref{position:absolute;top:-1px;bottom:-1px;width:0;border-left:2px dashed var(--ink3);opacity:.6}
+.rvi-band{position:absolute;top:6px;height:8px;border-radius:5px;background:rgba(var(--slatec),.28)}
+.rvi-pt{position:absolute;top:3px;width:14px;height:14px;margin-left:-7px;border-radius:3px;
+  transform:rotate(45deg);background:var(--n2);box-shadow:0 0 0 2px var(--paper)}
+.rvi-row.over .rvi-band{background:rgba(var(--greenc),.34)}
+.rvi-row.over .rvi-pt{background:var(--g2)}
+.rvi-row.under .rvi-band{background:rgba(var(--redc),.30)}
+.rvi-row.under .rvi-pt{background:var(--r2)}
+.rvi-row.hl .rvi-band{background:rgba(var(--goldc),.38)}
+.rvi-row.hl .rvi-pt{background:var(--gold)}
+.rvi-val{flex:0 0 auto;min-width:74px;text-align:right}
+.rvi-val span{display:block;font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:-.02em;
+  color:var(--ink);font-variant-numeric:tabular-nums}
+.rvi-val em{display:block;font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--ink4);
+  margin-top:1px;white-space:nowrap}
+.rvi-note{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin-top:6px}
+.rvi-key{margin-top:14px;padding-top:11px;border-top:1px solid var(--line3);
+  font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink4)}
+
+/* ── BAR ── */
+.rvb-rows{display:flex;flex-direction:column;gap:13px}
+.rvb-lab{font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.38;color:var(--ink);margin-bottom:6px}
+.rvb-row.hl .rvb-lab{color:var(--golddeep);font-weight:700}
+.rvb-body{display:flex;align-items:center;gap:11px}
+.rvb-track{position:relative;flex:1;min-width:0;height:16px;border-radius:5px;background:rgba(var(--tintc),.05)}
+.rvb-ref{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed var(--ink3);opacity:.65}
+.rvb-bar{position:absolute;top:2px;height:12px;border-radius:4px;background:rgba(var(--slatec),.42)}
+.rvb-row.pos .rvb-bar{background:rgba(var(--greenc),.48)}
+.rvb-row.neg .rvb-bar{background:rgba(var(--redc),.40)}
+.rvb-row.hl .rvb-bar{background:var(--brandgrad)}
+.rvb-val{flex:0 0 auto;min-width:62px;text-align:right;font-family:var(--disp);font-weight:800;font-size:14.5px;
+  letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+.rvb-note{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin-top:6px}
+
+/* ── COMPARE — what we tested against what the market knew ── */
+.rvc-head{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:4px}
+.rvc-hk{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  padding:5px 9px;border-radius:8px;line-height:1.3}
+.rvc-hk.l{background:rgba(var(--slatec),.13);color:var(--n2)}
+.rvc-hk.r{background:rgba(var(--goldc),.13);color:var(--golddeep)}
+.rvc-row{padding:12px 0 11px;border-bottom:1px solid var(--line3)}
+.rvc-row:last-child{border-bottom:0;padding-bottom:0}
+.rvc-lab{font-family:var(--sans);font-weight:600;font-size:12.5px;line-height:1.4;color:var(--ink3);margin-bottom:8px}
+.rvc-row.hl .rvc-lab{color:var(--golddeep);font-weight:700}
+.rvc-cells{display:grid;grid-template-columns:1fr 1fr;gap:9px;align-items:start}
+.rvc-cell{padding:9px 10px;border-radius:11px;background:rgba(var(--tintc),.045);
+  box-shadow:inset 0 0 0 1px var(--line3)}
+.rvc-cell.r{background:rgba(var(--goldc),.07);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.18)}
+.rvc-v{font-family:var(--disp);font-weight:700;font-size:14px;line-height:1.36;color:var(--ink);
+  font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rvc-cell.n .rvc-v{font-size:19px;letter-spacing:-.025em}
+.rvc-bar{display:block;height:4px;border-radius:2px;margin-top:7px;background:rgba(var(--slatec),.45)}
+.rvc-cell.r .rvc-bar{background:rgba(var(--goldc),.6)}
+.rvc-note{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4);margin-top:8px}
+
+/* ── FUNNEL — a stage ladder. Not monotonic on this corpus, so the number always prints. ── */
+.rvf-stage{position:relative;border-radius:13px;overflow:hidden;background:rgba(var(--tintc),.045);
+  box-shadow:inset 0 0 0 1px var(--line3)}
+.rvf-fill{position:absolute;inset:0 auto 0 0;background:rgba(var(--slatec),.16)}
+.rvf-stage.hl .rvf-fill{background:rgba(var(--goldc),.18)}
+.rvf-stage.zero{box-shadow:inset 0 0 0 1px rgba(var(--redc),.22)}
+.rvf-in{position:relative;display:flex;align-items:flex-start;gap:12px;padding:12px 13px}
+.rvf-n{flex-shrink:0;min-width:58px;font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:-.035em;
+  color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1}
+.rvf-stage.zero .rvf-n{color:var(--r2)}
+.rvf-tx{min-width:0}
+.rvf-lab{font-family:var(--sans);font-weight:650;font-size:13px;line-height:1.38;color:var(--ink)}
+.rvf-note{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin-top:4px}
+.rvf-drop{display:flex;justify-content:center;padding:3px 0}
+.rvf-drop svg{width:16px;height:16px;fill:none;stroke:var(--ink4);stroke-width:1.8;stroke-linecap:round;
+  stroke-linejoin:round;opacity:.55}
+
+/* ── SCOREBOARD — a ledger of answers, deliberately uncoloured ── */
+.rvs-row{padding:11px 0;border-top:1px solid var(--line3)}
+.rvs-row:first-child{border-top:0;padding-top:0}
+.rvs-top{display:flex;align-items:baseline;gap:12px}
+.rvs-lab{flex:1;min-width:0;font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.4;color:var(--ink2)}
+.rvs-val{flex:0 1 auto;text-align:right;font-family:var(--disp);font-weight:700;font-size:13.5px;line-height:1.35;
+  color:var(--ink);font-variant-numeric:tabular-nums;max-width:56%}
+.rvs-val.chip{flex-shrink:0;padding:4px 10px;border-radius:8px;background:rgba(var(--tintc),.07);
+  box-shadow:inset 0 0 0 1px var(--line3);white-space:nowrap}
+.rvs-row.hl .rvs-val{color:var(--golddeep)}
+.rvs-row.hl .rvs-val.chip{background:rgba(var(--goldc),.12);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.26)}
+.rvs-note{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4);margin-top:5px;padding-right:6px}
+
+/* ── TIMELINE — a spine ── */
+.rvt{list-style:none;margin:0;padding:0 0 0 20px;position:relative}
+.rvt::before{content:"";position:absolute;left:4px;top:6px;bottom:8px;width:2px;border-radius:1px;
+  background:linear-gradient(180deg,rgba(var(--goldc),.5),rgba(var(--tintc),.12))}
+.rvt-row{position:relative;padding:0 0 16px}
+.rvt-row:last-child{padding-bottom:0}
+.rvt-dot{position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:3px;transform:rotate(45deg);
+  background:var(--paper);box-shadow:inset 0 0 0 2px var(--gold)}
+.rvt-row.hl .rvt-dot{background:var(--gold)}
+.rvt-step{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--golddeep);margin-bottom:3px}
+.rvt-lab{font-family:var(--sans);font-weight:650;font-size:13.5px;line-height:1.38;color:var(--ink)}
+.rvt-note{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin-top:4px}
+
+/* ── LINE — the one type that needs real geometry ── */
+.rvl-key{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:9px}
+.rvl-kk{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:600;font-size:11.5px;
+  color:var(--ink2)}
+.rvl-kk i{width:13px;height:3px;border-radius:2px;flex-shrink:0}
+.rvl-kk i.c0{background:var(--gold)}
+.rvl-kk i.c1{background:var(--g3)}
+.rvl-kk i.c2{background:var(--b2)}
+.rvl-kk i.c3{background:rgb(var(--violetc))}
+.rvl-svg{display:block;width:100%;height:auto;overflow:visible}
+.rvl-grid{stroke:var(--line3);stroke-width:1}
+.rvl-ref{stroke:var(--ink3);stroke-width:1.4;stroke-dasharray:4 4;opacity:.7}
+.rvl-ax{font-family:var(--mono);font-size:8.5px;fill:var(--ink4)}
+/* Series carry a DASH PATTERN as well as a colour. On this corpus several series sit on the
+   same value for whole stretches (three analysts pinned at 100%), and a solid line drawn last
+   would simply erase the two underneath it. The patterns let the overlap read as an overlap. */
+.rvl-line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.rvl-line.c0{stroke:var(--gold)}
+.rvl-line.c1{stroke:var(--g3);stroke-dasharray:9 5}
+.rvl-line.c2{stroke:var(--b2);stroke-dasharray:2.5 4.5}
+.rvl-line.c3{stroke:rgb(var(--violetc))}
+.rvl-kk i.c1{background:repeating-linear-gradient(90deg,var(--g3) 0 6px,transparent 6px 9px)}
+.rvl-kk i.c2{background:repeating-linear-gradient(90deg,var(--b2) 0 2px,transparent 2px 5px)}
+.rvl-dot.c0{fill:var(--gold)}
+.rvl-dot.c1{fill:var(--g3)}
+.rvl-dot.c2{fill:var(--b2)}
+.rvl-dot.c3{fill:rgb(var(--violetc))}
+.rvl-xlab{font-family:var(--sans);font-size:11px;color:var(--ink4);text-align:center;margin-top:2px}
+@media(max-width:399px){
+  .rvz{padding:14px 12px 12px;border-radius:16px}
+  .rvi-val{min-width:64px}
+  .rvi-val span{font-size:14px}
+  .rvb-val{min-width:54px;font-size:13.5px}
+  .rvf-n{min-width:48px;font-size:19px}
+  .rvc-cells,.rvc-head{gap:7px}
+  .rvc-cell{padding:8px 9px}
+  .rvc-cell.n .rvc-v{font-size:17px}
+}
 
 
 /* ══════════════════ THE DESK AS A LANDING PAGE ══════════════════

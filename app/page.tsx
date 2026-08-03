@@ -248,6 +248,42 @@ export default function Home() {
     }
     const esc = (s: any) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => (({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as any)[c]));
     const num = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : Number(v).toFixed(d));
+    /* ═══════════════ ERROR CONTAINMENT — one bad item never takes a surface down ═══════════════
+       THE BUG CLASS. Every render on this app is a string built from served data, and the data
+       is not ours: a story with a null angle, a game whose pick object went missing, a headline
+       array with a hole in it. One throw inside one item's builder unwinds the WHOLE render —
+       innerHTML is never assigned — and the reader gets a blank tab, which is exactly what
+       "failure occurred when loading the news story" looks like from the outside. It has now
+       bitten twice: a null from displayPick took down a whole game page, and the briefing deck
+       builds twenty-four independent items into one string.
+
+       THE RULE. Anything that renders SERVED data in a loop is wrapped: `safeHtml` gives that
+       item's builder a boundary and falls back to a designed placeholder (or to nothing), and
+       `safeRun` does the same for a whole surface, leaving a real, styled retry state behind
+       instead of an empty div. In development both shout on the console so a swallowed bug is
+       still a visible bug; in production they degrade quietly, which is the entire point. */
+    function safeHtml(what: string, build: () => string, fallback = "") {
+      try {
+        const out = build();
+        return typeof out === "string" ? out : fallback;
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        if (DEV) console.error(`[DiamondEdge] render failed: ${what}`, e);
+        return fallback;
+      }
+    }
+    function safeRun(what: string, fn: () => any) {
+      try { return fn(); } catch (e) {
+        // eslint-disable-next-line no-console
+        if (DEV) console.error(`[DiamondEdge] surface failed: ${what}`, e);
+        return null;
+      }
+    }
+    // The one state a failed surface is allowed to show. It says what happened in a reader's
+    // words, and it always offers the way back — never a blank screen, never a raw error.
+    function failState(title: string, sub: string, retryId = "") {
+      return `<div class="state failstate"><div class="big">${esc(title)}</div><div class="sm">${esc(sub)}</div>${retryId ? `<button class="state-retry" id="${esc(retryId)}">Try again</button>` : ""}</div>`;
+    }
     const sgn = (v: any, d = 1) => { if (v == null || isNaN(Number(v))) return "—"; const n = Number(v); return (n > 0 ? "+" : "") + n.toFixed(d); };
     const fmtOdds = (o: any) => { if (o == null || o === "") return "—"; const n = Number(o); if (isNaN(n)) return "—"; if (n >= 100 || n <= -100) return n > 0 ? "+" + Math.round(n) : "" + Math.round(n); const am = n >= 2 ? Math.round((n - 1) * 100) : Math.round(-100 / (n - 1)); return am > 0 ? "+" + am : "" + am; };
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
@@ -10057,7 +10093,39 @@ export default function Home() {
       return key === "L" ? newsFeed.lead : ((newsFeed.headlines || []) as any[])[Number(key)];
     }
     function openArticleSheet(s: any, key = "") {
-      if (!s) return;
+      // A TAP THAT OPENS NOTHING IS A FAILURE TOO. The story key is resolved against a feed
+      // that may have refreshed underneath the deck, so "no story" gets a real, closable sheet
+      // that says so — never a dead tap the reader reads as the app being broken.
+      if (!s) { openArticleFail("This story is no longer available", "The news feed refreshed while it was open. The rest of the briefing is unaffected."); return; }
+      try { openArticleSheetInner(s, key); } catch (e) {
+        // eslint-disable-next-line no-console
+        if (DEV) console.error("[DiamondEdge] surface failed: the article reader", e);
+        openArticleFail("This story didn't load", "Something in the story was malformed. Nothing else is affected — close this and carry on.");
+      }
+    }
+    function openArticleFail(title: string, sub: string) {
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      detail = detailWithGameReturn({ _article: true });
+      layer.innerHTML = `
+        <div class="sheet-bg article-bg" id="sheet-bg"></div>
+        <div class="sheet article-story artfail" id="sheet" role="dialog" aria-modal="true">
+          <div class="sh-grab" id="sh-grab"><span></span></div>
+          <div class="sh-head">
+            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <div class="art-visual is-fallback"><span>◆</span></div>
+            <div class="sh-sport">DiamondEdge</div>
+            <div class="art-title">${esc(title)}</div>
+            <div class="sh-meta">${esc(sub)}</div>
+          </div>
+        </div>`;
+      document.body.classList.add("sheet-open");
+      bindClick("sheet-close", () => closeDetail());
+      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
+      bindSwipeBack($("sheet"));
+      bindSheetDrag($("sheet"), $("sh-grab"));
+    }
+    function openArticleSheetInner(s: any, key = "") {
       detail = detailWithGameReturn({ _article: true });
       try { const h = String(s.headline || s.title || ""); document.title = /diamondedge/i.test(h) ? h : `${h} — DiamondEdge`; } catch {}  // avoid double-branding; closeDetail restores base
       const navKeys = newsDisplayKeys();
@@ -10839,6 +10907,16 @@ export default function Home() {
       </div>`;
     }
     function storySlideHtml(sl: any, i: number) {
+      // ONE SLIDE CANNOT KILL THE DECK. Twenty-four items are concatenated into a single
+      // string; before this boundary a single malformed story (a null angle, a headline the
+      // feed truncated) threw inside its builder and the reader got an empty News tab.
+      const inner = safeHtml(`story slide ${i} (${sl && sl.t})`, () => storySlideInner(sl),
+        `<div class="sts sts-skip"><div class="sts-core"><div class="sts-skip-k">This story didn't load</div><p>The rest of the briefing is fine — tap either edge to keep going.</p></div></div>`);
+      // data-kind drives the per-type entry motion (see the MOTION INVENTORY in globals.css):
+      // a pick eases up, a winner lands, a news cover cross-dissolves, the end card blooms.
+      return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" data-kind="${esc(String((sl && sl.t) || "summary"))}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
+    }
+    function storySlideInner(sl: any) {
       const inner = sl.t === "pick" ? storyPickSlide(sl)
         : sl.t === "news" ? storyNewsSlide(sl)
         : sl.t === "recap" ? storyRecapSlide(sl)
@@ -10850,9 +10928,7 @@ export default function Home() {
         : sl.t === "hype" ? storyHypeSlide(sl)
         : sl.t === "anlspot" ? storyAnalystSlide(sl)
         : storySummarySlide(sl);
-      // data-kind drives the per-type entry motion (see the MOTION INVENTORY in globals.css):
-      // a pick eases up, a winner lands, a news cover cross-dissolves, the end card blooms.
-      return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" data-kind="${esc(String(sl.t || "summary"))}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
+      return inner;
     }
     function storyFillsSync() {
       document.querySelectorAll(".st-fill[data-sf]").forEach((el: any) => {
@@ -10991,7 +11067,9 @@ export default function Home() {
     }
     function renderStories(view: any) {
       stopStories();
-      const slides = buildStorySlides();
+      // The slide PLAN is served data too (picks, winners, headlines, analyst records). If the
+      // plan itself cannot be built the deck degrades to its shimmer rather than to a blank tab.
+      const slides = (safeRun("briefing running order", () => buildStorySlides()) || []) as any[];
       if (!slides.length) {
         // feeds still landing — a story-shaped shimmer (never an empty stage)
         view.innerHTML = `<div class="stories skel" aria-hidden="true"><div class="st-top"><div class="st-progress"><span class="st-seg"><i class="st-fill" style="width:35%"></i></span><span class="st-seg"></span><span class="st-seg"></span></div></div><div class="st-stage"><div class="st-slide on"><div class="sts sts-skel"><span class="sk sk-line w60"></span><span class="sk sk-line w48"></span><span class="sk sk-line w24"></span></div></div></div></div>`;
@@ -11050,7 +11128,16 @@ export default function Home() {
     function renderToday() {
       const view = $("today-view");
       if (!view) return;
-      renderStories(view);
+      // THE OUTER BOUNDARY. renderStories has its own per-slide and per-plan containment; this
+      // is the last one, and it is what guarantees the News tab can never be an empty rectangle.
+      try {
+        renderStories(view);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        if (DEV) console.error("[DiamondEdge] surface failed: the briefing", e);
+        view.innerHTML = `<div class="lab-wrap">${failState("The briefing didn't load", "Today's stories are having trouble. The board and the record are unaffected.", "today-retry")}</div>`;
+        bindClick("today-retry", () => { todayFresh = false; renderToday(); }, { optional: "the briefing retry only exists in the failed state" });
+      }
       if (tab !== "today") todayFresh = false;
       return;
     }
@@ -11992,63 +12079,482 @@ export default function Home() {
     async function loadPapers() {
       if (papersData || papersTried) return papersData;
       papersTried = true;
+      const ok = (j: any) => j && (Array.isArray(j) || Array.isArray(j.papers));
+      const wrap = (j: any) => (Array.isArray(j) ? { papers: j } : j);
       // 1. the roadmap payload's own section, if the pipeline chose to ride along
       const inline = roadmapData && (roadmapData.papers || (roadmapData.research && roadmapData.research.papers));
-      if (inline && Array.isArray(inline.papers || inline)) { papersData = inline.papers ? inline : { papers: inline }; return papersData; }
-      // 2. the Supabase key, then the bundled file
+      if (ok(inline)) { papersData = wrap(inline); return papersData; }
+      // 2. the Supabase key
       try {
         const sb: any = await Promise.race([snap("research_papers"), new Promise((r) => setTimeout(() => r(null), 3500))]);
-        if (sb && Array.isArray(sb.papers || sb)) { papersData = (sb as any).papers ? sb : { papers: sb }; return papersData; }
+        if (ok(sb)) { papersData = wrap(sb); return papersData; }
       } catch {}
-      try {
-        const r = await fetch(`/papers.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "no-cache" });
-        if (r.ok) {
+      // 3. the bundled files — the served name first, the pipeline's original name second
+      for (const url of ["/research_papers.json", "/papers.json"]) {
+        try {
+          const r = await fetch(`${url}?v=${new Date().toISOString().slice(0, 10)}`, { cache: "no-cache" });
+          if (!r.ok) continue;
           const j = await r.json();
-          if (j && Array.isArray(j.papers || j)) { papersData = j.papers ? j : { papers: j }; return papersData; }
-        }
-      } catch {}
+          if (ok(j)) { papersData = wrap(j); return papersData; }
+        } catch {}
+      }
       return null;
     }
-    const PAPER_CATS = ["Architecture", "Methodology", "Market Science", "Explorations"];
+    /* ══════════════ CONTRACT 1.1 ══════════════
+       A paper is {id, title, subtitle, category, author, date, tags[], abstract,
+       sections[{heading, role, body}], key_figures[], visuals[], sources[], roadmap_ids[],
+       related_papers[], verdict, reading_minutes, word_count}, and the payload carries its own
+       categories[{name,count,blurb}] in render order. NOTHING here trusts a field to exist:
+       every list defaults to empty, every string to "", and a paper with nothing but a title
+       still renders. `role` is the key for how a section is set — never the English heading —
+       and an unknown role falls through to "extra", which folds. */
+    const FLAGSHIP_CAT = "Start Here";
+    const SEC_ROLES: any = { methods: 1, results: 1, discussion: 1, takeaway: 1, extra: 1 };
     function normPaper(x: any) {
       if (!x || typeof x !== "object") return null;
-      const title = String(x.title || "").trim();
+      const str = (v: any) => String(v == null ? "" : v).trim();
+      const arr = (v: any) => (Array.isArray(v) ? v : []);
+      const title = str(x.title);
       if (!title) return null;
-      const secOf = (k: string) => {
-        const v = x[k];
-        if (typeof v === "string") return v.trim();
-        if (Array.isArray(v)) return v.filter((q) => typeof q === "string").join("\n\n");
-        return "";
-      };
+      const cat = str(x.category || x.cat);
       return {
-        id: String(x.id || title).slice(0, 80),
-        title,
-        cat: String(x.category || x.cat || "").trim(),
-        flagship: x.flagship === true || x.is_flagship === true,
-        authors: String(x.authors || "KytePush Research").trim(),
-        date: String(x.date || x.published || "").slice(0, 10),
-        abstract: secOf("abstract") || String(x.summary || "").trim(),
-        sections: [
-          ["Methods", secOf("methods") || secOf("method")],
-          ["Results", secOf("results")],
-          ["Discussion", secOf("discussion") || secOf("conclusion")],
-        ].filter((r) => r[1]),
-        finding: String(x.finding || x.headline_result || "").trim(),
-        tags: (Array.isArray(x.tags) ? x.tags : []).filter((t: any) => typeof t === "string").slice(0, 4),
+        id: str(x.id || title).slice(0, 80),
+        title, cat,
+        flagship: x.flagship === true || x.is_flagship === true || cat === FLAGSHIP_CAT,
+        subtitle: str(x.subtitle),
+        authors: str(x.author || x.authors) || "KytePush Research",
+        date: str(x.date || x.published).slice(0, 10),
+        abstract: str(x.abstract) || str(x.summary),
+        sections: arr(x.sections).map((s: any) => ({
+          heading: str(s && s.heading),
+          role: SEC_ROLES[str(s && s.role).toLowerCase()] ? str(s.role).toLowerCase() : "extra",
+          body: str(s && s.body),
+        })).filter((s: any) => s.body),
+        figures: arr(x.key_figures).map((f: any) => ({
+          label: str(f && f.label), value: str(f && f.value), note: str(f && f.note),
+        })).filter((f: any) => f.value),
+        visuals: arr(x.visuals).filter((v: any) => v && typeof v === "object" && Array.isArray(v.data) && v.data.length),
+        sources: arr(x.sources).filter((s: any) => typeof s === "string" && s),
+        related: arr(x.related_papers).filter((s: any) => typeof s === "string" && s),
+        verdict: str(x.verdict),
+        minutes: Math.max(0, Math.round(Number(x.reading_minutes) || 0)),
+        words: Math.max(0, Math.round(Number(x.word_count) || 0)),
+        tags: arr(x.tags).filter((t: any) => typeof t === "string" && t).slice(0, 6),
       };
     }
     function allPapers() {
-      const raw = papersData && (papersData.papers || papersData);
+      const raw = papersData && (Array.isArray(papersData) ? papersData : papersData.papers);
       return (Array.isArray(raw) ? raw : []).map(normPaper).filter(Boolean) as any[];
     }
-    /* A PAPER OPENS INTO A READING VIEW — not a modal of chips, a page of prose. Serif body,
-       a measure capped near 68 characters, real section headings, and the abstract set apart
-       as the lede. This is the one surface in the app that is allowed to look like a journal,
-       because looking like a journal IS the argument it is making. */
+    // The served category list IS the running order. If it is missing we fall back to the
+    // order the papers themselves arrive in, which the contract also guarantees is render-safe.
+    function paperCats(papers: any[]) {
+      const served = (papersData && Array.isArray(papersData.categories)) ? papersData.categories : [];
+      const out = served.map((c: any) => ({ name: String((c && c.name) || "").trim(), blurb: String((c && c.blurb) || "").trim() })).filter((c: any) => c.name);
+      const seen: any = {};
+      out.forEach((c: any) => (seen[c.name] = 1));
+      papers.forEach((p: any) => { if (p.cat && !seen[p.cat]) { seen[p.cat] = 1; out.push({ name: p.cat, blurb: "" }); } });
+      return out;
+    }
+    /* THE VERDICT IS THE HEADLINE. Every paper carries one — "NULL — 0 of 7 models", "SHIPPED",
+       "RETIRED — whole idea closed". It is the single most useful thing on a card, so it leads,
+       and its TONE is derived rather than served: a null is not dressed up as a finding and a
+       shipped module is not dressed down. Unknown wording falls through to a plain chip. */
+    function verdictTone(v: string) {
+      const s = String(v || "").toUpperCase();
+      if (/\bNULL\b|DIDN'T WORK|DID NOT WORK|THAT WORKED/.test(s)) return "null";
+      if (/\bRETIRED\b|\bCLOSED\b|\bKILLED\b/.test(s)) return "retired";
+      if (/\bIN PROGRESS\b/.test(s)) return "progress";
+      if (/SHIPPED|\bLIVE\b|FIXED|REBUILT|ENFORCED|IN PRODUCTION|VERIFIED/.test(s)) return "shipped";
+      if (/HOUSE RULE|STANDING|A PROCESS|WHOLE SYSTEM/.test(s)) return "rule";
+      return "plain";
+    }
+    function verdictShort(v: string) {
+      let s = String(v || "").split(" — ")[0].split(" – ")[0].split(". ")[0];
+      s = s.replace(/[.,;:]\s*$/, "").trim();
+      return s.length > 42 ? s.slice(0, 40).trim() + "…" : s;
+    }
+
+    /* ═══════════════════════ THE FIGURE RENDERER ═══════════════════════
+       64 charts across the corpus, seven types, every one of them carrying its data inline.
+       They are drawn in CSS and SVG against the app's own tokens — no chart library, nothing
+       fetched, and both themes for free — because a research page whose evidence arrives as a
+       screenshot is not evidence.
+
+       ONE RULE ABOVE ALL THE OTHERS: the chart never says more than the number does. Axes are
+       zero-based, ranges are drawn at their real width, and a bar that cannot be told apart
+       from its neighbour is left looking exactly like its neighbour. The house signature is
+       `interval` — a value WITH the honest range around it, measured against a line that means
+       something — and it is the one type whose colour carries an argument: a range that clears
+       the reference is separated from it, a range that crosses it is not, and we say which. */
+    const isNum = (v: any) => v != null && v !== "" && isFinite(Number(v));
+    const rvNum = (v: any) => {
+      const n = Number(v);
+      if (!isFinite(n)) return "—";
+      const a = Math.abs(n);
+      let s: string;
+      if (Number.isInteger(n)) s = a.toLocaleString("en-US");
+      else if (a >= 1000) s = a.toLocaleString("en-US", { maximumFractionDigits: 0 });
+      else if (a >= 100) s = a.toFixed(1);
+      else if (a >= 1) s = String(Math.round(a * 1000) / 1000);
+      else s = String(Math.round(a * 100000) / 100000);
+      return (n < 0 ? "−" : "") + s;
+    };
+    // `unit` is an AXIS LABEL, not a suffix — the corpus ships things like "runs of real edge
+    // per unit of signal". Only a literal "%" is ever appended to a value; everything else is
+    // printed once, beside the chart, where it cannot misdescribe a number.
+    const rvVal = (v: any, unit?: any) => rvNum(v) + (String(unit || "").trim() === "%" ? "%" : "");
+    const rvPct = (n: number) => `${Math.max(0, Math.min(100, n)).toFixed(2)}%`;
+
+    // ── INTERVAL — the house signature ─────────────────────────────────────────────────────
+    function rvInterval(v: any) {
+      const rows = (v.data || []).map((r: any) => ({
+        label: String((r && r.label) || ""),
+        v: Number(r && r.value),
+        lo: isNum(r && r.low) ? Number(r.low) : Number(r && r.value),
+        hi: isNum(r && r.high) ? Number(r.high) : Number(r && r.value),
+        note: String((r && r.note) || ""),
+        hl: !!(r && r.highlight),
+      })).filter((r: any) => isFinite(r.v));
+      if (!rows.length) return "";
+      const rf = v.reference && isNum(v.reference.value) ? { label: String(v.reference.label || "reference"), value: Number(v.reference.value) } : null;
+      let lo = Math.min(...rows.map((r: any) => Math.min(r.lo, r.v)));
+      let hi = Math.max(...rows.map((r: any) => Math.max(r.hi, r.v)));
+      if (rf) { lo = Math.min(lo, rf.value); hi = Math.max(hi, rf.value); }
+      const span = hi - lo || Math.max(1, Math.abs(hi) * 0.1);
+      lo -= span * 0.14; hi += span * 0.14;
+      const P = (x: number) => ((x - lo) / (hi - lo)) * 100;
+      const body = rows.map((r: any) => {
+        const tone = !rf ? "even" : r.lo > rf.value ? "over" : r.hi < rf.value ? "under" : "even";
+        const l = Math.min(P(r.lo), P(r.hi)), w = Math.max(0.8, Math.abs(P(r.hi) - P(r.lo)));
+        const rng = r.hi !== r.lo ? `${rvNum(r.lo)} – ${rvNum(r.hi)}` : "";
+        return `<div class="rvi-row ${tone}${r.hl ? " hl" : ""}">
+          <div class="rvi-lab">${esc(r.label)}</div>
+          <div class="rvi-body">
+            <div class="rvi-track">
+              ${rf ? `<i class="rvi-ref" style="left:${rvPct(P(rf.value))}"></i>` : ""}
+              <span class="rvi-band" style="left:${rvPct(l)};width:${rvPct(w)}"></span>
+              <b class="rvi-pt" style="left:${rvPct(P(r.v))}"></b>
+            </div>
+            <div class="rvi-val"><span>${esc(rvVal(r.v, v.unit))}</span>${rng ? `<em>${esc(rng)}</em>` : ""}</div>
+          </div>
+          ${r.note ? `<div class="rvi-note">${esc(r.note)}</div>` : ""}
+        </div>`;
+      }).join("");
+      return `<div class="rvi">
+        ${rf ? `<div class="rvi-legend"><i class="rvi-swatch" aria-hidden="true"></i>${esc(rf.label)} · ${esc(rvVal(rf.value, v.unit))}</div>` : ""}
+        <div class="rvi-rows">${body}</div>
+        ${rf ? `<div class="rvi-key">A range that clears the line is separated from it. A range that crosses the line is not — and most of ours cross it.</div>` : ""}
+      </div>`;
+    }
+
+    // ── BAR — always zero-based. If two bars look identical, that IS the finding. ───────────
+    function rvBar(v: any) {
+      const rows = (v.data || []).map((r: any) => ({
+        label: String((r && r.label) || ""), v: Number(r && r.value),
+        note: String((r && r.note) || ""), hl: !!(r && r.highlight),
+      })).filter((r: any) => isFinite(r.v));
+      if (!rows.length) return "";
+      const rf = v.reference && isNum(v.reference.value) ? { label: String(v.reference.label || "reference"), value: Number(v.reference.value) } : null;
+      const vals = rows.map((r: any) => r.v);
+      const lo = Math.min(0, ...vals, rf ? rf.value : 0);
+      const hi = Math.max(0, ...vals, rf ? rf.value : 0);
+      const sp = hi - lo || 1;
+      const P = (x: number) => ((x - lo) / sp) * 100;
+      const zero = P(0);
+      // Signed colour is only honest when the chart actually spans zero. A chart of six
+      // positive p-values is not "all good news", so those bars stay neutral ink.
+      const signed = Math.min(...vals) < 0 && Math.max(...vals) > 0;
+      const body = rows.map((r: any) => {
+        const p = P(r.v);
+        const l = Math.min(zero, p), w = Math.max(0.6, Math.abs(p - zero));
+        const tone = r.hl ? "hl" : signed ? (r.v >= 0 ? "pos" : "neg") : "flat";
+        return `<div class="rvb-row ${tone}">
+          <div class="rvb-lab">${esc(r.label)}</div>
+          <div class="rvb-body">
+            <div class="rvb-track">
+              ${rf ? `<i class="rvb-ref" style="left:${rvPct(P(rf.value))}"></i>` : ""}
+              <span class="rvb-bar" style="left:${rvPct(l)};width:${rvPct(w)}"></span>
+            </div>
+            <div class="rvb-val">${esc(rvVal(r.v, v.unit))}</div>
+          </div>
+          ${r.note ? `<div class="rvb-note">${esc(r.note)}</div>` : ""}
+        </div>`;
+      }).join("");
+      return `<div class="rvb">
+        ${rf ? `<div class="rvi-legend"><i class="rvi-swatch" aria-hidden="true"></i>${esc(rf.label)} · ${esc(rvVal(rf.value, v.unit))}</div>` : ""}
+        <div class="rvb-rows">${body}</div>
+      </div>`;
+    }
+
+    // ── COMPARE — two columns, "what we tested" against "what the market knew" ─────────────
+    function rvCompare(v: any) {
+      const rows = (v.data || []).filter((r: any) => r && (r.left != null || r.right != null));
+      if (!rows.length) return "";
+      const L = String(v.left_label || "Before"), R = String(v.right_label || "After");
+      const allNum = rows.every((r: any) => isNum(r.left) && isNum(r.right));
+      const mx = allNum ? Math.max(1e-9, ...rows.map((r: any) => Math.max(Math.abs(Number(r.left)), Math.abs(Number(r.right))))) : 0;
+      const cell = (raw: any, side: string) => {
+        const isN = allNum && isNum(raw);
+        const txt = isN ? rvVal(raw, v.unit) : String(raw == null || raw === "" ? "—" : raw);
+        return `<div class="rvc-cell ${side}${isN ? " n" : ""}">
+          <div class="rvc-v">${esc(txt)}</div>
+          ${isN ? `<i class="rvc-bar" style="width:${rvPct((Math.abs(Number(raw)) / mx) * 100)}"></i>` : ""}
+        </div>`;
+      };
+      return `<div class="rvc">
+        <div class="rvc-head"><span class="rvc-hk l">${esc(L)}</span><span class="rvc-hk r">${esc(R)}</span></div>
+        ${rows.map((r: any) => `<div class="rvc-row${r.highlight ? " hl" : ""}">
+          <div class="rvc-lab">${esc(String(r.label || ""))}</div>
+          <div class="rvc-cells">${cell(r.left, "l")}${cell(r.right, "r")}</div>
+          ${r.note ? `<div class="rvc-note">${esc(String(r.note))}</div>` : ""}
+        </div>`).join("")}
+      </div>`;
+    }
+
+    // ── FUNNEL — a stage ladder. The corpus's funnels are not monotonic (one of them ends at
+    //    1 after peaking at 353), so the fill is proportional to the largest stage and the
+    //    number is always printed. A stage that reaches zero is drawn as zero.
+    function rvFunnel(v: any) {
+      const rows = (v.data || []).map((r: any) => ({
+        label: String((r && r.label) || ""), v: Number(r && r.value),
+        note: String((r && r.note) || ""), hl: !!(r && r.highlight),
+      })).filter((r: any) => isFinite(r.v));
+      if (!rows.length) return "";
+      const mx = Math.max(1e-9, ...rows.map((r: any) => Math.abs(r.v)));
+      return `<div class="rvf">${rows.map((r: any, i: number) => `
+        ${i ? `<div class="rvf-drop" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v14M6.5 12.5 12 18.5l5.5-6"/></svg></div>` : ""}
+        <div class="rvf-stage${r.hl ? " hl" : ""}${r.v === 0 ? " zero" : ""}">
+          <i class="rvf-fill" style="width:${rvPct((Math.abs(r.v) / mx) * 100)}"></i>
+          <div class="rvf-in">
+            <div class="rvf-n">${esc(rvVal(r.v, v.unit))}</div>
+            <div class="rvf-tx"><div class="rvf-lab">${esc(r.label)}</div>${r.note ? `<div class="rvf-note">${esc(r.note)}</div>` : ""}</div>
+          </div>
+        </div>`).join("")}</div>`;
+    }
+
+    // ── SCOREBOARD — a ledger of answers. Values may be "Yes", "Never", "0" or a sentence, and
+    //    NONE of them is coloured by sentiment: on this corpus "Never" is usually the good
+    //    answer, so a green/red read would invert the paper's own argument.
+    function rvScore(v: any) {
+      const rows = (v.data || []).filter((r: any) => r && (r.label != null || r.value != null));
+      if (!rows.length) return "";
+      return `<div class="rvs">${rows.map((r: any) => {
+        const val = String(r.value == null ? "" : r.value);
+        return `<div class="rvs-row${r.highlight ? " hl" : ""}">
+          <div class="rvs-top">
+            <div class="rvs-lab">${esc(String(r.label || ""))}</div>
+            <div class="rvs-val${val.length <= 14 ? " chip" : ""}">${esc(val)}</div>
+          </div>
+          ${r.note ? `<div class="rvs-note">${esc(String(r.note))}</div>` : ""}
+        </div>`;
+      }).join("")}</div>`;
+    }
+
+    // ── TIMELINE — a spine. `step` is the marker, `label` the event, `note` the detail. ─────
+    function rvTimeline(v: any) {
+      const rows = (v.data || []).filter((r: any) => r && (r.step != null || r.label != null));
+      if (!rows.length) return "";
+      return `<ol class="rvt">${rows.map((r: any) => `<li class="rvt-row${r.highlight ? " hl" : ""}">
+        <i class="rvt-dot" aria-hidden="true"></i>
+        <div class="rvt-step">${esc(String(r.step || ""))}</div>
+        <div class="rvt-lab">${esc(String(r.label || ""))}</div>
+        ${r.note ? `<div class="rvt-note">${esc(String(r.note))}</div>` : ""}
+      </li>`).join("")}</ol>`;
+    }
+
+    // ── LINE — the one type that needs real geometry, so the one type drawn in SVG. ─────────
+    const rvNiceStep = (raw: number) => {
+      const a = Math.abs(raw) || 1;
+      const p = Math.pow(10, Math.floor(Math.log10(a)));
+      const m = a / p;
+      return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
+    };
+    function rvLine(v: any) {
+      const series = (Array.isArray(v.series) ? v.series : []).map((s: any) => String(s)).filter(Boolean);
+      const rows = (v.data || []).filter((r: any) => r && r.label != null);
+      if (!series.length || rows.length < 2) return "";
+      const vals: number[] = [];
+      rows.forEach((r: any) => series.forEach((s: string) => { if (isNum(r[s])) vals.push(Number(r[s])); }));
+      if (!vals.length) return "";
+      const rf = v.reference && isNum(v.reference.value) ? { label: String(v.reference.label || "reference"), value: Number(v.reference.value) } : null;
+      let lo = Math.min(...vals, ...(rf ? [rf.value] : []));
+      let hi = Math.max(...vals, ...(rf ? [rf.value] : []));
+      const sp = hi - lo || Math.max(1, Math.abs(hi) * 0.1);
+      lo -= sp * 0.16; hi += sp * 0.16;
+      const W = 340, H = 172, padL = 42, padR = 10, padT = 10, padB = 26;
+      const X = (i: number) => padL + (i / (rows.length - 1)) * (W - padL - padR);
+      const Y = (n: number) => padT + (1 - (n - lo) / (hi - lo)) * (H - padT - padB);
+      const step = rvNiceStep((hi - lo) / 3);
+      const ticks: number[] = [];
+      for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9 && ticks.length < 6; t += step) ticks.push(Math.round(t * 1e6) / 1e6);
+      const grid = ticks.map((t) => `<line class="rvl-grid" x1="${padL}" y1="${Y(t).toFixed(1)}" x2="${W - padR}" y2="${Y(t).toFixed(1)}"/><text class="rvl-ax" x="${(padL - 6).toFixed(1)}" y="${(Y(t) + 3.4).toFixed(1)}" text-anchor="end">${esc(rvVal(t, v.unit))}</text>`).join("");
+      const lines = series.map((s: string, si: number) => {
+        const pts = rows.map((r: any, i: number) => (isNum(r[s]) ? `${X(i).toFixed(1)},${Y(Number(r[s])).toFixed(1)}` : null)).filter(Boolean) as string[];
+        if (pts.length < 2) return "";
+        const dots = rows.map((r: any, i: number) => (isNum(r[s]) ? `<circle class="rvl-dot c${si % 4}" cx="${X(i).toFixed(1)}" cy="${Y(Number(r[s])).toFixed(1)}" r="2.9"/>` : "")).join("");
+        return `<polyline class="rvl-line c${si % 4}" points="${pts.join(" ")}"/>${dots}`;
+      }).join("");
+      const xlabs = rows.map((r: any, i: number) => `<text class="rvl-ax" x="${X(i).toFixed(1)}" y="${H - 8}" text-anchor="${i === 0 ? "start" : i === rows.length - 1 ? "end" : "middle"}">${esc(String(r.label))}</text>`).join("");
+      return `<div class="rvl">
+        <div class="rvl-key">${series.map((s: string, si: number) => `<span class="rvl-kk"><i class="c${si % 4}"></i>${esc(s)}</span>`).join("")}</div>
+        <svg class="rvl-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(String(v.title || "series chart"))}">
+          ${grid}
+          ${rf ? `<line class="rvl-ref" x1="${padL}" y1="${Y(rf.value).toFixed(1)}" x2="${W - padR}" y2="${Y(rf.value).toFixed(1)}"/>` : ""}
+          ${lines}
+          ${xlabs}
+        </svg>
+        ${v.x_label ? `<div class="rvl-xlab">${esc(String(v.x_label))}</div>` : ""}
+      </div>`;
+    }
+
+    const RV_KIND: any = { interval: "Interval", bar: "Bar", compare: "Comparison", funnel: "Funnel", scoreboard: "Scoreboard", timeline: "Timeline", line: "Series" };
+    function researchVisual(v: any, n: number) {
+      if (!v || typeof v !== "object") return "";
+      const t = String(v.type || "").toLowerCase();
+      const body =
+        t === "interval" ? rvInterval(v) :
+        t === "bar" ? rvBar(v) :
+        t === "compare" ? rvCompare(v) :
+        t === "funnel" ? rvFunnel(v) :
+        t === "scoreboard" ? rvScore(v) :
+        t === "timeline" ? rvTimeline(v) :
+        t === "line" ? rvLine(v) : "";
+      if (!body) return "";
+      const unit = String(v.unit || "").trim();
+      return `<figure class="rvz rvz-${esc(t)}">
+        <figcaption class="rvz-head"><span class="rvz-n">Fig. ${n}</span><span class="rvz-kind">${esc(RV_KIND[t] || t)}</span></figcaption>
+        ${v.title ? `<h4 class="rvz-title">${esc(String(v.title))}</h4>` : ""}
+        ${unit && unit !== "%" ? `<div class="rvz-unit">${esc(unit)}</div>` : ""}
+        <div class="rvz-body">${body}</div>
+        ${v.caption ? `<p class="rvz-cap">${esc(String(v.caption))}</p>` : ""}
+        ${v.source ? `<p class="rvz-src">${esc(String(v.source))}</p>` : ""}
+      </figure>`;
+    }
+
+    /* ═══════════════ MARKDOWN, THE SUBSET THE CORPUS ACTUALLY USES ═══════════════
+       Measured over all 19 papers: ### headings, **bold**, *emphasis*, `code`, fenced blocks,
+       - bullets, > pull-quotes and | tables. Everything is escaped BEFORE any markup is put
+       back, so a paper can never inject HTML into the app. */
+    function mdInline(s: string) {
+      let t = esc(s);
+      t = t.replace(/`([^`]+)`/g, (_m: string, c: string) => `<code>${c}</code>`);
+      t = t.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+      t = t.replace(/(^|[\s([])\*([^*\n]+)\*(?=$|[\s)\].,;:!?])/g, "$1<i>$2</i>");
+      return t;
+    }
+    function mdTable(rows: string[]) {
+      const cells = rows.map((r) => r.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim()));
+      const sep = cells.findIndex((r) => r.length > 0 && r.every((c) => /^:?-{2,}:?$/.test(c)));
+      const head = sep === 1 ? cells[0] : null;
+      const body = cells.filter((_r, k) => k !== sep && !(head && k === 0));
+      if (!body.length && !head) return "";
+      return `<div class="rp-tablewrap"><table class="rp-table">${head ? `<thead><tr>${head.map((c) => `<th>${mdInline(c)}</th>`).join("")}</tr></thead>` : ""}<tbody>${body.map((r) => `<tr>${r.map((c) => `<td>${mdInline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    }
+    function mdBlock(src: string) {
+      const lines = String(src || "").replace(/\r/g, "").split("\n");
+      const out: string[] = [];
+      let para: string[] = [];
+      const flush = () => { if (para.length) { out.push(`<p>${mdInline(para.join(" "))}</p>`); para = []; } };
+      let i = 0;
+      while (i < lines.length) {
+        const ln = lines[i];
+        if (/^\s*```/.test(ln)) {
+          flush(); i++;
+          const code: string[] = [];
+          while (i < lines.length && !/^\s*```/.test(lines[i])) code.push(lines[i++]);
+          i++;
+          if (code.length) out.push(`<pre class="rp-code">${esc(code.join("\n"))}</pre>`);
+          continue;
+        }
+        if (/^\s*\|/.test(ln)) {
+          flush();
+          const tb: string[] = [];
+          while (i < lines.length && /^\s*\|/.test(lines[i])) tb.push(lines[i++]);
+          out.push(mdTable(tb));
+          continue;
+        }
+        if (/^\s*>\s?/.test(ln)) {
+          flush();
+          const q: string[] = [];
+          while (i < lines.length && /^\s*>\s?/.test(lines[i])) q.push(lines[i++].replace(/^\s*>\s?/, ""));
+          out.push(`<blockquote class="rp-quote">${mdInline(q.join(" "))}</blockquote>`);
+          continue;
+        }
+        if (/^\s*[-*•]\s+/.test(ln)) {
+          flush();
+          const li: string[] = [];
+          while (i < lines.length && /^\s*[-*•]\s+/.test(lines[i])) li.push(lines[i++].replace(/^\s*[-*•]\s+/, ""));
+          out.push(`<ul class="rp-ul">${li.map((q) => `<li>${mdInline(q)}</li>`).join("")}</ul>`);
+          continue;
+        }
+        if (/^\s*\d+[.)]\s+/.test(ln)) {
+          flush();
+          const li: string[] = [];
+          while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) li.push(lines[i++].replace(/^\s*\d+[.)]\s+/, ""));
+          out.push(`<ol class="rp-ol">${li.map((q) => `<li>${mdInline(q)}</li>`).join("")}</ol>`);
+          continue;
+        }
+        const h = ln.match(/^\s*(#{2,4})\s+(.*)$/);
+        if (h) { flush(); out.push(`<h3 class="rp-h">${mdInline(h[2])}</h3>`); i++; continue; }
+        if (!ln.trim()) { flush(); i++; continue; }
+        para.push(ln.trim()); i++;
+      }
+      flush();
+      return out.join("");
+    }
+
+    /* ═══════════ A PAPER, AS A READING VIEW ═══════════
+       Not a modal of chips — an article. The order is the order a reader needs it in: what this
+       concluded (the verdict, up front, because burying it would be the same dishonesty the
+       corpus exists to argue against), what it is about, the numbers that carry it, then the
+       argument, with the figures set into the sections they belong to and the takeaway pulled
+       out at the end. Sections are keyed on ROLE, never on the English heading. */
+    function paperDateTxt(d: string) {
+      const m = String(d || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return "";
+      const dt = new Date(`${m[0]}T12:00:00`);
+      return isNaN(dt.getTime()) ? "" : dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
     function openPaper(id: string) {
-      const pp = allPapers().find((x: any) => x.id === id);
+      const papers = allPapers();
+      const pp = papers.find((x: any) => x.id === id);
       if (!pp) return;
-      detail = detailWithGameReturn({ _paper: true });
+      detail = detailWithGameReturn({ _paper: true, paper: pp.id });
+      // Figures are spread across the body sections rather than dumped in a gallery: a chart
+      // three screens from the sentence it proves is decoration. Balanced split, in order.
+      const bodySecs = pp.sections.filter((s: any) => s.role === "methods" || s.role === "results" || s.role === "discussion");
+      const nB = bodySecs.length || 1;
+      const nV = pp.visuals.length;
+      const counts = Array.from({ length: nB }, (_x, i) => Math.floor(nV / nB) + (i < nV % nB ? 1 : 0));
+      let vCur = 0, bIdx = 0, figN = 0;
+      const secHtml = pp.sections.map((s: any) => {
+        if (s.role === "takeaway") {
+          return `<aside class="rp-take">
+            <span class="rp-seck">${esc(s.heading || "What this means")}</span>
+            <div class="rp-prose" data-devtext="the corpus is the research programme itself — its prose quotes module names, column names and code, which is the subject matter">${mdBlock(s.body)}</div>
+          </aside>`;
+        }
+        if (s.role === "extra") {
+          return lazyFold("rp-extra", `<span class="rp-extra-k">${esc(s.heading || "Further detail")}</span><span class="sgc-caret" aria-hidden="true">›</span>`,
+            () => `<div class="rp-prose" data-devtext="the corpus is the research programme itself — module and column names are its content">${mdBlock(s.body)}</div>`);
+        }
+        let figs = "";
+        if (bIdx < counts.length) {
+          const take = counts[bIdx++];
+          for (let k = 0; k < take && vCur < nV; k++) figs += researchVisual(pp.visuals[vCur++], ++figN);
+        }
+        return `<section class="rp-sec rp-${esc(s.role)}">
+          <h2>${esc(s.heading || "")}</h2>
+          <div class="rp-prose" data-devtext="the corpus is the research programme itself — its prose quotes module names, column names and code, which is the subject matter">${mdBlock(s.body)}</div>
+          ${figs}
+        </section>`;
+      }).join("");
+      // anything the balancer did not place (a paper with more figures than sections) lands last
+      let tail = "";
+      while (vCur < nV) tail += researchVisual(pp.visuals[vCur++], ++figN);
+      const related = pp.related.map((rid: string) => papers.find((x: any) => x.id === rid)).filter(Boolean);
+      const vt = verdictTone(pp.verdict);
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = `
@@ -12059,28 +12565,57 @@ export default function Home() {
             <div class="hspacer"></div>
           </div>
           <div class="gp-body" id="gp-body">
-            <article class="paper">
-              ${pp.cat ? `<div class="pp-cat">${esc(pp.cat)}</div>` : ""}
-              <h1 class="pp-title">${esc(pp.title)}</h1>
-              <div class="pp-byline">${esc(pp.authors)}${pp.date ? ` · ${esc(stratDateTxt(pp.date) || pp.date)}` : ""}</div>
-              ${pp.abstract ? `<div class="pp-abstract"><span class="pp-seck">Abstract</span><p>${esc(pp.abstract)}</p></div>` : ""}
-              ${pp.sections.map((sec: any) => `<section class="pp-sec"><h2>${esc(sec[0])}</h2>${String(sec[1]).split(/\n{2,}/).map((q: string) => `<p>${esc(q.trim())}</p>`).join("")}</section>`).join("")}
-              ${pp.tags.length ? `<div class="pp-tags">${pp.tags.map((t: string) => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+            <article class="rpaper">
+              <div class="rp-kick">${pp.cat ? `<span class="rp-cat">${esc(pp.cat)}</span>` : ""}${pp.minutes ? `<span class="rp-min">${pp.minutes} min read</span>` : ""}</div>
+              <h1 class="rp-title">${esc(pp.title)}</h1>
+              ${pp.subtitle ? `<p class="rp-deck">${esc(pp.subtitle)}</p>` : ""}
+              <div class="rp-byline">${esc(pp.authors)}${pp.date ? ` · ${esc(paperDateTxt(pp.date) || pp.date)}` : ""}${pp.words ? ` · ${pp.words.toLocaleString("en-US")} words` : ""}</div>
+              ${pp.verdict ? `<div class="rp-verdict ${vt}"><span class="rp-verdict-k">Verdict</span><p>${esc(pp.verdict)}</p></div>` : ""}
+              ${pp.abstract ? `<div class="rp-abstract"><span class="rp-seck">Abstract</span><p>${mdInline(pp.abstract)}</p></div>` : ""}
+              ${pp.figures.length ? `<div class="rp-figs">
+                <div class="rp-seck">The numbers this rests on</div>
+                ${pp.figures.map((f: any) => `<div class="rp-fig">
+                  <div class="rp-fig-k">${esc(f.label)}</div>
+                  <div class="rp-fig-v">${esc(f.value)}</div>
+                  ${f.note ? `<div class="rp-fig-n">${esc(f.note)}</div>` : ""}
+                </div>`).join("")}
+              </div>` : ""}
+              ${secHtml}${tail}
+              ${pp.tags.length ? `<div class="rp-tags">${pp.tags.map((t: string) => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+              ${pp.sources.length ? lazyFold("rp-srcs", `<span class="rp-extra-k">Sources · ${pp.sources.length}</span><span class="sgc-caret" aria-hidden="true">›</span>`,
+                () => `<p class="rp-srcs-sub">Every figure above is traceable to one of these reports in the research repository.</p><ul data-devtext="the sources of a research paper are the report files the numbers came from — the paths are the citation">${pp.sources.map((s: string) => `<li>${esc(s)}</li>`).join("")}</ul>`) : ""}
+              ${related.length ? `<div class="rp-rel">
+                <div class="rp-seck">Read next</div>
+                ${related.map((r: any) => `<button class="rp-relcard" data-paper="${esc(r.id)}">
+                  <span class="rp-relcat">${esc(r.cat || "Paper")}</span>
+                  <span class="rp-reltitle">${esc(r.title)}</span>
+                  <span class="rp-relgo" aria-hidden="true">→</span>
+                </button>`).join("")}
+              </div>` : ""}
             </article>
           </div>
         </div>`;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
       bindClick("gp-back", () => closeDetail());
+      layer.querySelectorAll("[data-paper]").forEach((b: any) => (b.onclick = () => { const t = $("gp-body"); if (t) t.scrollTop = 0; openPaper(b.dataset.paper); }));
       bindSwipeBack($("gamepage"));
     }
+    /* THE CARD. The verdict leads, because on this corpus the verdict IS the news — eleven of
+       the nineteen papers conclude that something did NOT work, and a library that hides that
+       behind a title is selling rather than publishing. */
     function paperCard(pp: any, big = false) {
-      const abs = pp.abstract ? String(pp.abstract).slice(0, big ? 320 : 150) : "";
+      const vs = verdictShort(pp.verdict);
+      const sub = pp.subtitle || pp.abstract;
       return `<button class="papercard${big ? " flagship" : ""}" data-paper="${esc(pp.id)}">
-        ${pp.cat ? `<span class="pc-cat">${esc(pp.cat)}</span>` : ""}
+        ${big ? `<span class="pc-flag">Start here</span>` : ""}
+        <span class="pc-top">
+          ${vs ? `<span class="pc-verd ${verdictTone(pp.verdict)}">${esc(vs)}</span>` : `<span class="pc-verd plain">${esc(pp.cat || "Paper")}</span>`}
+          ${pp.minutes ? `<span class="pc-min">${pp.minutes} min</span>` : ""}
+        </span>
         <span class="pc-title">${esc(pp.title)}</span>
-        ${abs ? `<span class="pc-abs">${esc(abs)}${pp.abstract.length > abs.length ? "…" : ""}</span>` : ""}
-        <span class="pc-foot">${esc(pp.authors)}${pp.date ? ` · ${esc(stratDateTxt(pp.date) || pp.date)}` : ""}<em>Read →</em></span>
+        ${sub ? `<span class="pc-abs">${esc(sub)}</span>` : ""}
+        <span class="pc-foot">${pp.visuals.length ? `${pp.visuals.length} figure${pp.visuals.length === 1 ? "" : "s"}` : ""}${pp.visuals.length && pp.figures.length ? " · " : ""}${pp.figures.length ? `${pp.figures.length} key numbers` : ""}<em>Read →</em></span>
       </button>`;
     }
     async function loadRoadmap() {
@@ -12267,9 +12802,12 @@ export default function Home() {
       const papers = allPapers();
       const flagship = papers.find((x: any) => x.flagship) || null;
       const rest = papers.filter((x: any) => x !== flagship);
-      const byCat = PAPER_CATS.map((c) => [c, rest.filter((x: any) => x.cat === c)])
-        .concat([["Other", rest.filter((x: any) => PAPER_CATS.indexOf(x.cat) < 0)]] as any)
-        .filter((r: any) => r[1].length);
+      // The served categories[] carries the running order AND a blurb per shelf; a category
+      // the payload forgot to declare still gets a shelf, in the order its papers arrived.
+      const byCat = paperCats(rest)
+        .map((c: any) => ({ ...c, items: rest.filter((x: any) => x.cat === c.name) }))
+        .concat([{ name: "Other", blurb: "", items: rest.filter((x: any) => !x.cat) }])
+        .filter((c: any) => c.items.length);
       const upd = d.generated_utc ? new Date(d.generated_utc).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
       const stale0 = (() => { const m = labAgoMin(d.generated_utc); return m != null && m >= 120; })();
       const fresh = d.generated_utc
@@ -12322,12 +12860,16 @@ export default function Home() {
             ${fresh}
           </header>
           ${flagship ? `<section class="lab-flag">
-            <div class="lab-sect-head"><span class="lab-sect-k">Featured paper</span></div>
             ${paperCard(flagship, true)}
           </section>` : ""}
           ${byCat.length ? `<section class="lab-lib">
             <div class="lab-sect-head"><span class="lab-sect-k">The library</span><span class="lab-sect-n">${papers.length}</span></div>
-            ${byCat.map((row: any) => `<div class="lib-cat"><h3 class="lib-cat-k">${esc(row[0])}</h3><div class="lib-grid">${row[1].map((x: any) => paperCard(x)).join("")}</div></div>`).join("")}
+            <p class="lab-sect-sub">How the thing is built, how we test it, what we have actually measured about the market, and every idea that did not survive. Written to be read, not to be cited.</p>
+            ${byCat.map((c: any) => `<div class="lib-cat">
+              <h3 class="lib-cat-k">${esc(c.name)}<i>${c.items.length}</i></h3>
+              ${c.blurb ? `<p class="lib-cat-b">${esc(c.blurb)}</p>` : ""}
+              <div class="lib-grid">${c.items.map((x: any) => paperCard(x)).join("")}</div>
+            </div>`).join("")}
           </section>` : ""}
           <!-- THE CREDIBILITY WEAPON, GIVEN ITS OWN BLOCK RATHER THAN A FOLD LABEL -->
           <section class="lab-nulls">
