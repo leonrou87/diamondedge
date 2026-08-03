@@ -295,6 +295,10 @@ export default function Home() {
       const raw: any = pl && pl.result;
       let r = typeof raw === "string" ? raw : (raw && raw.status) || null;
       if (!r && g && g.display_pick && typeof g.display_pick.result === "string") r = g.display_pick.result;
+      if (!r) {
+        const pr = provisionalResult(g, pl);
+        if (pr && pr.status) r = pr.status;
+      }
       return r;
     };
 
@@ -1005,7 +1009,19 @@ export default function Home() {
       const pk = m ? m[1] : gid;
       const find = (d: any) => d && (d.games || []).find((x: any) =>
         String(x.game_pk) === gid || String(x.game_pk) === pk || String(x.game_id) === gid);
-      return find(betaLiveData) || find(betaData) || null;
+      const live = find(betaLiveData);
+      const hist = find(betaData);
+      if (live && hist && live.pick && hist.pick) {
+        // Today can briefly disagree between the live and full-history feeds. Keep the live
+        // row's current slate fields, but preserve any final grade that has already landed in
+        // history so the compact record and the tapped breakdown cannot say different things.
+        return {
+          ...hist,
+          ...live,
+          pick: { ...hist.pick, ...live.pick, result: live.pick.result || hist.pick.result || null },
+        };
+      }
+      return live || hist || null;
     }
     // The single pick lives on the game as `pick`. Only the totals lane carries it; spread/ML
     // are retired, so every other market resolves to null (→ an honest PASS downstream).
@@ -1643,6 +1659,7 @@ export default function Home() {
       bindClick("sheet-close", () => closeDetail());
       bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
       bindSheetDrag($("sheet"), $("sh-grab"));
+      bindSwipeBack($("sheet"));
     }
     function adaptiveStrategyInsight(d: any) {
       const root = adaptiveStrategyRoot(d);
@@ -2527,7 +2544,7 @@ export default function Home() {
       const state = pl && !locked ? pickStateTxt(g, pl, st) : null;
       const act = vd ? (vd.kind === "play" ? "PLAY" : vd.kind === "lean" ? "LEAN" : "AVOID") : "AVOID";
       const cls = act === "PLAY" ? "de-play" : act === "LEAN" ? "de-lean" : "de-avoid";
-      const word = act === "PLAY" ? "PICK" : "NO PICK";
+      const word = act === "PLAY" || act === "LEAN" ? "DIAMONDEDGE PICK" : "MARKET LINE";
       // the O/U call itself, at the line it was priced against
       const side = (vd && (vd.side || vd.leanSide)) || (pl && pl.side ? String(pl.side) : "");
       const dirCls = /under/i.test(side) ? "ou-under" : /over/i.test(side) ? "ou-over" : "";
@@ -2536,10 +2553,11 @@ export default function Home() {
       // A PASS is never dressed as a bet. When the desk avoids, the headline IS "no bet on
       // the total" and any directional lean rides underneath it, quiet and labelled.
       const avoid = act === "AVOID";
+      const marketTxt = priced != null ? `O/U ${lineStr(priced)}` : "O/U";
       const callHtml = locked
         ? `<span class="de-side locked"><span class="de-dots" aria-hidden="true">●●●● ●</span></span>`
         : avoid
-          ? `<span class="de-side de-pass">No bet on the total${side ? `<em class="de-leanonly">lean was ${esc(side)} — not played</em>` : ""}</span>`
+          ? `<span class="de-side de-pass"><b>${esc(marketTxt)}</b><em class="de-leanonly">No DiamondEdge Pick here.</em></span>`
           : side
             ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(side)}</b>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}</span>`
             : "";
@@ -3226,6 +3244,7 @@ export default function Home() {
       bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
       bindClick("anl-insights", () => { closeDetail(false, true); switchTab("results"); });
       bindClick("anl-pat-all", () => { closeDetail(false, true); switchTab("results"); });
+      bindSwipeBack($("gamepage"));
     }
     // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
     // card — tiles, the standings strip, the debate panel — without touching each binder.
@@ -4951,8 +4970,7 @@ export default function Home() {
       const n = pl && pl.stars != null && isFinite(Number(pl.stars))
         ? Math.max(1, Math.min(5, Math.round(Number(pl.stars)))) : null;
       const q = n == null ? qualityOf(pl) : n >= 4 ? "strong" : n === 3 ? "good" : "lean";
-      const lab = n == null ? (Q_LABEL[q] || "Read") : n >= 4 ? "Strong" : n === 3 ? "Solid" : "Lean";
-      const txt = q === "lean" ? "No pick" : "Pick";
+      const txt = q === "lean" ? "Line" : (compact ? "Pick" : "DiamondEdge Pick");
       return `<span class="str-pill q-${q}${compact ? " compact" : ""}" title="${esc(txt)}">${esc(txt)}</span>`;
     }
     // A pass's sub-2.00 score, muted — passes carry a score too (the model rates every row).
@@ -5077,7 +5095,7 @@ export default function Home() {
       if (!isPick(pl) && (v4GameFor(g) || !ph.has)) {
         const pln = passLineTxt(g);
         return `<div class="hpc hpc-${size} pass"><div class="hpc-scrim"></div>
-          <div class="hpc-line"><span class="hpc-k">◆ The Verdict</span><b class="hpc-txt">Pass${pln ? ` — ${pln} held no edge` : ""}</b></div></div>`;
+          <div class="hpc-line"><span class="hpc-k">◆ Line</span><b class="hpc-txt">${pln ? esc(pln) : "O/U"}</b></div></div>`;
       }
       if (teaseOnly) {
         // News-feed cover: STARS + GRADE + THE SELECTION — no "Lean"/"Low confidence" words,
@@ -5397,7 +5415,7 @@ export default function Home() {
           <div class="gp-bar"><button id="gp-back" class="gp-back" aria-label="Back">←</button><span class="gp-t">${esc(P.name)}</span></div>
           <div class="gp-scroll">
             <div class="bgame-hero">
-              <div class="bgh-mu"><b>${esc(P.name)}</b>${P.throws ? ` <span class="pit-hand">${esc(P.throws)}HP</span>` : ""}</div>
+              <div class="bgh-mu"><b>${esc(P.name)}</b></div>
               <div class="bgh-fin">${esc(P.team || "")}${P.era != null ? ` · <b>${num(P.era, 2)} ERA</b>` : ""}${P.wl ? ` · ${esc(P.wl)}` : ""}${P.whip != null ? ` · ${num(P.whip, 2)} WHIP` : ""}${P.k9 != null ? ` · ${num(P.k9, 1)} K/9` : ""}</div>
               <div class="bgh-date">Last ${starts.length} starts</div>
             </div>
@@ -5413,6 +5431,7 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); });
       bindClick("gp-back", () => closeDetail());
+      bindSwipeBack($("gamepage"));
     }
     // one delegated click for every pitcher chip/line anywhere in the app
     document.addEventListener("click", async (e: any) => {
@@ -5499,20 +5518,20 @@ export default function Home() {
     const pickLabelShort = (g: any) => (isStarted(g) ? "◆ Pre-Game Pick" : "◆ The Pick");
     const pickWord = (g: any) => (isStarted(g) ? "Pre-Game Pick" : "DiamondEdge Pick");
     // The pick sub-headline for a preview: served article.pick_headline wins, else composed
-    // from the display pick. Always names the side/line; passes read "No Pick — Passing".
+    // from the display pick. Always names the side/line; no-pick games show the market line.
     function pickHeadline(g: any) {
       const art = gameArticle(g);
       if (art && art.pick_headline) {
         // normalize the served label's brand prefix to the state-aware one
         let s = String(art.pick_headline).replace(/^\s*(◆\s*)?(DiamondEdge|Pre-?Game)\s*Pick\s*:?\s*/i, "");
-        if (/no pick|pass/i.test(s) || !s.trim()) return { txt: "No Pick — Passing", has: false };
+        if (/no pick|pass/i.test(s) || !s.trim()) return { txt: passLineTxt(g) || "O/U", has: false };
         return { txt: `${pickWord(g)}: ${s}`, has: true };
       }
       const pl = displayPick(g);
       if (pl && pl.action === "TAKE" && pl.side) {
         return { txt: `${pickWord(g)}: ${String(pl.side)}${pl.price != null ? ` (${fmtOdds(pl.price)})` : ""}`, has: true, q: qualityOf(pl) };
       }
-      return { txt: "No Pick — Passing", has: false };
+      return { txt: passLineTxt(g) || "O/U", has: false };
     }
 
     // ===================== GAME ARTICLES (served game.article / game.streaks, tolerant reader) =====================
@@ -5834,6 +5853,10 @@ export default function Home() {
       const k = gameState(g).kind;
       return k === "live" ? 0 : k === "pre" ? 1 : k === "final" ? 2 : 3;
     };
+    const boardPhaseRank = (g: any) => {
+      const k = gameState(g).kind;
+      return k === "live" ? 0 : k === "final" ? 1 : k === "pre" ? 2 : 3;
+    };
     function byStartTime(a: any, b: any) {
       const d = startMsOf(a) - startMsOf(b);
       if (d) return d;
@@ -5841,6 +5864,15 @@ export default function Home() {
       if (s) return s;
       const ta = String(a.start_ts || a.start_time || ""), tb = String(b.start_ts || b.start_time || "");
       return ta < tb ? -1 : ta > tb ? 1 : 0;
+    }
+    function byBoardOrder(a: any, b: any) {
+      const p = boardPhaseRank(a) - boardPhaseRank(b);
+      if (p) return p;
+      const d = startMsOf(a) - startMsOf(b);
+      if (d) return d;
+      const ta = String(a.start_ts || a.start_time || ""), tb = String(b.start_ts || b.start_time || "");
+      if (ta !== tb) return ta < tb ? -1 : 1;
+      return String(a.game_id || "").localeCompare(String(b.game_id || ""));
     }
     function gamesForLeague(p: any, lg: string, dateISO?: string) {
       const forDate = dateISO || curDate;
@@ -6330,8 +6362,7 @@ export default function Home() {
       const name = served.name || (fd && fd.name);
       if (!name) return "";
       const era = served.era != null ? served.era : (fd && fd.era != null ? fd.era : null);
-      const throws = served.throws || (fd && fd.throws);
-      const bits = [`${throws ? `${String(throws).toUpperCase()}HP ` : ""}${String(name).trim()}`, era != null ? `${num(era, 2)} ERA` : ""].filter(Boolean);
+      const bits = [`${String(name).trim()}`, era != null ? `${num(era, 2)} ERA` : ""].filter(Boolean);
       const key = gameFeedKeys(g)[0] || String(g.game_id || "");
       return `<span class="t-pitchsub" data-pitcher="${esc(key)}|${which}" role="button" tabindex="0"><span class="tps-nm">${esc(bits[0])}</span>${bits[1] ? `<span class="tps-era">${esc(bits[1])}</span>` : ""}</span>`;
     }
@@ -6339,7 +6370,8 @@ export default function Home() {
        started. MLB also gets the probable starter + ERA beneath the team in tiny type:
        enough matchup context for the board without turning the tile back into a preview. */
     function tileRow(g: any, which: "away" | "home", gs: any, hideScore = false) {
-      const ab = which === "away" ? g.away_abbr : g.home_abbr;
+      const rawAb = which === "away" ? g.away_abbr : g.home_abbr;
+      const ab = String(rawAb || "").length > 4 ? (mlbAbbr(rawAb) || rawAb) : rawAb;
       const f = teamRecordFor(g, which);
       const rec = f && f.rec ? `<span class="t-rec">${esc(f.rec)}${f.streak ? `<i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : "";
       const pitcher = tilePitcherMeta(g, which);
@@ -6430,7 +6462,7 @@ export default function Home() {
       if (!kind) return null;
       return {
         kind,
-        word: kind === "play" ? "Pick" : "No pick",
+        word: kind === "play" ? "DiamondEdge Pick" : kind === "lean" ? "DiamondEdge Pick" : "Line",
         side: kind === "pass" ? "" : side,
         leanSide: kind === "pass" ? side : "",
         cls: `v-${kind}`,
@@ -6632,25 +6664,24 @@ export default function Home() {
       // THE CALL WE DID NOT BET. On a pass the desk still has a direction, and it is now
       // stated — in the call language, never the bet language (hollow mark, sentence case,
       // no price). Null on a served bet and on any game the backend gave no direction for.
-      const dc = vd && vd.kind === "pass" ? deskCall(g) : null;
+      const dc = null;
+      const passLine = lockedTot || (pg && pg.total && pg.total.line != null ? lineStr(pg.total.line) : "");
       // THE VERDICT LINE. Locked ⇒ crisp dots, never a blur, and the whole tile becomes the
       // unlock affordance — the signed-out redaction contract is unchanged.
       const callHtml = !vd ? ""
         : locked && vd.kind !== "pass"
           ? `<span class="tv-side locked"><span class="tv-dots" aria-hidden="true">●●●● ●</span></span>`
           : vd.kind === "pass"
-            ? (dc
-              ? `<span class="tv-call ou-${dc.dir}"><i class="tv-mk hollow" aria-hidden="true"></i><b>${esc(dc.txt)}</b></span>`
-              : `<span class="tv-side tv-pass">Pass</span>`)
+            ? `<span class="tv-market"><b>O/U${passLine ? ` ${esc(passLine)}` : ""}</b></span>`
             : `<span class="tv-side ${dirCls}">${arrow ? `<i class="tv-mk" aria-hidden="true"></i>` : ""}<b>${esc(vd.side || "—")}</b>${vd.price != null ? `<em>${fmtOdds(vd.price)}</em>` : ""}</span>`;
       const starHtml = "";
       const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
       // the kicker names the register: a bet says what kind of bet, a call says DESK CALL
       // and wears a NO BET chip so the two can never be read as the same thing
-      const kick = vd && vd.kind === "pass" && dc ? "Desk call" : vd ? vd.word : "";
+      const kick = vd ? vd.word : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}${dc ? " is-call" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-krow"><span class="tv-k">${esc(kick)}</span>${starHtml}${dc ? `<span class="tv-nb">No bet</span>` : ""}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
+             <div class="tv-krow"><span class="tv-k">${esc(kick)}</span>${starHtml}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
              <div class="tv-callrow">${callHtml}</div>
              ${liveCash}
              ${agRow}
@@ -6659,13 +6690,13 @@ export default function Home() {
         : "";
       // the number rides inside the call now; the chip is the fallback for a tile whose
       // verdict carries no figure of its own (a bare "Pass", or no verdict at all)
-      const needTot = !vd || (vd.kind === "pass" && !dc);
+      const needTot = !vd;
       const footBits = [
         needTot && lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
         tileDeskRow(g, locked),
       ].filter(Boolean).join("");
       return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (locked && vd.kind !== "pass" ? " — the desk's call is locked" : vd.kind === "pass" ? (dc ? ` — no bet; the desk calls the ${esc(dc.dir)}` : " — the desk passed") : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (locked && vd.kind !== "pass" ? " — the desk's call is locked" : vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
         <div class="tl-top">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="tl-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${verdictBlk}
@@ -7047,6 +7078,7 @@ export default function Home() {
         gradedTotal: graded(T.strong) + graded(T.good) + graded(T.lean),
         w: T.strong.w + T.good.w + T.lean.w,
         l: T.strong.l + T.good.l + T.lean.l,
+        p: (T.strong.push || 0) + (T.good.push || 0) + (T.lean.push || 0),
         live: T.strong.live + T.good.live + T.lean.live,
         up: T.strong.up + T.good.up + T.lean.up,
       };
@@ -7076,14 +7108,27 @@ export default function Home() {
     // Overall pick record for the VIEWED date/league — across ALL markets (spread + total + ML),
     // plus a separate "top picks" (Strong ★★★) tally. Drives the small performance banner.
     function dayPicksTally() {
-      // ANY day (incl. prior days): prefer the model payload's per-day record — it's the
-      // backfilled + nightly-archived truth for every date, so looking back always shows
-      // that day's pick record. The live tally is only a fallback for today.
+      const inLeague = (g: any) => league === "all" || String(g.sport || "").toLowerCase() === league;
+      const rows = tierRecordFor((g: any) => inLeague(g) && String(g.date || "").slice(0, 10) === curDate);
+      if (rows) {
+        const graded = rows.w + rows.l + (rows.p || 0);
+        const pending = rows.live + rows.up;
+        if (graded || pending) {
+          return {
+            w: rows.w, l: rows.l, p: rows.p || 0,
+            sw: rows.strong.w + rows.good.w, sl: rows.strong.l + rows.good.l,
+            n: graded + pending, graded, pending, live: rows.live, up: rows.up,
+          };
+        }
+      }
+      // Fallback only: old per-day records can lag the row-level feed during live slates.
       if ((league === "all" || league === "mlb") && betaData && betaData.by_date_record) {
         const r = betaData.by_date_record[curDate];
         if (r && r.n_picks != null) {
           // n_void (visible-void): postponed picks shown on the day but in NO record
-          return { w: r.wins || 0, l: r.losses || 0, p: r.pushes || 0, sw: 0, sl: 0, n: r.n_picks || 0, roi: r.roi != null ? r.roi : null, hit: r.hit_rate != null ? r.hit_rate : null, nv: r.n_void || 0 };
+          const graded = (r.wins || 0) + (r.losses || 0) + (r.pushes || 0);
+          const pending = Math.max(0, (r.n_picks || 0) - graded - (r.n_void || 0));
+          return { w: r.wins || 0, l: r.losses || 0, p: r.pushes || 0, sw: 0, sl: 0, n: (r.n_picks || graded), graded, pending, live: 0, up: pending, nv: r.n_void || 0 };
         }
       }
       const games = payload ? gamesForLeague(payload, league) : [];
@@ -7100,7 +7145,7 @@ export default function Home() {
           else if (s === "push") p++;
         });
       });
-      return { w, l, p, sw, sl, n: w + l + p };
+      return { w, l, p, sw, sl, n: w + l + p, graded: w + l + p, pending: 0, live: 0, up: 0 };
     }
     // Small performance banner — OVERALL across all picks for the day, with a separate Top-picks
     // (Strong) standing. Tapping opens the full record broken down by confidence level (scoped to
@@ -7113,9 +7158,10 @@ export default function Home() {
       if (!t.n) {
         inner = `<span class="pf-k">${esc(dayLab)}</span><span class="pf-v pending">${isToday ? "picks grading live" : "no picks"}</span>`;
       } else {
-        // per-day record: W–L(–P) + hit% / ROI when we have it (historical days carry both)
-        const roiTxt = (t as any).roi != null ? `<span class="pf-roi ${(t as any).roi >= 0 ? "pos" : "neg"}">${((t as any).roi >= 0 ? "+" : "") + ((t as any).roi * 100).toFixed(0)}%</span>` : "";
-        const extra = (t.sw + t.sl) ? `<span class="pf-top">Picks ${t.sw}–${t.sl}</span>` : roiTxt;
+        // per-day record: graded W-L(-P), plus the official picks that are still live/to come.
+        const pending = (t as any).pending || 0;
+        const pendTxt = pending ? `<span class="pf-pending">${pending} pending</span>` : "";
+        const extra = pendTxt || ((t as any).graded ? `<span class="pf-top">${(t as any).graded} graded</span>` : "");
         // a postponed day says so: "· 1 void" — shown, never counted in the W–L
         const voidBit = (t as any).nv ? `<span class="pf-voidn">· ${(t as any).nv} void</span>` : "";
         inner = `<span class="pf-k">${esc(dayLab)}</span><span class="pf-v">${t.w}–${t.l}${t.p ? `–${t.p}` : ""}</span>${voidBit}${extra}`;
@@ -7378,7 +7424,7 @@ export default function Home() {
             : "";
           const byPhase = games.reduce((m: any, g: any) => { const k = gameState(g).kind; m[k] = (m[k] || 0) + 1; return m; }, {});
           const phaseLine = [byPhase.live ? `${byPhase.live} live` : "", byPhase.pre ? `${byPhase.pre} upcoming` : "", byPhase.final ? `${byPhase.final} final` : ""].filter(Boolean).join(" · ");
-          const grouped = `${section(phaseLine ? `Time order · ${phaseLine}` : "Live & Upcoming", games.slice().sort(byStartTime), byPhase.live ? "live mixed" : "mixed")}${ppdSec}`;
+          const grouped = `${section(phaseLine ? `Live first · ${phaseLine}` : "Live & Upcoming", games.slice().sort(byBoardOrder), byPhase.live ? "live mixed" : "mixed")}${ppdSec}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
           // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
           const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
@@ -7432,6 +7478,7 @@ export default function Home() {
         { optional: "only rendered by renderRangeBody() when a range scan comes back empty" });
     }
 
+    let scoresChromeResizeBound = false;
     function bindScoresChrome() {
       root.querySelectorAll(".sporttab").forEach((b: any) => (b.onclick = () => {
         if (league === b.dataset.lg) return;
@@ -7464,7 +7511,10 @@ export default function Home() {
       }, { optional: "the history/range toggle button is not currently rendered — see the note above" });
       bindHist();
       bindMeta();
-      window.addEventListener("resize", () => { positionInk(); positionLens(); recenterStrip(false); });
+      if (!scoresChromeResizeBound) {
+        scoresChromeResizeBound = true;
+        window.addEventListener("resize", () => { positionInk(); positionLens(); recenterStrip(false); }, { passive: true });
+      }
     }
     function bindHist() {
       // The range panel only exists while it's open, so every target here is genuinely optional.
@@ -7677,9 +7727,10 @@ export default function Home() {
       } else {
         // a pass names the number it judged — the line + the plain-English why
         const passNote = pl.v4pass ? plainPassReason(pl.v4pass) : "no edge in this market";
+        const lineTxt = pl.market === "total" && pl.line != null ? `O/U ${lineStr(pl.line)}` : (pl.line != null ? lineStr(pl.line) : "Line");
         head = `<div class="shp-head pass">
           <span class="shp-mk">${MK_FULL[mk]}</span>
-          <span class="shp-act pass">PASS</span>
+          <span class="shp-act pass">${esc(lineTxt)}</span>
           <span class="shp-passnote">${esc(passNote)}</span>
         </div>`;
       }
@@ -8239,8 +8290,8 @@ export default function Home() {
       const passLn = hasTake ? "" : passLineTxt(g);
       const payoffTxt = hasTake
         ? `${lead.side}${lead.price != null ? ` (${fmtOdds(lead.price)})` : ""}`
-        : `Pass${passLn ? ` — ${passLn} held no edge` : ""}`;
-      const calloutKick = hasTake ? pickLabel(g).replace(/^◆\s*/, "◆ ") : "◆ The Verdict";
+        : `${passLn || "O/U"}`;
+      const calloutKick = hasTake ? pickLabel(g).replace(/^◆\s*/, "◆ ") : "◆ Line";
       const pickCallout = leadLocked
         ? `<div class="art-pick locked" data-up="1"><span class="apk-k">◆ ${esc(pickWord(g))}</span><span class="apk-txt">${isSignedIn() ? "Unlock" : "Sign in"} to see the side &amp; line ${lockSvg}</span></div>`
         : `<div class="art-pick ${hasTake ? `has q-${phQ || "lean"}` : "pass"}"><span class="apk-k">${esc(calloutKick)}</span><span class="apk-txt">${esc(payoffTxt)}</span>${hasTake ? `<span class="apk-q">${pickStars(lead)}${pickGrade(lead)}</span>` : ""}</div>`;
@@ -8435,6 +8486,7 @@ export default function Home() {
       //  delegated handler above already covers — so the binding was dead weight, not a gate.)
       bindClick("tl-how", (e: any) => { e.stopPropagation(); closeDetail(false, true); setTimeout(() => switchTab("beta"), 120); });
       bindClick("gp-share", (e: any) => { e.stopPropagation(); shareGame(g); });
+      bindSwipeBack($("gamepage"));
       // tab switching (no re-fetch; just show/hide + move the ink)
       wireBody();
       // if opened on a live game, pull the box score right away
@@ -8539,6 +8591,25 @@ export default function Home() {
         window.addEventListener("mousemove", mm); window.addEventListener("mouseup", mu);
       });
     }
+    function bindSwipeBack(surface: any) {
+      if (!surface) return;
+      let sx = 0, sy = 0, tracking = false;
+      const ignored = ".stories,#st-stage,.lp-scroll,.bgrid-scroll,.sporttabs,.datestrip,.tp-rail,a,button,input,select,textarea,[data-no-swipe]";
+      surface.addEventListener("pointerdown", (e: any) => {
+        if (e.pointerType === "mouse") return;
+        if (!detail || document.body.classList.contains("stories-on")) return;
+        if (e.target && e.target.closest && e.target.closest(ignored)) return;
+        if (e.clientX > 34) return;
+        sx = e.clientX; sy = e.clientY; tracking = true;
+      }, { passive: true });
+      surface.addEventListener("pointerup", (e: any) => {
+        if (!tracking) return;
+        tracking = false;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (dx > 72 && dx > Math.abs(dy) * 1.45) closeDetail();
+      }, { passive: true });
+      surface.addEventListener("pointercancel", () => { tracking = false; }, { passive: true });
+    }
 
     // ===================== "HOW PICKS WORK" SHEET (the ⓘ link) =====================
     function openRecipeSheet() {
@@ -8587,6 +8658,7 @@ export default function Home() {
       bindClick("sheet-close", () => closeDetail());
       bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
       bindSheetDrag($("sheet"), $("sh-grab"));
+      bindSwipeBack($("sheet"));
     }
     // The pick-record breakdown — TODAY (with how many are still live/to-come) and THIS MONTH,
     // each split by market. Same sheet chrome as everything else, so overlays stay consistent.
@@ -9540,6 +9612,7 @@ export default function Home() {
       document.body.classList.add("sheet-open");
       bindClick("sheet-close", () => closeDetail());
       bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
+      bindSwipeBack($("sheet"));
       // The whole "Our take" row is the pick affordance — clicking it ALWAYS opens the game's
       // full pick. Resolve the game at click-time (state may have loaded since render), mirroring
       // the article-row handlers: live/loaded slate → openDetail; otherwise jump the board to it.
@@ -10909,7 +10982,7 @@ export default function Home() {
              <span class="bcell-side"><b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span>${resTag}
            </div>
            ${p.vegas_line != null ? `<div class="bgrid-legend">vs Vegas O/U ${esc(lineStr(p.vegas_line))}${p.lead_time ? ` · locked at ${esc(p.lead_time)}` : ""}.</div>` : ""}`
-        : `<div class="bcell pass" style="padding:14px 16px"><span class="bcell-pass">PASS</span> <span class="bpass-why">${esc(p ? plainPassReason(v4ToPlay(g, p).v4pass) : "No pick on this game.")}</span></div>`;
+        : `<div class="bcell pass" style="padding:14px 16px"><span class="bcell-pass">O/U ${esc(p && p.line != null ? lineStr(p.line) : "")}</span> <span class="bpass-why">${esc(p ? plainPassReason(v4ToPlay(g, p).v4pass) : "No DiamondEdge Pick on this game.")}</span></div>`;
       const html = `
         <div class="gamepage betapage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.away)} at ${esc(g.home)}">
           <div class="gp-head">
@@ -10941,6 +11014,7 @@ export default function Home() {
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
       bindClick("gp-back", () => closeDetail());
       bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
+      bindSwipeBack($("gamepage"));
     }
 
     // ===================== RESEARCH — "THE LAB" (public roadmap of every idea we test) =====================
@@ -11442,19 +11516,20 @@ export default function Home() {
       // The header stays FULL SIZE at every width — no scroll-condense/shrink. `.scrolled`
       // only adds a frosted backing so content reads under the sticky bar (it does not resize).
       hdr.classList.toggle("scrolled", y > 6);
+    }
+    function publishHeaderHeight() {
+      const hdr = $("app-header"); if (!hdr) return;
       document.documentElement.style.setProperty("--hdr-h", hdr.offsetHeight + "px");
     }
     function scrollY() { return window.scrollY || (document.scrollingElement ? document.scrollingElement.scrollTop : 0) || 0; }
     function bindHeaderScroll() {
       if (headerScrollBound) return; headerScrollBound = true;
       let raf = 0;
-      // Toggle immediately (cheap class flip — robust even where rAF is throttled), and also
-      // coalesce a rAF pass for the --hdr-h publish when animation frames are available.
-      const onScroll = () => { applyHeaderState(scrollY()); if (raf) return; raf = requestAnimationFrame(() => { raf = 0; applyHeaderState(scrollY()); }); };
+      // Scroll only toggles the visual state. Header height is measured on layout events.
+      const onScroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; applyHeaderState(scrollY()); }); };
       window.addEventListener("scroll", onScroll, { passive: true });
-      document.addEventListener("scroll", onScroll, { passive: true, capture: true });
-      window.addEventListener("resize", onScroll, { passive: true });
-      requestAnimationFrame(() => applyHeaderState(scrollY()));
+      window.addEventListener("resize", () => { publishHeaderHeight(); applyHeaderState(scrollY()); }, { passive: true });
+      requestAnimationFrame(() => { publishHeaderHeight(); applyHeaderState(scrollY()); });
     }
 
     function switchTab(t: string) {
