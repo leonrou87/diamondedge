@@ -6827,21 +6827,68 @@ export default function Home() {
          separate object with the brand lockup inside it. The seal sits at the row's far
          right on `margin-left:auto`, so it cannot cover a team name, a figure or a word at
          any width — which was the whole complaint. */
+      /* ════════ THE BLACK TAG, FOURTH ITERATION ════════
+         Leon: "let's write a line 'DiamondEdge picks' — maybe put a black tag on these or
+         something like that to make it pop a little bit more", and then: "right-align it."
+
+         The board is a light surface — white paper, hairlines, ink type. Making our call the
+         ONE dark object on the tile is the cheapest, strongest hierarchy move available: the
+         eye finds it before it reads anything, on every tile, at every width, without a
+         single extra pixel of size. It is also the premium moment — a near-black tag with a
+         gold mark on it is the brand, and it is the same object whether the pick is revealed,
+         locked behind the paywall, or still to come. A signed-out reader therefore sees THAT
+         a DiamondEdge pick exists (the tag is there, the value inside it is redacted), which
+         is the whole upsell.
+
+         Near-black, not black: --ink (#0d1420), the same token the type is set in. Pure #000
+         on a white card reads as a hole; the ink token reads as ink.
+
+         THE ROW IS STILL THREE CELLS AND STILL NEVER OVERLAPS:
+           [ O/U 8.5 ] ······················ [ ◆DE ▲ OVER ] [ ✓ ]
+             market, left      the tag, flush right, seal beside it and never on it
+         The hairline separator is gone — a black tag against paper does not need a rule to
+         say it is a different object. */
       const mark = noPick ? ""
         : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i>${
           locked ? `<i class="de-mini-lockdots"></i>` : `<i class="de-mini-arrow"></i>`}</span>`;
       // the market total — ALWAYS rendered, always meaning the market
       const ouCell = `<span class="de-mini-ou"><i>O/U</i>${line ? `<b>${esc(line)}</b>` : `<b>—</b>`}</span>`;
-      // our call — the brand lockup plus the word. A pass renders nothing here; the empty
-      // slot is the signal (see the note above about scanning a column of tiles).
-      const callCell = noPick ? ""
+      /* our call — the tag. A game we PASSED on leaves the slot empty (the emptiness is the
+         signal); a game whose picks have not been made yet is a different state entirely and
+         gets the INCOMING tag, because "we are not on this" and "we have not looked yet" must
+         never read the same. */
+      const upcoming = noPick && isFutureGame(g);
+      const callCell = upcoming
+        ? `<span class="de-mini-call incoming"><span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i></span><b class="de-mini-word">${esc(picksEtaShort(g))}</b></span>`
+        : noPick ? ""
         : `<span class="de-mini-call">${mark}${locked
             ? `<i class="de-mini-redact" aria-hidden="true"></i>`
             : `<b class="de-mini-word">${esc(word || "PICK")}</b>`}</span>`;
-      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(title)}" role="img" aria-label="${esc(aria)}">
-        ${ouCell}${callCell ? `<i class="dmp-sep" aria-hidden="true"></i>${callCell}` : ""}${stamp}
+      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${upcoming ? " upcoming" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(upcoming ? picksEtaLong(g) : title)}" role="img" aria-label="${esc(upcoming ? picksEtaLong(g) : aria)}">
+        ${ouCell}${callCell || stamp ? `<span class="dmp-right">${callCell}${stamp}</span>` : ""}
       </span>`;
     }
+    /* ════════ PICKS THAT HAVE NOT HAPPENED YET ════════
+       Leon: "tomorrow's games must be visible on the board tonight — just with no picks and a
+       disclaimer on when picks are coming."
+
+       This is ANTICIPATION, not absence. A game we passed on and a game we have not run yet
+       are different facts and the board must not say them the same way: "Nothing cleared the
+       bar" is a verdict, and there is no verdict here yet. The served human string wins
+       whenever the feed carries one (`picks_eta`); otherwise we say the true thing plainly. */
+    function picksEtaRaw(g: any) {
+      const src = livePayload || payload || {};
+      const cand = [g && g.picks_eta, g && g.pick && g.pick.picks_eta, (src as any).picks_eta];
+      for (const c of cand) { const t = String(c == null ? "" : c).trim(); if (t) return t; }
+      return "";
+    }
+    const picksEtaShort = (g: any) => {
+      const raw = picksEtaRaw(g);
+      // a served string is used verbatim when it is short enough to be a tag; otherwise the tag
+      // stays two words and the full sentence rides on the title/aria and the group header
+      return raw && raw.length <= 22 ? raw : "PICKS SOON";
+    };
+    const picksEtaLong = (g: any) => picksEtaRaw(g) || "DiamondEdge picks for this game publish tomorrow morning";
     /* ════════ THE RESULT STAMP — a different object from the pick ════════
        Leon: "for RIGHT / WRONG use another treatment." So the outcome does not borrow ONE
        thing from the direction language: not the triangle, not the tinted-slot silhouette,
@@ -9027,17 +9074,29 @@ export default function Home() {
       const hasStrats = gameStrategies(g).length > 0 && !leadLocked;
       /* THE TAB BAR — iOS segmented rhythm: equal-width targets, the ink rail under the
          active one, and a Box score tab that exists only once there is a box score. */
-      /* CBS's ORDER, ONCE THE GAME HAS STARTED: Recap · Box Score · Stats · Odds. Before it
-         starts there is no recap and no box score, so it is Preview · Stats · Odds. The box
-         score is one tap from arrival on every game that has one — and it is the tab the page
-         OPENS on for a live or finished game, because that is the fact the page is opened
-         for. (It used to be a block wedged above the tabs, which is why it collided with the
-         hero's score; see the single-home discipline note on buildBody.) */
+      /* ════════ THE TAB SET, AND WHY RECAP IS GONE ════════
+         Leon: "the recap tab seems a little useless — I think we can get rid of that", and
+         separately: "the Preview tab stays on a game even after it's completed."
+
+         RECAP said one thing the hero does not already say, and it said it worse: the final
+         score is in the hero, the pick's outcome is in the banner above these tabs, and the
+         narrative was a third rendering of both — precisely the duplicate-information class
+         the single-home rule exists to kill. It is removed, not relocated.
+
+         PREVIEW is the opposite call. The pregame read is part of the game's story and stays
+         readable after the fact — what we saw before first pitch, still there when you know
+         how it turned out, which is the most testable thing this product publishes. It is
+         framed as the pregame view with a kicker, never apologised for with a caveat.
+
+         SO:  pre     Preview · Stats · Odds                    (3)
+              live    Live · Box Score · Preview · Stats · Odds (5)
+              final   Box Score · Preview · Stats · Odds        (4)
+         Preview owns the pregame narrative, Box Score owns what happened, and no block
+         appears in two of them. */
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
-        ${showLive
-          ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">${isFinal ? "Recap" : "Live"}</button>
-             <button class="gp-tab ${detailTab === "box" ? "on" : ""}" data-dtab="box" role="tab">Box Score</button>`
-          : `<button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>`}
+        ${showLive && !isFinal ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Live</button>` : ""}
+        ${showLive ? `<button class="gp-tab ${detailTab === "box" ? "on" : ""}" data-dtab="box" role="tab">Box Score</button>` : ""}
+        <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
         <button class="gp-tab ${detailTab === "stats" ? "on" : ""}" data-dtab="stats" role="tab">Stats</button>
         <button class="gp-tab ${detailTab === "odds" ? "on" : ""}" data-dtab="odds" role="tab">Odds</button>
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
@@ -9049,6 +9108,7 @@ export default function Home() {
          so this pane no longer repeats it — it is the masthead, the setup prose, the lines
          sentence and the strategy teaser, in reading order. */
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
+        ${showLive ? `<div class="gp-prekick">How we saw it before first pitch</div>` : ""}
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${linesBlock}
@@ -9106,7 +9166,9 @@ export default function Home() {
          page prints either. */
       // RECAP IS NARRATIVE ONLY — the score blocks that used to open it are the hero's and the
       // box score's job (gameRecap drops its own `finalTxt` chip for the same reason).
-      const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${isFinal ? gameRecap(g) : liveVsLineBlock(g, leadLocked)}</div>` : "";
+      // RECAP RETIRED (see the tab-set note): a final game has no live/recap pane at all, and
+      // the live pane exists only while the game is actually in progress.
+      const livePane = showLive && !isFinal ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${liveVsLineBlock(g, leadLocked)}</div>` : "";
       // The star-tier legend was cut from the bottom of the board (it explained a five-step
       // scale to every reader on every visit).
       /* ═══════════ ODDS: THE MARKET DETAIL ═══════════
@@ -13873,15 +13935,21 @@ export default function Home() {
          reloaded the whole app; and because the guard only checked `detail`, a drag inside any
          popover that happened to be scrolled to its top reloaded the page underneath it.
 
-         THE RULE NOW, in one predicate (ptrArmed):
-           1. a GAME PAGE must be open — `#gamepage` present and `detail` holding a real game
-              (not the record archive, not the recipe sheet, not an analyst or pitcher page)
-           2. NOTHING may be stacked on top of it — no `body.sheet-open`, and no second
+         THE RULE NOW, in one predicate (ptrArmed). The gesture lives on the two surfaces a
+         reader actually pulls to refresh — THE BOARD and A GAME PAGE — and nowhere else:
+           1. either the GAMES TAB is the surface on screen with nothing over it, OR a GAME
+              PAGE is open — `#gamepage` present and `detail` holding a real game (not the
+              record archive, not the recipe sheet, not an analyst or pitcher page)
+           2. NOTHING may be stacked on top of either — no `body.sheet-open`, and no second
               element in the sheet layer
-           3. that game page's own scroller must be at the very top
-         Every other surface in the app has no pull-to-refresh at all. Feeds still refresh
-         silently on the poller everywhere (see SMART SILENT AUTO-REFRESH above), so nothing
-         is lost by removing the gesture — only the accidental reloads are. */
+           3. NOT mid-gesture — the tab pan and the swipe-back own the drag while they run
+           4. that surface's own scroller must be at the very top (the board scrolls the
+              document; a game page scrolls its own .gp-body — the gesture belongs to
+              whichever one is actually on screen)
+         The board was excluded by construction: the predicate REQUIRED a game page, so the
+         one surface with a live, changing feed on it was the one surface you could not pull.
+         Every other surface still has no pull-to-refresh at all; their feeds refresh silently
+         on the poller (see SMART SILENT AUTO-REFRESH above). */
       (() => {
         let sy = 0, pulling = false, armed = false;
         const bar = document.createElement("div");
@@ -13890,16 +13958,24 @@ export default function Home() {
         // the game page's own scroll container — the gesture belongs to it, not to the document
         const scroller = () => {
           const p = $("gamepage");
-          return (p && (p.querySelector(".gp-body") || p.querySelector(".gp-scroll"))) || null;
+          if (p) return p.querySelector(".gp-body") || p.querySelector(".gp-scroll") || null;
+          return (document.scrollingElement || document.documentElement) as any;   // the board scrolls the document
         };
         const ptrArmed = () => {
-          const p = $("gamepage");
-          if (!p || p.classList.contains("anlpage") || p.classList.contains("pitcherpage")) return false;
-          if (!detail || detail.game_id == null || detail._history || detail._recipe) return false;
-          if (document.body.classList.contains("sheet-open")) return false;   // a popover owns the drag
+          // never mid-flight: the tab pan and the swipe-back gesture own the drag while they run
+          const bc = document.body.classList;
+          if (bc.contains("tab-leaving") || bc.contains("tab-pan-left") || bc.contains("tab-pan-right") || bc.contains("swiping-back")) return false;
           const layer = $("sheet-layer");
           if (layer && layer.childElementCount > 1) return false;             // something is stacked above
-          return true;
+          const p = $("gamepage");
+          if (p) {
+            if (p.classList.contains("anlpage") || p.classList.contains("pitcherpage")) return false;
+            if (!detail || detail.game_id == null || detail._history || detail._recipe) return false;
+            return true;
+          }
+          // THE BOARD. Only the Games tab, only with nothing over it.
+          if (bc.contains("sheet-open") || bc.contains("stories-on")) return false;
+          return tab === "games" && !detail;
         };
         document.addEventListener("touchstart", (e: any) => {
           const sc = scroller();
@@ -13925,7 +14001,28 @@ export default function Home() {
           if (armed) {
             (bar.querySelector(".ptr-t") as any).textContent = "Refreshing…";
             bar.classList.add("spin");
-            setTimeout(() => location.reload(), 180);
+            /* THE BOARD REFRESHES IN PLACE. A full reload throws away the reader's scroll
+               position, their league tab and their date — on the one surface where they were
+               almost certainly looking at a specific game. So the board refetches the live
+               feeds and re-renders, with a 650ms floor so the spinner never flashes and
+               vanishes (which reads as "nothing happened"). A game page keeps the hard
+               reload: it is a single object and a reload is the honest way to re-fetch it. */
+            if (!$("gamepage")) {
+              const done = () => {
+                bar.style.transform = ""; bar.classList.remove("show", "go", "spin");
+                (bar.querySelector(".ptr-t") as any).textContent = "Pull down";
+              };
+              betaLiveAt = 0;
+              const work = Promise.all([
+                loadBetaLive().catch(() => null),
+                pollLiveScores().catch ? (pollLiveScores() as any) : null,
+                pollPregame().catch ? (pollPregame() as any) : null,
+              ].map((x: any) => (x && x.then ? x.catch(() => null) : Promise.resolve(null))));
+              const floor = new Promise((r) => setTimeout(r, 650));
+              Promise.all([work, floor]).then(() => { try { renderSlate(true); } catch {} done(); }).catch(done);
+            } else {
+              setTimeout(() => location.reload(), 180);
+            }
           } else { bar.style.transform = ""; bar.classList.remove("show", "go"); }
         }, { passive: true });
       })();

@@ -2124,14 +2124,29 @@ details.more .more-body{padding-top:12px}
 /* TABS */
 .gp-tabs{position:relative;display:flex;gap:2px;margin:0 0 14px;padding:4px;border-radius:15px;
   background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--shadow)}
-.gp-tab{position:relative;z-index:1;flex:1;border:0;background:transparent;cursor:pointer;padding:9px 12px;border-radius:11px;
-  font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);transition:color .25s ease}
+/* EVENLY DISTRIBUTED AT EVERY WIDTH AND EVERY COUNT. `flex:1` alone is not equal-width — a
+   flex base of `auto` lets a long label ("BOX SCORE") claim more than its share, which is
+   exactly the uneven rhythm Leon flagged. `flex:1 1 0` + `min-width:0` divides the bar into
+   n identical cells; the label then shrinks its own type rather than its neighbour's cell.
+   The bar carries 3 tabs pregame, 4 on a final and 5 on a live game, and all three read as
+   one segmented control. */
+.gp-tab{position:relative;z-index:1;flex:1 1 0;min-width:0;border:0;background:transparent;cursor:pointer;
+  padding:9px 6px;border-radius:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);
+  transition:color .25s ease,transform .18s var(--spring)}
+.gp-tab:active{transform:scale(.96)}
+/* (the responsive step-down lives with the underline variant further down — one place, not two) */
 .gp-tab.on{color:var(--g3)}
 .gp-tab:hover:not(.on){color:var(--ink)}
 .gp-tab-ink{position:absolute;z-index:0;top:4px;bottom:4px;left:0;width:0;border-radius:11px;
   background:linear-gradient(135deg,rgba(var(--greenc),.28),rgba(var(--greenc),.16));box-shadow:inset 0 1px 0 rgba(var(--rimc),.11),0 4px 12px rgba(var(--greenc),.2);
   transition:transform .38s var(--spring),width .38s var(--spring);will-change:transform}
 .gp-pane{animation:rise .3s var(--ease-out) both}
+/* PREVIEW AFTER THE FACT. The pregame read stays on a live or finished game — it is the most
+   testable thing the product publishes. This kicker frames it as the pregame view; it is a
+   label, never an apology, so it states what the pane is and stops. */
+.gp-prekick{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--ink4);margin:0 2px 12px;padding-bottom:9px;border-bottom:1px solid var(--line3)}
 /* ── ALL-MARKETS LEAN TABLE — model's call on every market, at the top of the game detail ── */
 .mkt-table{margin:0 0 14px;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e1);padding:13px 15px 7px}
 .mkt-table .mt-h{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:9px}
@@ -2449,19 +2464,53 @@ details.more .more-body{padding-top:12px}
    precisely why it landed on top of the number. It is a flow item on `margin-left:auto` now,
    so at every width from 360px up it sits in clear space at the end of the row and can
    cover nothing. */
-.de-mini-pick{position:relative;display:flex;align-items:center;gap:7px;width:100%;min-width:0;line-height:1}
+/* THE ROW WRAPS RATHER THAN CLIPS. Measured across the live board at 360px the worst tile
+   (a two-digit total, UNDER, and a settled seal) is 14px over its 123px column. Squeezing the
+   type further would cost legibility on every OTHER tile to save one, so the row is allowed
+   to wrap instead: the tag keeps `margin-left:auto`, which right-aligns it on whichever line
+   it lands on, and the seal follows it. In practice one tile in fifteen takes the second line
+   and nothing anywhere is ever cut off. */
+.de-mini-pick{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:6px 7px;width:100%;min-width:0;line-height:1}
 /* THE MARKET NUMBER — always present, always meaning the market. Quiet label, loud figure. */
 .de-mini-ou{display:inline-flex;align-items:baseline;gap:4px;flex-shrink:0;min-width:0;
   font-family:var(--disp);font-weight:800;letter-spacing:.005em;color:var(--ink)}
 .de-mini-ou i{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.11em;color:var(--ink3)}
 .de-mini-ou b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:16px;letter-spacing:-.03em;color:var(--ink)}
-/* the hairline between the market and our call — two facts, visibly two facts */
-.dmp-sep{flex-shrink:0;width:1px;height:14px;background:var(--line);border-radius:1px}
-/* OUR CALL — the brand lockup and the word, as one object */
-.de-mini-call{display:inline-flex;align-items:center;gap:6px;min-width:0}
-.de-mini-word{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.03em;color:var(--ink)}
-.de-mini-pick.over .de-mini-word{color:var(--over)}
-.de-mini-pick.under .de-mini-word{color:var(--under)}
+/* (the hairline separator retired with the black tag — a dark object against paper does not
+   need a rule to say it is a different object) */
+.dmp-sep{display:none}
+/* ══════════ OUR CALL — THE BLACK TAG ══════════
+   The one dark element on a light board. Near-black (--ink, the same token the type is set
+   in — pure #000 reads as a hole in white paper), flush RIGHT on its row, carrying the gold
+   mark and the call. It is the same object in every state: revealed, locked, or still to
+   come, so "a DiamondEdge pick exists here" is legible before anything is read.
+
+   THE ON-BLACK PALETTE. The page's --gold (#8a5f06) and --over/--under are tuned for INK ON
+   WHITE and are unreadable here, so the tag carries its own three tones, each measured on
+   #0d1420: light gold #f6c745 (12.4:1), mint #5fe0ac (10.9:1), rose #ff8fa3 (8.6:1). */
+/* The tag and its seal are ONE right-hand group, so when the row has to wrap they move
+   together — a seal orphaned on its own line reads as a second, unrelated object. */
+.dmp-right{margin-left:auto;display:inline-flex;align-items:center;min-width:0;flex-shrink:0}
+.de-mini-call{display:inline-flex;align-items:center;gap:7px;min-width:0;flex-shrink:0;
+  padding:5px 10px 5px 7px;border-radius:10px;background:var(--ink);
+  box-shadow:0 1px 2px rgba(var(--rimc),.30),0 5px 14px rgba(var(--rimc),.16)}
+.de-mini-call .de-mini-mark{padding:0;gap:4px;background:none;box-shadow:none}
+.de-mini-call .de-mini-logo{background:#f6c745}
+.de-mini-call .de-mini-de{color:#e8c877}
+.de-mini-word{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.03em;color:#fff}
+.de-mini-pick.over .de-mini-word{color:#5fe0ac}
+.de-mini-pick.under .de-mini-word{color:#ff8fa3}
+.de-mini-pick.over .de-mini-call .de-mini-arrow{color:#5fe0ac}
+.de-mini-pick.under .de-mini-call .de-mini-arrow{color:#ff8fa3}
+.de-mini-call .de-mini-arrow{color:rgba(255,255,255,.62)}
+.de-mini-call .de-mini-lockdots{background:#f6c745}
+.de-mini-call .de-mini-redact{background:repeating-linear-gradient(115deg,rgba(246,199,69,.55) 0 3px,rgba(246,199,69,.16) 3px 6px)}
+/* INCOMING — tomorrow's board. Anticipation, not absence: the same tag, outlined rather than
+   filled, so it reads as "this slot is spoken for" instead of as a pick that is missing. */
+.de-mini-call.incoming{background:none;box-shadow:inset 0 0 0 1.5px rgba(var(--rimc),.30);padding:4px 10px 4px 7px}
+.de-mini-call.incoming .de-mini-logo{background:var(--gold)}
+.de-mini-call.incoming .de-mini-de{color:var(--golddeep)}
+.de-mini-pick.upcoming .de-mini-word{font-size:11px;letter-spacing:.11em;color:var(--ink3)}
 /* THE BRAND LOCKUP. A gold chip carrying the diamond AND the letters DE, so the unit reads
    as OUR call rather than as a decorated number. The gold is the real brand gradient on the
    glyph and deep bronze ink on the letters — gold text at 9px would not survive the contrast
@@ -2490,8 +2539,11 @@ details.more .more-body{padding-top:12px}
 .de-mini-redact{display:inline-block;flex-shrink:0;width:44px;height:11px;border-radius:3px;
   background:repeating-linear-gradient(115deg,rgba(var(--goldc),.30) 0 3px,rgba(var(--goldc),.10) 3px 6px)}
 /* ── THE OUTCOME, AT THE END OF THE ROW AND OVER NOTHING ── */
-.de-mini-pick .restamp.rs-mini{margin-left:auto;flex-shrink:0;width:19px;height:19px;
+/* The seal sits BESIDE the tag, never on it — the tag already carries the row's auto margin,
+   so the stamp only needs its gap. A passed game has no tag, so there the seal takes the auto. */
+.de-mini-pick .restamp.rs-mini{margin-left:6px;flex-shrink:0;width:19px;height:19px;
   box-shadow:0 1px 3px var(--sh3)}
+.de-mini-pick.nopick .restamp.rs-mini{margin-left:0}
 .de-mini-pick .restamp.rs-mini .rs-g{width:19px;height:19px}
 .de-mini-pick .restamp.rs-mini .rs-g svg{width:11px;height:11px;stroke-width:3.6}
 .tl-verdict .tv-callrow{padding-top:5px}
@@ -2510,19 +2562,28 @@ details.more .more-body{padding-top:12px}
    triangle — the triangle last, because the WORD is still there and still colour-coded, and
    at detail size (where there is room) the triangle comes straight back. What is NOT given
    up is any of the three facts, or the rule that the seal covers nothing. */
-.de-mini-pick.dmp-tile{gap:4px}
-.de-mini-pick.dmp-tile .de-mini-ou{gap:3px}
-.de-mini-pick.dmp-tile .de-mini-ou i{font-size:8.5px;letter-spacing:.08em}
-.de-mini-pick.dmp-tile .de-mini-ou b{font-size:13.5px}
-.de-mini-pick.dmp-tile .de-mini-word{font-size:12.5px;letter-spacing:.01em;flex-shrink:0}
+.de-mini-pick.dmp-tile{gap:5px 3px}
+.de-mini-pick.dmp-tile .de-mini-ou{gap:2px}
+.de-mini-pick.dmp-tile .de-mini-ou i{font-size:8px;letter-spacing:.07em}
+.de-mini-pick.dmp-tile .de-mini-ou b{font-size:13px}
+.de-mini-pick.dmp-tile .de-mini-logo{width:10px;height:10px}
 .de-mini-pick.dmp-tile .de-mini-logo{width:11px;height:11px}
 .de-mini-pick.dmp-tile .de-mini-mark{padding:0;gap:3px;background:none;box-shadow:none}
+/* THE 360px BUDGET, MEASURED NOT GUESSED. The tile column is ~163px of content at 375 and
+   ~128px at 360, and the row must hold "O/U 8.5" + the tag + the seal on ONE line at both.
+   So at tile size the tag drops BOTH the DE letterform and the direction triangle — at this
+   scale the diamond alone is the mark and the word alone is the call — and every gap and pad
+   steps down. Worst case measured on the live board (UNDER + seal): 126px at 360. */
 .de-mini-pick.dmp-tile .de-mini-de,
 .de-mini-pick.dmp-tile .de-mini-arrow{display:none}
-.de-mini-pick.dmp-tile .de-mini-call{gap:4px}
+.de-mini-pick.dmp-tile .de-mini-call{gap:4px;padding:3px 5px 3px 4px;border-radius:8px}
+.de-mini-pick.dmp-tile .de-mini-call.incoming{padding:2.5px 7px}
+.de-mini-pick.dmp-tile .de-mini-word{font-size:10.5px;letter-spacing:0}
+.de-mini-pick.dmp-tile.upcoming .de-mini-word{font-size:9px;letter-spacing:.07em}
 .de-mini-pick.dmp-tile .de-mini-redact{width:30px;height:10px}
 .de-mini-pick.dmp-tile .dmp-sep{height:12px}
-.de-mini-pick.dmp-tile .restamp.rs-mini{width:16px;height:16px;margin-left:auto}
+.de-mini-pick.dmp-tile .restamp.rs-mini{width:14px;height:14px;margin-left:3px}
+.de-mini-pick.dmp-tile.nopick .restamp.rs-mini{margin-left:0}
 .de-mini-pick.dmp-tile .restamp.rs-mini .rs-g{width:16px;height:16px}
 .de-mini-pick.dmp-tile .restamp.rs-mini .rs-g svg{width:10px;height:10px}
 @media(max-width:400px){
@@ -6099,11 +6160,19 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .dbt-rec i{font-style:normal;font-family:var(--sans);font-variant-numeric:tabular-nums;
   font-weight:600;font-size:9.5px;letter-spacing:.02em;color:var(--ink4);white-space:nowrap}
 
-/* ── game-page tab strip: "BOX SCORE" must never break across two lines at 375 ── */
+/* ── game-page tab strip: EQUAL CELLS, AND "BOX SCORE" FITS INSIDE ITS OWN ──────────────
+   The bar carries three tabs pregame, four on a final and five on a live game. `flex:1 1 0`
+   makes the cells identical at every count; these steps make the longest label fit the
+   smallest cell, measured rather than guessed: at 375 a five-tab bar gives each cell 68px, and
+   "BOX SCORE" at 11.5px/.01em is 64px including its padding. No ellipsis at any width. */
 .gp-tab{white-space:nowrap;min-width:0}
 @media(max-width:430px){
-  .gp-tabs.underline .gp-tab{font-size:13px;padding:10px 7px 12px;letter-spacing:.015em}
-  .gp-tabs:not(.underline) .gp-tab{font-size:12.5px;padding:9px 6px;letter-spacing:.02em}
+  .gp-tabs.underline .gp-tab{font-size:12px;padding:10px 4px 12px;letter-spacing:.01em}
+  .gp-tabs:not(.underline) .gp-tab{font-size:12px;padding:9px 4px;letter-spacing:.015em}
+}
+@media(max-width:390px){
+  .gp-tabs.underline .gp-tab{font-size:11.5px;padding:10px 3px 12px;letter-spacing:.005em}
+  .gp-tabs:not(.underline) .gp-tab{font-size:11.5px;padding:9px 3px;letter-spacing:.01em}
 }
 
 /* ── last mono-prose stragglers: variants of a numeric class whose fallback copy is words ── */

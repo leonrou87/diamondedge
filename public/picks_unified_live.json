@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-03T05:41:02Z",
+  "generated_utc": "2026-08-03T06:11:03Z",
   "dates": [
     "2026-08-02"
   ],
@@ -22,7 +22,7 @@
     },
     "n_playable_scores": 534,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-03T00:55:20Z",
+    "generated_utc": "2026-08-03T06:08:09Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
     "n_nonplayable_scores": 6111
@@ -2160,6 +2160,24 @@
   },
   "performance_claim": "Adaptive four-analyst selector, measured from strictly-prior trailing windows; no same-day or future result can choose that day's rule.",
   "positioning": "THE DIAMONDEDGE PICK (Leon, 2026-07-20): one pick per game, one score, one star ladder, one record. Since 2026-08-02 the public total uses the locked daily four-analyst adaptive strategy: it can follow, fade or pass depending on the trailing pattern evidence. Champion/model streams remain diagnostic.",
+  "schedule_forward": {
+    "dates": [
+      "2026-08-02",
+      "2026-08-03"
+    ],
+    "n_scheduled": 23,
+    "n_already_on_board": 15,
+    "n_upcoming_added": 8,
+    "by_date": {
+      "2026-08-02": 0,
+      "2026-08-03": 8
+    },
+    "source": "mlb_statsapi_schedule",
+    "status_vocabulary": {
+      "UPCOMING": "scheduled, nothing has read it yet. NOT a pass \u2014 a PASS in this engine carries a stated lean. No side, no line, no price, no stars, and it enters no record or ledger."
+    },
+    "picks_eta_contract": "games[].picks_eta = {line, expected_utc, expected_local_pt, why}; the sentence is for display, the timestamp for logic"
+  },
   "record": {
     "headline": {
       "label": "DiamondEdge",
@@ -4576,7 +4594,7 @@
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-03T03:46:27Z",
+      "updated": "2026-08-03T06:08:08Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -7083,7 +7101,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-03T05:41:16Z",
+      "updated": "2026-08-03T06:11:03Z",
       "order": [
         "vega",
         "atlas",
@@ -7245,15 +7263,15 @@
     "desk_calls": {
       "stream": "desk_call",
       "record_start": "2026-08-01",
-      "n": 28,
+      "n": 29,
       "win": 13,
-      "loss": 14,
+      "loss": 15,
       "push": 1,
-      "decided": 27,
-      "hit_rate": 0.4815,
+      "decided": 28,
+      "hit_rate": 0.4643,
       "hit_ci95": [
-        0.3074,
-        0.6601
+        0.2953,
+        0.6419
       ],
       "by_conviction": {
         "STRONG": {
@@ -7279,20 +7297,20 @@
           ]
         },
         "SLIGHT": {
-          "n": 17,
+          "n": 18,
           "win": 8,
-          "loss": 9,
+          "loss": 10,
           "push": 0,
-          "hit_rate": 0.4706,
+          "hit_rate": 0.4444,
           "hit_ci95": [
-            0.2617,
-            0.6904
+            0.2456,
+            0.6628
           ]
         }
       },
       "n_called_and_bet": 9,
-      "n_called_not_bet": 19,
-      "updated": "2026-08-03T01:02:21Z",
+      "n_called_not_bet": 20,
+      "updated": "2026-08-03T06:08:08Z",
       "is_a_betting_record": false,
       "note": "THE DESK'S CALLS, GRADED IN THEIR OWN LEDGER. This is NOT a betting record and must never be summed with one, shown beside one as a comparison, or described in units: a call has no price and no stake, so it has no ROI. It counts one row per game \u2014 the desk's view at the most informed wall it reached \u2014 and it exists to answer one question the product could not previously ask: when the desk says something, is it right? A CALL IS NOT A BET. This is the desk's directional view on the game \u2014 what it actually thinks \u2014 built from the four analysts' own reads, equal-weighted. It is NEVER staked, it NEVER enters games[].pick, it is never counted in the product record, and it cannot be sized. Whether we are betting this game is a separate question with a separate answer, at `we_are_betting` / `bet_action`, decided by the price gate alone and unchanged by anything here. The graded product remains games[].pick and only games[].pick; the desk's calls are graded in their own ledger, separately, from 2026-08-01.",
       "honest_note": "THE STANDING HYGIENE RULE APPLIES IN FULL. This ledger starts at 2026-08-01 and will take months to say anything. A hit rate here is not evidence of edge in either direction, and in particular a call that beats 50% is NOT an argument for loosening the price gate \u2014 the gate is what protects the product record and it does not move on this.",
@@ -8808,6 +8826,18 @@
       "units": 1.959,
       "units_weighted": 3.919,
       "source": "adaptive_desk"
+    },
+    "2026-08-03": {
+      "n_picks": 0,
+      "n_graded": 0,
+      "wins": 0,
+      "losses": 0,
+      "pushes": 0,
+      "hit_rate": null,
+      "roi": null,
+      "units": 0.0,
+      "units_weighted": 0.0,
+      "source": "all_pass"
     }
   },
   "featured": {
@@ -8825,9 +8855,9 @@
   },
   "featured_game_id": "2026-08-02-St. Louis Cardinals-Toronto Blue Jays-822783",
   "board_census": {
-    "n_games": 15,
+    "n_games": 23,
     "n_picks": 8,
-    "n_passes": 7,
+    "n_passes": 15,
     "n_void": 0,
     "n_champion_sourced": 0,
     "n_model_sourced": 0,
@@ -9496,7 +9526,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -10574,7 +10604,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -11637,7 +11667,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -12152,1115 +12182,6 @@
           "conviction_runs": 0.8448,
           "mu_shown": 9.84,
           "market_line": 9.0,
-          "basis": "live",
-          "is_bet": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true
-        }
-      ],
-      "live_progress": null
-    },
-    {
-      "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404",
-      "game_pk": 824404,
-      "date": "2026-08-02",
-      "away": "Arizona Diamondbacks",
-      "home": "Cleveland Guardians",
-      "matchup": "Arizona Diamondbacks @ Cleveland Guardians",
-      "first_pitch_utc": "2026-08-02T17:40:00+00:00",
-      "pick": {
-        "status": "PICK",
-        "side": "over",
-        "line": 8.0,
-        "vegas_line": 8.0,
-        "stars": 5,
-        "score": 5.0,
-        "star_tier": "Adaptive desk STRONG (35d trailing)",
-        "price": 100.0,
-        "suggested_units": 2.0,
-        "result": "loss",
-        "locked": true,
-        "locked_at_utc": "2026-08-02T18:02:54Z",
-        "timestamp": "2026-08-02T18:02:54Z",
-        "lead_time": "T-3h",
-        "source": "adaptive_desk",
-        "our_prob": 0.4949,
-        "our_prob_basis": "reference_side",
-        "p_over": 0.4949,
-        "ev": null,
-        "expanded_band": false,
-        "certified": false,
-        "premium": true,
-        "adaptive_strategy": {
-          "version": "adaptive_desk_v20",
-          "date": "2026-08-02",
-          "status": "ACTIVE",
-          "rule_key": "neural_tanh:l20.12:th0.54",
-          "label": "Shallow neural desk ensemble (0.54 margin)",
-          "mode": "follow",
-          "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
-          "rule_family": "neural_tanh",
-          "window_days": 35,
-          "decided": 174,
-          "win": 119,
-          "loss": 55,
-          "push": 5,
-          "record": "119-55-5",
-          "hit_rate": 0.6839,
-          "units": 64,
-          "pick_rate": 0.4958,
-          "hit_rate_ci": [
-            0.6372,
-            0.7272
-          ],
-          "hit_rate_ci_level": 0.8,
-          "hit_rate_lower": 0.6372,
-          "hit_rate_upper": 0.7272,
-          "confidence_tier": "STRONG",
-          "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins).",
-          "locked": true,
-          "game_confidence_tier": "STRONG",
-          "game_signal_margin": 1.5868,
-          "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
-          "analyst_calls": {
-            "vega": "over",
-            "atlas": "under",
-            "nova": "under",
-            "scout": "under"
-          },
-          "game_matched_rule": true,
-          "full_block_at": "adaptive_strategy_by_date.2026-08-02"
-        },
-        "is_bet": true,
-        "signals": []
-      },
-      "spread": {
-        "status": "LEAN",
-        "side": "away",
-        "side_team": "Arizona Diamondbacks",
-        "line": 1.5,
-        "home_line": -1.5,
-        "vegas_line": -1.5,
-        "price": -139,
-        "best_book": null,
-        "stars": 1,
-        "score": 1.78,
-        "our_prob": 0.4097,
-        "ev": 0.0149,
-        "result": null,
-        "locked": true,
-        "locked_at_utc": "2026-08-02T18:02:54Z",
-        "lead_time": "T-1h",
-        "mode": "lean_only",
-        "activation_date": "2026-07-27",
-        "is_new_stream": true,
-        "new_tag": "NEW \u2014 graded from day one",
-        "is_bet": false,
-        "suggested_units": null,
-        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
-        "date": "2026-08-02",
-        "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404"
-      },
-      "simulator": {
-        "status": "LEAN",
-        "side": "over",
-        "line": 8.0,
-        "vegas_line": 8.0,
-        "p_over": 0.5972,
-        "p_over_market": 0.4948,
-        "sim_edge": 0.1024,
-        "price": 100.0,
-        "best_book": "lowvig",
-        "stars": 1,
-        "score": null,
-        "sim_mu": 9.529,
-        "sim_median": 9,
-        "sim_sd": 4.537,
-        "n_sims": 20000,
-        "hfa": "on",
-        "result": null,
-        "locked": true,
-        "locked_at_utc": "2026-08-02T18:02:54Z",
-        "lead_time": "T-1h",
-        "mode": "transparent_voice",
-        "activation_date": "2026-07-28",
-        "is_new_stream": true,
-        "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
-        "is_bet": false,
-        "suggested_units": null,
-        "note": "physics simulator \u2014 ties the market, no proven edge",
-        "date": "2026-08-02",
-        "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404",
-        "walls_priced": [
-          "T-12h",
-          "T-6h",
-          "T-3h",
-          "T-1h"
-        ]
-      },
-      "strategies": [
-        {
-          "key": "unified",
-          "label": "The DiamondEdge Pick",
-          "status": "PICK",
-          "is_headline": true,
-          "is_served_source": false,
-          "side": "over",
-          "line": 8.0,
-          "vegas_line": 8.0,
-          "price": 100.0,
-          "stars": 5,
-          "score": 5.0,
-          "result": "loss",
-          "lead_time": "T-3h",
-          "locked": true,
-          "expanded_band": false,
-          "pass_why": null,
-          "reason": "Adaptive desk STRONG"
-        },
-        {
-          "key": "champion",
-          "label": "Champion engine",
-          "status": "NO_VIEW",
-          "is_headline": false,
-          "is_served_source": false,
-          "side": null,
-          "line": null,
-          "vegas_line": null,
-          "price": null,
-          "stars": null,
-          "score": null,
-          "result": null,
-          "lead_time": null,
-          "locked": null,
-          "expanded_band": false,
-          "pass_why": null,
-          "reason": "No view \u2014 the champion engine did not fire on this game"
-        },
-        {
-          "key": "model_v4",
-          "label": "V4 model grid",
-          "status": "PICK",
-          "is_headline": false,
-          "is_served_source": false,
-          "side": "under",
-          "line": 8.0,
-          "vegas_line": 8.0,
-          "price": -105,
-          "stars": 3,
-          "score": 2.98,
-          "result": null,
-          "lead_time": "T-12h",
-          "locked": true,
-          "expanded_band": false,
-          "pass_why": null,
-          "reason": "Good"
-        },
-        {
-          "key": "expanded_band",
-          "label": "Expanded band",
-          "status": "PASS",
-          "is_headline": false,
-          "is_served_source": false,
-          "side": null,
-          "line": null,
-          "vegas_line": null,
-          "price": null,
-          "stars": null,
-          "score": null,
-          "result": null,
-          "lead_time": null,
-          "locked": null,
-          "expanded_band": false,
-          "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
-        },
-        {
-          "key": "spread_stream",
-          "label": "Spread stream (run line)",
-          "status": "PASS",
-          "is_headline": false,
-          "is_served_source": false,
-          "side": "away",
-          "line": 1.5,
-          "vegas_line": -1.5,
-          "price": -139,
-          "stars": 1,
-          "score": 1.78,
-          "result": null,
-          "lead_time": "T-1h",
-          "locked": true,
-          "expanded_band": false,
-          "pass_why": "unproven_stream",
-          "reason": "Honest lean \u2014 NEW unproven spread stream (graded in public from day one; low confidence, not a bet)",
-          "market": "spread",
-          "side_team": "Arizona Diamondbacks"
-        },
-        {
-          "key": "simulator",
-          "label": "Physical run simulator",
-          "status": "PASS",
-          "is_headline": false,
-          "is_served_source": false,
-          "side": "over",
-          "line": 8.0,
-          "vegas_line": 8.0,
-          "price": 100.0,
-          "stars": 1,
-          "score": null,
-          "result": null,
-          "lead_time": "T-1h",
-          "locked": true,
-          "expanded_band": false,
-          "pass_why": "sim_no_edge",
-          "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
-          "market": "total",
-          "sim_p_over": 0.5972,
-          "sim_p_over_market": 0.4948,
-          "sim_mu": 9.529,
-          "sim_median": 9,
-          "sim_n_sims": 20000
-        }
-      ],
-      "scout": {
-        "status": "LEAN",
-        "side": "over",
-        "line": 8.0,
-        "vegas_line": 8.0,
-        "p_over": 0.5059,
-        "p_over_market": 0.4948,
-        "scout_edge": 0.011,
-        "conviction": 0.5059,
-        "price": 100.0,
-        "best_book": "lowvig",
-        "stars": null,
-        "score": null,
-        "n_train": 11093,
-        "train_max_date": "2026-08-01",
-        "raw_inputs": {
-          "sp_home_era_std": 3.8934,
-          "sp_away_era_std": 5.7115,
-          "bat_home_avg_r30": 0.2246,
-          "bat_away_avg_r30": 0.2212,
-          "pen_home_era_std": 3.1456,
-          "pen_away_era_std": 3.1294,
-          "enr_park_run_factor_3y": 0.9123,
-          "wx_temp_f": 81.68
-        },
-        "result": null,
-        "locked": true,
-        "locked_at_utc": "2026-08-02T18:02:54Z",
-        "lead_time": "T-1h",
-        "mode": "transparent_voice",
-        "activation_date": "2026-07-30",
-        "is_new_stream": true,
-        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
-        "is_bet": false,
-        "suggested_units": null,
-        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
-        "date": "2026-08-02",
-        "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404",
-        "walls_priced": [
-          "T-12h",
-          "T-6h",
-          "T-3h",
-          "T-1h"
-        ],
-        "is_the_scout_analyst": false,
-        "not_an_analyst_note": "This is the simple-8 fundamentals STREAM's own lean for this game, with its own ledger and its own activation date. It is NOT the SCOUT analyst's read. Since 2026-07-31 the SCOUT analyst reads THE ARMS \u2014 the two starters and the bullpens behind them \u2014 over a disjoint feature slice, and its read is at games[].analysts[key=scout] / games[].analysts_v2. The shared name is history: the analyst used to be this stream."
-      },
-      "pregame_line": {
-        "total": 8.0,
-        "total_price_over": 100.0,
-        "total_price_under": -110.0,
-        "run_line": -1.5,
-        "run_line_price_home": 131.0,
-        "run_line_price_away": -139.0,
-        "book": "lowvig",
-        "captured_at": "2026-08-02T18:02:50Z",
-        "wall": "T-1h",
-        "locked_at": "2026-08-02T18:02:50Z",
-        "game_pk": 824404,
-        "date": "2026-08-02",
-        "first_pitch_utc": "2026-08-02T17:40:00+00:00",
-        "total_line_at_book": 7.5,
-        "is_locked": true,
-        "total_open": 8.5,
-        "total_move": -0.5,
-        "p_over_devig": 0.4948402542722694,
-        "n_books": 23.0,
-        "first_captured_at": "2026-08-02T05:45:08Z",
-        "source": "fact_serve_point_in_time",
-        "note": "THE PREGAME LINE, LOCKED: the market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'ATLAS: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
-      },
-      "line_now": null,
-      "analysts": [
-        {
-          "key": "vega",
-          "name": "VEGA \u00b7 The Price",
-          "persona_line": "The number is the evidence, so I grade the market and nothing else: where it opened, how far it moved, how much the books disagree and what the two sides actually cost.",
-          "slice_title": "THE PRICE",
-          "channel": "market structure",
-          "source": "analyst_v2_stream",
-          "side": "over",
-          "p_over": 0.5383,
-          "conviction": 0.5383,
-          "locked": true,
-          "wall": "T-3h",
-          "vs_line": 8.0,
-          "vs_line_is_pregame_line": true,
-          "has_row": true,
-          "coverage_expanded": false,
-          "coverage_kind": null,
-          "coverage_activation": null,
-          "low_conviction": false,
-          "conviction_calibrated": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true,
-          "lineup_posted": null,
-          "umpire_assigned": null,
-          "starters_announced": null,
-          "information_read": [
-            "market"
-          ],
-          "information_missing": [],
-          "information_completeness": 1.0,
-          "completeness_tier": "full",
-          "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
-          "levers_neutral_filled": [],
-          "take": "Three theories against me and none of them can see the number. The price says over at 8 and I read it 54%.",
-          "take_kind": "dissent"
-        },
-        {
-          "key": "atlas",
-          "name": "ATLAS \u00b7 The Conditions",
-          "persona_line": "Runs are a physical event, so I grade the place and the man behind the plate: the park's run factor, its altitude and roof, day or night, and how many runs this umpire's games actually produce.",
-          "slice_title": "THE CONDITIONS",
-          "channel": "environment",
-          "source": "analyst_v2_stream",
-          "side": "under",
-          "p_over": 0.4964,
-          "conviction": 0.5036,
-          "locked": true,
-          "wall": "T-3h",
-          "vs_line": 8.0,
-          "vs_line_is_pregame_line": true,
-          "has_row": true,
-          "coverage_expanded": false,
-          "coverage_kind": null,
-          "coverage_activation": null,
-          "low_conviction": false,
-          "conviction_calibrated": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true,
-          "lineup_posted": null,
-          "umpire_assigned": true,
-          "starters_announced": null,
-          "information_read": [
-            "umpire",
-            "venue"
-          ],
-          "information_missing": [],
-          "information_completeness": 1.0,
-          "completeness_tier": "full",
-          "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
-          "levers_neutral_filled": [],
-          "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.04 runs below an average night \u2014 8.0 against 8.",
-          "take_kind": "standard"
-        },
-        {
-          "key": "nova",
-          "name": "NOVA \u00b7 The Bats",
-          "persona_line": "Runs come from bats, so I grade the hitters and nothing else: the nine names actually posted tonight against the hand they will face, and how the two offenses have actually been scoring.",
-          "slice_title": "THE BATS",
-          "channel": "run production",
-          "source": "analyst_v2_stream",
-          "side": "under",
-          "p_over": 0.4507,
-          "conviction": 0.5493,
-          "locked": true,
-          "wall": "T-3h",
-          "vs_line": 8.0,
-          "vs_line_is_pregame_line": true,
-          "has_row": true,
-          "coverage_expanded": false,
-          "coverage_kind": null,
-          "coverage_activation": null,
-          "low_conviction": false,
-          "conviction_calibrated": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true,
-          "lineup_posted": true,
-          "umpire_assigned": null,
-          "starters_announced": null,
-          "information_read": [
-            "posted_lineup",
-            "projected_lineup",
-            "team_offense"
-          ],
-          "information_missing": [],
-          "information_completeness": 0.9334,
-          "completeness_tier": "high",
-          "completeness_note": "NOVA filed this read at T-3h without the nine names actually posted \u2014 those levers took their neutral value and contributed nothing to the call. 5 of 7 levers populated, carrying 93% of the model's weight, so the read stands on what it genuinely knows and its conviction is reduced to match.",
-          "levers_neutral_filled": [
-            "bats_vs_hand",
-            "bats_lineups_known"
-          ],
-          "take": "I grade hitters and nothing else \u2014 not the arms, not the park, not the price. The bats say under 8 at 55%.",
-          "take_kind": "standard"
-        },
-        {
-          "key": "scout",
-          "name": "SCOUT \u00b7 The Arms",
-          "persona_line": "Runs come from bad pitching, so I grade the arms and nothing else: the two starters who open the game and the bullpens behind them \u2014 weak staffs mean runs, and I lean over.",
-          "slice_title": "THE ARMS",
-          "channel": "run prevention",
-          "source": "analyst_v2_stream",
-          "side": "under",
-          "p_over": 0.4941,
-          "conviction": 0.5059,
-          "locked": true,
-          "wall": "T-3h",
-          "vs_line": 8.0,
-          "vs_line_is_pregame_line": true,
-          "has_row": true,
-          "coverage_expanded": false,
-          "coverage_kind": null,
-          "coverage_activation": null,
-          "low_conviction": false,
-          "conviction_calibrated": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true,
-          "lineup_posted": null,
-          "umpire_assigned": null,
-          "starters_announced": true,
-          "information_read": [
-            "bullpen",
-            "probables"
-          ],
-          "information_missing": [],
-          "information_completeness": 1.0,
-          "completeness_tier": "full",
-          "completeness_note": "SCOUT read its whole slice on this game at T-3h: 10 of 10 levers populated, 100% of its model's weight.",
-          "levers_neutral_filled": [],
-          "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read under 8 at 51%.",
-          "take_kind": "standard"
-        }
-      ],
-      "consensus": {
-        "n_over": 1,
-        "n_under": 3,
-        "n_no_read": 0,
-        "state": "MAJORITY",
-        "majority_side": "under",
-        "spread": {
-          "n_home": 0,
-          "n_away": 0,
-          "n_no_read": 4,
-          "state": "PENDING",
-          "majority_side": null,
-          "voices": {
-            "vega": null,
-            "atlas": null,
-            "nova": null,
-            "scout": null
-          },
-          "note": "THE ANALYST CONSENSUS IS TOTALS-ONLY. Every v2 read is scope=full_game, bet_type=total \u2014 not one of the four produces a run-line call, so every voice here is null and the state is PENDING, permanently and by design. This dimension used to attribute a margin side to ATLAS (from the simulator's joint margin distribution) and to NOVA (from the run-line lean stream). Those were the DISMANTLED engines that used to carry those names; the v2 ATLAS reads the conditions and the v2 NOVA reads the bats, and neither has anything to say about a margin. The key is kept at null rather than removed so nothing downstream changes shape. THE RUN-LINE CALL ITSELF DID NOT GO ANYWHERE: it is served at games[].diamondedge.spread_call, attributed to its actual producers.",
-          "run_line_call_lives_at": "games[].diamondedge.spread_call"
-        },
-        "source": "analyst_v2_stream",
-        "all_at_final_wall": true,
-        "provisional": false
-      },
-      "diamondedge": {
-        "status": "PICK",
-        "side": "over",
-        "line": 8.0,
-        "vegas_line": 8.0,
-        "stars": 5,
-        "score": 5.0,
-        "price": 100.0,
-        "suggested_units": 2.0,
-        "result": "loss",
-        "locked": true,
-        "lead_time": "T-3h",
-        "source": "adaptive_desk",
-        "expanded_band": false,
-        "consensus_state": "MAJORITY",
-        "action": "PLAY",
-        "action_before_pattern": "PLAY",
-        "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
-        "desk_agreement": "AGAINST",
-        "is_bet": true,
-        "desk_call": {
-          "stream": "desk_call",
-          "activation_date": "2026-08-01",
-          "n_voices": 4,
-          "n_seats": 4,
-          "vote": {
-            "over": 1,
-            "under": 3,
-            "no_read": 0
-          },
-          "consensus_state": "MAJORITY",
-          "wall": null,
-          "all_voices_at_final_wall": true,
-          "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
-          "state": "CALL_AND_PLAY",
-          "side": "under",
-          "conviction": "SLIGHT",
-          "call": "SLIGHT UNDER",
-          "desk_p_over": 0.4949,
-          "desk_edge": -0.0051,
-          "confidence": 0.0051,
-          "line": 8.0,
-          "argument": "3 of 4 analysts on the under (ATLAS, NOVA, SCOUT); the desk's own number is 49.5% over against a 8 board.",
-          "headline": "The desk calls the under 8; the bet we are making is the over, on price.",
-          "we_are_betting": true,
-          "bet_action": "PLAY",
-          "why_no_bet": null,
-          "call_agrees_with_bet": false,
-          "vote_and_probability_disagree": false,
-          "is_bet": false,
-          "staked": false,
-          "stake_units": null,
-          "suggested_units": null,
-          "playable": false,
-          "take": false,
-          "pick_side": null,
-          "stars": null,
-          "ev": null,
-          "score": null,
-          "is_pick": false,
-          "counts_in_product_record": false,
-          "graded_product_is": "games[].pick",
-          "note": "A CALL IS NOT A BET. This is the desk's directional view on the game \u2014 what it actually thinks \u2014 built from the four analysts' own reads, equal-weighted. It is NEVER staked, it NEVER enters games[].pick, it is never counted in the product record, and it cannot be sized. Whether we are betting this game is a separate question with a separate answer, at `we_are_betting` / `bet_action`, decided by the price gate alone and unchanged by anything here. The graded product remains games[].pick and only games[].pick; the desk's calls are graded in their own ledger, separately, from 2026-08-01."
-        },
-        "pattern_downgraded": false,
-        "confidence_rank": 3,
-        "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
-        "adaptive_strategy": {
-          "version": "adaptive_desk_v20",
-          "date": "2026-08-02",
-          "status": "ACTIVE",
-          "rule_key": "neural_tanh:l20.12:th0.54",
-          "label": "Shallow neural desk ensemble (0.54 margin)",
-          "mode": "follow",
-          "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
-          "rule_family": "neural_tanh",
-          "window_days": 35,
-          "decided": 174,
-          "win": 119,
-          "loss": 55,
-          "push": 5,
-          "record": "119-55-5",
-          "hit_rate": 0.6839,
-          "units": 64,
-          "pick_rate": 0.4958,
-          "hit_rate_ci": [
-            0.6372,
-            0.7272
-          ],
-          "hit_rate_ci_level": 0.8,
-          "hit_rate_lower": 0.6372,
-          "hit_rate_upper": 0.7272,
-          "confidence_tier": "STRONG",
-          "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins).",
-          "locked": true,
-          "game_confidence_tier": "STRONG",
-          "game_signal_margin": 1.5868,
-          "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
-          "analyst_calls": {
-            "vega": "over",
-            "atlas": "under",
-            "nova": "under",
-            "scout": "under"
-          },
-          "game_matched_rule": true,
-          "full_block_at": "adaptive_strategy_by_date.2026-08-02"
-        },
-        "pattern": {
-          "era": "reconstructed_era",
-          "bucket": "by_family",
-          "key": "MAJORITY_3-1",
-          "family": "MAJORITY_3-1",
-          "call": "under",
-          "n": 146,
-          "hit_rate": 0.4932,
-          "hit_ci95": [
-            0.4095,
-            0.5771
-          ],
-          "fade_hit_rate": 0.5068,
-          "p_two_sided": 0.93408,
-          "ci_excludes_50": false,
-          "underperforms": true,
-          "significant": false,
-          "best_powered_of": 1,
-          "ci_clause": "95% CI 41%-58%, NOT distinguishable from a coin flip",
-          "line": "When the desk splits 3-1, the side they called has landed 49% of the time (n=146, reconstructed; 95% CI 41%-58%, NOT distinguishable from a coin flip)."
-        },
-        "pattern_line": null,
-        "synthesis_config_version": "v2_live_patterns",
-        "spread_call": {
-          "side": "away",
-          "side_team": "Arizona Diamondbacks",
-          "line": 1.5,
-          "home_line": -1.5,
-          "rationale_line": "Both margin producers like the away side of the run line \u2014 the run-line stream's direction and the simulated margin agree.",
-          "voices": {
-            "run_line_stream": {
-              "side": "away",
-              "basis": "run-line lean stream (residual engine direction)"
-            },
-            "margin_simulator": {
-              "side": "away",
-              "p_cover": 0.5649,
-              "basis": "simulator joint margin distribution"
-            }
-          },
-          "is_bet": false,
-          "voices_are_not_analysts": true,
-          "note": "displayed prediction synthesized from the two MARGIN PRODUCERS \u2014 the run-line lean stream and the simulator's joint margin. Neither is one of the four analysts: the v2 stream is totals-only and no analyst produces a run-line call, so these voices are named for what they are. The run-line lean stream keeps grading unchanged in its own ledger, and the margin engine's betting-certification status is irrelevant for display."
-        },
-        "predicted_score": {
-          "away": 3.8,
-          "home": 4.9,
-          "source": "ATLAS",
-          "p_home_win": 0.6169,
-          "wall": "T-12h",
-          "projected_total": 8.77,
-          "statistic": "expected_runs",
-          "note": "per-team EXPECTED runs from the simulator's joint distribution \u2014 the pair sums to the total ATLAS projects (8.77) by construction. Display prediction only, graded nowhere."
-        },
-        "chief": {
-          "scope": "pregame",
-          "ou_call": {
-            "side": "over",
-            "side_basis": "served_bet",
-            "line": 8.0,
-            "line_basis": "served_bet_line",
-            "pregame_total": 8.0,
-            "line_matches_pregame_total": true,
-            "line_is_locked_pregame": true,
-            "price": 100.0,
-            "desk_votes": {
-              "over": 1,
-              "under": 3,
-              "no_read": 0
-            },
-            "desk_majority_side": "under",
-            "desk_agreement": "AGAINST",
-            "engine_pick_status": "PICK",
-            "engine_pick_side": "over",
-            "stars": 5,
-            "is_bet": true,
-            "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
-          },
-          "spread_call": {
-            "side": "away",
-            "side_team": "Arizona Diamondbacks",
-            "line": 1.5,
-            "home_line": -1.5,
-            "rationale_line": "Both margin producers like the away side of the run line \u2014 the run-line stream's direction and the simulated margin agree.",
-            "voices": {
-              "run_line_stream": {
-                "side": "away",
-                "basis": "run-line lean stream (residual engine direction)"
-              },
-              "margin_simulator": {
-                "side": "away",
-                "p_cover": 0.5649,
-                "basis": "simulator joint margin distribution"
-              }
-            },
-            "is_bet": false,
-            "voices_are_not_analysts": true,
-            "note": "displayed prediction synthesized from the two MARGIN PRODUCERS \u2014 the run-line lean stream and the simulator's joint margin. Neither is one of the four analysts: the v2 stream is totals-only and no analyst produces a run-line call, so these voices are named for what they are. The run-line lean stream keeps grading unchanged in its own ledger, and the margin engine's betting-certification status is irrelevant for display."
-          },
-          "predicted_score": {
-            "away": 3.8,
-            "home": 4.9,
-            "source": "ATLAS",
-            "p_home_win": 0.6169,
-            "wall": "T-12h",
-            "projected_total": 8.77,
-            "statistic": "expected_runs",
-            "note": "per-team EXPECTED runs from the simulator's joint distribution \u2014 the pair sums to the total ATLAS projects (8.77) by construction. Display prediction only, graded nowhere."
-          },
-          "desk_fit": {
-            "status": "ok",
-            "updated": "2026-08-03T00:51:57Z",
-            "window_days": 30,
-            "window": [
-              "2026-07-04",
-              "2026-08-03"
-            ],
-            "window_n_games": 320,
-            "reads_by_analyst": {
-              "vega": 320,
-              "atlas": 320,
-              "nova": 320,
-              "scout": 320
-            },
-            "fitted_weights": {
-              "vega": -0.00228,
-              "atlas": -0.05517,
-              "nova": -0.03118,
-              "scout": -0.04772
-            },
-            "fitted_weights_ci95": {
-              "vega": [
-                -0.39137,
-                0.3868
-              ],
-              "atlas": [
-                -0.42855,
-                0.31822
-              ],
-              "nova": [
-                -0.41511,
-                0.35276
-              ],
-              "scout": [
-                -0.42928,
-                0.33384
-              ]
-            },
-            "fitted_weights_se": {
-              "vega": 0.19851,
-              "atlas": 0.1905,
-              "nova": 0.19588,
-              "scout": 0.19467
-            },
-            "any_weight_separates_from_zero": false,
-            "weights_basis": "equal_weight",
-            "effective_weights": {
-              "vega": 1.0,
-              "atlas": 1.0,
-              "nova": 1.0,
-              "scout": 1.0
-            },
-            "verdict": "equal_weight_fallback",
-            "fitted_weights_adopted": false,
-            "why": [
-              "walk-forward, the fitted weights are not distinguishable from equal weighting (delta log-loss -0.00041, 95% CI [-0.00156, +0.00064] on 200 games over 16 days)"
-            ],
-            "gate": "adopt fitted weights only when the trailing window holds >= 300 graded games with >= 100 reads for every analyst AND the walk-forward log-loss improvement over equal weighting has a 95% day-clustered interval strictly better than zero",
-            "source": {
-              "path": "/Users/leonrou/Desktop/sports-betting-platform/v4/serve/state/analyst_v2_graded.jsonl",
-              "present": true,
-              "stream": "analyst_v2",
-              "record_start": "2026-07-01",
-              "trained_through": "2026-06-30",
-              "n_games": 356,
-              "span": [
-                "2026-07-01",
-                "2026-08-02"
-              ],
-              "note": "the v2 stream's own append-only GRADED LEDGER \u2014 the graded half of the write-once board that analyst_v2_stream.reads_for_date() serves the desk chief, so the combiner and the chief describe the same desk. Read only; nothing here re-prices or re-grades. Pushes carry no outcome and are dropped, as are games whose analysts were priced at different lines and landed between them.",
-              "no_longer_read": "v4/models/analyst_desk/history.parquet \u2014 the walk-forward reconstruction of the PREVIOUS four analysts (VEGA the champion engine, NOVA the v4 grid, ATLAS the simulator, SCOUT the simple-8 fundamentals). Those four were dismantled on 2026-07-31; a weight fitted on their behaviour is not a weight for the analysts it would be applied to. The file is left on disk untouched \u2014 nothing is deleted or restated \u2014 and is simply never opened by this module.",
-              "fence": "no frame on or before 2026-06-30 \u2014 the four models were fitted through that date, so a frame at or before it would be a fit on training data"
-            },
-            "walk_forward": {
-              "n_games_scored": 200,
-              "n_days_scored": 16,
-              "span": [
-                "2026-07-18",
-                "2026-08-02"
-              ],
-              "mean_logloss": {
-                "fitted": 0.68519,
-                "equal_weight": 0.684779,
-                "market": 0.690993
-              },
-              "fitted_vs_equal": {
-                "delta_logloss": -0.000411,
-                "ci95": [
-                  -0.001564,
-                  0.000642
-                ],
-                "better": false,
-                "worse": false,
-                "separated": false,
-                "n_games": 200,
-                "n_days": 16,
-                "bootstrap_B": 2000,
-                "bootstrap_seed": 20260731,
-                "clustered_by": "slate day"
-              },
-              "equal_vs_market": {
-                "delta_logloss": 0.006214,
-                "ci95": [
-                  -0.000763,
-                  0.014808
-                ],
-                "better": false,
-                "worse": false,
-                "separated": false,
-                "n_games": 200,
-                "n_days": 16,
-                "bootstrap_B": 2000,
-                "bootstrap_seed": 20260731,
-                "clustered_by": "slate day"
-              },
-              "fitted_vs_market": {
-                "delta_logloss": 0.005803,
-                "ci95": [
-                  -0.001253,
-                  0.014454
-                ],
-                "better": false,
-                "worse": false,
-                "separated": false,
-                "n_games": 200,
-                "n_days": 16,
-                "bootstrap_B": 2000,
-                "bootstrap_seed": 20260731,
-                "clustered_by": "slate day"
-              },
-              "side_hit_vs_market": {
-                "fitted": {
-                  "n": 200,
-                  "hit_rate": 0.57,
-                  "hit_ci95": [
-                    0.5014,
-                    0.6386
-                  ]
-                },
-                "equal_weight": {
-                  "n": 200,
-                  "hit_rate": 0.57,
-                  "hit_ci95": [
-                    0.5014,
-                    0.6386
-                  ]
-                }
-              }
-            },
-            "headline": "Fitting the four analysts' disagreement-with-the-price over a rolling 30-day window does NOT beat weighting them equally: walk-forward over 200 games and 16 days the log-loss difference is -0.00041 (95% CI [-0.00156, +0.00064]). The desk uses EQUAL WEIGHTS. Neither is the combined desk distinguishable from simply using the price.",
-            "model": "P(over) = sigmoid( logit(p_mkt) + b + SUM_a w_a * d_a ), d_a = logit(p_over_a) - logit(p_mkt_a), 0 where analyst a has no read. The market log-odds are a FIXED OFFSET, so w_a asks only whether that analyst's disagreement with the number adds anything the number does not already carry. Ridge-penalised (lambda pre-specified, not scanned), fit by IRLS, standard errors from the penalised Hessian.",
-            "baselines": "EQUAL WEIGHT = the same model with one shared coefficient on the mean divergence of the analysts who read the game, fit on the same window \u2014 so the comparison isolates differential weighting. MARKET = p_mkt untouched.",
-            "caveats": [
-              "THE CORPUS RESTARTED ON 2026-07-01 AND THAT IS THE POINT. This block used to be computed over ~11,800 games of a pre-re-architecture reconstruction of four DIFFERENT models. Those weights could never have been applied honestly to these analysts, so the history was dropped rather than carried forward. What is here now is a few hundred games and it says so; a thin honest window beats a deep irrelevant one.",
-              "Almost every frame is `reconstructed_oos` basis: the four models were built on 2026-07-31 and priced July after the fact. Every read is genuinely out of sample against a 2026-06-30 training fence, but it was not SERVED before the game. The live share grows by one slate a night and nothing is ever restated.",
-              "THE EVIDENCE FLOOR IS MET AND THE WALK-FORWARD IS NOT. The trailing window now clears both floors, so four weights CAN be fitted \u2014 but the walk-forward that decides whether to USE them only starts once 150 games of history exist, which on a corpus this young costs the first half of it. So the contrast is scored on a handful of slates and its interval is wide enough to contain both a real improvement and a real regression. Adopting weights on it would be adopting noise; the gate stays shut and the interval is printed rather than described.",
-              "No analyst shows a positive edge on its own side and none is claimed (the four sit between 43% and 51% at n=332, an interval of about +/-5.4 points). What the re-architecture bought is DECORRELATION \u2014 disjoint feature slices, side agreement down from 0.84-0.89 to 0.51-0.57 \u2014 which is the property a combiner would need in order to have anything to combine. Whether it carries edge is a question only the forward record answers."
-            ],
-            "honest_note": "THE ROLLING DESK FIT IS A MEASUREMENT, NOT A BET RULE. It re-fits every night over the trailing 30 days how each analyst's DISAGREEMENT WITH THE PRICE has related to results, scores that fit WALK-FORWARD (fit strictly on days before the day it is scored on, never on the days it is scored on), and compares it to two baselines: equal weighting and the price itself. Fitted weights are only ever ADOPTED when the walk-forward improvement over equal weighting has an interval strictly better than zero AND the window carries enough reads to fit four weights. When it does not \u2014 which is the state today \u2014 the desk uses EQUAL WEIGHTS and this block says so with the numbers, because presenting a fitted weight whose interval straddles the equal-weight baseline is presenting noise as insight. Nothing here gates, sizes or grades a bet: the +EV gate and the star system remain the only things that make a bet, and the combined probability is display only, graded nowhere.",
-            "presentation_only": true
-          },
-          "desk_combined": {
-            "p_over": 0.4949,
-            "side": "over",
-            "p_market": 0.4948,
-            "divergence_logodds": 5e-05,
-            "weights_basis": "equal_weight",
-            "weights": {
-              "vega": 1.0,
-              "atlas": 1.0,
-              "nova": 1.0,
-              "scout": 1.0
-            },
-            "voices_used": [
-              {
-                "key": "vega",
-                "divergence_logodds": 0.17414,
-                "weight": 1.0
-              },
-              {
-                "key": "atlas",
-                "divergence_logodds": 0.00624,
-                "weight": 1.0
-              },
-              {
-                "key": "nova",
-                "divergence_logodds": -0.1772,
-                "weight": 1.0
-              },
-              {
-                "key": "scout",
-                "divergence_logodds": -0.00296,
-                "weight": 1.0
-              }
-            ],
-            "voices_excluded": [],
-            "window_days": 30,
-            "verdict": "equal_weight_fallback",
-            "display_only": true,
-            "is_bet": false,
-            "note": "the desk's weighted combination of the four analysts' disagreement with the price. DISPLAY ONLY \u2014 it is graded nowhere, it never changes the action, and it is not an edge: walk-forward it does not beat the price. Read it as 'where the desk collectively sits versus the number'."
-          },
-          "coherence": {
-            "the_bet": {
-              "side": "over",
-              "line": 8.0,
-              "price": 100.0,
-              "stars": 5
-            },
-            "is_bet": true,
-            "reference_side": "over",
-            "voices": {
-              "desk_majority": {
-                "side": "under",
-                "vs_bet": "opposite"
-              },
-              "desk_combined": {
-                "side": "over",
-                "p_over": 0.4949,
-                "vs_bet": "same"
-              },
-              "atlas_predicted_score": {
-                "side": "over",
-                "predicted_total": 8.7,
-                "vs_line": 8.0,
-                "vs_bet": "same"
-              }
-            },
-            "all_voices_agree_with_bet": false,
-            "run_line_is_a_separate_market": true,
-            "note": "THE BET IS `the_bet` and nothing else on this card is a bet. The desk's majority lean, the desk's weighted combination and ATLAS's predicted final score are three DISPLAY readings of the same game; each is reported here with whether it points the same way as the ticket. A voice pointing the other way is information, not a contradiction \u2014 none of them clears a price gate, and none of them is graded. The run line is a separate market and is never expected to agree with a total."
-          },
-          "consensus_state": "MAJORITY",
-          "desk_agreement": "AGAINST",
-          "action": "PLAY",
-          "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
-          "is_bet": true,
-          "confidence_rank": 3,
-          "pattern": {
-            "era": "reconstructed_era",
-            "bucket": "by_family",
-            "key": "MAJORITY_3-1",
-            "family": "MAJORITY_3-1",
-            "call": "under",
-            "n": 146,
-            "hit_rate": 0.4932,
-            "hit_ci95": [
-              0.4095,
-              0.5771
-            ],
-            "fade_hit_rate": 0.5068,
-            "p_two_sided": 0.93408,
-            "ci_excludes_50": false,
-            "underperforms": true,
-            "significant": false,
-            "best_powered_of": 1,
-            "ci_clause": "95% CI 41%-58%, NOT distinguishable from a coin flip",
-            "line": "When the desk splits 3-1, the side they called has landed 49% of the time (n=146, reconstructed; 95% CI 41%-58%, NOT distinguishable from a coin flip)."
-          },
-          "pattern_line": null,
-          "pattern_downgraded": false,
-          "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
-          "synthesis_config_version": "v2_live_patterns",
-          "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
-          "adaptive_strategy": {
-            "version": "adaptive_desk_v20",
-            "date": "2026-08-02",
-            "status": "ACTIVE",
-            "rule_key": "neural_tanh:l20.12:th0.54",
-            "label": "Shallow neural desk ensemble (0.54 margin)",
-            "mode": "follow",
-            "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
-            "rule_family": "neural_tanh",
-            "window_days": 35,
-            "decided": 174,
-            "win": 119,
-            "loss": 55,
-            "push": 5,
-            "record": "119-55-5",
-            "hit_rate": 0.6839,
-            "units": 64,
-            "pick_rate": 0.4958,
-            "hit_rate_ci": [
-              0.6372,
-              0.7272
-            ],
-            "hit_rate_ci_level": 0.8,
-            "hit_rate_lower": 0.6372,
-            "hit_rate_upper": 0.7272,
-            "confidence_tier": "STRONG",
-            "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins).",
-            "locked": true,
-            "game_confidence_tier": "STRONG",
-            "game_signal_margin": 1.5868,
-            "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
-            "analyst_calls": {
-              "vega": "over",
-              "atlas": "under",
-              "nova": "under",
-              "scout": "under"
-            },
-            "game_matched_rule": true,
-            "full_block_at": "adaptive_strategy_by_date.2026-08-02"
-          }
-        },
-        "note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top. COHERENCE (2026-07-31 \u2014 the defect this replaced): the action used to be a four-way VOTE, so a card could serve a real staked bet and, in the same breath, tell the reader the desk was passing on it. It did exactly that on both served bets of 2026-07-31. AVOID now means, and only ever means, THAT NO BET WAS SERVED (pick.status != PICK); a served bet displays as PLAY or LEAN by its star tier, and the desk's disagreement \u2014 which is real and is worth reading \u2014 is carried in `desk_agreement` (ALIGNED|MIXED|AGAINST|PENDING) and said out loud in the rationale as CONTEXT, never as a veto. The rail is unchanged in the direction that matters: the synthesis can never manufacture a bet, a PASS can never become a PLAY, and no served pick was created, altered, re-graded or removed by any of this. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that."
-      },
-      "analysts_v2": [
-        {
-          "analyst": "vega",
-          "short": "VEGA",
-          "pick_side": "over",
-          "p_over": 0.5383,
-          "our_prob": 0.5383,
-          "p_mkt_over": 0.4892,
-          "edge_vs_market": 0.0491,
-          "delta_runs": null,
-          "conviction_runs": null,
-          "mu_shown": null,
-          "market_line": 8.0,
-          "basis": "live",
-          "is_bet": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true
-        },
-        {
-          "analyst": "atlas",
-          "short": "ATLAS",
-          "pick_side": "under",
-          "p_over": 0.4964,
-          "our_prob": 0.5036,
-          "p_mkt_over": 0.4892,
-          "edge_vs_market": 0.0072,
-          "delta_runs": -0.0413,
-          "conviction_runs": 0.0413,
-          "mu_shown": 7.96,
-          "market_line": 8.0,
-          "basis": "live",
-          "is_bet": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true
-        },
-        {
-          "analyst": "nova",
-          "short": "NOVA",
-          "pick_side": "under",
-          "p_over": 0.4507,
-          "our_prob": 0.5493,
-          "p_mkt_over": 0.4892,
-          "edge_vs_market": -0.0385,
-          "delta_runs": -0.5833,
-          "conviction_runs": 0.5833,
-          "mu_shown": 7.42,
-          "market_line": 8.0,
-          "basis": "live",
-          "is_bet": false,
-          "read_wall": "T-3h",
-          "is_final_wall": true
-        },
-        {
-          "analyst": "scout",
-          "short": "SCOUT",
-          "pick_side": "under",
-          "p_over": 0.4941,
-          "our_prob": 0.5059,
-          "p_mkt_over": 0.4892,
-          "edge_vs_market": 0.0049,
-          "delta_runs": -0.0673,
-          "conviction_runs": 0.0673,
-          "mu_shown": 7.93,
-          "market_line": 8.0,
           "basis": "live",
           "is_bet": false,
           "read_wall": "T-3h",
@@ -13824,7 +12745,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -14944,7 +13865,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -15508,6 +14429,1115 @@
       "live_progress": null
     },
     {
+      "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404",
+      "game_pk": 824404,
+      "date": "2026-08-02",
+      "away": "Arizona Diamondbacks",
+      "home": "Cleveland Guardians",
+      "matchup": "Arizona Diamondbacks @ Cleveland Guardians",
+      "first_pitch_utc": "2026-08-02T17:40:00+00:00",
+      "pick": {
+        "status": "PICK",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "stars": 5,
+        "score": 5.0,
+        "star_tier": "Adaptive desk STRONG (35d trailing)",
+        "price": 100.0,
+        "suggested_units": 2.0,
+        "result": "loss",
+        "locked": true,
+        "locked_at_utc": "2026-08-02T18:02:54Z",
+        "timestamp": "2026-08-02T18:02:54Z",
+        "lead_time": "T-3h",
+        "source": "adaptive_desk",
+        "our_prob": 0.4949,
+        "our_prob_basis": "reference_side",
+        "p_over": 0.4949,
+        "ev": null,
+        "expanded_band": false,
+        "certified": false,
+        "premium": true,
+        "adaptive_strategy": {
+          "version": "adaptive_desk_v20",
+          "date": "2026-08-02",
+          "status": "ACTIVE",
+          "rule_key": "neural_tanh:l20.12:th0.54",
+          "label": "Shallow neural desk ensemble (0.54 margin)",
+          "mode": "follow",
+          "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
+          "rule_family": "neural_tanh",
+          "window_days": 35,
+          "decided": 174,
+          "win": 119,
+          "loss": 55,
+          "push": 5,
+          "record": "119-55-5",
+          "hit_rate": 0.6839,
+          "units": 64,
+          "pick_rate": 0.4958,
+          "hit_rate_ci": [
+            0.6372,
+            0.7272
+          ],
+          "hit_rate_ci_level": 0.8,
+          "hit_rate_lower": 0.6372,
+          "hit_rate_upper": 0.7272,
+          "confidence_tier": "STRONG",
+          "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins).",
+          "locked": true,
+          "game_confidence_tier": "STRONG",
+          "game_signal_margin": 1.5868,
+          "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
+          "analyst_calls": {
+            "vega": "over",
+            "atlas": "under",
+            "nova": "under",
+            "scout": "under"
+          },
+          "game_matched_rule": true,
+          "full_block_at": "adaptive_strategy_by_date.2026-08-02"
+        },
+        "is_bet": true,
+        "signals": []
+      },
+      "spread": {
+        "status": "LEAN",
+        "side": "away",
+        "side_team": "Arizona Diamondbacks",
+        "line": 1.5,
+        "home_line": -1.5,
+        "vegas_line": -1.5,
+        "price": -139,
+        "best_book": null,
+        "stars": 1,
+        "score": 1.78,
+        "our_prob": 0.4097,
+        "ev": 0.0149,
+        "result": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-02T18:02:54Z",
+        "lead_time": "T-1h",
+        "mode": "lean_only",
+        "activation_date": "2026-07-27",
+        "is_new_stream": true,
+        "new_tag": "NEW \u2014 graded from day one",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "date": "2026-08-02",
+        "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404"
+      },
+      "simulator": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5972,
+        "p_over_market": 0.4948,
+        "sim_edge": 0.1024,
+        "price": 100.0,
+        "best_book": "lowvig",
+        "stars": 1,
+        "score": null,
+        "sim_mu": 9.529,
+        "sim_median": 9,
+        "sim_sd": 4.537,
+        "n_sims": 20000,
+        "hfa": "on",
+        "result": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-02T18:02:54Z",
+        "lead_time": "T-1h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-28",
+        "is_new_stream": true,
+        "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "physics simulator \u2014 ties the market, no proven edge",
+        "date": "2026-08-02",
+        "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404",
+        "walls_priced": [
+          "T-12h",
+          "T-6h",
+          "T-3h",
+          "T-1h"
+        ]
+      },
+      "strategies": [
+        {
+          "key": "unified",
+          "label": "The DiamondEdge Pick",
+          "status": "PICK",
+          "is_headline": true,
+          "is_served_source": false,
+          "side": "over",
+          "line": 8.0,
+          "vegas_line": 8.0,
+          "price": 100.0,
+          "stars": 5,
+          "score": 5.0,
+          "result": "loss",
+          "lead_time": "T-3h",
+          "locked": true,
+          "expanded_band": false,
+          "pass_why": null,
+          "reason": "Adaptive desk STRONG"
+        },
+        {
+          "key": "champion",
+          "label": "Champion engine",
+          "status": "NO_VIEW",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": null,
+          "line": null,
+          "vegas_line": null,
+          "price": null,
+          "stars": null,
+          "score": null,
+          "result": null,
+          "lead_time": null,
+          "locked": null,
+          "expanded_band": false,
+          "pass_why": null,
+          "reason": "No view \u2014 the champion engine did not fire on this game"
+        },
+        {
+          "key": "model_v4",
+          "label": "V4 model grid",
+          "status": "PICK",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": "under",
+          "line": 8.0,
+          "vegas_line": 8.0,
+          "price": -105,
+          "stars": 3,
+          "score": 2.98,
+          "result": null,
+          "lead_time": "T-12h",
+          "locked": true,
+          "expanded_band": false,
+          "pass_why": null,
+          "reason": "Good"
+        },
+        {
+          "key": "expanded_band",
+          "label": "Expanded band",
+          "status": "PASS",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": null,
+          "line": null,
+          "vegas_line": null,
+          "price": null,
+          "stars": null,
+          "score": null,
+          "result": null,
+          "lead_time": null,
+          "locked": null,
+          "expanded_band": false,
+          "pass_why": null,
+          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+        },
+        {
+          "key": "spread_stream",
+          "label": "Spread stream (run line)",
+          "status": "PASS",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": "away",
+          "line": 1.5,
+          "vegas_line": -1.5,
+          "price": -139,
+          "stars": 1,
+          "score": 1.78,
+          "result": null,
+          "lead_time": "T-1h",
+          "locked": true,
+          "expanded_band": false,
+          "pass_why": "unproven_stream",
+          "reason": "Honest lean \u2014 NEW unproven spread stream (graded in public from day one; low confidence, not a bet)",
+          "market": "spread",
+          "side_team": "Arizona Diamondbacks"
+        },
+        {
+          "key": "simulator",
+          "label": "Physical run simulator",
+          "status": "PASS",
+          "is_headline": false,
+          "is_served_source": false,
+          "side": "over",
+          "line": 8.0,
+          "vegas_line": 8.0,
+          "price": 100.0,
+          "stars": 1,
+          "score": null,
+          "result": null,
+          "lead_time": "T-1h",
+          "locked": true,
+          "expanded_band": false,
+          "pass_why": "sim_no_edge",
+          "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
+          "market": "total",
+          "sim_p_over": 0.5972,
+          "sim_p_over_market": 0.4948,
+          "sim_mu": 9.529,
+          "sim_median": 9,
+          "sim_n_sims": 20000
+        }
+      ],
+      "scout": {
+        "status": "LEAN",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5059,
+        "p_over_market": 0.4948,
+        "scout_edge": 0.011,
+        "conviction": 0.5059,
+        "price": 100.0,
+        "best_book": "lowvig",
+        "stars": null,
+        "score": null,
+        "n_train": 11093,
+        "train_max_date": "2026-08-01",
+        "raw_inputs": {
+          "sp_home_era_std": 3.8934,
+          "sp_away_era_std": 5.7115,
+          "bat_home_avg_r30": 0.2246,
+          "bat_away_avg_r30": 0.2212,
+          "pen_home_era_std": 3.1456,
+          "pen_away_era_std": 3.1294,
+          "enr_park_run_factor_3y": 0.9123,
+          "wx_temp_f": 81.68
+        },
+        "result": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-02T18:02:54Z",
+        "lead_time": "T-1h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "date": "2026-08-02",
+        "game_id": "2026-08-02-Arizona Diamondbacks-Cleveland Guardians-824404",
+        "walls_priced": [
+          "T-12h",
+          "T-6h",
+          "T-3h",
+          "T-1h"
+        ],
+        "is_the_scout_analyst": false,
+        "not_an_analyst_note": "This is the simple-8 fundamentals STREAM's own lean for this game, with its own ledger and its own activation date. It is NOT the SCOUT analyst's read. Since 2026-07-31 the SCOUT analyst reads THE ARMS \u2014 the two starters and the bullpens behind them \u2014 over a disjoint feature slice, and its read is at games[].analysts[key=scout] / games[].analysts_v2. The shared name is history: the analyst used to be this stream."
+      },
+      "pregame_line": {
+        "total": 8.0,
+        "total_price_over": 100.0,
+        "total_price_under": -110.0,
+        "run_line": -1.5,
+        "run_line_price_home": 131.0,
+        "run_line_price_away": -139.0,
+        "book": "lowvig",
+        "captured_at": "2026-08-02T18:02:50Z",
+        "wall": "T-1h",
+        "locked_at": "2026-08-02T18:02:50Z",
+        "game_pk": 824404,
+        "date": "2026-08-02",
+        "first_pitch_utc": "2026-08-02T17:40:00+00:00",
+        "total_line_at_book": 7.5,
+        "is_locked": true,
+        "total_open": 8.5,
+        "total_move": -0.5,
+        "p_over_devig": 0.4948402542722694,
+        "n_books": 23.0,
+        "first_captured_at": "2026-08-02T05:45:08Z",
+        "source": "fact_serve_point_in_time",
+        "note": "THE PREGAME LINE, LOCKED: the market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'ATLAS: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
+      },
+      "line_now": null,
+      "analysts": [
+        {
+          "key": "vega",
+          "name": "VEGA \u00b7 The Price",
+          "persona_line": "The number is the evidence, so I grade the market and nothing else: where it opened, how far it moved, how much the books disagree and what the two sides actually cost.",
+          "slice_title": "THE PRICE",
+          "channel": "market structure",
+          "source": "analyst_v2_stream",
+          "side": "over",
+          "p_over": 0.5383,
+          "conviction": 0.5383,
+          "locked": true,
+          "wall": "T-3h",
+          "vs_line": 8.0,
+          "vs_line_is_pregame_line": true,
+          "has_row": true,
+          "coverage_expanded": false,
+          "coverage_kind": null,
+          "coverage_activation": null,
+          "low_conviction": false,
+          "conviction_calibrated": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "lineup_posted": null,
+          "umpire_assigned": null,
+          "starters_announced": null,
+          "information_read": [
+            "market"
+          ],
+          "information_missing": [],
+          "information_completeness": 1.0,
+          "completeness_tier": "full",
+          "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
+          "levers_neutral_filled": [],
+          "take": "Three theories against me and none of them can see the number. The price says over at 8 and I read it 54%.",
+          "take_kind": "dissent"
+        },
+        {
+          "key": "atlas",
+          "name": "ATLAS \u00b7 The Conditions",
+          "persona_line": "Runs are a physical event, so I grade the place and the man behind the plate: the park's run factor, its altitude and roof, day or night, and how many runs this umpire's games actually produce.",
+          "slice_title": "THE CONDITIONS",
+          "channel": "environment",
+          "source": "analyst_v2_stream",
+          "side": "under",
+          "p_over": 0.4964,
+          "conviction": 0.5036,
+          "locked": true,
+          "wall": "T-3h",
+          "vs_line": 8.0,
+          "vs_line_is_pregame_line": true,
+          "has_row": true,
+          "coverage_expanded": false,
+          "coverage_kind": null,
+          "coverage_activation": null,
+          "low_conviction": false,
+          "conviction_calibrated": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "lineup_posted": null,
+          "umpire_assigned": true,
+          "starters_announced": null,
+          "information_read": [
+            "umpire",
+            "venue"
+          ],
+          "information_missing": [],
+          "information_completeness": 1.0,
+          "completeness_tier": "full",
+          "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
+          "levers_neutral_filled": [],
+          "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.04 runs below an average night \u2014 8.0 against 8.",
+          "take_kind": "standard"
+        },
+        {
+          "key": "nova",
+          "name": "NOVA \u00b7 The Bats",
+          "persona_line": "Runs come from bats, so I grade the hitters and nothing else: the nine names actually posted tonight against the hand they will face, and how the two offenses have actually been scoring.",
+          "slice_title": "THE BATS",
+          "channel": "run production",
+          "source": "analyst_v2_stream",
+          "side": "under",
+          "p_over": 0.4507,
+          "conviction": 0.5493,
+          "locked": true,
+          "wall": "T-3h",
+          "vs_line": 8.0,
+          "vs_line_is_pregame_line": true,
+          "has_row": true,
+          "coverage_expanded": false,
+          "coverage_kind": null,
+          "coverage_activation": null,
+          "low_conviction": false,
+          "conviction_calibrated": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "lineup_posted": true,
+          "umpire_assigned": null,
+          "starters_announced": null,
+          "information_read": [
+            "posted_lineup",
+            "projected_lineup",
+            "team_offense"
+          ],
+          "information_missing": [],
+          "information_completeness": 0.9334,
+          "completeness_tier": "high",
+          "completeness_note": "NOVA filed this read at T-3h without the nine names actually posted \u2014 those levers took their neutral value and contributed nothing to the call. 5 of 7 levers populated, carrying 93% of the model's weight, so the read stands on what it genuinely knows and its conviction is reduced to match.",
+          "levers_neutral_filled": [
+            "bats_vs_hand",
+            "bats_lineups_known"
+          ],
+          "take": "I grade hitters and nothing else \u2014 not the arms, not the park, not the price. The bats say under 8 at 55%.",
+          "take_kind": "standard"
+        },
+        {
+          "key": "scout",
+          "name": "SCOUT \u00b7 The Arms",
+          "persona_line": "Runs come from bad pitching, so I grade the arms and nothing else: the two starters who open the game and the bullpens behind them \u2014 weak staffs mean runs, and I lean over.",
+          "slice_title": "THE ARMS",
+          "channel": "run prevention",
+          "source": "analyst_v2_stream",
+          "side": "under",
+          "p_over": 0.4941,
+          "conviction": 0.5059,
+          "locked": true,
+          "wall": "T-3h",
+          "vs_line": 8.0,
+          "vs_line_is_pregame_line": true,
+          "has_row": true,
+          "coverage_expanded": false,
+          "coverage_kind": null,
+          "coverage_activation": null,
+          "low_conviction": false,
+          "conviction_calibrated": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "lineup_posted": null,
+          "umpire_assigned": null,
+          "starters_announced": true,
+          "information_read": [
+            "bullpen",
+            "probables"
+          ],
+          "information_missing": [],
+          "information_completeness": 1.0,
+          "completeness_tier": "full",
+          "completeness_note": "SCOUT read its whole slice on this game at T-3h: 10 of 10 levers populated, 100% of its model's weight.",
+          "levers_neutral_filled": [],
+          "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read under 8 at 51%.",
+          "take_kind": "standard"
+        }
+      ],
+      "consensus": {
+        "n_over": 1,
+        "n_under": 3,
+        "n_no_read": 0,
+        "state": "MAJORITY",
+        "majority_side": "under",
+        "spread": {
+          "n_home": 0,
+          "n_away": 0,
+          "n_no_read": 4,
+          "state": "PENDING",
+          "majority_side": null,
+          "voices": {
+            "vega": null,
+            "atlas": null,
+            "nova": null,
+            "scout": null
+          },
+          "note": "THE ANALYST CONSENSUS IS TOTALS-ONLY. Every v2 read is scope=full_game, bet_type=total \u2014 not one of the four produces a run-line call, so every voice here is null and the state is PENDING, permanently and by design. This dimension used to attribute a margin side to ATLAS (from the simulator's joint margin distribution) and to NOVA (from the run-line lean stream). Those were the DISMANTLED engines that used to carry those names; the v2 ATLAS reads the conditions and the v2 NOVA reads the bats, and neither has anything to say about a margin. The key is kept at null rather than removed so nothing downstream changes shape. THE RUN-LINE CALL ITSELF DID NOT GO ANYWHERE: it is served at games[].diamondedge.spread_call, attributed to its actual producers.",
+          "run_line_call_lives_at": "games[].diamondedge.spread_call"
+        },
+        "source": "analyst_v2_stream",
+        "all_at_final_wall": true,
+        "provisional": false
+      },
+      "diamondedge": {
+        "status": "PICK",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "stars": 5,
+        "score": 5.0,
+        "price": 100.0,
+        "suggested_units": 2.0,
+        "result": "loss",
+        "locked": true,
+        "lead_time": "T-3h",
+        "source": "adaptive_desk",
+        "expanded_band": false,
+        "consensus_state": "MAJORITY",
+        "action": "PLAY",
+        "action_before_pattern": "PLAY",
+        "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
+        "desk_agreement": "AGAINST",
+        "is_bet": true,
+        "desk_call": {
+          "stream": "desk_call",
+          "activation_date": "2026-08-01",
+          "n_voices": 4,
+          "n_seats": 4,
+          "vote": {
+            "over": 1,
+            "under": 3,
+            "no_read": 0
+          },
+          "consensus_state": "MAJORITY",
+          "wall": null,
+          "all_voices_at_final_wall": true,
+          "provisional": false,
+          "asof_utc": "2026-08-03T06:11:03Z",
+          "state": "CALL_AND_PLAY",
+          "side": "under",
+          "conviction": "SLIGHT",
+          "call": "SLIGHT UNDER",
+          "desk_p_over": 0.4949,
+          "desk_edge": -0.0051,
+          "confidence": 0.0051,
+          "line": 8.0,
+          "argument": "3 of 4 analysts on the under (ATLAS, NOVA, SCOUT); the desk's own number is 49.5% over against a 8 board.",
+          "headline": "The desk calls the under 8; the bet we are making is the over, on price.",
+          "we_are_betting": true,
+          "bet_action": "PLAY",
+          "why_no_bet": null,
+          "call_agrees_with_bet": false,
+          "vote_and_probability_disagree": false,
+          "is_bet": false,
+          "staked": false,
+          "stake_units": null,
+          "suggested_units": null,
+          "playable": false,
+          "take": false,
+          "pick_side": null,
+          "stars": null,
+          "ev": null,
+          "score": null,
+          "is_pick": false,
+          "counts_in_product_record": false,
+          "graded_product_is": "games[].pick",
+          "note": "A CALL IS NOT A BET. This is the desk's directional view on the game \u2014 what it actually thinks \u2014 built from the four analysts' own reads, equal-weighted. It is NEVER staked, it NEVER enters games[].pick, it is never counted in the product record, and it cannot be sized. Whether we are betting this game is a separate question with a separate answer, at `we_are_betting` / `bet_action`, decided by the price gate alone and unchanged by anything here. The graded product remains games[].pick and only games[].pick; the desk's calls are graded in their own ledger, separately, from 2026-08-01."
+        },
+        "pattern_downgraded": false,
+        "confidence_rank": 3,
+        "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
+        "adaptive_strategy": {
+          "version": "adaptive_desk_v20",
+          "date": "2026-08-02",
+          "status": "ACTIVE",
+          "rule_key": "neural_tanh:l20.12:th0.54",
+          "label": "Shallow neural desk ensemble (0.54 margin)",
+          "mode": "follow",
+          "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
+          "rule_family": "neural_tanh",
+          "window_days": 35,
+          "decided": 174,
+          "win": 119,
+          "loss": 55,
+          "push": 5,
+          "record": "119-55-5",
+          "hit_rate": 0.6839,
+          "units": 64,
+          "pick_rate": 0.4958,
+          "hit_rate_ci": [
+            0.6372,
+            0.7272
+          ],
+          "hit_rate_ci_level": 0.8,
+          "hit_rate_lower": 0.6372,
+          "hit_rate_upper": 0.7272,
+          "confidence_tier": "STRONG",
+          "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins).",
+          "locked": true,
+          "game_confidence_tier": "STRONG",
+          "game_signal_margin": 1.5868,
+          "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
+          "analyst_calls": {
+            "vega": "over",
+            "atlas": "under",
+            "nova": "under",
+            "scout": "under"
+          },
+          "game_matched_rule": true,
+          "full_block_at": "adaptive_strategy_by_date.2026-08-02"
+        },
+        "pattern": {
+          "era": "reconstructed_era",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
+          "family": "MAJORITY_3-1",
+          "call": "under",
+          "n": 146,
+          "hit_rate": 0.4932,
+          "hit_ci95": [
+            0.4095,
+            0.5771
+          ],
+          "fade_hit_rate": 0.5068,
+          "p_two_sided": 0.93408,
+          "ci_excludes_50": false,
+          "underperforms": true,
+          "significant": false,
+          "best_powered_of": 1,
+          "ci_clause": "95% CI 41%-58%, NOT distinguishable from a coin flip",
+          "line": "When the desk splits 3-1, the side they called has landed 49% of the time (n=146, reconstructed; 95% CI 41%-58%, NOT distinguishable from a coin flip)."
+        },
+        "pattern_line": null,
+        "synthesis_config_version": "v2_live_patterns",
+        "spread_call": {
+          "side": "away",
+          "side_team": "Arizona Diamondbacks",
+          "line": 1.5,
+          "home_line": -1.5,
+          "rationale_line": "Both margin producers like the away side of the run line \u2014 the run-line stream's direction and the simulated margin agree.",
+          "voices": {
+            "run_line_stream": {
+              "side": "away",
+              "basis": "run-line lean stream (residual engine direction)"
+            },
+            "margin_simulator": {
+              "side": "away",
+              "p_cover": 0.5649,
+              "basis": "simulator joint margin distribution"
+            }
+          },
+          "is_bet": false,
+          "voices_are_not_analysts": true,
+          "note": "displayed prediction synthesized from the two MARGIN PRODUCERS \u2014 the run-line lean stream and the simulator's joint margin. Neither is one of the four analysts: the v2 stream is totals-only and no analyst produces a run-line call, so these voices are named for what they are. The run-line lean stream keeps grading unchanged in its own ledger, and the margin engine's betting-certification status is irrelevant for display."
+        },
+        "predicted_score": {
+          "away": 3.8,
+          "home": 4.9,
+          "source": "ATLAS",
+          "p_home_win": 0.6169,
+          "wall": "T-12h",
+          "projected_total": 8.77,
+          "statistic": "expected_runs",
+          "note": "per-team EXPECTED runs from the simulator's joint distribution \u2014 the pair sums to the total ATLAS projects (8.77) by construction. Display prediction only, graded nowhere."
+        },
+        "chief": {
+          "scope": "pregame",
+          "ou_call": {
+            "side": "over",
+            "side_basis": "served_bet",
+            "line": 8.0,
+            "line_basis": "served_bet_line",
+            "pregame_total": 8.0,
+            "line_matches_pregame_total": true,
+            "line_is_locked_pregame": true,
+            "price": 100.0,
+            "desk_votes": {
+              "over": 1,
+              "under": 3,
+              "no_read": 0
+            },
+            "desk_majority_side": "under",
+            "desk_agreement": "AGAINST",
+            "engine_pick_status": "PICK",
+            "engine_pick_side": "over",
+            "stars": 5,
+            "is_bet": true,
+            "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
+          },
+          "spread_call": {
+            "side": "away",
+            "side_team": "Arizona Diamondbacks",
+            "line": 1.5,
+            "home_line": -1.5,
+            "rationale_line": "Both margin producers like the away side of the run line \u2014 the run-line stream's direction and the simulated margin agree.",
+            "voices": {
+              "run_line_stream": {
+                "side": "away",
+                "basis": "run-line lean stream (residual engine direction)"
+              },
+              "margin_simulator": {
+                "side": "away",
+                "p_cover": 0.5649,
+                "basis": "simulator joint margin distribution"
+              }
+            },
+            "is_bet": false,
+            "voices_are_not_analysts": true,
+            "note": "displayed prediction synthesized from the two MARGIN PRODUCERS \u2014 the run-line lean stream and the simulator's joint margin. Neither is one of the four analysts: the v2 stream is totals-only and no analyst produces a run-line call, so these voices are named for what they are. The run-line lean stream keeps grading unchanged in its own ledger, and the margin engine's betting-certification status is irrelevant for display."
+          },
+          "predicted_score": {
+            "away": 3.8,
+            "home": 4.9,
+            "source": "ATLAS",
+            "p_home_win": 0.6169,
+            "wall": "T-12h",
+            "projected_total": 8.77,
+            "statistic": "expected_runs",
+            "note": "per-team EXPECTED runs from the simulator's joint distribution \u2014 the pair sums to the total ATLAS projects (8.77) by construction. Display prediction only, graded nowhere."
+          },
+          "desk_fit": {
+            "status": "ok",
+            "updated": "2026-08-03T00:51:57Z",
+            "window_days": 30,
+            "window": [
+              "2026-07-04",
+              "2026-08-03"
+            ],
+            "window_n_games": 320,
+            "reads_by_analyst": {
+              "vega": 320,
+              "atlas": 320,
+              "nova": 320,
+              "scout": 320
+            },
+            "fitted_weights": {
+              "vega": -0.00228,
+              "atlas": -0.05517,
+              "nova": -0.03118,
+              "scout": -0.04772
+            },
+            "fitted_weights_ci95": {
+              "vega": [
+                -0.39137,
+                0.3868
+              ],
+              "atlas": [
+                -0.42855,
+                0.31822
+              ],
+              "nova": [
+                -0.41511,
+                0.35276
+              ],
+              "scout": [
+                -0.42928,
+                0.33384
+              ]
+            },
+            "fitted_weights_se": {
+              "vega": 0.19851,
+              "atlas": 0.1905,
+              "nova": 0.19588,
+              "scout": 0.19467
+            },
+            "any_weight_separates_from_zero": false,
+            "weights_basis": "equal_weight",
+            "effective_weights": {
+              "vega": 1.0,
+              "atlas": 1.0,
+              "nova": 1.0,
+              "scout": 1.0
+            },
+            "verdict": "equal_weight_fallback",
+            "fitted_weights_adopted": false,
+            "why": [
+              "walk-forward, the fitted weights are not distinguishable from equal weighting (delta log-loss -0.00041, 95% CI [-0.00156, +0.00064] on 200 games over 16 days)"
+            ],
+            "gate": "adopt fitted weights only when the trailing window holds >= 300 graded games with >= 100 reads for every analyst AND the walk-forward log-loss improvement over equal weighting has a 95% day-clustered interval strictly better than zero",
+            "source": {
+              "path": "/Users/leonrou/Desktop/sports-betting-platform/v4/serve/state/analyst_v2_graded.jsonl",
+              "present": true,
+              "stream": "analyst_v2",
+              "record_start": "2026-07-01",
+              "trained_through": "2026-06-30",
+              "n_games": 356,
+              "span": [
+                "2026-07-01",
+                "2026-08-02"
+              ],
+              "note": "the v2 stream's own append-only GRADED LEDGER \u2014 the graded half of the write-once board that analyst_v2_stream.reads_for_date() serves the desk chief, so the combiner and the chief describe the same desk. Read only; nothing here re-prices or re-grades. Pushes carry no outcome and are dropped, as are games whose analysts were priced at different lines and landed between them.",
+              "no_longer_read": "v4/models/analyst_desk/history.parquet \u2014 the walk-forward reconstruction of the PREVIOUS four analysts (VEGA the champion engine, NOVA the v4 grid, ATLAS the simulator, SCOUT the simple-8 fundamentals). Those four were dismantled on 2026-07-31; a weight fitted on their behaviour is not a weight for the analysts it would be applied to. The file is left on disk untouched \u2014 nothing is deleted or restated \u2014 and is simply never opened by this module.",
+              "fence": "no frame on or before 2026-06-30 \u2014 the four models were fitted through that date, so a frame at or before it would be a fit on training data"
+            },
+            "walk_forward": {
+              "n_games_scored": 200,
+              "n_days_scored": 16,
+              "span": [
+                "2026-07-18",
+                "2026-08-02"
+              ],
+              "mean_logloss": {
+                "fitted": 0.68519,
+                "equal_weight": 0.684779,
+                "market": 0.690993
+              },
+              "fitted_vs_equal": {
+                "delta_logloss": -0.000411,
+                "ci95": [
+                  -0.001564,
+                  0.000642
+                ],
+                "better": false,
+                "worse": false,
+                "separated": false,
+                "n_games": 200,
+                "n_days": 16,
+                "bootstrap_B": 2000,
+                "bootstrap_seed": 20260731,
+                "clustered_by": "slate day"
+              },
+              "equal_vs_market": {
+                "delta_logloss": 0.006214,
+                "ci95": [
+                  -0.000763,
+                  0.014808
+                ],
+                "better": false,
+                "worse": false,
+                "separated": false,
+                "n_games": 200,
+                "n_days": 16,
+                "bootstrap_B": 2000,
+                "bootstrap_seed": 20260731,
+                "clustered_by": "slate day"
+              },
+              "fitted_vs_market": {
+                "delta_logloss": 0.005803,
+                "ci95": [
+                  -0.001253,
+                  0.014454
+                ],
+                "better": false,
+                "worse": false,
+                "separated": false,
+                "n_games": 200,
+                "n_days": 16,
+                "bootstrap_B": 2000,
+                "bootstrap_seed": 20260731,
+                "clustered_by": "slate day"
+              },
+              "side_hit_vs_market": {
+                "fitted": {
+                  "n": 200,
+                  "hit_rate": 0.57,
+                  "hit_ci95": [
+                    0.5014,
+                    0.6386
+                  ]
+                },
+                "equal_weight": {
+                  "n": 200,
+                  "hit_rate": 0.57,
+                  "hit_ci95": [
+                    0.5014,
+                    0.6386
+                  ]
+                }
+              }
+            },
+            "headline": "Fitting the four analysts' disagreement-with-the-price over a rolling 30-day window does NOT beat weighting them equally: walk-forward over 200 games and 16 days the log-loss difference is -0.00041 (95% CI [-0.00156, +0.00064]). The desk uses EQUAL WEIGHTS. Neither is the combined desk distinguishable from simply using the price.",
+            "model": "P(over) = sigmoid( logit(p_mkt) + b + SUM_a w_a * d_a ), d_a = logit(p_over_a) - logit(p_mkt_a), 0 where analyst a has no read. The market log-odds are a FIXED OFFSET, so w_a asks only whether that analyst's disagreement with the number adds anything the number does not already carry. Ridge-penalised (lambda pre-specified, not scanned), fit by IRLS, standard errors from the penalised Hessian.",
+            "baselines": "EQUAL WEIGHT = the same model with one shared coefficient on the mean divergence of the analysts who read the game, fit on the same window \u2014 so the comparison isolates differential weighting. MARKET = p_mkt untouched.",
+            "caveats": [
+              "THE CORPUS RESTARTED ON 2026-07-01 AND THAT IS THE POINT. This block used to be computed over ~11,800 games of a pre-re-architecture reconstruction of four DIFFERENT models. Those weights could never have been applied honestly to these analysts, so the history was dropped rather than carried forward. What is here now is a few hundred games and it says so; a thin honest window beats a deep irrelevant one.",
+              "Almost every frame is `reconstructed_oos` basis: the four models were built on 2026-07-31 and priced July after the fact. Every read is genuinely out of sample against a 2026-06-30 training fence, but it was not SERVED before the game. The live share grows by one slate a night and nothing is ever restated.",
+              "THE EVIDENCE FLOOR IS MET AND THE WALK-FORWARD IS NOT. The trailing window now clears both floors, so four weights CAN be fitted \u2014 but the walk-forward that decides whether to USE them only starts once 150 games of history exist, which on a corpus this young costs the first half of it. So the contrast is scored on a handful of slates and its interval is wide enough to contain both a real improvement and a real regression. Adopting weights on it would be adopting noise; the gate stays shut and the interval is printed rather than described.",
+              "No analyst shows a positive edge on its own side and none is claimed (the four sit between 43% and 51% at n=332, an interval of about +/-5.4 points). What the re-architecture bought is DECORRELATION \u2014 disjoint feature slices, side agreement down from 0.84-0.89 to 0.51-0.57 \u2014 which is the property a combiner would need in order to have anything to combine. Whether it carries edge is a question only the forward record answers."
+            ],
+            "honest_note": "THE ROLLING DESK FIT IS A MEASUREMENT, NOT A BET RULE. It re-fits every night over the trailing 30 days how each analyst's DISAGREEMENT WITH THE PRICE has related to results, scores that fit WALK-FORWARD (fit strictly on days before the day it is scored on, never on the days it is scored on), and compares it to two baselines: equal weighting and the price itself. Fitted weights are only ever ADOPTED when the walk-forward improvement over equal weighting has an interval strictly better than zero AND the window carries enough reads to fit four weights. When it does not \u2014 which is the state today \u2014 the desk uses EQUAL WEIGHTS and this block says so with the numbers, because presenting a fitted weight whose interval straddles the equal-weight baseline is presenting noise as insight. Nothing here gates, sizes or grades a bet: the +EV gate and the star system remain the only things that make a bet, and the combined probability is display only, graded nowhere.",
+            "presentation_only": true
+          },
+          "desk_combined": {
+            "p_over": 0.4949,
+            "side": "over",
+            "p_market": 0.4948,
+            "divergence_logodds": 5e-05,
+            "weights_basis": "equal_weight",
+            "weights": {
+              "vega": 1.0,
+              "atlas": 1.0,
+              "nova": 1.0,
+              "scout": 1.0
+            },
+            "voices_used": [
+              {
+                "key": "vega",
+                "divergence_logodds": 0.17414,
+                "weight": 1.0
+              },
+              {
+                "key": "atlas",
+                "divergence_logodds": 0.00624,
+                "weight": 1.0
+              },
+              {
+                "key": "nova",
+                "divergence_logodds": -0.1772,
+                "weight": 1.0
+              },
+              {
+                "key": "scout",
+                "divergence_logodds": -0.00296,
+                "weight": 1.0
+              }
+            ],
+            "voices_excluded": [],
+            "window_days": 30,
+            "verdict": "equal_weight_fallback",
+            "display_only": true,
+            "is_bet": false,
+            "note": "the desk's weighted combination of the four analysts' disagreement with the price. DISPLAY ONLY \u2014 it is graded nowhere, it never changes the action, and it is not an edge: walk-forward it does not beat the price. Read it as 'where the desk collectively sits versus the number'."
+          },
+          "coherence": {
+            "the_bet": {
+              "side": "over",
+              "line": 8.0,
+              "price": 100.0,
+              "stars": 5
+            },
+            "is_bet": true,
+            "reference_side": "over",
+            "voices": {
+              "desk_majority": {
+                "side": "under",
+                "vs_bet": "opposite"
+              },
+              "desk_combined": {
+                "side": "over",
+                "p_over": 0.4949,
+                "vs_bet": "same"
+              },
+              "atlas_predicted_score": {
+                "side": "over",
+                "predicted_total": 8.7,
+                "vs_line": 8.0,
+                "vs_bet": "same"
+              }
+            },
+            "all_voices_agree_with_bet": false,
+            "run_line_is_a_separate_market": true,
+            "note": "THE BET IS `the_bet` and nothing else on this card is a bet. The desk's majority lean, the desk's weighted combination and ATLAS's predicted final score are three DISPLAY readings of the same game; each is reported here with whether it points the same way as the ticket. A voice pointing the other way is information, not a contradiction \u2014 none of them clears a price gate, and none of them is graded. The run line is a separate market and is never expected to agree with a total."
+          },
+          "consensus_state": "MAJORITY",
+          "desk_agreement": "AGAINST",
+          "action": "PLAY",
+          "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
+          "is_bet": true,
+          "confidence_rank": 3,
+          "pattern": {
+            "era": "reconstructed_era",
+            "bucket": "by_family",
+            "key": "MAJORITY_3-1",
+            "family": "MAJORITY_3-1",
+            "call": "under",
+            "n": 146,
+            "hit_rate": 0.4932,
+            "hit_ci95": [
+              0.4095,
+              0.5771
+            ],
+            "fade_hit_rate": 0.5068,
+            "p_two_sided": 0.93408,
+            "ci_excludes_50": false,
+            "underperforms": true,
+            "significant": false,
+            "best_powered_of": 1,
+            "ci_clause": "95% CI 41%-58%, NOT distinguishable from a coin flip",
+            "line": "When the desk splits 3-1, the side they called has landed 49% of the time (n=146, reconstructed; 95% CI 41%-58%, NOT distinguishable from a coin flip)."
+          },
+          "pattern_line": null,
+          "pattern_downgraded": false,
+          "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
+          "synthesis_config_version": "v2_live_patterns",
+          "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
+          "adaptive_strategy": {
+            "version": "adaptive_desk_v20",
+            "date": "2026-08-02",
+            "status": "ACTIVE",
+            "rule_key": "neural_tanh:l20.12:th0.54",
+            "label": "Shallow neural desk ensemble (0.54 margin)",
+            "mode": "follow",
+            "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
+            "rule_family": "neural_tanh",
+            "window_days": 35,
+            "decided": 174,
+            "win": 119,
+            "loss": 55,
+            "push": 5,
+            "record": "119-55-5",
+            "hit_rate": 0.6839,
+            "units": 64,
+            "pick_rate": 0.4958,
+            "hit_rate_ci": [
+              0.6372,
+              0.7272
+            ],
+            "hit_rate_ci_level": 0.8,
+            "hit_rate_lower": 0.6372,
+            "hit_rate_upper": 0.7272,
+            "confidence_tier": "STRONG",
+            "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins).",
+            "locked": true,
+            "game_confidence_tier": "STRONG",
+            "game_signal_margin": 1.5868,
+            "rationale_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 119-55-5 (68% hit, +64 net wins). In plain English: today's strategy says to run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear; this game matched with VEGA OVER, ATLAS UNDER, NOVA UNDER, SCOUT UNDER, and the recent proof plus today's signal cleared STRONG, so the DiamondEdge pick is OVER.",
+            "analyst_calls": {
+              "vega": "over",
+              "atlas": "under",
+              "nova": "under",
+              "scout": "under"
+            },
+            "game_matched_rule": true,
+            "full_block_at": "adaptive_strategy_by_date.2026-08-02"
+          }
+        },
+        "note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top. COHERENCE (2026-07-31 \u2014 the defect this replaced): the action used to be a four-way VOTE, so a card could serve a real staked bet and, in the same breath, tell the reader the desk was passing on it. It did exactly that on both served bets of 2026-07-31. AVOID now means, and only ever means, THAT NO BET WAS SERVED (pick.status != PICK); a served bet displays as PLAY or LEAN by its star tier, and the desk's disagreement \u2014 which is real and is worth reading \u2014 is carried in `desk_agreement` (ALIGNED|MIXED|AGAINST|PENDING) and said out loud in the rationale as CONTEXT, never as a veto. The rail is unchanged in the direction that matters: the synthesis can never manufacture a bet, a PASS can never become a PLAY, and no served pick was created, altered, re-graded or removed by any of this. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that."
+      },
+      "analysts_v2": [
+        {
+          "analyst": "vega",
+          "short": "VEGA",
+          "pick_side": "over",
+          "p_over": 0.5383,
+          "our_prob": 0.5383,
+          "p_mkt_over": 0.4892,
+          "edge_vs_market": 0.0491,
+          "delta_runs": null,
+          "conviction_runs": null,
+          "mu_shown": null,
+          "market_line": 8.0,
+          "basis": "live",
+          "is_bet": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true
+        },
+        {
+          "analyst": "atlas",
+          "short": "ATLAS",
+          "pick_side": "under",
+          "p_over": 0.4964,
+          "our_prob": 0.5036,
+          "p_mkt_over": 0.4892,
+          "edge_vs_market": 0.0072,
+          "delta_runs": -0.0413,
+          "conviction_runs": 0.0413,
+          "mu_shown": 7.96,
+          "market_line": 8.0,
+          "basis": "live",
+          "is_bet": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true
+        },
+        {
+          "analyst": "nova",
+          "short": "NOVA",
+          "pick_side": "under",
+          "p_over": 0.4507,
+          "our_prob": 0.5493,
+          "p_mkt_over": 0.4892,
+          "edge_vs_market": -0.0385,
+          "delta_runs": -0.5833,
+          "conviction_runs": 0.5833,
+          "mu_shown": 7.42,
+          "market_line": 8.0,
+          "basis": "live",
+          "is_bet": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true
+        },
+        {
+          "analyst": "scout",
+          "short": "SCOUT",
+          "pick_side": "under",
+          "p_over": 0.4941,
+          "our_prob": 0.5059,
+          "p_mkt_over": 0.4892,
+          "edge_vs_market": 0.0049,
+          "delta_runs": -0.0673,
+          "conviction_runs": 0.0673,
+          "mu_shown": 7.93,
+          "market_line": 8.0,
+          "basis": "live",
+          "is_bet": false,
+          "read_wall": "T-3h",
+          "is_final_wall": true
+        }
+      ],
+      "live_progress": null
+    },
+    {
       "game_id": "2026-08-02-Pittsburgh Pirates-Cincinnati Reds-824483",
       "game_pk": 824483,
       "date": "2026-08-02",
@@ -16055,7 +16085,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -17163,7 +17193,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -18292,7 +18322,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -19408,7 +19438,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "STRONG",
@@ -20483,7 +20513,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -21605,7 +21635,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -22688,7 +22718,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "CLEAR",
@@ -23804,7 +23834,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -24917,7 +24947,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T05:38:41Z",
+          "asof_utc": "2026-08-03T06:11:03Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -25479,6 +25509,496 @@
         }
       ],
       "live_progress": null
+    },
+    {
+      "game_id": "823431",
+      "game_pk": 823431,
+      "date": "2026-08-03",
+      "away": "Washington Nationals",
+      "home": "Philadelphia Phillies",
+      "matchup": "Washington Nationals @ Philadelphia Phillies",
+      "first_pitch_utc": "2026-08-03T22:40:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "WSH",
+          "record": "55-57",
+          "pct": 0.491,
+          "last10": "4-6",
+          "streak": "L4"
+        },
+        "home": {
+          "abbr": "PHI",
+          "record": "58-53",
+          "pct": 0.523,
+          "last10": "2-8",
+          "streak": "W1"
+        }
+      },
+      "probables": {
+        "away": null,
+        "home": "Aaron Nola"
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+    },
+    {
+      "game_id": "823520",
+      "game_pk": 823520,
+      "date": "2026-08-03",
+      "away": "St. Louis Cardinals",
+      "home": "New York Yankees",
+      "matchup": "St. Louis Cardinals @ New York Yankees",
+      "first_pitch_utc": "2026-08-03T23:05:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "STL",
+          "record": "54-57",
+          "pct": 0.486,
+          "last10": "2-8",
+          "streak": "L3"
+        },
+        "home": {
+          "abbr": "NYY",
+          "record": "62-49",
+          "pct": 0.559,
+          "last10": "6-4",
+          "streak": "L1"
+        }
+      },
+      "probables": {
+        "away": "Michael McGreevy",
+        "home": "Cam Schlittler"
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+    },
+    {
+      "game_id": "823757",
+      "game_pk": 823757,
+      "date": "2026-08-03",
+      "away": "Pittsburgh Pirates",
+      "home": "Milwaukee Brewers",
+      "matchup": "Pittsburgh Pirates @ Milwaukee Brewers",
+      "first_pitch_utc": "2026-08-03T23:40:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "PIT",
+          "record": "56-56",
+          "pct": 0.5,
+          "last10": "3-7",
+          "streak": "W1"
+        },
+        "home": {
+          "abbr": "MIL",
+          "record": "69-41",
+          "pct": 0.627,
+          "last10": "6-4",
+          "streak": "W2"
+        }
+      },
+      "probables": {
+        "away": "Bubba Chandler",
+        "home": "Brandon Sproat"
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+    },
+    {
+      "game_id": "822867",
+      "game_pk": 822867,
+      "date": "2026-08-03",
+      "away": "San Francisco Giants",
+      "home": "Texas Rangers",
+      "matchup": "San Francisco Giants @ Texas Rangers",
+      "first_pitch_utc": "2026-08-04T00:05:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "SF",
+          "record": "47-64",
+          "pct": 0.423,
+          "last10": "5-5",
+          "streak": "L2"
+        },
+        "home": {
+          "abbr": "TEX",
+          "record": "55-56",
+          "pct": 0.495,
+          "last10": "4-6",
+          "streak": "L4"
+        }
+      },
+      "probables": {
+        "away": "Logan Webb",
+        "home": null
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+    },
+    {
+      "game_id": "824647",
+      "game_pk": 824647,
+      "date": "2026-08-03",
+      "away": "Los Angeles Dodgers",
+      "home": "Chicago Cubs",
+      "matchup": "Los Angeles Dodgers @ Chicago Cubs",
+      "first_pitch_utc": "2026-08-04T00:05:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "LAD",
+          "record": "69-42",
+          "pct": 0.622,
+          "last10": "6-4",
+          "streak": "L2"
+        },
+        "home": {
+          "abbr": "CHC",
+          "record": "63-48",
+          "pct": 0.568,
+          "last10": "6-4",
+          "streak": "W1"
+        }
+      },
+      "probables": {
+        "away": null,
+        "home": "Matthew Boyd"
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+    },
+    {
+      "game_id": "824160",
+      "game_pk": 824160,
+      "date": "2026-08-03",
+      "away": "Toronto Blue Jays",
+      "home": "Houston Astros",
+      "matchup": "Toronto Blue Jays @ Houston Astros",
+      "first_pitch_utc": "2026-08-04T00:10:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "TOR",
+          "record": "52-59",
+          "pct": 0.468,
+          "last10": "6-4",
+          "streak": "W3"
+        },
+        "home": {
+          "abbr": "HOU",
+          "record": "57-55",
+          "pct": 0.509,
+          "last10": "9-1",
+          "streak": "W5"
+        }
+      },
+      "probables": {
+        "away": "Shane Bieber",
+        "home": "Cristian Javier"
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+    },
+    {
+      "game_id": "824324",
+      "game_pk": 824324,
+      "date": "2026-08-03",
+      "away": "Tampa Bay Rays",
+      "home": "Colorado Rockies",
+      "matchup": "Tampa Bay Rays @ Colorado Rockies",
+      "first_pitch_utc": "2026-08-04T00:40:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "TB",
+          "record": "65-45",
+          "pct": 0.591,
+          "last10": "7-3",
+          "streak": "W1"
+        },
+        "home": {
+          "abbr": "COL",
+          "record": "44-67",
+          "pct": 0.396,
+          "last10": "4-6",
+          "streak": "W2"
+        }
+      },
+      "probables": {
+        "away": "Ian Seymour",
+        "home": "Michael Lorenzen"
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+    },
+    {
+      "game_id": "825095",
+      "game_pk": 825095,
+      "date": "2026-08-03",
+      "away": "San Diego Padres",
+      "home": "Arizona Diamondbacks",
+      "matchup": "San Diego Padres @ Arizona Diamondbacks",
+      "first_pitch_utc": "2026-08-04T01:40:00Z",
+      "status": "upcoming",
+      "is_upcoming": true,
+      "schedule_source": "mlb_statsapi_schedule",
+      "team_records": {
+        "away": {
+          "abbr": "SD",
+          "record": "57-54",
+          "pct": 0.514,
+          "last10": "7-3",
+          "streak": "W2"
+        },
+        "home": null
+      },
+      "probables": {
+        "away": "Michael King",
+        "home": "Brandon Pfaadt"
+      },
+      "picks_eta": {
+        "line": "Picks drop tomorrow morning",
+        "expected_utc": "2026-08-03T13:00:00Z",
+        "expected_local_pt": "2026-08-03T06:00:00-0700",
+        "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+      },
+      "pick": {
+        "status": "UPCOMING",
+        "is_upcoming": true,
+        "premium": false,
+        "picks_eta": {
+          "line": "Picks drop tomorrow morning",
+          "expected_utc": "2026-08-03T13:00:00Z",
+          "expected_local_pt": "2026-08-03T06:00:00-0700",
+          "why": "the desk locks each date's strategy at 02:00 PT from games that are already final, then the morning serve publishes that day's board"
+        },
+        "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
+      },
+      "analysts": [],
+      "analysts_v2": [],
+      "consensus": null,
+      "diamondedge": null,
+      "strategies": [],
+      "spread": null,
+      "simulator": null,
+      "scout": null,
+      "pregame_line": null,
+      "line_now": null,
+      "desk_status": "PENDING",
+      "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
     }
   ]
 }

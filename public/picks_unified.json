@@ -4,7 +4,7 @@
   "status": "production",
   "board": "history",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-03T04:22:44Z",
+  "generated_utc": "2026-08-03T06:10:48Z",
   "dates": [
     "2026-03-27",
     "2026-03-28",
@@ -100,7 +100,7 @@
     },
     "n_playable_scores": 534,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-03T00:55:20Z",
+    "generated_utc": "2026-08-03T06:08:09Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
     "n_nonplayable_scores": 6111
@@ -4750,7 +4750,7 @@
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-03T03:46:27Z",
+      "updated": "2026-08-03T06:08:08Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -7257,7 +7257,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-03T04:22:59Z",
+      "updated": "2026-08-03T06:11:03Z",
       "order": [
         "vega",
         "atlas",
@@ -7419,15 +7419,15 @@
     "desk_calls": {
       "stream": "desk_call",
       "record_start": "2026-08-01",
-      "n": 28,
+      "n": 29,
       "win": 13,
-      "loss": 14,
+      "loss": 15,
       "push": 1,
-      "decided": 27,
-      "hit_rate": 0.4815,
+      "decided": 28,
+      "hit_rate": 0.4643,
       "hit_ci95": [
-        0.3074,
-        0.6601
+        0.2953,
+        0.6419
       ],
       "by_conviction": {
         "STRONG": {
@@ -7453,20 +7453,20 @@
           ]
         },
         "SLIGHT": {
-          "n": 17,
+          "n": 18,
           "win": 8,
-          "loss": 9,
+          "loss": 10,
           "push": 0,
-          "hit_rate": 0.4706,
+          "hit_rate": 0.4444,
           "hit_ci95": [
-            0.2617,
-            0.6904
+            0.2456,
+            0.6628
           ]
         }
       },
       "n_called_and_bet": 9,
-      "n_called_not_bet": 19,
-      "updated": "2026-08-03T01:02:21Z",
+      "n_called_not_bet": 20,
+      "updated": "2026-08-03T06:08:08Z",
       "is_a_betting_record": false,
       "note": "THE DESK'S CALLS, GRADED IN THEIR OWN LEDGER. This is NOT a betting record and must never be summed with one, shown beside one as a comparison, or described in units: a call has no price and no stake, so it has no ROI. It counts one row per game \u2014 the desk's view at the most informed wall it reached \u2014 and it exists to answer one question the product could not previously ask: when the desk says something, is it right? A CALL IS NOT A BET. This is the desk's directional view on the game \u2014 what it actually thinks \u2014 built from the four analysts' own reads, equal-weighted. It is NEVER staked, it NEVER enters games[].pick, it is never counted in the product record, and it cannot be sized. Whether we are betting this game is a separate question with a separate answer, at `we_are_betting` / `bet_action`, decided by the price gate alone and unchanged by anything here. The graded product remains games[].pick and only games[].pick; the desk's calls are graded in their own ledger, separately, from 2026-08-01.",
       "honest_note": "THE STANDING HYGIENE RULE APPLIES IN FULL. This ledger starts at 2026-08-01 and will take months to say anything. A hit rate here is not evidence of edge in either direction, and in particular a call that beats 50% is NOT an argument for loosening the price gate \u2014 the gate is what protects the product record and it does not move on this.",

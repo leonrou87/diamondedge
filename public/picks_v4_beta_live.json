@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-03T05:38:41Z",
+  "generated_utc": "2026-08-03T06:08:08Z",
   "dates": [
     "2026-08-02"
   ],
@@ -939,7 +939,7 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-08-03T00:55:20Z",
+    "record_generated_utc": "2026-08-03T06:08:08Z",
     "backfill": {
       "n_rows": 138,
       "sources": {
@@ -1719,7 +1719,7 @@
     },
     "n_playable_scores": 534,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-03T00:55:20Z",
+    "generated_utc": "2026-08-03T06:04:47Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
     "n_nonplayable_scores": 6111
@@ -1733,7 +1733,7 @@
     "n_playable": 534,
     "n_nonplayable": 6111,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-03T00:55:20Z",
+    "generated_utc": "2026-08-03T06:04:47Z",
     "basis": "v3.2 frozen season reference: percentile ranks of |model divergence| and EV (0.5/0.5 blend) over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill); non-playable rows rank in their own frozen distribution (tail-inverted edge measure + pass EV position). Frozen for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: no score promotes a non-playable row.",
     "playable": {
       "n": 534,
@@ -2115,7 +2115,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 10,
         "champion_unsettled": 0,
-        "checked_at_utc": "2026-07-31T17:05:39Z"
+        "checked_at_utc": "2026-08-03T06:08:08Z"
       },
       "2026-07-31": {
         "final_games": 15,
@@ -2128,7 +2128,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 14,
         "champion_unsettled": 0,
-        "checked_at_utc": "2026-08-01T11:03:20Z"
+        "checked_at_utc": "2026-08-03T06:08:07Z"
       },
       "2026-08-01": {
         "final_games": 15,
@@ -2141,7 +2141,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 13,
         "champion_unsettled": 0,
-        "checked_at_utc": "2026-08-03T00:51:57Z"
+        "checked_at_utc": "2026-08-03T06:08:06Z"
       }
     },
     "totals": {
