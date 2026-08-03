@@ -488,10 +488,46 @@ export default function Home() {
        has flagged `status: "upcoming"` — that is the state of every game on the board between
        midnight and the 06:00 PT serve, and it was reading as "we passed" because nothing
        distinguished it. Both are the same fact to a reader: we have not looked yet. */
+    /* IT CANNOT DEPEND ON A FIELD THAT GETS OVERWRITTEN. The first cut read `status` and
+       `is_upcoming` off the game in hand — and the live-score overlay rewrites `status` from
+       "upcoming" to "pre" the moment a live_scores snapshot mentions the game, while the copy
+       the game PAGE resolves is a different object that never carried `is_upcoming` at all.
+       So the board said "picks soon" and the game page one tap later said "the pass is the
+       pick", about the same game, in the same minute.
+
+       The durable fact is a property of the DATE, not of any one copy of a game: if the live
+       feed still describes that date's slate as upcoming, that date's picks have not published.
+       That is read from the feed's own objects, which nothing in the render path mutates. */
+    function datePicksPending(dateISO: string) {
+      if (!dateISO) return false;
+      const gs = ((betaLiveData && betaLiveData.games) || []) as any[];
+      for (const x of gs) {
+        if (!x || String(x.date || "").slice(0, 10) !== dateISO) continue;
+        const pk = (x.pick && typeof x.pick === "object") ? x.pick : null;
+        if (pk && (String(pk.status || "").toUpperCase() === "UPCOMING" || pk.is_upcoming === true)) return true;
+        if (String(x.desk_status || "").toUpperCase() === "PENDING") return true;
+        if (String(x.status || "").toLowerCase() === "upcoming" || x.is_upcoming === true) return true;
+      }
+      return false;
+    }
     function picksPending(g: any) {
       if (!g) return false;
+      // a graded or in-progress game is never pending, whatever anything else says
+      const st = String(g.status || "").toLowerCase();
+      if (st === "final" || st === "live") return false;
+      /* THE SIGNAL IS ON THE PICK, and that is the one place nothing in the render path
+         rewrites. The GAME's `status` is overwritten from "upcoming" to "pre" by the
+         live-score overlay the moment a snapshot mentions the fixture, and the copy the game
+         PAGE resolves never carried the game-level `is_upcoming` at all — which is how the
+         board came to say "picks soon" while the game page one tap later said "the pass is
+         the pick", about the same game, in the same minute. The backend states it three ways
+         and all three survive: pick.status, pick.is_upcoming, desk_status. */
+      const pk = (g.pick && typeof g.pick === "object") ? g.pick : null;
+      if (pk && (String(pk.status || "").toUpperCase() === "UPCOMING" || pk.is_upcoming === true)) return true;
+      if (String(g.desk_status || "").toUpperCase() === "PENDING") return true;
       if (String(g.status || "").toLowerCase() === "upcoming" || g.is_upcoming === true) return true;
-      return isFutureGame(g);
+      if (isFutureGame(g)) return true;
+      return datePicksPending(gameDateISO(g));
     }
 
     async function snap(k: string) {
@@ -7149,7 +7185,20 @@ export default function Home() {
       // stays two words and the full sentence rides on the title/aria and the group header
       return raw && raw.length <= 22 ? raw : "PICKS SOON";
     };
-    const picksEtaLong = (g: any) => picksEtaRaw(g) || "DiamondEdge picks for this game publish tomorrow morning";
+    /* THE LONG FORM IS COMPOSED, NOT SERVED — because the served strings carry a RELATIVE day
+       word and the payload outlives the day it was written in. The same feed shipped both
+       "Picks drop tomorrow morning" (on the game) and "Picks drop this morning" (on the pick),
+       and there is no way to tell from the outside which one is stale. The date is not
+       ambiguous, so the sentence is built from the date and the served TIME, and it cannot go
+       out of date sitting in a cache. */
+    function picksEtaLong(g: any) {
+      const d = gameDateISO(g);
+      const t = picksEtaTime(g);
+      if (!d) return `Our picks for this game post by ${t}.`;
+      const when = d === todayISO() ? "today" : d === shiftDate(todayISO(), 1) ? "tomorrow"
+        : new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
+      return `Our picks for ${when} post by ${t}.`;
+    }
     /* ════════ THE RESULT STAMP — a different object from the pick ════════
        Leon: "for RIGHT / WRONG use another treatment." So the outcome does not borrow ONE
        thing from the direction language: not the triangle, not the tinted-slot silhouette,
@@ -9478,8 +9527,18 @@ export default function Home() {
       </div>`;
       // PASS games get an explicit no-bet block that NAMES the lines we judged — a pass is
       // a priced decision, and it reads like one.
+      /* AND A PENDING GAME IS NOT A PASS. On a game whose picks have not published yet this
+         block declared, in the DiamondEdge Pick slot: "We checked the spread, the total and the
+         moneyline for this game, and none of them offered a real advantage." We had checked
+         nothing. It is the same false verdict the board's pass panel was making, on the surface
+         where a reader goes to find out what we think — so it says the true thing instead, and
+         it says WHEN. */
       const passBlock = (!lead && !leadLocked)
         ? (() => {
+            if (picksPending(g)) {
+              return `<div class="callcard pass pending"><div class="cc-k">${pickLabel(g)}</div>
+              <p class="cc-passwhy">${esc(picksEtaLong(g))} Nothing has been judged on this game yet, so there is no call here to read.</p></div>`;
+            }
             const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
             const why = judged.length
               ? `We priced every market — ${judged.join(", ")} — and none of them beat our number. The pass is the pick.`
@@ -9516,12 +9575,19 @@ export default function Home() {
             <div class="wc-k">Game preview</div>
             <p>The full read behind this pick — the model number, the line it beats, and the history of calls made exactly this way — is part of DiamondEdge Premium. The quality rating above is the real one.</p>
           </div>`
-        : `<div class="whycard preview">
-            <div class="wc-k">The setup</div>
-            ${bodyParas.map((w) => `<p>${mdBold(w)}</p>`).join("")}
-            ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
-            ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
-          </div>`;
+        /* AN EMPTY CARD IS WORSE THAN NO CARD. On a game the backend has not written a
+           preview for yet — every game on the board before the morning serve — bodyParas,
+           streaks and facts are all empty and this shipped a titled box with nothing in it.
+           A heading over white space reads as content that failed to load. No content, no
+           card; the rest of the pane is unaffected. */
+        : (bodyParas.length || stks || facts.length)
+          ? `<div class="whycard preview">
+              <div class="wc-k">The setup</div>
+              ${bodyParas.map((w) => `<p>${mdBold(w)}</p>`).join("")}
+              ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
+              ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
+            </div>`
+          : "";
 
       // (3) THE LINES — one plain sentence on where the board sits (numbers sourced from the
       // SAME seam as the pick itself, so nothing here can disagree with the markets table above).

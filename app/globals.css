@@ -8228,3 +8228,16 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .future-note .fn-ic::after{content:"";position:absolute;width:17px;height:17px;background:var(--golddeep);
   -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
 .future-note.full .fn-ic::after{width:23px;height:23px}
+
+/* THE INCOMING TAG FITS ON ONE LINE AT 360.
+   At 360 a tile column is 155px and the tag was measuring 131 of it, so the row wrapped and
+   every one of the morning's eight tiles paid ~14px of height for a second line carrying a
+   two-word label. The wrap itself is correct behaviour — the market number is never what
+   gives way — but it should not be needed. Under 400px the tag drops its tracking and two
+   pixels of padding; the mark, the word and the number all stay whole. Measured after:
+   tag 84px + O/U 42px + gap = 129 inside 131. */
+@media(max-width:400px){
+  .de-mini-pick.dmp-tile .de-mini-call.incoming{padding:2.5px 6px 2.5px 5px;gap:3px}
+  .de-mini-pick.dmp-tile.upcoming .de-mini-word{font-size:8.5px;letter-spacing:.02em}
+  .de-mini-pick.dmp-tile.upcoming .de-mini-logo{width:9px;height:9px}
+}
