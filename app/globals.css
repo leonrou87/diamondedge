@@ -265,19 +265,39 @@ header#app-header{position:sticky;top:0;z-index:65;padding-top:var(--sat);
    a blur is not frosting, it is a team abbreviation faintly legible through the wordmark.
    A sticky bar that lets content read through it is worse than no sticky bar. */
 header#app-header.scrolled{background:var(--paper);box-shadow:0 1px 0 var(--line),0 6px 18px var(--sh1)}
-.hbar{max-width:var(--wide);margin:0 auto;padding:9px max(18px,var(--sal)) 9px max(18px,var(--sar));display:flex;align-items:center;gap:14px}
+/* ══════════════ THE MASTHEAD — CENTRED, iOS TITLE-BAR PROPORTIONS ══════════════
+   Leon: "let's make the DiamondEdge logo take up 50% of the vertical height and centre it."
+
+   THE BAR IS A FIXED HEIGHT so "50%" means something stable: --hbar-h is the content row,
+   and the mark is exactly half of it (--brand-mark: 50% of the bar), which is also the
+   proportion iOS gives a title-bar glyph. The brand is CENTRED with `justify-content:center`
+   and the old chip background is gone — a centred wordmark in a grey lozenge reads as a
+   button, and this is a title.
+
+   NO LAYOUT SHIFT ON SCROLL. `.scrolled` only changes the backing (see above); the bar's
+   height and the mark's size are the same at every scroll position and at every width, so
+   the wordmark never jumps. Sign-in left this bar in round 1, so the right side is free and
+   a centred composition finally balances. */
+:root{--hbar-h:46px;--brand-mark:calc(var(--hbar-h) * .5)}
+.hbar{position:relative;max-width:var(--wide);margin:0 auto;
+  padding:8px max(18px,var(--sal)) 8px max(18px,var(--sar));
+  min-height:var(--hbar-h);display:flex;align-items:center;justify-content:center;gap:14px}
 .brand-tx{overflow:hidden}
-.brand{display:flex;align-items:center;gap:9px;flex-shrink:0;cursor:pointer;border-radius:16px;padding:5px 7px 5px 5px;
-  background:linear-gradient(180deg,rgba(var(--rimc),.08),rgba(var(--rimc),.025));box-shadow:inset 0 0 0 1px rgba(var(--rimc),.08)}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer;border-radius:16px;padding:2px 4px;
+  background:none;box-shadow:none}
 /* the mark keeps its real gold — a solid metallic shape reads beautifully on
    white, where gold TEXT would not (see --gold / --golddeep) */
-.diamond{width:25px;height:25px;transform:rotate(45deg);border-radius:7px;background:var(--brandgrad);position:relative;
+.diamond{width:var(--brand-mark);height:var(--brand-mark);transform:rotate(45deg);border-radius:calc(var(--brand-mark) * .28);background:var(--brandgrad);position:relative;
   box-shadow:0 1px 2px rgba(140,92,6,.34),0 8px 18px -10px rgba(var(--goldc),.9)}
-.diamond::after{content:"";position:absolute;inset:6.5px;border:2px solid rgba(255,255,255,.92);border-radius:2px}
+.diamond::after{content:"";position:absolute;inset:26%;border:2px solid rgba(255,255,255,.92);border-radius:2px}
 .brand h1{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:.055em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .brand h1 b{color:var(--gold)}
 .brand .tag{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-top:3px}
+/* the spacer only does a job on the game page's own header, which is still a left/right
+   layout (back · brand · share). In the masthead the brand is centred and the spacer is inert. */
 .hspacer{flex:1}
+#app-header .hspacer{display:none}
+#app-header .navright{position:absolute;right:max(18px,var(--sar));top:50%;transform:translateY(-50%)}
 body.native .brand .tag{display:none}
 .ticker{display:none}
 
@@ -327,7 +347,7 @@ body.native .ticker{display:none}
    (Today/Games/Results) as a full-width segmented strip. This fits 340–375px with
    no horizontal overflow and keeps every view + the record + the account reachable. */
 @media(max-width:720px){
-  .hbar{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding-bottom:6px}
+  .hbar{flex-wrap:nowrap;column-gap:8px}
   /* the section nav drops to its own full-width row beneath the brand row */
   .toptabs{order:3;flex-basis:100%;width:100%;gap:4px;
     background:var(--glass);-webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
@@ -632,7 +652,10 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* FUTURE-DATE banner — picks not published yet. Compact strip above a schedule, or a full card. */
 .future-note{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:13px 16px;border-radius:var(--r-md);background:linear-gradient(180deg,var(--amberbg),rgba(var(--rimc),.09));border:1px solid var(--glass-brd);box-shadow:var(--e0)}
 .future-note.full{margin:24px auto;max-width:520px;flex-direction:column;text-align:center;padding:28px 22px}
-.future-note .fn-countdown{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;background:var(--goldbg);border:1px solid var(--goldline);flex-shrink:0;white-space:nowrap}
+/* `white-space:nowrap` + `flex-shrink:0` on a chip whose content is authored copy is a
+   horizontal-overflow bug waiting to happen — it was one, at 375px, when the chip read
+   "2:00 AM PT → 6:00 AM PT". The chip may now shrink and wrap; it just never breaks a time. */
+.future-note .fn-countdown{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;background:var(--goldbg);border:1px solid var(--goldline);min-width:0;flex-wrap:wrap;justify-content:center;row-gap:2px}
 .future-note.full .fn-countdown{margin:14px auto 0}
 .fn-countdown .fnc-k{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--golddeep)}
 .fn-countdown .fnc-val{font-family:var(--mono);font-weight:700;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
@@ -803,13 +826,17 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* ---- row 2: the two teams. Crest · abbreviation · score. ---- */
 .tl-teams,.t-teams{display:flex;flex-direction:column;gap:7px;min-width:0}
 .t-teamblock{display:flex;flex-direction:column;gap:1px;min-width:0}
-.t-row{display:flex;align-items:center;gap:7px;min-width:0;min-height:26px}
+.t-row{display:flex;align-items:center;gap:9px;min-width:0;min-height:26px}
 /* The crest sits on a neutral chip, NOT on a dark plate. The old rule filled it with
    near-black so white-marked logos would show; on paper that plate is the loudest
    thing on the board, so it is a hairline-ringed wash instead. */
-.t-crest{flex-shrink:0;display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line3)}
-.t-crest img,.t-crest .crest{width:19px;height:19px;object-fit:contain}
-.t-crest .crest{border-radius:5px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:10px;color:var(--ink2);background:transparent}
+/* THE CREST GREW (Leon: "the logos can probably be a bit bigger given the pitcher / ERA
+   line etc"). The team block is two lines tall — abbreviation+record, then pitcher+ERA — so
+   the crest had ~20px of unused vertical room beside it. It now spans both lines, which
+   also gives the row a proper visual anchor at the left edge instead of a small chip. */
+.t-crest{flex-shrink:0;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line3)}
+.t-crest img,.t-crest .crest{width:26px;height:26px;object-fit:contain}
+.t-crest .crest{border-radius:6px;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:12px;color:var(--ink2);background:transparent}
 .t-id{display:flex;align-items:baseline;gap:5px;min-width:0;overflow:hidden}
 /* THE TEAM NEVER TRUNCATES. `.t-ab` used to be `flex:0 1 auto` next to a `flex:1 1 auto`
    record, so on a 163px two-across column the RECORD won the space fight and the team
@@ -819,40 +846,49 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .t-ab{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.015em;color:var(--ink);flex:0 0 auto;white-space:nowrap}
 .t-rec{display:inline-flex;align-items:baseline;gap:3px;min-width:0;flex:0 1 auto;
   font-family:var(--mono);font-weight:600;font-size:10px;letter-spacing:-.03em;color:var(--ink4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The record NEVER truncates — a half-written record is a wrong record. It is present in
+   full or it is absent; see the width rule below. (An ellipsis was tried here and produced
+   "58…", which is worse than nothing: it looks like data loss, not like a design.) */
 .t-rec em{font-style:normal;flex:0 1 auto;min-width:0;white-space:nowrap}
 .t-rec i{font-style:normal;font-family:var(--disp);font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--ink4);flex-shrink:0}
 .t-rec i.hot{color:var(--green)}
 /* the id block takes the slack, not the spacer — a `flex:1` spacer beside a `flex:0 1 auto`
    id meant every pixel of leftover width went to NOTHING while the record beside the team
-   name was squeezed until its streak ("W4") was clipped mid-glyph. */
-.t-id{flex:1 1 auto}
-.t-rsp{flex:0 1 auto;min-width:0}
+   name was squeezed until its streak ("W4") was clipped mid-glyph.
+   BUT THE SPACER MUST NEVER REACH ZERO. It was `min-width:0`, so once the crest grew the
+   record ran straight into the score — "55-57L4 2" with no gap, which reads as one number.
+   It is a fixed 10px gutter now: the row's last defence, and the record truncates into it
+   rather than through it. */
+.t-id{flex:1 1 auto;min-width:0}
+.t-rsp{flex:0 0 10px}
 /* TWO-ACROSS AT 375 IS A 163px COLUMN, and "BOS 59-51 W4 5" has to fit in it whole. The
    card's 16px gutter and the 26px crest plate were spending 12 of the px the record needed,
    so both give a little back below 420px. Nothing here truncates any more. */
 @media(max-width:420px){
   .tile{padding:13px}
-  .t-row{gap:5px}
+  .t-row{gap:7px}
   .t-score{font-size:16px}
-  .t-crest{width:24px;height:24px;border-radius:7px}
-  .t-crest img,.t-crest .crest{width:18px;height:18px}
+  .t-crest{width:32px;height:32px;border-radius:9px}
+  .t-crest img,.t-crest .crest{width:24px;height:24px}
   .t-rec{font-size:9.5px;gap:2px}
-  .t-pitchsub{margin-left:27px}
+  .t-pitchsub{margin-left:39px}
 }
 @media(max-width:380px){
   .tile{padding:11px}
   .t-ab{font-size:14px}
   .t-rec{font-size:9px;gap:2px}
   .t-score{font-size:15px}
-  .t-crest{width:22px;height:22px}
-  .t-crest img,.t-crest .crest{width:17px;height:17px}
-  .t-pitchsub{margin-left:24px;font-size:10px}
+  .t-crest{width:29px;height:29px}
+  .t-crest img,.t-crest .crest{width:22px;height:22px}
+  .t-pitchsub{margin-left:36px;font-size:10px}
   .t-rec{letter-spacing:-.05em;gap:1px}
 }
-/* NARROWEST PHONES (Android 360 and below): the season record gives way completely rather
-   than shipping "53-5…". The streak — the fact that actually changes day to day — stays,
-   and the full record is one tap away on the game page (and in the row's title). */
-@media(max-width:366px){.t-rec em{display:none}}  /* NOTE: after the 420 block on purpose — equal-specificity media queries are resolved
+/* EVERY PHONE, now that the crest is 34px: the season record gives way completely rather
+   than shipping "53-5…". The STREAK — the fact that actually changes day to day — stays, and
+   the full record is one tap away on the game page's Stats tab (and in the row's title).
+   The threshold is the two-across breakpoint, not a device: above it the tile is wide
+   enough to carry both, below it it never was. */
+@media(max-width:460px){.t-rec em{display:none}}  /* NOTE: after the 420 block on purpose — equal-specificity media queries are resolved
      by SOURCE ORDER, and this one has to win at 375. */
 .t-score{font-family:var(--mono);font-weight:700;font-size:17px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;flex-shrink:0;text-align:right}
 .t-score.live{color:var(--ink)}
@@ -915,14 +951,9 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tv-market b{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2)}
 .tv-market .tv-mk{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink4);
   background:none;clip-path:none;width:auto;height:auto;align-self:baseline;flex-shrink:0}
-/* the day's record + current run, on the tile whose result just moved them */
-.tl-runchip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
-.tl-runchip>span{display:inline-flex;align-items:baseline;gap:4px;border-radius:999px;padding:1.5px 7px;
-  background:rgba(var(--tintc),.055);box-shadow:inset 0 0 0 1px var(--line3);white-space:nowrap}
-.tl-runchip i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink4)}
-.tl-runchip b{font-family:var(--mono);font-weight:700;font-size:11px;font-variant-numeric:tabular-nums;color:var(--ink2)}
-.tl-runchip .trc-run.up b{color:var(--green)}
-.tl-runchip .trc-run.down b{color:var(--red)}
+/* (.tl-runchip lived here — the day's record + current run stamped on every graded tile.
+   Leon cut it mid-round: "not sure we need the record and Run W1… feels overkill". The
+   record now lives on the Desk headline, the 14-day widget and the Record surface.) */
 .tv-nb{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);
   border:1px solid var(--line);border-radius:999px;padding:1.5px 7px;white-space:nowrap;flex-shrink:0}
 .tl-verdict.is-call .tv-k{color:var(--ink3)}
@@ -935,15 +966,10 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tv-unlock{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-top:1px}
 .tv-unlock svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.2}
 
-/* THE DESK'S VIEW OF THE TICKET, on a tile — one quiet line under the call.
-   Deliberately NOT styled as a warning. "The desk disagrees" on a bet we placed is the
-   product working: the price edge and the room's opinion are different questions, and a
-   red alert here would tell the reader we half-regret our own ticket. */
-.tl-ag{font-family:var(--sans);font-size:11px;line-height:1.35;color:var(--ink3);
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.tl-ag::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;vertical-align:1px;background:var(--ink4)}
-.tl-ag.ag-mixed::before{background:var(--amber)}
-.tl-ag.ag-against::before{background:var(--blue)}
+/* (.tl-ag lived here — the tile's "the desk disagrees" line. The markup was cut in round 1
+   when the agreement CHIPS were removed as a hedge on our own call; the rule outlived it by
+   one round. Removed, not silenced: the STATE is still computed and still drives the desk
+   slide's one-sentence read. See deskAgreement() / deskAgreementWhy().) */
 .tv-livecash{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;margin-top:1px;border-radius:999px;padding:2px 7px;
   font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:10.5px;font-weight:700;line-height:1.2;background:rgba(var(--tintc),.055);color:var(--ink3);white-space:nowrap}
 .tv-livecash i{font-style:normal;font-weight:600;color:currentColor;opacity:.72}
@@ -1654,7 +1680,11 @@ details.more .more-body{padding-top:12px}
 .acct-card.upsell{background:linear-gradient(140deg,rgba(var(--bluec),.09),rgba(var(--rimc),.11) 62%);border-color:var(--pickline)}
 .upsell .uc-k{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.02em;color:var(--pick)}
 .upsell .uc-b{font-size:14px;line-height:1.55;color:var(--ink2);margin-top:5px}.upsell .uc-b b{color:var(--ink)}
-.acct-cta{display:block;width:100%;margin-top:12px;border:0;border-radius:14px;padding:13px;background:linear-gradient(135deg,var(--a4),var(--a3));color:var(--a0);font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 20px rgba(var(--goldc),.32),inset 0 1px 0 rgba(var(--rimc),.09);transition:transform .18s var(--spring),filter .18s ease}
+/* THE PRIMARY CTA. `--a0` ink on an `--a3/--a4` fill is deep bronze on mid bronze — it
+   measured ~2.1:1, i.e. the one button on the site that has to be read was the least
+   readable thing on it. White knockout on the deeper end of the ramp measures ~7:1 and
+   also looks like the button it is. */
+.acct-cta{display:block;width:100%;margin-top:12px;border:0;border-radius:14px;padding:14px;background:linear-gradient(135deg,var(--a2),var(--a0));color:#fff;font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 20px rgba(var(--goldc),.32),inset 0 1px 0 rgba(255,255,255,.16);transition:transform .18s var(--spring),filter .18s ease}
 .acct-cta:hover{filter:brightness(1.04)}.acct-cta:active{transform:scale(.97)}
 .acct-link{display:flex;align-items:center;gap:4px;width:100%;text-align:left;border:0;background:transparent;border-top:1px solid var(--line3);padding:12px 2px;font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.01em;color:var(--ink);cursor:pointer}
 .acct-card-k+.acct-link{border-top:0}.membercard .acct-link{border-top-color:rgba(var(--goldc),.2)}
@@ -1772,7 +1802,7 @@ details.more .more-body{padding-top:12px}
 .whycard .pv-stks{margin-top:10px}
 .whycard.lines p{font-size:15px}
 @media(max-width:640px){
-  .hbar{padding:12px max(14px,var(--sal)) 6px max(14px,var(--sar));gap:8px}
+  .hbar{padding:8px max(14px,var(--sal));gap:8px}
   .brand h1{font-size:18px}
   .brand .tag{font-size:10px;letter-spacing:.14em}
   .intel-grid{grid-template-columns:1fr}
@@ -2325,41 +2355,121 @@ details.more .more-body{padding-top:12px}
    wildly by font and renders as a hollow outline in several fallbacks. Modifier classes are
    NAMESPACED (`dmp-tile`, `dmp-detail`) — the old bare `tile` modifier collided with the
    board-card class and rendered this chip as a nested 115px card. */
-.de-mini-pick{display:inline-flex;align-items:center;gap:9px;min-width:0;max-width:100%;white-space:nowrap;line-height:1}
-.de-mini-ou{display:inline-flex;align-items:baseline;gap:4px;font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.01em;color:var(--ink3);flex-shrink:0}
+.de-mini-pick{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:100%;white-space:nowrap;line-height:1}
+/* THE CALL, IN WORDS. Display face, tabular figures, ink — the word and the number read as
+   one phrase ("OVER 8.5"), which is how a person says it out loud. */
+.de-mini-ou{display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.005em;color:var(--ink);min-width:0}
 .de-mini-ou b{font-variant-numeric:tabular-nums;font-size:17px;color:var(--ink)}
-/* THE SLOT. Fixed footprint whether or not it is filled, so the number never shifts. */
+.de-mini-word{font-size:15px;letter-spacing:.03em}
+.de-mini-pick.over .de-mini-word{color:var(--over)}
+.de-mini-pick.under .de-mini-word{color:var(--under)}
+/* THE BRAND SLOT. Fixed footprint whether or not it is filled, so the phrase never shifts. */
 .de-mini-mark{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
   border-radius:999px;padding:3px 8px 3px 7px;
   background:rgba(var(--tintc),.05);box-shadow:inset 0 0 0 1px var(--line3)}
 .de-mini-logo{font-style:normal;flex-shrink:0;font-size:13px;line-height:1;
   background:var(--brandgrad);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 1px 1px var(--sh2))}
-/* the mark: a solid triangle, apex up for over and down for under — form first, colour as
-   confirmation, so it survives greyscale and every kind of colour blindness */
-.de-mini-arrow{display:block;flex-shrink:0;width:11px;height:9px;background:currentColor;color:var(--ink3);
+/* the direction mark now REINFORCES the word rather than replacing it: a solid triangle,
+   apex up for over and down for under, so the call still survives greyscale and every kind
+   of colour blindness even if the word is missed */
+.de-mini-arrow{display:block;flex-shrink:0;width:10px;height:8px;background:currentColor;color:var(--ink3);
   clip-path:polygon(50% 0,100% 100%,0 100%)}
 .de-mini-pick.over .de-mini-arrow{color:var(--over)}
 .de-mini-pick.over .de-mini-mark{background:rgba(var(--greenc),.09);box-shadow:inset 0 0 0 1px rgba(var(--greenc),.2)}
 .de-mini-pick.under .de-mini-arrow{color:var(--under);clip-path:polygon(0 0,100% 0,50% 100%)}
 .de-mini-pick.under .de-mini-mark{background:rgba(var(--redc),.075);box-shadow:inset 0 0 0 1px rgba(var(--redc),.18)}
-.de-mini-lockdots{display:block;flex-shrink:0;width:11px;height:5px;border-radius:999px;background:rgba(var(--rimc),.26)}
+/* REDACTION IS CRISP, NEVER A BLUR. The word's slot becomes a hatched bar the exact width a
+   word would occupy — so a locked board and an unlocked board have identical geometry, and
+   nothing about the real value is in the DOM to un-blur. */
+.de-mini-lockdots{display:block;flex-shrink:0;width:11px;height:5px;border-radius:999px;background:rgba(var(--goldc),.42)}
+.de-mini-redact{display:inline-block;width:44px;height:11px;border-radius:3px;vertical-align:-1px;
+  background:repeating-linear-gradient(115deg,rgba(var(--goldc),.30) 0 3px,rgba(var(--goldc),.10) 3px 6px)}
 .de-mini-pick.locked .de-mini-mark{background:rgba(var(--goldc),.08);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.22)}
-/* NO PICK ⇒ NO SLOT. Nothing renders to the right of the number. */
-.de-mini-pick.nopick .de-mini-ou{color:var(--ink4)}
+/* NO PICK ⇒ the market number alone, quiet, and no brand slot beside it. */
+.de-mini-pick.nopick .de-mini-ou{color:var(--ink4);font-weight:700}
 .de-mini-pick.nopick .de-mini-ou b{color:var(--ink2)}
 @media(prefers-reduced-motion:no-preference){
   .tile.v-play .de-mini-arrow{animation:pick-nod 1.9s ease-in-out infinite}
   .tile.v-lean .de-mini-arrow{animation:pick-nod 2.7s ease-in-out infinite}
 }
-/* on a board tile: one notch down, and the figure still leads */
-.de-mini-pick.dmp-tile{gap:8px}
-.de-mini-pick.dmp-tile .de-mini-ou{font-size:13px}
-.de-mini-pick.dmp-tile .de-mini-ou b{font-size:16px}
-.de-mini-pick.dmp-tile .de-mini-logo{font-size:12px}
-.de-mini-pick.dmp-tile .de-mini-mark{padding:2.5px 7px 2.5px 6px;gap:4px}
-.de-mini-pick.dmp-detail{gap:11px}
+/* ON A BOARD TILE the column is ~137px of usable width and it has to carry the mark, the
+   word, the number AND the result stamp on ONE line. The pill around the mark was spending
+   14px of that on padding, which is what pushed "OVER 8.5" into clipping to "OVER 8." — so
+   on the tile (and only on the tile) the mark loses its container and becomes two bare
+   glyphs. Nothing truncates: the call is the reason the tile exists. */
+.de-mini-pick.dmp-tile{gap:6px}
+.de-mini-pick.dmp-tile .de-mini-ou{font-size:13px;gap:4px;white-space:nowrap}
+.de-mini-pick.dmp-tile .de-mini-ou b{font-size:15px}
+.de-mini-pick.dmp-tile .de-mini-word{font-size:13px;letter-spacing:.01em}
+.de-mini-pick.dmp-tile .de-mini-logo{font-size:11px}
+.de-mini-pick.dmp-tile .de-mini-mark{padding:0;gap:4px;background:none;box-shadow:none}
+.de-mini-pick.dmp-tile .de-mini-redact{width:34px;height:10px}
+@media(max-width:400px){
+  .de-mini-pick.dmp-tile{gap:5px}
+  .de-mini-pick.dmp-tile .de-mini-word{font-size:12px}
+  .de-mini-pick.dmp-tile .de-mini-ou b{font-size:14px}
+  .restamp.rs-mini{width:19px;height:19px}
+  .restamp.rs-mini .rs-g{width:19px;height:19px}
+  .restamp.rs-mini .rs-g svg{width:12px;height:12px}
+}
+.de-mini-pick.dmp-detail{gap:10px}
 .de-mini-pick.dmp-detail .de-mini-ou b{font-size:19px}
+.de-mini-pick.dmp-detail .de-mini-word{font-size:17px}
+
+/* ══════════════ THE RESULT STAMP — deliberately NOT the pick's language ══════════════
+   Leon: "use word OVER or UNDER for picks… and then for RIGHT / WRONG use another
+   treatment." A graded outcome and a direction call are different KINDS of fact, and they
+   used to be told apart only by which green thing you were looking at.
+
+   THE PICK is ink on paper: an uncontained word, a hairline-tinted brand slot, a triangle.
+   THE RESULT is a stamp: solid fill, white knockout type, letterspaced, with its glyph
+   inside a translucent disc. Nothing is shared — not the shape, not the weight, not the
+   fill. You can tell them apart at arm's length, in greyscale, at 11px.
+
+   Live states are NOT stamped. Nothing is applied to the page until the game is over; the
+   in-flight read keeps its own quiet vocabulary ("holding", "chasing", "clinched"). */
+.restamp{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
+  border-radius:7px;padding:3.5px 8px 3.5px 5px;
+  font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.1em;line-height:1;
+  color:#fff;white-space:nowrap;box-shadow:0 1px 2px var(--sh3)}
+.restamp .rs-g{display:grid;place-items:center;width:15px;height:15px;border-radius:50%;
+  background:rgba(255,255,255,.24);flex-shrink:0}
+.restamp .rs-g svg{width:11px;height:11px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.restamp b{font-weight:800}
+.restamp.won{background:linear-gradient(160deg,var(--g3),var(--g1))}
+.restamp.lost{background:linear-gradient(160deg,var(--r3),var(--r1))}
+.restamp.pushed{background:linear-gradient(160deg,var(--n3),var(--n2))}
+.restamp.rs-sm{padding:2.5px 7px 2.5px 4px;font-size:10px;gap:4px;border-radius:6px}
+.restamp.rs-sm .rs-g{width:13px;height:13px}
+.restamp.rs-sm .rs-g svg{width:9px;height:9px}
+/* MINI — the tile. The glyph alone in its filled disc: one object, fixed size, no text to
+   wrap and no width to negotiate with the call beside it. */
+.restamp.rs-mini{padding:0;border-radius:50%;gap:0;width:21px;height:21px;justify-content:center;box-shadow:0 1px 3px var(--sh3)}
+.restamp.rs-mini .rs-g{width:21px;height:21px;background:none}
+.restamp.rs-mini .rs-g svg{width:13px;height:13px;stroke-width:3.2}
+/* THE CALL ROW IS ONE LINE. The stamp is unshrinkable and the call takes the slack, so a
+   long call ("UNDER 10.5 +105") truncates its own price rather than pushing the outcome
+   onto a second line. Verified at 360px. */
+.tl-verdict .tv-callrow{flex-wrap:nowrap;align-items:center;gap:7px;min-width:0}
+/* the call never truncates — it shrinks its own spacing first (see .dmp-tile above) */
+.tl-verdict .tv-callrow .de-mini-pick{flex:0 0 auto;min-width:0}
+.tl-verdict .tv-callrow .tv-res{flex:0 0 auto;margin-left:auto}
+/* the stamp is the whole result chip — the old bordered .tv-res frame would double it */
+.tv-res.stamped{background:none;border:0;box-shadow:none;padding:0}
+
+/* THE REDACTED SIDE, on Record surfaces that read the unified feed directly. Same contract
+   as the board's: a chip that says a pick is there, never a filter over a real value. */
+.lockside{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2.5px 9px 2.5px 7px;
+  background:rgba(var(--goldc),.10);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.24);white-space:nowrap}
+.lockside svg{width:11px;height:11px;fill:none;stroke:var(--gold);stroke-width:2.1}
+.lockside i{font-style:normal;font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold)}
+.lockside.sm{padding:2px 7px 2px 6px}
+.lockside.sm i{font-size:9px}
+.rbp-lock{display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.rbp-lock svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.2}
+/* a locked analyst mark on a story slide: neutral, identity intact, direction gone */
+.sts-hmark.lock i{background:rgba(255,255,255,.34);clip-path:none;border-radius:999px;height:4px}
 .art-pick.compact{border-left:0;border-radius:16px;align-items:center;justify-content:space-between;background:rgba(255,255,255,.66);border:1px solid rgba(var(--rimc),.12);box-shadow:var(--e0)}
 .art-pick.compact .apk-price{margin-left:auto;font-family:var(--mono);font-weight:700;color:var(--ink3)}
 .art-pick.compact .apk-lineonly{margin-left:auto;font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
@@ -2500,20 +2610,61 @@ details.more .more-body{padding-top:12px}
 @keyframes storyLogoFloat{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-3px) rotate(1deg)}}
 @keyframes storyAgentPulse{from{transform:translateY(0);filter:saturate(1)}to{transform:translateY(-2px);filter:saturate(1.12)}}
 
-.dp-14{margin:12px 0 0;padding:13px;border-radius:18px;background:rgba(255,255,255,.62);border:1px solid rgba(var(--rimc),.12);box-shadow:var(--e0);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25)}
-.dp-14h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
-.dp-14h span{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
-.dp-14h b{font-family:var(--sans);font-weight:700;font-size:12px;color:var(--ink3)}
-.dp-14row{display:grid;grid-template-columns:repeat(14,minmax(34px,1fr));gap:5px}
-.d14{min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:10px;padding:7px 3px;background:rgba(var(--tintc),.055);border:1px solid rgba(var(--rimc),.09)}
-.d14 i{font-style:normal;font-family:var(--sans);font-size:10px;color:var(--ink4);white-space:nowrap}
-.d14 b{font-family:var(--mono);font-weight:800;font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums}
-.d14.up{background:rgba(var(--greenc),.09);border-color:rgba(var(--greenc),.18)}
-.d14.up b{color:var(--g3)}
-.d14.down{background:rgba(var(--redc),.075);border-color:rgba(var(--redc),.16)}
-.d14.down b{color:var(--r3)}
-.d14.empty{opacity:.55}
-@media(max-width:520px){.dp-14row{grid-template-columns:repeat(7,minmax(34px,1fr))}.dp-14h{align-items:flex-start;flex-direction:column;gap:2px}}
+/* ══ THE 14-DAY WIDGET — the proof-of-life surface ══
+   Leon: "make it genuinely compelling — this is the proof-of-life surface."
+
+   It was fourteen equal grey chips reading "Mon 2-1". Everything on it was a FIGURE, which
+   means nothing about it could be read without reading it, and fourteen small numbers in a
+   row is the least persuasive way to show a fortnight of results.
+
+   It is a SKYLINE now. Each day is a column whose bar is that day's net units, drawn up or
+   down from a shared baseline and scaled to the fortnight's biggest move — so a hot run is
+   a ridge and a cold week is a trench, legible before a single figure is read. The W–L and
+   the net sit under the bar for the reader who wants them, the date under that, and today's
+   column carries a ring. A day with no action is a hollow tick, which is honest and also
+   makes the days we played louder. All fourteen fit at 375px: the columns are fr units with
+   no minimum, so the grid narrows rather than scrolling. */
+.dp-14{margin:14px 0 0;padding:14px 13px 11px;border-radius:20px;
+  background:rgba(255,255,255,.66);border:1px solid rgba(var(--rimc),.11);box-shadow:var(--e0);
+  -webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);
+  cursor:pointer;-webkit-tap-highlight-color:transparent}
+.dp-14:active{background:rgba(255,255,255,.8)}
+.dp-14h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 11px}
+.dp-14k{font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.dp-14sum{display:inline-flex;align-items:baseline;gap:8px;flex-shrink:0}
+.dp-14sum b{font-family:var(--mono);font-weight:800;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+.dp-14sum i{font-style:normal;font-family:var(--mono);font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+.dp-14sum i.pos{color:var(--g3)}
+.dp-14sum i.neg{color:var(--r3)}
+.dp-14row{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:3px;align-items:end}
+.d14{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:9px;padding:5px 1px 6px}
+/* the bar — the whole point of the widget */
+.d14-bar{display:flex;align-items:flex-end;justify-content:center;width:100%;height:38px}
+.d14-bar i{display:block;width:64%;max-width:14px;min-height:3px;border-radius:3px 3px 1px 1px;background:rgba(var(--tintc),.16)}
+.d14.up .d14-bar i{background:linear-gradient(180deg,var(--g3),var(--g1))}
+.d14.down .d14-bar i{background:linear-gradient(180deg,var(--r3),var(--r1))}
+.d14.flat .d14-bar i{background:rgba(var(--tintc),.24)}
+.d14.none .d14-bar i{height:3px !important;background:rgba(var(--rimc),.14)}
+.d14-wl{font-family:var(--mono);font-weight:800;font-size:10px;line-height:1;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.d14-net{font-family:var(--mono);font-weight:700;font-size:8.5px;line-height:1;color:var(--ink4);font-variant-numeric:tabular-nums;white-space:nowrap}
+.d14.up .d14-wl{color:var(--g3)}
+.d14.up .d14-net{color:var(--g3)}
+.d14.down .d14-wl{color:var(--r3)}
+.d14.down .d14-net{color:var(--r3)}
+.d14.none .d14-wl,.d14.none .d14-net{color:var(--ink4);opacity:.6}
+.d14-d{display:flex;flex-direction:column;align-items:center;gap:0;margin-top:1px}
+.d14-d b{font-family:var(--disp);font-weight:700;font-size:10px;line-height:1.1;color:var(--ink3);font-variant-numeric:tabular-nums}
+.d14-d em{font-style:normal;font-family:var(--disp);font-weight:700;font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink4);line-height:1.2}
+/* TODAY is ringed, not recoloured — the colour channel is already carrying win/loss */
+.d14.is-today{background:rgba(var(--goldc),.09);box-shadow:inset 0 0 0 1.5px rgba(var(--goldc),.34)}
+.d14.is-today .d14-d em{color:var(--gold)}
+@media(max-width:400px){
+  .dp-14row{gap:2px}
+  .d14-bar{height:32px}
+  .d14-wl{font-size:9px}
+  .d14-net{display:none}   /* the bar already carries the net; the figure is the first to go */
+  .d14-d b{font-size:9px}
+}
 
 /* ══ TAB NAVIGATION IS A PAN, AND THE DOCK NEVER MOVES ══
    `main` is the only element that travels. Phase 1 accelerates it off-stage in the
@@ -2548,10 +2699,8 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 .lp-graded.push{border-color:var(--glass-brd)}
 .lpg-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .lpg-lab{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
-.lpg-res{font-family:var(--disp);font-weight:800;font-size:16px;padding:2px 10px;border-radius:999px}
-.lpg-res.hit{color:var(--g3);background:rgba(var(--greenc),.14)}
-.lpg-res.miss{color:var(--r3);background:rgba(var(--redc),.12)}
-.lpg-res.push{color:var(--ink2);background:var(--pan2,rgba(var(--tintc),.14))}
+/* the stamp is the chip — the old pill frame around it would draw a badge on a badge */
+.lpg-res{display:inline-flex;padding:0;background:none;border-radius:0}
 .lpg-detail{margin-top:7px;font-size:16px;color:var(--ink2)}
 .lpg-detail b{color:var(--ink);font-variant-numeric:tabular-nums}
 .lpg-why{margin-top:9px;padding-top:8px;border-top:1px solid var(--line3);font-size:12px;line-height:1.45;color:var(--ink3)}
@@ -2957,7 +3106,7 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 .pit-chip.tap{cursor:pointer}
 .pit-chip.tap:active{transform:scale(.98)}
 .pit-more{color:var(--ink3);font-weight:700;margin-left:2px}
-.tp-p{cursor:pointer;text-decoration:underline dotted rgba(var(--rimc),.35);text-underline-offset:2px}
+.tp-p{cursor:inherit}
 .tp-era{font-style:normal;font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink3)}
 .pit-hand{font-family:var(--mono);font-size:13px;color:var(--ink3);font-weight:600}
 .bgrid.pitlog td.num{text-align:right;font-family:var(--mono)}
@@ -3002,33 +3151,124 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
        never grows the active one. Icon over label, 10pt, tight tracking.
      · THE ACTIVE STATE IS COLOUR, NOT A CONTAINER. Tint the icon and the label; no pill, no
        glow, no size change. The selected tab is the one that is inked.
-     · A CENTER SLOT THAT CAN BE RAISED LATER. `.dock-item.main` already owns the middle and
-       is positioned with `--dock-lift` / `--dock-main-size`; a coming round can raise and
-       enlarge it by changing those two values, with no structural rework.                */
-.dockwrap{--dock-h:49px;--dock-lift:0px;--dock-main-size:28px;
-  position:fixed;inset-inline:0;bottom:0;z-index:460;display:block;
-  padding:0 var(--sar) var(--sab) var(--sal);pointer-events:none;background:transparent}
-.dock{pointer-events:auto;display:flex;align-items:stretch;justify-content:space-around;gap:0;width:100%;
-  max-width:none;min-height:var(--dock-h);padding:0 max(4px,var(--sal)) 0 max(4px,var(--sar));border-radius:0;
-  background:rgba(249,251,254,.72);border:0;
-  -webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);
-  box-shadow:0 -0.5px 0 rgba(20,31,46,.14);
+     · THE CENTER SLOT IS NOW RAISED. Round 1 reserved it; this round uses it. GAMES sits in
+       the middle of five tabs, lifted 3px and drawn at 34px against the other tabs' 25px,
+       with a soft brand wash behind it. It is still a tab — no floating action button, no
+       container that breaks the row — just the one destination the product is about, given
+       the weight iOS gives a primary tab. Both values stay variables so the lift can be
+       tuned (or zeroed) without touching structure.                                      */
+.dockwrap{--dock-h:54px;--dock-lift:16px;--dock-main-size:31px;--dock-main-well:54px;--dock-inset:13px;
+  position:fixed;inset-inline:0;bottom:0;z-index:460;display:flex;justify-content:center;
+  padding:0 calc(var(--dock-inset) + var(--sar)) calc(var(--sab) + 11px) calc(var(--dock-inset) + var(--sal));
+  pointer-events:none;background:transparent}
+/* ══════════════ A FLOATING LIQUID-GLASS CAPSULE ══════════════
+   Leon, three times: "still need the glassmorphic design on the bottom bar and it should be
+   FLOATING, latest iOS style."
+
+   WHY THE LAST ATTEMPT DIDN'T READ AS GLASS. It had the right geometry and a real
+   backdrop-filter, and it still looked like a white bar — because the fill was
+   rgba(255,255,255,.80). At .80 there is almost nothing left for the blur to blur. Glass is
+   not a blur setting; it is a LOW-ALPHA material that lets you see the page move behind it.
+   The fill is .50→.34 now, and a red crest scrolling underneath visibly warms the capsule,
+   which is the whole effect.
+
+   THE FIVE LAYERS, each doing an optical job:
+     1. backdrop-filter — blur 30px, saturate 200%, brightness 106%. Saturation is what keeps
+        the blurred content behind it looking like colour rather than grey mush.
+     2. a low-alpha vertical tint — brighter at the top edge, as on a curved pane
+     3. a SPECULAR top hairline (near-white inset) and a softer bottom one
+     4. a diffuse highlight sweep across the top third (::before, overlay blend)
+     5. two shadows — a tight contact shadow and a wide soft lift — so it floats rather than
+        sits. An edge-docked bar needs neither; a floating capsule needs both.
+
+   CONTRAST IS NOT NEGOTIATED AWAY. The labels sit on the material, never in it: nothing on
+   the capsule is blurred, the inactive ink is --ink2 (8.9:1 on paper) rather than the --ink4
+   an opaque bar could afford, and the active tab gets its own brighter lozenge so gold-on-
+   glass keeps its ratio even over a dark photo scrolling beneath. */
+.dock{pointer-events:auto;position:relative;isolation:isolate;
+  display:flex;align-items:stretch;justify-content:space-around;gap:0;
+  width:100%;max-width:520px;min-height:var(--dock-h);padding:0 5px;
+  border-radius:calc(var(--dock-h) / 2);
+  background:linear-gradient(180deg,rgba(255,255,255,.50),rgba(244,248,253,.34));
+  -webkit-backdrop-filter:saturate(200%) brightness(106%) blur(30px);
+  backdrop-filter:saturate(200%) brightness(106%) blur(30px);
+  border:0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 0 0 .5px rgba(var(--rimc),.13),
+    inset 0 -1px 0 rgba(255,255,255,.45),
+    0 2px 6px -2px rgba(var(--rimc),.14),
+    0 16px 38px -10px rgba(var(--rimc),.26);
   animation:dockIn .34s var(--ease-out) both}
+/* the specular sweep — the detail that separates "liquid glass" from "translucent box" */
+.dock::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:linear-gradient(180deg,rgba(255,255,255,.60),rgba(255,255,255,0) 52%);
+  mix-blend-mode:overlay}
 @keyframes dockIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .dock-item{position:relative;flex:1 1 0;min-width:0;max-width:120px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  min-height:var(--dock-h);padding:6px 2px 5px;border:0;background:transparent;border-radius:0;cursor:pointer;
-  color:var(--ink4);-webkit-tap-highlight-color:transparent;
+  min-height:var(--dock-h);padding:7px 2px 6px;border:0;background:transparent;border-radius:0;cursor:pointer;
+  color:var(--ink2);-webkit-tap-highlight-color:transparent;
   transition:color .16s ease,transform .16s var(--ease-out)}
 .dock-item:active{transform:scale(.93)}
-/* SELECTED = INKED. No container, no growth. */
+/* SELECTED. Inked gold, plus a very soft lozenge of lighter glass behind it — the
+   current-iOS selection treatment: the material itself thickens under the active tab
+   rather than a hard pill being drawn on top of it. */
 .dock-item.on{width:auto;padding:6px 2px 5px;background:transparent;box-shadow:none;color:var(--gold)}
+.dock-item.on::before{content:"";position:absolute;inset:4px 3px;border-radius:16px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.30));
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.9),0 1px 3px rgba(var(--rimc),.07);
+  opacity:.9}
 .dock-item.on .dock-lab{font-weight:700}
-/* the center slot — reserved, and liftable from one variable */
+/* ══════════════ THE CENTER SLOT — GAMES, RAISED ══════════════
+   Leon, three times: "the Games tab must be visibly LARGER than the other four… a genuinely
+   bigger, raised center element… it should read as 'the main button' even in a screenshot
+   thumbnail."
+
+   So it is the iOS raised-center-action pattern, not a slightly heavier tab: a 54px
+   squircle of brighter glass that RIDES the capsule — lifted 16px so its top third sits
+   proudly above the bar's edge — carrying the brand diamond at 31px against the other tabs'
+   25px (1.24× the glyph, ~2.1× the visual footprint once the well is counted). It keeps its
+   label, so it is still a tab and still reads as navigation.
+
+   The well is always drawn (the middle of the bar has structure wherever you are) and warms
+   to brand gold with a real glow when Games is selected. The other four keep their 49pt
+   targets; this one is larger, which is the point. */
 .dock-item.main{width:auto;height:auto;min-height:var(--dock-h);margin:0;background:transparent;box-shadow:none;
-  transform:translateY(calc(-1 * var(--dock-lift)))}
-.dock-item.main:active{transform:translateY(calc(-1 * var(--dock-lift))) scale(.93)}
-.dock-item.main .dock-ic svg{width:var(--dock-main-size);height:var(--dock-main-size)}
+  justify-content:flex-end;padding-bottom:6px;overflow:visible;z-index:2}
+.dock-item.main:active .dock-ic{transform:translateY(calc(-1 * var(--dock-lift))) scale(.93)}
+.dock-item.main .dock-ic{position:relative;width:var(--dock-main-well);height:var(--dock-main-well);
+  border-radius:50%;display:grid;place-items:center;flex-shrink:0;
+  transform:translateY(calc(-1 * var(--dock-lift)));
+  margin-bottom:calc(-1 * var(--dock-lift) + 1px);
+  transition:transform .2s var(--ease-out),background .22s ease,box-shadow .22s ease}
+.dock-item.main .dock-ic svg{width:var(--dock-main-size);height:var(--dock-main-size);stroke-width:1.9}
+.dock-item.main.on .dock-ic svg{stroke-width:2.1}
+/* THE WELL. Its own pane of brighter glass with a specular rim and a real drop, so the
+   raised circle reads as a physical object sitting on the capsule rather than a tinted area
+   of it. Selected, it takes the brand gold and a warm glow. */
+.dock-item.main .dock-ic::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(240,245,251,.72));
+  -webkit-backdrop-filter:saturate(190%) blur(20px);backdrop-filter:saturate(190%) blur(20px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 .5px rgba(var(--rimc),.11),
+    0 4px 10px -2px rgba(var(--rimc),.18),
+    0 10px 22px -8px rgba(var(--rimc),.22);
+  transition:background .22s ease,box-shadow .22s ease}
+.dock-item.main.on .dock-ic::after{
+  background:linear-gradient(180deg,rgba(255,238,196,.96),rgba(246,214,132,.80));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 0 0 .5px rgba(var(--goldc),.34),
+    0 4px 12px -2px rgba(var(--goldc),.34),
+    0 12px 26px -8px rgba(var(--goldc),.40)}
+.dock-item.main.on .dock-ic{color:var(--golddeep)}
+/* the active lozenge is for the ordinary tabs; the centre has its own well */
+.dock-item.main.on::before{display:none}
+.dock-item.main .dock-lab{font-weight:800;letter-spacing:.005em}
+/* the capsule must not clip the raised circle */
+.dock{overflow:visible}
 .dock-pill{display:none}
 .dock-ic{position:relative;z-index:1;display:grid;place-items:center;height:26px}
 /* SF-Symbols weight: 1.7px strokes with round caps and joins at 24px, never hairlines */
@@ -3040,17 +3280,36 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 /* on a wide screen the material still spans the window (that is what makes it chrome), but
    the tabs cluster in the middle instead of drifting 300px apart */
 @media(min-width:700px){
-  .dock{justify-content:center;gap:6px}
+  .dock{justify-content:center;gap:2px;width:auto;padding:0 10px}
   .dock-item{flex:0 1 104px}
   .dock-lab{font-size:11px}
 }
 @media (prefers-reduced-motion:reduce){.dock{animation:none}.dock-item,.dock-item.main{transition:none}}
-/* the deck is a dark surface: the bar takes its dark material there, as iOS would */
-body.stories-on .dock{background:rgba(10,13,22,.66);box-shadow:0 -0.5px 0 rgba(255,255,255,.14)}
-body.stories-on .dock-item{color:rgba(226,235,245,.56)}
+/* THE DARK MATERIAL. The deck is a dark surface, so the bar takes iOS's dark glass there —
+   same four layers, inverted: the specular rim goes white-at-low-alpha, the tint goes deep,
+   and the ambient drop disappears (a dark pane on a dark page needs a rim, not a shadow). */
+body.stories-on .dock{
+  background:linear-gradient(180deg,rgba(30,37,52,.52),rgba(12,16,26,.38));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 0 0 .5px rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(255,255,255,.07),
+    0 18px 40px -12px rgba(0,0,0,.62)}
+body.stories-on .dock::before{background:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,0) 50%)}
+body.stories-on .dock-item{color:rgba(232,240,250,.80)}
 body.stories-on .dock-item.on{color:#f5be42}
-/* content must clear the bar */
-main{padding-bottom:calc(var(--sab) + 49px + 22px) !important}
+body.stories-on .dock-item.on::before{background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.05));box-shadow:inset 0 .5px 0 rgba(255,255,255,.2)}
+body.stories-on .dock-item.main .dock-ic::after{
+  background:linear-gradient(180deg,rgba(52,60,78,.86),rgba(26,32,46,.72));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),inset 0 0 0 .5px rgba(255,255,255,.10),0 10px 24px -8px rgba(0,0,0,.6)}
+body.stories-on .dock-item.main.on .dock-ic::after{
+  background:linear-gradient(180deg,rgba(246,199,69,.96),rgba(211,155,32,.86));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 0 .5px rgba(246,199,69,.5),0 12px 26px -8px rgba(246,199,69,.4)}
+body.stories-on .dock-item.main.on .dock-ic{color:#3a2a05}
+/* content must clear the bar — the pill is inset from the bottom now, so this grew with it */
+/* nothing may sit under the capsule at the bottom of a scroll: its full footprint is the
+   bar height + its bottom inset + a breath of clearance */
+main{padding-bottom:calc(var(--sab) + 54px + 34px) !important}
 /* THE BAR NEVER LEAVES (Leon: "let's actually leave the bottom bar there all the time").
    Sheets and the game page render into #sheet-layer at z-450; the bar is z-460 above it and
    stays interactive over every modal. */
@@ -3199,11 +3458,11 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
    a gold bloom under a floating capsule. The dock is a solid tab bar now; see THE DOCK.) */
 
 /* ══ (10) PITCHERS UNDER TEAMS — quiet last-name + ERA line under each team row ══ */
-.t-pitchsub{display:flex;align-items:baseline;gap:5px;min-width:0;margin:-2px 0 0 31px;padding:0;
+.t-pitchsub{display:flex;align-items:baseline;gap:5px;min-width:0;margin:-2px 0 0 43px;padding:0;
   font-family:var(--sans);font-size:10.5px;line-height:1.25;color:var(--ink4);cursor:pointer}
 /* "Liberatore" + "4.97 ERA" has to survive a 163px column: the surname keeps its size and
    the unit label gives up the last two pixels. */
-@media(max-width:719px){.t-pitchsub{gap:4px;margin-left:30px}.t-pitchsub .tps-era{font-size:9.5px;letter-spacing:-.02em}}
+@media(max-width:719px){.t-pitchsub{gap:4px;margin-left:41px}.t-pitchsub .tps-era{font-size:9.5px;letter-spacing:-.02em}}
 .t-pitchsub .tps-nm{font-weight:600;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .t-pitchsub .tps-era{display:inline-flex;align-items:baseline;gap:3px;font-family:var(--mono);font-weight:600;font-size:10px;color:var(--ink4);white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
 .t-pitchsub .tps-era em{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.06em}
@@ -3212,7 +3471,7 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
    both spell it out. The NAME never truncates. */
 @media(max-width:400px){.t-pitchsub .tps-era{gap:2px}.t-pitchsub .tps-era em{font-size:8px;letter-spacing:0}}
 @media(max-width:366px){.t-pitchsub .tps-era em{display:none}}
-.t-pitchsub:hover .tps-nm{color:var(--ink2)}
+/* (.t-pitchsub:hover lived here — it advertised a tap target the card no longer has.) */
 
 /* ══ (7) TOP PICKS — #1 full-width cinematic hero + #2–#5 compact 2×2 grid ══ */
 .toppicks .tpk-hero{width:100%;padding:14px 16px 13px;gap:9px;border-radius:20px;
@@ -3589,15 +3848,20 @@ body.stories-on{background:#050710}
 .pp-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid var(--line3);cursor:pointer;
   background:var(--glass-hi);border-radius:10px;padding:7px 10px;transition:background .2s ease}
 .pp-row:hover{background:rgba(var(--tintc),.07)}
-.pp-row .bstars{font-size:12px;flex-shrink:0}
+/* (.pp-row .bstars lived here — the gold star tier on every archive row. It was one of
+   two gold vocabularies on the same row and the reason the surface read as "gold picks and
+   green picks all different". The row is matchup · call · outcome now, full stop.) */
 .pp-mu{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pp-side{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--ink2);white-space:nowrap;flex-shrink:0}
-.pp-side i{font-style:normal;color:var(--ink3)}
-.ppres{flex-shrink:0;display:grid;place-items:center;width:20px;height:20px;border-radius:7px;font-family:var(--disp);font-weight:800;font-size:12px}
-.ppres.won{color:#fff;background:var(--green)}
-.ppres.lost{color:#fff;background:var(--red)}
-.ppres.pushed{color:var(--n3);background:rgba(var(--rimc),.16)}
+/* the call sits right of the matchup and takes the slack, so the outcome stamp is always
+   flush right and the column of stamps reads straight down the day */
+.pp-side{margin-left:auto;display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:800;font-size:13px;color:var(--ink);white-space:nowrap;flex-shrink:0}
+.pp-side i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:11px;color:var(--ink3)}
+/* the stamp IS the result; .ppres survives only for the two states that are not outcomes */
+.ppres{flex-shrink:0;display:inline-flex;align-items:center;border-radius:7px;padding:3px 8px;
+  font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.08em}
+.ppres.voidppd{color:var(--n3);background:rgba(var(--rimc),.12)}
 .ppres.open{color:var(--ink3);background:rgba(var(--tintc),.08)}
+.pp-row .restamp{flex-shrink:0}
 /* honest day notes — flagged empty/thin days are stated, never silent */
 .pp-noteonly{padding:10px 2px}
 .pp-notehead{display:flex;align-items:center;gap:9px}
@@ -3734,7 +3998,8 @@ body.stories-on{background:#050710}
 /* the narrowest phones: the bar is full-bleed and self-distributing, so only the label and
    the icon step down — the old capsule sizing (fixed 42px items, a gap and a pad) is gone
    with the capsule itself. */
-@media(max-width:392px){.dock-lab{font-size:9.5px}.dock-ic svg{width:23px;height:23px}.dockwrap{--dock-main-size:26px}}
+@media(max-width:392px){.dock-lab{font-size:9.5px}.dock-ic svg{width:23px;height:23px}
+  .dockwrap{--dock-main-size:29px;--dock-main-well:50px;--dock-lift:14px;--dock-inset:9px}}
 
 /* ══════════════════════════════════════════════════════════════════════════════
    PICK PRESENTATION — ELEGANCE PASS  (Leon, 2026-07-26)
@@ -4970,15 +5235,63 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .dp-h{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.04;letter-spacing:-.035em;
   color:var(--ink);margin-bottom:10px}
 .dp-dek{font-family:var(--sans);font-size:16px;line-height:1.6;color:var(--ink2);max-width:58ch}
-.dp-recordhero{margin:15px 0 0;padding:16px 17px;border-radius:18px;background:linear-gradient(145deg,rgba(var(--goldc),.16),rgba(var(--panec),.84) 64%);
-  border:1px solid rgba(var(--goldc),.28);box-shadow:var(--e1)}
-.dpr-k{font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--golddeep)}
-.dpr-main{display:flex;align-items:baseline;gap:9px 14px;flex-wrap:wrap;margin-top:5px}
-.dpr-main b{font-family:var(--mono);font-weight:800;font-size:36px;letter-spacing:-.06em;color:var(--ink);font-variant-numeric:tabular-nums}
-.dpr-main span{font-family:var(--disp);font-weight:800;font-size:14px;color:var(--ink2);white-space:nowrap}
-.dpr-main span.pos{color:var(--g3)}.dpr-main span.neg{color:var(--r3)}
-.dp-recordhero p{margin:8px 0 0;font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink3);max-width:64ch}
-.dp-section-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:18px 2px 9px}
+/* ══ THE HEADLINE RECORD — the biggest thing on the site ══
+   A sales page opens with its claim. The W–L is set in the display face at 60px with tight
+   negative tracking so it reads as a scoreboard rather than as body copy with a number in
+   it, and the three qualifying figures sit beneath on one rule-separated row. */
+.dp-recordhero{margin:2px 0 0;padding:19px 20px 17px;border-radius:22px;
+  background:linear-gradient(145deg,rgba(var(--goldc),.19),rgba(var(--panec),.86) 62%);
+  border:1px solid rgba(var(--goldc),.30);box-shadow:var(--e1)}
+.dpr-k{display:block;font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--golddeep)}
+.dpr-wl{margin:6px 0 0;font-family:var(--disp);font-weight:800;font-size:60px;line-height:.94;letter-spacing:-.055em;
+  color:var(--ink);font-variant-numeric:tabular-nums}
+.dpr-figs{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:13px;padding-top:12px;border-top:1px solid rgba(var(--goldc),.22)}
+.dpr-figs span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.dpr-figs b{font-family:var(--mono);font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+.dpr-figs i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.dpr-figs span.pos b{color:var(--g3)}
+.dpr-figs span.neg b{color:var(--r3)}
+/* THE TRACKING LINE — what the headline number is, and what starts tonight. Set as a quiet
+   footer INSIDE the hero rather than as a caveat beside it: it is provenance, not a hedge. */
+.dpr-live{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 7px;margin-top:13px;padding-top:12px;
+  border-top:1px solid rgba(var(--goldc),.22)}
+.dpr-live b{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:-.005em;color:var(--ink)}
+.dpr-live i{font-style:normal;flex-basis:100%;font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3)}
+.dpr-livedot{width:7px;height:7px;border-radius:50%;background:var(--g3);flex-shrink:0;align-self:center;
+  box-shadow:0 0 0 3px rgba(var(--greenc),.16)}
+@media(prefers-reduced-motion:no-preference){.dpr-livedot{animation:pulseDot 2.4s ease-in-out infinite}}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 3px rgba(var(--greenc),.16)}50%{box-shadow:0 0 0 6px rgba(var(--greenc),.06)}}
+/* (.dp-recordhero.is-replay lived here — a cooler wash for a headline that was a replay
+   rather than a served record. The contract was simplified to one continuous live record
+   from July 1, so there is only one state to draw.) */
+@media(max-width:559px){.dpr-wl{font-size:50px}.dpr-figs{gap:6px 16px}.dpr-figs b{font-size:16px}}
+/* THE PITCH — one sentence, set large enough to be the second thing you read. */
+.dp-pitch{margin:15px 2px 0;font-family:var(--serif,var(--disp));font-weight:600;font-size:19px;line-height:1.42;
+  letter-spacing:-.012em;color:var(--ink);max-width:44ch}
+@media(max-width:559px){.dp-pitch{font-size:17px;line-height:1.4}}
+.dp-recbtn{display:flex;align-items:center;gap:8px;width:100%;margin-top:11px;padding:13px 15px;border:0;cursor:pointer;
+  border-radius:15px;background:rgba(var(--tintc),.05);box-shadow:inset 0 0 0 1px var(--line3);
+  font-family:var(--sans);font-weight:700;font-size:14px;color:var(--ink2);text-align:left}
+.dp-recbtn em{font-style:normal;margin-left:auto;color:var(--ink4);font-size:16px}
+.dp-recbtn:active{background:rgba(var(--tintc),.09)}
+.dp-section-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:22px 2px 9px}
+/* ══ WHY IT HOLDS UP — the science, stated rather than hedged ══
+   Three numbered claims about the machine. Numbered because a numbered list reads as a
+   specification and a bulleted one reads as marketing, and the point of this block is that
+   it is the specification. */
+.dp-cred{margin:24px 0 0;padding:20px 18px 18px;border-radius:22px;
+  background:linear-gradient(168deg,rgba(var(--slatec),.09),rgba(var(--panec),.86) 58%);
+  border:1px solid rgba(var(--rimc),.11);box-shadow:var(--e0)}
+.dp-cred-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+.dp-cred-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:760px){.dp-cred-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}}
+.dpc{display:flex;flex-direction:column;gap:5px;min-width:0}
+.dpc-n{font-family:var(--mono);font-weight:800;font-size:11px;letter-spacing:.08em;color:var(--gold)}
+.dpc b{font-family:var(--disp);font-weight:800;font-size:17px;line-height:1.24;letter-spacing:-.018em;color:var(--ink)}
+.dpc p{margin:0;font-family:var(--sans);font-size:14px;line-height:1.58;color:var(--ink2)}
+.dp-cred .adapt-insight{margin-top:18px}
+.dp-note{margin:16px 2px 0;font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink3)}
+.dp-note b{color:var(--ink2)}
 @media(max-width:559px){.dp-h{font-size:27px}.dp-dek{font-size:14px;line-height:1.5}.dp-k{font-size:10px;margin-bottom:8px}.deskpage{padding-top:4px}}
 
 /* TWO COLUMNS AT EVERY WIDTH — that is the requirement. All four analysts are visible on
@@ -5229,11 +5542,20 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   text-align:center;text-wrap:balance;max-width:20ch;margin:0 auto}
 @media(max-width:559px){.sts-head.pat{font-size:27px}}
 .sts-substat{margin-top:14px;text-align:center;font-family:var(--sans);font-size:13px;color:var(--ink3)}
-/* the game page's opening statement: line → live → the pick, above the tabs */
-.gp-lead{display:flex;flex-direction:column;gap:14px;margin:0 0 18px}
-.gp-lead .decall{border-radius:18px;padding:18px 19px 16px}
-.gp-lead .de-side{font-size:38px}
-@media(max-width:559px){.gp-lead .de-side{font-size:30px}}
+/* THE BANNER — the game page's one statement above the tabs.
+   It used to be a stack of five blocks (line, live meter, desk, call, receipt) running past
+   1,000px, which put the tab bar off the first screen on a phone. It is one card now: the
+   call, its price, and its result stamp. Sized so that hero + banner + tab bar all land
+   above the fold at 375×812, which is the constraint the whole layout is built to. */
+.gp-lead{display:flex;flex-direction:column;gap:14px;margin:0 0 16px}
+.gp-lead .decall{border-radius:18px;padding:15px 17px 14px;gap:8px}
+.gp-lead .de-side{font-size:34px}
+@media(max-width:559px){.gp-lead .de-side{font-size:29px}}
+/* the banner variant never grows a second column of rows */
+.decall.is-banner{gap:8px}
+.decall.is-banner .de-callrow{align-items:center;row-gap:4px}
+/* the stamp is its own object — the old pill frame around .de-res would double it */
+.de-res.stamped{background:none;padding:0;border-radius:0}
 /* TOP PICKS rail: the cards were sized for 8.5px chrome. At the new type scale a 254px card
    clipped its own consensus chip — widen the card and let the chip wrap instead of truncate. */
 .tpk{width:min(86vw,320px)}
@@ -5961,21 +6283,15 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
 .rblv-btrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px;
   padding:4px 7px;border-radius:7px;background:var(--glass);font-size:11px;color:var(--ink3)}
 
-/* ══════════ THE DESK vs THE TICKET — agreement + coherence (game page) ══════════
-   Two blocks that exist to keep one distinction visible: the desk's opinion and the bet
-   are different objects. `desk_agreement` says what the four made of the ticket;
-   `coherence` lays the other reads (desk majority, weighted combination, ATLAS's score)
-   beside it and marks each same or opposite. Neither is ever styled as an alarm — a bet
-   the room dislikes is a normal, and often the best, kind of bet. */
-.deskag{display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 9px;margin-top:10px;padding:10px 12px;
-  border-radius:var(--r-sm);background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line3)}
-.deskag .dag-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.03em;color:var(--ink)}
-.deskag .dag-n{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums}
-.deskag .dag-note{flex-basis:100%;font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--ink3)}
-.deskag .dag-note b{font-weight:800;color:var(--ink)}
-.deskag.ag-with .dag-k{color:var(--green)}
-.deskag.ag-mixed .dag-k{color:var(--amber)}
-.deskag.ag-against .dag-k{color:var(--blue)}
+/* ══════════ HOW THE OTHER READS LINE UP — coherence (game page) ══════════
+   The desk's opinion and the bet are different objects. This block lays the other reads
+   (desk majority, weighted combination, ATLAS's score) beside the ticket and marks each
+   same or opposite. It is never styled as an alarm — taking the side the room dislikes is
+   the job, not a warning.
+
+   (.deskag lived here too — the labelled agreement slab. Its markup went in round 1 with
+   the "Mixed desk read" / "Ticket vs desk read" chips, which read as a hedge on a call we
+   had already made. The STATE survives and drives deskAgreementWhy(); the slab does not.) */
 
 .coherence{margin-top:10px;border-top:1px solid var(--line3);padding-top:8px}
 .coherence>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:4px 0}
@@ -6149,3 +6465,111 @@ header#app-header.scrolled{background:rgba(255,255,255,.86)}
 .tpk-foot .pgrade{color:var(--golddeep)}
 .tpk-hero{background-image:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.42) 70%)!important}
 .tpk-crest{background:rgba(255,255,255,.78);box-shadow:0 1px 0 rgba(255,255,255,.85) inset,0 0 0 1px rgba(20,31,46,.06),0 10px 24px rgba(20,31,46,.075)}
+
+
+/* ════════════════════ THE ACCOUNT HUB ════════════════════
+   The fifth tab. Plan card, preferences, support — iOS grouped-list rhythm: cards with a
+   quiet header, rows with a chevron, generous 44pt targets, nothing shouting. */
+.acct-card.plancard{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:11px}
+.acct-card.plancard.is-prem{background:linear-gradient(150deg,rgba(var(--goldc),.15),rgba(var(--panec),.9) 60%);
+  border-color:rgba(var(--goldc),.28)}
+.plan-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.plan-id{display:flex;flex-direction:column;gap:2px;min-width:0}
+.plan-k{font-family:var(--disp);font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--ink)}
+.plan-state{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.acct-card.plancard.is-prem .plan-state{color:var(--golddeep)}
+.plan-price{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0}
+.plan-price b{font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:-.03em;color:var(--ink)}
+.plan-price i{font-style:normal;font-family:var(--sans);font-weight:600;font-size:12px;color:var(--ink3)}
+.plan-body{margin:0;font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--ink2)}
+.plan-acts{display:flex;flex-direction:column;gap:2px}
+.plan-proof{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3);text-align:center}
+.plan-proof b{color:var(--ink2);font-variant-numeric:tabular-nums}
+
+/* MANAGE SUBSCRIPTION */
+.acct-page.manage .mg-hero{text-align:center;padding:6px 0 18px}
+.mg-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--golddeep)}
+.mg-state{display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+  font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--g3)}
+.mg-dot{width:7px;height:7px;border-radius:50%;background:var(--g3);box-shadow:0 0 0 3px rgba(var(--greenc),.16)}
+.mg-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 2px;border-top:1px solid var(--line3)}
+.mg-row:first-of-type{border-top:0}
+.mg-row span{font-family:var(--sans);font-size:14px;color:var(--ink3)}
+.mg-row b{font-family:var(--sans);font-weight:700;font-size:14px;color:var(--ink);text-align:right;min-width:0;overflow-wrap:anywhere}
+.mg-cancel{display:block;width:100%;margin-top:16px;padding:14px;border:1px solid rgba(var(--redc),.24);border-radius:15px;cursor:pointer;
+  background:rgba(var(--redc),.05);font-family:var(--sans);font-weight:700;font-size:15px;color:var(--red)}
+.mg-cancel:active{background:rgba(var(--redc),.11)}
+/* a support row that is a real link still has to look like every other row */
+a.acct-link{text-decoration:none}
+
+
+/* ══ THE BOX SCORE, AT THE TOP OF A GAME THAT HAS STARTED ══
+   CBS's hierarchy: score, then what happened, then depth. The line score sits directly
+   under the compact header with the same card treatment as the hero, so header + line
+   score + pick stamp + tabs all land on the first screen at 375×812. */
+.gp-topbox{margin:0 0 14px}
+.gp-topbox .lp-graded,.gp-topbox .lp-sec{margin-top:10px}
+.gp-topbox > div:first-child{margin-top:0}
+
+
+/* ══ THE DESK'S TRIMMED CREDIBILITY LIST ══ */
+.dp-cred-list{list-style:none;display:flex;flex-direction:column;gap:11px;margin:0;padding:0}
+.dp-cred-list li{font-family:var(--sans);font-size:14.5px;line-height:1.55;color:var(--ink2);
+  padding-left:15px;position:relative}
+.dp-cred-list li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:rgba(var(--goldc),.55)}
+.dp-cred-list b{color:var(--ink);font-weight:700}
+.dp-more-btn{display:flex;align-items:center;gap:8px;width:100%;margin-top:15px;padding:12px 14px;border:0;cursor:pointer;
+  border-radius:14px;background:rgba(var(--tintc),.05);box-shadow:inset 0 0 0 1px var(--line3);
+  font-family:var(--sans);font-weight:700;font-size:13.5px;color:var(--ink2);text-align:left}
+.dp-more-btn em{font-style:normal;margin-left:auto;color:var(--ink4)}
+.dp-more-btn:active{background:rgba(var(--tintc),.09)}
+
+/* ══ THE RECORD SCREEN'S SCOPED ROWS ══
+   The same three facts in the same order at every time scale, in the same visual language as
+   the 14-day skyline above them. One column, one vocabulary. */
+.scopes{display:flex;flex-direction:column;gap:9px;margin:14px 0 16px}
+.scoperow{padding:15px 16px;border-radius:18px;background:var(--paper);
+  border:1px solid rgba(var(--rimc),.10);box-shadow:var(--e0)}
+.scoperow.empty{display:flex;align-items:baseline;justify-content:space-between;gap:10px;opacity:.72}
+.sc-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+.sc-k{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:-.015em;color:var(--ink)}
+.sc-sub{font-family:var(--sans);font-size:12px;color:var(--ink3)}
+.sc-none{font-family:var(--sans);font-size:13px;color:var(--ink4)}
+.sc-figs{display:flex;align-items:baseline;gap:8px 26px;flex-wrap:wrap}
+.sc-figs>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sc-figs b{font-family:var(--mono);font-weight:800;font-size:20px;letter-spacing:-.03em;color:var(--ink);font-variant-numeric:tabular-nums}
+.sc-figs i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.sc-u.pos b{color:var(--g3)}
+.sc-u.neg b{color:var(--r3)}
+@media(max-width:400px){.sc-figs{gap:8px 18px}.sc-figs b{font-size:18px}}
+.ix-btn.quiet{background:transparent;box-shadow:inset 0 0 0 1px var(--line3);color:var(--ink3)}
+.rec-sheet .rb-head{margin-bottom:14px}
+.rec-sheet .rb-k{font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--golddeep)}
+.rec-sheet .rb-head h3{font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:-.03em;color:var(--ink);margin-top:3px}
+
+/* ══ RESEARCH: A SCANNABLE STUDY INDEX ══
+   One row per study: a status dot, the title, the finding in one line. Depth on tap. */
+.lab-card{border-radius:14px;background:var(--paper);border:1px solid rgba(var(--rimc),.09);box-shadow:var(--e0);overflow:hidden}
+.lab-card>summary{list-style:none;cursor:pointer;padding:0}
+.lab-card>summary::-webkit-details-marker{display:none}
+.lab-row{display:flex;align-items:flex-start;gap:10px;padding:13px 14px}
+.lab-status-dot{flex-shrink:0;width:8px;height:8px;border-radius:50%;margin-top:5px;background:var(--ink4)}
+.lab-status-dot.fire{background:var(--a3)}
+.lab-status-dot.shipped{background:var(--g3)}
+.lab-status-dot.accruing{background:var(--b3)}
+.lab-status-dot.queued{background:var(--n3)}
+.lab-status-dot.grave{background:rgba(var(--rimc),.28)}
+.lab-rowmain{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.lab-card .lab-title{font-family:var(--disp);font-weight:700;font-size:15px;line-height:1.28;letter-spacing:-.012em;color:var(--ink)}
+.lab-finding{font-family:var(--sans);font-size:13px;line-height:1.45;color:var(--ink3);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lab-card .lab-caret{flex-shrink:0;margin-top:2px;color:var(--ink4);font-size:17px;transition:transform .2s var(--ease)}
+.lab-card[open] .lab-caret{transform:rotate(90deg)}
+.lab-cardbody{padding:0 14px 14px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line3);margin-top:-1px;padding-top:12px}
+.lab-charts{display:flex;flex-direction:column;gap:12px;padding:10px 0 2px}
+.lab-measure{padding:8px 0 2px}
+
+
+/* while a tab swipe is in flight `main` follows the finger — no transition, transform only */
+main.swiping{transition:none !important;will-change:transform}
+@media(prefers-reduced-motion:reduce){main.swiping{transform:none !important}}

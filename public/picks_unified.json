@@ -4,7 +4,7 @@
   "status": "production",
   "board": "history",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-03T02:24:06Z",
+  "generated_utc": "2026-08-03T02:59:41Z",
   "dates": [
     "2026-03-27",
     "2026-03-28",
@@ -2307,27 +2307,33 @@
       "source": "adaptive_desk",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "through": "2026-08-02",
-      "n": 16,
-      "win": 11,
-      "loss": 4,
-      "push": 1,
-      "record": "11-4-1",
-      "decided": 15,
-      "hit_rate": 0.7333,
-      "units": 6.738,
+      "selector_version": "adaptive_desk_v20",
+      "n": 0,
+      "win": 0,
+      "loss": 0,
+      "push": 0,
+      "record": "0-0-0",
+      "decided": 0,
+      "hit_rate": null,
+      "units": 0.0,
       "units_weighted": {
-        "units": 13.476,
-        "staked": 30.0,
-        "roi": 0.4492,
+        "units": 0.0,
+        "staked": 0.0,
+        "roi": null,
         "n_offladder_flat_1u": 0
       },
-      "roi": 0.4492,
+      "roi": null,
       "hit_rate_ci": [
-        0.5695,
-        0.8511
+        null,
+        null
       ],
       "hit_rate_ci_level": 0.8,
+      "n_days": 0,
+      "first": null,
+      "through": null,
+      "is_walk_forward": true,
+      "status": "accruing",
+      "accruing_line": "The desk's record starts fresh from the next locked slate \u2014 every day from here is chosen before the games and graded after.",
       "walk_forward": {
         "available": true,
         "no_lookahead_in_data": true,
@@ -2338,199 +2344,344 @@
         "n_recomputed_after_the_fact": 30,
         "selector_version": "adaptive_desk_v20",
         "pre_slate_cutoff_utc_hour": 16,
+        "stamp_store": "/Users/leonrou/Desktop/sports-betting-platform/v4/serve/state/adaptive_desk_served.jsonl",
         "by_date": {
           "2026-07-01": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:30:47.342305+00:00",
+            "first_seen_utc": null,
+            "first_seen_version": null,
             "locked_before_slate": false,
             "rule_key": "pass_all"
           },
           "2026-07-02": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:42:12.179695+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "prob_weighted:0.012"
           },
           "2026-07-03": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:42:03.624844+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "prob_weighted:0.018"
           },
           "2026-07-04": {
             "version": "adaptive_desk_v9",
             "selected_at_utc": null,
+            "first_seen_utc": null,
+            "first_seen_version": null,
             "locked_before_slate": false,
             "rule_key": "pair_fade:atlas,scout"
           },
           "2026-07-05": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:42:03.302956+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "pair_follow:vega,nova"
           },
           "2026-07-06": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:42:02.520110+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "pair_follow:vega,nova"
           },
           "2026-07-07": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:16.919310+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "pair_follow:vega,nova"
           },
           "2026-07-08": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:16.338359+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "pair_fade:atlas,scout"
           },
           "2026-07-09": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:13.290154+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "pair_fade:atlas,scout"
           },
           "2026-07-10": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:05.183848+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "prob_weighted:0.004"
           },
           "2026-07-11": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:00.996393+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "prob_weighted:0.004"
           },
           "2026-07-12": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:09.983683+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "prob_weighted:0.004"
           },
           "2026-07-16": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:48.105419+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "pair_fade:atlas,scout"
           },
           "2026-07-17": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:59.482910+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "weighted_form:0.06"
           },
           "2026-07-18": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:53.480623+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "group_fade:atlas,nova,scout"
           },
           "2026-07-19": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:43.245834+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "prob_weighted:0.004"
           },
           "2026-07-20": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:23.867189+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "prob_weighted:0.004"
           },
           "2026-07-21": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:30.546916+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "meta_logit:l20.45:th0.46"
           },
           "2026-07-22": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:41:37.250570+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "meta_logit:l20.45:th0.46"
           },
           "2026-07-23": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:42:11.783826+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "group_fade:atlas,nova,scout"
           },
           "2026-07-24": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:40:40.308426+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "stacked_rules:top5:v2:th0.12"
           },
           "2026-07-25": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:40:56.669267+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "meta_logit:l20.45:th0.46"
           },
           "2026-07-26": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:30:47.002901+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "vote_count:2:under"
           },
           "2026-07-27": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:40:48.838659+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "vote_count:2:under"
           },
           "2026-07-28": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:40:24.221645+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "vote_count:2:under"
           },
           "2026-07-29": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:40:33.154211+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "vote_count:2:under"
           },
           "2026-07-30": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:37:56.099688+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "vote_count:2:under"
           },
           "2026-07-31": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:37:56.105274+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "vote_count:2:under"
           },
           "2026-08-01": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:37:56.109506+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "vote_count:2:under"
           },
           "2026-08-02": {
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-03T00:35:39.129914+00:00",
+            "first_seen_utc": "2026-08-03T02:50:19Z",
+            "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": false,
             "rule_key": "neural_tanh:l20.12:th0.54"
           },
           "2026-08-03": {
             "version": "adaptive_desk_v19",
             "selected_at_utc": "2026-08-03T00:01:31.086364+00:00",
+            "first_seen_utc": null,
+            "first_seen_version": null,
             "locked_before_slate": true,
             "rule_key": "neural_tanh:l20.12:th0.54"
           }
         },
-        "note": "evidence_mode=as_served means every date's strategy was written into the write-once ledger before that day's first pitch \u2014 the record is what the desk played. evidence_mode=recomputed_backtest means the ledger entries were (re)written after those days had finished, which happens whenever the selector's VERSION changes: choose_strategy is write-once per (date, VERSION), so a version bump re-derives every past date under the NEW selector. Such a record still has no look-ahead inside any single day, but the selector itself was developed with those days' outcomes visible, so it is a backtest of the current selector and not a live record. Going forward, choose_strategy(today, write_once=True) runs in the 02:00 PT overnight cycle \u2014 about eight hours before first pitch \u2014 so every date locked under a stable VERSION is as-served."
+        "note": "A date is walk-forward if and only if its strategy was stamped into the as-served ledger (v4/serve/state/adaptive_desk_served.jsonl) before that day's first pitch. That store is append-only, first-write-wins per date, and is NOT the selector's own store \u2014 which matters, because choose_strategy is write-once per (date, VERSION), so a selector version bump re-derives every past date under the new selector and overwrites the evidence of what was actually served. That is exactly what happened on 2026-08-02: the v20 bump rewrote 80 of 82 dates in one twelve-minute window. Those days still have no look-ahead inside any single day, but the selector itself was developed with their outcomes visible, so they are a REPLAY of the current selector, not a record, and record.headline excludes them. Going forward, choose_strategy(today, write_once=True) runs in the 02:00 PT overnight cycle \u2014 about eight hours before first pitch \u2014 and the stamp is written then, so the record accrues honestly from that point and survives every future version bump."
       },
-      "basis": "every game the per-date adaptive strategy served as an official pick, graded at the price and line it was served at. One row per game. Nothing re-graded, nothing restated."
+      "model_generation_seam": "2026-07-31",
+      "basis": "every game the per-date adaptive strategy served as an official pick ON A DAY WHOSE STRATEGY WAS LOCKED BEFORE FIRST PITCH, graded at the price and line it was served at. One row per game. Nothing re-graded, nothing restated.",
+      "replay": {
+        "n": 16,
+        "win": 11,
+        "loss": 4,
+        "push": 1,
+        "record": "11-4-1",
+        "decided": 15,
+        "hit_rate": 0.7333,
+        "units": 6.738,
+        "units_weighted": {
+          "units": 13.476,
+          "staked": 30.0,
+          "roi": 0.4492,
+          "n_offladder_flat_1u": 0
+        },
+        "roi": 0.4492,
+        "hit_rate_ci": [
+          0.5695,
+          0.8511
+        ],
+        "hit_rate_ci_level": 0.8,
+        "n_days": 4,
+        "first": "2026-07-30",
+        "through": "2026-08-02",
+        "is_the_record": false,
+        "label": "Replay of the current selector over earlier days",
+        "why_not_the_record": "these days' strategies were derived after those games had finished (selector version bump), so no look-ahead exists inside any single day but the selector itself was developed with these outcomes visible. That is a backtest of the current selector. It is shown for transparency and is never summed into the record."
+      },
+      "full_ledger_including_replay": {
+        "n": 16,
+        "win": 11,
+        "loss": 4,
+        "push": 1,
+        "record": "11-4-1",
+        "decided": 15,
+        "hit_rate": 0.7333,
+        "units": 6.738,
+        "units_weighted": {
+          "units": 13.476,
+          "staked": 30.0,
+          "roi": 0.4492,
+          "n_offladder_flat_1u": 0
+        },
+        "roi": 0.4492,
+        "hit_rate_ci": [
+          0.5695,
+          0.8511
+        ],
+        "hit_rate_ci_level": 0.8,
+        "n_days": 4,
+        "first": "2026-07-30",
+        "through": "2026-08-02"
+      }
     },
     "daily": [
+      {
+        "date": "2026-07-20",
+        "n": 0,
+        "win": 0,
+        "loss": 0,
+        "push": 0,
+        "record": "0-0-0",
+        "hit_rate": null,
+        "units": 0.0,
+        "roi": null,
+        "strategy": {
+          "rule_key": "prob_weighted:0.004",
+          "label": "Probabilistic analyst blend (0.4% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "STRONG",
+          "window_days": 21,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-20"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": true
+      },
       {
         "date": "2026-07-21",
         "n": 0,
@@ -2550,6 +2701,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-21"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2572,6 +2729,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-22"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2594,6 +2757,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-23"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2616,6 +2785,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-24"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2638,6 +2813,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-25"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2660,6 +2841,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-26"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2682,6 +2869,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-27"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2704,6 +2897,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-28"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2726,6 +2925,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-29"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": true
       },
@@ -2748,6 +2953,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-30"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
         "is_today": false,
         "no_action": false
       },
@@ -2770,6 +2981,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-07-31"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v2",
+        "is_model_seam": true,
+        "window_spans_model_seam": true,
         "is_today": false,
         "no_action": false
       },
@@ -2792,6 +3009,12 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-08-01"
         },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v2",
+        "is_model_seam": false,
+        "window_spans_model_seam": true,
         "is_today": false,
         "no_action": false
       },
@@ -2814,42 +3037,26 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
-        "is_today": false,
-        "no_action": false
-      },
-      {
-        "date": "2026-08-03",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
-        "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
-        "strategy": {
-          "rule_key": "neural_tanh:l20.12:th0.54",
-          "label": "Shallow neural desk ensemble (0.54 margin)",
-          "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
-          "confidence_tier": "STRONG",
-          "window_days": 35,
-          "status": "ACTIVE",
-          "full_block_at": "adaptive_strategy_by_date.2026-08-03"
-        },
+        "selector_version": "adaptive_desk_v20",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v2",
+        "is_model_seam": false,
+        "window_spans_model_seam": true,
         "is_today": true,
-        "no_action": true
+        "no_action": false
       }
     ],
     "streaks": {
       "since": "2026-07-01",
       "site": {
         "current": {
-          "type": "win",
-          "length": 1
+          "type": null,
+          "length": 0
         },
-        "best_win_streak": 7,
-        "best_loss_streak": 2,
-        "n_decided": 15
+        "best_win_streak": 0,
+        "best_loss_streak": 0,
+        "n_decided": 0
       },
       "by_analyst": {
         "vega": {
@@ -3288,7 +3495,14 @@
         "upgrade_path": "UPGRADE PATH: a future run-line engine that passes its margin fitness gate with a surviving arm and real economics can flip the stream to sim_pricing (P(cover) from a validated joint margin distribution, +EV gate at real per-side prices, max 2*). The 2026-07-27 DERIV_RUNLINE_MARGIN_REPORT verdict was BLOCKED (prereg K1: margin fitness gate failed \u2014 no home-field advantage in the engine; and every declared arm, including the no-sim control, lost to the de-vigged market on Brier), so lean_only stands. The flip is explicit and human-signed (state/spread_engine_mode.json) \u2014 never automatic, never regex-parsed off a research report."
       },
       "note": "GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The spread stream is live in lean_only mode: every game's stated run-line lean is locked at first pitch and graded against the final at the real locked price, in public, from the 2026-07-27 activation forward \u2014 but a lean is not a bet, no units are ever suggested, and no edge is claimed. The record starts 0-0-0 and accrues only from days the stream actually served. It is never added to, or compared against, the totals record.",
-      "separation": "this record counts ONLY stream-stamped run-line rows graded on/after 2026-07-27; it never contains a totals row, and no totals record (overall, by_strategy, live_record, champion) ever contains a spread row \u2014 selftested in spread_stream, daily_cycle and unified_model"
+      "separation": "this record counts ONLY stream-stamped run-line rows graded on/after 2026-07-27; it never contains a totals row, and no totals record (overall, by_strategy, live_record, champion) ever contains a spread row \u2014 selftested in spread_stream, daily_cycle and unified_model",
+      "price_validity": {
+        "evaluable_from": "2026-07-31",
+        "pre_fix_rows_are_evaluable": false,
+        "why": "run-line results before 2026-07-31 were graded from best-price columns written before the price-validity rule landed. Their two-sided prices imply arbitrage that was never obtainable (5th-percentile overround 0.729), so the ROI and units on those rows are not a measurement of anything. W-L is unaffected; the money is.",
+        "totals_unaffected": true,
+        "restated": false
+      }
     },
     "sim_stream": {
       "n": 55,
@@ -6560,7 +6774,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-03T02:24:16Z",
+      "updated": "2026-08-03T02:59:42Z",
       "order": [
         "vega",
         "atlas",
@@ -264073,7 +264287,16 @@
           "is_final_wall": true
         }
       ],
-      "live_progress": null
+      "live_progress": null,
+      "final": {
+        "home_runs": 4,
+        "away_runs": 8,
+        "total_runs": 12,
+        "home_margin": -4,
+        "status": "Game Over",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      }
     }
   ]
 }

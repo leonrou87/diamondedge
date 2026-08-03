@@ -27,13 +27,20 @@ async function getGame(id: string) {
   }
 }
 
-// Show a pick line ONLY for the validated edge: MLB totals. Soccer totals are exploratory leans
-// and spreads/ML are leans — never surface those as a "DiamondEdge Pick" on a public share card.
-function totalPick(g: any) {
-  if (!g || g.sport !== "mlb") return null;
+/* ═════════ THE SHARE CARD MAY SAY THAT WE HAVE A PICK. IT MAY NOT SAY WHAT IT IS. ═════════
+   This card used to print "DiamondEdge Pick: OVER 8.5" and, under it, "Our number 9.4 ·
+   market 8.5" — server-rendered, from the raw payload, with no entitlement concept at all.
+   Anyone holding a /g/<id> link got the side, the line AND our projected total for free, and
+   the in-app share button built that link FOR SIGNED-OUT READERS. It was the widest hole in
+   the paywall by a distance, and it unfurled into other people's chat apps.
+
+   The card now does the job the paywall wants a share to do: it says a DiamondEdge Pick
+   exists on this game, and it stops there. Whether one exists is not secret — it is the
+   invitation. The side is the product. */
+function hasPick(g: any) {
+  if (!g || g.sport !== "mlb") return false;
   const t = g.de_plays && g.de_plays.total;
-  if (t && String(t.action).toUpperCase() === "TAKE" && t.side) return { side: String(t.side), line: t.line };
-  return null;
+  return !!(t && String(t.action).toUpperCase() === "TAKE" && t.side);
 }
 
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
@@ -44,13 +51,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   // Pre-game shares get the start time (the most useful context for an upcoming pick).
   const started = g ? String(g.status || "pre").toLowerCase() !== "pre" : false;
   const kicker = [sport ? String(sport).toUpperCase() : "", !started && g && g.start_time ? String(g.start_time) : ""].filter(Boolean).join("  ·  ");
-  const pick = g ? totalPick(g) : null;
-  const pickTxt = pick ? `${pick.side}${pick.line != null && !/[0-9.]/.test(pick.side) ? " " + pick.line : ""}` : "";
-  // Our projected total = predicted_score.away + home (EXACT app computation) — the transparency
-  // edge, shown vs the market line so the card conveys WHY we like the pick.
-  const ps = g && g.predicted_score;
-  const ourNum = pick && ps && ps.away != null && ps.home != null ? (Number(ps.away) + Number(ps.home)).toFixed(1) : null;
-  const edgeTxt = ourNum && pick && pick.line != null ? `Our number ${ourNum} · market ${Number(pick.line)}` : "";
+  // A pick EXISTS on this game — never which side, never the line, never our number.
+  const pickTxt = g && hasPick(g) ? "DiamondEdge Pick on this game" : "";
+  const edgeTxt = pickTxt ? "Open the game to see the call" : "";
   return new ImageResponse(
     (
       <div
@@ -77,7 +80,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {kicker ? <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif", letterSpacing: "2px", fontWeight: 700 }}>{kicker}</div> : null}
           <div style={{ display: "flex", fontSize: 86, fontWeight: 800, lineHeight: 1.05 }}>{mu}</div>
-          {pickTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 46, color: "#e0ac20", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>DiamondEdge Pick: {pickTxt}</div> : null}
+          {pickTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 46, color: "#e0ac20", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>◆ {pickTxt}</div> : null}
           {edgeTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>{edgeTxt}</div> : null}
         </div>
         <div style={{ display: "flex", fontSize: 26, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>Every pick graded in the open · diamondedge.kytepush.com</div>
