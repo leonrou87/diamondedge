@@ -483,6 +483,16 @@ export default function Home() {
       const d = gameDateISO(g);
       return d ? isFutureDate(d) : isFutureDate(curDate);
     }
+    /* "OUR PICKS FOR THIS GAME ARE NOT PUBLISHED YET" — one predicate, two ways to be true.
+       A game DATED tomorrow is obviously pending. So is a game dated TODAY that the backend
+       has flagged `status: "upcoming"` — that is the state of every game on the board between
+       midnight and the 06:00 PT serve, and it was reading as "we passed" because nothing
+       distinguished it. Both are the same fact to a reader: we have not looked yet. */
+    function picksPending(g: any) {
+      if (!g) return false;
+      if (String(g.status || "").toLowerCase() === "upcoming" || g.is_upcoming === true) return true;
+      return isFutureGame(g);
+    }
 
     async function snap(k: string) {
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
@@ -6184,7 +6194,56 @@ export default function Home() {
     }
     function gamesForLeague(p: any, lg: string, dateISO?: string) {
       const forDate = dateISO || curDate;
-      const all = (p && p.games) || [];
+      /* ═══ THE SLATE EXISTS BEFORE THE PICKS DO ═══
+         The board reads the backend's `pregame_picks` snapshot, which is REGENERATED when the
+         day's picks publish (06:00 PT). Between midnight and that serve, that snapshot still
+         holds YESTERDAY's slate — so on the calendar day itself, before the picks land, the
+         board found nothing for today and printed "NO MLB ON THE BOARD · Nothing scheduled for
+         Monday, August 3" over a day with eight scheduled games. That sentence is false, and
+         it is false for six hours every single morning.
+
+         The backend already publishes the answer: `picks_unified_live` carries the day's games
+         as `status: "upcoming"` with a `picks_eta`, precisely so the schedule can be shown
+         before the calls exist. Until now those games were only reachable through the date
+         PICKER (the non-today path), which is why this never showed up in testing — you had to
+         be looking at the board on the right day at the right hour.
+
+         So: any game the live feed has for THIS date that the board's own payload does not is
+         merged in, matched by game_id so a game present in both is never doubled. Every one of
+         them renders with the INCOMING tag and the future-note above it, which is the honest
+         state — "we have not looked yet", not "there is nothing here". */
+      const own = (p && p.games) || [];
+      /* SCOPED AS TIGHTLY AS THE BUG IS. The merge fires ONLY when the board's own payload has
+         nothing at all for this date and league — which is exactly and only the pre-serve
+         window. It is not a general union, and it must not become one: the two feeds give the
+         SAME game different game_ids (the day snapshot's MIA@NYM is 823592, the live feed's is
+         another number), so a union deduped by id doubled every past board — thirty tiles for
+         fifteen games, each matchup twice. Matching on names instead would be a heuristic on a
+         surface where a duplicated game is a duplicated PICK. Scope, not fuzz. */
+      const ownHere = own.some((g: any) =>
+        g && String(g.date || "").slice(0, 10) === forDate &&
+        (String(g.sport || "").toLowerCase() === lg || (!g.sport && lg === "mlb")));
+      /* THE LIVE FEED CARRIES NO `sport` ON ANY GAME — it is MLB-only by convention, which is
+         why isMlbGame() already reads an empty sport as MLB. The board's league filter is not
+         that forgiving, so a merged game with no sport matched no league and vanished. Stamped
+         here, and only on evidence: every game in that feed carries an MLB StatsAPI `game_pk`,
+         so this is reading the fact rather than assuming it. */
+      const sched = (ownHere ? [] : (((betaLiveData && betaLiveData.games) || []) as any[])).filter((g: any) => {
+        if (!g || g.game_id == null) return false;
+        if (String(g.date || "").slice(0, 10) !== forDate) return false;
+        if (!g.sport && g.game_pk != null && /^\d{4,}$/.test(String(g.game_pk))) g.sport = "mlb";
+        if (String(g.sport || "").toLowerCase() !== lg) return false;
+        /* ADAPT, DON'T ASSUME. The live feed's game shape is not the board's: it carries FULL
+           team names where the tile reads `*_abbr`, and `first_pitch_utc` where the tile reads
+           `start_ts`. Merged without this, the tiles rendered as two blank crests and a
+           dangling "L2" — worse than the empty state we were replacing. Filled in place, only
+           where the field is genuinely missing, so a feed that later carries them wins. */
+        if (!g.away_abbr && g.away) g.away_abbr = mlbAbbr(g.away);
+        if (!g.home_abbr && g.home) g.home_abbr = mlbAbbr(g.home);
+        if (!isTS(g.start_ts) && isTS(g.first_pitch_utc)) g.start_ts = g.first_pitch_utc;
+        return true;
+      });
+      const all = sched.length ? own.concat(sched) : own;
       // "All" — the merged board across every league. Reuse the per-league
       // path for date filtering, then re-merge and keep one first-pitch timeline.
       if (lg === "all") {
@@ -7001,7 +7060,7 @@ export default function Home() {
          signal); a game whose picks have not been made yet is a different state entirely and
          gets the INCOMING tag, because "we are not on this" and "we have not looked yet" must
          never read the same. */
-      const upcoming = noPick && isFutureGame(g);
+      const upcoming = noPick && picksPending(g);
       const callCell = upcoming
         ? `<span class="de-mini-call incoming"><span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i></span><b class="de-mini-word">${esc(picksEtaShort(g))}</b></span>`
         : noPick ? ""
@@ -7392,7 +7451,7 @@ export default function Home() {
          shipped with nothing where our call goes. That is the exact confusion the incoming
          state exists to prevent: an empty slot is how this board says "we passed", and we
          have not passed on tomorrow — we have not looked yet. */
-      const incoming = !vd && isFutureGame(g);
+      const incoming = !vd && picksPending(g);
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
              <div class="tv-callrow">${callHtml}</div>
@@ -7651,6 +7710,15 @@ export default function Home() {
       return { n: read, total: games.length, kinds };
     }
     function passBoardPanel(games: any[]) {
+      /* A PASS IS A VERDICT, AND YOU CANNOT PASS ON A GAME YOU HAVE NOT READ.
+         Before the morning serve the board carries the day's SCHEDULE with no picks on it.
+         The pass panel counted those as games the desk "read and priced", and led with
+         "Nothing cleared the bar" — which is not merely wrong, it is the single claim this
+         product cannot afford to get wrong. When every game on the board is still upcoming
+         there is no verdict to report, and the future-note above the board already says the
+         true thing: the picks are coming. */
+      const anyRead = (games || []).some((g: any) => !picksPending(g));
+      if (!anyRead) return "";
       const ro = passReadout(games);
       if (!ro) return "";
       const isToday = curDate === todayISO();
@@ -8050,12 +8118,14 @@ export default function Home() {
           body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`;
         } else {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
+          const allPending = games.length > 0 && games.every((g: any) => picksPending(g));
+          const rail = anyPick ? "" : (isFuture || allPending ? "" : passBoardPanel(games));
           // TOP PICKS rail (replaces the single featured hero): the day's best picks by score,
           // in a distinct dark style. No rail on a future (no-pick) slate — it's a schedule.
           // NOTHING CLEARED: the slot never just vanishes. When the board was priced and every
           // game came back a pass, the pass board takes the slot and says so, with the count
           // of each reason. A future slate has no reads yet, so it keeps its own banner.
-          const rail = anyPick ? "" : (isFuture ? "" : passBoardPanel(games));
+
           let n = 0;
           const section = (label: string, arr: any[], cls = "") => arr.length
             ? `<div class="slate-sec ${cls}">${label ? `<div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div>` : ""}<div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
@@ -8070,7 +8140,11 @@ export default function Home() {
           const grouped = `${section("", games.slice().sort(byBoardOrder), byPhase.live ? "live mixed nohead" : "mixed nohead")}${ppdSec}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
           // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
-          const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
+          /* …and the banner is not about the DATE, it is about the PICKS. A today board whose
+             every game is still `upcoming` needs the same sentence a tomorrow board does —
+             that is the six-hour window each morning where the schedule is up and the calls
+             are not, and it was the one state with no explanation on it at all. */
+          const futureBanner = (isFuture || allPending) && !anyPick ? futureNote(dispDate, false, games) : "";
           const nAll = games.length + ppdGames.length;
           // Tier legend rides at the very BOTTOM of the slate (Leon) — reference, not headline.
           // CUT: the star-tier legend that used to close every board. It explained a
@@ -14361,7 +14435,7 @@ export default function Home() {
       Promise.allSettled([loadBetaLive(), loadBeta()]).then(() => {
         todayFresh = false; deskStale = true;
         if (tab === "today") { renderToday(); todayFresh = true; }
-        if ($("slate-body")) renderSlate(true);
+        if (tab === "games" || $("slate-body")) renderSlate(true);
       });
       // keep the live pick feed fresh: re-fetch every 5 min while the tab is visible
       setInterval(() => {
@@ -14371,7 +14445,7 @@ export default function Home() {
           if (lv && lv.generated_utc !== before) {
             todayFresh = false; deskStale = true;
             if (tab === "today") { renderToday(); todayFresh = true; }
-            if ($("slate-body")) renderSlate(true);
+            if (tab === "games" || $("slate-body")) renderSlate(true);
           }
         }).catch(() => {});
       }, 5 * 60 * 1000);
