@@ -1,13 +1,39 @@
 {
-  "generated_utc": "2026-08-03T03:02:58.067772+00:00",
+  "generated_utc": "2026-08-03T04:26:44.856506+00:00",
   "summary": {
-    "shipped": 44,
+    "shipped": 46,
     "testing": 4,
     "accruing": 9,
     "queued": 0,
     "closed": 32
   },
   "items": [
+    {
+      "id": "desk_process_replay_record",
+      "title": "The record, rebuilt by re-running every night of it",
+      "tagline": "Instead of quoting what the current strategy would have done, we replayed the whole nightly routine day by day \u2014 choose tonight's playbook from what was already final, then grade the games it picked.",
+      "status": "shipped",
+      "category": "serving",
+      "progress_pct": 100,
+      "started": "2026-08-02",
+      "eta": "live; extends itself every night",
+      "latest": "2026-08-02: 33 nights replayed, every one proving it read nothing from its own day or later; 123 picks, 65-54-4, +10.5 units",
+      "detail": "A record is only worth reading if the pick was chosen before the game. So rather than take the current strategy and see how it would have done in July \u2014 which is a way of grading your own homework \u2014 we re-ran the actual routine: for each night in turn, look only at games that had already finished, pick that night's playbook the way the 2am job would have, then grade the next day's games against it. Every night is checked, not trusted: each one has to prove that not a single piece of evidence it used is dated that day or later. Two things had to be solved to make it reach back at all. The store that remembers the closing price only started at the end of July, so before that the routine fired and nothing could be priced \u2014 and a pick with no real price is not a pick. We rebuilt those closing prices from the same permanent record the live capture reads, at the same point before first pitch, and marked every one so it is never confused with a price locked at the time. And the four analysts turned out to have been rebuilt backwards over the whole span, so no lookback window mixes two generations of them \u2014 checked from the ledger's own stamps rather than assumed. Eight days in early July have no price record at all and never will; those days fall back to what was genuinely served then, and days where the strategy simply passed stay empty, because filling them would be inventing a record.",
+      "result": "SHIPPED \u2014 full replay 2026-07-01 -> today: 33 days, all fenced, 123 replayed picks 65-54-4 (+10.45u). Combined product record 65-56-4, +8.45u over 125 picks. Checkpointed per day and keyed by selector version. Ledger: v4/serve/state/desk_process_replay.jsonl."
+    },
+    {
+      "id": "records_update_in_real_time",
+      "title": "A game ending now moves the record now",
+      "tagline": "The analysts were priced every half hour and graded only at 2am, so a game that finished at 9:40pm left the day's record a win short until the middle of the night.",
+      "status": "shipped",
+      "category": "infrastructure",
+      "progress_pct": 100,
+      "started": "2026-08-02",
+      "eta": "live",
+      "latest": "2026-08-02: Leon spotted Sunday reading 4-3 when it was 5-3; the missing game is graded and the gap is closed at the source",
+      "detail": "Every half hour the site re-read the analysts and rebuilt the board, but the step that settles a finished game into the ledger only ran overnight. So the game card on the site would show a final score while the day's record beside it still counted one game fewer \u2014 for hours. Leon caught it on Sunday: the strip said 4-3 when the day had actually gone 5-3. Settling now runs on every serve, for the analysts, their wall reads and the desk's own calls. It only ever adds games that have finished and are not already settled, so running it constantly is harmless and running it once a night was the bug.",
+      "result": "SHIPPED \u2014 grading moved into the intraday cycle. Sunday 2026-08-02 now reads 5-3 (game 823919, over 8.5, final 12). Per-analyst records and streaks recompute on the same cycle."
+    },
     {
       "id": "archive_vs_display_policy",
       "title": "Two layers, not one \u2014 the desk became the product and history became the archive",
@@ -1160,5 +1186,308 @@
         "feature-level orthogonalisation against the line: actively harmful where signal exists"
       ]
     }
-  ]
+  ],
+  "papers_index": {
+    "contract_version": "1.1",
+    "generated_utc": "2026-08-03T05:05:02.298861+00:00",
+    "n_papers": 19,
+    "payload_key": "research_papers",
+    "static_fallback": "/research_papers.json",
+    "note": "The full paper bodies live in the separate `research_papers` payload (Supabase slate_snapshots key 'research_papers', static fallback /research_papers.json). This index is here so a surface already reading the roadmap can discover the library without a second decision.",
+    "papers": [
+      {
+        "id": "kr-2026-001",
+        "title": "How DiamondEdge Actually Works",
+        "category": "Start Here",
+        "date": "2026-08-03",
+        "one_liner": "Four analysts who never read the same stats, a strategy that gets rebuilt every single night, and a set of rules that stop us fooling ourselves \u2014 and stop us fooling you.",
+        "reading_minutes": 10,
+        "roadmap_ids": [
+          "analyst_rearchitecture_v2",
+          "strategy_tournament",
+          "analyst_farm_minor_league",
+          "analyst_v3_residual_rearchitecture",
+          "outcome_verification_rail",
+          "at_line_pricing_defect",
+          "analyst_live_claude_strategy",
+          "enriched_data_layer"
+        ]
+      },
+      {
+        "id": "kr-2026-002",
+        "title": "Why Our Four Analysts Never Read the Same Stats",
+        "category": "How It Works",
+        "date": "2026-07-31",
+        "one_liner": "We had four analysts who agreed almost every time. It turned out they were all secretly reading the same thing. Here is how we caught it, and what we rebuilt.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "analyst_rearchitecture_v2",
+          "analyst_retrain_2025_2026h1",
+          "analyst_desk",
+          "desk_call",
+          "consensus_patterns_v2",
+          "rolling_desk_fit"
+        ]
+      },
+      {
+        "id": "kr-2026-003",
+        "title": "We Don't Have a System. We Have 2,848 of Them, and We Pick a New One Every Night",
+        "category": "How It Works",
+        "date": "2026-08-03",
+        "one_liner": "Stop hunting for the strategy that always works \u2014 there isn't one. Score every strategy on the last five weeks, play the twenty-one that are running hottest, grade them, do it again tomorrow.",
+        "reading_minutes": 10,
+        "roadmap_ids": [
+          "strategy_tournament",
+          "archive_vs_display_policy",
+          "desk_record_surfaces"
+        ]
+      },
+      {
+        "id": "kr-2026-004",
+        "title": "Why the Desk Has an Opinion at 9am and a Better One at 3pm",
+        "category": "How It Works",
+        "date": "2026-08-01",
+        "one_liner": "A game eight hours out shouldn't show a blank card. But it also shouldn't show a made-up one. So we built a separate model for every analyst at every point in the day.",
+        "reading_minutes": 8,
+        "roadmap_ids": [
+          "analyst_multi_wall_coverage",
+          "analyst_graceful_degradation",
+          "per_game_desk_v2",
+          "analyst_surface_map"
+        ]
+      },
+      {
+        "id": "kr-2026-005",
+        "title": "Yes, There's AI In Here. No, It Doesn't Pick Your Games.",
+        "category": "How It Works",
+        "date": "2026-08-02",
+        "one_liner": "We run current-generation AI across the research floor \u2014 and we locked it out of the picks by design. Then we tested it as a handicapper and published that it lost.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "analyst_live_claude_strategy",
+          "moon-archaeologist",
+          "moon-llm-forecaster",
+          "vega_tau_candidate",
+          "strategy_tournament"
+        ]
+      },
+      {
+        "id": "kr-2026-006",
+        "title": "No Rewinding the Tape: Why Every Pick Was Made Before the Games Were Played",
+        "category": "How We Test",
+        "date": "2026-08-02",
+        "one_liner": "The single most common way a betting record lies is that the model got to peek. Here is the one rule that stops it, what it costs, and what it takes away from us.",
+        "reading_minutes": 7,
+        "roadmap_ids": [
+          "strategy_tournament",
+          "validation-gates",
+          "analyst_v3_residual_rearchitecture",
+          "analyst_retrain_2025_2026h1"
+        ]
+      },
+      {
+        "id": "kr-2026-007",
+        "title": "Test 41 Ideas and Two Will Look Brilliant By Pure Luck. We Run the Math That Catches Them.",
+        "category": "How We Test",
+        "date": "2026-08-02",
+        "one_liner": "Write down what you're testing before you look. Count every test you ran, including the ones you threw away. And decide in advance what a boring result will mean, so you can't talk yourself out of it later.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "validation-gates",
+          "strategy_tournament",
+          "accuracy-ceiling",
+          "analyst_v3_residual_rearchitecture",
+          "analyst_farm_minor_league"
+        ]
+      },
+      {
+        "id": "kr-2026-008",
+        "title": "The Prices We Were Betting Into Did Not Exist",
+        "category": "How We Test",
+        "date": "2026-08-01",
+        "one_liner": "For a while, 34 of our 58 live picks were graded against prices no bettor could have taken. A wrong price doesn't just mis-grade a bet \u2014 it CHOOSES the bet. Here are four separate bugs, and the one rule that ended them.",
+        "reading_minutes": 7,
+        "roadmap_ids": [
+          "at_line_pricing_defect",
+          "stale_book_pricing_defect",
+          "merged_market_defect",
+          "serving-hardening",
+          "validation-gates"
+        ]
+      },
+      {
+        "id": "kr-2026-009",
+        "title": "Two Sources Have To Agree On the Score Before We'll Grade Your Bet",
+        "category": "How We Test",
+        "date": "2026-07-31",
+        "one_liner": "We thought we had a second opinion on every final. It turned out our second opinion was being fed by the first one. Here's what we built instead.",
+        "reading_minutes": 6,
+        "roadmap_ids": [
+          "outcome_verification_rail",
+          "moved_game_resolver",
+          "serving-hardening",
+          "gamepk-audit"
+        ]
+      },
+      {
+        "id": "kr-2026-010",
+        "title": "We Redid One of Our Own Predictions By Hand To Make Sure the Computer Wasn't Lying",
+        "category": "How We Test",
+        "date": "2026-07-28",
+        "one_liner": "A program that agrees with itself proves nothing. So we re-cut a training set on paper, re-solved the weights, and recomputed one probability from scratch: 0.497780783 both ways.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "gamepk-audit",
+          "validation-gates",
+          "accuracy-ceiling",
+          "serving-hardening",
+          "analyst_rearchitecture_v2"
+        ]
+      },
+      {
+        "id": "kr-2026-019",
+        "title": "Some Nights There Are Only Two Picks. We Checked Whether That's Us Being Too Strict.",
+        "category": "How We Test",
+        "date": "2026-07-24",
+        "one_liner": "A third of nights were producing two picks or fewer. So we graded every near-miss. Every relaxation was a measured loser \u2014 except one, and here's exactly how honestly we shipped it.",
+        "reading_minutes": 7,
+        "roadmap_ids": [
+          "expanded_pick_band",
+          "star_scale_v33",
+          "unified_one_pick",
+          "calibrated_confidence",
+          "validation-gates",
+          "desk_record_surfaces"
+        ]
+      },
+      {
+        "id": "kr-2026-011",
+        "title": "Our Analysts Thought They Were Beating the Number. They Were Betting It Back at Itself.",
+        "category": "What We Know About the Market",
+        "date": "2026-08-02",
+        "one_liner": "Three of our four analysts were supposed to have their own read on a game. It turned out the market's number already contained most of it \u2014 so their records were really a bet on which way the month's totals fell.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "analyst_v3_residual_rearchitecture",
+          "analyst_farm_minor_league",
+          "analyst_rearchitecture_v2"
+        ]
+      },
+      {
+        "id": "kr-2026-012",
+        "title": "Forget the Vig. Can Anyone Even Pick the Right Side?",
+        "category": "What We Know About the Market",
+        "date": "2026-07-26",
+        "one_liner": "We ignored the juice completely and asked the pure question: what's the best anyone can do picking over/under against a posted MLB total? The answer is 52.1%, and it belongs to the market.",
+        "reading_minutes": 8,
+        "roadmap_ids": [
+          "accuracy-ceiling",
+          "validation-gates"
+        ]
+      },
+      {
+        "id": "kr-2026-013",
+        "title": "The Number On the Board Is a Better Model Than Ours",
+        "category": "What We Know About the Market",
+        "date": "2026-07-27",
+        "one_liner": "We built the fundamentals model. Then we checked: the posted total predicts runs more than twice as well \u2014 and adding our stats to it makes it WORSE.",
+        "reading_minutes": 8,
+        "roadmap_ids": [
+          "derivative-markets",
+          "player-state-momentum",
+          "mega_edge_hunt",
+          "sim-hfa-fix",
+          "banked-features"
+        ]
+      },
+      {
+        "id": "kr-2026-014",
+        "title": "We Found an 11.5% Edge on 496 Bets. Then We Killed It.",
+        "category": "What We Know About the Market",
+        "date": "2026-07-26",
+        "one_liner": "The most promising idea we ever tested. It survived three rebuilds and every economic check. It died when we stopped testing whether it made money and started testing whether it was true.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "sharp_divergence_v1_v2",
+          "line_divergence_v3",
+          "divergence-v4-target-universe",
+          "pinnacle_divergence_flags",
+          "deep_research_sweep"
+        ]
+      },
+      {
+        "id": "kr-2026-015",
+        "title": "The Minor Leagues: Ten Prospect Analysts Who Can't Get Promoted By Getting Hot",
+        "category": "What We Tried",
+        "date": "2026-08-01",
+        "one_liner": "A leaderboard of ten models always has a leader. After a month one of them will be sitting at 56% and it'll be noise. So we built the promotion system to physically ignore the leaderboard.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "analyst_farm_minor_league",
+          "analyst_v3_residual_rearchitecture",
+          "validation-gates"
+        ]
+      },
+      {
+        "id": "kr-2026-016",
+        "title": "Shadows, Jet Lag and Network Theory: Eight Wild Ideas, One Wall",
+        "category": "What We Tried",
+        "date": "2026-07-29",
+        "one_liner": "Exact solar astronomy. Published sleep science. A neural net reading the raw quote tape. AI mining our own failures. All eight hit the same wall the boring models hit.",
+        "reading_minutes": 8,
+        "roadmap_ids": [
+          "moon-graph",
+          "moon-quote-tape",
+          "moon-biology",
+          "moon-sun-shadow",
+          "moon-sequence-motifs",
+          "moon-close-forecast",
+          "moon-stacked",
+          "moon-archaeologist",
+          "moon-llm-forecaster",
+          "moon-llm-news"
+        ]
+      },
+      {
+        "id": "kr-2026-017",
+        "title": "Everything That Didn't Work \u2014 and Why We Show You All of It",
+        "category": "What We Tried",
+        "date": "2026-08-02",
+        "one_liner": "Roughly seventy ideas tested and killed, with the numbers attached. Including the ones that looked spectacular. Including fourteen of our own published results that we later took back.",
+        "reading_minutes": 9,
+        "roadmap_ids": [
+          "mega_edge_hunt",
+          "trust_a_meta_model",
+          "rapid_pilot_pool",
+          "nrfi_first_inning",
+          "segment_mining",
+          "star_rest_totals",
+          "f5_totals_model",
+          "f5_fullgame_coherence",
+          "banked-features",
+          "stalled-fronts-finished",
+          "live-mc-repricing",
+          "live-late-innings-final",
+          "derivative-markets",
+          "player-state-momentum",
+          "platoon_splits_build",
+          "distrust-avoid-filter",
+          "moon-close-forecast"
+        ]
+      },
+      {
+        "id": "kr-2026-018",
+        "title": "We Cheated On Purpose: Does Knowing the Lineup Actually Help?",
+        "category": "What We Tried",
+        "date": "2026-07-26",
+        "one_liner": "Instead of trying and failing to beat the market on lineups, we handed a model the ACTUAL nine who played \u2014 information nobody had \u2014 and measured the absolute best case. There isn't one.",
+        "reading_minutes": 7,
+        "roadmap_ids": [
+          "lineups-answered",
+          "player-splits-data-fix",
+          "enriched_data_layer"
+        ]
+      }
+    ]
+  }
 }
