@@ -8449,3 +8449,21 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
    progress bar and the aria story count still see 24 slides) but cost nothing to render.
    `.near` is maintained by storyPaintWindow() in page.tsx. */
 .st-slide:not(.on):not(.near){visibility:hidden}
+
+/* The strategy bar's small record stat — the quiet number, not a headline. */
+.stgy-stat{display:flex;flex-direction:column;align-items:flex-end;gap:1px;margin-left:auto;
+  padding-right:2px;flex:none;line-height:1}
+.stgy-stat b{font-family:var(--sans);font-weight:800;font-size:13px;letter-spacing:.01em;
+  color:var(--golddeep);font-variant-numeric:tabular-nums}
+.stgy-stat i{font-style:normal;font-family:var(--sans);font-weight:600;font-size:9px;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+.stgy-bar .stgy-tx{min-width:0}
+.stgy-bar .stgy-tx b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+
+/* Motion pass (Leon: "more moving animations… modern and swift"): the game page's panes
+   arrive with a short rise instead of a hard cut when the reader changes tabs. The
+   animation is on the PANE (which persists through the live pollers' innerHTML repaints),
+   so nothing replays while the reader holds still. */
+@keyframes paneIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.gp-pane{animation:paneIn .24s var(--ease-out) both}
+@media(prefers-reduced-motion:reduce){.gp-pane{animation:none}}

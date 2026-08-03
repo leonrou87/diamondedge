@@ -5828,6 +5828,7 @@ export default function Home() {
       return teamForm(g, which);
     }
     // The pitcher sheet: header (name/team/hand + season line) + the recent-starts table.
+    let pitcherPushed = false;   // this sheet pushed its own history entry (see below)
     function openPitcherSheet(P: any) {
       if (!P) return;
       detail = detailWithGameReturn({ _pitcher: true });
@@ -5856,6 +5857,15 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); });
+      /* THE PITCHER SHEET IS A HISTORY ENTRY. Without one, the NATIVE back gesture (the
+         OS edge swipe Safari owns before the app sees a single pointer event) performed a
+         real history.back() past the game page's ?g= entry — pitcher stats closed all the
+         way to the board instead of to the game the reader was inside. With its own entry,
+         the native gesture pops back to the ?g= URL and popstate → syncFromUrl restores
+         the game page (on the tab the reader left). The in-app back arrow and edge swipe
+         run history.back() too, so every way out of this sheet is the same way out. */
+      pitcherPushed = false;
+      try { history.pushState({ layer: "pitcher" }, "", location.href); pitcherPushed = true; } catch {}
       bindClick("gp-back", () => closeDetail());
       bindSwipeBack($("gamepage"));
     }
@@ -6323,7 +6333,11 @@ export default function Home() {
     let todayFresh = false;
     function refreshLiveViews() {
       renderTicker();
-      if (tab === "today") { renderToday(); todayFresh = true; }
+      // THE 30-SECOND OFFENDER. This runs on every live-scores poll — on a live afternoon
+      // that was a full deck rebuild under the reader twice a minute, and on a phone each
+      // rebuild is a white flash and a GPU-memory spike. repaintToday() defers while a
+      // real deck is being read (see its note); the ticker and the board still tick live.
+      if (tab === "today") repaintToday();
       else { todayFresh = false; if (tab === "games" && !rangeMode) renderSlate(true); }
       if (detail && detail.game_id != null) refreshSheetScore(detail);
     }
@@ -8282,6 +8296,34 @@ export default function Home() {
       const windowTxt = isPast
         ? `Chosen from the ${windowSpan} of finished games before it — locked before a single first pitch that day.`
         : `Chosen from the last ${windowSpan} of finished games — before a single first pitch today.`;
+      /* THE SMALL "HOW IT'S DOING" STAT (Leon: "add some kind of percent that's small on
+         how well it's doing"). Served numbers only, never computed fresh here: today shows
+         the headline record's hit rate (every pick since July 1); a past day shows its own
+         day row's record and rate. No served row ⇒ no stat — the bar renders without it. */
+      let statPct = "", statSub = "";
+      const statSrcs = [livePayload, betaLiveData, betaData, payload].filter(Boolean);
+      if (isPast) {
+        for (const src of statSrcs) {
+          const rows = src && src.record && Array.isArray(src.record.daily) ? src.record.daily : [];
+          const row = rows.find((r: any) => r && String(r.date || "") === dateISO);
+          const dec = row ? (row.win || 0) + (row.loss || 0) : 0;
+          if (row && dec) { statPct = `${Math.round(((row.win || 0) / dec) * 100)}%`; statSub = String(row.record || "").replace(/-0$/, ""); break; }
+        }
+      } else {
+        for (const src of statSrcs) {
+          const h = src && src.record && src.record.headline;
+          const dec = h ? (h.win || 0) + (h.loss || 0) : 0;
+          if (h && dec) {
+            statPct = `${Math.round(((h.win || 0) / dec) * 100)}%`;
+            const st = String(h.start || "");
+            statSub = /^\d{4}-\d{2}-\d{2}$/.test(st)
+              ? `since ${new Date(st + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+              : "all picks";
+            break;
+          }
+        }
+      }
+      const statHtml = statPct ? `<span class="stgy-stat"><b>${esc(statPct)}</b><i>${esc(statSub)}</i></span>` : "";
       const n = dayStrategyPickCount(dateISO);
       const pending = !isPast && datePicksPending(dateISO);
       const countTxt = pending && !n
@@ -8297,6 +8339,7 @@ export default function Home() {
         <button class="stgy-bar" id="stgy-btn" type="button" aria-expanded="false" aria-controls="stgy-more">
           <span class="stgy-mark">${strategyMark()}</span>
           <span class="stgy-tx"><i>${esc(eyebrow)}</i><b>${esc(label)}</b></span>
+          ${statHtml}
           <span class="stgy-caret" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
         </button>
         <div class="stgy-more" id="stgy-more">
@@ -9595,7 +9638,16 @@ export default function Home() {
     function repaintBoxPane() {
       const pane = document.querySelector('.gp-pane[data-pane="box"]') as any;
       if (!pane || !detail) return;
-      pane.innerHTML = boxScoreTab(detail);
+      // The live-vs-line meter heads this pane on an entitled live game (the Live tab is
+      // retired). Rebuilt fresh each repaint so its read tracks the score it sits beside.
+      const gs = gameState(detail);
+      const meter = gs.kind === "live"
+        ? safeHtml("live-vs-line meter", () => {
+            const pl = displayPick(detail);
+            return liveVsLineBlock(detail, pl ? pickLocked(pl, playState(detail, pl)) : false);
+          }, "")
+        : "";
+      pane.innerHTML = meter + boxScoreTab(detail);
       wireBoxPane();
     }
     function wireBoxPane() {
@@ -10157,21 +10209,25 @@ export default function Home() {
          something to show, so the tab set is a function of what exists rather than a
          promise the pane may not keep. Signed-out live therefore reads Box Score · Preview ·
          Stats · Odds, exactly like a final; entitled live gets the fifth tab. */
+      /* THE LIVE TAB IS RETIRED (Leon: "Live tab isn't needed for games; make Preview
+         left-most always"). Its one block — the live-vs-line meter, the tracking read on an
+         unsettled entitled pick — moves to the TOP of the Box Score pane, which is where a
+         reader watching a live game already is. The meter keeps its own gating (it returns
+         "" when the pick is locked), so signed-out live is unchanged. Tab order is fixed
+         for every game state: Preview · Box Score · Stats · Odds — the DEFAULT tab still
+         follows the game (Preview pre-game, Box Score once it starts), but the ORDER never
+         reshuffles under the reader. */
       const liveVsLineHtml = showLive && !isFinal ? liveVsLineBlock(g, leadLocked) : "";
-      const hasLivePane = !!liveVsLineHtml;
-      // …and a restored/remembered "live" tab must not strand the reader on a tab we just
-      // withdrew: fall back to the tab a live game opens on anyway.
-      if (detailTab === "live" && !hasLivePane) detailTab = showLive ? "box" : "preview";
+      if (detailTab === "live") detailTab = showLive ? "box" : "preview";
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
-        ${hasLivePane ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Live</button>` : ""}
-        ${showLive ? `<button class="gp-tab ${detailTab === "box" ? "on" : ""}" data-dtab="box" role="tab">Box Score</button>` : ""}
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
+        ${showLive ? `<button class="gp-tab ${detailTab === "box" ? "on" : ""}" data-dtab="box" role="tab">Box Score</button>` : ""}
         <button class="gp-tab ${detailTab === "stats" ? "on" : ""}" data-dtab="stats" role="tab">Stats</button>
         <button class="gp-tab ${detailTab === "odds" ? "on" : ""}" data-dtab="odds" role="tab">Odds</button>
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
       const boxPane = showLive
-        ? `<div class="gp-pane" data-pane="box" style="display:${detailTab === "box" ? "block" : "none"}">${boxScoreTab(g)}</div>`
+        ? `<div class="gp-pane" data-pane="box" style="display:${detailTab === "box" ? "block" : "none"}">${liveVsLineHtml}${boxScoreTab(g)}</div>`
         : "";
       /* PREVIEW IS THE STORY. The pick's own banner sits ABOVE the tabs now (see gpBanner),
          so this pane no longer repeats it — it is the masthead, the setup prose, the lines
@@ -10242,7 +10298,7 @@ export default function Home() {
       // box score's job (gameRecap drops its own `finalTxt` chip for the same reason).
       // RECAP RETIRED (see the tab-set note): a final game has no live/recap pane at all, and
       // the live pane exists only while the game is actually in progress.
-      const livePane = hasLivePane ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${liveVsLineHtml}</div>` : "";
+      const livePane = "";   // retired — the live-vs-line meter lives at the top of Box Score now
       // The star-tier legend was cut from the bottom of the board (it explained a five-step
       // scale to every reader on every visit).
       /* ═══════════ ODDS: THE MARKET DETAIL ═══════════
@@ -10437,6 +10493,12 @@ export default function Home() {
       }
     }
     function closeDetail(fromHistory = false, forceRoot = false) {
+      // The pitcher sheet closes by popping ITS OWN history entry, so the in-app back
+      // arrow and the native back gesture run one identical path (popstate → syncFromUrl).
+      if (!fromHistory && !forceRoot && detail && detail._pitcher && pitcherPushed) {
+        pitcherPushed = false; history.back(); return;
+      }
+      pitcherPushed = false;
       if (!fromHistory && !forceRoot && detail && detail._backToGame && restoreGameDetail(detail._backToGame)) return;
       const wasGame = isGameDetail(detail) || !!(forceRoot && detail && detail._backToGame && detail._backToGame.game && detail._backToGame.game.game_id != null);
       try { document.title = DEF_TITLE; } catch {}   // restore the base tab title on close
@@ -10646,7 +10708,13 @@ export default function Home() {
       try { gid = new URL(location.href).searchParams.get("g"); } catch {}
       if (gid) {
         const g = gameById(gid);
-        if (g) { if (!detail || detail.game_id == null || String(detail.game_id) !== String(gid)) openDetail(g, undefined, true); }
+        if (g) {
+          // Popping back INTO a game from a layered sheet (the pitcher page) restores the
+          // game on the tab the reader left, not on the default tab.
+          const bk = detail && detail._pitcher && detail._backToGame;
+          if (bk && bk.game && String(bk.game.game_id) === String(gid)) { pitcherPushed = false; restoreGameDetail(bk); }
+          else if (!detail || detail.game_id == null || String(detail.game_id) !== String(gid)) openDetail(g, undefined, true);
+        }
         else if (!detail) { /* game not in the loaded slate yet — leave URL, board loads it */ }
       } else if (detail && !detail._recipe) {
         closeDetail(fromHistory);
