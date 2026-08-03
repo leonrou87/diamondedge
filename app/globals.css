@@ -8211,3 +8211,12 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   .gl-mixrow{grid-template-columns:minmax(0,1fr) 52px 32px 38px;gap:6px}
   .gl-n{font-size:25px}
 }
+
+/* the third dev guard shares the family's chrome; blue, so three simultaneous guards are
+   still individually identifiable at a glance */
+.dev-recbar{bottom:auto;top:8px;border-color:var(--b3);background:var(--b0);color:var(--b4)}
+.dev-recbar b{color:var(--b4)}
+.dev-recbar span{background:rgba(var(--bluec),.24);max-width:100%;overflow-wrap:anywhere}
+.dev-recbar i{color:var(--b4)}
+/* two banners at the top must not stack on top of each other */
+.dev-leakbar ~ .dev-recbar{top:56px}

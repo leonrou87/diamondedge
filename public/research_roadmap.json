@@ -1,8 +1,8 @@
 {
-  "generated_utc": "2026-08-03T04:26:44.856506+00:00",
+  "generated_utc": "2026-08-03T06:41:23.716092+00:00",
   "summary": {
     "shipped": 46,
-    "testing": 4,
+    "testing": 5,
     "accruing": 9,
     "queued": 0,
     "closed": 32
@@ -98,6 +98,19 @@
       "latest": "2026-08-02: 2,089 nightly-selection recipes replayed; the recommended one is up on all three stretches, including both it was not tuned on",
       "detail": "We built 2,848 different ways of turning the desk's fourteen voices into a pick \u2014 follow one, vote, blend, only bet certain lines, only bet when the number moved, learn the weights \u2014 and then, instead of hunting for one that always works, we tested the thing the product actually does: every night, look at how each of them has ACTUALLY been doing over the last few weeks, play the best ones tomorrow, and repeat. The strategy that gets played is disposable; it lives one day and is judged on a day it never saw. We tried 1,441 recipes for doing that nightly pick (how far back to look, how to rank, how many to play at once, how sure to insist on being) and chose one using only the first nine months, then checked it on the months it had never seen. It comes out at 54.8% over 205 nights and 997 picks, up 45 units at standard juice, worst losing streak 11.3 units \u2014 and it was up on BOTH stretches it was not tuned on. The check that matters most: run exactly the same machinery but pick the nightly strategy at RANDOM out of the same bag, and it loses 93 units on average across 40 tries. So the nightly choosing is doing real work. What we are NOT saying: the error bars on that 45 units still reach below zero, so this is a process that has been winning, not a proven edge, and it has to be served that way \u2014 activation-dated, graded in public from day one, with the price gate untouched. Two things it taught us that we can use immediately: look back about five weeks, not one (short windows were the worst setting we tested by fifty units), and keep the pool of strategies WIDE, because a narrow pool has nothing to choose between. One more thing the search taught us about itself: when we widened the hunt from 1,441 recipes to 2,089, the single best-looking recipe got WORSE on the months it had not seen \u2014 so the final answer is not the top of any leaderboard, it is the setting that was best on average across hundreds of tries, which is much harder for one lucky stretch to move.",
       "result": "RECOMMENDED, NOT ADOPTED \u2014 35-night window, rank by trailing return, require a real sample and consistency across both halves, play the majority vote of the top 21, nudge toward yesterday. +45.4u over 205 nights at 54.8%, worst drawdown 11.3u, positive on all three stretches, 90% interval [-0.004, +0.095] so zero is still inside it. Beats random selection from the same pool by ~3.4 sd. Settings chosen from axis medians over 2,089 variants, not from a leaderboard. Drop-in module: v4/models/strategy_tournament/desk_meta_selector.py. Report: v4/models/strategy_tournament/TOURNAMENT_REPORT.md"
+    },
+    {
+      "id": "nightly_engine",
+      "title": "The 2AM nightly engine \u2014 last 21 nights choose tonight's strategy, locked and scrubbed",
+      "tagline": "Every night at 2AM PT the engine looks at how ~2,800 ways of reading the four analysts actually did over the trailing 21 graded nights, locks the best 21 as a voting ensemble for the day's games, and a post-engine scrub re-proves every served number before morning. Running in shadow behind a signed fail-closed switch.",
+      "status": "testing",
+      "category": "serving",
+      "progress_pct": 90,
+      "started": "2026-08-02",
+      "eta": "shadow ledger accrues nightly from 2026-08-02; the signed mode file flips it live whenever Leon decides the record has earned it",
+      "latest": "2026-08-03: full rehearsal complete \u2014 locked 2026-08-02 in shadow (top strategy: mirror the desk majority; 3 plays, 12 abstains on a 15-game slate), scrub verdict OK with all four rails green, and an independent red-team pass confirmed the boundary, double-run, and version-bump defenses (two file-handling fixes landed; one narrow torn-append window accepted on the record).",
+      "detail": "This is the strategy tournament's proven nightly meta-selector, adopted for production with Leon's 21-night window (down from 35; the decided-picks floor scales to 18). Every night: derive from 2,848 candidate strategies over the trailing 21 graded nights of the four analysts' reads \u2014 a candidate must be profitable in BOTH halves of its window separately, the top 21 VOTE per game (never the argmax, which failed the tournament's own search), a tie abstains, and the window restarts at any model-swap fingerprint so two read bases are never averaged. The lock is append-only and first-write-wins per date: no re-run or version bump can restate it, which is the exact lesson the v20 adaptive-desk bump taught. Then the post-engine scrub re-grades everything gradable through the outcome-verification gate, rebuilds and syncs every payload, recounts every record against the ledgers, runs the four standing rails, and refuses success if any fails \u2014 receipted nightly in SCRUB_LOG.md. The whole thing runs in SHADOW: the adaptive desk stays the live path until Leon signs the fail-closed mode file by hand (python3 nightly_engine.py --sign live --by \"Leon Rou\"). Nothing flips automatically, ever.",
+      "result": "SHIPPED IN SHADOW, NOT SIGNED \u2014 the tournament meta-record's 90% interval still contains zero, so this is a winning process with an unproven edge; the live shadow ledger accruing from day one is the evidence that will decide the flip."
     },
     {
       "id": "merged_market_defect",

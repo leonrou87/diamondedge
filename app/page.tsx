@@ -114,6 +114,133 @@ export default function Home() {
        Escape hatch, deliberately narrow: put data-devtext="<why>" on an element whose text
        legitimately contains one of these (a code sample, a schema table). The reason is
        required, so it cannot become a lazy way to re-silence this. */
+    /* ═════════════ RECORD-CONTRACT GUARD — the third of the dev-guard family ═════════════
+       WHY THIS ONE EXISTS. The record is the product's whole argument, and it is rendered
+       entirely from two payload objects — `record.headline` and `record.daily` — whose field
+       names live on the backend and can change without anything on this side raising a
+       sound. The failure mode is not a crash: it is `NaN–NaN`, or "undefined% hit", or a
+       module that quietly renders as an em dash, on the surface a paying reader trusts most.
+       Leon saw a broken record window that nothing in the frontend commit stream explains,
+       which means the most likely cause is exactly this — a payload that changed shape under
+       a renderer that had no opinion about shape. This guard is the answer either way.
+
+       WHAT IT CHECKS, on every payload that lands:
+         · `record.headline` carries the fields the renderers actually consume — the guard
+           lists them explicitly rather than checking "is an object", because "is an object"
+           is what we already had and it passes on `{}`.
+         · `record.daily` is one of the two shapes the app supports (array of day blocks, or
+           a map keyed by date) and its ROWS carry win/loss under one of the accepted
+           aliases. A daily block that parses to nothing is the case that empties the record
+           screen while every other surface looks fine.
+         · nothing consumed is NaN. `Number(undefined)` is NaN and NaN reaches the DOM as the
+           literal string "NaN" — silently, through every template in this file.
+
+       DEV: a console.error naming the exact missing path, plus a fixed banner, same as its
+       two siblings. PRODUCTION: not installed, byte-for-byte the old behaviour — but the
+       renderers are separately hardened (see recordSafe below) so a bad payload HIDES the
+       module or falls back to the last good one rather than printing a wrong number.
+
+       VERSION SKEW IN BOTH DIRECTIONS is the point of the alias lists. A user pinned on a
+       stale bundle against a new payload, and a fresh bundle against a cached old payload,
+       are the same problem seen from two sides; every reader below accepts the old AND the
+       new field name, so neither direction can produce a blank. */
+    const REC_HEADLINE_FIELDS: { path: string; alts: string[] }[] = [
+      { path: "record.headline.win", alts: ["win", "wins", "w"] },
+      { path: "record.headline.loss", alts: ["loss", "losses", "l"] },
+      { path: "record.headline.push", alts: ["push", "pushes", "p"] },
+      { path: "record.headline.n", alts: ["n", "n_graded", "graded"] },
+      { path: "record.headline.hit_rate", alts: ["hit_rate", "hit"] },
+      { path: "record.headline.units", alts: ["units", "net_units"] },
+      { path: "record.headline.record", alts: ["record", "wl"] },
+    ];
+    const recIssues = new Set<string>();
+    let recBannerT = 0;
+    function reportRecordIssue(what: string) {
+      if (!DEV || recIssues.has(what)) return;
+      recIssues.add(what);
+      // eslint-disable-next-line no-console
+      console.error(
+        `[DiamondEdge] RECORD CONTRACT  ${what}\n` +
+        `  A field the record renderers consume is missing, unparseable, or NaN.\n` +
+        `  In production the module falls back to the last good rendering or hides —\n` +
+        `  it will NOT print NaN — but the reader loses a surface. Fix the payload or\n` +
+        `  add the new field name to REC_HEADLINE_FIELDS / normDayBlock's alias list.`
+      );
+      if (recBannerT) return;
+      recBannerT = window.setTimeout(() => {
+        recBannerT = 0;
+        if (!document.body) return;
+        let bar = $("dev-recbar");
+        if (!bar) { bar = document.createElement("div"); bar.id = "dev-recbar"; bar.className = "dev-deadbar dev-recbar"; document.body.appendChild(bar); }
+        bar.innerHTML =
+          `<b>RECORD CONTRACT</b>` +
+          Array.from(recIssues).slice(0, 6).map((k) => `<span>${k}</span>`).join("") +
+          `<i>the record payload changed shape — see the console</i>`;
+      }, 0);
+    }
+    /* Runs on every payload that lands. Cheap, and it is the only thing standing between a
+       contract change and a wrong number on the surface this product is sold on. */
+    function checkRecordContract(d: any) {
+      if (!DEV || !d || typeof d !== "object") return;
+      const rec = d.record;
+      if (rec == null) { reportRecordIssue("record — absent from the payload"); return; }
+      if (typeof rec !== "object") { reportRecordIssue("record — not an object"); return; }
+      const h = rec.headline;
+      if (h == null || typeof h !== "object") reportRecordIssue("record.headline — absent");
+      else {
+        REC_HEADLINE_FIELDS.forEach(({ path, alts }) => {
+          const key = alts.find((a) => h[a] != null);
+          if (!key) { reportRecordIssue(`${path} — none of [${alts.join(", ")}]`); return; }
+          const v = h[key];
+          if (typeof v !== "string" && !isFinite(Number(v))) reportRecordIssue(`${path} — NaN (${String(v)})`);
+        });
+      }
+      const daily = rec.daily;
+      const legacy = d.by_date_record;
+      if (daily == null && legacy == null) { reportRecordIssue("record.daily — absent, and no by_date_record to fall back on"); return; }
+      if (daily != null && !Array.isArray(daily) && typeof daily !== "object")
+        reportRecordIssue("record.daily — neither an array of day blocks nor a map keyed by date");
+      // the rows have to PARSE, not merely exist — a daily block nobody can read is what
+      // empties the record screen while everything around it still looks healthy
+      const map = dayRecordMap();
+      const parsed = Object.keys(map).length;
+      const rawN = Array.isArray(daily) ? daily.length
+        : daily && typeof daily === "object" ? Object.keys(daily).length
+        : legacy && typeof legacy === "object" ? Object.keys(legacy).length : 0;
+      if (rawN > 0 && parsed === 0) reportRecordIssue(`record.daily — ${rawN} day blocks served, 0 parseable (win/loss aliases changed?)`);
+    }
+    /* THE PRODUCTION HALF. A dev banner helps whoever is looking; this is what protects the
+       reader who is not. Every record figure goes through here: a value that cannot be made
+       into a real number returns null, and every call site treats null as "hide this", never
+       as "print it anyway". The last good headline is remembered for the session, so a single
+       bad refresh shows the previous true record rather than an empty box — stale-but-true
+       beats blank, and blank beats wrong. */
+    let lastGoodHeadline: any = null;
+    function recNum(v: any): number | null {
+      if (v == null || v === "") return null;
+      const n = Number(v);
+      return isFinite(n) ? n : null;
+    }
+    function recordHeadlineSafe(): any {
+      const h = recordRoot().headline;
+      if (h && typeof h === "object") {
+        const pick = (alts: string[]) => { for (const a of alts) { const n = recNum(h[a]); if (n != null) return n; } return null; };
+        const w = pick(["win", "wins", "w"]), l = pick(["loss", "losses", "l"]);
+        if (w != null || l != null) {
+          const out = {
+            w: w || 0, l: l || 0, p: pick(["push", "pushes", "p"]) || 0,
+            n: pick(["n", "n_graded", "graded"]),
+            hit: pick(["hit_rate", "hit"]),
+            units: pick(["units", "net_units"]),
+            record: typeof h.record === "string" ? h.record : typeof h.wl === "string" ? h.wl : null,
+          };
+          lastGoodHeadline = out;
+          return out;
+        }
+      }
+      return lastGoodHeadline;   // null on a cold start ⇒ the module hides, never NaN
+    }
+
     const LEAK_SIG: { what: string; re: RegExp }[] = [
       { what: "a backtick — copy is never marked up in code", re: /`/ },
       { what: "a snake_case field name", re: /(?:^|[\s("'])[a-z][a-z0-9]*(?:_[a-z0-9]+)+(?=$|[\s)."',;:])/ },
@@ -504,6 +631,22 @@ export default function Home() {
     const MARKETS = ["spread", "total", "moneyline"];
     const MK_FULL: any = { spread: "Spread", total: "Total", moneyline: "Moneyline" };
 
+    /* ══ ONE GRADER. "DID THIS PICK WIN" IS DECIDED IN EXACTLY ONE PLACE. ══
+       Fifteen surfaces were each testing the raw served string for equality with "win".
+       They all agreed today, which is precisely why it was dangerous: the agreement was a
+       coincidence of the current payload, not a property of the code. One backend that ships
+       "won" instead of "win" — or "W", or capitalises it — and the board says a pick cashed
+       while the record page counts it as ungraded, with nothing anywhere to catch it.
+       Every alias the served feeds have ever used is normalised here, and the fifteen
+       surfaces now ask this function instead of the string. */
+    function gradeOf(p: any): "win" | "loss" | "push" | null {
+      const r = String((p && (p.result != null ? p.result : p.outcome)) || "").trim().toLowerCase();
+      if (!r) return null;
+      if (r === "win" || r === "won" || r === "w" || r === "hit") return "win";
+      if (r === "loss" || r === "lost" || r === "l" || r === "miss") return "loss";
+      if (r === "push" || r === "p" || r === "tie" || r === "pushed") return "push";
+      return null;
+    }
     function normPlayResult(r: any) {
       if (!r) return null;
       let st = r.status || null;
@@ -1200,7 +1343,7 @@ export default function Home() {
       const ln = pk.line != null ? pk.line : pk.vegas_line;
       const take = String(pk.status || "").toUpperCase() === "PICK";
       const side = take ? `${/over/i.test(String(pk.side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim() : null;
-      const res = pk.result === "win" ? { status: "hit" } : pk.result === "loss" ? { status: "miss" } : pk.result === "push" ? { status: "push" } : null;
+      const res = gradeOf(pk) === "win" ? { status: "hit" } : gradeOf(pk) === "loss" ? { status: "miss" } : gradeOf(pk) === "push" ? { status: "push" } : null;
       const stars = pk.stars != null ? Number(pk.stars) : 0;
       const q = stars >= 4 ? "strong" : stars === 3 ? "good" : "lean";
       const be = pk.price != null ? beFromAmerican(pk.price) : null;
@@ -1615,7 +1758,7 @@ export default function Home() {
        format. Nothing else about the sentence is touched. */
     const proseDates = (t: any) => String(t == null ? "" : t)
       .replace(/\b(\d{4}-\d{2}-\d{2})\b/g, (m) => stratDateTxt(m) || m);
-    const stratWL = (b: any) => (b ? `${b.win}–${b.loss}${b.push ? `–${b.push}` : ""}` : "—");
+    const stratWL = (b: any) => (b ? wlTxt(b) : "—");
     const stratPct = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
     const stratRoi = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
     function adaptiveTier(s: any) {
@@ -3242,9 +3385,9 @@ export default function Home() {
            text AND in the row class, for TODAY's board as readily as for last month's. A
            GRADED row is the analyst's record and stays open; an ungraded one is a live read
            on a live game and is redacted like everything else. */
-        const anLocked = !entitled() && !(a.result === "win" || a.result === "loss" || a.result === "push");
+        const anLocked = !entitled() && !(gradeOf(a) === "win" || gradeOf(a) === "loss" || gradeOf(a) === "push");
         const dirCls = anLocked ? "" : a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
-        const res = a.result === "win" ? resultStamp("won", "sm") : a.result === "loss" ? resultStamp("lost", "sm") : a.result === "push" ? resultStamp("pushed", "sm") : `<span class="ppres open">Open</span>`;
+        const res = gradeOf(a) === "win" ? resultStamp("won", "sm") : gradeOf(a) === "loss" ? resultStamp("lost", "sm") : gradeOf(a) === "push" ? resultStamp("pushed", "sm") : `<span class="ppres open">Open</span>`;
         const callHtml = anLocked
           ? lockedSideChip(true)
           : `<span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>`;
@@ -3259,7 +3402,7 @@ export default function Home() {
       // a permanent title over a live record
       const aiW = wkAll && wkAll.aotwInfo && wkAll.aotwInfo.key === k ? wkAll.aotwInfo : null;
       const wkCell = wrow
-        ? `<div class="anl-big wk"><b>${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b><i>this week</i></div>`
+        ? `<div class="anl-big wk"><b>${wlTxt(wrow)}</b><i>this week</i></div>`
         : "";
       // THE BANNER that says how every number under it should be read. It used to declare
       // which KIND of ledger this was (staked vs leans); that distinction is retired, so it
@@ -3273,7 +3416,7 @@ export default function Home() {
       const recHero = rec
         ? `${lkBanner}
           <div class="anl-hero">
-            <div class="anl-big"><b>${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}</b><i>record</i></div>
+            <div class="anl-big"><b>${wlTxt(rec)}</b><i>record</i></div>
             ${rec.hit != null ? `<div class="anl-big"><b>${(rec.hit * 100).toFixed(0)}%</b><i>hit</i></div>` : ""}
             ${rec.roi != null ? `<div class="anl-big ${rec.roi >= 0 ? "pos" : "neg"}"><b>${bRoi(rec.roi)}</b><i>ROI</i></div>` : ""}
             ${wkCell}
@@ -3337,7 +3480,7 @@ export default function Home() {
           ${b.txt ? `<p class="anl-take-say">“${esc(b.txt)}”</p>` : ""}
         </div>`;
       } else {
-        const bw = calls.filter(({ a }: any) => a.result === "win")
+        const bw = calls.filter(({ a }: any) => gradeOf(a) === "win")
           .sort((x: any, y: any) => ((y.a.conv != null ? y.a.conv : 0) - (x.a.conv != null ? x.a.conv : 0)))[0];
         if (bw) {
           const aAb = bw.g.away_abbr || mlbAbbr(bw.g.away) || "—", hAb = bw.g.home_abbr || mlbAbbr(bw.g.home) || "—";
@@ -3358,7 +3501,7 @@ export default function Home() {
           ${b.txt ? `<p class="anl-take-say">“${esc(b.txt)}”</p>` : ""}
         </div>`;
       } else {
-        const bl = calls.filter(({ a }: any) => a.result === "loss")
+        const bl = calls.filter(({ a }: any) => gradeOf(a) === "loss")
           .sort((x: any, y: any) => ((y.a.conv != null ? y.a.conv : 0) - (x.a.conv != null ? x.a.conv : 0)))[0];
         if (bl) {
           const aAb = bl.g.away_abbr || mlbAbbr(bl.g.away) || "—", hAb = bl.g.home_abbr || mlbAbbr(bl.g.home) || "—";
@@ -3470,7 +3613,7 @@ export default function Home() {
       // even the smallest inline chip carries its sample AND its kind — a bare W–L with no n
       // reads as a characteristic instead of a running tally, and a lean ledger's W–L read as
       // a betting record is the same lie in miniature.
-      return `<span class="dbt-rec ${ledgerCls(r)}"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b><i>${ledgerMark(r)} ${r.n} graded ${esc(ledgerShort(r))}</i></span>`;
+      return `<span class="dbt-rec ${ledgerCls(r)}"><b>${wlTxt(r)}</b><i>${ledgerMark(r)} ${r.n} graded ${esc(ledgerShort(r))}</i></span>`;
     }
     function deskDebatePanel(g: any, locked = false) {
       const ans = deskAnalysts(g);
@@ -3500,7 +3643,7 @@ export default function Home() {
             ? `<b class="dbt-side ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</b>`
             : `<b class="dbt-side none">${esc(missingLabel)}</b>`;
         const conv = !hide && a.conv != null && a.dir ? `<span class="dbt-conv">${Math.round(a.conv * 100)}% lean</span>` : "";
-        const res = a.result === "win" ? `<span class="sgr-res won">RIGHT</span>` : a.result === "loss" ? `<span class="sgr-res lost">WRONG</span>` : a.result === "push" ? `<span class="sgr-res pushed">PUSH</span>` : "";
+        const res = gradeOf(a) === "win" ? `<span class="sgr-res won">RIGHT</span>` : gradeOf(a) === "loss" ? `<span class="sgr-res lost">WRONG</span>` : gradeOf(a) === "push" ? `<span class="sgr-res pushed">PUSH</span>` : "";
         // THE VOICE: the analyst's per-game take is the speech bubble — their persona line
         // only stands in while the backend take hasn't landed yet.
         const say = !hide ? (a.take || a.persona) : "";
@@ -3870,7 +4013,7 @@ export default function Home() {
       if (!w || !w.rows.length) return "";
       const rows = w.rows.map((r: any) => {
         const lk = anLedger(r.key, r);
-        const rec = `${r.w}–${r.l}${r.p ? `–${r.p}` : ""}`;
+        const rec = wlTxt(r);
         const played = r.w + r.l + r.p;
         const nm = (DESK_CAST[r.key] || {}).name || r.key;
         const split = played
@@ -3923,7 +4066,7 @@ export default function Home() {
     function recapWinnerLineTxt(rc: any) {
       const w = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner].name : "";
       const wl = rc.lines.find((l: any) => l.key === rc.winner);
-      const rec = wl && wl.wl ? `${wl.wl.w}–${wl.wl.l}${wl.wl.p ? `–${wl.wl.p}` : ""}` : "";
+      const rec = wl && wl.wl ? wlTxt(wl.wl) : "";
       return w ? `${w} takes the night${rec ? ` at ${rec}` : ""}` : "";
     }
     function recapCallRow(c: any, kind: "best" | "worst") {
@@ -3931,7 +4074,7 @@ export default function Home() {
       const cast = c.key && DESK_CAST[c.key] ? DESK_CAST[c.key] : null;
       const who = cast ? cast.name : "The desk";
       const lab = kind === "best" ? "Best call" : "Worst call";
-      const resTxt = c.result === "win" ? "cashed" : c.result === "loss" ? "missed" : c.result === "push" ? "pushed" : "";
+      const resTxt = gradeOf(c) === "win" ? "cashed" : gradeOf(c) === "loss" ? "missed" : gradeOf(c) === "push" ? "pushed" : "";
       return `<div class="rcap-call ${kind}${c.key ? ` an-${esc(c.key)}` : ""}"${c.key ? ` data-an="${esc(c.key)}" role="button" tabindex="0"` : ""}>
         <span class="rcap-call-k">${kind === "best" ? "◆" : "✕"} ${lab}</span>
         <div class="rcap-call-b">
@@ -3943,7 +4086,7 @@ export default function Home() {
       </div>`;
     }
     const recapLineRows = (rc: any, max = 4) => rc.lines.slice(0, max).map((l: any) => {
-      const rec = l.wl ? `${l.wl.w}–${l.wl.l}${l.wl.p ? `–${l.wl.p}` : ""}` : "";
+      const rec = l.wl ? wlTxt(l.wl) : "";
       const win = rc.winner === l.key;
       const lk = anLedger(l.key);
       return `<button class="rcap-line an-${esc(l.key)} ${ledgerCls(lk)}${win ? " won" : ""}" data-an="${esc(l.key)}">
@@ -4018,10 +4161,10 @@ export default function Home() {
             ? `<span class="dskrec-prof on"><i>measured specialism</i>${esc(ph.line)}</span>` : "";
           return `
           <button class="dskrec-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked ? "" : " early"}${profTx ? " hasprof" : ""}" data-an="${esc(r.key)}"
-            aria-label="${esc(`${r.name} — ${r.win}-${r.loss}${r.push ? `-${r.push}` : ""} over ${r.n} graded calls ${recordEraTxt()}${grp.ranked && grp.ordinals ? `, ranked ${ordinal(i)}` : ""}${ph && ph.line ? `. ${ph.line}` : ""}`)}">
+            aria-label="${esc(`${r.name} — ${wlTxt(r)} over ${r.n} graded calls ${recordEraTxt()}${grp.ranked && grp.ordinals ? `, ranked ${ordinal(i)}` : ""}${ph && ph.line ? `. ${ph.line}` : ""}`)}">
             <span class="dskrec-rank">${grp.ranked && grp.ordinals ? ordinal(i) : `<i class="dskrec-norank">${grp.ranked ? "◆" : "—"}</i>`}</span>
             <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
-            <span class="dskrec-stats"><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i${grp.ranked ? "" : ` class="soft"`}>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? ledgerRoi(r, grp.ranked ? "" : "soft") : ""}<i class="dim">${r.n || 0} graded ${recordEraTxt()}</i></span>
+            <span class="dskrec-stats"><b>${wlTxt(r)}</b>${r.hit != null ? `<i${grp.ranked ? "" : ` class="soft"`}>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? ledgerRoi(r, grp.ranked ? "" : "soft") : ""}<i class="dim">${r.n || 0} graded ${recordEraTxt()}</i></span>
             ${deskL10Dots(r.last10)}
             ${profTx}
           </button>`;
@@ -4034,7 +4177,7 @@ export default function Home() {
       const ch = consensusHistoryRows();
       const chRows = ch.map((r: any) => {
         const lab = r.state === "UNANIMOUS" ? "All four agree" : r.state === "MAJORITY" ? "3–1 majority" : "Desk split";
-        return `<div class="chh-row ${r.state.toLowerCase()}"><span class="chh-lab">${lab}</span><b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(0)}%</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}<span class="chh-n">${r.n} games</span></div>`;
+        return `<div class="chh-row ${r.state.toLowerCase()}"><span class="chh-lab">${lab}</span><b>${wlTxt(r)}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(0)}%</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}<span class="chh-n">${r.n} games</span></div>`;
       }).join("");
       return `<div class="ixc dskrec" id="analyst-record">
         <div class="ixc-h">The desk board</div>
@@ -4452,7 +4595,7 @@ export default function Home() {
         : it.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : "";
       const nChip = it.n ? `<span class="pat-n">n = ${it.n} game${it.n === 1 ? "" : "s"}</span>` : "";
       const smalln = "";   /* an "emerging signal" chip hung off every under-sample row — the sample count beside it already says it */
-      const wlChip = it.wl ? `<span class="pat-wl">${it.wl.w}–${it.wl.l}${it.wl.p ? `–${it.wl.p}` : ""}</span>` : "";
+      const wlChip = it.wl ? `<span class="pat-wl">${wlTxt(it.wl)}</span>` : "";
       return `<article class="patcard${big ? " big" : ""}${it.kind ? ` kind-${esc(it.kind)}` : ""}">
         <div class="pat-kick">${glyphs}<span class="pat-lead">${esc(patternLead(it))}</span></div>
         <p class="pat-line">${patternBody(it)}</p>
@@ -7021,18 +7164,82 @@ export default function Home() {
        from the graded games in order. Anything missing simply doesn't render — no chip,
        no placeholder, no error. */
     function recordRoot() { return (betaData && betaData.record) || (betaLiveData && betaLiveData.record) || {}; }
-    function dailyRecordFor(dateISO: string) {
-      const rec = recordRoot();
-      const daily = rec && typeof rec.daily === "object" && rec.daily ? rec.daily : null;
-      const fromNew = daily && typeof daily[dateISO] === "object" ? daily[dateISO] : null;
-      const fromOld = betaData && betaData.by_date_record && typeof betaData.by_date_record[dateISO] === "object"
-        ? betaData.by_date_record[dateISO] : null;
-      const d = fromNew || fromOld;
-      if (!d) return null;
-      const w = _fin(d.wins != null ? d.wins : d.win), l = _fin(d.losses != null ? d.losses : d.loss);
-      const p = _fin(d.pushes != null ? d.pushes : d.push) || 0;
+
+    /* ════════════════════════════════════════════════════════════════════════════════
+       ONE DAY LEDGER. EVERY SURFACE READS IT.
+       ────────────────────────────────────────────────────────────────────────────────
+       A day's W–L was being reconstructed from the payload in FOUR independent places —
+       the briefing's recap slide, the record page's past-picks list, the Desk's 14-day
+       calendar and the record page's scope rows — each with its own field aliasing, its
+       own idea of which payload key to trust, and its own arithmetic. Four readings of one
+       fact is four chances to disagree, and two of them already did:
+
+         · the recap slide read ONLY the legacy `by_date_record`. `record.daily` is the
+           current contract and it ships as an ARRAY of day blocks — which the slide could
+           not read at all — so the day the backend drops the legacy key, the slide silently
+           stops rendering. Not an error: an absence, which is the failure mode nobody sees.
+         · the slide printed the SERVED hit rate while the record screen derived w/(w+l).
+           On a day with a push those are different numbers, on the same date, two taps
+           apart.
+
+       So there is one normaliser now, and it is the only thing in the app that knows what
+       shape a day block arrives in. It reads BOTH shapes of `record.daily` (array of blocks
+       and map keyed by date) and backfills from `by_date_record`, newest contract winning
+       per-day — which is what makes it version-skew-proof in both directions: a payload
+       that only has the legacy key still renders, and a payload that drops the legacy key
+       renders identically. Everything downstream (dailyRecordFor · dailyRecordSince ·
+       dailyRecordRows · the recap slide · past picks) reads THIS.
+       ════════════════════════════════════════════════════════════════════════════════ */
+    function normDayBlock(x: any) {
+      if (!x || typeof x !== "object") return null;
+      const w = _fin(x.win != null ? x.win : x.wins);
+      const l = _fin(x.loss != null ? x.loss : x.losses);
+      const p = _fin(x.push != null ? x.push : x.pushes) || 0;
       if (w == null && l == null) return null;
-      return { w: w || 0, l: l || 0, p, n: _fin(d.n_graded) };
+      const W = w || 0, L = l || 0;
+      const n = _fin(x.n_graded != null ? x.n_graded : x.n);
+      return {
+        w: W, l: L, p,
+        n: n != null ? n : W + L + p,
+        units: _fin(x.units),
+        nPicks: _fin(x.n_picks),
+        nVoid: _fin(x.n_void),
+        // HIT RATE IS DERIVED, ALWAYS — never the served number. A push is not a loss and it
+        // is not a win; w/(w+l) is the only definition this app uses anywhere, and taking a
+        // served `hit_rate` on one surface while deriving it on another is how the same day
+        // ended up showing two percentages.
+        hit: W + L > 0 ? W / (W + L) : null,
+        roi: _fin(x.roi),
+      };
+    }
+    function dayRecordMap() {
+      const out: any = {};
+      // legacy FIRST so the current contract overwrites it per-day rather than the reverse
+      const legacy = (betaData && betaData.by_date_record) || {};
+      Object.keys(legacy).forEach((k) => { const d = normDayBlock(legacy[k]); if (d) out[k] = d; });
+      const daily = recordRoot().daily;
+      if (Array.isArray(daily)) {
+        daily.forEach((x: any) => {
+          const k = String((x && x.date) || "").slice(0, 10);
+          const d = normDayBlock(x); if (k && d) out[k] = d;
+        });
+      } else if (daily && typeof daily === "object") {
+        Object.keys(daily).forEach((k) => { const d = normDayBlock(daily[k]); if (d) out[k] = d; });
+      }
+      return out;
+    }
+    function dailyRecordFor(dateISO: string) {
+      return dayRecordMap()[dateISO] || null;
+    }
+    /* THE ONE W–L STRING. Six surfaces were building it inline and they did not agree about
+       whether a zero-push day prints "5–3" or "5–3–0", nor about the dash character (an en
+       dash is the score dash; a hyphen is a range). One helper, one answer. */
+    function wlTxt(r: any) {
+      if (!r) return "0–0";
+      const w = Number(r.w != null ? r.w : r.win != null ? r.win : r.wins) || 0;
+      const l = Number(r.l != null ? r.l : r.loss != null ? r.loss : r.losses) || 0;
+      const p = Number(r.p != null ? r.p : r.push != null ? r.push : r.pushes) || 0;
+      return `${w}–${l}${p ? `–${p}` : ""}`;
     }
     // current run: served record.streaks.current (signed) wins; else derive from graded games.
     function currentRun() {
@@ -7043,11 +7250,11 @@ export default function Home() {
         if (typeof st.current === "string" && /^[WL]\d+$/i.test(st.current)) return st.current.toUpperCase();
       }
       const graded = (((betaData && betaData.games) || []) as any[])
-        .filter((x: any) => x.pick && (x.pick.result === "win" || x.pick.result === "loss"))
+        .filter((x: any) => x.pick && (gradeOf(x.pick) === "win" || gradeOf(x.pick) === "loss"))
         .sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
       if (!graded.length) return "";
       let run = 0, last = "";
-      graded.forEach((x: any) => { const r = x.pick.result; if (r === last) run++; else { run = 1; last = r; } });
+      graded.forEach((x: any) => { const r = gradeOf(x.pick) || ""; if (r === last) run++; else { run = 1; last = r; } });
       return `${last === "win" ? "W" : "L"}${run}`;
     }
     /* THE RUN CHIP IS GONE FROM THE TILE (Leon, mid-round: "the DiamondEdge pick and upsell
@@ -7300,46 +7507,10 @@ export default function Home() {
       });
       return best;
     }
-    function featuredCard(g: any, pl: any) {
-      const gs = gameState(g);
-      const q = qualityOf(pl);
-      const st = playState(g, pl);
-      const locked = pickLocked(pl, st);
-      const resCls = st === "won" || st === "clinched" ? "res-won" : st === "lost" || st === "cooked" ? "res-lost" : st === "pushed" ? "res-push" : "";
-      const res = st === "won" ? `<span class="ft-res won">${condCheck} WON</span>`
-        : st === "lost" ? `<span class="ft-res lost">✗ LOST</span>`
-        : st === "pushed" ? `<span class="ft-res pushed">PUSH</span>`
-        : st === "clinched" ? `<span class="ft-res won">${condCheck} CLINCHED</span>`
-        : st === "cooked" ? `<span class="ft-res lost">✗ NOT LANDING</span>`
-        : st === "inplay" ? `<span class="ft-res inplay"><span class="ip-dot"></span>IN PLAY</span>` : "";
-      const sc = gs.score;
-      const side = (which: "away" | "home") => {
-        const ab = which === "away" ? g.away_abbr : g.home_abbr;
-        const mine = sc && sc.split && sc.home != null ? (which === "home" ? sc.home : sc.away) : null;
-        const other = sc && sc.split && sc.home != null ? (which === "home" ? sc.away : sc.home) : null;
-        const win = gs.kind === "final" && mine != null && mine > other;
-        return `<div class="ft-tm ${win ? "win" : ""}">${gCrest(g, which)}<i>${esc(ab)}</i>${mine != null ? `<b>${num(mine, 0)}</b>` : ""}</div>`;
-      };
-      const mid = gs.kind === "live"
-        ? `<div class="ft-mid live"><span class="livedot"></span>${esc(gs.label !== "Live" && gs.label ? gs.label : "LIVE")}</div>`
-        : gs.kind === "final" ? `<div class="ft-mid">FINAL</div>`
-        : `<div class="ft-mid">${esc(gs.si.hasTime && gs.si.time ? gs.si.time : gs.si.date || "@")}</div>`;
-      const ftOver = /(^|\s)over/i.test(String(pl.side || ""));
-      const ftUnder = /(^|\s)under/i.test(String(pl.side || ""));
-      const ftDir = ftOver ? "ou-over" : ftUnder ? "ou-under" : "";
-      const take = locked
-        ? `<button class="lockchip ft-lock" data-up="1" aria-label="Pick locked — unlock today's picks"><span class="lk-blur" aria-hidden="true">●●●● ●</span><span class="lk-badge">${lockSvg}${esc(unlockPitchTxt())}</span></button>`
-        : `<div class="ft-take q-${q} ${st}"><span class="ft-de">${pickLabel(g)}</span><span class="ft-sel ${ftDir}">${pickArrow(pl)} <b>${esc(pl.side || "—")}</b>${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</span><span class="ft-q">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : ""}</span>${res}</div>${pickMadeMeta(pl)}`;
-      return `<article class="feat q-${q} ${gs.kind}${resCls ? " " + resCls : ""}" data-gid="${esc(g.game_id)}" role="button" tabindex="0"
-        aria-label="Featured — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}${locked ? " — pick locked" : ` — DiamondEdge Pick ${esc(pl.side || "")}`} — open details">
-        <div class="ft-top"><span class="ft-lab">◆ Featured</span><span class="ft-sport">${esc(SPORT_LABEL[g.sport] || g.sport || "")}</span></div>
-        <div class="ft-mu">${side("away")}${mid}${side("home")}</div>
-        ${take}
-        ${gs.kind === "pre" ? countdownChip(g, gs) : ""}
-        ${gs.kind === "live" && !locked ? liveHitOdds(g, pl, "full") : ""}
-        ${gs.kind === "live" && !locked ? pickProgress(g, pl, st) : ""}
-      </article>`;
-    }
+    /* featuredCard() DELETED (round 5, the single-source sweep). It had no callers — the
+       comment above is kept because it is the record of WHY the surface was cut, but the
+       dead builder underneath it was a fourth independent rendering of facts the live
+       surfaces already own, sitting there waiting to be wired back up and disagree. */
 
     /* ═════════ THE BOARD SUMMARY — one line where a rail used to be ═════════
        CUT IN THE LIGHT REWRITE: the "Top Picks Today" rail. It was a dark-glass hero card
@@ -7354,30 +7525,10 @@ export default function Home() {
        tile's verdict line is for — and the ranked, graded list lives on the record. The
        "nothing cleared the bar" slab is untouched and still takes this slot on a no-play
        night; a board with plays should not be louder than a board without them. */
-    function boardSummaryBar(games: any[]) {
-      const rows = games.map((g: any) => ({ g, vd: tileVerdict(g) })).filter((r: any) => r.vd);
-      if (!rows.length) return "";
-      const plays = rows.filter((r: any) => r.vd.kind === "play").length;
-      const leans = rows.filter((r: any) => r.vd.kind === "lean").length;
-      const isToday = curDate === todayISO();
-      // the desk now calls a direction on games it will not bet, and that count is the
-      // interesting one: it is the difference between "we had no view" and "we had a view
-      // and the price was wrong", which is the whole product
-      const calls = rows.filter((r: any) => r.vd.kind === "pass" && deskCall(r.g)).length;
-      const bits = [
-        `<b>${plays}</b> play${plays === 1 ? "" : "s"}`,
-        leans ? `<b>${leans}</b> lean${leans === 1 ? "" : "s"}` : "",
-        calls ? `<b>${calls}</b> call${calls === 1 ? "" : "s"}, no bet` : "",
-        `<b>${rows.length}</b> read`,
-      ].filter(Boolean).map((s) => `<span>${s}</span>`).join('<i aria-hidden="true">·</i>');
-      /* CUT: "Every verdict is on its own tile — tap a game for the argument." It was an
-         instruction for a board that now states its verdict in type on every tile, on a
-         line a reader cannot act on. */
-      return `<div class="boardsum">
-        <span class="bs-k">${isToday ? "The desk today" : "The desk"}</span>
-        <span class="bs-nums">${bits}</span>
-      </div>`;
-    }
+    /* boardSummaryBar() DELETED (round 5, the single-source sweep). It had no callers — the
+       comment above is kept because it is the record of WHY the surface was cut, but the
+       dead builder underneath it was a fourth independent rendering of facts the live
+       surfaces already own, sitting there waiting to be wired back up and disagree. */
 
     /* ═══════════════════ THE PASS BOARD — a night with no play, stated ═══════════════════
        When nothing clears, the Top Picks rail simply used to VANISH and the page fell
@@ -7544,46 +7695,10 @@ export default function Home() {
     }
     // Overall pick record for the VIEWED date/league — across ALL markets (spread + total + ML),
     // plus a separate "top picks" (Strong ★★★) tally. Drives the small performance banner.
-    function dayPicksTally() {
-      const inLeague = (g: any) => league === "all" || String(g.sport || "").toLowerCase() === league;
-      const rows = tierRecordFor((g: any) => inLeague(g) && String(g.date || "").slice(0, 10) === curDate);
-      if (rows) {
-        const graded = rows.w + rows.l + (rows.p || 0);
-        const pending = rows.live + rows.up;
-        if (graded || pending) {
-          return {
-            w: rows.w, l: rows.l, p: rows.p || 0,
-            sw: rows.strong.w + rows.good.w, sl: rows.strong.l + rows.good.l,
-            n: graded + pending, graded, pending, live: rows.live, up: rows.up,
-          };
-        }
-      }
-      // Fallback only: old per-day records can lag the row-level feed during live slates.
-      if ((league === "all" || league === "mlb") && betaData && betaData.by_date_record) {
-        const r = betaData.by_date_record[curDate];
-        if (r && r.n_picks != null) {
-          // n_void (visible-void): postponed picks shown on the day but in NO record
-          const graded = (r.wins || 0) + (r.losses || 0) + (r.pushes || 0);
-          const pending = Math.max(0, (r.n_picks || 0) - graded - (r.n_void || 0));
-          return { w: r.wins || 0, l: r.losses || 0, p: r.pushes || 0, sw: 0, sl: 0, n: (r.n_picks || graded), graded, pending, live: 0, up: pending, nv: r.n_void || 0 };
-        }
-      }
-      const games = payload ? gamesForLeague(payload, league) : [];
-      let w = 0, l = 0, p = 0, sw = 0, sl = 0;
-      games.forEach((g: any) => {
-        const P = gamePlays(g);
-        MARKETS.forEach((mk) => {
-          const pl = P[mk];
-          if (!isBet(pl) || !pl.result) return; // only count bets we'd actually make (+EV)
-          const s = pl.result.status;
-          const strong = qualityOf(pl) === "strong";
-          if (s === "hit") { w++; if (strong) sw++; }
-          else if (s === "miss") { l++; if (strong) sl++; }
-          else if (s === "push") p++;
-        });
-      });
-      return { w, l, p, sw, sl, n: w + l + p, graded: w + l + p, pending: 0, live: 0, up: 0 };
-    }
+    /* dayPicksTally() DELETED (round 5, the single-source sweep). It had no callers — the
+       comment above is kept because it is the record of WHY the surface was cut, but the
+       dead builder underneath it was a fourth independent rendering of facts the live
+       surfaces already own, sitting there waiting to be wired back up and disagree. */
     // Small performance banner — OVERALL across all picks for the day, with a separate Top-picks
     // (Strong) standing. Tapping opens the full record broken down by confidence level (scoped to
     // the viewed date/league). Replaces the old totals-only "Today's Edge" line.
@@ -7599,7 +7714,7 @@ export default function Home() {
 
        WHAT THIS ROW STILL CARRIES: the day's chosen strategy, which is about TODAY'S BOARD
        rather than about the ledger, and is the one line that explains what you are looking
-       at. dayPicksTally() is untouched and still feeds the record surfaces. */
+       at. (The dead dayPicksTally() that used to sit under this note is gone — see above.) */
     /* THE BOARD CARRIES NO STRATEGY UI AT ALL.
        Leon: "we no longer need all the other models we have tested before, though they can
        be deep in the research tab as other variants… the product is DiamondEdge and its one
@@ -9029,9 +9144,9 @@ export default function Home() {
         : "";
       // Only a PICK gets a W/L badge. A PASS may be graded in the payload, but we did not
       // bet it — a green WON on a pass is exactly the hindsight bait this panel prevents.
-      const res = s.result === "win" ? resultStamp("won", "sm")
-        : s.result === "loss" ? resultStamp("lost", "sm")
-        : s.result === "push" ? resultStamp("pushed", "sm") : "";
+      const res = gradeOf(s) === "win" ? resultStamp("won", "sm")
+        : gradeOf(s) === "loss" ? resultStamp("lost", "sm")
+        : gradeOf(s) === "push" ? resultStamp("pushed", "sm") : "";
       const rec = strategyRecordFor(s.key);
       const lv = rec && rec.live;
       const btN = rec && rec.backtests.length ? rec.backtests.reduce((a: number, b: any) => a + b.n, 0) : 0;
@@ -9892,12 +10007,12 @@ export default function Home() {
         });
         if (out.length >= 2) return out;
       }
-      const bdr = (d && d.by_date_record) || {};
-      const dates = Object.keys(bdr).filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && bdr[k] && bdr[k].n_graded).sort();
+      const map = dayRecordMap();
+      const dates = Object.keys(map).filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && map[k].n).sort();
       let cum = 0;
       return dates.map((k) => {
-        const r = bdr[k];
-        const day = r.units != null ? Number(r.units) : (r.roi != null && r.n_graded ? Number(r.roi) * Number(r.n_graded) : 0);
+        const r = map[k];
+        const day = r.units != null ? Number(r.units) : (r.roi != null && r.n ? Number(r.roi) * Number(r.n) : 0);
         cum += isFinite(day) ? day : 0;
         return { x: k, v: cum };
       });
@@ -10004,16 +10119,15 @@ export default function Home() {
         });
         if (out.length) return out;
       }
-      const bdr = (d && d.by_date_record) || {};
+      const map = dayRecordMap();
       const agg: any = {};
-      Object.keys(bdr).forEach((k) => {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !bdr[k] || !bdr[k].n_graded) return;
-        const mo = k.slice(0, 7);
-        const r = bdr[k];
-        const day = r.units != null ? Number(r.units) : (r.roi != null ? Number(r.roi) * Number(r.n_graded) : 0);
+      Object.keys(map).forEach((k) => {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !map[k].n) return;
+        const mo = k.slice(0, 7), r = map[k];
+        const day = r.units != null ? Number(r.units) : (r.roi != null ? Number(r.roi) * Number(r.n) : 0);
         agg[mo] = agg[mo] || { m: mo, u: 0, n: 0 };
         agg[mo].u += isFinite(day) ? day : 0;
-        agg[mo].n += Number(r.n_graded) || 0;
+        agg[mo].n += Number(r.n) || 0;
       });
       return (Object.values(agg) as any[]).sort((a: any, b: any) => (a.m < b.m ? -1 : 1));
     }
@@ -10046,7 +10160,7 @@ export default function Home() {
       let st: any = rec.streaks;
       if (!st || typeof st !== "object") {
         const graded = (((d && d.games) || []) as any[])
-          .filter((g: any) => g.pick && (g.pick.result === "win" || g.pick.result === "loss"))
+          .filter((g: any) => g.pick && (gradeOf(g.pick) === "win" || gradeOf(g.pick) === "loss"))
           .sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
         if (!graded.length) return "";
         let bw = 0, bl = 0, run = 0; let last = "";
@@ -10196,7 +10310,6 @@ export default function Home() {
     let ppShown = 10;
     function pastPicksSection(d: any) {
       const games = ((d && d.games) || []) as any[];
-      const bdr = (d && d.by_date_record) || {};
       // HONEST DAY NOTES (2026-07-27): the payload flags every empty or thin
       // day in the served range (days_incomplete) — All-Star break, light
       // slates, genuine outage-partial days. They render as labeled rows so a
@@ -10221,7 +10334,7 @@ export default function Home() {
         return raw ? teamShort(raw) : "—";
       };
       const dayBlock = (k: string, open: boolean) => {
-        const r = bdr[k] || {};
+        const r = dailyRecordFor(k) || ({} as any);
         const dd = new Date(k + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
         const note = dayNotes[k];
         const noteTag = note ? (note.records_incomplete ? "records incomplete" : note.kind === "no_games_scheduled" ? "no games" : "small slate") : "";
@@ -10231,7 +10344,7 @@ export default function Home() {
           return `<div class="pp-day pp-noteonly"><div class="pp-notehead"><span class="pp-date">${esc(dd)}</span><span class="pp-wl dim">${esc(noteTag || "no picks")}</span></div><div class="pp-notetext">${esc((note && note.note) || "No picks this day.")}</div></div>`;
         }
         const noteLine = note ? `<div class="pp-notetext inday">${esc(note.note)}</div>` : "";
-        const wl = r.n_graded ? `${r.wins || 0}–${r.losses || 0}${r.pushes ? `–${r.pushes}` : ""}` : "";
+        const wl = r.n ? wlTxt(r) : "";
         const roi = r.roi != null ? `${r.roi >= 0 ? "+" : ""}${(r.roi * 100).toFixed(0)}%` : "";
         const list = byDate[k].slice().sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
         const rows = list.map((g: any) => {
@@ -10240,8 +10353,8 @@ export default function Home() {
           const side = p.side ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
           // the SAME result stamp the board and the game page use — one outcome language site-wide
           const res = isV ? `<span class="ppres voidppd" title="Postponed — pick void, no action">VOID</span>`
-            : p.result === "win" ? resultStamp("won", "sm") : p.result === "loss" ? resultStamp("lost", "sm")
-            : p.result === "push" ? resultStamp("pushed", "sm") : `<span class="ppres open">Open</span>`;
+            : gradeOf(p) === "win" ? resultStamp("won", "sm") : gradeOf(p) === "loss" ? resultStamp("lost", "sm")
+            : gradeOf(p) === "push" ? resultStamp("pushed", "sm") : `<span class="ppres open">Open</span>`;
           /* NO STARS ON THIS ROW. Leon: "very weird with gold picks and green picks all
              different — simplify hard: picks per day, clear W-L per day, one visual
              language. Kill the gold/green tier confusion."  A row used to carry FOUR
@@ -10434,10 +10547,27 @@ export default function Home() {
     }
     // Displayed story keys in order: lead ("L") then each deduped headline by its ORIGINAL index
     // (so newsStoryByKey resolves the right story even after dedup shifts positions).
-    function newsDisplayKeys(): string[] {
+    /* THE DECK'S RUNNING ORDER AND THE READER'S PREV/NEXT ARE THE SAME LIST.
+       They were derived twice from the same two lines of arithmetic — once here, once inline
+       inside buildStorySlides — and the reader's "Next story ->" depends on the two agreeing
+       exactly. Nothing enforced that; a change to the dedupe on one side would have silently
+       sent the reader to the wrong story, or to none. One list, built once. */
+    function newsDisplayStories(): { s: any; key: string }[] {
       if (!newsFeed || !newsFeed.lead) return [];
       const orig = (newsFeed.headlines || []) as any[];
-      return ["L", ...newsDedupedHeadlines().map((s) => String(orig.indexOf(s)))];
+      return [
+        { s: newsFeed.lead, key: "L" },
+        ...newsDedupedHeadlines().map((s: any) => ({ s, key: String(orig.indexOf(s)) })),
+      ];
+    }
+    function newsDisplayKeys(): string[] {
+      return newsDisplayStories().map((x) => x.key);
+    }
+    /* ONE DEK. The deck fell back to `summary` when a story had no dek; the reader did not —
+       so a story could carry a standfirst on the card and none in the article, which reads as
+       the reader having lost something on the way in. */
+    function newsDek(s: any) {
+      return hedgeFree((s && (s.dek || s.summary)) || "");
     }
     // Resolve a story card back to its object, then open OUR article reader.
     function newsStoryByKey(key: string) {
@@ -10530,7 +10660,7 @@ export default function Home() {
               <span class="art-hero-body">
                 <span class="sh-sport">${lab} · DiamondEdge</span>
                 <span class="art-title">${esc(s.headline || s.title)}</span>
-                ${hedgeFree(s.dek) ? `<span class="sh-meta">${esc(hedgeFree(s.dek))}</span>` : ""}
+                ${newsDek(s) ? `<span class="sh-meta">${esc(newsDek(s))}</span>` : ""}
               </span>
             </div>
           </div>
@@ -10611,8 +10741,10 @@ export default function Home() {
     // Yesterday's graded record + its picks (for the recap slide). Null when ungraded.
     function yesterdayRecap() {
       const y = shiftDate(todayISO(), -1);
-      const r = betaData && betaData.by_date_record && betaData.by_date_record[y];
-      if (!r || !r.n_graded) return null;
+      // reads the one day ledger, so this slide can no longer vanish when the backend drops
+      // the legacy by_date_record key (it used to read that and nothing else)
+      const r = dailyRecordFor(y);
+      if (!r || !r.n) return null;
       const games = (((betaData && betaData.games) || []) as any[])
         .filter((g: any) => g.date === y && g.pick && String(g.pick.status || "").toUpperCase() === "PICK" && g.pick.result)
         .sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
@@ -10647,7 +10779,7 @@ export default function Home() {
         });
       });
       (((betaData && betaData.games) || []) as any[])
-        .filter((x: any) => x && x.pick && x.pick.result === "win" && x.final)
+        .filter((x: any) => x && x.pick && gradeOf(x.pick) === "win" && x.final)
         .sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)))
         .forEach((x: any) => {
           const key = String(x.game_id);
@@ -10704,7 +10836,15 @@ export default function Home() {
           head = `${Math.round(stars)}-star ticket, still to play.`;
         } else if (c && c.state === "MAJORITY" && ans.length >= 3) {
           rank = 1; kicker = "The desk leans";
-          head = `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)} ${String(c.side || "").toUpperCase()}.`;
+          /* THE SIDE IS THE PRODUCT, AND THIS BRANCH WAS GIVING IT AWAY.
+             consensusBanner — the canonical rendering of this exact fact — suppresses the
+             side word whenever the game's pick is locked. This branch recomputed the same
+             consensus from the same source with NO gate and printed the side, in 28px
+             display type, on the briefing deck a signed-out reader sees first. Same gate as
+             the banner now: the count is the invitation, the side is the product. */
+          const consLocked = gameLocked(g, pl);
+          const sideWord = consLocked ? "" : String(c.side || "").toUpperCase();
+          head = `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)}${sideWord ? ` ${sideWord}` : ""}${consLocked ? " — the desk leans one way." : "."}`;
         }
         return { g, rank, kicker, head, tot, stars };
       }).filter((r: any) => r.rank > 0);
@@ -10754,12 +10894,7 @@ export default function Home() {
           ((b.pl.stars || 0) - (a.pl.stars || 0)) ||
           ((b.pl.p || 0) - (a.pl.p || 0)))
         .slice(0, 5);
-      const news: any[] = [];
-      if (newsFeed && newsFeed.lead) {
-        news.push({ s: newsFeed.lead, key: "L" });
-        const orig = (newsFeed.headlines || []) as any[];
-        newsDedupedHeadlines().forEach((s: any) => news.push({ s, key: String(orig.indexOf(s)) }));
-      }
+      const news: any[] = newsDisplayStories();
       /* ════════ THE RUNNING ORDER ════════
          Leon: "a mix of picks that were right and then upcoming games we are excited about…
          and more analyst personality data."
@@ -11003,7 +11138,7 @@ export default function Home() {
          a whisper. There is NO button. The card is the target (the standing gesture rule)
          and the affordance is a chevron text-link — the same thing Apple ships. */
       const img = s.image_url ? `<img class="nws-shot" src="${esc(String(s.image_url))}" alt="" decoding="async" onload="var p=this.closest('.nws-card');var r=this.naturalWidth/this.naturalHeight;if(!p)return;if(!this.naturalWidth||this.naturalWidth<300||r>2.6){this.remove();return}p.style.setProperty('--shot-ar',r.toFixed(3));p.classList.remove('nofoto');p.classList.add(r>=1.24?'foto-band':'foto-bleed')" onerror="this.remove()">` : "";
-      const dek = hedgeFree(s.dek || s.summary);
+      const dek = newsDek(s);
       return `<div class="sts sts-news">
         ${storyField("news")}
         <div class="sts-core">
@@ -11022,14 +11157,16 @@ export default function Home() {
       </div>`;
     }
     function storyRecapSlide(sl: any) {
+      // sl.rec is a normalised day block from the one ledger — same object the record screen
+      // and the 14-day widget read, so this slide cannot show a different number than they do
       const r = sl.rec || {};
-      const wl = `${r.wins || 0}–${r.losses || 0}${r.pushes ? `–${r.pushes}` : ""}`;
+      const wl = wlTxt(r);
       const roi = r.roi != null ? `${r.roi >= 0 ? "+" : ""}${(r.roi * 100).toFixed(0)}% ROI` : "";
-      const pos = (r.wins || 0) >= (r.losses || 0);
+      const pos = (r.w || 0) >= (r.l || 0);
       const rows = (sl.games || []).map((g: any) => {
         const p = g.pick;
         const side = unifiedPickLocked(p) ? "" : `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim();
-        const res = p.result === "win" ? `<span class="sts-rres won">W</span>` : p.result === "loss" ? `<span class="sts-rres lost">L</span>` : `<span class="sts-rres pushed">P</span>`;
+        const res = gradeOf(p) === "win" ? `<span class="sts-rres won">W</span>` : gradeOf(p) === "loss" ? `<span class="sts-rres lost">L</span>` : `<span class="sts-rres pushed">P</span>`;
         return `<div class="sts-rrow"><span class="sts-rmu">${esc(teamShort(g.away))} @ ${esc(teamShort(g.home))}</span><span class="sts-rside">${esc(side)}</span>${bStars(p.stars)}${res}</div>`;
       }).join("");
       const dd = new Date(sl.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
@@ -11038,7 +11175,7 @@ export default function Home() {
         ${storyEyebrow("Yesterday's Record", `<span class="sts-when">${esc(dd)}</span>`)}
         <div class="sts-core">
           <div class="sts-bigwl">${wl}</div>
-          <div class="sts-substat">${r.hit_rate != null ? `${(r.hit_rate * 100).toFixed(0)}% hit` : ""}${roi ? ` · ${roi}` : ""} · graded in the open</div>
+          <div class="sts-substat">${r.hit != null ? `${(r.hit * 100).toFixed(0)}% hit` : ""}${roi ? ` · ${roi}` : ""} · graded in the open</div>
           ${rows ? `<div class="sts-rrows">${rows}</div>` : ""}
         </div>
         <div class="sts-foot"><button class="st-cta" data-go="results">See the full record →</button></div>
@@ -11131,7 +11268,7 @@ export default function Home() {
     function storyAnalystSlide(sl: any) {
       const r = sl.r, run = sl.run || { mark: "", n: 0 };
       const graded = r.win + r.loss + r.push > 0;
-      const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "—";
+      const rec = graded ? wlTxt(r) : "—";
       const thesis = r.persona || deskThesis(r.key, r) || "";
       const edge = deskEdgeLine(r.key, r) || "";
       const todayN = (() => { try { return anlTodayCount(r.key); } catch { return 0; } })();
@@ -11260,7 +11397,7 @@ export default function Home() {
           return `<button class="sts-strow an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked && grp.ordinals && i === 0 ? " lead" : ""}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}">
             <span class="sts-strank">${grp.ranked ? (grp.ordinals ? ordinal(i) : "◆") : `<i>${ledgerMark(r)}</i>`}</span>
             <span class="sts-stbody">
-              <span class="sts-strow1">${deskGlyph(r.key, 15)}<b class="sts-stnm">${esc(r.name)}</b><span class="sts-strec"><b>${graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "—"}</b></span></span>
+              <span class="sts-strow1">${deskGlyph(r.key, 15)}<b class="sts-stnm">${esc(r.name)}</b><span class="sts-strec"><b>${graded ? wlTxt(r) : "—"}</b></span></span>
               <span class="sts-strow2"><i>${esc(graded ? `${r.n} graded · ${ledgerShort(r)}` : `no graded calls · ${ledgerShort(r)}`)}</i>${r.roi != null ? ledgerRoi(r, "sts-stroi") : ""}${deskL10Dots(r.last10.slice(-5))}</span>
             </span>
           </button>`;
@@ -12075,6 +12212,7 @@ export default function Home() {
         if (!fresh || !fresh.games || feedStampMs(bundled) >= feedStampMs(fresh)) fresh = bundled;
       }
       betaData = applyDeskMock(fresh);
+      checkRecordContract(betaData);
       return betaData;
     }
     // LIVE picks (today + tomorrow) — the freshest copy lives in Supabase (slate_snapshots
@@ -12100,6 +12238,7 @@ export default function Home() {
       }
       betaLiveData = applyDeskMock(fresh);
       betaLiveAt = Date.now();
+      checkRecordContract(betaLiveData);
       if (hadNone) reRender(); // swap in the real picks / flagship once the feed lands
       // SELF-HEAL: if we had to fall back to the bundled static file (Supabase was slow), it
       // can be days old (deploy gap) — keep retrying Supabase in the background and swap +
@@ -12111,7 +12250,7 @@ export default function Home() {
             try {
               const sb: any = await snap("picks_unified_live");
               if (sb && sb.games && sb.generated_utc !== fresh.generated_utc) {
-                betaLiveData = applyDeskMock(sb); betaLiveAt = Date.now(); reRender(); return;
+                betaLiveData = applyDeskMock(sb); betaLiveAt = Date.now(); checkRecordContract(betaLiveData); reRender(); return;
               }
             } catch {}
           }
@@ -12125,7 +12264,7 @@ export default function Home() {
     }
     const bPct = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) * 100).toFixed(d) + "%");
     const bRoi = (v: any) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
-    const bWL = (r: any) => (r && r.n ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0");
+    const bWL = (r: any) => (r && r.n ? wlTxt(r) : "0–0");
     // The game's single pick when it's an actionable PICK — used to headline it in the list.
     function bestBetaCell(g: any) {
       if (isFutureDate(g && g.date)) return null;
@@ -12184,18 +12323,20 @@ export default function Home() {
       // LAST 7 DAYS — a compact day-by-day strip under the hero (most recent first), from the
       // same by_date_record that powers the per-day chips. Only days with graded picks count;
       // each day is W-L(-P) tinted by that day's ROI, with the ROI itself as a small trailer.
-      const bdr = d.by_date_record || {};
-      const l7dates = Object.keys(bdr)
-        .filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && bdr[k] && bdr[k].n_graded)
+      const _l7map = dayRecordMap();
+      const l7dates = Object.keys(_l7map)
+        .filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && _l7map[k].n)
         .sort().reverse().slice(0, 7);
       const l7 = l7dates.map((k) => {
-        const r = bdr[k];
+        const r = _l7map[k];
         const day = new Date(k + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
-        const wl = `${r.wins || 0}-${r.losses || 0}${r.pushes ? "-" + r.pushes : ""}`;
+        // wlTxt, not a sixth inline build — this one was the only surface in the app printing
+        // the record with HYPHENS while every other one used the en dash
+        const wl = wlTxt(r);
         const dir = r.roi != null ? (r.roi > 0 ? "up" : r.roi < 0 ? "down" : "flat") : "flat";
         const rv = r.roi != null ? Math.round(r.roi * 100) : null;
         const roiTxt = rv != null ? (rv > 0 ? `+${rv}%` : rv < 0 ? `${rv}%` : "0%") : "";
-        return `<span class="l7d ${dir}" title="${esc(k)} · ${r.n_graded} graded${roiTxt ? ` · ${roiTxt} ROI` : ""}"><i>${esc(day)}</i><b>${wl}</b>${roiTxt ? `<em>${roiTxt}</em>` : ""}</span>`;
+        return `<span class="l7d ${dir}" title="${esc(k)} · ${r.n} graded${roiTxt ? ` · ${roiTxt} ROI` : ""}"><i>${esc(day)}</i><b>${wl}</b>${roiTxt ? `<em>${roiTxt}</em>` : ""}</span>`;
       }).join("");
       const last7Strip = l7dates.length
         ? `<div class="strec-l7"><span class="l7k">Daily results</span><div class="l7row">${l7}</div><p class="l7note">Each chip is that day's official picks.</p></div>`
@@ -12266,7 +12407,7 @@ export default function Home() {
           ? `<span class="bg-pick voidppd">${pickStrengthPill(vp, true)}<span class="bg-side">${unifiedPickLocked(vp) ? lockedSideChip(true) : `${esc(sideTxt)}${vp.price != null ? ` ${fmtOdds(vp.price)}` : ""}`}</span><span class="bg-res void">PPD</span></span>`
           : `<span class="bg-nopick">postponed</span>`)
         : best
-        ? `<span class="bg-pick ${best.result || "open"}">${pickStrengthPill(best, true)}<span class="bg-side">${unifiedPickLocked(best) ? lockedSideChip(true) : `${esc(sideTxt)}${best.price != null ? ` ${fmtOdds(best.price)}` : ""}`}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${best.result === "win" ? "✓" : best.result === "loss" ? "✕" : "P"}</span>` : ""}</span>`
+        ? `<span class="bg-pick ${best.result || "open"}">${pickStrengthPill(best, true)}<span class="bg-side">${unifiedPickLocked(best) ? lockedSideChip(true) : `${esc(sideTxt)}${best.price != null ? ` ${fmtOdds(best.price)}` : ""}`}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${gradeOf(best) === "win" ? "✓" : gradeOf(best) === "loss" ? "✕" : "P"}</span>` : ""}</span>`
         : `<span class="bg-nopick">${hasFinal ? "pass" : "no pick"}</span>`;
       return `<button class="beta-gcard" data-bgid="${esc(g.game_id)}">
         <span class="bg-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></span>
@@ -12378,8 +12519,8 @@ export default function Home() {
       const isVoid = !future && p && String(p.status || "").toUpperCase() === "VOID";
       const side = (isPick || (isVoid && p.side)) ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
       const resTag = isPick && p.result && p.result !== "push"
-        ? `<span class="bcell-res ${p.result}">${p.result === "win" ? "✓ RIGHT" : "✕ WRONG"}</span>`
-        : isPick && p.result === "push" ? `<span class="bcell-res push">PUSH</span>` : "";
+        ? `<span class="bcell-res ${p.result}">${gradeOf(p) === "win" ? "✓ RIGHT" : "✕ WRONG"}</span>`
+        : isPick && gradeOf(p) === "push" ? `<span class="bcell-res push">PUSH</span>` : "";
       const scoreChip = p && p.score != null ? `<i class="pgrade">${Number(p.score).toFixed(2)}</i>` : "";
       const pickCard = isVoid
         ? `<div class="bcell voidppd" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
@@ -13341,7 +13482,7 @@ export default function Home() {
       const graded = rec && (rec.win + rec.loss + rec.push) > 0;
       // NEVER 0–0: an ungraded analyst says so in words (see zeroScopeTxt) rather than
       // publishing a zero that reads like a measured result.
-      const wl = graded ? `${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}` : "";
+      const wl = graded ? wlTxt(rec) : "";
       const hit = graded && rec.hit != null ? `${(rec.hit * 100).toFixed(0)}%` : "";
       const roi = graded && rec.roi != null ? `${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(1)}%` : "";
       const today = anlTodayCount(k);
@@ -13434,23 +13575,30 @@ export default function Home() {
        failure the old mystery record was replaced to avoid. */
     function headlineRecordBlock() {
       const rec = recordRoot();
-      const h = rec && typeof rec.headline === "object" ? rec.headline : null;
-      const read = (x: any, since: string) => {
-        const w = _fin(x.win) || 0, l = _fin(x.loss) || 0, pu = _fin(x.push) || 0;
-        const n = _fin(x.n) != null ? Number(x.n) : w + l + pu;
+      const raw = rec && typeof rec.headline === "object" ? rec.headline : null;
+      const start = (raw && String(raw.start || "").slice(0, 10)) || "2026-07-01";
+      /* THROUGH THE SAFE READER. This used to read `h.win` / `h.loss` / `h.hit_rate` straight
+         off the payload with no aliases and no NaN check — so a renamed field produced a
+         hollow block, and a non-numeric one produced "NaN". recordHeadlineSafe() accepts every
+         field name these feeds have shipped, refuses anything that is not a finite number, and
+         remembers the last good headline for the session: on a bad refresh the reader sees the
+         PREVIOUS TRUE record rather than an empty box. Stale-but-true beats blank; blank beats
+         wrong. If there has never been a good one, this returns null and the two tiers below
+         take over — which is the behaviour that was already here. */
+      const h = recordHeadlineSafe();
+      if (h && h.w + h.l > 0) {
         return {
-          wl: String(x.record || `${w}-${l}${pu ? `-${pu}` : ""}`).replace(/-/g, "–"),
-          hit: _fin(x.hit_rate), roi: _fin(x.roi), units: _fin(x.units),
-          n, days: _fin(x.n_days), since,
+          wl: h.record ? String(h.record).replace(/-/g, "–") : wlTxt(h),
+          hit: h.hit, roi: _fin(raw && raw.roi), units: h.units,
+          n: h.n != null ? h.n : h.w + h.l + h.p,
+          days: _fin(raw && raw.n_days), since: start,
         };
-      };
-      const start = (h && String(h.start || "").slice(0, 10)) || "2026-07-01";
-      if (h && (_fin(h.win) || 0) + (_fin(h.loss) || 0) > 0) return read(h, start);
+      }
       const sum = dailyRecordSince(start);
       if (sum.w + sum.l > 0) {
         const dec = sum.w + sum.l;
         return {
-          wl: `${sum.w}–${sum.l}${sum.p ? `–${sum.p}` : ""}`,
+          wl: wlTxt(sum),
           hit: dec ? sum.w / dec : null,
           roi: sum.staked ? sum.units / sum.staked : null,
           units: sum.units, n: sum.n, days: sum.days, since: start,
@@ -13495,56 +13643,27 @@ export default function Home() {
        map) first and by_date_record second, exactly as the 14-day widget does, so the
        headline and the widget can never disagree about a day. */
     function dailyRecordSince(sinceISO: string) {
-      const rec = recordRoot() || {};
-      const seen: any = {};
-      const take = (k: string, x: any) => {
-        if (!k || k < sinceISO || k > todayISO() || !x || seen[k]) return;
-        const w = _fin(x.win != null ? x.win : x.wins) || 0;
-        const l = _fin(x.loss != null ? x.loss : x.losses) || 0;
-        const p = _fin(x.push != null ? x.push : x.pushes) || 0;
-        if (!(w + l + p)) return;
-        seen[k] = { w, l, p, n: _fin(x.n_graded != null ? x.n_graded : x.n) || (w + l + p), u: _fin(x.units) || 0 };
-      };
-      const daily = rec.daily;
-      if (Array.isArray(daily)) daily.forEach((x: any) => take(String((x && x.date) || "").slice(0, 10), x));
-      else if (daily && typeof daily === "object") Object.keys(daily).forEach((k) => take(k, daily[k]));
-      const legacy = (betaData && betaData.by_date_record) || {};
-      Object.keys(legacy).forEach((k) => take(k, legacy[k]));
+      const map = dayRecordMap();
+      const today = todayISO();
       const out = { w: 0, l: 0, p: 0, n: 0, units: 0, staked: 0, days: 0 };
-      Object.keys(seen).forEach((k) => {
-        const r = seen[k];
-        out.w += r.w; out.l += r.l; out.p += r.p; out.n += r.n; out.units += r.u;
+      Object.keys(map).forEach((k) => {
+        if (k < sinceISO || k > today) return;
+        const r = map[k];
+        if (!(r.w + r.l + r.p)) return;
+        out.w += r.w; out.l += r.l; out.p += r.p; out.n += r.n; out.units += (r.units || 0);
         out.staked += r.w + r.l + r.p;   // flat 1u a pick — the same basis the ledger uses
         out.days++;
       });
       return out;
     }
-    function dailyRecordRows(d: any) {
-      const rec = (d && d.record) || recordRoot() || {};
-      const byDate: any = {};
-      const daily = rec && rec.daily;
-      // shape 1 (current contract): an array of day blocks
-      if (Array.isArray(daily)) {
-        daily.forEach((x: any) => {
-          const k = String((x && x.date) || "").slice(0, 10);
-          if (k) byDate[k] = x;
-        });
-      } else if (daily && typeof daily === "object") {
-        // shape 2 (map keyed by date) — supported so a contract change can't blank the widget
-        Object.keys(daily).forEach((k) => { byDate[k] = daily[k]; });
-      }
-      const legacy = (d && d.by_date_record) || (betaData && betaData.by_date_record) || {};
+    function dailyRecordRows(_d?: any) {
+      const map = dayRecordMap();
       const days: string[] = [];
       for (let i = 13; i >= 0; i--) days.push(shiftDate(todayISO(), -i));
       return days.map((k) => {
-        const a = byDate[k] || null, b = (legacy && legacy[k]) || null;
-        const src = a || b;
-        if (!src) return { k, n: 0, w: 0, l: 0, p: 0, units: null as any };
-        const w = _fin(src.win != null ? src.win : src.wins) || 0;
-        const l = _fin(src.loss != null ? src.loss : src.losses) || 0;
-        const p = _fin(src.push != null ? src.push : src.pushes) || 0;
-        const n = _fin(src.n_graded != null ? src.n_graded : src.n) || (w + l + p);
-        return { k, n, w, l, p, units: _fin(src.units) };
+        const r = map[k];
+        return r ? { k, n: r.n, w: r.w, l: r.l, p: r.p, units: r.units }
+                 : { k, n: 0, w: 0, l: 0, p: 0, units: null as any };
       });
     }
     /* ═══════════════ THE RECORD, AT FOUR TIME SCALES ═══════════════
@@ -13602,9 +13721,15 @@ export default function Home() {
       return `<div class="scoperow">
         <div class="sc-head"><span class="sc-k">${esc(label)}</span>${sub ? `<span class="sc-sub">${esc(sub)}</span>` : ""}</div>
         <div class="sc-figs">
-          <span class="sc-wl"><b>${sum.w}–${sum.l}${sum.p ? `–${sum.p}` : ""}</b><i>record</i></span>
-          <span class="sc-u ${up ? "pos" : "neg"}"><b>${up ? "+" : ""}${sum.units.toFixed(2)}u</b><i>net</i></span>
-          ${hit != null ? `<span class="sc-h"><b>${(hit * 100).toFixed(0)}%</b><i>hit</i></span>` : ""}
+          <span class="sc-wl"><b>${wlTxt(sum)}</b><i>record</i></span>
+          ${/* ONE PRECISION PER FIGURE, APP-WIDE. The hero six inches above this row prints
+                "+8.5u" and "53.7%"; these rows printed "+8.45u" and "54%" for the SAME window,
+                on the SAME screen, in the same viewport. Two renderings of one number is the
+                thing this sweep exists to kill, and rounding is a rendering. One decimal on
+                units, one on the hit rate — the hero's format, because the hero is the one
+                that gets screenshotted. */""}
+          <span class="sc-u ${up ? "pos" : "neg"}"><b>${up ? "+" : ""}${sum.units.toFixed(1)}u</b><i>net</i></span>
+          ${hit != null ? `<span class="sc-h"><b>${(hit * 100).toFixed(1)}%</b><i>hit</i></span>` : ""}
         </div>
       </div>`;
     }
@@ -13649,28 +13774,18 @@ export default function Home() {
        day lagged a late-graded game; everything here is derived from the payload on every
        render, so a corrected day appears the moment the feed does. */
     function cumulativeSeries(sinceISO: string) {
-      const rows: any[] = [];
-      const rec = recordRoot() || {};
-      const push = (k: string, x: any) => {
-        if (!k || k < sinceISO || k > todayISO() || !x) return;
-        const w = _fin(x.win != null ? x.win : x.wins) || 0;
-        const l = _fin(x.loss != null ? x.loss : x.losses) || 0;
-        const p = _fin(x.push != null ? x.push : x.pushes) || 0;
-        if (!(w + l + p)) return;
-        rows.push({ k, u: _fin(x.units) || 0 });
-      };
-      const daily = rec.daily;
-      if (Array.isArray(daily)) daily.forEach((x: any) => push(String((x && x.date) || "").slice(0, 10), x));
-      else if (daily && typeof daily === "object") Object.keys(daily).forEach((k) => push(k, daily[k]));
-      if (!rows.length) {
-        const legacy = (betaData && betaData.by_date_record) || {};
-        Object.keys(legacy).forEach((k) => push(k, legacy[k]));
-      }
-      const seen: any = {};
-      const uniq = rows.filter((r) => (seen[r.k] ? false : (seen[r.k] = 1)));
-      uniq.sort((a, b) => a.k.localeCompare(b.k));
-      let run = 0;
-      return uniq.map((r) => ({ k: r.k, u: (run += r.u) }));
+      // the ONE day ledger, summed — the curve and the rows beneath it are now literally the
+      // same numbers, which they were not while this walked the payload on its own
+      const map = dayRecordMap();
+      const today = todayISO();
+      return Object.keys(map)
+        .filter((k) => k >= sinceISO && k <= today && (map[k].w + map[k].l + map[k].p) > 0)
+        .sort((a, b) => a.localeCompare(b))
+        .reduce((acc: any[], k) => {
+          const run = (acc.length ? acc[acc.length - 1].u : 0) + (map[k].units || 0);
+          acc.push({ k, u: run });
+          return acc;
+        }, []);
     }
     /* THE CURVE HAS TO SELL. Leon: "the graph isn't that compelling."  The first cut was a
        96px sparkline in result-green — technically correct, visually a footnote. This one is
@@ -13735,7 +13850,7 @@ export default function Home() {
         const dnum = isNaN(dd.getTime()) ? "" : String(dd.getDate());
         const u = Number(r.units || 0);
         const tone = !r.n ? "none" : u > 0 ? "up" : u < 0 ? "down" : "flat";
-        const wl = r.n ? `${r.w}–${r.l}${r.p ? `–${r.p}` : ""}` : "";
+        const wl = r.n ? wlTxt(r) : "";
         return `<span class="cal-cell ${tone}${isToday ? " is-today" : ""}" title="${esc(r.k)}${r.n ? ` · ${wl} · ${u >= 0 ? "+" : ""}${u.toFixed(2)}u` : " · no picks"}">
           <b class="cal-d">${esc(dnum)}</b>${wl ? `<i class="cal-wl">${esc(wl)}</i>` : `<i class="cal-wl dim">·</i>`}
         </span>`;
@@ -13758,13 +13873,13 @@ export default function Home() {
         ${curve ? `<div class="dp-curve">
           <div class="dp-curve-h">
             <span class="dpc-k">Net units since ${esc(sinceTxt)}</span>
-            <span class="dpc-v ${total >= 0 ? "pos" : "neg"}">${total >= 0 ? "+" : ""}${total.toFixed(2)}u</span>
+            <span class="dpc-v ${total >= 0 ? "pos" : "neg"}">${total >= 0 ? "+" : ""}${total.toFixed(1)}u</span>
           </div>
           ${curve}
         </div>` : ""}
         <div class="dp-14h">
           <span class="dp-14k">The last 14 days</span>
-          <span class="dp-14sum"><b>${tw}–${tl}</b><i class="${net >= 0 ? "pos" : "neg"}">${net >= 0 ? "+" : ""}${net.toFixed(2)}u</i></span>
+          <span class="dp-14sum"><b>${wlTxt({ w: tw, l: tl })}</b><i class="${net >= 0 ? "pos" : "neg"}">${net >= 0 ? "+" : ""}${net.toFixed(1)}u</i></span>
         </div>
         ${deskCalendar(d)}
       </div>`;
