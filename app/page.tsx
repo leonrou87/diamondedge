@@ -532,6 +532,10 @@ export default function Home() {
     // A finished game whose pick isn't graded yet (the big payload lags the live
     // scores) still resolves visually — grade it provisionally off the final score.
     function provisionalResult(g: any, pl: any) {
+      // A PASS GAME HAS NO PICK. boxScorePanel falls back to displayPick(g), which is null on
+      // a game we passed, and this then threw on `pl.action` — a hard crash that took the
+      // whole game page down for any FINAL game with no ticket. Guard both arguments.
+      if (!g || !pl) return null;
       if ((g.status || "").toLowerCase() !== "final" || pl.action !== "TAKE") return null;
       const sc = finalScore(g);
       if (!sc) return null;
