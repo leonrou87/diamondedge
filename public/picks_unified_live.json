@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-03T03:13:43Z",
+  "generated_utc": "2026-08-03T03:50:25Z",
   "dates": [
     "2026-08-02"
   ],
@@ -2129,38 +2129,121 @@
   "positioning": "THE DIAMONDEDGE PICK (Leon, 2026-07-20): one pick per game, one score, one star ladder, one record. Since 2026-08-02 the public total uses the locked daily four-analyst adaptive strategy: it can follow, fade or pass depending on the trailing pattern evidence. Champion/model streams remain diagnostic.",
   "record": {
     "headline": {
-      "label": "The DiamondEdge desk",
-      "source": "adaptive_desk",
+      "label": "DiamondEdge",
+      "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "selector_version": "adaptive_desk_v20",
-      "n": 0,
-      "win": 0,
-      "loss": 0,
-      "push": 0,
-      "record": "0-0-0",
-      "decided": 0,
-      "hit_rate": null,
-      "units": 0.0,
+      "n": 125,
+      "win": 51,
+      "loss": 69,
+      "push": 5,
+      "record": "51-69-5",
+      "decided": 120,
+      "hit_rate": 0.425,
+      "units": -18.075,
       "units_weighted": {
-        "units": 0.0,
-        "staked": 0.0,
-        "roi": null,
+        "units": -23.487,
+        "staked": 146.5,
+        "roi": -0.1603,
         "n_offladder_flat_1u": 0
       },
-      "roi": null,
+      "roi": -0.1506,
       "hit_rate_ci": [
-        null,
-        null
+        0.3686,
+        0.4835
       ],
       "hit_rate_ci_level": 0.8,
-      "n_days": 0,
-      "first": null,
-      "through": null,
-      "is_walk_forward": true,
-      "status": "accruing",
-      "accruing_line": "The desk's record starts fresh from the next locked slate \u2014 every day from here is chosen before the games and graded after.",
-      "walk_forward": {
+      "n_days": 25,
+      "first": "2026-07-02",
+      "through": "2026-08-02",
+      "status": "live",
+      "by_month": [
+        {
+          "month": "2026-07",
+          "n": 114,
+          "win": 45,
+          "loss": 64,
+          "push": 5,
+          "record": "45-64-5",
+          "hit_rate": 0.4128,
+          "units": -19.085,
+          "roi": -0.1751
+        },
+        {
+          "month": "2026-08",
+          "n": 11,
+          "win": 6,
+          "loss": 5,
+          "push": 0,
+          "record": "6-5-0",
+          "hit_rate": 0.5455,
+          "units": 1.009,
+          "roi": 0.0918
+        }
+      ],
+      "by_engine": {
+        "champion_model": {
+          "n": 117,
+          "win": 46,
+          "loss": 66,
+          "push": 5,
+          "record": "46-66-5",
+          "decided": 112,
+          "hit_rate": 0.4107,
+          "units": -20.035,
+          "units_weighted": {
+            "units": -27.406,
+            "staked": 130.5,
+            "roi": -0.21,
+            "n_offladder_flat_1u": 0
+          },
+          "roi": -0.1789,
+          "hit_rate_ci": [
+            0.3528,
+            0.4712
+          ],
+          "hit_rate_ci_level": 0.8,
+          "n_days": 24,
+          "first": "2026-07-02",
+          "through": "2026-08-01"
+        },
+        "adaptive_desk": {
+          "n": 8,
+          "win": 5,
+          "loss": 3,
+          "push": 0,
+          "record": "5-3-0",
+          "decided": 8,
+          "hit_rate": 0.625,
+          "units": 1.959,
+          "units_weighted": {
+            "units": 3.919,
+            "staked": 16.0,
+            "roi": 0.2449,
+            "n_offladder_flat_1u": 0
+          },
+          "roi": 0.2449,
+          "hit_rate_ci": [
+            0.4028,
+            0.8046
+          ],
+          "hit_rate_ci_level": 0.8,
+          "n_days": 1,
+          "first": "2026-08-02",
+          "through": "2026-08-02"
+        }
+      },
+      "engine_changeover": "2026-08-02",
+      "current_engine": "adaptive_desk",
+      "selector_version": "adaptive_desk_v20",
+      "model_generation_seam": "2026-07-31",
+      "is_replay": false,
+      "sourced_from": [
+        "ARCHIVE stores (hash-pinned) via the same select_unified rule the board ran at the time \u2014 2026-07-01 .. 2026-08-02",
+        "the adaptive desk's write-once ledger \u2014 2026-08-02 onward"
+      ],
+      "basis": "every game DiamondEdge served as an official pick, graded at the price and line it was served at, one row per game, across every engine change. Nothing re-graded, nothing restated, and no part of it is a strategy replayed over days it did not actually play.",
+      "walk_forward_adaptive_era": {
         "available": true,
         "no_lookahead_in_data": true,
         "no_lookahead_basis": "adaptive_desk_strategy.choose_strategy fits each date only on games final BEFORE that date; this holds for every date, including recomputations.",
@@ -2422,74 +2505,349 @@
           }
         },
         "note": "A date is walk-forward if and only if its strategy was stamped into the as-served ledger (v4/serve/state/adaptive_desk_served.jsonl) before that day's first pitch. That store is append-only, first-write-wins per date, and is NOT the selector's own store \u2014 which matters, because choose_strategy is write-once per (date, VERSION), so a selector version bump re-derives every past date under the new selector and overwrites the evidence of what was actually served. That is exactly what happened on 2026-08-02: the v20 bump rewrote 80 of 82 dates in one twelve-minute window. Those days still have no look-ahead inside any single day, but the selector itself was developed with their outcomes visible, so they are a REPLAY of the current selector, not a record, and record.headline excludes them. Going forward, choose_strategy(today, write_once=True) runs in the 02:00 PT overnight cycle \u2014 about eight hours before first pitch \u2014 and the stamp is written then, so the record accrues honestly from that point and survives every future version bump."
-      },
-      "model_generation_seam": "2026-07-31",
-      "basis": "every game the per-date adaptive strategy served as an official pick ON A DAY WHOSE STRATEGY WAS LOCKED BEFORE FIRST PITCH, graded at the price and line it was served at. One row per game. Nothing re-graded, nothing restated.",
-      "replay": {
-        "n": 16,
-        "win": 11,
-        "loss": 4,
-        "push": 1,
-        "record": "11-4-1",
-        "decided": 15,
-        "hit_rate": 0.7333,
-        "units": 6.738,
-        "units_weighted": {
-          "units": 13.476,
-          "staked": 30.0,
-          "roi": 0.4492,
-          "n_offladder_flat_1u": 0
-        },
-        "roi": 0.4492,
-        "hit_rate_ci": [
-          0.5695,
-          0.8511
-        ],
-        "hit_rate_ci_level": 0.8,
-        "n_days": 4,
-        "first": "2026-07-30",
-        "through": "2026-08-02",
-        "is_the_record": false,
-        "label": "Replay of the current selector over earlier days",
-        "why_not_the_record": "these days' strategies were derived after those games had finished (selector version bump), so no look-ahead exists inside any single day but the selector itself was developed with these outcomes visible. That is a backtest of the current selector. It is shown for transparency and is never summed into the record."
-      },
-      "full_ledger_including_replay": {
-        "n": 16,
-        "win": 11,
-        "loss": 4,
-        "push": 1,
-        "record": "11-4-1",
-        "decided": 15,
-        "hit_rate": 0.7333,
-        "units": 6.738,
-        "units_weighted": {
-          "units": 13.476,
-          "staked": 30.0,
-          "roi": 0.4492,
-          "n_offladder_flat_1u": 0
-        },
-        "roi": 0.4492,
-        "hit_rate_ci": [
-          0.5695,
-          0.8511
-        ],
-        "hit_rate_ci_level": 0.8,
-        "n_days": 4,
-        "first": "2026-07-30",
-        "through": "2026-08-02"
       }
     },
     "daily": [
       {
-        "date": "2026-07-20",
-        "n": 0,
+        "date": "2026-07-02",
+        "n": 1,
         "win": 0,
-        "loss": 0,
+        "loss": 1,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "0-1-0",
+        "hit_rate": 0.0,
+        "units": -1.0,
+        "roi": -1.0,
+        "strategy": {
+          "rule_key": "prob_weighted:0.012",
+          "label": "Probabilistic analyst blend (1.2% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "LEAN",
+          "window_days": 10,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-02"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-03",
+        "n": 1,
+        "win": 0,
+        "loss": 1,
+        "push": 0,
+        "record": "0-1-0",
+        "hit_rate": 0.0,
+        "units": -1.0,
+        "roi": -1.0,
+        "strategy": {
+          "rule_key": "prob_weighted:0.018",
+          "label": "Probabilistic analyst blend (1.8% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "LEAN",
+          "window_days": 10,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-03"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-07",
+        "n": 4,
+        "win": 2,
+        "loss": 1,
+        "push": 1,
+        "record": "2-1-1",
+        "hit_rate": 0.6667,
+        "units": 1.04,
+        "roi": 0.3467,
+        "strategy": {
+          "rule_key": "pair_follow:vega,nova",
+          "label": "Follow VEGA + NOVA when they agree",
+          "plain_english_rule": "bet with VEGA and NOVA only when they agree",
+          "confidence_tier": "LEAN",
+          "window_days": 10,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-07"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-08",
+        "n": 5,
+        "win": 2,
+        "loss": 3,
+        "push": 0,
+        "record": "2-3-0",
+        "hit_rate": 0.4,
+        "units": -1.0,
+        "roi": -0.2,
+        "strategy": {
+          "rule_key": "pair_fade:atlas,scout",
+          "label": "Fade ATLAS + SCOUT when they agree",
+          "plain_english_rule": "bet against ATLAS and SCOUT only when they agree",
+          "confidence_tier": "LEAN",
+          "window_days": 10,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-08"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-09",
+        "n": 3,
+        "win": 2,
+        "loss": 1,
+        "push": 0,
+        "record": "2-1-0",
+        "hit_rate": 0.6667,
+        "units": 0.909,
+        "roi": 0.303,
+        "strategy": {
+          "rule_key": "pair_fade:atlas,scout",
+          "label": "Fade ATLAS + SCOUT when they agree",
+          "plain_english_rule": "bet against ATLAS and SCOUT only when they agree",
+          "confidence_tier": "LEAN",
+          "window_days": 10,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-09"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-10",
+        "n": 7,
+        "win": 1,
+        "loss": 6,
+        "push": 0,
+        "record": "1-6-0",
+        "hit_rate": 0.1429,
+        "units": -5.02,
+        "roi": -0.7171,
+        "strategy": {
+          "rule_key": "prob_weighted:0.004",
+          "label": "Probabilistic analyst blend (0.4% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "LEAN",
+          "window_days": 10,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-10"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-11",
+        "n": 5,
+        "win": 2,
+        "loss": 3,
+        "push": 0,
+        "record": "2-3-0",
+        "hit_rate": 0.4,
+        "units": -1.02,
+        "roi": -0.2039,
+        "strategy": {
+          "rule_key": "prob_weighted:0.004",
+          "label": "Probabilistic analyst blend (0.4% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "LEAN",
+          "window_days": 10,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-11"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-12",
+        "n": 6,
+        "win": 4,
+        "loss": 2,
+        "push": 0,
+        "record": "4-2-0",
+        "hit_rate": 0.6667,
+        "units": 1.85,
+        "roi": 0.3083,
+        "strategy": {
+          "rule_key": "prob_weighted:0.004",
+          "label": "Probabilistic analyst blend (0.4% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "STRONG",
+          "window_days": 14,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-12"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-17",
+        "n": 5,
+        "win": 2,
+        "loss": 2,
+        "push": 1,
+        "record": "2-2-1",
+        "hit_rate": 0.5,
+        "units": -0.095,
+        "roi": -0.0238,
+        "strategy": {
+          "rule_key": "weighted_form:0.06",
+          "label": "Weighted four-analyst form blend (6% threshold)",
+          "plain_english_rule": "weight each analyst by its trailing four-week form, fade analysts that have been backwards, and pass when the weighted vote is too close",
+          "confidence_tier": "STRONG",
+          "window_days": 21,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-17"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-18",
+        "n": 6,
+        "win": 1,
+        "loss": 3,
+        "push": 2,
+        "record": "1-3-2",
+        "hit_rate": 0.25,
+        "units": -2.074,
+        "roi": -0.5185,
+        "strategy": {
+          "rule_key": "group_fade:atlas,nova,scout",
+          "label": "Fade ATLAS + NOVA + SCOUT when that block agrees",
+          "plain_english_rule": "bet against the ATLAS, NOVA, SCOUT block only when that block agrees",
+          "confidence_tier": "STRONG",
+          "window_days": 21,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-18"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-19",
+        "n": 8,
+        "win": 4,
+        "loss": 4,
+        "push": 0,
+        "record": "4-4-0",
+        "hit_rate": 0.5,
+        "units": 0.01,
+        "roi": 0.0012,
+        "strategy": {
+          "rule_key": "prob_weighted:0.004",
+          "label": "Probabilistic analyst blend (0.4% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "STRONG",
+          "window_days": 21,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-19"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-20",
+        "n": 6,
+        "win": 4,
+        "loss": 2,
+        "push": 0,
+        "record": "4-2-0",
+        "hit_rate": 0.6667,
+        "units": 2.12,
+        "roi": 0.3534,
         "strategy": {
           "rule_key": "prob_weighted:0.004",
           "label": "Probabilistic analyst blend (0.4% edge)",
@@ -2500,24 +2858,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-20"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-21",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 7,
+        "win": 4,
+        "loss": 3,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "4-3-0",
+        "hit_rate": 0.5714,
+        "units": 0.975,
+        "roi": 0.1393,
         "strategy": {
           "rule_key": "meta_logit:l20.45:th0.46",
           "label": "Regularized desk meta-model (0.46 margin)",
@@ -2528,24 +2888,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-21"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-22",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
-        "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "n": 7,
+        "win": 2,
+        "loss": 4,
+        "push": 1,
+        "record": "2-4-1",
+        "hit_rate": 0.3333,
+        "units": -2.115,
+        "roi": -0.3525,
         "strategy": {
           "rule_key": "meta_logit:l20.45:th0.46",
           "label": "Regularized desk meta-model (0.46 margin)",
@@ -2556,24 +2918,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-22"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-23",
-        "n": 0,
-        "win": 0,
+        "n": 1,
+        "win": 1,
         "loss": 0,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "1-0-0",
+        "hit_rate": 1.0,
+        "units": 1.07,
+        "roi": 1.07,
         "strategy": {
           "rule_key": "group_fade:atlas,nova,scout",
           "label": "Fade ATLAS + NOVA + SCOUT when that block agrees",
@@ -2584,24 +2948,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-23"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-24",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 2,
+        "win": 1,
+        "loss": 1,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
+        "record": "1-1-0",
+        "hit_rate": 0.5,
         "units": 0.0,
-        "roi": null,
+        "roi": 0.0,
         "strategy": {
           "rule_key": "stacked_rules:top5:v2:th0.12",
           "label": "Stacked analyst-rule model (top 5, 2+ signals)",
@@ -2612,24 +2978,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-24"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-25",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 8,
+        "win": 2,
+        "loss": 6,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "2-6-0",
+        "hit_rate": 0.25,
+        "units": -4.165,
+        "roi": -0.5206,
         "strategy": {
           "rule_key": "meta_logit:l20.45:th0.46",
           "label": "Regularized desk meta-model (0.46 margin)",
@@ -2640,24 +3008,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-25"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-26",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 4,
+        "win": 3,
+        "loss": 1,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "3-1-0",
+        "hit_rate": 0.75,
+        "units": 2.19,
+        "roi": 0.5475,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -2668,24 +3038,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-26"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-27",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 10,
+        "win": 3,
+        "loss": 7,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "3-7-0",
+        "hit_rate": 0.3,
+        "units": -4.061,
+        "roi": -0.4061,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -2696,24 +3068,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-27"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-28",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 8,
+        "win": 3,
+        "loss": 5,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "3-5-0",
+        "hit_rate": 0.375,
+        "units": -1.77,
+        "roi": -0.2212,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -2724,24 +3098,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-28"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-29",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
+        "n": 5,
+        "win": 1,
+        "loss": 4,
         "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
+        "record": "1-4-0",
+        "hit_rate": 0.2,
+        "units": -2.91,
+        "roi": -0.582,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -2752,24 +3128,26 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-29"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
         "is_today": false,
-        "no_action": true
+        "no_action": false
       },
       {
         "date": "2026-07-30",
-        "n": 3,
-        "win": 3,
-        "loss": 0,
+        "n": 2,
+        "win": 0,
+        "loss": 2,
         "push": 0,
-        "record": "3-0-0",
-        "hit_rate": 1.0,
-        "units": 2.918,
-        "roi": 0.9726,
+        "record": "0-2-0",
+        "hit_rate": 0.0,
+        "units": -2.0,
+        "roi": -1.0,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -2780,8 +3158,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-30"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v1",
         "is_model_seam": false,
         "window_spans_model_seam": false,
@@ -2791,13 +3171,13 @@
       {
         "date": "2026-07-31",
         "n": 3,
-        "win": 3,
-        "loss": 0,
+        "win": 1,
+        "loss": 2,
         "push": 0,
-        "record": "3-0-0",
-        "hit_rate": 1.0,
-        "units": 2.909,
-        "roi": 0.9698,
+        "record": "1-2-0",
+        "hit_rate": 0.3333,
+        "units": -1.02,
+        "roi": -0.3399,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -2808,8 +3188,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-31"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v2",
         "is_model_seam": true,
         "window_spans_model_seam": true,
@@ -2820,12 +3202,12 @@
         "date": "2026-08-01",
         "n": 3,
         "win": 1,
-        "loss": 1,
-        "push": 1,
-        "record": "1-1-1",
-        "hit_rate": 0.5,
-        "units": -0.038,
-        "roi": -0.0192,
+        "loss": 2,
+        "push": 0,
+        "record": "1-2-0",
+        "hit_rate": 0.3333,
+        "units": -0.95,
+        "roi": -0.3167,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -2836,8 +3218,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-01"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "champion_model",
+        "is_engine_changeover": false,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v2",
         "is_model_seam": false,
         "window_spans_model_seam": true,
@@ -2846,14 +3230,14 @@
       },
       {
         "date": "2026-08-02",
-        "n": 7,
-        "win": 4,
+        "n": 8,
+        "win": 5,
         "loss": 3,
         "push": 0,
-        "record": "4-3-0",
-        "hit_rate": 0.5714,
-        "units": 0.949,
-        "roi": 0.1356,
+        "record": "5-3-0",
+        "hit_rate": 0.625,
+        "units": 1.959,
+        "roi": 0.2449,
         "strategy": {
           "rule_key": "neural_tanh:l20.12:th0.54",
           "label": "Shallow neural desk ensemble (0.54 margin)",
@@ -2864,8 +3248,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "selector_version": "adaptive_desk_v20",
+        "engine": "adaptive_desk",
+        "is_engine_changeover": true,
         "walk_forward": false,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v2",
         "is_model_seam": false,
         "window_spans_model_seam": true,
@@ -2877,12 +3263,12 @@
       "since": "2026-07-01",
       "site": {
         "current": {
-          "type": null,
-          "length": 0
+          "type": "win",
+          "length": 1
         },
-        "best_win_streak": 0,
-        "best_loss_streak": 0,
-        "n_decided": 0
+        "best_win_streak": 4,
+        "best_loss_streak": 6,
+        "n_decided": 120
       },
       "by_analyst": {
         "vega": {
@@ -2892,7 +3278,7 @@
           },
           "best_win_streak": 9,
           "best_loss_streak": 13,
-          "n_decided": 366
+          "n_decided": 367
         },
         "atlas": {
           "current": {
@@ -2901,7 +3287,7 @@
           },
           "best_win_streak": 8,
           "best_loss_streak": 11,
-          "n_decided": 366
+          "n_decided": 367
         },
         "nova": {
           "current": {
@@ -2910,7 +3296,7 @@
           },
           "best_win_streak": 9,
           "best_loss_streak": 10,
-          "n_decided": 366
+          "n_decided": 367
         },
         "scout": {
           "current": {
@@ -2919,7 +3305,7 @@
           },
           "best_win_streak": 7,
           "best_loss_streak": 10,
-          "n_decided": 366
+          "n_decided": 367
         }
       },
       "analyst_order": [
@@ -2928,7 +3314,40 @@
         "nova",
         "scout"
       ],
-      "note": "pushes are neutral \u2014 they neither extend nor break a streak. `site` runs over the adaptive desk's own served picks (the DISPLAY layer); each analyst's runs over that analyst's own v2 reads, which are a different and much larger population \u2014 the two are never summed."
+      "note": "pushes are neutral \u2014 they neither extend nor break a streak. `site` runs over the SAME served picks record.headline counts, straight through the engine changeover; each analyst's runs over that analyst's own v2 reads, which are a different and much larger population \u2014 the two are never summed."
+    },
+    "diagnostics": {
+      "adaptive_selector_replay": {
+        "n": 9,
+        "win": 7,
+        "loss": 1,
+        "push": 1,
+        "record": "7-1-1",
+        "decided": 8,
+        "hit_rate": 0.875,
+        "units": 5.789,
+        "units_weighted": {
+          "units": 11.577,
+          "staked": 16.0,
+          "roi": 0.7236,
+          "n_offladder_flat_1u": 0
+        },
+        "roi": 0.7236,
+        "hit_rate_ci": [
+          0.6604,
+          0.9618
+        ],
+        "hit_rate_ci_level": 0.8,
+        "n_days": 3,
+        "first": "2026-07-30",
+        "through": "2026-08-01",
+        "is_the_record": false,
+        "is_replay": true,
+        "selector_version": "adaptive_desk_v20",
+        "label": "Selector replay \u2014 NOT a track record",
+        "why_not_the_record": "these picks were never served. They are what the current selector says it would have chosen on days the champion/model engine was actually on the board. Judging the selector: useful. Quoting it as a record: an advertisement."
+      },
+      "note": "measurements kept for judging the engines. Nothing here is a track record and nothing here is ever summed into record.headline."
     },
     "policy": {
       "policy_id": "adaptive_desk_display_v1",
@@ -3005,33 +3424,33 @@
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
     "overall": {
-      "n": 16,
-      "win": 11,
+      "n": 17,
+      "win": 12,
       "loss": 4,
       "push": 1,
-      "roi": 0.4492,
-      "hit_rate": 0.7333,
-      "units_flat": 6.738,
+      "roi": 0.4843,
+      "hit_rate": 0.75,
+      "units_flat": 7.748,
       "units_weighted": {
-        "units": 13.476,
-        "staked": 30.0,
-        "roi": 0.4492,
+        "units": 15.496,
+        "staked": 32.0,
+        "roi": 0.4843,
         "n_offladder_flat_1u": 0
       }
     },
     "by_star_tier": {
       "5": {
-        "n": 10,
-        "win": 5,
+        "n": 11,
+        "win": 6,
         "loss": 4,
         "push": 1,
-        "roi": 0.1012,
-        "hit_rate": 0.5556,
-        "units_flat": 0.911,
+        "roi": 0.1921,
+        "hit_rate": 0.6,
+        "units_flat": 1.921,
         "units_weighted": {
-          "units": 1.822,
-          "staked": 18.0,
-          "roi": 0.1012,
+          "units": 3.842,
+          "staked": 20.0,
+          "roi": 0.1921,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
@@ -3117,17 +3536,17 @@
         }
       },
       "adaptive_desk": {
-        "n": 16,
-        "win": 11,
+        "n": 17,
+        "win": 12,
         "loss": 4,
         "push": 1,
-        "roi": 0.4492,
-        "hit_rate": 0.7333,
-        "units_flat": 6.738,
+        "roi": 0.4843,
+        "hit_rate": 0.75,
+        "units_flat": 7.748,
         "units_weighted": {
-          "units": 13.476,
-          "staked": 30.0,
-          "roi": 0.4492,
+          "units": 15.496,
+          "staked": 32.0,
+          "roi": 0.4843,
           "n_offladder_flat_1u": 0
         }
       }
@@ -3137,7 +3556,7 @@
       "model",
       "adaptive_desk"
     ],
-    "n_unified_picks": 16,
+    "n_unified_picks": 17,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -3210,16 +3629,16 @@
         },
         {
           "date": "2026-08-02",
-          "units_flat": 6.738,
-          "units_weighted": 13.476,
-          "n": 16
+          "units_flat": 7.748,
+          "units_weighted": 15.496,
+          "n": 17
         }
       ],
       "by_star_perf": {
         "5": {
-          "n": 10,
-          "hit": 0.5556,
-          "roi": 0.1012
+          "n": 11,
+          "hit": 0.6,
+          "roi": 0.1921
         },
         "4": {
           "n": 6,
@@ -3240,9 +3659,9 @@
       "calibration_buckets": [
         {
           "bucket_mid": 0.475,
-          "n": 10,
-          "predicted": 0.4898,
-          "realized": 0.6
+          "n": 11,
+          "predicted": 0.4901,
+          "realized": 0.6364
         },
         {
           "bucket_mid": 0.525,
@@ -3264,13 +3683,13 @@
         },
         {
           "month": "2026-08",
-          "n": 10,
-          "win": 5,
+          "n": 11,
+          "win": 6,
           "loss": 4,
           "push": 1,
-          "hit": 0.5556,
-          "roi": 0.1012,
-          "units_flat": 0.911
+          "hit": 0.6,
+          "roi": 0.1921,
+          "units_flat": 1.921
         }
       ],
       "streaks": {
@@ -3279,7 +3698,7 @@
           "length": 1
         },
         "max_win_streak": 7,
-        "max_loss_streak": 2,
+        "max_loss_streak": 1,
         "note": "pushes are neutral \u2014 they neither extend nor break a streak"
       },
       "basis": "honest aggregates over the SAME one-per-game graded unified picks as record.overall \u2014 nothing re-graded, no new claims. equity_curve is CUMULATIVE (units_flat = 1u per pick at the row's own executable price; units_weighted = tier-ladder staked, expanded fills 0.5u); by_star_perf uses the current v3.3 display bands over all history; calibration_buckets compare the served side's model probability to the realized win rate (pushes excluded); streaks treat pushes as neutral."
@@ -3459,34 +3878,34 @@
         "what": "The one pick we actually serve on this game: the champion's play if it has one, otherwise the model's best playable lean, otherwise a PASS.",
         "is_headline": true,
         "activation_date": "2026-07-20",
-        "n": 16,
-        "win": 11,
+        "n": 17,
+        "win": 12,
         "loss": 4,
         "push": 1,
-        "roi": 0.4492,
-        "hit_rate": 0.7333,
-        "units_flat": 6.738,
+        "roi": 0.4843,
+        "hit_rate": 0.75,
+        "units_flat": 7.748,
         "units_weighted": {
-          "units": 13.476,
-          "staked": 30.0,
-          "roi": 0.4492,
+          "units": 15.496,
+          "staked": 32.0,
+          "roi": 0.4843,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-30",
         "last_graded_date": "2026-08-02",
         "evidence_split": {
           "unknown": {
-            "n": 16,
-            "win": 11,
+            "n": 17,
+            "win": 12,
             "loss": 4,
             "push": 1,
-            "roi": 0.4492,
-            "hit_rate": 0.7333,
-            "units_flat": 6.738,
+            "roi": 0.4843,
+            "hit_rate": 0.75,
+            "units_flat": 7.748,
             "units_weighted": {
-              "units": 13.476,
-              "staked": 30.0,
-              "roi": 0.4492,
+              "units": 15.496,
+              "staked": 32.0,
+              "roi": 0.4843,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-30",
@@ -3955,29 +4374,29 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 374,
-          "win": 183,
+          "n": 375,
+          "win": 184,
           "loss": 183,
           "push": 8,
-          "hit_rate": 0.5,
-          "decided": 366,
+          "hit_rate": 0.5014,
+          "decided": 367,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.449,
-            0.551
+            0.4505,
+            0.5522
           ],
-          "last10": "W-L-L-W-L-L-W-L-L-P",
+          "last10": "L-W-L-W-L-L-W-L-L-P",
           "first_date": "2026-07-01",
           "last_date": "2026-08-02",
           "n_reconstructed_oos": 331,
-          "n_live": 43,
-          "own_side_over_rate": 0.4225,
+          "n_live": 44,
+          "own_side_over_rate": 0.424,
           "mean_abs_edge_vs_market": 0.0136,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 43 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -3992,29 +4411,29 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 374,
-          "win": 160,
+          "n": 375,
+          "win": 161,
           "loss": 206,
           "push": 8,
-          "hit_rate": 0.4372,
-          "decided": 366,
+          "hit_rate": 0.4387,
+          "decided": 367,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.3873,
-            0.4884
+            0.3888,
+            0.4898
           ],
-          "last10": "L-L-L-L-L-W-L-W-L-P",
+          "last10": "L-W-L-L-L-W-L-W-L-P",
           "first_date": "2026-07-01",
           "last_date": "2026-08-02",
           "n_reconstructed_oos": 331,
-          "n_live": 43,
-          "own_side_over_rate": 0.5053,
+          "n_live": 44,
+          "own_side_over_rate": 0.5067,
           "mean_abs_edge_vs_market": 0.032,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 43 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "nova": {
           "key": "nova",
@@ -4029,29 +4448,29 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 374,
-          "win": 177,
+          "n": 375,
+          "win": 178,
           "loss": 189,
           "push": 8,
-          "hit_rate": 0.4836,
-          "decided": 366,
+          "hit_rate": 0.485,
+          "decided": 367,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4328,
-            0.5347
+            0.4343,
+            0.536
           ],
-          "last10": "L-L-W-L-L-W-W-L-L-P",
+          "last10": "L-W-W-L-L-W-W-L-L-P",
           "first_date": "2026-07-01",
           "last_date": "2026-08-02",
           "n_reconstructed_oos": 331,
-          "n_live": 43,
-          "own_side_over_rate": 0.5428,
+          "n_live": 44,
+          "own_side_over_rate": 0.544,
           "mean_abs_edge_vs_market": 0.0223,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 43 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "scout": {
           "key": "scout",
@@ -4066,34 +4485,34 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 374,
+          "n": 375,
           "win": 174,
-          "loss": 192,
+          "loss": 193,
           "push": 8,
-          "hit_rate": 0.4754,
-          "decided": 366,
+          "hit_rate": 0.4741,
+          "decided": 367,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4248,
-            0.5266
+            0.4236,
+            0.5252
           ],
-          "last10": "L-W-W-L-L-W-L-W-W-P",
+          "last10": "W-L-W-L-L-W-L-W-W-P",
           "first_date": "2026-07-01",
           "last_date": "2026-08-02",
           "n_reconstructed_oos": 331,
-          "n_live": 43,
-          "own_side_over_rate": 0.4251,
+          "n_live": 44,
+          "own_side_over_rate": 0.424,
           "mean_abs_edge_vs_market": 0.0265,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 43 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-03T00:51:59Z",
+      "updated": "2026-08-03T03:46:27Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -4115,16 +4534,16 @@
           "bh_significant": false
         },
         "MAJORITY": {
-          "n": 4,
-          "win": 2,
+          "n": 5,
+          "win": 3,
           "loss": 2,
           "push": 0,
-          "hit_rate": 0.5,
-          "roi": -0.0276,
-          "n_decided": 4,
+          "hit_rate": 0.6,
+          "roi": 0.1799,
+          "n_decided": 5,
           "hit_ci95": [
-            0.0676,
-            0.9324
+            0.1466,
+            0.9473
           ],
           "p_vs_coinflip": 1.0,
           "bh_significant": false
@@ -4147,16 +4566,16 @@
       },
       "by_configuration": {
         "MAJORITY_3-1|dissent=scout|over": {
-          "n": 2,
-          "win": 1,
+          "n": 3,
+          "win": 2,
           "loss": 1,
           "push": 0,
-          "hit_rate": 0.5,
-          "roi": -0.0455,
-          "n_decided": 2,
+          "hit_rate": 0.6667,
+          "roi": 0.3064,
+          "n_decided": 3,
           "hit_ci95": [
-            0.0126,
-            0.9874
+            0.0943,
+            0.9916
           ],
           "p_vs_coinflip": 1.0,
           "bh_significant": false,
@@ -4270,8 +4689,8 @@
           }
         }
       },
-      "n_games_with_all_four_graded": 16,
-      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 8 rows this table renders, on 16 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
+      "n_games_with_all_four_graded": 17,
+      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 8 rows this table renders, on 17 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
       "n_rows_rendered": 8,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
@@ -6600,7 +7019,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-03T03:13:44Z",
+      "updated": "2026-08-03T03:50:26Z",
       "order": [
         "vega",
         "atlas",
@@ -7346,7 +7765,7 @@
             "atlas": 79
           },
           "pushes": 2,
-          "n_both_graded": 374,
+          "n_both_graded": 375,
           "line": "When VEGA and ATLAS disagree: VEGA 102, ATLAS 79"
         },
         {
@@ -7364,7 +7783,7 @@
             "nova": 87
           },
           "pushes": 1,
-          "n_both_graded": 374,
+          "n_both_graded": 375,
           "line": "When VEGA and NOVA disagree: VEGA 93, NOVA 87"
         },
         {
@@ -7376,14 +7795,14 @@
             "VEGA \u00b7 The Price",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 191,
+          "n_disagreements": 192,
           "wins": {
-            "vega": 99,
+            "vega": 100,
             "scout": 90
           },
           "pushes": 2,
-          "n_both_graded": 374,
-          "line": "When VEGA and SCOUT disagree: VEGA 99, SCOUT 90"
+          "n_both_graded": 375,
+          "line": "When VEGA and SCOUT disagree: VEGA 100, SCOUT 90"
         },
         {
           "pair": [
@@ -7400,7 +7819,7 @@
             "nova": 88
           },
           "pushes": 1,
-          "n_both_graded": 374,
+          "n_both_graded": 375,
           "line": "When ATLAS and NOVA disagree: ATLAS 71, NOVA 88"
         },
         {
@@ -7412,14 +7831,14 @@
             "ATLAS \u00b7 The Conditions",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 158,
+          "n_disagreements": 159,
           "wins": {
-            "atlas": 71,
+            "atlas": 72,
             "scout": 85
           },
           "pushes": 2,
-          "n_both_graded": 374,
-          "line": "When ATLAS and SCOUT disagree: ATLAS 71, SCOUT 85"
+          "n_both_graded": 375,
+          "line": "When ATLAS and SCOUT disagree: ATLAS 72, SCOUT 85"
         },
         {
           "pair": [
@@ -7430,14 +7849,14 @@
             "NOVA \u00b7 The Bats",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 164,
+          "n_disagreements": 165,
           "wins": {
-            "nova": 82,
+            "nova": 83,
             "scout": 79
           },
           "pushes": 3,
-          "n_both_graded": 374,
-          "line": "When NOVA and SCOUT disagree: NOVA 82, SCOUT 79"
+          "n_both_graded": 375,
+          "line": "When NOVA and SCOUT disagree: NOVA 83, SCOUT 79"
         }
       ],
       "note": "disagreement scoreboards: for each pair, only games where BOTH analysts had a graded read and their sides differed; each side's wins count its OWN graded row (streams grade at their own locked line, so both can push). Computed from the same activation-dated graded ledgers as record.analysts \u2014 sparse until the younger desks accrue; small n means NO conclusion."
@@ -7448,45 +7867,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 93,
-          "win": 36,
+          "n": 94,
+          "win": 37,
           "loss": 56,
           "push": 1,
-          "hit_rate": 0.3913,
-          "line": "36-56-1",
+          "hit_rate": 0.3978,
+          "line": "37-56-1",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 93,
-          "win": 41,
+          "n": 94,
+          "win": 42,
           "loss": 51,
           "push": 1,
-          "hit_rate": 0.4457,
-          "line": "41-51-1",
+          "hit_rate": 0.4516,
+          "line": "42-51-1",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 93,
-          "win": 46,
+          "n": 94,
+          "win": 47,
           "loss": 46,
           "push": 1,
-          "hit_rate": 0.5,
-          "line": "46-46-1",
+          "hit_rate": 0.5054,
+          "line": "47-46-1",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 93,
+          "n": 94,
           "win": 45,
-          "loss": 47,
+          "loss": 48,
           "push": 1,
-          "hit_rate": 0.4891,
-          "line": "45-47-1",
+          "hit_rate": 0.4839,
+          "line": "45-48-1",
           "is_betting_record": false
         }
       },
@@ -7553,17 +7972,17 @@
     "record_start": "2026-07-01",
     "through": "2026-08-02",
     "overall": {
-      "n": 16,
-      "win": 11,
+      "n": 17,
+      "win": 12,
       "loss": 4,
       "push": 1,
-      "roi": 0.4492,
-      "hit_rate": 0.7333,
-      "units_flat": 6.738,
+      "roi": 0.4843,
+      "hit_rate": 0.75,
+      "units_flat": 7.748,
       "units_weighted": {
-        "units": 13.476,
-        "staked": 30.0,
-        "roi": 0.4492,
+        "units": 15.496,
+        "staked": 32.0,
+        "roi": 0.4843,
         "n_offladder_flat_1u": 0
       }
     },
@@ -7596,11 +8015,11 @@
         "strategy_at": "adaptive_strategy_by_date.2026-08-01"
       },
       "2026-08-02": {
-        "n": 7,
-        "win": 4,
+        "n": 8,
+        "win": 5,
         "loss": 3,
         "push": 0,
-        "hit_rate": 0.5714,
+        "hit_rate": 0.625,
         "strategy_ref": "neural_tanh:l20.12:th0.54",
         "strategy_at": "adaptive_strategy_by_date.2026-08-02"
       }
@@ -8315,15 +8734,15 @@
       "source": "adaptive_desk"
     },
     "2026-08-02": {
-      "n_picks": 7,
-      "n_graded": 7,
-      "wins": 4,
+      "n_picks": 8,
+      "n_graded": 8,
+      "wins": 5,
       "losses": 3,
       "pushes": 0,
-      "hit_rate": 0.5714,
-      "roi": 0.1356,
-      "units": 0.949,
-      "units_weighted": 1.899,
+      "hit_rate": 0.625,
+      "roi": 0.2449,
+      "units": 1.959,
+      "units_weighted": 3.919,
       "source": "adaptive_desk"
     }
   },
@@ -9013,7 +9432,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -10091,7 +10510,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -11154,7 +11573,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -12223,7 +12642,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -13341,7 +13760,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -14461,7 +14880,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -15572,7 +15991,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16680,7 +17099,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -17809,7 +18228,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18925,7 +19344,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "STRONG",
@@ -20000,7 +20419,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -21122,7 +21541,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -22205,7 +22624,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "CLEAR",
@@ -23321,7 +23740,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -23895,7 +24314,7 @@
         "star_tier": "Adaptive desk STRONG (35d trailing)",
         "price": 101.0,
         "suggested_units": 2.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-02T23:28:55Z",
         "timestamp": "2026-08-02T23:28:55Z",
@@ -24034,7 +24453,7 @@
           "price": 101.0,
           "stars": 5,
           "score": 5.0,
-          "result": null,
+          "result": "win",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -24409,7 +24828,7 @@
         "score": 5.0,
         "price": 101.0,
         "suggested_units": 2.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "lead_time": "T-3h",
         "source": "adaptive_desk",
@@ -24434,7 +24853,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:11:12Z",
+          "asof_utc": "2026-08-03T03:48:00Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",

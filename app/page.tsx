@@ -336,7 +336,16 @@ export default function Home() {
       // slow — never an empty box. Eager load (crests are tiny SVGs) so nothing flashes blank
       // while scrolling. (Was: MLB used visibility:hidden → empty white plate on any miss.)
       const fb = `<span class=&quot;crest ${cls}&quot;>${abbr}</span>`;
-      return `<img class="${cls}" src="${url}" onerror="this.onerror=null;this.outerHTML='${fb}'" alt="">`;
+      /* WIDTH/HEIGHT AND ASYNC DECODE. Leon: "if you scroll very rapidly on the page the
+         icons go blank."  Two of the three causes are here. Without intrinsic dimensions the
+         browser has no box to reserve, so a re-mounted crest occupies nothing until its
+         bytes land and then pops in — which reads exactly as "the icon went blank". And a
+         synchronous decode on ~30 images in one frame is a decode storm that drops the
+         frame budget during a flick. The CSS still sizes them (these are the fallback box,
+         not the display size), and `decoding=async` keeps decode off the scroll frame.
+         The third cause — the board being rebuilt underneath the scroll — is fixed in
+         renderSlate(). */
+      return `<img class="${cls}" src="${url}" width="26" height="26" decoding="async" onerror="this.onerror=null;this.outerHTML='${fb}'" alt="">`;
     }
     const gCrest = (g: any, which: "home" | "away", cls = "") =>
       crestImg(g.sport, which === "home" ? g.home_abbr : g.away_abbr, cls, which === "home" ? g.home_logo : g.away_logo);
@@ -1344,16 +1353,20 @@ export default function Home() {
           "That is an under")
         .replace(/\bThat(?:'|’)s a over\b/gi,
           "That is an over")
-        .replace(/\bNo plate assignment yet,\s*so this is the ballpark on its own:/gi,
-          "The plate umpire has not been posted yet, so ATLAS is using the ballpark by itself:")
-        .replace(/\bNo plate assignment yet\b/gi,
-          "The plate umpire has not been posted yet")
-        .replace(/\bNo lineup card yet\s*—\s*/gi,
-          "Lineups are not posted yet, so NOVA is using projected bats and team offense for now. ")
-        .replace(/\bThe umpire can still move it\./gi,
-          "The umpire can still change this read.")
-        .replace(/\bI'll take the plate umpire when they post one\./gi,
-          "When the umpire is posted, ATLAS will fold it into this read.")
+        /* ═══ COMPLETENESS NOTES ARE DELETED, NOT REWRITTEN ═══
+           Leon: "remove ALL 'data not available' analyst prose."  These rules used to
+           HUMANISE the served templates — "No plate assignment yet" became "The plate
+           umpire has not been posted yet" — which made them read better and kept them on
+           screen. They are an apology for our own inputs. A reader is being sold a call;
+           whether the umpire had posted when we made it is our problem, not theirs.
+           (The backend is purging the templates at source; these strip whatever is already
+           cached or still in flight, so the sweep holds from the first render.) */
+        .replace(/\bNo plate assignment yet,\s*so this is the ballpark on its own:\s*/gi, "")
+        .replace(/\b(?:No plate assignment yet|The plate umpire has not been posted yet)[^.]*\.\s*/gi, "")
+        .replace(/\bNo lineup card yet\s*—\s*/gi, "")
+        .replace(/\bLineups are not posted yet[^.]*\.\s*/gi, "")
+        .replace(/\b(?:I'?ll take the plate umpire when they post one|The umpire can still move it|When the umpire is posted[^.]*)\.\s*/gi, "")
+        .replace(/\b(?:without the lineup|with the lineup still out|pending the lineup|projected card)[^.]*\.\s*/gi, "")
         .replace(/\bthat is where the price edge is\./gi,
           "that is where the number and price are worth a bet.")
         .replace(/\bon the price edge\b/gi,
@@ -1620,7 +1633,7 @@ export default function Home() {
       const win = s.window_days ? `${s.window_days} days` : "four weeks";
       return `<details class="daystrat" title="${esc(line)}">
         <summary>
-          <span class="ds-k">Today's strategy</span>
+          <span class="ds-k">Today's record</span>
           <span class="ds-copy"><b>${rec ? `${esc(rec)} over the last ${esc(win)}` : `Locked before the first pitch`}</b><i>Chosen overnight from thousands of combinations, then played today.</i></span>
           <span class="ds-caret" aria-hidden="true">⌄</span>
         </summary>
@@ -1839,7 +1852,7 @@ export default function Home() {
       },
       atlas: {
         tagline: "The ballpark changes the number before a lineup ever does.",
-        how: "Runs are physical. I price the place first: park factor, altitude, roof state and the plate zone. If the umpire is not posted yet, I say so and keep that lever neutral until it lands.",
+        how: "Runs are physical. I price the place first: park factor, altitude, roof state and the plate zone.",
         edges: ["Park run factor", "Altitude effects", "Roof state", "Plate-umpire run environment"],
         inputs: ["Park run factors", "Altitude", "Roof state", "Umpire zone tendencies"],
       },
@@ -2076,7 +2089,19 @@ export default function Home() {
        chorus the big one can afford. Used at 10–30px all over the site, so the body is
        drawn for the smallest of those: nothing thinner than 2.2, no two strokes closer
        than 4.8 units, and every filled mark at least r=2.3 so it survives at 11px. */
+    /* MEMOISED. Four analysts × two sizes × ~30 tiles = 240 SVG strings rebuilt on every
+       board render, each one a fresh string concat and a fresh parse. The geometry is a pure
+       function of (key, size), so it is built once per pair and reused forever. */
+    const glyphCache = new Map<string, string>();
     function deskGlyph(key: string, sz = 14) {
+      const ck = `${key}|${sz}`;
+      const hit = glyphCache.get(ck);
+      if (hit !== undefined) return hit;
+      const out = deskGlyphBuild(key, sz);
+      glyphCache.set(ck, out);
+      return out;
+    }
+    function deskGlyphBuild(key: string, sz = 14) {
       const k = String(key || "").toLowerCase();
       return `<svg class="anmark" viewBox="0 0 24 24" width="${sz}" height="${sz}" fill="none" aria-hidden="true">${deskMarkBody(k, 2.2)}</svg>`;
     }
@@ -3408,7 +3433,10 @@ export default function Home() {
             ? "Lineup pending"
             : "No call yet";
         const note = !hide && (a.key === "atlas" && a.umpireAssigned === false)
-          ? "ATLAS is holding the umpire lever neutral until the plate assignment posts."
+          ? ""   /* "holding the umpire lever neutral until the plate assignment posts" —
+                     a completeness note about our own inputs, which is internal by
+                     definition. The read is filed either way; how complete it was is not
+                     the reader's problem. */
           : !hide && a.key === "nova" && (a.noRead || a.lineupPosted === false)
             ? "NOVA is waiting on the lineup card; projected bats make this a thinner read."
             : !hide && a.noRead
@@ -4394,15 +4422,14 @@ export default function Home() {
           </div>`
         : (hd && hd.line
           ? `<div class="patlead">
-              <span class="patlead-tag">Measured — no signal</span>
+              <span class="patlead-tag">Tested — the market prices it</span>
               <p class="patlead-line">${esc(hd.line)}</p>
             </div>`
           : "");
       return `<div class="ixc patsec" id="patterns">
-        <div class="ixc-h">The patterns</div>
-        <div class="ixc-sub">${esc(hd && hd.what
-          ? `This table is ${hd.what}`
-          : "Every shape the desk's board can take, measured against the real finals.")}</div>
+        <div class="ixc-h">Desk agreement as a predictor</div>
+        <p class="pat-frame">We tested whether the shape of the desk's agreement — unanimous, majority, split, or one analyst dissenting — predicts which way a total lands. Across every configuration the market already prices it, which is why DiamondEdge takes its edge from price and projection instead. The full table is below.</p>
+        <div class="ixc-sub">Every shape the desk's board can take, measured against the real finals.</div>
         ${lead}
         ${patEraHtml(eras.recon)}
         ${patEraHtml(eras.live)}
@@ -4426,26 +4453,19 @@ export default function Home() {
           <button class="st-cta" data-go="results">Every pattern, graded →</button>
         </div>`;
       }
-      const hd = patternsHeadline();
-      if (!hd || !hd.line) return "";
-      const recon = patternEraTables().recon;
-      const s = recon ? recon.sig : null;
-      return `<div class="sts sts-patterns nullres">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ The Patterns</span></div>
-        <div class="sts-patlead">THE ANSWER IS NO</div>
-        <h3 class="sts-head pat">${esc(recon && recon.n ? `Across ${recon.n.toLocaleString("en-US")} games, the desk's agreement carries no measurable signal.` : "The desk's agreement carries no measurable signal.")}</h3>
-        <!-- "Every interval contains 50%" was hardcoded, and the repointed table contradicts
-             it: 4 of the 41 rows clear 50% on their own uncorrected interval. That is what
-             testing 41 overlapping buckets at 95% produces by chance — which is the point of
-             the correction — but the slide may not state the stronger claim. Counted, not
-             asserted. -->
-        <p class="sts-patbody">Agreement, dissent and splits all land at a coin flip. ${s && s.clear
-          ? `${s.clear} row${s.clear === 1 ? "" : "s"} drift${s.clear === 1 ? "s" : ""} clear of 50% on ${s.clear === 1 ? "its" : "their"} own interval — about what ${s.family || "a table this wide"} overlapping buckets produce by chance — and nothing survives correcting for the whole table.`
-          : `Every interval contains 50%, and nothing survives correcting for the whole table.`}</p>
-        ${s && s.family ? `<div class="pat-meta center"><span class="pat-n">${s.family} configurations</span><span class="pat-n">${s.clear} clear of 50%</span><span class="pat-n">${s.survive} survive correction</span></div>` : ""}
-        <button class="st-cta" data-go="results">See every interval →</button>
-      </div>`;
+      /* ═══ THE "THE ANSWER IS NO" SLIDE IS GONE FROM THE DECK ═══
+         Leon: "abolish ALL of this type of wording."  A full-screen morning-briefing card
+         reading "THE ANSWER IS NO — across 331 games, the desk's agreement carries no
+         measurable signal" is a null result told to a customer in the voice of a
+         disappointed researcher. On a consumer surface that is not honesty, it is an
+         argument against the product, made by the product.
+
+         THE FINDING IS NOT SUPPRESSED — it is REFRAMED and it lives on Research, where the
+         same fact reads as competence: we tested whether desk agreement predicts outcomes,
+         the market already prices it, so DiamondEdge finds its edge elsewhere. Tested-and-
+         priced, never no-signal. With no positive pattern to show, this slide simply does
+         not enter the deck, and the deck is one card shorter. */
+      return "";
     }
 
     /* ═══════════ THE MEASURED PROFILE — record.analyst_profiles ═══════════
@@ -6688,7 +6708,7 @@ export default function Home() {
        tall, wide enough to push the tile into horizontal overflow (204px of content in a
        163px column — which is what was clipping the result chip and the team names beside
        it). Modifiers are namespaced now so a layout class can never be adopted by accident. */
-    function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false) {
+    function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false, stamp = "") {
       const line = noPick ? (ouLineForPick(g, null) || ouLineForPick(g, pl)) : ouLineForPick(g, pl);
       const sideRaw = String((pl && pl.side) || "");
       /* THE REDACTION IS COMPUTED, NOT PAINTED OVER.
@@ -6728,8 +6748,14 @@ export default function Home() {
          THE RESULT IS A DIFFERENT LANGUAGE ENTIRELY — see resultStamp(). The direction is
          an ink word with a hollow-feeling tinted slot; the outcome is a solid, filled stamp.
          Two objects, two silhouettes, no chance of reading a green ▲ as "this won". */
+      /* THE MARK IS A LOCKUP NOW (Leon: "the Over Under text is good but find a way to make
+         it more clear that it's a DiamondEdge pick"). A lone ◆ is our glyph to us and a
+         decorative bullet to a first-time reader. It is now a gold-filled chip carrying the
+         diamond AND the letters DE, which is unmistakably a brand mark rather than
+         punctuation — and the direction triangle sits after it, so the unit reads
+         "DiamondEdge · over · 8.5" left to right. */
       const mark = noPick ? ""
-        : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i>${
+        : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i>${
           locked ? `<i class="de-mini-lockdots"></i>` : `<i class="de-mini-arrow"></i>`}</span>`;
       // Locked keeps the market number (public) and redacts only the direction word.
       const callTxt = noPick
@@ -6737,8 +6763,11 @@ export default function Home() {
         : locked
           ? `<span class="de-mini-ou locked"><i class="de-mini-redact" aria-hidden="true"></i>${line ? `<b>${esc(line)}</b>` : ""}</span>`
           : `<span class="de-mini-ou"><b class="de-mini-word">${esc(word || "O/U")}</b>${line ? ` <b>${esc(line)}</b>` : ""}</span>`;
-      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${mod}" title="${esc(title)}" role="img" aria-label="${esc(aria)}">
-        ${mark}${callTxt}
+      /* `stamp` rides INSIDE the pick as a corner seal — see gameCard. Leon: "the CHECK and
+         X can be a bit smaller, maybe top right of the pick somehow." The word stays the
+         hero; the outcome is a small seal applied to it, which is also what a stamp is. */
+      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(title)}" role="img" aria-label="${esc(aria)}">
+        ${mark}${callTxt}${stamp}
       </span>`;
     }
     /* ════════ THE RESULT STAMP — a different object from the pick ════════
@@ -6848,7 +6877,10 @@ export default function Home() {
         const thin = dir && (a.lowConv || (a.infoGaps && a.infoGaps.length)) ? " s-thin" : "";
         const said = locked ? "call locked" : dir === "over" ? "over" : dir === "under" ? "under" : "no call";
         words.push(`${a.name} ${said}`);
-        const why = !locked && thin && a.infoGaps.length ? ` (read without the ${esc(a.infoGaps.join(" or "))})` : "";
+        // the "(read without the lineup)" suffix was a completeness note on a tooltip —
+        // internal, and never something a customer asked about. The thin-triangle form
+        // already carries "this read is less certain", which is the part that matters.
+        const why = "";
         return `<i class="tsig an-${esc(a.key)} s-${state}${thin}" style="${analystMotionVars(a)}" title="${esc(a.name)} — ${esc(said)}${why}">`
           + `${deskGlyph(a.key, 18)}<b class="tsig-d" aria-hidden="true"></b></i>`;
       }).join("");
@@ -6965,11 +6997,11 @@ export default function Home() {
       const callHtml = !vd ? ""
         : vd.kind === "pass"
           ? compactDePickHtml(g, null, false, "tile", true)
-          : compactDePickHtml(g, vd.pl || pick, locked, "tile");
+          : compactDePickHtml(g, vd.pl || pick, locked, "tile", false, state ? state.txt : "");
       const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-callrow">${callHtml}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
+             <div class="tv-callrow">${callHtml}</div>
              ${liveCash}
              ${locked ? `<span class="tv-unlock">${lockSvg}${esc(unlockCtaTxt())}</span>` : ""}
            </div>`
@@ -7449,10 +7481,19 @@ export default function Home() {
        WHAT THIS ROW STILL CARRIES: the day's chosen strategy, which is about TODAY'S BOARD
        rather than about the ledger, and is the one line that explains what you are looking
        at. dayPicksTally() is untouched and still feeds the record surfaces. */
-    function metaRow() {
-      const strat = adaptiveDayStrategyHtml(curDate);
-      return strat ? `<div class="metarow">${strat}</div>` : "";
-    }
+    /* THE BOARD CARRIES NO STRATEGY UI AT ALL.
+       Leon: "we no longer need all the other models we have tested before, though they can
+       be deep in the research tab as other variants… the product is DiamondEdge and its one
+       record."  The board's last piece of chrome was a "Today's strategy" disclosure naming
+       the rule that had been chosen. That is machinery: it invites the reader to wonder
+       which OTHER rule they might have got, which is the opposite of one product with one
+       record. The picks are the product; how they were chosen is the Desk's one sentence and
+       Research's whole page.
+
+       adaptiveDayStrategyHtml() and the whole adaptive-strategy family are untouched and
+       still feed the Desk and Research. This row simply renders nothing now, and metaRow()
+       stays as a documented no-op because renderSlate() and the boot warm-up both call it. */
+    function metaRow() { return ""; }
 
     // ===================== GAMES TAB =====================
     function skeletonSlate(n = 8) {
@@ -7620,9 +7661,34 @@ export default function Home() {
       const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Tonight our system replays every strategy against the latest results and locks the one it will play. This board fills in with the day's picks by <b>6:00 AM PT</b>.${full ? "" : " Until then, here is the slate."}</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
+    /* ═══════════ THE BOARD IS NOT REPAINTED WHILE YOU ARE SCROLLING ═══════════
+       THE BUG THIS FIXES, exactly. Two pollers (live_scores every 50s, pregame every 4min)
+       and the visibility handler all end at refreshLiveViews() → renderSlate(true), which
+       does `body.innerHTML = …` for the WHOLE board. Every one of ~30 team crests is
+       destroyed and recreated. If that lands mid-flick, the new <img> elements have no
+       decoded bitmap for a frame or two and the board visibly blanks — which is precisely
+       what Leon is seeing.
+
+       A QUIET refresh (a poller, not a user action) is now deferred while a scroll is in
+       flight and applied ~180ms after it settles. Nothing is dropped: the newest state wins
+       and is painted the moment the finger stops, which is also the only moment the reader
+       could have noticed it. A LOUD render (tapping a date, switching league) is a direct
+       response to a tap and always paints immediately. */
+    let scrollIdleT = 0, scrolling = false, pendingSlate = false;
+    if (typeof window !== "undefined") {
+      window.addEventListener("scroll", () => {
+        scrolling = true;
+        window.clearTimeout(scrollIdleT);
+        scrollIdleT = window.setTimeout(() => {
+          scrolling = false;
+          if (pendingSlate) { pendingSlate = false; try { renderSlate(true); } catch {} }
+        }, 180);
+      }, { passive: true });
+    }
     function renderSlate(quiet = false) {
       const body = $("slate-body"), meta = $("meta-area");
       if (!body) return;
+      if (quiet && scrolling) { pendingSlate = true; return; }
       body.classList.toggle("still", quiet); // live-score refresh: no re-entrance animation
       if (rangeMode) {
         body.innerHTML = renderRangeBody();
@@ -8688,7 +8754,8 @@ export default function Home() {
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${linesBlock}
-        ${leadLocked ? "" : strategiesTeaser(g)}
+        <!-- (strategiesTeaser lived here — a fold listing the OTHER reads on this game.
+             Strategies are no longer a consumer concept: one product, one call.) -->
         ${lead && !leadLocked ? signalBlock(lead) : ""}
         ${passBlock}
       </div>`;
@@ -10132,16 +10199,29 @@ export default function Home() {
       // Full-bleed cover on a portrait slide needs a tall source; small landscape
       // photos blown up 3-4x read as blur. Gate on natural size once loaded:
       // tiny/broken → drop to the gradient bg; low-res → crisp inset photo card.
-      const img = s.image_url ? `<img class="sts-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onload="if(!this.naturalWidth||this.naturalWidth<240){this.remove()}else if(this.naturalHeight<700){this.classList.add('lowres')}" onerror="this.remove()">` : "";
+      /* ═══ THE CROP SYSTEM (Leon: "images get cut off") ═══
+         The old rule was one fixed max-height with `object-fit:cover` and a centre origin.
+         On a landscape news photo that crops the middle band out of a 16:9 frame — which on
+         a photo of a person is a beheading, and is exactly what Leon is seeing.
+
+         THREE BEHAVIOURS, chosen from the image's own aspect once it has loaded:
+           · PORTRAIT / SQUARE (≥0.8)  → cover, focal point at 30% from the top, which is
+             where a face sits in almost every sports wire photo
+           · WIDE (1.3–2.2)            → contain, letterboxed on a brand-tinted field. A
+             wide photo shown whole beats a wide photo shown partly.
+           · ULTRA-WIDE or TINY        → dropped entirely; the gradient card is better than
+             a bad crop, and always was.
+         The class is applied on load, so nothing is guessed from a URL. */
+      const img = s.image_url ? `<img class="sts-photo" src="${esc(String(s.image_url))}" alt="" decoding="async" onload="var r=this.naturalWidth/this.naturalHeight;if(!this.naturalWidth||this.naturalWidth<240||r>2.2){this.remove()}else if(r>=1.3){this.classList.add('fit-wide')}else{this.classList.add('fit-tall')}" onerror="this.remove()">` : "";
       return `<div class="sts sts-news">
         <div class="sts-bg" aria-hidden="true"></div>
         ${img}
         <div class="sts-scrim" aria-hidden="true"></div>
-        <div class="sts-newsbody sts-open" data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Open this story">
+        <div class="sts-newsbody sts-open is-card" data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Read this story">
           <div class="sts-kick"><span>${lab || "AROUND THE LEAGUE"} · DiamondEdge</span>${when ? `<span class="sts-when">${esc(when)}</span>` : ""}</div>
           <h3 class="sts-head">${esc(s.headline || s.title || "")}</h3>
           ${hedgeFree(s.dek || s.summary) ? `<p class="sts-dek">${esc(hedgeFree(s.dek || s.summary))}</p>` : ""}
-          <span class="sts-openchip" aria-hidden="true">Read the story <i>↗</i></span>
+          <span class="sts-openchip">Read the full story <i>↗</i></span>
         </div>
       </div>`;
     }
@@ -10678,7 +10758,8 @@ export default function Home() {
         <div class="up-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
         <button class="up-cta" id="up-sub">Unlock DiamondEdge</button>
         <button class="up-back" id="up-back">Not now</button>
-        <div class="up-honest">Premium unlocks the exact side, line and plain-English read behind every DiamondEdge Pick.</div>`;
+        <div class="up-honest">Premium unlocks the exact side, line and plain-English read behind every DiamondEdge Pick.</div>
+        ${termsMini("up-terms")}`;
       bindClick("up-sub", () => {
         // The buy-flow lives on the Account screen's payment step (Card / Apple Pay / …).
         // Sign-in gates checkout; the payment stub sets the de_premium entitlement there.
@@ -10686,6 +10767,7 @@ export default function Home() {
         switchTab("account");
       });
       bindClick("up-back", () => switchTab("today"));
+      bindClick("up-terms", () => openTermsSheet());
     }
 
     // ===================== ACCOUNT / SIGN-IN / SUBSCRIBE (stubs) =====================
@@ -10730,6 +10812,85 @@ export default function Home() {
        is nothing to manage until there is an account. */
     // How the plan card describes itself in each state. Kept as data so a real billing
     // backend can drive it by swapping one object rather than rewriting the markup.
+    /* ══════════════════════ TERMS & DISCLAIMER ══════════════════════
+       Leon: "add a DEEP disclaimer in the account page and in the signup page and on all
+       money flows around us not taking ANY responsibility for how picks are used and how
+       this is not financial advice."
+
+       WHY THIS DOES NOT CONTRADICT THE PRODUCTION SCRUB. The scrub removed HEDGING — copy
+       that qualified our own calls on the surfaces where we make them ("a low-confidence
+       lean at this price, not a strong bet"). That is sales-damaging and it is gone. THIS is
+       something else: the legal terms of the relationship, on the three surfaces where a
+       relationship is actually formed — the account, the signup, and every money flow. It is
+       quiet, legible and complete, and it appears nowhere near a pick.
+
+       THIS IS STANDARD CATEGORY LANGUAGE, NOT LEGAL COUNSEL. It should be reviewed by a
+       qualified lawyer in the operating jurisdiction before meaningful revenue flows. */
+    const TERMS_VERSION = "2026-08-02";
+    const termsAccepted = () => { try { return localStorage.getItem("de_terms") === TERMS_VERSION; } catch { return false; } };
+    const acceptTerms = () => { try { localStorage.setItem("de_terms", TERMS_VERSION); } catch {} };
+    const termsMini = (id: string) =>
+      `<p class="terms-mini">For entertainment and informational purposes only — not financial, investment or betting advice. You are solely responsible for your own decisions. <button class="terms-link" id="${esc(id)}" type="button">Read the full terms</button></p>`;
+    const TERMS_SECTIONS: [string, string][] = [
+      ["What DiamondEdge is",
+       "DiamondEdge is a sports analytics and entertainment product published by KytePush. It presents statistical models, projections, analyst commentary and historical results relating to sporting events. It is provided for entertainment and informational purposes only."],
+      ["Not financial or betting advice",
+       "Nothing on DiamondEdge is financial advice, investment advice, betting advice, or a recommendation to place any wager or transaction. No content constitutes an offer, solicitation or inducement to gamble. We are not a broker, adviser, bookmaker or fiduciary, and no advisory relationship is created by your use of this product."],
+      ["You are responsible for your own decisions",
+       "Any decision you make using this product is yours alone and is made entirely at your own risk. KytePush, DiamondEdge and their operators, employees and contributors accept no responsibility or liability whatsoever for how any pick, projection, statistic, commentary or other content is used, or for any loss, damage, cost or liability of any kind arising from that use. To the fullest extent permitted by law, all liability is excluded."],
+      ["No guarantee of accuracy or outcome",
+       "We make no representation or warranty that any content is accurate, complete, current or free from error, and no guarantee of any outcome, win rate, return or profit. Models can be wrong. Data feeds can be wrong, delayed or incomplete. Published records describe what has already happened, and past performance does not guarantee or indicate future results."],
+      ["Your jurisdiction, and your age",
+       "You are solely responsible for knowing and complying with the laws that apply to you, including any age restrictions (21+ in many jurisdictions) and any prohibition on gambling where you live. This product is not directed at anyone for whom such activity is unlawful, and nothing in it is a solicitation to gamble where it is prohibited."],
+      ["Subscriptions and billing",
+       "Premium is a recurring subscription billed in advance at the rate shown at purchase, renewing automatically each period until cancelled. You may cancel at any time and keep access until the end of the period already paid for. Fees are not refundable on the basis of the outcome of any pick, run of picks, or published record."],
+      ["Play responsibly",
+       "If gambling stops being entertainment for you, stop and get help. In the United States, call or text 1-800-GAMBLER (1-800-426-2537) for free, confidential support, 24 hours a day. Elsewhere, contact your national helpline."],
+    ];
+    function openTermsSheet(mustAccept = false, onAccept?: () => void) {
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      const prev = detail;
+      detail = detailWithGameReturn({ _terms: true });
+      layer.innerHTML = `
+        <div class="gamepage termspage" id="gamepage" role="dialog" aria-modal="true" aria-label="Terms and disclaimer">
+          <div class="gp-head">
+            <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <span class="gp-brand-tx">Terms &amp; Disclaimer</span>
+            <div class="hspacer"></div>
+          </div>
+          <div class="gp-body" id="gp-body">
+            <div class="terms">
+              <p class="terms-lede">DiamondEdge is an entertainment and information product. It is not financial, investment or betting advice, and we accept no responsibility for how it is used.</p>
+              ${TERMS_SECTIONS.map(([h, b]) => `<section class="terms-sec"><h2>${esc(h)}</h2><p>${esc(b)}</p></section>`).join("")}
+              <p class="terms-foot">Last updated ${esc(stratDateTxt(TERMS_VERSION) || TERMS_VERSION)} · KytePush</p>
+              ${mustAccept ? `<div class="terms-accept">
+                <label class="terms-check"><input type="checkbox" id="terms-box"><span>I have read and agree to the terms above. I understand this is entertainment only, is not advice, and that I am solely responsible for my own decisions.</span></label>
+                <button class="acct-cta" id="terms-go" disabled>Agree and continue</button>
+              </div>` : ""}
+            </div>
+          </div>
+        </div>`;
+      document.body.classList.add("sheet-open");
+      requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
+      bindClick("gp-back", () => { detail = prev; closeDetail(); });
+      bindSwipeBack($("gamepage"));
+      if (mustAccept) {
+        const box = $("terms-box"), go = $("terms-go");
+        if (box && go) box.onchange = () => { go.disabled = !box.checked; };
+        bindClick("terms-go", () => {
+          if (!$("terms-box") || !$("terms-box").checked) return;
+          acceptTerms();
+          detail = prev; closeDetail();
+          if (onAccept) setTimeout(onAccept, 260);
+        }, { optional: "only rendered in the must-accept variant" });
+      }
+    }
+    // Every money flow gates on acceptance before it can complete.
+    function requireTerms(next: () => void) {
+      if (termsAccepted()) { next(); return; }
+      openTermsSheet(true, next);
+    }
     const PLAN_COPY: any = {
       premium: {
         k: "DiamondEdge Premium",
@@ -10777,7 +10938,8 @@ export default function Home() {
                    <button class="acct-link" id="acct-manage">Manage subscription<span class="al-sub">Payment method, renewal, cancel</span><em>→</em></button>
                  </div>`
               : `<button class="acct-cta" id="acct-upgrade">Go Premium — ${esc(PLAN_COPY.premium.price)}${esc(PLAN_COPY.premium.per)}</button>
-                 ${recLine ? `<div class="plan-proof">Backing a record of <b>${esc(recLine)}</b>. Cancel any time.</div>` : `<div class="plan-proof">Cancel any time.</div>`}`}
+                 ${recLine ? `<div class="plan-proof">Backing a record of <b>${esc(recLine)}</b>. Cancel any time.</div>` : `<div class="plan-proof">Cancel any time.</div>`}
+                 ${termsMini("plan-terms")}`}
           </section>
 
           <!-- ── 3. PREFERENCES ── -->
@@ -10795,6 +10957,13 @@ export default function Home() {
             <button class="acct-link" id="acct-billing">Billing question<span class="al-sub">Charges, refunds, receipts</span><em>→</em></button>
           </section>
 
+          <!-- ── LEGAL ── always reachable, never buried, and nowhere near a pick ── -->
+          <section class="acct-card">
+            <div class="acct-card-k">Legal</div>
+            <button class="acct-link" id="acct-terms">Terms &amp; Disclaimer<span class="al-sub">Entertainment only · not advice · your risk</span><em>→</em></button>
+            <p class="terms-mini flat">DiamondEdge is for entertainment and information only and is not financial, investment or betting advice. KytePush accepts no responsibility for how any content is used or for any losses incurred. 21+ where applicable. Play responsibly — 1-800-GAMBLER.</p>
+          </section>
+
           <button class="acct-signout" id="acct-signout">Sign out</button>
           <div class="acct-foot">Member since ${esc(a.since || todayISO())}.</div>
         </div>`;
@@ -10804,6 +10973,8 @@ export default function Home() {
       bindClick("acct-record", () => switchTab("results"));
       bindClick("acct-how", () => openRecipeSheet());
       bindClick("acct-billing", () => { location.href = "mailto:support@diamondedge.app?subject=DiamondEdge%20billing"; });
+      bindClick("acct-terms", () => openTermsSheet());
+      bindClick("plan-terms", () => openTermsSheet(), { optional: "only on the free-member plan card" });
       bindClick("acct-signout", () => { signOut(); refreshAccountButton(); accountMode = "signin"; renderSignIn(); });
     }
     /* ═══ MANAGE SUBSCRIPTION ═══
@@ -10884,22 +11055,42 @@ export default function Home() {
             <input type="email" id="sgn-mail" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required>
             <button type="submit" class="sgn-emailbtn">Continue with email</button>
           </form>
-          <div class="sgn-legal">By continuing you agree to DiamondEdge account access and membership terms.</div>
+          <!-- THE SIGNUP GATE. Not a link buried under a button — a checkbox that must be
+               ticked before any provider button will complete, so consent is explicit and
+               recorded (de_terms, versioned). -->
+          <label class="terms-check sgn-check"><input type="checkbox" id="sgn-terms"${termsAccepted() ? " checked" : ""}><span>I have read and agree to the <button class="terms-link" id="sgn-terms-open" type="button">Terms &amp; Disclaimer</button>. I understand DiamondEdge is for entertainment and information only, is not financial, investment or betting advice, and that I am solely responsible for any decision I make. 21+ where applicable.</span></label>
+          <div class="sgn-legal">Play responsibly. In the US, call or text 1-800-GAMBLER for free, confidential support.</div>
         </div>`;
       bindClick("sgn-close", () => { if (isSignedIn()) { accountMode = "menu"; renderAccount(); } else switchTab("today"); });
-      view.querySelectorAll(".sgn-btn").forEach((b: any) => (b.onclick = () => {
+      bindClick("sgn-terms-open", () => openTermsSheet());
+      // Nothing creates an account until the box is ticked. The prompt is inline rather than
+      // a blocking alert, and the checkbox is the thing that gets pointed at.
+      const gate = (next: () => void) => {
+        const box = $("sgn-terms");
+        if (box && !box.checked) {
+          const lab = box.closest(".terms-check");
+          if (lab) { lab.classList.add("needs"); setTimeout(() => lab.classList.remove("needs"), 1400); }
+          toast("Please agree to the terms to continue");
+          return;
+        }
+        acceptTerms();
+        next();
+      };
+      view.querySelectorAll(".sgn-btn").forEach((b: any) => (b.onclick = () => gate(() => {
         // OAUTH WIRE-IN POINT (per provider): replace mockSignIn with the real provider flow,
         // then persist the returned profile via setAccount and confirm entitlement server-side.
         mockSignIn(b.dataset.prov);
         onSignedIn();
-      }));
+      })));
       const form = $("sgn-form");
       if (form) form.onsubmit = (e: any) => {
         e.preventDefault();
-        const mail = ($("sgn-mail") && $("sgn-mail").value || "").trim();
-        // EMAIL AUTH WIRE-IN POINT: send a magic link / OTP here; on verify, setAccount(...).
-        mockSignIn("email", mail || undefined);
-        onSignedIn();
+        gate(() => {
+          const mail = ($("sgn-mail") && $("sgn-mail").value || "").trim();
+          // EMAIL AUTH WIRE-IN POINT: send a magic link / OTP here; on verify, setAccount(...).
+          mockSignIn("email", mail || undefined);
+          onSignedIn();
+        });
       };
     }
     // Post-sign-in: refresh header avatar, re-render surfaces that show account/pick state,
@@ -10964,11 +11155,15 @@ export default function Home() {
           <button class="sub-cta" id="sub-go">${payMethod === "apple" ? " Pay — Subscribe" : payMethod === "gpay" ? "Subscribe with Google Pay" : payMethod === "paypal" ? "Subscribe with PayPal" : "Subscribe — $9.99/mo"}</button>
           <button class="sub-skip" id="sub-skip">Not now</button>
           <div class="sub-honest">Premium unlocks the pick side, line, price and the full reasoning on every game.</div>
+          ${termsMini("sub-terms")}
         </div>`;
       view.querySelectorAll(".pay-m").forEach((b: any) => (b.onclick = () => { payMethod = b.dataset.pm; renderSubscribe(); }));
       bindClick("sub-close", () => { accountMode = "menu"; renderAccount(); });
       bindClick("sub-skip", () => { accountMode = "menu"; renderAccount(); });
-      bindClick("sub-go", () => {
+      bindClick("sub-terms", () => openTermsSheet());
+      // THE PURCHASE STEP REQUIRES THE ACKNOWLEDGMENT. If it is not already on file the full
+      // text opens with the accept box, and the charge only proceeds after it is ticked.
+      bindClick("sub-go", () => requireTerms(() => {
         // STRIPE / APPLE PAY / PAYPAL WIRE-IN POINT: run the selected gateway here. On a
         // confirmed charge (webhook/callback), set the entitlement — mirror server-side.
         setPremium(true);
@@ -10985,7 +11180,7 @@ export default function Home() {
           renderToday();
           renderAccount();
         }, REDUCE ? 300 : 1600);
-      });
+      }));
     }
 
     // ===================== HEADER / SHELL =====================
@@ -11378,6 +11573,113 @@ export default function Home() {
     // Feed: Supabase slate_snapshots key 'research_roadmap' (fresh) → bundled static
     // /research_roadmap.json (fallback) → background self-heal (same recipe as loadBeta).
     let roadmapData: any = null;
+    /* ═══════════════ THE PAPER LIBRARY ═══════════════
+       A content pipeline is producing a real corpus — ~15–20 short papers in academic form
+       (abstract / methods / results / discussion), in four categories (Architecture,
+       Methodology, Market Science, Explorations) plus a flagship overview, "The DiamondEdge
+       System". It arrives either as its own `papers.json` or as a `papers` section on the
+       research payload, whichever the pipeline settles on.
+
+       READ BOTH, REQUIRE NEITHER. Until the corpus lands the Research page renders exactly
+       what it renders today from the roadmap; the moment papers appear the library becomes
+       the page and the roadmap items drop to "Working notes" beneath it. Nothing about this
+       load path can fail loudly: a missing file, a malformed array or an empty list all
+       resolve to "no papers yet". */
+    let papersData: any = null, papersTried = false;
+    async function loadPapers() {
+      if (papersData || papersTried) return papersData;
+      papersTried = true;
+      // 1. the roadmap payload's own section, if the pipeline chose to ride along
+      const inline = roadmapData && (roadmapData.papers || (roadmapData.research && roadmapData.research.papers));
+      if (inline && Array.isArray(inline.papers || inline)) { papersData = inline.papers ? inline : { papers: inline }; return papersData; }
+      // 2. the Supabase key, then the bundled file
+      try {
+        const sb: any = await Promise.race([snap("research_papers"), new Promise((r) => setTimeout(() => r(null), 3500))]);
+        if (sb && Array.isArray(sb.papers || sb)) { papersData = (sb as any).papers ? sb : { papers: sb }; return papersData; }
+      } catch {}
+      try {
+        const r = await fetch(`/papers.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "no-cache" });
+        if (r.ok) {
+          const j = await r.json();
+          if (j && Array.isArray(j.papers || j)) { papersData = j.papers ? j : { papers: j }; return papersData; }
+        }
+      } catch {}
+      return null;
+    }
+    const PAPER_CATS = ["Architecture", "Methodology", "Market Science", "Explorations"];
+    function normPaper(x: any) {
+      if (!x || typeof x !== "object") return null;
+      const title = String(x.title || "").trim();
+      if (!title) return null;
+      const secOf = (k: string) => {
+        const v = x[k];
+        if (typeof v === "string") return v.trim();
+        if (Array.isArray(v)) return v.filter((q) => typeof q === "string").join("\n\n");
+        return "";
+      };
+      return {
+        id: String(x.id || title).slice(0, 80),
+        title,
+        cat: String(x.category || x.cat || "").trim(),
+        flagship: x.flagship === true || x.is_flagship === true,
+        authors: String(x.authors || "KytePush Research").trim(),
+        date: String(x.date || x.published || "").slice(0, 10),
+        abstract: secOf("abstract") || String(x.summary || "").trim(),
+        sections: [
+          ["Methods", secOf("methods") || secOf("method")],
+          ["Results", secOf("results")],
+          ["Discussion", secOf("discussion") || secOf("conclusion")],
+        ].filter((r) => r[1]),
+        finding: String(x.finding || x.headline_result || "").trim(),
+        tags: (Array.isArray(x.tags) ? x.tags : []).filter((t: any) => typeof t === "string").slice(0, 4),
+      };
+    }
+    function allPapers() {
+      const raw = papersData && (papersData.papers || papersData);
+      return (Array.isArray(raw) ? raw : []).map(normPaper).filter(Boolean) as any[];
+    }
+    /* A PAPER OPENS INTO A READING VIEW — not a modal of chips, a page of prose. Serif body,
+       a measure capped near 68 characters, real section headings, and the abstract set apart
+       as the lede. This is the one surface in the app that is allowed to look like a journal,
+       because looking like a journal IS the argument it is making. */
+    function openPaper(id: string) {
+      const pp = allPapers().find((x: any) => x.id === id);
+      if (!pp) return;
+      detail = detailWithGameReturn({ _paper: true });
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = `
+        <div class="gamepage paperpage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(pp.title)}">
+          <div class="gp-head">
+            <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <span class="gp-brand-tx">KytePush Research</span>
+            <div class="hspacer"></div>
+          </div>
+          <div class="gp-body" id="gp-body">
+            <article class="paper">
+              ${pp.cat ? `<div class="pp-cat">${esc(pp.cat)}</div>` : ""}
+              <h1 class="pp-title">${esc(pp.title)}</h1>
+              <div class="pp-byline">${esc(pp.authors)}${pp.date ? ` · ${esc(stratDateTxt(pp.date) || pp.date)}` : ""}</div>
+              ${pp.abstract ? `<div class="pp-abstract"><span class="pp-seck">Abstract</span><p>${esc(pp.abstract)}</p></div>` : ""}
+              ${pp.sections.map((sec: any) => `<section class="pp-sec"><h2>${esc(sec[0])}</h2>${String(sec[1]).split(/\n{2,}/).map((q: string) => `<p>${esc(q.trim())}</p>`).join("")}</section>`).join("")}
+              ${pp.tags.length ? `<div class="pp-tags">${pp.tags.map((t: string) => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+            </article>
+          </div>
+        </div>`;
+      document.body.classList.add("sheet-open");
+      requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
+      bindClick("gp-back", () => closeDetail());
+      bindSwipeBack($("gamepage"));
+    }
+    function paperCard(pp: any, big = false) {
+      const abs = pp.abstract ? String(pp.abstract).slice(0, big ? 320 : 150) : "";
+      return `<button class="papercard${big ? " flagship" : ""}" data-paper="${esc(pp.id)}">
+        ${pp.cat ? `<span class="pc-cat">${esc(pp.cat)}</span>` : ""}
+        <span class="pc-title">${esc(pp.title)}</span>
+        ${abs ? `<span class="pc-abs">${esc(abs)}${pp.abstract.length > abs.length ? "…" : ""}</span>` : ""}
+        <span class="pc-foot">${esc(pp.authors)}${pp.date ? ` · ${esc(stratDateTxt(pp.date) || pp.date)}` : ""}<em>Read →</em></span>
+      </button>`;
+    }
     async function loadRoadmap() {
       if (roadmapData) return roadmapData;
       let fresh: any = null;
@@ -11558,6 +11860,13 @@ export default function Home() {
         queued.length ? `<span class="lab-count queued">${queued.length} pre-registered</span>` : "",
         nGrave ? `<span class="lab-count grave">${nGrave} nulls published</span>` : "",
       ].filter(Boolean).join("");
+      await loadPapers().catch(() => null);
+      const papers = allPapers();
+      const flagship = papers.find((x: any) => x.flagship) || null;
+      const rest = papers.filter((x: any) => x !== flagship);
+      const byCat = PAPER_CATS.map((c) => [c, rest.filter((x: any) => x.cat === c)])
+        .concat([["Other", rest.filter((x: any) => PAPER_CATS.indexOf(x.cat) < 0)]] as any)
+        .filter((r: any) => r[1].length);
       const upd = d.generated_utc ? new Date(d.generated_utc).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
       const stale0 = (() => { const m = labAgoMin(d.generated_utc); return m != null && m >= 120; })();
       const fresh = d.generated_utc
@@ -11587,13 +11896,41 @@ export default function Home() {
                by status, and the null results published rather than buried. The one thing
                that changes about the nulls is their FRAMING — "the graveyard" was an
                apology; "Published null results" is a credential. Not one card is dropped. -->
-          <header class="ix-masthead labmast">
-            <div class="ix-eyebrow">DiamondEdge Research</div>
-            <h2 class="ix-mast-h">A research programme in sports prediction</h2>
-            <p class="ix-mast-sub">We build and test predictive systems the way a lab does: one falsifiable claim at a time, pre-registered against a holdout, and published whether or not it works. Every study below is a real experiment on real slates, and every result — including the ones that failed — is on this page.</p>
+          <!-- ══════════════ KYTEPUSH RESEARCH — A LAB SITE IN MINIATURE ══════════════
+               Leon: "make it even MORE academia focused… giving people confidence in the
+               engines… tons of credit to KytePush technology using the latest cutting-edge
+               AI… tons of additional papers and details explaining what sets us apart."
+
+               This page is deliberately a DIFFERENT REGISTER from the rest of the app: a
+               serif display face, a journal masthead with a rule under it, an ISSN-style
+               identity line. Everywhere else the product speaks in the app's sans; here it
+               speaks as a lab, because the argument this surface is making is "there is real
+               science behind the thing you are being asked to pay for", and register is half
+               of that argument.
+
+               THE ORDER IS A JOURNAL'S ORDER: masthead → the flagship paper → the library by
+               category → the null-results credential → working notes → the archive. -->
+          <header class="labmast">
+            <div class="labmast-id">KytePush Research</div>
+            <h2 class="labmast-h">The lab behind DiamondEdge</h2>
+            <p class="labmast-sub">A working research group applying cutting-edge machine learning to the prediction of live sporting events. We publish our methods, our architecture and our failures — because a programme that reports only its successes has produced no evidence at all.</p>
+            <div class="labmast-rule" aria-hidden="true"></div>
             ${chips ? `<div class="lab-counts">${chips}</div>` : ""}
             ${fresh}
           </header>
+          ${flagship ? `<section class="lab-flag">
+            <div class="lab-sect-head"><span class="lab-sect-k">Featured paper</span></div>
+            ${paperCard(flagship, true)}
+          </section>` : ""}
+          ${byCat.length ? `<section class="lab-lib">
+            <div class="lab-sect-head"><span class="lab-sect-k">The library</span><span class="lab-sect-n">${papers.length}</span></div>
+            ${byCat.map((row: any) => `<div class="lib-cat"><h3 class="lib-cat-k">${esc(row[0])}</h3><div class="lib-grid">${row[1].map((x: any) => paperCard(x)).join("")}</div></div>`).join("")}
+          </section>` : ""}
+          <!-- THE CREDIBILITY WEAPON, GIVEN ITS OWN BLOCK RATHER THAN A FOLD LABEL -->
+          <section class="lab-nulls">
+            <div class="lab-nulls-k">We publish our null results</div>
+            <p>${nGrave ? `<b>${nGrave}</b> of the hypotheses below were rejected by our own evaluation and are published in full, with the numbers that killed them.` : `Every hypothesis this programme rejects is published in full, with the numbers that killed it.`} Anyone can show you their winners. The nulls are what tell you what the winners are worth.</p>
+          </section>
           <!-- THE INDEX PAGE IS AN INDEX. Leon: "a short mission statement, then the
                studies as a scannable list… no walls of methodology on the index page; depth
                lives one tap in." The four-point protocol and the full methods paragraph are
@@ -11608,18 +11945,27 @@ export default function Home() {
               <span><b>Publication</b><i>Every result reported — confirmations and nulls alike.</i></span>
             </div>`)}
           ${items.length ? "" : `<div class="state"><div class="big">No studies indexed yet</div><div class="sm">The index fills in as studies open.</div></div>`}
+          <div class="lab-sect-head lab-notes-k"><span class="lab-sect-k">Working notes &amp; ongoing studies</span></div>
           ${labSection("Studies in progress", "Under active construction or evaluation — each with its protocol, its window and its current read.", fire, "fire")}
           ${labSection("In production", "Passed holdout evaluation and now serving live decisions, each with the result that earned it.", shipped, "shipped", false)}
           ${labSection("Data collection", "Awaiting sample. These are accumulating the observations their design requires before any test is meaningful.", accruing, "accruing", false)}
           ${labSection("Pre-registered", "Designed and queued. The hypothesis and the evaluation are fixed before the data is touched.", queued, "queued", false)}
           ${labSection("Published null results", "Hypotheses our own evaluation rejected. Publishing them is the point: a programme that only reports its winners has no evidence at all, and these are the studies that tell you what the confirmations are worth.", grave, "grave", false)}
           ${charts}
+          <!-- WHERE THE OTHER MODELS LIVE NOW. Leon: "we no longer need all the other
+               models we have tested before, though they can be deep in the research tab as
+               other variants." Every alternative selector we have run — champion, the v4
+               grid, the simulator, the expanded band, the spread stream — with its graded
+               outcome, framed as what it is: variants we evaluated and did not ship. -->
+          ${betaData ? lazyFold("lab-sect lab-fold", `<div class="lab-sect-head"><span class="lab-sect-k">Model variants evaluated</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
+            () => `<p class="lab-sect-sub">Alternative selectors run against the same slates as the production engine. Each is reported with the record it earned; none of them is the product.</p>${strategyRecordSection(betaData)}`) : ""}
           ${lazyFold("lab-sect lab-fold", `<div class="lab-sect-head"><span class="lab-sect-k">Measurement notes</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
             () => `<div class="lab-measure">${deskProfileBlock()}${patternsSection()}</div>`)}
           ${upd ? `<div class="refnote">Index updated ${esc(upd)} · study status changes as evaluations complete.</div>` : ""}
         </div>`;
       // Freshness heartbeat: one shared 60s interval, re-used across re-renders (data-ts is
       // read from the DOM each tick, so a self-healed payload swap keeps it honest).
+      view.querySelectorAll("[data-paper]").forEach((b: any) => (b.onclick = () => openPaper(b.dataset.paper)));
       if (!labFreshTimer) labFreshTimer = setInterval(() => { try { tickLabFresh(); } catch {} }, 60000);
     }
 
@@ -11976,10 +12322,21 @@ export default function Home() {
       let run = 0;
       return uniq.map((r) => ({ k: r.k, u: (run += r.u) }));
     }
+    /* THE CURVE HAS TO SELL. Leon: "the graph isn't that compelling."  The first cut was a
+       96px sparkline in result-green — technically correct, visually a footnote. This one is
+       built the way a fintech growth chart is built, because that is the genre the reader
+       already knows how to be impressed by:
+         · TALLER (150 units of viewBox, ~132px painted) so the shape has somewhere to go
+         · the BRAND gold as the line colour, not the win/loss green — this is the product's
+           growth, and green is already spoken for by individual results
+         · a two-stop gradient fill that fades to nothing, so the area reads as volume
+         · the PEAK annotated in place, and the current value called out at the end dot
+         · a draw-in animation on first paint (stroke-dashoffset), which is the single most
+           persuasive 700ms in the app — and which prefers-reduced-motion turns off */
     function roiCurveSvg(sinceISO: string) {
       const pts = cumulativeSeries(sinceISO);
       if (pts.length < 2) return "";
-      const w = 320, h = 96, padX = 4, padT = 10, padB = 10;
+      const w = 320, h = 150, padX = 6, padT = 22, padB = 16;
       const vals = pts.map((p) => p.u);
       const hi = Math.max(0, ...vals), lo = Math.min(0, ...vals);
       const span = hi - lo || 1;
@@ -11990,15 +12347,25 @@ export default function Home() {
       const last = pts[pts.length - 1].u;
       const up = last >= 0;
       const zeroY = Y(0).toFixed(1);
+      const lastX = X(pts.length - 1), lastY = Y(last);
+      // the peak, annotated in place — the one number on the chart worth reading off it
+      let pi = 0; pts.forEach((p, i) => { if (p.u > pts[pi].u) pi = i; });
+      const showPeak = pts[pi].u > 0 && pi < pts.length - 1 && Math.abs(X(pi) - lastX) > 46;
       return `<svg class="roicurve ${up ? "up" : "down"}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Cumulative net units since ${esc(sinceISO)}: ${last >= 0 ? "up" : "down"} ${Math.abs(last).toFixed(2)} units">
-        <defs><linearGradient id="roiFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="currentColor" stop-opacity=".26"/>
-          <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
-        </linearGradient></defs>
+        <defs>
+          <linearGradient id="roiFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="currentColor" stop-opacity=".34"/>
+            <stop offset="62%" stop-color="currentColor" stop-opacity=".08"/>
+            <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
         ${lo < 0 && hi > 0 ? `<line class="roi-zero" x1="0" y1="${zeroY}" x2="${w}" y2="${zeroY}"/>` : ""}
         <path class="roi-area" d="${area}" fill="url(#roiFill)"/>
-        <path class="roi-line" d="${line}"/>
-        <circle class="roi-dot" cx="${X(pts.length - 1).toFixed(1)}" cy="${Y(last).toFixed(1)}" r="3.6"/>
+        <path class="roi-line" d="${line}" pathLength="1"/>
+        ${showPeak ? `<g class="roi-peak"><circle cx="${X(pi).toFixed(1)}" cy="${Y(pts[pi].u).toFixed(1)}" r="2.6"/><text x="${X(pi).toFixed(1)}" y="${(Y(pts[pi].u) - 9).toFixed(1)}" text-anchor="middle">+${pts[pi].u.toFixed(1)}u</text></g>` : ""}
+        <circle class="roi-halo" cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="8"/>
+        <circle class="roi-dot" cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="4.2"/>
+        <text class="roi-now" x="${Math.min(w - 6, lastX + 8).toFixed(1)}" y="${Math.max(14, lastY - 11).toFixed(1)}" text-anchor="end">${last >= 0 ? "+" : ""}${last.toFixed(1)}u</text>
       </svg>`;
     }
     /* A REAL CALENDAR: fourteen days placed in their true weekday columns, so the grid has
@@ -12010,8 +12377,7 @@ export default function Home() {
       const first = new Date(rows[0].k + "T12:00:00");
       const lead = isNaN(first.getTime()) ? 0 : first.getDay();
       const DOW = ["S", "M", "T", "W", "T", "F", "S"];
-      const head = DOW.map((x, i) => `<span class="cal-dow" aria-hidden="true">${x}${i}</span>`).join("")
-        .replace(/([SMTWF])(\d)/g, "$1");
+      const head = DOW.map((x) => `<span class="cal-dow" aria-hidden="true">${x}</span>`).join("");
       const blanks = Array.from({ length: lead }, () => `<span class="cal-cell blank" aria-hidden="true"></span>`).join("");
       const cells = rows.map((r) => {
         const isToday = r.k === today;
@@ -12126,12 +12492,18 @@ export default function Home() {
             <div class="dp-section-k">Key insights</div>
             <!-- All three build on first open — together they were ~150KB of the Desk's
                  203KB, rendered on every visit for content behind a closed disclosure. -->
-            ${lazyFold("dp-more", `<span>The daily strategy ledger</span><span class="sgc-caret" aria-hidden="true">›</span>`,
-              () => `<div class="dp-more-body">${betaData ? strategyRecordSection(betaData) : `<div class="state"><div class="sm">Strategy records load with the pick ledger.</div></div>`}</div>`)}
             ${lazyFold("dp-more", `<span>The competition between them</span><span class="sgc-caret" aria-hidden="true">›</span>`,
               () => `<div class="dp-more-body">${deskRecapSection()}${weeklyRaceSection()}${rivalriesSection()}</div>`)}
             <p class="dp-note"><b>How the records work.</b> Each analyst is measured on the calls they filed. DiamondEdge is measured on the picks it published. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
           </div>
+
+          <!-- ONE ASK, AT THE FOOT OF THE SELL. A landing page earns its CTA by the time the
+               reader reaches it; putting a second one higher up would interrupt the proof. -->
+          ${entitled() ? "" : `<section class="dp-cta">
+            <div class="dp-cta-h">Get every pick, the moment it's published.</div>
+            <div class="dp-cta-s">The record on this page is public. The calls behind it are Premium.</div>
+            <button class="acct-cta" id="dp-premium">Go Premium — $9.99/month</button>
+          </section>`}
         </section>`;
       bindDeskTaps();
       v.querySelectorAll(".rostcard").forEach((el: any) => {
@@ -12141,6 +12513,7 @@ export default function Home() {
       // this button, and the 14-day widget itself.
       bindClick("dp-torecord", () => switchTab("results"));
       bindClick("dp-toresearch", () => switchTab("research"));
+      bindClick("dp-premium", () => openUnlock(), { optional: "hidden for premium members" });
       const w14 = v.querySelector(".dp-14") as any;
       if (w14) {
         w14.setAttribute("role", "button");
@@ -12157,7 +12530,10 @@ export default function Home() {
           <div class="hbar">
             <button class="brand" id="brand" aria-label="Go to games">
               <div class="diamond"></div>
-              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">News · Games · Record</div></div>
+              <!-- the "News · Games · Record" subtitle row is gone: it named the tab bar
+                   sitting at the bottom of the same screen, and it cost the masthead a
+                   whole line of height on every page. -->
+              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1></div>
             </button>
             <div class="hspacer"></div>
             <div class="navright"></div>

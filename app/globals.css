@@ -146,6 +146,12 @@
   --disp:var(--font-disp),'Outfit',system-ui,sans-serif;
   --sans:var(--font-sans),'Figtree',system-ui,sans-serif;
   --serif:var(--font-disp),'Outfit',system-ui,sans-serif;
+  /* THE RESEARCH REGISTER. `--serif` above is an alias for the display SANS (a legacy of the
+     first theme), so it cannot give the Research page the scholarly voice that page is
+     making its argument with. This is a real serif stack — the faces that ship on Apple and
+     Windows, no webfont, no extra bytes — and it is used ONLY on Research and inside a
+     paper. Everywhere else the app stays sans, which is what makes the switch mean anything. */
+  --research-serif:'Iowan Old Style','Charter','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
 
   /* ── SPACE / RADII / MOTION ── */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px;
@@ -256,15 +262,22 @@ button{font-family:inherit}
    own Live section, animated constantly in the reader's peripheral vision, and
    was the single busiest element on a first screen that Leon said carried far
    too much. The scores live on the board, one tap away. */
+/* ══ THE MASTHEAD IS CHROME, AND IT NOW LOOKS LIKE CHROME ══
+   Leon: "give the top bar its own background colour so it stands apart from the page."
+   It was near-white on a near-white page, which made it a floating wordmark rather than a
+   bar. It takes a deep ink surface now — the inverse of the page — so the two bars (this
+   and the glass capsule) bracket the content as chrome, and the gold mark finally has
+   something to sit against. The wordmark inverts with it; nothing else on the page changes. */
 header#app-header{position:sticky;top:0;z-index:65;padding-top:var(--sat);
-  background:linear-gradient(180deg,rgba(var(--paperc),.96),rgba(var(--paperc),.9));
-  -webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
-  box-shadow:0 1px 0 var(--chrome-line),0 10px 26px -24px var(--sh5);transition:box-shadow .3s ease,background .3s ease}
+  background:linear-gradient(180deg,#131a28,#0d1420);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 22px -18px rgba(13,20,32,.6);
+  transition:box-shadow .3s ease}
 /* SCROLLED ⇒ OPAQUE. At rest there is nothing behind the masthead and the frosted
    translucency is just a nice surface; once the board is running under it, .82 alpha plus
    a blur is not frosting, it is a team abbreviation faintly legible through the wordmark.
    A sticky bar that lets content read through it is worse than no sticky bar. */
-header#app-header.scrolled{background:var(--paper);box-shadow:0 1px 0 var(--line),0 6px 18px var(--sh1)}
+header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px -14px rgba(13,20,32,.5)}
 /* ══════════════ THE MASTHEAD — CENTRED, iOS TITLE-BAR PROPORTIONS ══════════════
    Leon: "let's make the DiamondEdge logo take up 50% of the vertical height and centre it."
 
@@ -290,8 +303,10 @@ header#app-header.scrolled{background:var(--paper);box-shadow:0 1px 0 var(--line
 .diamond{width:var(--brand-mark);height:var(--brand-mark);transform:rotate(45deg);border-radius:calc(var(--brand-mark) * .28);background:var(--brandgrad);position:relative;
   box-shadow:0 1px 2px rgba(140,92,6,.34),0 8px 18px -10px rgba(var(--goldc),.9)}
 .diamond::after{content:"";position:absolute;inset:26%;border:2px solid rgba(255,255,255,.92);border-radius:2px}
-.brand h1{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:.055em;text-transform:uppercase;line-height:1;color:var(--ink)}
-.brand h1 b{color:var(--gold)}
+.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.055em;text-transform:uppercase;line-height:1;color:#f2f6fc}
+.brand h1 b{color:#f0c14e}
+.brand:active{transform:scale(.96)}
+.brand{transition:transform .16s var(--ease-out)}
 .brand .tag{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-top:3px}
 /* the spacer only does a job on the game page's own header, which is still a left/right
    layout (back · brand · share). In the masthead the brand is centred and the spacer is inert. */
@@ -2364,28 +2379,46 @@ details.more .more-body{padding-top:12px}
 .de-mini-pick.over .de-mini-word{color:var(--over)}
 .de-mini-pick.under .de-mini-word{color:var(--under)}
 /* THE BRAND SLOT. Fixed footprint whether or not it is filled, so the phrase never shifts. */
-.de-mini-mark{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
-  border-radius:999px;padding:3px 8px 3px 7px;
-  background:rgba(var(--tintc),.05);box-shadow:inset 0 0 0 1px var(--line3)}
+/* THE BRAND LOCKUP. A gold chip carrying the diamond AND the letters DE, so the unit reads
+   as OUR call rather than as a decorated number. The gold is the real brand gradient on the
+   glyph and deep bronze ink on the letters — gold text at 9px would not survive the contrast
+   ladder, and the brand splitting that way is already the system's rule (see --gold). */
+.de-mini-mark{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;
+  border-radius:999px;padding:3px 8px 3px 6px;
+  background:linear-gradient(180deg,rgba(var(--goldc),.16),rgba(var(--goldc),.07));
+  box-shadow:inset 0 0 0 1px rgba(var(--goldc),.30)}
 .de-mini-logo{font-style:normal;flex-shrink:0;font-size:13px;line-height:1;
   background:var(--brandgrad);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 1px 1px var(--sh2))}
+.de-mini-de{font-style:normal;flex-shrink:0;font-family:var(--disp);font-weight:850;font-size:10px;
+  letter-spacing:.06em;line-height:1;color:var(--golddeep)}
 /* the direction mark now REINFORCES the word rather than replacing it: a solid triangle,
    apex up for over and down for under, so the call still survives greyscale and every kind
    of colour blindness even if the word is missed */
 .de-mini-arrow{display:block;flex-shrink:0;width:10px;height:8px;background:currentColor;color:var(--ink3);
   clip-path:polygon(50% 0,100% 100%,0 100%)}
 .de-mini-pick.over .de-mini-arrow{color:var(--over)}
-.de-mini-pick.over .de-mini-mark{background:rgba(var(--greenc),.09);box-shadow:inset 0 0 0 1px rgba(var(--greenc),.2)}
+/* the lockup keeps its GOLD in every direction — it identifies the publisher, not the
+   side; the word and the triangle beside it are what carry over/under */
 .de-mini-pick.under .de-mini-arrow{color:var(--under);clip-path:polygon(0 0,100% 0,50% 100%)}
-.de-mini-pick.under .de-mini-mark{background:rgba(var(--redc),.075);box-shadow:inset 0 0 0 1px rgba(var(--redc),.18)}
 /* REDACTION IS CRISP, NEVER A BLUR. The word's slot becomes a hatched bar the exact width a
    word would occupy — so a locked board and an unlocked board have identical geometry, and
    nothing about the real value is in the DOM to un-blur. */
 .de-mini-lockdots{display:block;flex-shrink:0;width:11px;height:5px;border-radius:999px;background:rgba(var(--goldc),.42)}
 .de-mini-redact{display:inline-block;width:44px;height:11px;border-radius:3px;vertical-align:-1px;
   background:repeating-linear-gradient(115deg,rgba(var(--goldc),.30) 0 3px,rgba(var(--goldc),.10) 3px 6px)}
-.de-mini-pick.locked .de-mini-mark{background:rgba(var(--goldc),.08);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.22)}
+/* ── THE OUTCOME AS A CORNER SEAL ──
+   Leon: "the CHECK and X can be a bit smaller, maybe top right of the pick somehow."
+   It sits on the pick's top-right corner, overlapping it slightly, at 17px — small enough
+   that the call is still the hero, and placed like something applied AFTER the fact, which
+   is what a graded result is. `has-seal` reserves the room so it never overlaps the word. */
+.de-mini-pick{position:relative}
+.de-mini-pick.has-seal{padding-right:7px}
+.de-mini-pick .restamp.rs-mini{position:absolute;top:-9px;right:-7px;width:17px;height:17px;
+  box-shadow:0 1px 3px var(--sh3),0 0 0 2px var(--paper)}
+.de-mini-pick .restamp.rs-mini .rs-g{width:17px;height:17px}
+.de-mini-pick .restamp.rs-mini .rs-g svg{width:10px;height:10px;stroke-width:3.6}
+.tl-verdict .tv-callrow{padding-top:5px}
 /* NO PICK ⇒ the market number alone, quiet, and no brand slot beside it. */
 .de-mini-pick.nopick .de-mini-ou{color:var(--ink4);font-weight:700}
 .de-mini-pick.nopick .de-mini-ou b{color:var(--ink2)}
@@ -2490,12 +2523,12 @@ details.more .more-body{padding-top:12px}
    anything in the page — no matter what a future surface does with z-index. The layer
    passes pointer events through so an empty layer never eats a tap, and it sits BELOW the
    dock on purpose: the bottom bar stays visible and usable over every modal. */
-#sheet-layer{position:fixed;inset:0;z-index:450;pointer-events:none}
+#sheet-layer{position:fixed;inset:0;z-index:470;pointer-events:none}  /* ABOVE the tab bar (460) — a presented sheet owns the screen; see the layering note by .dockwrap */
 #sheet-layer>*{pointer-events:auto}
 #sheet-layer:empty{display:none}
 .de-toast{z-index:900}
 /* the dock is always on screen now, so every scrolling modal body must clear it */
-#sheet-layer .sh-body,#sheet-layer .gp-body{padding-bottom:calc(var(--sab) + 88px)}
+#sheet-layer .sh-body,#sheet-layer .gp-body{padding-bottom:calc(var(--sab) + 34px)}  /* the bar is hidden under a sheet, so only the safe area needs clearing */
 .sheet.article-story{background:#070a13;color:#f8fbff;box-shadow:0 -18px 70px rgba(0,0,0,.55)}
 .sheet.article-story .sh-body{max-height:calc(100dvh - 250px);overflow:auto}
 .article-story .art-body p{color:rgba(246,250,255,.88)}
@@ -3189,7 +3222,9 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
   display:flex;align-items:stretch;justify-content:space-around;gap:0;
   width:100%;max-width:520px;min-height:var(--dock-h);padding:0 5px;
   border-radius:calc(var(--dock-h) / 2);
-  background:linear-gradient(180deg,rgba(255,255,255,.50),rgba(244,248,253,.34));
+  /* a whisper of the brand's warmth in the material, so the capsule reads as chrome of the
+     same family as the masthead rather than as a neutral pane of frosted glass */
+  background:linear-gradient(180deg,rgba(255,252,244,.54),rgba(247,244,236,.36));
   -webkit-backdrop-filter:saturate(200%) brightness(106%) blur(30px);
   backdrop-filter:saturate(200%) brightness(106%) blur(30px);
   border:0;
@@ -3310,12 +3345,30 @@ body.stories-on .dock-item.main.on .dock-ic{color:#3a2a05}
 /* nothing may sit under the capsule at the bottom of a scroll: its full footprint is the
    bar height + its bottom inset + a breath of clearance */
 main{padding-bottom:calc(var(--sab) + 54px + 34px) !important}
-/* THE BAR NEVER LEAVES (Leon: "let's actually leave the bottom bar there all the time").
-   Sheets and the game page render into #sheet-layer at z-450; the bar is z-460 above it and
-   stays interactive over every modal. */
+/* ══════════ SHEETS GO OVER THE BAR — the iOS rule, and a real bug until now ══════════
+   Leon: "when you have a pop-up from the bottom I can still switch tabs on the bottom… if we
+   have pop-up tabs it should go over the bottom tab bar."
+
+   Round 1 deliberately put the capsule ABOVE the sheet layer (z-460 vs z-450) so the bar
+   would "never leave". That is not how a sheet works anywhere else: a presented sheet owns
+   the screen, slides OVER the tab bar, and the tabs are neither visible through it nor
+   tappable until it is dismissed. As shipped you could open a game page and then tab away
+   underneath it, leaving a sheet floating over a surface it had nothing to do with.
+
+   THE INVERSION, with belt and braces:
+     · #sheet-layer goes to z-470, above the capsule's 460
+     · the scrim covers the FULL viewport, safe areas included, so it covers the bar too
+     · and the bar is independently made inert while any sheet is mounted — pointer-events
+       none plus aria-hidden — so a future transparent-scrim design cannot regress this by
+       accident. Two mechanisms, because "the scrim will catch it" is exactly the assumption
+       that produced the bug.
+   Dismissal (grabber, scrim tap, Esc, back) removes body.sheet-open and the bar returns. */
 .dockwrap{transition:opacity .22s ease,transform .26s var(--ease-out)}
-body.sheet-open .dockwrap{opacity:1;transform:none;pointer-events:auto}
+body.sheet-open .dockwrap{opacity:0;transform:translateY(12px);pointer-events:none}
+body.sheet-open .dock{pointer-events:none}
 @media (prefers-reduced-motion:reduce){.dockwrap{transition:none}}
+/* the scrim owns the whole viewport, bar included */
+.sheet-bg{inset:0;height:100dvh}
 
 /* ══ STICKY GAMES CHROME — THREE BANDS, THREE SURFACES ══
    Leon: "should be sticky header… the sport team row also should be a different
@@ -3508,7 +3561,8 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
    segments, tap zones, hold-to-pause, swipe, reduced-motion — is unchanged. */
 body.stories-on{overflow:hidden}
 body.stories-on header#app-header{opacity:0;pointer-events:none;transform:translateY(-8px)}
-body.stories-on .dockwrap{opacity:1;pointer-events:auto;transform:none}
+/* the stories deck is not a sheet — it is a full-screen TAB surface, and the bar stays. */
+body.stories-on:not(.sheet-open) .dockwrap{opacity:1;pointer-events:auto;transform:none}
 body.stories-on main{position:fixed;inset:0;z-index:399;width:100vw;height:100dvh;margin:0;padding:0 !important;max-width:none;overflow:hidden}
 body.stories-on #today-view{animation:none!important;transform:none!important}
 
@@ -3600,7 +3654,20 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .st-cta svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 /* news slide: the photo becomes a real inset card, not a full-bleed upscale */
 .sts-news{justify-content:center}
-.sts-photo{position:relative;z-index:2;width:100%;max-height:38vh;object-fit:cover;border-radius:var(--r-md);box-shadow:var(--e1);opacity:1}
+/* ══ THE STORY IMAGE — aspect-aware, never a beheading ══
+   Leon: "images get cut off."  A single fixed height with object-fit:cover and a centre
+   origin crops the middle band out of every landscape photo, which on a photo of a person
+   removes their head. The two classes below are applied on load from the image's own
+   aspect ratio (see storyNewsSlide):
+     .fit-tall — portrait/square, cropped with the focal point at 30% from the top, where a
+                 face sits in almost every sports wire photo
+     .fit-wide — landscape, shown WHOLE on a brand-tinted letterbox field. A wide photo
+                 complete beats a wide photo partial.
+   An ultra-wide or tiny source is removed by the loader; the gradient card is better. */
+.sts-photo{position:relative;z-index:2;width:100%;border-radius:var(--r-md);box-shadow:var(--e1);opacity:1}
+.sts-photo.fit-tall{max-height:38vh;object-fit:cover;object-position:50% 30%}
+.sts-photo.fit-wide{aspect-ratio:16/9;max-height:34vh;object-fit:contain;
+  background:linear-gradient(150deg,rgba(var(--goldc),.14),rgba(var(--rimc),.10))}
 .sts-scrim{display:none}
 .sts-newsbody{position:relative;z-index:2;display:flex;flex-direction:column;gap:12px}
 .sts-newsbody .st-cta{align-self:flex-start}
@@ -3771,9 +3838,10 @@ body.stories-on{background:#050710}
 .stories .sts-news .sts-bg::before{content:"";position:absolute;inset:72px 16px auto;height:44vh;border-radius:24px;
   background:linear-gradient(135deg,rgba(125,220,255,.18),rgba(245,190,66,.12),rgba(255,255,255,.05));
   filter:blur(26px);opacity:.72;animation:briefingGlow 5.8s ease-in-out infinite alternate}
-.stories .sts-photo{max-height:46vh;border-radius:18px;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 52px rgba(0,0,0,.38);
+.stories .sts-photo{border-radius:18px;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 52px rgba(0,0,0,.38);
   animation:briefingPhoto 7s ease-in-out infinite alternate;transform-origin:center}
-.stories .sts-photo.lowres{max-height:34vh}
+.stories .sts-photo.fit-tall{max-height:42vh}
+.stories .sts-photo.fit-wide{max-height:32vh;background:linear-gradient(150deg,rgba(246,199,69,.16),rgba(255,255,255,.05))}
 @keyframes briefingPhoto{from{transform:translateY(0) scale(1)}to{transform:translateY(-4px) scale(1.018)}}
 @keyframes briefingGlow{from{transform:translate3d(-2%,-1%,0);opacity:.55}to{transform:translate3d(2%,2%,0);opacity:.88}}
 /* every slide reads from the vertical centre of the page — a short card floating at the
@@ -5320,12 +5388,26 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .anportrait{color:var(--anc)}
 .rost-art{flex-shrink:0;line-height:0;color:var(--anc)}
 
-/* Cute analyst motion: the marks move like tiny mascots, without moving layout. */
-.anmark,.anportrait,.diamond{transform-box:fill-box;transform-origin:center;will-change:transform}
-.tsig .anmark,.dsk-cell .anmark,.sts-voice-id .anmark,.rost-art .anportrait,.anlp-hero .anportrait{
+/* Cute analyst motion: the marks move like tiny mascots, without moving layout.
+
+   `will-change:transform` USED TO BE ON EVERY MARK. A board is ~30 tiles × 4 sigils, so that
+   rule promoted 120 elements to their own compositor layers, permanently, plus a
+   drop-shadow filter on each — and a filtered layer cannot be cheaply composited. That is
+   the third cause of Leon's blank icons: under a flick the compositor is spending its
+   budget on 120 tiny animating layers and the crest decodes lose the race.
+
+   The hint now lives ONLY on the animated elements (which genuinely benefit), and the board
+   tile's own sigils opt out of both the promotion and the shadow — at 18px, inside a card
+   the reader is flicking past, neither was doing visible work. The Desk, the story slides
+   and the analyst sheet keep the full treatment, because those are surfaces you stop on. */
+.anmark,.anportrait,.diamond{transform-box:fill-box;transform-origin:center}
+.dsk-cell .anmark,.sts-voice-id .anmark,.rost-art .anportrait,.anlp-hero .anportrait{
+  will-change:transform;
   animation:var(--an-dance,an-bob) var(--an-dur,2.9s) ease-in-out infinite;
   filter:drop-shadow(0 3px 7px rgba(var(--anrgb),var(--an-glow,.18)));
 }
+/* the board tile's sigils: drawn, not animated, and never promoted */
+.tsig .anmark{will-change:auto;animation:none;filter:none}
 .an-vega .anmark,.anportrait.an-vega{--an-dance:an-vega-tick;--an-dur:2.35s}
 .an-atlas .anmark,.anportrait.an-atlas{--an-dance:an-atlas-orbit;--an-dur:3.15s;animation-delay:-.65s}
 .an-nova .anmark,.anportrait.an-nova{--an-dance:an-nova-swing;--an-dur:2.55s;animation-delay:-1.1s}
@@ -6438,13 +6520,18 @@ body{background:linear-gradient(180deg,#fcfdff 0%,#f7fbff 44%,#eef5fb 100%) fixe
 input[type=text],input[type=email],input[type=date],input[type=tel],
 .datebar.lead .datetools .calwrap input{color-scheme:light!important}
 
-header#app-header,.games-chrome,.pitcherpage .gp-bar{
+/* THE MASTHEAD IS NO LONGER PART OF THE LIGHT-CHROME SWEEP.
+   This block repainted every chrome surface near-white, and it runs ~6,200 lines AFTER the
+   masthead's own rule — so when the masthead went to deep ink (Leon: "give the top bar its
+   own background colour so it stands apart from the page") this quietly painted it back to
+   white and the wordmark rendered white-on-white. The two other surfaces still want the
+   light treatment; the masthead owns its own colour now, in one place, up top. */
+.games-chrome,.pitcherpage .gp-bar{
   background:rgba(255,255,255,.72);
   -webkit-backdrop-filter:var(--chrome-blur)!important;backdrop-filter:var(--chrome-blur)!important;
   box-shadow:0 1px 0 rgba(20,31,46,.07),0 18px 44px -34px rgba(20,31,46,.26);
 }
-header#app-header.scrolled{background:rgba(255,255,255,.86)}
-.brand,.toptabs,.recchip,.dtool,.tile,.feat,.tpk,.histpanel,.strec-l7,.strec-card,.ixc,.lab-card,.beta-card,
+.toptabs,.recchip,.dtool,.tile,.feat,.tpk,.histpanel,.strec-l7,.strec-card,.ixc,.lab-card,.beta-card,
 .sigcard,.decall,.dsk-cell,.rostcard,.callcard,.whycard,.mkt-table,.ix-fold,.future-note,.nextup{
   background-color:var(--glass-hi);
   border-color:var(--glass-brd);
@@ -6573,3 +6660,245 @@ a.acct-link{text-decoration:none}
 /* while a tab swipe is in flight `main` follows the finger — no transition, transform only */
 main.swiping{transition:none !important;will-change:transform}
 @media(prefers-reduced-motion:reduce){main.swiping{transform:none !important}}
+
+
+/* ═══════════════ THE PROOF BLOCK: A CURVE AND A CALENDAR ═══════════════
+   Leon: "the daily records become a CALENDAR widget, plus an ROI graph — make it sell
+   itself… the single most persuasive module in the app."
+
+   THE CURVE is a fintech growth chart and nothing more clever than that: a 2px line in the
+   result colour, a soft gradient fading to nothing beneath it, a hairline zero rule when the
+   series has been under water, and the current value called out in the header. It is drawn
+   from the real cumulative series, so its drawdowns are real — which is the point. A curve
+   with dips reads as a record; a smooth one reads as an illustration.
+
+   THE CALENDAR is a real calendar: weekday headers, days in their true weekday columns.
+   That framing is what makes it read as a LOG of things that happened on dates rather than
+   as a chart whose shape somebody chose. Each cell is tinted by that day's net, carries its
+   W–L, and today is ringed in its natural position. */
+/* (the first cut of .dp-curve / .roicurve lived here — an 88px green sparkline. It was
+   superseded by the full growth chart at the foot of this sheet, and left behind it fought
+   the new one on source order: `.roicurve.up{color:var(--g3)}` beat the brand gold, which
+   is why the chart shipped green for one build. One block per component.) */
+
+.dp-cal{margin-top:2px}
+.cal-dows,.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-dows{margin-bottom:5px}
+.cal-dow{text-align:center;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink4)}
+.cal-cell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  min-width:0;aspect-ratio:1/1;border-radius:11px;
+  background:rgba(var(--tintc),.045);box-shadow:inset 0 0 0 1px var(--line3)}
+.cal-cell.blank{background:none;box-shadow:none}
+.cal-d{font-family:var(--disp);font-weight:700;font-size:12px;line-height:1;color:var(--ink3);font-variant-numeric:tabular-nums}
+.cal-wl{font-style:normal;font-family:var(--mono);font-weight:800;font-size:9.5px;line-height:1;
+  color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cal-wl.dim{color:var(--ink4);opacity:.5}
+.cal-cell.up{background:rgba(var(--greenc),.13);box-shadow:inset 0 0 0 1px rgba(var(--greenc),.22)}
+.cal-cell.up .cal-d{color:var(--g1)}
+.cal-cell.up .cal-wl{color:var(--g3)}
+.cal-cell.down{background:rgba(var(--redc),.10);box-shadow:inset 0 0 0 1px rgba(var(--redc),.20)}
+.cal-cell.down .cal-d{color:var(--r1)}
+.cal-cell.down .cal-wl{color:var(--r3)}
+.cal-cell.flat{background:rgba(var(--tintc),.09)}
+/* TODAY is ringed, never recoloured — the fill channel is already carrying win/loss */
+.cal-cell.is-today{box-shadow:inset 0 0 0 2px rgba(var(--goldc),.55)}
+.cal-cell.is-today .cal-d{color:var(--golddeep)}
+@media(max-width:400px){
+  .cal-dows,.cal-grid{gap:3px}
+  .cal-cell{border-radius:9px}
+  .cal-d{font-size:11px}
+  .cal-wl{font-size:8.5px}
+}
+
+
+/* ══════════════════ KYTEPUSH RESEARCH — A DIFFERENT REGISTER ══════════════════
+   This is the only page in the app that is allowed to look like a journal. The app speaks in
+   a humanist sans; this page speaks in a serif with a masthead rule, because "there is real
+   science here" is an argument that typography makes faster than prose can. Everything else
+   — the tokens, the spacing scale, the dark/light handling — is unchanged. */
+.labmast{padding:6px 0 4px;margin-bottom:20px}
+.labmast-id{font-family:var(--research-serif);font-weight:600;font-size:12px;letter-spacing:.26em;
+  text-transform:uppercase;color:var(--gold)}
+.labmast-h{font-family:var(--research-serif);font-weight:600;font-size:34px;line-height:1.08;
+  letter-spacing:-.02em;color:var(--ink);margin:9px 0 10px}
+.labmast-sub{font-family:var(--research-serif);font-size:16.5px;line-height:1.62;color:var(--ink2);max-width:60ch}
+.labmast-rule{height:3px;margin:18px 0 14px;
+  background:linear-gradient(90deg,var(--ink) 0 42px,rgba(var(--rimc),.16) 42px)}
+@media(max-width:559px){.labmast-h{font-size:27px}.labmast-sub{font-size:15px}}
+
+/* THE FEATURED PAPER + THE LIBRARY */
+.lab-flag{margin-bottom:24px}
+.lab-lib{margin-bottom:24px}
+.lib-cat{margin-top:18px}
+.lib-cat-k{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:9px}
+.lib-grid{display:grid;grid-template-columns:1fr;gap:9px}
+@media(min-width:760px){.lib-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+.papercard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;text-align:left;cursor:pointer;
+  padding:15px 16px;border-radius:16px;background:var(--paper);border:1px solid rgba(var(--rimc),.10);box-shadow:var(--e0)}
+.papercard:active{background:var(--wash)}
+.pc-cat{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.pc-title{font-family:var(--research-serif);font-weight:600;font-size:18px;line-height:1.26;letter-spacing:-.012em;color:var(--ink)}
+.pc-abs{font-family:var(--research-serif);font-size:14px;line-height:1.58;color:var(--ink3)}
+.pc-foot{display:flex;align-items:baseline;gap:8px;width:100%;margin-top:3px;
+  font-family:var(--sans);font-size:11.5px;color:var(--ink4)}
+.pc-foot em{font-style:normal;margin-left:auto;font-weight:700;color:var(--gold)}
+.papercard.flagship{padding:22px 20px;gap:9px;
+  background:linear-gradient(158deg,rgba(var(--goldc),.10),rgba(var(--panec),.94) 58%);
+  border-color:rgba(var(--goldc),.26);box-shadow:var(--e1)}
+.papercard.flagship .pc-title{font-size:25px;line-height:1.18}
+.papercard.flagship .pc-abs{font-size:15px}
+@media(max-width:559px){.papercard.flagship .pc-title{font-size:21px}}
+
+/* THE NULL-RESULTS CREDENTIAL — its own block, not a fold label */
+.lab-nulls{margin:22px 0;padding:19px 18px;border-radius:18px;
+  background:linear-gradient(160deg,rgba(var(--slatec),.10),rgba(var(--panec),.9) 60%);
+  border:1px solid rgba(var(--rimc),.11)}
+.lab-nulls-k{font-family:var(--research-serif);font-weight:600;font-size:19px;letter-spacing:-.015em;color:var(--ink);margin-bottom:7px}
+.lab-nulls p{font-family:var(--research-serif);font-size:15px;line-height:1.62;color:var(--ink2);margin:0}
+.lab-nulls b{font-family:var(--mono);font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.lab-notes-k{margin-top:26px;padding-top:16px;border-top:1px solid var(--line3)}
+.lab-count.total{background:rgba(var(--tintc),.07);color:var(--ink2)}
+
+/* ══ A PAPER, AS A READING VIEW ══
+   Real typographic care: a capped measure, serif body, sections that breathe. */
+.paperpage .gp-body{background:var(--paper)}
+.paper{max-width:68ch;margin:0 auto;padding:6px 2px 40px}
+.pp-cat{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.pp-title{font-family:var(--research-serif);font-weight:600;font-size:31px;line-height:1.16;letter-spacing:-.022em;
+  color:var(--ink);margin:10px 0 8px}
+.pp-byline{font-family:var(--sans);font-size:13px;color:var(--ink3);padding-bottom:16px;border-bottom:1px solid var(--line3)}
+.pp-abstract{margin:18px 0;padding:16px 17px;border-radius:14px;background:var(--sunken)}
+.pp-seck{display:block;font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:7px}
+.pp-abstract p{font-family:var(--research-serif);font-size:16px;line-height:1.68;color:var(--ink);margin:0}
+.pp-sec{margin-top:24px}
+.pp-sec h2{font-family:var(--research-serif);font-weight:600;font-size:21px;letter-spacing:-.015em;color:var(--ink);margin-bottom:9px}
+.pp-sec p{font-family:var(--research-serif);font-size:16.5px;line-height:1.72;color:var(--ink2);margin:0 0 13px}
+.pp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line3)}
+.pp-tags span{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--ink3);
+  padding:4px 10px;border-radius:999px;background:rgba(var(--tintc),.06)}
+@media(max-width:559px){.pp-title{font-size:26px}.pp-sec p{font-size:16px}}
+
+
+/* ══════════════════ THE DESK AS A LANDING PAGE ══════════════════
+   Leon: "overall it should be even MORE of a sales explanation of all the amazing things the
+   product produces… the graph isn't that compelling… let's really think through this all."
+
+   The page now runs the sequence a converting landing page runs, and each block does exactly
+   one job:
+     HERO      the record, at 60px, with the window named — the claim
+     PITCH     one sentence — the promise
+     CURVE     the growth chart, brand gold, drawn in on arrival — the drama
+     CALENDAR  fourteen days you can audit — the proof you can check
+     CTA       one route to the full ledger
+     TEAM      the four engines
+     WHY       three lines, then Research
+     CTA       one premium ask
+   The curve is the piece that changed most: it was a 96px green sparkline and is now a 132px
+   gold growth chart with a gradient body, an annotated peak, a called-out current value and a
+   700ms draw-in. */
+.dp-curve{margin:0 0 18px;padding:16px 15px 10px;border-radius:20px;
+  background:linear-gradient(168deg,rgba(var(--goldc),.10),rgba(var(--panec),.92) 62%);
+  border:1px solid rgba(var(--goldc),.20);box-shadow:var(--e0)}
+.dp-curve-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 4px}
+.dpc-k{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+.dpc-v{font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.dpc-v.pos{color:var(--g3)}
+.dpc-v.neg{color:var(--r3)}
+/* THE CURVE IS THE BRAND'S COLOUR, not the win/loss green — this is the product's growth,
+   and green already means "this individual pick won" everywhere else on the site. */
+.roicurve{display:block;width:100%;height:132px;overflow:visible;color:var(--a2)}
+.roicurve.down{color:var(--r2)}
+.roicurve .roi-area{stroke:none}
+.roicurve .roi-line{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;filter:drop-shadow(0 3px 8px rgba(var(--goldc),.30))}
+.roicurve .roi-dot{fill:currentColor;stroke:var(--paper);stroke-width:2.4;vector-effect:non-scaling-stroke}
+.roicurve .roi-halo{fill:currentColor;opacity:.16}
+.roicurve .roi-zero{stroke:rgba(var(--rimc),.18);stroke-width:1;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
+.roicurve .roi-peak circle{fill:currentColor;opacity:.55}
+.roicurve .roi-peak text,.roicurve .roi-now{font-family:var(--mono);font-weight:800;fill:currentColor}
+.roicurve .roi-peak text{font-size:9px;opacity:.8}
+.roicurve .roi-now{font-size:11px}
+/* THE DRAW-IN. The single most persuasive 700ms in the app — the line writes itself once, on
+   arrival. pathLength="1" makes the dash math resolution-independent. */
+@media(prefers-reduced-motion:no-preference){
+  .roicurve .roi-line{stroke-dasharray:1;stroke-dashoffset:1;animation:roiDraw .95s var(--ease-out) .12s forwards}
+  .roicurve .roi-area,.roicurve .roi-peak,.roicurve .roi-dot,.roicurve .roi-halo,.roicurve .roi-now{
+    opacity:0;animation:roiFade .5s ease .8s forwards}
+  .roicurve .roi-halo{animation-name:roiHalo}
+}
+@keyframes roiDraw{to{stroke-dashoffset:0}}
+@keyframes roiFade{to{opacity:1}}
+@keyframes roiHalo{to{opacity:.16}}
+
+/* THE PREMIUM ASK — one, at the foot of the sell */
+.dp-cta{display:flex;flex-direction:column;align-items:center;gap:9px;margin:26px 0 4px;padding:22px 18px;
+  border-radius:22px;background:linear-gradient(150deg,rgba(var(--goldc),.16),rgba(var(--panec),.9) 62%);
+  border:1px solid rgba(var(--goldc),.28);box-shadow:var(--e1);text-align:center}
+.dp-cta-h{font-family:var(--disp);font-weight:800;font-size:22px;line-height:1.2;letter-spacing:-.025em;color:var(--ink)}
+.dp-cta-s{font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--ink2);max-width:36ch}
+.dp-cta .acct-cta{margin-top:6px;max-width:320px}
+
+
+/* ══════════════════ TERMS & DISCLAIMER — quiet, legible, complete ══════════════════
+   Legal styling: readable at a real size (this is not fine print in the pejorative sense),
+   set in the body sans, and confined to the account, signup and money flows. */
+.terms{max-width:64ch;margin:0 auto;padding:4px 2px 32px}
+.terms-lede{font-family:var(--sans);font-size:16px;line-height:1.6;font-weight:600;color:var(--ink);
+  padding-bottom:18px;border-bottom:1px solid var(--line3)}
+.terms-sec{margin-top:22px}
+.terms-sec h2{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:-.005em;color:var(--ink);margin-bottom:6px}
+.terms-sec p{font-family:var(--sans);font-size:14.5px;line-height:1.68;color:var(--ink2);margin:0}
+.terms-foot{margin-top:26px;font-family:var(--sans);font-size:12px;color:var(--ink4)}
+.terms-accept{margin-top:24px;padding:18px 16px;border-radius:16px;background:var(--sunken);
+  box-shadow:inset 0 0 0 1px var(--line3)}
+.terms-check{display:flex;align-items:flex-start;gap:10px;cursor:pointer;
+  font-family:var(--sans);font-size:13.5px;line-height:1.55;color:var(--ink2)}
+.terms-check input{flex-shrink:0;width:20px;height:20px;margin-top:1px;accent-color:var(--gold);cursor:pointer}
+.terms-check.needs{animation:termsNudge .5s ease}
+.terms-check.needs span{color:var(--red)}
+@keyframes termsNudge{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media(prefers-reduced-motion:reduce){.terms-check.needs{animation:none}}
+.terms-accept .acct-cta:disabled{opacity:.45;cursor:not-allowed}
+.sgn-check{margin:16px 2px 10px;padding:13px 14px;border-radius:14px;background:rgba(var(--tintc),.045);
+  box-shadow:inset 0 0 0 1px var(--line3)}
+/* the compact line that rides every money flow */
+.terms-mini{margin:14px 2px 0;font-family:var(--sans);font-size:11.5px;line-height:1.55;color:var(--ink4);text-align:center}
+.terms-mini.flat{text-align:left;margin-top:12px}
+.terms-link{border:0;background:none;padding:0;cursor:pointer;font:inherit;color:var(--gold);
+  font-weight:700;text-decoration:underline;text-underline-offset:2px}
+
+
+/* ══════════════ THE STORY DECK: SCROLLABLE SLIDES + HONEST TAP ZONES ══════════════
+   Leon: "slides may SCROLL vertically when content warrants… the reads-the-story click
+   targets isn't great."
+
+   SCROLL. A slide is a card that may overflow. The composition above the fold is unchanged —
+   kicker, headline, image, the call — and scrolling reveals depth beneath it rather than
+   revealing the headline. Momentum scrolling, no scrollbar, and the timer keeps running.
+
+   TAP ZONES. Three, and they no longer overlap ambiguously:
+     · the CONTENT CARD (.sts-open) opens the story — and now says so, with a visible chip
+       rather than an aria-hidden one, so a reader knows cards open at all
+     · the EDGE ZONES advance and go back — widened to 22% of the viewport each, which is
+       the iOS story convention and comfortably wider than a thumb
+     · everything between them is inert, so a mis-tap does nothing instead of doing the
+       wrong thing */
+.stories .sts{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.stories .sts::-webkit-scrollbar{display:none}
+.st-zone{width:22%}
+/* the card reads as a card: a real surface, a real affordance, a real pressed state */
+.sts-open.is-card{display:flex;flex-direction:column;gap:9px;cursor:pointer;border-radius:20px;
+  padding:16px 17px 14px;background:rgba(255,255,255,.07);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13);
+  transition:transform .16s var(--ease-out),background .16s ease}
+.sts-open.is-card:active{transform:scale(.985);background:rgba(255,255,255,.12)}
+.stories .sts-openchip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:2px;
+  padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.14);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20);
+  font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:#f4f8ff}
+.stories .sts-openchip i{font-style:normal}
+@media(prefers-reduced-motion:reduce){.sts-open.is-card{transition:none}}
