@@ -3025,6 +3025,13 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 .dock-lab{display:inline;position:relative;z-index:1;font-family:var(--sans);font-weight:600;font-size:10px;
   letter-spacing:-.005em;line-height:1.1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .dock-item.on .dock-lab{display:inline}
+/* on a wide screen the material still spans the window (that is what makes it chrome), but
+   the tabs cluster in the middle instead of drifting 300px apart */
+@media(min-width:700px){
+  .dock{justify-content:center;gap:6px}
+  .dock-item{flex:0 1 104px}
+  .dock-lab{font-size:11px}
+}
 @media (prefers-reduced-motion:reduce){.dock{animation:none}.dock-item,.dock-item.main{transition:none}}
 /* the deck is a dark surface: the bar takes its dark material there, as iOS would */
 body.stories-on .dock{background:rgba(10,13,22,.66);box-shadow:0 -0.5px 0 rgba(255,255,255,.14)}
