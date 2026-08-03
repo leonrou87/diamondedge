@@ -1,7 +1,7 @@
 # DiamondEdge — production readiness
 
-Last updated: 2026-08-02, frontend round 4 (agentA).
-Head at time of writing: `d4afd18`.
+Last updated: 2026-08-03, frontend round 5 (agentA).
+Head at time of writing: `7dcf2c8`.
 
 This document is the running go/no-go. It records what has been swept, what was fixed,
 what is explicitly still open, and what Leon is testing himself before launch. It is meant
@@ -9,122 +9,232 @@ to be read top to bottom by whoever picks the work up next.
 
 ---
 
-## 1. Landed this round
+## 1. Landed in round 5
 
-### `778e412` — the research paper library, and error containment on the briefing
+Five commits, landed in order: `ca0011f` · `da02f24` · `00401ab` · `c8bc6e8` · `7dcf2c8`.
 
-**The library.** The 19-paper corpus landed on contract 1.1 and the Research tab was still
-reading the old shape: categories that no longer exist, a `flagship` flag nobody sets, three
-top-level prose fields where the payload now ships `sections[].role`. Every paper fell into
-an "Other" shelf and none of the evidence rendered at all. Rebuilt against the served
-contract:
+### `ca0011f` — one glass material, a denser tile, the brand on every card the app hands out
 
-- **Index** — flagship featured full-width, then the served `categories[]` in their own order,
-  each with its blurb and count. The card leads with the **verdict**, because on this corpus
-  the verdict is the news (eleven of nineteen papers conclude something did *not* work). Tone
-  is derived from the wording, never served, so a null cannot be dressed up as a finding.
-- **Reading view** — keyed on section `role`, never on the English heading. `takeaway` is the
-  gold pull-out, `extra` folds, `key_figures` set as an evidence ledger up front, `sources` in
-  a fold, `related_papers` as footer cards. Markdown covers the subset the corpus actually
-  uses (measured across all 19): `###`, `**bold**`, `*em*`, `` `code` ``, fenced blocks,
-  bullets, `>` pull-quotes and `|` tables. Tables scroll inside their own container; the page
-  body never scrolls sideways.
-- **64 charts, 7 types, no chart library.** `interval` / `bar` / `compare` / `funnel` /
-  `scoreboard` / `timeline` in CSS, `line` in SVG, all against the app's own tokens.
-  House rule: *the drawing never says more than the number does* — bars are zero-based, ranges
-  are drawn at true width, and two results that cannot be told apart are left looking
-  identical, because on this corpus that is usually the finding. Colour is spent exactly
-  twice: brand gold on the row a paper is about, and the green/slate/red of an `interval`
-  against its reference line — the one encoding that carries an argument, with a legend that
-  states it in words.
+**The material.** There were at least three approximations of "our glass": the dock's bespoke
+five-layer capsule, the `--chrome-blur`/`--chrome-bg` pair the sticky bars used, and a scatter
+of per-component `blur(4…18px)` values invented at the call site. Three recipes is three
+materials, and it showed — the dock, the date band and a sheet header caught the light
+differently on the same screen. There is now **one** recipe, tokenised at the top of
+`globals.css` as five parts doing five optical jobs (filter · tint · hairline · specular ·
+drop) in three densities:
 
-**Error containment.** See §2.
+| token | density | used by |
+|---|---|---|
+| `--mat-tint` | CHROME — bars that pin | games chrome, `.gp-head`, `.pitcherpage .gp-bar`, sheet header |
+| `--mat-tint-thin` | SUB-BAR — a band nested inside chrome | date strip, league rail, every segmented control |
+| `--mat-tint-smoke` | FLOAT — the capsule | the dock |
 
-### `d4afd18` — the black tag, Preview after the fact, Recap retired, PTR on the board
+plus `--mat-filter` / `--mat-filter-lite`, `--mat-hair`, `--mat-spec`, `--mat-drop`,
+`--mat-drop-float`, `--mat-scrim`. **Verified in the painted DOM: exactly two distinct
+`backdrop-filter` values remain app-wide** (the full pass and the lite pass), where there were
+five. Both theme ramps carry the tokens and the light-only override restores the light values,
+so a dark-OS reader never gets dark glass on light surfaces.
 
-- **The black DiamondEdge tag.** Our call is now the one dark object on a light tile, flush
-  right, gold mark inside, seal beside it in the same right-hand group. Same object in all
-  three states — revealed, locked, incoming — so a signed-out reader sees *that* a pick exists
-  and that its value is redacted. On-black palette measured on `#0d1420`: gold `#f6c745`
-  (12.4:1), mint `#5fe0ac` (10.9:1), rose `#ff8fa3` (8.6:1).
-- **Tomorrow's picks are a state, not an absence.** A future-dated game renders the tag in an
-  `incoming` state with the served `picks_eta` string (or a plain true sentence). Derived from
-  the game's own date, so it works before the backend ships `status: "UPCOMING"`.
-- **Recap tab removed.** It said one thing the hero does not already say and said it worse.
-  Removed, not relocated.
-- **Preview survives the game.** Tabs are now `Preview·Stats·Odds` pregame,
-  `Live·Box Score·Preview·Stats·Odds` live, `Box Score·Preview·Stats·Odds` final. Preview
-  carries a kicker ("How we saw it before first pitch") — a label, not a caveat.
-- **Tab spacing.** `flex:1 1 0` + `min-width:0` makes the cells identical at 3, 4 and 5 tabs;
-  type steps down so the longest label fits the smallest cell. Measured: no ellipsis and no
-  overflow at 375 or 360, any count.
-- **Pull-to-refresh on the Games board.** It did not work there because the predicate
-  *required* an open game page. Now armed on the board and on a game page, never with anything
-  stacked above, never mid-pan or mid-swipe-back. The board refreshes **in place** (refetch +
-  re-render, 650 ms floor so the spinner cannot flash) rather than reloading, so the reader
-  keeps their scroll position, league and date.
+The dock's smoke came down from `.30/.21` to `.19/.13`. Round 3 asked for the capsule to read
+"a tiny tiny bit darker" than the page and its comment claimed "materially more of the board
+reads through the blur" — at `.30` that was not true; it read as a grey slab.
+
+**The finishing coat.** Continuous corners (`corner-shape: superellipse(1.8)`, progressively
+enhanced, only where the curvature is visible) · one motion ladder (`--t-press/fast/mid/slow`,
+spring for anything with mass) replacing about a dozen invented durations · a pressed state on
+everything tappable, applied by ROLE so anything added later inherits it, momentary only, and
+removed under reduced motion · one hairline instead of three ways of drawing a ring · safe
+areas on the four surfaces that actually reach an edge.
+
+**Tile density.** 232px → 178–199px measured across every board state at 375 (**−15 to −23 %**
+against the target of 10–15 %). Not a squeeze — a padding audit: four of the six vertical
+blocks were paying for padding twice (16px above an 11px cap-height label; a `gap:1px` and a
+`margin-top:-2px` cancelling each other one pixel apart; two paddings stacked at the same seam;
+the board's between-CARDS gap used between blocks INSIDE a card). The horizontal gutter came
+off with it, which handed the pick row the 4px it was short of — **the one-tile-in-fifteen wrap
+at 360 is gone**.
+
+**Meta / OG / 404.** The per-game share card was still drawing the pre-round-4 mark (a rounded
+rectangle turned 45°) while the icon, masthead and site card had moved to the Cut Diamond; both
+cards now carry the real mark and drop Georgia for the house sans. The description claimed five
+leagues against a product that ships one and a half. `theme_color` was answered three different
+ways (viewport `#0b111e`, manifest `#eef1f7`, masthead `#131a28`) and `colorScheme:"dark"`
+declared a dark app the stylesheet then spent a block undoing — one value now, taken from the
+masthead. And there is a 404: it was Next's stock Times New Roman page, which every stale
+`/g/<id>` link lands on.
+
+### `da02f24` — Statcast GAME LEADERS, and the article header
+
+**Statcast.** `/api/v1.1/game/<pk>/feed/live` through StatsAPI's `fields=` filter — 804 KB → 164
+KB raw, 14 KB on the wire — riding the box score's **existing** cache: same 25 s TTL live,
+fetched exactly once when final, same silent degradation, same repaint triggers. One extra
+parallel fetch inside `loadMlbBox`; team aggregates come from the boxscore the app already
+caches, so they cost nothing.
+
+Two things about `fields=` the URL is shaped around: it matches on key NAME and every
+intermediate name on the path must be listed (asking for `spinRate` without `breaks` returns
+pitchData with no spin **and no error**), and there is no way to select `breaks.spinRate` alone,
+so listing `breaks` drags in all eight break fields — the 99 KB → 164 KB difference, worth
+paying because spin is what makes a velocity reading mean something.
+
+Modules: hardest pitch · hardest-hit ball · longest home run · fastball-velocity leaderboard
+(max and average per arm) · pitch mix for the arm that threw the most on each side · the team
+day (LOB, RISP, bullpen innings, strikes/pitches). Every one is **absent** when the game did not
+produce the fact, and if none survive the heading goes too.
+
+Three honesty calls: a **cutter is not a fastball** (thrown 3–6 mph slower on purpose; FB is
+four-seam / two-seam / sinker only, minimum five thrown, and the module says so); **team LOB is
+the boxscore's formatted string**, never `teamStats.batting.leftOnBase`, which is a different
+statistic that disagrees with it; and `"1.1"` innings means one and a **third**, so bullpen IP
+is summed in outs. Pitch-mix bars are zero-based at true share, not scaled to the row maximum.
+
+Measured coverage on four 2026 games: 100 % of `isPitch` events carry pitchData with startSpeed,
+type and spin all present; batted-ball data is on 64–77 % of plays.
+
+**The article header** is the card, continued. The news card is an App-Store "Today" card — the
+photograph fills it, a scrim rises from the foot, the headline sits ON the image. Tapping it
+landed on the web-article-teaser anatomy the Today card exists to replace. Same anatomy now,
+one register bigger, and it carries through: same URL so the image is warm in cache, entering
+by continuing the card's crop (1.05 → 1) rather than cross-fading in as a new picture, with the
+type settling behind it on a 60/110 ms stagger.
+
+### `00401ab` — the single-source sweep
+
+The game page's "a fact has ONE home" rule, applied to the rest of the app. Every item is a
+place two numbers could drift apart on a customer-facing surface.
+
+- **One day ledger.** A day's W–L was reconstructed in **six** independent places. Two already
+  disagreed and one was a latent outage: the recap slide read ONLY the legacy `by_date_record`,
+  while `record.daily` (the current contract) ships as an ARRAY the slide could not read at all
+  — so the day the backend drops the legacy key, that slide silently stops rendering. The slide
+  also printed the SERVED hit rate while the record screen derived `w/(w+l)`; on a day with a
+  push those are different numbers two taps apart. And the last-7 strip was the only surface in
+  the app printing the record with **hyphens**. One normaliser now reads both shapes of
+  `record.daily` and backfills from `by_date_record`, newest contract winning per-day.
+- **One W–L string** (eighteen inline builds), **one grader** (`gradeOf` — fifteen surfaces each
+  tested `p.result === "win"` against the raw string; they agreed only by coincidence of the
+  current payload), **one news list** (the deck's running order and the reader's prev/next were
+  derived twice from the same arithmetic), **one dek fallback**, **one precision** (the record
+  hero printed "+8.5u / 53.7%" while the scope rows six inches below printed "+8.45u / 54%" for
+  the same window in the same viewport).
+- **A paywall leak.** The briefing deck's "the desk leans" headline recomputed the desk
+  consensus from the same source as `consensusBanner` — the canonical rendering, which
+  suppresses the side word whenever the pick is locked — with **no gate**, and printed the side
+  in 28px display type on the first screen a signed-out reader sees. Same gate as the banner now.
+- **Dead code deleted**: `boardSummaryBar`, `dayPicksTally`, `featuredCard` — three more
+  independent renderings of facts the live surfaces own, waiting to be wired back up and disagree.
+
+### `c8bc6e8` + `7dcf2c8` — the pre-serve board, and the pending state
+
+**The board said "nothing scheduled" on a day with eight games — for six hours, every morning.**
+The board reads the backend's `pregame_picks` snapshot, which is regenerated when the day's
+picks publish at 06:00 PT. Between midnight and that serve it still holds *yesterday's* slate,
+so on the calendar day itself it found nothing and printed **"NO MLB ON THE BOARD · Nothing
+scheduled for Monday, August 3"** over a day with eight scheduled games. It never surfaced in
+testing because you have to be looking at the board on the right day in the right six hours —
+which is what happened while this round was running.
+
+`picks_unified_live` already carries the day's games as `status: "upcoming"` with a `picks_eta`.
+Those games are on the board now, each with the INCOMING tag and the schedule note above them.
+Three things it took, each its own small lie:
+
+- **The merge is scoped, not a union.** The first cut merged by `game_id` and doubled every past
+  board — thirty tiles for fifteen games, each matchup twice — because the two feeds give the
+  SAME game DIFFERENT `game_id`s. Matching on team names instead would be a heuristic on a
+  surface where a duplicated game is a duplicated PICK. The merge fires **only** when the
+  board's own payload has nothing at all for that date and league.
+- **The shapes differ.** Full team names where the tile reads `*_abbr`, `first_pitch_utc` where
+  it reads `start_ts`, and no `sport` on any game. Merged raw, the tiles rendered as two blank
+  crests, a dangling "L2" and a start time of "TBD".
+- **A pass is a verdict, and you cannot pass on a game you have not read.** The pass panel
+  counted them as games the desk "read and priced" and led with "Nothing cleared the bar" — and
+  the game page said the same thing in the DiamondEdge Pick slot.
+
+**`picksPending(g)`** is the single predicate for "our picks for this game are not published
+yet", and it is built on fields nothing in the render path rewrites (`pick.status`,
+`pick.is_upcoming`, `desk_status`, plus a date-level fallback read off the live feed's own
+objects). The first cut read the game-level `status`, which **the live-score overlay rewrites**
+from "upcoming" to "pre" — so the board said "PICKS SOON" while the game page one tap later
+said "the pass is the pick", about the same game, in the same minute.
+
+**The ETA sentence is composed, not served.** The same feed shipped BOTH "Picks drop tomorrow
+morning" (on the game) and "Picks drop this morning" (on the pick) for the same game; a relative
+day word in a cached payload outlives the day it was written in. Built from the date and the
+served *time* now — and `picks_eta` arrives as an **object**, which the old reader stringified,
+so the tag was one render away from printing "[object Object]".
 
 ---
 
-## 2. The "failure occurred when loading a news story" report
+## 2. The record-contract guard (the answer to the broken-record window)
 
-**What was actually wrong.** Walking every slide and every tap target on the live feed threw
-nothing — so the failure is conditional, and two conditions that produce it were both live:
+The record is the product's whole argument and it renders entirely from two payload objects
+whose field names live on the backend. The failure mode is not a crash — it is `NaN–NaN`, or
+"undefined% hit", or a module that quietly becomes an em dash.
 
-1. **A dead tap.** `openArticleSheet` began `if (!s) return;`. The deck resolves a story by key
-   against `newsFeed`, and that feed refreshes on a poller underneath the mounted deck. If the
-   key no longer resolved, the tap did *nothing at all* — which from the outside is exactly
-   "I tried to load the news story and it failed".
-2. **One bad item taking the whole tab.** Twenty-four independent slide builders are
-   concatenated into a single string. A throw in any one of them unwound the entire render,
-   `innerHTML` was never assigned, and the reader got an empty News tab.
+**In development** — a third dev guard in the same idiom as `#dev-deadbar` and `#dev-leakbar`:
+a console error naming the exact missing path **and the feed it came from**, plus a fixed
+banner. It checks that `record.headline` carries the fields the renderers actually consume (an
+explicit list, because "is an object" passes on `{}`), that `record.daily` is one of the two
+supported shapes, that its rows **parse** and not merely exist, and that nothing consumed is NaN.
 
-**What is in place now.** `safeHtml` / `safeRun` boundaries per slide, per running order and
-per surface; a designed `failState` with a retry instead of a blank rectangle; and an
-unresolvable story opens a real, closable sheet that says so. Both shout on the console in
-development and degrade quietly in production. **No user-visible surface anywhere says
-"failure occurred" or shows a raw error string** — verified by grep and by the hostile pass.
+**In production** — not installed, but the renderers are separately hardened: every record
+figure goes through a reader that refuses non-finite values and remembers the last good headline
+for the session. Stale-but-true beats blank; blank beats wrong.
 
-**Hostile verification** (network-intercepted `news_feed`, six cases): malformed stories
-(null headline, string angle, array article, dead image URL, unparseable date), empty object,
-`null`, an array, HTTP 500, and a dead socket. Result in every case: **no blank tab, zero dead
-taps, and every malformed story still opened a readable sheet.**
+**Hostile-tested**, the way the news path was in round 4 — both payloads mangled at the point
+they land (headline replaced with a field-free object, every daily row's `win`/`loss` renamed,
+the legacy `by_date_record` emptied):
+
+| | result |
+|---|---|
+| dev guard | named all six missing headline fields **and** the feed |
+| Desk headline | fell through to a TRUE record from the next ledger down |
+| 14-day widget | honest "no picks" dots |
+| painted DOM | **zero** occurrences of `NaN`, zero of `undefined` |
+
+**Version skew, both directions.** Every reader accepts the old AND the new field name, so a
+user pinned on a stale bundle against a new payload — and a fresh bundle against a cached old
+payload — both render. **Cache audit:** no service worker, no `vercel.json`, no custom headers;
+Next serves content-hashed immutable chunks behind HTML the browser revalidates, so a *reload*
+can never pin a stale bundle. The residual case is a long-lived standalone PWA tab that never
+reloads while the payload moves underneath it — which is exactly the case the alias readers and
+the safe reader cover.
 
 ---
 
 ## 3. Swept and clean
 
+Headless, three widths × four dates × five tabs (`audit-screenshots/round5/`):
+
 | Check | Result |
 |---|---|
-| Console errors/warnings, all five tabs, 375 + 360 + desktop | clean |
-| Dead-click-target guard (`#dev-deadbar`) | silent |
-| Payload-documentation guard (`#dev-leakbar`) | silent |
-| Horizontal overflow at 375 / 360 | none (`scrollWidth === clientWidth`) |
-| Research index, reading view, all 7 chart types | render; screenshots in `audit-screenshots/research-charts/` |
-| Sheets over the dock | holds |
-| Pick-row width budget at 360 | no clipping; 1 tile in 15 wraps as a group |
-| Game-page tabs at 3 / 4 / 5 | equal cells, no ellipsis, 375 and 360 |
-| PTR arms on board + game page, not on Research | verified by synthetic touch |
+| Console errors, 375 + 360 + desktop, every tab and date | **zero** |
+| Horizontal page overflow | **zero** at every width |
+| `NaN` / `undefined` / `[object Object]` in the painted DOM | **zero** |
+| Dead-click guard · payload-leak guard · record-contract guard | all silent |
+| Distinct `backdrop-filter` values app-wide | 2 (was 5) |
+| Tile height at 375 | 178–199px (was 227–232) |
+| Pick-row wrap at 360 | none (incoming tag re-fitted: callrow 37px → 17px) |
+| Board: today / yesterday / two days back / a future day | correct, **zero duplicate game ids or matchups** |
+| Total payload fetch failure (all sources blocked) | designed empty state; Desk falls to its zero-state; News shows the end card; no raw error anywhere |
+| Empty future day | standalone schedule note |
 | `npx next build` | clean |
+| 404 route | on brand, `robots: noindex` |
+| OG cards | verified they do not leak a gated pick — the `/g/` card says a pick EXISTS and stops |
+
+Two elements report internal overflow and **both are intentional**: `#games-view`'s full-bleed
+negative margin on the sticky chrome, and the native date input parked over the calendar button.
 
 **Theme note.** The app is deliberately **light-only**: `color-scheme: light` plus a
-`prefers-color-scheme: dark` block that restores the light ramp. Rendering under a dark OS
-preference was verified to be identical to light — that is the intended behaviour, not a bug.
-If a real dark theme is ever wanted, the token ramps already exist and only that override
-block has to go.
-
-**Record surfaces.** Nothing in this agent's commit stream touched the record renderers or
-their field names, so neither `778e412` nor `d4afd18` can have been the broken window Leon
-saw. Both were verified live on production after landing. The contract guard for
-`record.headline` / `record.daily` requested alongside that report is **not yet written** —
-see §5.
+`prefers-color-scheme: dark` block that restores the light ramp. The material tokens are defined
+in all three blocks, so the recipe is a real two-theme system the day that override comes out.
 
 ---
 
 ## 4. Remaining pre-launch list — Leon's own testing
 
-Explicitly out of scope for this round. The UI renders and the stub states are honest; the
-functional testing is Leon's:
+Explicitly out of scope for the frontend rounds. The UI renders and the stub states are honest;
+the functional testing is Leon's:
 
 - **Signup flow, end to end**
 - **Payment / subscription flows**
@@ -132,59 +242,27 @@ functional testing is Leon's:
 
 ---
 
-## 5. Still open — precise handoff
+## 5. Still open
 
-Ordered roughly by value. Each item is stated so it can be picked up without re-discovery.
-
-1. **Statcast / pitch-level game stats.** Build a game-stats layer from
-   `/api/v1.1/game/{pk}/feed/live` (per-pitch start speed and type, per-play exit velocity,
-   launch angle, distance). Design as `GAME LEADERS`-style modules: hardest pitch (velo, who,
-   type), avg/max fastball per pitcher, pitch-type mix, hardest-hit ball, longest home run,
-   team LOB / RISP / bullpen innings. Cache per `gamePk` like the existing box score; refresh
-   live games on the live cycle; **hide the module rather than showing blanks** when Statcast
-   fields are absent. Not started.
-2. **Tile vertical density.** Leon wants ~10–15 % of tile height back without losing the air.
-   Current measured tile height at 375: **228 px**. Audit candidates: top/bottom padding vs the
-   8pt grid, team-row line-height vs the enlarged crests, divider margins, adjacent elements
-   both carrying margin. Not started. (Note: the pick row can now wrap on one tile in fifteen
-   at 360 — factor that into any height budget.)
-3. **Glass material unification + polish pass.** One documented recipe in `globals.css`
-   (blur / saturation / tint / hairline / shadow as tokens) applied to every floating and
-   overlay surface — sheet headers, date strip, segmented controls, story identity row, sticky
-   sub-bars — plus continuous corners, spring timing on every interactive transition, pressed
-   states on everything tappable, correct safe-area behaviour, reduced-motion clean. Today
-   there are at least three approximations of the glass recipe in the sheet
-   (`--glass`, `--chrome-bg`, and per-component ad-hoc values). Not started.
-4. **App-wide dedupe sweep.** The single-home rule beyond the game page: desk headline record
-   vs calendar vs ROI curve labels; record screen vs desk widget (must be the *same component*,
-   not two renderings that can drift); stories slides vs the surfaces they summarise; analyst
-   info on roster vs sheets vs slides; board summary line vs tiles. Not started. The Recap-tab
-   removal in `d4afd18` is one instance of this rule, done.
-5. **Record-contract regression guard.** A dev-guard-family check for the exact fields the
-   record renderers consume (`record.headline`, `record.daily`: win/loss/push/record/units/
-   hit_rate/n and the daily row shape) — loud in development; in production fall back to the
-   last-good rendering or hide the module rather than showing NaN/undefined/empty dashes. Also
-   confirm cache headers / service-worker behaviour cannot pin a user on a stale bundle against
-   a new payload shape. Not started.
-6. **Article popover header continuity.** The news-card → article transition: the card image
-   should carry through into the sheet header and the headline settle; the sheet header is
-   still round-2 language and should match the Today-card treatment. Not started.
-7. **Pick lifecycle screenshots.** Today's local slate was all finals, so `upcoming-gated`,
-   `upcoming-premium` (entitlement flipped), and `live` were never shot on a real game. The
-   `final-won` and `final-lost` states are verified. Re-shoot when a slate with upcoming/live
-   games is available.
-8. **Game-page dedupe on a LIVE game.** The single-home rule (hero vs live block vs box score)
-   was verified on `pre` and `final` only — no game was in progress during this round.
-9. **Tomorrow-group section header.** "Tomorrow · picks drop in the morning" as a group header
-   when today and tomorrow render together. The per-game `incoming` tag is done; the board
-   still shows one date at a time, so the header is only meaningful once the board renders two
-   days at once — decide that first.
-10. **Empty / error / extreme states not yet exercised.** No-games day, no-news day, payload
-    fetch failure on the *board* (only the news path has been hostile-tested), longest team
-    names, `+105` prices, `11.5` totals, doubleheaders.
-11. **Meta / production polish.** Page title, description, OG cards, favicon and touch icon
-    against the new brand mark; 404 presentability; share links must not leak a gated pick.
-    Not audited this round.
+1. **LIVE-game verification.** The single-home rule (hero vs live block vs box score), the
+   5-tab bar, the live pick states and the Statcast modules on a live cycle have been exercised
+   on `pre` and `final` only. No game was in progress at any point across rounds 4 and 5 — first
+   pitch on the day this was written is 3:40 PM local. **Everything else in the pick lifecycle is
+   now shot**: `upcoming-gated`, `upcoming-premium`, `final-won`, `final-lost`, each signed-out
+   and with the entitlement flipped.
+2. **Doubleheaders and extreme prices.** `+105`, `11.5` totals and the longest team names all
+   render without clipping in the sweep above, but no doubleheader appeared on any of the four
+   dates tested — the two-games-same-teams-same-day case is unexercised.
+3. **The remaining dedupe items**, lower value than the ones taken: the pick call block still has
+   more than one markup (the briefing slide hand-builds it; the board delegates to
+   `compactDePickHtml`) and the patterns meta chips are rebuilt inline rather than shared with
+   `patternCard`. Neither can currently disagree about a NUMBER — they are presentation
+   duplicates, not fact duplicates — which is why they were left.
+4. **A "Tomorrow" group header** when today and tomorrow render together. The board still shows
+   one date at a time and the per-game incoming tag plus the schedule note now carry the meaning,
+   so this is only worth doing if the board ever renders two days at once.
+5. **The signup sheet's brand lockup** is a gold rounded-square plate carrying the diamond, which
+   is the app-icon idiom rather than the masthead's. Cosmetic, one surface.
 
 ---
 
@@ -192,10 +270,10 @@ Ordered roughly by value. Each item is stated so it can be picked up without re-
 
 | Surface | Assessment |
 |---|---|
-| **Games board** | **Go.** Tag lands, no overflow, PTR works, console clean. Tile density is a polish item, not a blocker. |
-| **News / briefing** | **Go.** Now the most defensively-tested surface in the app. Popover header continuity is cosmetic. |
-| **Game page** | **Go with one gap** — never exercised on a live game (tabs, dedupe, live block). |
-| **Desk** | **Not re-audited this round.** Assumed unchanged since round 3. Needs the dedupe pass. |
-| **Record** | **Not re-audited this round.** Verified rendering correctly on production; wants the contract guard in §5.5. |
-| **Research** | **Go.** Rebuilt and verified end to end this round. |
+| **Games board** | **Go.** Tile density −15…−23 %, no overflow, no duplicates, the pre-serve window now tells the truth, incoming tag on every pending game, console clean at all three widths. |
+| **News / briefing** | **Go.** Round 4's defensive work holds; the article header is now the card continued, and the deck's ungated consensus leak is closed. |
+| **Game page** | **Go with one gap** — never exercised on a live game (tabs, dedupe, live block, Statcast live cycle). Pre and final are verified, GAME LEADERS renders and hides correctly. |
+| **Desk** | **Go.** Now provably the same component and the same numbers as the Record screen; falls to an honest zero-state under a total payload failure. |
+| **Record** | **Go.** Six independent day-ledger readings collapsed to one, guarded in dev, hardened in production, hostile-tested. |
+| **Research** | **Go.** Unchanged since round 4; re-verified clean this round. |
 | **Account / Premium / Settings** | **No-go until Leon's own testing** (§4). UI renders; flows untested. |
