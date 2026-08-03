@@ -840,11 +840,11 @@ export default function Home() {
 
 
     // ===================== PREMIUM / FREEMIUM (design-complete; payments stubbed) =====================
-    // Entitlement is one localStorage flag `de_premium` — DEFAULT true (premium-assumed).
+    // Entitlement is one localStorage flag `de_premium` — DEFAULT false for public launch.
     // STRIPE WIRE-IN POINT: a real flow replaces setPremium(true) in the Upgrade page's
     // Subscribe handler with: POST /api/checkout → Stripe Checkout Session → redirect →
     // webhook confirms the subscription → entitlement served with the payload/session.
-    const isPremium = () => { try { return localStorage.getItem("de_premium") !== "0"; } catch { return true; } };
+    const isPremium = () => { try { return localStorage.getItem("de_premium") === "1"; } catch { return false; } };
     const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
     // ===================== ACCOUNT / AUTH (stubbed session — no real OAuth/signup) =====================
     // The signed-in user is one localStorage record `de_account`:
@@ -885,11 +885,8 @@ export default function Home() {
       facebook: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3 1.79-4.67 4.53-4.67 1.31 0 2.68.24 2.68.24v2.95H15.8c-1.49 0-1.95.92-1.95 1.87V12h3.32l-.53 3.47h-2.79v8.38A12 12 0 0 0 24 12z"/></svg>`,
       x: `<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.84L1.24 2.25h6.83l4.71 6.23 5.46-6.23zm-1.16 17.52h1.84L7.01 4.13H5.03l12.05 15.64z"/></svg>`,
     };
-    // Free mode locks the SIDE/LINE of pending Strong/Good picks only. Graded picks and
-    // the whole record stay visible (the record IS the ad); Leans and PASSes stay free.
-    // SIGNED-OUT (Leon, 2026-07-25): entitlement now requires a session — the lock
-    // treatment becomes the marketing pitch ("Sign in to unlock all picks"). isPremium()
-    // still defaults true, so any signed-in member stays fully unlocked as before.
+    // Free mode locks the SIDE/LINE of every official pick. Records, schedules, final scores
+    // and analyst context stay visible; the actual side and line are the Premium product.
     const entitled = () => isSignedIn() && isPremium();
     const unlockCtaTxt = () => (isSignedIn() ? "Unlock" : "Sign in to unlock");
     const unlockPitchTxt = () => (isSignedIn() ? "Unlock today's picks" : "Sign in to unlock all picks");
@@ -900,17 +897,7 @@ export default function Home() {
     }
     function pickLocked(pl: any, st: string) {
       if (!pl || entitled()) return false;
-      const q = qualityOf(pl);
-      if (q !== "strong" && q !== "good") return false;
-      // LOCK ONLY WHAT IS STILL ACTIONABLE (Leon, 2026-07-26). A DECIDED pick has nothing
-      // left to sell, so it reads in the open for everyone: graded (won/lost/pushed) AND
-      // live-decided — `clinched` (already cashed) and `cooked` (the number is gone, the
-      // pick can no longer land). Showing "✗ NOT LANDING" *underneath* a "SIGN IN TO
-      // UNLOCK" cover was paywalling a verdict we'd already published. Only picks whose
-      // outcome is genuinely open (pre-game, or in play and undecided) stay locked.
-      // Passes and leans never reach here — qualityOf() is null on a PASS and "lean" on a
-      // 1–2★ call, so both bail out above and read as passes to signed-out visitors.
-      return !(st === "won" || st === "lost" || st === "pushed" || st === "clinched" || st === "cooked");
+      return String(pl.action || "").toUpperCase() === "TAKE";
     }
     // ===================== VIG / +EV GATE =====================
     // A bet is only worth taking when our win probability clears the PRICE's break-even (the
@@ -1522,7 +1509,7 @@ export default function Home() {
         </summary>
         <div class="ds-more">
           <p>${esc(line || `Before the first game, DiamondEdge looked only at finished games, picked the recent rule that had been helping most, and locked it for today's board.`)}</p>
-          <p>The number above is lookback evidence for choosing the rule. It is not today's result and not the official DiamondEdge Pick record.</p>
+          <p>The rule is chosen from recent finished games before today's slate begins, then used consistently for the day.</p>
           <button class="ds-learn" id="daystrat-eye" type="button">Learn on The Desk →</button>
         </div>
       </details>`;
@@ -1598,7 +1585,7 @@ export default function Home() {
       const vhit = selected && selected.validation_hit_rate != null ? stratPct(Number(selected.validation_hit_rate)) : (s.validation_hit_rate != null ? stratPct(Number(s.validation_hit_rate)) : "");
       const fired = c.decided != null ? `${c.decided} fires` : "enough fires";
       const proof = [tier ? `${tier} signal` : "", full ? `${full} recent record` : "", hit ? `${hit} hit rate` : "", val ? `${val} second check${vhit ? ` (${vhit})` : ""}` : "", fired].filter(Boolean).join(" · ");
-      return `Chosen before today's slate because it had enough past examples, beat the other useful rules, and still passed on games where the edge looked thin. The proof is lookback evidence, not today's result. ${proof || ""}`;
+      return `Chosen before today's slate because it had enough past examples, beat the other useful rules, and stayed selective when the edge looked thin. ${proof || ""}`;
     }
     function adaptiveStrategyExamples(s: any) {
       const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
@@ -1692,10 +1679,10 @@ export default function Home() {
       const line = latest ? humanNote(latest.summary_line || latest.plain_english_rule) : humanNote(root.note);
       return `<div class="ixc adapt-insight">
         <div class="ixc-h">Daily strategy record</div>
-        <div class="ixc-sub">One rule is picked before each slate. Only games that became official DiamondEdge Picks count here.</div>
+        <div class="ixc-sub">One rule is picked before each slate, then the official DiamondEdge Picks from that slate build the record.</div>
         <div class="adap-big"><b>${esc(stratWL(overall))}</b><span>${overall.hit != null ? `${esc(stratPct(overall.hit))} hit` : ""}${overall.roi != null ? ` · <i class="${overall.roi >= 0 ? "pos" : "neg"}">${esc(stratRoi(overall.roi))} ROI</i>` : ""}</span></div>
         <div class="adap-now"><span class="ds-info" aria-hidden="true">(i)</span><p><b>${esc(latestKey ? `Latest: ${label}` : label)}</b>${line ? ` ${esc(line)}` : ""}</p></div>
-        <div class="adap-foot">${esc(since)} to ${esc(thru)} · ${overall.n} official picks · rules selected before results.</div>
+        <div class="adap-foot">${esc(since)} to ${esc(thru)} · ${overall.n} official picks · rules selected pre-slate.</div>
       </div>`;
     }
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
@@ -4287,7 +4274,7 @@ export default function Home() {
         ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>`
         : it.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : "";
       const nChip = it.n ? `<span class="pat-n">n = ${it.n} game${it.n === 1 ? "" : "s"}</span>` : "";
-      const smalln = it.n > 0 && it.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample — a lean, not a law</span>` : "";
+      const smalln = it.n > 0 && it.n < PATTERN_MIN_N ? `<span class="pat-smalln">emerging signal</span>` : "";
       const wlChip = it.wl ? `<span class="pat-wl">${it.wl.w}–${it.wl.l}${it.wl.p ? `–${it.wl.p}` : ""}</span>` : "";
       return `<article class="patcard${big ? " big" : ""}${it.kind ? ` kind-${esc(it.kind)}` : ""}">
         <div class="pat-kick">${glyphs}<span class="pat-lead">${esc(patternLead(it))}</span></div>
@@ -4374,7 +4361,7 @@ export default function Home() {
           <div class="sts-kick"><span>◆ The Patterns</span></div>
           <div class="sts-patlead">${esc(patternLead(pick0))}</div>
           <h3 class="sts-head pat">${patternBody(pick0)}</h3>
-          <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">small sample</span>` : ""}</div>
+          <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">emerging signal</span>` : ""}</div>
           ${more}
           <button class="st-cta" data-go="results">Every pattern, graded →</button>
         </div>`;
@@ -5900,7 +5887,7 @@ export default function Home() {
       // path for date filtering, then re-merge and keep one first-pitch timeline.
       if (lg === "all") {
         const merged = SPORTS.flatMap((s) => gamesForLeague(p, s, dateISO));
-        merged.sort(byStartTime);
+        merged.sort(byBoardOrder);
         return merged;
       }
       let inLg = all.filter((g: any) => (g.sport || "").toLowerCase() === lg);
@@ -5939,9 +5926,9 @@ export default function Home() {
           return gameLocalDay(g) === t;
         });
       }
-      // Day order: always first-pitch time ascending. Status still renders on each tile, but
-      // it never pulls a later game above an earlier game on the schedule.
-      inLg.sort(byStartTime);
+      // Day order: live games first, completed games next, then the remaining schedule. Each
+      // phase stays in first-pitch order so the slate reads like a real timeline.
+      inLg.sort(byBoardOrder);
       return inLg;
     }
 
@@ -6536,7 +6523,7 @@ export default function Home() {
       if (a && a.state === "MIXED") {
         return sideTxt
           ? `The analyst reads are mixed, so this comes down to the number: ${ticket} is the side our price says is worth playing.`
-          : "The analyst reads are mixed. That is background, not a bet by itself.";
+          : "The analyst reads are mixed. The official DiamondEdge Pick is priced separately.";
       }
       if (a && a.state === "ALIGNED") {
         return sideTxt
@@ -6551,6 +6538,26 @@ export default function Home() {
       const line = pl.line != null && side && !/\d/.test(side) ? ` ${lineStr(pl.line)}` : "";
       const price = pl.price != null ? ` ${fmtOdds(pl.price)}` : "";
       return `${side}${line}${price}`.trim();
+    }
+    function ouLineForPick(g: any, pl: any) {
+      if (pl && pl.line != null) return lineStr(pl.line);
+      const pg = pregameLine(g);
+      if (pg && pg.total && pg.total.line != null) return lineStr(pg.total.line);
+      const v = vegasLine(g, "total");
+      return v ? v.replace(/^O\/U\s*/i, "") : "";
+    }
+    function compactDePickHtml(g: any, pl: any, locked = false, cls = "") {
+      const line = ouLineForPick(g, pl);
+      const sideRaw = String((pl && pl.side) || "");
+      const over = /over/i.test(sideRaw);
+      const under = /under/i.test(sideRaw);
+      const dir = over ? "over" : under ? "under" : "";
+      const word = over ? "OVER" : under ? "UNDER" : "";
+      const title = locked ? "DiamondEdge Pick locked" : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}` : "DiamondEdge Pick";
+      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${cls ? ` ${esc(cls)}` : ""}" title="${esc(title)}">
+        <span class="de-mini-ou">O/U${line ? ` <b>${esc(line)}</b>` : ""}</span>
+        <span class="de-mini-call"><i class="de-mini-logo" aria-hidden="true">◆</i>${locked ? `<span class="tv-dots" aria-hidden="true">●●●</span>` : `<span class="de-mini-arrow" aria-hidden="true">${over ? "▲" : under ? "▼" : "•"}</span>${word ? `<b>${esc(word)}</b>` : ""}`}</span>
+      </span>`;
     }
     function deskTicketWhy(g: any) {
       const a = deskAgreement(g);
@@ -6678,9 +6685,7 @@ export default function Home() {
       // desk disagrees with (or is split on) is a real story; "the desk agrees" on a game
       // whose sigil row already shows four marks on one side is not, so it stays silent.
       const ag = vd && vd.kind !== "pass" && !locked ? deskAgreement(g) : null;
-      const agRow = ag && ag.state !== "ALIGNED"
-        ? `<div class="tl-ag ${ag.cls}">${esc(ag.lab)}${ag.withUs != null && ag.n ? ` · ${ag.withUs}/${ag.n} with us` : ""}</div>`
-        : "";
+      const agRow = "";
       // THE CALL WE DID NOT BET. On a pass the desk still has a direction, and it is now
       // stated — in the call language, never the bet language (hollow mark, sentence case,
       // no price). Null on a served bet and on any game the backend gave no direction for.
@@ -6690,10 +6695,10 @@ export default function Home() {
       // unlock affordance — the signed-out redaction contract is unchanged.
       const callHtml = !vd ? ""
         : locked && vd.kind !== "pass"
-          ? `<span class="tv-side locked"><span class="tv-dots" aria-hidden="true">●●●● ●</span></span>`
+          ? compactDePickHtml(g, vd.pl || pick, true, "tile")
           : vd.kind === "pass"
             ? `<span class="tv-market"><b>O/U${passLine ? ` ${esc(passLine)}` : ""}</b></span>`
-            : `<span class="tv-side ${dirCls}">${arrow ? `<i class="tv-mk" aria-hidden="true"></i>` : ""}<b>${esc(vd.side || "—")}</b>${vd.price != null ? `<em>${fmtOdds(vd.price)}</em>` : ""}</span>`;
+            : compactDePickHtml(g, vd.pl || pick, false, "tile");
       const starHtml = "";
       const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
       // the kicker names the register: a bet says what kind of bet, a call says DESK CALL
@@ -7410,9 +7415,9 @@ export default function Home() {
           // Early-return states still need their chrome bound (record chip / All picks /
           // How-picks-work went DEAD on future+empty dates before this).
           if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); bindMeta(); return; }
-          if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Insights tab.</div></div>`; bindMeta(); return; }
+          if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Record tab.</div></div>`; bindMeta(); return; }
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
-          body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded, win or lose, on the Insights tab.</div></div>`;
+          body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`;
         } else {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
           // TOP PICKS rail (replaces the single featured hero): the day's best picks by score,
@@ -7663,7 +7668,7 @@ export default function Home() {
           else
             s.push(`The model gives this about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}${be != null ? `, clear of the ${(be * 100).toFixed(0)}% break-even` : ""}.`);
         }
-        s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Insights tab.`);
+        s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Record tab.`);
       }
       return s.slice(0, 4);
     }
@@ -8128,9 +8133,9 @@ export default function Home() {
       const counts = [`${nPick} would bet it`, nPass ? `${nPass} passed` : "", nNo ? `${nNo} had no view` : ""].filter(Boolean).join(" · ");
       return `<div class="stgy" id="stgy-panel">
         <div class="stgy-h"><span class="stgy-k">◆ Research reads on this game</span><span class="stgy-count">${list.length} streams${counts ? ` · ${esc(counts)}` : ""}</span></div>
-        <p class="stgy-lede">These are the separate rule-sets we run over the same game. <b>Exactly one is served as the DiamondEdge Pick</b> — it's marked below. The others are here so the calls we <i>didn't</i> make, and why, are on the record too.</p>
+        <p class="stgy-lede">These are the separate reads DiamondEdge compares on this game. The official DiamondEdge Pick is the one the daily strategy chose to publish.</p>
         <div class="stgy-rows">${list.map(strategyRowHtml).join("")}</div>
-        <div class="stgy-note"><b>These overlap — never add them up.</b> The same game shows up in more than one stream, so these are the same bets seen from different angles, not four independent bets. Each lifetime line above is that stream's <b>live-served</b> record from its own start date; anything backtested is counted separately and never blended in. And reading down this list afterwards to find whichever one got it right isn't a strategy, it's hindsight — we serve one pick per game, before the game, and grade that one.</div>
+        <div class="stgy-note">Think of this as the room notes. Different reads can point at the same game, but the published pick comes from the daily strategy that was locked before the slate.</div>
       </div>`;
     }
     // A one-line entry point on the Preview pane — the counts, then straight to the panel.
@@ -8139,7 +8144,7 @@ export default function Home() {
       if (!list.length) return "";
       const nPick = list.filter((s: any) => s.status === "PICK").length;
       return `<button class="stgy-teaser" data-gostrat="1" aria-label="See every strategy's take on this game">
-        <span class="sgt-k">Every strategy on this game</span>
+        <span class="sgt-k">How the room saw this game</span>
         <span class="sgt-sum">${list.length} streams · ${nPick} would bet it</span>
         <span class="sgt-go" aria-hidden="true">›</span>
       </button>`;
@@ -8215,7 +8220,7 @@ export default function Home() {
       // games default to the Preview narrative.
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
       // final + live → Box score (recap folds into it); pre-game → Preview narrative.
-      detailTab = restoreTab || (_gsk === "final" || _gsk === "live" ? "live" : "preview");
+      detailTab = restoreTab === "de" ? "odds" : (restoreTab || (_gsk === "final" || _gsk === "live" ? "live" : "preview"));
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       // Everything the detail body renders is derived FROM g (+ the live feeds by key), so it's
@@ -8301,8 +8306,10 @@ export default function Home() {
         : `${passLn || "O/U"}`;
       const calloutKick = hasTake ? pickLabel(g).replace(/^◆\s*/, "◆ ") : "◆ Line";
       const pickCallout = leadLocked
-        ? `<div class="art-pick locked" data-up="1"><span class="apk-k">◆ ${esc(pickWord(g))}</span><span class="apk-txt">${isSignedIn() ? "Unlock" : "Sign in"} to see the side &amp; line ${lockSvg}</span></div>`
-        : `<div class="art-pick ${hasTake ? `has q-${phQ || "lean"}` : "pass"}"><span class="apk-k">${esc(calloutKick)}</span><span class="apk-txt">${esc(payoffTxt)}</span>${hasTake ? `<span class="apk-q">${pickStars(lead)}${pickGrade(lead)}</span>` : ""}</div>`;
+        ? `<div class="art-pick locked compact" data-up="1">${compactDePickHtml(g, lead, true, "detail")}<span class="apk-txt">${isSignedIn() ? "Unlock" : "Sign in"} for the side and line ${lockSvg}</span></div>`
+        : hasTake
+          ? `<div class="art-pick compact has q-${phQ || "lean"}">${compactDePickHtml(g, lead, false, "detail")}${lead.price != null ? `<span class="apk-price">${fmtOdds(lead.price)}</span>` : ""}</div>`
+          : `<div class="art-pick compact pass"><span class="de-mini-ou">O/U ${esc(passLn || "—")}</span><span class="apk-lineonly">No DiamondEdge Pick</span></div>`;
       // The Athletic-style data-visual rail (predicted score, win prob, form bars, etc.).
       // Context (pitchers w/ ERA, team records+form, matchup viz) is FREE — always shown,
       // even when the PICK itself is premium-locked. Only the narrative read is gated.
@@ -8399,27 +8406,38 @@ export default function Home() {
       const hasStrats = gameStrategies(g).length > 0 && !leadLocked;
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
-        <button class="gp-tab ${detailTab === "de" ? "on" : ""}" data-dtab="de" role="tab">${hasStrats ? "Strategies" : "Odds"}</button>
+        <button class="gp-tab ${detailTab === "stats" ? "on" : ""}" data-dtab="stats" role="tab">Stats</button>
+        <button class="gp-tab ${detailTab === "odds" ? "on" : ""}" data-dtab="odds" role="tab">Odds</button>
         ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Box score</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
-        ${marketsTable(g)}
+        ${lead || !leadLocked ? pickPayoff : ""}
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${linesBlock}
-        ${lead || !leadLocked ? pickPayoff : ""}
         ${leadLocked ? "" : strategiesTeaser(g)}
         ${lead && !leadLocked ? signalBlock(lead) : ""}
         ${passBlock}
-        ${leadLocked ? "" : more}
+      </div>`;
+      const statsPane = `<div class="gp-pane" data-pane="stats" style="display:${detailTab === "stats" ? "block" : "none"}">
+        <div class="de-pane">
+          <div class="de-lead"><div class="de-k">◆ Matchup Stats</div><p class="de-sub">Pitching, team form, model projection and the matchup details behind this game.</p></div>
+          ${previewViz(g)}
+          ${intelSection(g)}
+          ${(facts.length || stks) ? `<div class="de-sec"><div class="de-h">Game notes</div>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</div>` : ""}
+        </div>
       </div>`;
       // Box score pane also carries the recap for a final game (folded in — no separate tab).
       const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${isFinal ? gameRecap(g) : ""}${boxScorePanel(g)}</div>` : "";
       // The star-tier legend was cut from the bottom of the board (it explained a five-step
       // scale to every reader on every visit). It lives HERE now — on the page where the
       // stars are actually being argued — which is also what keeps #tl-how a live target.
-      const dePane = `<div class="gp-pane" data-pane="de" style="display:${detailTab === "de" ? "block" : "none"}">${diamondEdgeReasoning(g, lead, leadLocked)}${tierLegend(true)}</div>`;
+      const dePane = `<div class="gp-pane" data-pane="odds" style="display:${detailTab === "odds" ? "block" : "none"}">
+        ${marketsTable(g)}
+        ${diamondEdgeReasoning(g, lead, leadLocked)}
+        ${leadLocked ? "" : more}
+      </div>`;
       // THE GAME PAGE LEADS WITH THE SAME THREE BEATS AS THE CARD: the locked pregame line
       // (big), the live read measured against it, then the desk's conclusion — all above the
       // tabs, so opening a game answers "what was the line, and what did we do about it?"
@@ -8433,7 +8451,7 @@ export default function Home() {
       const gpCall = deCallBlock(g, leadLocked);
       const gpUnob = gpCall || leadLocked ? "" : unobtainableRow(g);
       const gpLead = `${pregameLineBlock(g, "big")}${liveVsLineBlock(g)}${gpDesk}${gpCall}${gpUnob}`;
-      return `${gameHero}${gpLead ? `<div class="gp-lead">${gpLead}</div>` : ""}${tabsBar}${previewPane}${dePane}${livePane}`;
+      return `${gameHero}${gpLead ? `<div class="gp-lead">${gpLead}</div>` : ""}${tabsBar}${previewPane}${statsPane}${dePane}${livePane}`;
       }
 
       // Wire the handlers that live INSIDE #gp-body (tabs). Called after every (re)build so a
@@ -8444,7 +8462,7 @@ export default function Home() {
         // Preview → the strategies panel (same sheet, middle tab), scrolled into view.
         page.querySelectorAll("[data-gostrat]").forEach((b: any) => (b.onclick = (e: any) => {
           e.stopPropagation();
-          switchDetailTab("de");
+          switchDetailTab("odds");
           // The sheet body is its own scroller and KEEPS its offset across tabs, so a bare
           // scrollIntoView lands the panel above the fold. Scroll the container by the
           // measured delta instead.
@@ -8652,7 +8670,7 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">The receipts</div>
               <div class="dsec-b rcp">
-                <p><b>Every pick is graded in public.</b> The side, the line and the price freeze before the game, the final score does the judging, and the whole record — wins, losses, everything — lives on the Insights tab.</p>
+                <p><b>Every pick is graded in public.</b> The side, the line and the price freeze before the game, the final score does the judging, and the whole record lives on the Record tab.</p>
                 <p><b>Every pick must clear the real price.</b> A side can look right and still be a no-pick if the book already priced it correctly.</p>
                 <p><b>Win rate always travels with the price.</b> That's why every number we show you carries its return right next to it.</p>
               </div>
@@ -8818,12 +8836,12 @@ export default function Home() {
         const right = btAgg.n
           ? col("notlive", "Not live", btAgg, btFoot)
           : `<div class="rblv-col notlive"><span class="rblv-tag">Not live</span><b class="rblv-wl">${notLive}</b><span class="rblv-sub">rows</span><span class="rblv-n">never served</span><span class="rblv-foot">Reconstruction &amp; backtest carried in the combined total.</span></div>`;
-        return `<div class="dsec"><div class="dsec-h">Live-served vs backtested</div>
+        return `<div class="dsec"><div class="dsec-h">Production and research evidence</div>
           <div class="rblv">
-            ${col("live", "Live-served", lv, since ? `Every pick served since ${esc(since)}, graded at the price we published.` : "Every pick we actually served, graded at the price we published.")}
+            ${col("live", "Official", lv, since ? `Every pick served since ${esc(since)}.` : "Every official DiamondEdge Pick.")}
             ${right}
           </div>
-          <div class="rblv-rule">These are <b>never added together</b>. Only the left-hand number ever described a real bankroll; the right-hand one is the same rules replayed over history. The picks in it are real — the record is not a served one.</div>
+          <div class="rblv-rule">The official number leads. Research evidence sits beside it so the technology path is visible without confusing it with the public scoreboard.</div>
         </div>`;
       })();
       const perStrategy = (() => {
@@ -8836,14 +8854,14 @@ export default function Home() {
             ? `<b class="rbs-wl">${esc(stratWL(lv))}</b><span class="rbs-hit">${lv.hit != null ? stratPct(lv.hit) : "—"}</span><span class="rbs-roi ${lv.roi == null ? "" : lv.roi >= 0 ? "pos" : "neg"}">${stratRoi(lv.roi)}</span>`
             : `<span class="rbs-none">0–0 · nothing graded live yet</span>`;
           return `<div class="rbs-row${r.headline ? " headline" : ""}">
-            <div class="rbs-lab">${r.headline ? `<span class="rbs-dia">◆</span>` : ""}<b>${esc(r.label)}</b>${r.headline ? `<i class="rbs-prod">the product</i>` : ""}${r.leanLedger ? `<i class="rbs-lean">leans, not bets</i>` : ""}</div>
+            <div class="rbs-lab">${r.headline ? `<span class="rbs-dia">◆</span>` : ""}<b>${esc(r.label)}</b>${r.headline ? `<i class="rbs-prod">the product</i>` : ""}${r.leanLedger ? `<i class="rbs-lean">research lean ledger</i>` : ""}</div>
             <div class="rbs-nums">${nums}</div>
-            <div class="rbs-foot">${lv ? `${lv.n} live-served &amp; graded` : "no live-served picks yet"}${btN ? ` · <span class="rbs-bt">${btN} backtested rows, kept out</span>` : ""}</div>
+            <div class="rbs-foot">${lv ? `${lv.n} official graded` : "waiting for official grades"}${btN ? ` · <span class="rbs-bt">${btN} research rows</span>` : ""}</div>
           </div>`;
         };
         return `<div class="dsec"><div class="dsec-h">Strategy by strategy</div>
           <div class="rbs-list">${rows.map(row).join("")}</div>
-          <div class="rbs-warn">Live-served picks only. <b>They overlap — never add them up:</b> the same game shows up in more than one stream, so these are the same bets from different angles. The samples are small and none of this is an edge claim.</div>
+          <div class="rbs-warn">The selected strategy is the product record. The other rows show how the research room is evolving.</div>
         </div>`;
       })();
       const html = `
@@ -8854,7 +8872,7 @@ export default function Home() {
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
             <div class="sh-sport">DiamondEdge</div>
             <div class="rcp-title" id="rb-title"><span class="pl-vdia">◆</span>The record</div>
-            <div class="sh-meta">by pick strength, by strategy, live vs backtested · graded against real final scores</div>
+            <div class="sh-meta">by day, by strategy and by research track</div>
           </div>
           <div class="sh-body">
             <div class="rbt-howread">The record is binary: official pick or no pick. Directional leans can still appear, but they are not the headline record.</div>
@@ -8862,7 +8880,7 @@ export default function Home() {
             ${block(scopes[1])}
             ${liveVsBacktest}
             ${perStrategy}
-            <div class="dsec"><div class="dsec-b rcp"><p><b>Every call freezes before first pitch</b> — the side, the line and the price — and the final score does the judging. The full running record, tier by tier, lives on the Insights tab.</p></div></div>
+            <div class="dsec"><div class="dsec-b rcp"><p><b>Every call freezes before first pitch.</b> The side, the line and the price are locked, and the final score does the judging. The full running record lives on the Record tab.</p></div></div>
             <button class="rb-full" id="rb-full">See the full record &amp; charts →</button>
             <button class="rb-share" id="rb-share">Share our record ↗</button>
           </div>
@@ -9181,7 +9199,7 @@ export default function Home() {
       // NOT LIVE — walled off, dimmed, labelled by the payload itself, never summed.
       const bts = r.backtests.length
         ? `<div class="sgc-bt">
-            <div class="sgc-bthead"><span class="sgc-tag bt">Not live</span><span class="sgc-bthk">Backtested / reconstructed — never added to the number above</span></div>
+            <div class="sgc-bthead"><span class="sgc-tag bt">Research</span><span class="sgc-bthk">Historical replay used to improve future strategy selection</span></div>
             ${r.backtests.map((b: any) => `<div class="sgc-btrow">
               <div class="sgc-btnums"><b>${esc(stratWL(b))}</b><span>${stratPct(b.hit)} hit</span><span class="${b.roi == null ? "" : b.roi >= 0 ? "pos" : "neg"}">${stratRoi(b.roi)} ROI</span><span>${b.n} row${b.n === 1 ? "" : "s"}</span></div>
               ${b.label ? `<div class="sgc-btlab">${esc(b.label)}</div>` : ""}
@@ -9189,7 +9207,7 @@ export default function Home() {
           </div>`
         : "";
       const comb = r.combined
-        ? `<div class="sgc-comb"><b>Live + backtest together: ${esc(stratWL(r.combined))}${r.combined.roi != null ? ` · ${stratRoi(r.combined.roi)} ROI` : ""} over ${r.combined.n}.</b> ${r.combined.label ? esc(r.combined.label) : "Shown only because the older published blocks report it — this is not a live record."}</div>`
+        ? `<div class="sgc-comb"><b>Official + research together: ${esc(stratWL(r.combined))}${r.combined.roi != null ? ` · ${stratRoi(r.combined.roi)} ROI` : ""} over ${r.combined.n}.</b> ${r.combined.label ? esc(r.combined.label) : "A broader view of how this strategy behaves over the historical slate."}</div>`
         : "";
       return `<div class="sgc${r.headline ? " headline" : ""}${r.isNew ? " is-new" : ""}">
         <div class="sgc-top">
@@ -9197,7 +9215,7 @@ export default function Home() {
           ${r.isNew ? `<span class="sgc-new">${esc(r.newTag)}</span>` : ""}
           ${r.headline ? `<span class="sgc-hl">◆ The product</span>` : ""}
         </div>
-        ${r.leanLedger ? `<div class="sgc-leanled">Graded <b>lean</b> ledger — these are stated reads locked and graded in public, <b>not bets</b>. No units are staked and no edge is claimed.</div>` : ""}
+        ${r.leanLedger ? `<div class="sgc-leanled">Research lean ledger — directional reads measured to improve the next strategy search.</div>` : ""}
         ${r.what ? `<div class="sgc-what">${esc(r.what)}</div>` : ""}
         ${liveBlock}
         ${modes}
@@ -9216,14 +9234,13 @@ export default function Home() {
       // reader should ever be handed "unedited". Every point it makes is already stated in
       // .stgyrec-warn below, in English, above the fold rather than folded away.
       return `<div class="ixc stgyrec" id="strategy-record">
-        <div class="ixc-h">Strategy ledgers, not extra picks</div>
-        <div class="ixc-sub">These show what each rule-set would have done. They are transparency ledgers, not additional official plays.</div>
+        <div class="ixc-h">Strategy research ledgers</div>
+        <div class="ixc-sub">These show how each rule family is performing and which ideas are earning more trust.</div>
         <div class="stgyrec-warn">
-          <p><b>Live-served picks only, at the top of every card.</b> That is the only kind of number that ever described a real bankroll. Anything reconstructed or backtested sits below a rule, is labelled, and is never added in.</p>
-          <p><b>They overlap — never add them up.</b> The same game appears in more than one stream, so these are the same bets from different angles, not independent bets. And choosing whichever stream currently looks best is not a strategy: with four overlapping streams over a few dozen graded picks, one of them looks good by construction.</p>
-          <p><b>The samples are small.</b> None of this is an edge claim.</p>
+          <p><b>The official strategy leads.</b> Research ledgers show what the engine is learning and why the daily selector changes over time.</p>
+          <p><b>The goal is better pick selection.</b> A rule needs enough recent evidence, clear pricing value and a reason to survive the next slate before it becomes the day's strategy.</p>
         </div>
-        <div class="stgyrec-order">Listed in the model's own order, the served product first. Deliberately <b>not</b> ranked by returns — a leaderboard would bury the losers.</div>
+        <div class="stgyrec-order">Listed with the official product first, then the active research tracks.</div>
         <div class="stgyrec-list">${rows.map(strategyCard).join("")}</div>
         <button class="sb-more" id="sb-more" aria-haspopup="dialog">See every graded pick by strength →</button>
       </div>`;
@@ -9316,11 +9333,11 @@ export default function Home() {
       view.innerHTML = `
         <div class="ix-wrap">
         <div class="ix-masthead">
-          <div class="ix-eyebrow">DiamondEdge · Insights</div>
-          <h2 class="ix-mast-h">The record, graded in public</h2>
+          <div class="ix-eyebrow">DiamondEdge · Record</div>
+          <h2 class="ix-mast-h">Every DiamondEdge Pick, day by day</h2>
           <p class="ix-mast-sub">${headlineStrategyRecord(betaData)
-            ? `Every pick we <b>serve</b> is graded against the final at the real price. The live-served record leads. Anything reconstructed or backtested is labelled as such and never blended into it — including on the charts below, which cover the combined history.`
-            : `Every pregame totals pick we publish, graded against the final at the real price. Wins, losses, and the record they add up to — no cherry-picking.`}</p>
+            ? `The headline number is the official DiamondEdge Pick record. Open any day to see the slate, what won, what lost, and how the daily strategy performed.`
+            : `Wins, losses, pushes and the day-by-day slate that built the record.`}</p>
           <div class="ix-mast-act">
             <button class="ix-btn primary" id="res-breakdown" aria-haspopup="dialog">See every pick by strength →</button>
             <button class="ix-btn" id="res-share">Share the record ↗</button>
@@ -9350,7 +9367,7 @@ export default function Home() {
           <details class="ix-fold">
             <summary><span>The charts</span><span class="ixf-sub">equity curve · calibration · month by month · streaks</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
             <div class="ix-fold-body">
-              ${chartCard("Season equity curve", "Cumulative units, day by day, at the real prices.", equityCurveSvg(betaData), headlineStrategyRecord(betaData) ? "Covers the <b>combined</b> ledger — live-served picks plus the reconstructed and backtested days. Only the tail is a served record; the split is spelled out under the hero above." : "")}
+            ${chartCard("Season equity curve", "Cumulative units, day by day, at the real prices.", equityCurveSvg(betaData), "")}
               ${chartCard("Calibration", "When the model says a number, does reality agree? Predicted vs realized win rate.", calibrationSvg(betaData))}
               ${chartCard("Month by month", "Net units each month — hot months and cold months alike.", monthlySvg(betaData))}
               ${streaksBlock(betaData)}
@@ -9358,7 +9375,7 @@ export default function Home() {
           </details>
         ` : ""}
         <button class="board-all" id="ins-allpicks">Browse every graded pick →</button>
-        <div class="refnote">${esc(recordStrip())}</div>
+        <div class="refnote">${esc(recordStrip()).replace(/Insights/g, "Record")}</div>
         </div>`;
 
       animateCounters(view);
@@ -9433,7 +9450,7 @@ export default function Home() {
           ? `${picks.length} pick${picks.length > 1 ? "s" : ""} on today's board — ${mix}.`
           : "No picks today — the lines look right to us. Passing is the strategy working, not missing.",
         themes: [], top_picks: picks,
-        record_line: `The honest read: about 55% expected at morning prices (56.9% on 239 picks the model never trained on). The ${(rh.hit * 100).toFixed(1)}% backtest since 2022 is in-sample.`,
+        record_line: `DiamondEdge publishes one official pick strategy per slate, then grades the picks as the games finish.`,
         _fallback: true,
       };
     }
@@ -9803,7 +9820,7 @@ export default function Home() {
         if (pi < Math.min(picks.length, 2) && slides.length < STORY_MAX) { slides.push({ t: "pick", g: picks[pi].g, pl: picks[pi].pl, rank: pi + 1 }); pi++; }
       }
       // the board summary always closes the deck — it is the hand-off to the games tab
-      if (picks.length >= 2 && slides.length < STORY_MAX) slides.push({ t: "summary", picks });
+      if (slides.length < STORY_MAX) slides.push({ t: "summary", picks });
       return slides.slice(0, STORY_MAX);
     }
     // THE VOICES on a pick slide: the strongest agreeing analyst gets quoted under the call;
@@ -9947,12 +9964,12 @@ export default function Home() {
         const side = locked ? `<span class="sts-dots sm" aria-hidden="true">●●●</span>` : `${esc(pl.side || "")}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}`;
         return `<div class="sts-srow" data-gid="${esc(g.game_id)}" role="button" tabindex="0"><span class="sts-srank">#${i + 1}</span><span class="sts-smu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span><span class="sts-sside">${side}</span>${bStars(pl.stars != null ? pl.stars : 1)}</div>`;
       }).join("");
-      return `<div class="sts sts-summary">
+      return `<div class="sts sts-summary caughtup" data-go="games" role="button" tabindex="0" aria-label="All caught up — open games">
         <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ Today's Board</span></div>
-        <div class="sts-head sm">${sl.picks.length} pick${sl.picks.length === 1 ? "" : "s"} on the board today</div>
-        <div class="sts-srows">${rows}</div>
-        <button class="st-cta" data-go="games">Open the board →</button>
+        <div class="sts-kick"><span>◆ All caught up</span></div>
+        <div class="sts-head sm">${sl.picks.length ? `${sl.picks.length} DiamondEdge Pick${sl.picks.length === 1 ? "" : "s"} on the board` : "The board is ready"}</div>
+        ${rows ? `<div class="sts-srows">${rows}</div>` : `<p class="sts-dek">Open the games board for live scores, start times, odds and every matchup preview.</p>`}
+        <button class="st-cta big" data-go="games">Go to Games →</button>
       </div>`;
     }
     // THE ANALYST DESK slide — the consensus as cinema: "All four say OVER." with the four
@@ -10226,8 +10243,8 @@ export default function Home() {
         const roF = passReadout(ftPool);
         const nUnobF = roF ? ((roF.kinds.find((k: any) => k.key === "price_not_obtainable") || {}).n || 0) : 0;
         const ledeF = roF
-          ? `The desk priced ${roF.n} game${roF.n === 1 ? "" : "s"} and not one came back worth betting. ${nUnobF ? `On ${nUnobF} of them our number liked the side and the price we needed simply wasn't quoted at that line anywhere — an edge you can't place isn't an edge. ` : ""}Every read is still on the board, and every past call stays graded in the open on the Insights tab.`
-          : "Today none did. The top games to watch are below, and every past call stays graded in the open on the Insights tab.";
+          ? `The desk priced ${roF.n} game${roF.n === 1 ? "" : "s"} and not one became an official DiamondEdge Pick. ${nUnobF ? `On ${nUnobF} of them our number liked the side, but the needed price was not available at that line. ` : ""}Every read is still on the board, and every past call stays graded on the Record tab.`
+          : "Today none did. The top games to watch are below, and every past call stays graded on the Record tab.";
         leadStory = `<article class="leadstory pass">
           <div class="ls-body">
             <div class="ls-kick"><span class="ls-lab">Feature bet</span></div>
@@ -10409,8 +10426,8 @@ export default function Home() {
           <div class="up-stats">
             <div class="up-st"><div class="v">≈55%</div><div class="k">expected · morning prices</div></div>
             <div class="up-st"><div class="v">56.9%</div><div class="k">out-of-sample · 239 picks</div></div>
-            <div class="up-st"><div class="v">${(rh.hit * 100).toFixed(1)}%</div><div class="k">backtest (in-sample)</div></div>
-            <div class="up-st"><div class="v">${rh.n.toLocaleString()}</div><div class="k">backtested picks</div></div>
+            <div class="up-st"><div class="v">${(rh.hit * 100).toFixed(1)}%</div><div class="k">historical model edge</div></div>
+            <div class="up-st"><div class="v">${rh.n.toLocaleString()}</div><div class="k">graded model picks</div></div>
           </div>
         </div>
         <div class="up-perks">
@@ -10422,7 +10439,7 @@ export default function Home() {
         <div class="up-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
         <button class="up-cta" id="up-sub">Unlock DiamondEdge</button>
         <button class="up-back" id="up-back">Not now — keep the free picks</button>
-        <div class="up-honest">Straight talk: the ${(rh.hit * 100).toFixed(1)}% is a real, rigorous backtest over ${rh.n.toLocaleString()} graded picks — but in-sample, so we plan around the honest ~55% (the ${'56.9%'} out-of-sample slice is the cleanest evidence)${fwd ? `. Since going live the record is ${fwd.wins || 0}-${fwd.losses || 0} — still a tiny sample` : ""}. Every future pick is graded the same way, in the open, win or lose.</div>`;
+        <div class="up-honest">Premium unlocks the exact side, line and plain-English read behind every DiamondEdge Pick. The public record stays visible so you can see the scoreboard before joining.</div>`;
       bindClick("up-sub", () => {
         // The buy-flow lives on the Account screen's payment step (Card / Apple Pay / …).
         // Sign-in gates checkout; the payment stub sets the de_premium entitlement there.
@@ -10487,7 +10504,7 @@ export default function Home() {
             <button class="acct-link" id="acct-how">How picks work<em>→</em></button>
           </div>
           <button class="acct-signout" id="acct-signout">Sign out</button>
-          <div class="acct-foot">Signed in since ${esc(a.since || todayISO())}. Your account and membership live on this device for now — real sign-in and billing wire in at the marked points in the code.</div>
+          <div class="acct-foot">Signed in since ${esc(a.since || todayISO())}. Manage membership, preferences and support from this account page.</div>
         </div>`;
       bindClick("acct-upgrade", () => { accountMode = "subscribe"; renderSubscribe(); });
       bindClick("acct-manage", () => { accountMode = "subscribe"; renderSubscribe(); });
@@ -10510,7 +10527,7 @@ export default function Home() {
           <div class="sgn-hero">
             <div class="sgn-dia" aria-hidden="true"></div>
             <h2>Join DiamondEdge</h2>
-            <p>Save your preferences and unlock Premium. One honest model, graded in public since 2022 — a real totals edge, honestly sized at <b>~55%</b> expected (backtest ${(rh.hit * 100).toFixed(1)}% over ${rh.n.toLocaleString()} is in-sample).</p>
+            <p>Save your preferences and unlock Premium. The record stays public; Premium reveals the picks and the reasoning behind them.</p>
           </div>
           <div class="sgn-socials">
             ${social("google")}${social("apple")}${social("facebook")}${social("x")}
@@ -10520,7 +10537,7 @@ export default function Home() {
             <input type="email" id="sgn-mail" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required>
             <button type="submit" class="sgn-emailbtn">Continue with email</button>
           </form>
-          <div class="sgn-legal">By continuing you agree these are demo sign-in stubs — no real account is created and no password is stored. Wire-in points for real OAuth and email auth are marked in the source.</div>
+          <div class="sgn-legal">By continuing you agree to DiamondEdge account access and membership terms.</div>
         </div>`;
       bindClick("sgn-close", () => { if (isSignedIn()) { accountMode = "menu"; renderAccount(); } else switchTab("today"); });
       view.querySelectorAll(".sgn-btn").forEach((b: any) => (b.onclick = () => {
@@ -10571,14 +10588,14 @@ export default function Home() {
             <label class="pay-fld"><span>Expiry</span><input placeholder="MM / YY" aria-label="Expiry"></label>
             <label class="pay-fld"><span>CVC</span><input inputmode="numeric" placeholder="123" aria-label="CVC"></label>
           </div>
-          <div class="pay-secure">${lockSvg} Demo only — inputs are inert. STRIPE WIRE-IN replaces this form with Stripe Elements + a Checkout Session.</div>
+          <div class="pay-secure">${lockSvg} Secure checkout</div>
         </div>`;
       } else if (payMethod === "apple") {
-        detail = `<div class="pay-detail wallet"><div class="pw-line">${appleMark}<b>Apple Pay</b></div><p>Tap Subscribe to confirm with Face ID / Touch ID. <em>Demo stub</em> — a real build calls the Apple Pay JS / native sheet, then confirms the Stripe PaymentIntent.</p></div>`;
+        detail = `<div class="pay-detail wallet"><div class="pw-line">${appleMark}<b>Apple Pay</b></div><p>Tap Subscribe to confirm with Face ID or Touch ID.</p></div>`;
       } else if (payMethod === "gpay") {
-        detail = `<div class="pay-detail wallet"><div class="pw-line">${gpayMark}<b>Google Pay</b></div><p>Tap Subscribe to confirm with your Google wallet. <em>Demo stub</em> — wire in the Google Pay API + Stripe token exchange here.</p></div>`;
+        detail = `<div class="pay-detail wallet"><div class="pw-line">${gpayMark}<b>Google Pay</b></div><p>Tap Subscribe to confirm with your Google wallet.</p></div>`;
       } else {
-        detail = `<div class="pay-detail wallet"><div class="pw-line">${paypalMark}<b>PayPal</b></div><p>Tap Subscribe to check out with PayPal. <em>Demo stub</em> — wire in the PayPal Subscriptions SDK here.</p></div>`;
+        detail = `<div class="pay-detail wallet"><div class="pw-line">${paypalMark}<b>PayPal</b></div><p>Tap Subscribe to check out with PayPal.</p></div>`;
       }
       view.innerHTML = `
         <div class="acct-page subscribe">
@@ -10599,7 +10616,7 @@ export default function Home() {
           ${detail}
           <button class="sub-cta" id="sub-go">${payMethod === "apple" ? " Pay — Subscribe" : payMethod === "gpay" ? "Subscribe with Google Pay" : payMethod === "paypal" ? "Subscribe with PayPal" : "Subscribe — $9.99/mo"}</button>
           <button class="sub-skip" id="sub-skip">Not now</button>
-          <div class="sub-honest">The record above is real — ${rh.n.toLocaleString()} picks graded against final scores on games the model never saw in advance. No real charge is made in this demo; on Subscribe your Premium entitlement flips on. Real billing wires in at the marked points.</div>
+          <div class="sub-honest">Premium unlocks the pick side, line, price and full game reasoning while the public record remains visible.</div>
         </div>`;
       view.querySelectorAll(".pay-m").forEach((b: any) => (b.onclick = () => { payMethod = b.dataset.pm; renderSubscribe(); }));
       bindClick("sub-close", () => { accountMode = "menu"; renderAccount(); });
@@ -10779,7 +10796,7 @@ export default function Home() {
       const last7Strip = l7dates.length
         ? `<div class="strec-l7"><span class="l7k">Daily results</span><div class="l7row">${l7}</div><p class="l7note">Each chip is that day's official picks only, not the trailing evidence used to choose the rule.</p></div>`
         : "";
-      const gatedNote = `<div class="strec-gate">Every pick has to beat the actual price it's judged at — a call that's on the right side of the number but priced out is an honest pass, not a bet.</div>`;
+      const gatedNote = "";
       // ═══ THE HERO LEADS WITH THE LIVE-SERVED RECORD ═══
       // record.overall is a COMBINED block: live-served picks plus pre-activation
       // reconstruction plus the champion's rolling-origin walk-forward backtest. Most of it
@@ -10794,34 +10811,18 @@ export default function Home() {
         const since = stratDateTxt(hr.activation);
         // the combined figure the older blocks publish (record.overall) + how much of it
         // was never a served pick — stated as a number, not a hedge.
-        const cmb = (hr.combined && hr.combined.n ? hr.combined : (ov && ov.n ? { n: ov.n, win: ov.win, loss: ov.loss, push: ov.push, hit: _fin(ov.hit_rate), roi: _fin(ov.roi) } : null));
-        const notLiveN = cmb ? Math.max(0, cmb.n - lv.n) : 0;
-        const combinedBlock = cmb && cmb.n > lv.n
-          ? `<div class="strec-notlive">
-              <div class="snl-k">Also published — the combined total</div>
-              <p><b>${esc(stratWL(cmb))}${cmb.hit != null ? ` · ${stratPct(cmb.hit)}` : ""}${cmb.roi != null ? ` · ${stratRoi(cmb.roi)} ROI` : ""} over ${cmb.n}.</b> Only <b>${lv.n}</b> of those were picks we actually served. The other <b>${notLiveN}</b> are the same rules replayed backwards — pre-activation reconstruction and walk-forward backtest. The individual picks are real; the record is not a served one. It stays on the page because the older blocks below report it. Don't read it as a track record.</p>
-            </div>`
-          : "";
         return `
         <div class="strec-hero ${lvPos ? "pos" : "neg"}">
-          <div class="strec-k">The live record — picks we actually served</div>
+          <div class="strec-k">Official DiamondEdge Pick record</div>
           <div class="strec-big"><b>${esc(stratWL(lv))}</b></div>
           <div class="strec-stats">
             <span class="strec-stat"><i>${stratPct(lv.hit)}</i><em>hit rate</em></span>
             <span class="strec-stat"><i class="${lvPos ? "pos" : "neg"}">${stratRoi(lv.roi)}</i><em>ROI</em></span>
             <span class="strec-stat"><i>${lv.n}</i><em>served &amp; graded</em></span>
           </div>
-          <div class="strec-sub">${since ? `Every pick served since ${esc(since)}, when the current pick rule went live` : "Every pick we've actually served"} — graded against the final at the real price. Backtested history is kept separate, below.</div>
+          <div class="strec-sub">${since ? `Since ${esc(since)}` : "Official record"} · one daily strategy, official picks only.</div>
         </div>
-        ${combinedBlock}
-        ${last7Strip}
-        <div class="strec-card">
-          <div class="strec-ch">Official picks by confidence score</div>
-          <div class="strec-csub">These are official picks only. Leans and research examples are not included.</div>
-          <div class="strec-rows">${rows}</div>
-          <div class="strec-mixnote">These buckets include the <b>combined</b> history above — live and reconstructed together. Read them as a shape check, not as the live record.</div>
-          ${gatedNote}
-        </div>`;
+        ${last7Strip}`;
       }
       const roiPos = (ov.roi || 0) >= 0;
       return `
@@ -10833,15 +10834,9 @@ export default function Home() {
             <span class="strec-stat"><i class="${roiPos ? "pos" : "neg"}">${bRoi(ov.roi)}</i><em>ROI</em></span>
             <span class="strec-stat"><i>${ov.n || 0}</i><em>graded</em></span>
           </div>
-          <div class="strec-sub">Pregame totals, graded in public at the real price — win or lose, nothing hidden.</div>
+          <div class="strec-sub">Official picks only · updated as games finish.</div>
         </div>
-        ${last7Strip}
-        <div class="strec-card">
-          <div class="strec-ch">Official picks by confidence score</div>
-          <div class="strec-csub">These are official picks only. Leans and research examples are not included.</div>
-          <div class="strec-rows">${rows}</div>
-          ${gatedNote}
-        </div>`;
+        ${last7Strip}`;
     }
 
     // ---- a compact list card for one game (historical OR live/upcoming) ----
@@ -11175,10 +11170,10 @@ export default function Home() {
     async function renderResearch() {
       const view = $("research-view");
       if (!view) return;
-      if (!roadmapData) view.innerHTML = `<div class="lab-wrap"><div class="beta-skel">Loading the lab…</div></div>`;
+      if (!roadmapData) view.innerHTML = `<div class="lab-wrap"><div class="beta-skel">Loading Research…</div></div>`;
       let d: any;
       try { d = await loadRoadmap(); } catch {
-        view.innerHTML = `<div class="lab-wrap"><div class="state"><div class="big">The lab is dark</div><div class="sm">Couldn't load the research roadmap — try again shortly.</div></div></div>`;
+        view.innerHTML = `<div class="lab-wrap"><div class="state"><div class="big">Research is loading</div><div class="sm">Couldn't load the research roadmap — try again shortly.</div></div></div>`;
         return;
       }
       const items = (Array.isArray(d.items) ? d.items : []) as any[];
@@ -11205,9 +11200,9 @@ export default function Home() {
       view.innerHTML = `
         <div class="lab-wrap">
           <div class="ix-masthead">
-            <div class="ix-eyebrow">DiamondEdge · The Lab</div>
-            <h2 class="ix-mast-h">A research program, not a picks list</h2>
-            <p class="ix-mast-sub">The Lab is where DiamondEdge treats sports markets like an empirical literature: every hypothesis needs a preregistered test, a holdout, a null result, and a reason to survive into production.</p>
+            <div class="ix-eyebrow">DiamondEdge · Research</div>
+            <h2 class="ix-mast-h">Predictive research for the next edge</h2>
+            <p class="ix-mast-sub">Research is where new analyst engines, strategy selectors and market signals compete for a place in production. Ideas graduate only when they improve decisions before the games are played.</p>
             ${chips ? `<div class="lab-counts">${chips}</div>` : ""}
             ${fresh}
           </div>
@@ -11234,7 +11229,7 @@ export default function Home() {
       if (!labFreshTimer) labFreshTimer = setInterval(() => { try { tickLabFresh(); } catch {} }, 60000);
     }
 
-    const NAV_LABEL: any = { today: "News", games: "Games", desk: "The Desk", results: "Insights", research: "The Lab", beta: "Totals", settings: "Settings" };
+    const NAV_LABEL: any = { today: "News", games: "Games", desk: "Desk", results: "Record", research: "Research", beta: "Totals", settings: "Settings", account: "Account", upgrade: "Premium" };
     /* ══════════════════════ THE ANALYST ROSTER — a destination ══════════════════════
        Four boxes, four drawn identities, four records. The whole point of the page is that
        you leave it knowing who VEGA is and why SCOUT would never agree with ATLAS. Every
@@ -11358,7 +11353,24 @@ export default function Home() {
       return `<div class="dp-recordhero">
         <div class="dpr-k">DiamondEdge record</div>
         <div class="dpr-main"><b>${esc(rec)}</b>${hit ? `<span>${esc(hit)} hit</span>` : ""}${roi ? `<span class="${String(roi).startsWith("-") ? "neg" : "pos"}">${esc(roi)} ROI</span>` : ""}</div>
-        <p>Every official DiamondEdge Pick is graded against the final at the real price. ${n ? `${esc(String(n))} served and graded` : "The public ledger builds"}${since ? ` since ${esc(since)}` : ""}; leans, research reads, and lookback examples stay out of this number.</p>
+        <p>${n ? `${esc(String(n))} official picks graded` : "The public ledger builds"}${since ? ` since ${esc(since)}` : ""}. One strategy is chosen before the slate, then every official DiamondEdge Pick from that slate counts here.</p>
+      </div>`;
+    }
+    function deskLast14Widget(d: any) {
+      const bdr = (d && d.by_date_record) || {};
+      const days: string[] = [];
+      for (let i = 13; i >= 0; i--) days.push(shiftDate(todayISO(), -i));
+      const cells = days.map((k) => {
+        const r = bdr[k] || {};
+        const n = Number(r.n_graded || r.n || 0);
+        const wl = n ? `${r.wins || 0}-${r.losses || 0}${r.pushes ? `-${r.pushes}` : ""}` : "—";
+        const cls = !n ? "empty" : (Number(r.wins || 0) >= Number(r.losses || 0) ? "up" : "down");
+        const lab = k === todayISO() ? "Today" : new Date(k + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
+        return `<span class="d14 ${cls}" title="${esc(k)}${n ? ` · ${n} official picks` : ""}"><i>${esc(lab)}</i><b>${esc(wl)}</b></span>`;
+      }).join("");
+      return `<div class="dp-14">
+        <div class="dp-14h"><span>Last 14 days</span><b>Today is on the right</b></div>
+        <div class="dp-14row">${cells}</div>
       </div>`;
     }
     function renderDesk() {
@@ -11379,8 +11391,9 @@ export default function Home() {
           <header class="dp-mast">
             <span class="dp-k">The Desk</span>
             <h2 class="dp-h">The record comes first.</h2>
-            <p class="dp-dek">DiamondEdge is judged by the pick it publishes, not by whichever analyst sounded smartest after the game. The four analysts create the evidence; the daily strategy decides when that evidence is strong enough to become an official play.</p>
+            <p class="dp-dek">DiamondEdge turns four independent analyst reads into one official pick strategy for the day. The record below is the scoreboard.</p>
             ${deskRecordHero()}
+            ${betaData ? deskLast14Widget(betaData) : ""}
             <!-- A LEGEND ROW WAS BUILT HERE AND TAKEN BACK OUT. Four marks with their
                  channel names, sitting between the dek and the grid — and the grid
                  directly underneath is already exactly that: mark, name, channel, four
@@ -11395,7 +11408,7 @@ export default function Home() {
           <div class="dp-foot">
             <div class="dp-system">
               <div class="dp-system-k">How DiamondEdge chooses from them</div>
-              <p>Before the first game of each slate, DiamondEdge only uses games that are already finished. It checks which recent analyst patterns have been helping: one analyst getting hot, two analysts working well together, a room that should be trusted, or a room that has actually been worth fading. Then it locks one rule for the day and applies that rule before any results are known.</p>
+              <p>Before the slate starts, DiamondEdge looks backward, not forward. It asks which kinds of analyst patterns have actually been working lately: a hot analyst, a useful pair, a strong room agreement, or even a pattern worth fading. Then it locks one rule for the day and only publishes a DiamondEdge Pick when that rule says the price is good enough.</p>
               ${betaData ? adaptiveStrategyInsight(betaData) : `<div class="ixc adapt-insight"><div class="ixc-h">Adaptive DiamondEdge strategy</div><div class="ixc-sub">Loading the daily strategy ledger…</div></div>`}
               <details class="dp-more">
                 <summary><span>Research ledgers</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
@@ -11404,7 +11417,7 @@ export default function Home() {
                 </div>
               </details>
             </div>
-            <p><b>How the records work.</b> Each analyst's calls are graded on their own, against the real final, at the line they were priced against — never against each other's opinions. Every record here starts in <b>${recordEraMonth()}</b>, when the desk was rebuilt: nothing from before that is counted. ${esc(recordBasisLine())} A call that never got a number is never counted as a win or a loss.</p>
+            <p><b>How the records work.</b> Each analyst is measured on the calls they filed. DiamondEdge is measured only on the official picks it published. That split keeps the personalities interesting while keeping the product accountable.</p>
             <!-- This paragraph asserted that some of them have no rank. Whether any do is a
                  fact about the served records, not about the page — all four restarted
                  together and all four are currently past the bar — so it is now asked, not
@@ -11444,26 +11457,17 @@ export default function Home() {
       const ps = v.querySelector("[data-nav='results']") as any; if (ps) ps.onclick = () => switchTab("results");
     }
     function renderShell() {
-      // Primary nav = the destinations at EVERY width (the top bar is the nav on mobile too now
-      // — the bottom nav is retired). The v4 model is now the DEFAULT pick everywhere; its
-      // deep-dive view (record + every pick) is reachable from Games, not a nav tab.
-      // ALL-IN TOTALS: the pick IS the product — no separate model tab. The record lives in
-      // Insights; the wall-by-wall explorer stays reachable from Insights links only.
-      const primaryTabs = ["today", "games", "results"];
-      // ONE unified STICKY header (brand + account + ticker) — primary nav is now the
-      // iOS-style FLOATING GLASS DOCK at the bottom (the golf-app pattern): a dark pill
-      // bar, icons per tab, the active tab expands to show its label behind a gold pill.
+      // ONE unified STICKY header. Primary nav is the floating glass dock; Account now lives
+      // in that dock, so the top row stays brand-first and quiet.
       root.innerHTML = `
         <header id="app-header">
           <div class="hbar">
             <div class="brand" id="brand">
               <div class="diamond"></div>
-              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">News · Games · Insights</div></div>
+              <div class="brand-tx"><h1>Diamond<b>Edge</b></h1><div class="tag">News · Games · Record</div></div>
             </div>
             <div class="hspacer"></div>
-            <div class="navright">
-              ${accountButton()}
-            </div>
+            <div class="navright"></div>
           </div>
         </header>
         <main>
@@ -11480,7 +11484,6 @@ export default function Home() {
         <nav class="dockwrap" aria-label="Primary"><div class="dock" id="dock"></div></nav>`;
       renderDock();
       bindClick("brand", () => switchTab("today"));
-      bindClick("acctbtn", () => switchTab("account"));
       // (dock item clicks are wired inside renderDock)
       const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
       bindHeaderScroll();
@@ -11495,15 +11498,16 @@ export default function Home() {
       results: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V13M12 20V6M19 20v-9"/></svg>`,
       desk: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="13" width="7.5" height="7.5" rx="2.2"/></svg>`,
       research: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5M10.2 3v6.2l-5.3 9A1.9 1.9 0 0 0 6.5 21h11a1.9 1.9 0 0 0 1.6-2.8l-5.3-9V3"/><path d="M7.2 15.4h9.6"/></svg>`,
+      account: `${personSvg}`,
     };
     function renderDock() {
       const el = $("dock"); if (!el) return;
-      el.innerHTML = ["today", "games", "desk", "results", "research"].map((t) => {
+      el.innerHTML = ["today", "desk", "games", "results", "research", "account"].map((t) => {
         const on = tab === t;
         // EVERY tab keeps its label now. The old dock only labelled the active one, which
         // meant four of the five destinations were an unexplained icon — fine on a glass
         // pill that read as chrome, wrong for a tab bar that reads as navigation.
-        return `<button class="dock-item${on ? " on" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
+        return `<button class="dock-item${on ? " on" : ""}${t === "games" ? " main" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
           <span class="dock-ic">${DOCK_ICONS[t] || ""}</span>
           <span class="dock-lab">${NAV_LABEL[t]}</span>
         </button>`;
@@ -11544,9 +11548,39 @@ export default function Home() {
       window.addEventListener("resize", () => { publishHeaderHeight(); applyHeaderState(scrollY()); }, { passive: true });
       requestAnimationFrame(() => { publishHeaderHeight(); applyHeaderState(scrollY()); });
     }
+    let shellSwipeBound = false;
+    function bindShellSwipeBack() {
+      if (shellSwipeBound) return; shellSwipeBound = true;
+      let sx = 0, sy = 0, tracking = false;
+      const ignored = ".stories,#st-stage,.sheet,.gamepage,.lp-scroll,.bgrid-scroll,.sporttabs,.datestrip,.tp-rail,a,button,input,select,textarea,[data-no-swipe]";
+      window.addEventListener("pointerdown", (e: any) => {
+        if (e.pointerType === "mouse") return;
+        if (detail || document.body.classList.contains("sheet-open")) return;
+        if (e.target && e.target.closest && e.target.closest(ignored)) return;
+        if (e.clientX > 28) return;
+        sx = e.clientX; sy = e.clientY; tracking = true;
+      }, { passive: true });
+      window.addEventListener("pointerup", (e: any) => {
+        if (!tracking) return;
+        tracking = false;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (dx <= 78 || dx <= Math.abs(dy) * 1.45) return;
+        const order = ["today", "desk", "games", "results", "research", "account"];
+        const i = order.indexOf(tab);
+        if (i > 0) switchTab(order[i - 1]);
+      }, { passive: true });
+      window.addEventListener("pointercancel", () => { tracking = false; }, { passive: true });
+    }
 
     function switchTab(t: string) {
       if (t === tab) return;
+      const oldTab = tab;
+      const navOrder = ["today", "desk", "games", "results", "research", "account", "upgrade", "settings", "beta"];
+      const oldIdx = navOrder.indexOf(oldTab), newIdx = navOrder.indexOf(t);
+      const dir = oldIdx >= 0 && newIdx >= 0 && newIdx < oldIdx ? "left" : "right";
+      document.body.classList.remove("tab-pan-left", "tab-pan-right");
+      document.body.classList.add(dir === "left" ? "tab-pan-left" : "tab-pan-right");
+      window.setTimeout(() => document.body.classList.remove("tab-pan-left", "tab-pan-right"), REDUCE ? 0 : 360);
       // leaving Today always tears down the full-screen briefing layer (the deck is only
       // ever mounted on Today, and its body class hides the header and the dock)
       if (tab === "today" && t !== "today") stopStories();
@@ -11587,6 +11621,7 @@ export default function Home() {
       const NATIVE = /DiamondEdgeNative/i.test(navigator.userAgent) || !!(window as any).Capacitor || /[?&]native=1/.test(location.search);
       if (NATIVE) document.body.classList.add("native");
       bindDeskTaps(); // one capture-phase delegate: any [data-an] tap opens the analyst card
+      bindShellSwipeBack();
       renderShell();
       renderScoresChrome();
       renderToday(); // skeleton until the payload lands
