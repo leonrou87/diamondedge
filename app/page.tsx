@@ -763,7 +763,7 @@ export default function Home() {
         <div class="ltr-k">${live ? `<span class="livedot"></span>` : ""}${esc(kick)}</div>
         <div class="ltr-head">${esc(heroHead)}</div>
         ${!hero && tr.sub ? `<div class="ltr-sub">${esc(tr.sub)}</div>` : ""}
-        ${!hero && live ? `<div class="ltr-note">Context on how it's going — the graded morning play is unchanged.</div>` : ""}
+        ${!hero && live ? `<div class="ltr-note">Live read. The morning ticket stands.</div>` : ""}
       </div>`;
     }
 
@@ -1508,8 +1508,7 @@ export default function Home() {
           <span class="ds-caret" aria-hidden="true">⌄</span>
         </summary>
         <div class="ds-more">
-          <p>${esc(line || `Before the first game, DiamondEdge looked only at finished games, picked the recent rule that had been helping most, and locked it for today's board.`)}</p>
-          <p>The rule is chosen from recent finished games before today's slate begins, then used consistently for the day.</p>
+          <p>${esc(line || `Before the first game, DiamondEdge read every finished game, took the rule that has been working, and locked it for today's board.`)}</p>
           <button class="ds-learn" id="daystrat-eye" type="button">Learn on The Desk →</button>
         </div>
       </details>`;
@@ -2596,7 +2595,6 @@ export default function Home() {
         ${callHtml ? `<div class="de-callrow">${callHtml}${atLine}${quality}</div>` : ""}
         ${locked ? `<div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : ""}
         ${locked ? "" : unobtainableRow(g)}
-        ${locked ? "" : deskAgreementRow(g, locked)}
         ${rlHtml || predHtml ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
         ${rat && !locked ? `<p class="de-rat">${esc(rat)}</p>` : ""}
         ${locked ? "" : coherenceBlock(chief)}
@@ -2947,7 +2945,7 @@ export default function Home() {
       if (early.length) out.push({
         id: "early", ranked: false, ordinals: false, rows: early,
         head: "Too early to rank",
-        sub: `Under ${ANALYST_MIN_N} graded calls, so hit rate and ROI are still noise. Listed by calls made — the order here means nothing.`,
+        sub: `Under ${ANALYST_MIN_N} graded calls. Listed by calls made, not ranked.`,
       });
       return out;
     }
@@ -2962,53 +2960,6 @@ export default function Home() {
     const deskL10Dots = (arr: any[]) => (arr && arr.length
       ? `<span class="dsk-l10" aria-label="last ${arr.length} calls">${arr.map((r) => `<i class="d-${r === "W" ? "w" : r === "L" ? "l" : "p"}"></i>`).join("")}</span>`
       : "");
-    // ---- DESK STANDINGS (top of home) ----
-    // NOT one leaderboard. A ranked group only exists where the sample and the ledger kind
-    // make the comparison mean something; everyone else sits under "too early to rank" in a
-    // deliberately neutral order. See deskGroups() for the rule.
-    function deskStandingsStrip() {
-      let rows = deskRecordRows();
-      const haveRec = rows.length > 0;
-      if (!haveRec && !deskAnyAnalysts()) return "";
-      // no served records ⇒ empty rows, but the IDENTITY still prefers the served slice over
-      // the authored cast (see deskSliceFor) so an un-recorded desk is never mislabelled
-      if (!haveRec) rows = DESK_ORDER.map((k) => ({ key: k, cast: DESK_CAST[k], name: DESK_CAST[k].name, title: (deskSliceFor(k) as any).title || DESK_CAST[k].title, persona: deskThesis(k), n: 0, win: 0, loss: 0, push: 0, hit: null, roi: null, last10: [] }));
-      const wk = weeklyStandingsData();
-      const card = (r: any, grp: any, i: number) => {
-        const graded = r.win + r.loss + r.push > 0;
-        const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0";
-        const roiTxt = r.roi != null
-          ? ledgerRoi(r, "dskst-roi")
-          : `<i class="dskst-roi dim">${graded ? "" : "first calls today"}</i>`;
-        // THIS-WEEK FORM rides the strip as a plain tally. The crown does NOT: it belongs to a
-        // COMPLETED week and pinning it to a live standings position is how a reader ends up
-        // believing the bottom row is the champion.
-        const wrow = wk ? wk.rows.find((x: any) => x.key === r.key) : null;
-        const wkChip = wrow ? `<span class="dskst-wk">wk <b>${wrow.w}–${wrow.l}${wrow.p ? `–${wrow.p}` : ""}</b></span>` : "";
-        const rankTxt = grp.ranked
-          ? (grp.ordinals ? `${i === 0 ? "◆ " : ""}${ordinal(i)}` : "◆ readable")
-          : `<span class="dskst-unranked">unranked</span>`;
-        const aria = `${r.name} — ${r.title}, ${rec} over ${r.n} graded call${r.n === 1 ? "" : "s"} ${recordEraTxt()}`
-          + (grp.ranked ? (grp.ordinals ? `, ranked ${ordinal(i)}` : ", the only readable record") : ", too early to rank")
-          + (wrow ? `, this week ${wrow.w} and ${wrow.l}` : "");
-        return `<button class="dskst-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked && grp.ordinals && i === 0 ? " lead" : ""}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}" aria-label="${esc(aria)}">
-          <span class="dskst-rank">${rankTxt}${wkChip}</span>
-          <span class="dskst-id">${deskGlyph(r.key, 17)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
-          <span class="dskst-rec"><b>${rec}</b>${roiTxt}</span>
-          <span class="dskst-n${graded && r.n < ANALYST_MIN_N ? " young" : ""}">${graded ? `${r.n} graded` : "no graded calls yet"}${ledgerChip(r, true)}</span>
-          ${deskL10Dots(r.last10)}
-        </button>`;
-      };
-      const groups = deskGroups(rows).map((grp: any) => `
-        <div class="dskst-grp ${esc(grp.id)}">
-          <div class="dskst-gh"><span class="dskst-gk">${esc(grp.head)}</span><span class="dskst-gs">${esc(grp.sub)}</span></div>
-          <div class="dskst-rail n${Math.min(4, grp.rows.length)}">${grp.rows.map((r: any, i: number) => card(r, grp, i)).join("")}</div>
-        </div>`).join("");
-      return `<section class="dskst" aria-label="Desk standings">
-        <div class="dskst-h"><span class="dskst-k">◆ Desk standings</span><span class="dskst-sub">Four analysts call every game, and every record here starts in ${recordEraMonth()}. Only a record past ${ANALYST_MIN_N} graded calls is ranked — under that, a hit rate is noise and we say so instead of giving it a place.</span></div>
-        ${groups}
-      </section>`;
-    }
     // ---- the analyst PAGE: a full-screen character destination — the persona as the star.
     // Hero (glyph medallion · name · title · method) → the record arc → their week → today's
     // takes → best call → rivalries → the patterns they star in → every recent call.
@@ -3761,27 +3712,6 @@ export default function Home() {
       if (!rc || !rc.lines || !rc.lines.length) return "";
       return `<div class="rcap-key"><span class="rcap-key-tx">One night's tally over a handful of calls — winning a night is not a standing.</span></div>`;
     };
-    // (b) the morning recap card on the home board — fresh content every day.
-    function deskRecapCard() {
-      const rc = latestDeskRecap();
-      if (!rc) return "";
-      const winnerCast = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner] : null;
-      const head = rc.headline || recapWinnerLineTxt(rc) || "The desk, graded overnight";
-      return `<section class="rcapcard${rc.winner ? ` an-${esc(rc.winner)}` : ""}" aria-label="Last night at the desk">
-        <div class="rcap-h">
-          <span class="rcap-k">◆ Last night at the desk</span>
-          ${rc.date ? `<span class="rcap-date">${esc(recapDateTxt(rc.date))}</span>` : ""}
-        </div>
-        <div class="rcap-hero">
-          ${winnerCast ? `<span class="rcap-glyph an-${esc(rc.winner)}" data-an="${esc(rc.winner)}" role="button" tabindex="0"><span class="rcap-glyph-crown">${crownSvg(13)}</span>${deskGlyph(rc.winner, 22)}</span>` : ""}
-          <div class="rcap-head"><b>${esc(head)}</b>${rc.note ? `<i>${esc(rc.note)}</i>` : ""}</div>
-        </div>
-        ${rc.lines.length ? `<div class="rcap-lines">${recapLineRows(rc)}</div>` : ""}
-        ${recapKeyLine(rc)}
-        ${recapCallRow(rc.best, "best")}
-        ${recapCallRow(rc.worst, "worst")}
-      </section>`;
-    }
     // (c) Insights: the last 14 nights, browsable.
     function deskRecapSection() {
       const all = deskRecapsAll().slice(0, 14);
@@ -4282,43 +4212,6 @@ export default function Home() {
         <div class="pat-meta">${nChip}${wlChip}${eraChip}${smalln}</div>
         ${it.note ? `<div class="pat-note">${esc(it.note)}</div>` : ""}
       </article>`;
-    }
-    // HOME: the patterns card. With findings it is the rail of revelations; with a
-    // well-powered null it is the null, stated at full confidence — the same size of type,
-    // the same weight of surface. A result is a result.
-    function patternsStrip() {
-      const items = patternHighlights();
-      const hd = patternsHeadline();
-      if (items.length) {
-        const cards = items.slice(0, 5).map((it) => patternCard(it)).join("");
-        return `<section class="patstrip" aria-label="The patterns">
-          <div class="pat-h">
-            <span class="pat-k">◆ The Patterns</span>
-            <span class="pat-sub">What actually happens when the desk lines up — measured against the real finals, not asserted</span>
-            <button class="pat-all" data-nav="results" aria-label="Every pattern, on Insights">All patterns →</button>
-          </div>
-          <div class="pat-rail">${cards}</div>
-        </section>`;
-      }
-      if (!hd || !hd.line) return "";
-      const recon = patternEraTables().recon;
-      const s = recon ? recon.sig : null;
-      return `<section class="patstrip nullres" aria-label="The patterns">
-        <div class="pat-h">
-          <span class="pat-k">◆ The Patterns</span>
-          <button class="pat-all" data-nav="results" aria-label="Every configuration and its interval, on Insights">Every interval →</button>
-        </div>
-        <div class="patnull">
-          <span class="patnull-tag">Measured — no signal</span>
-          <p class="patnull-line">${esc(hd.line)}</p>
-          ${s && s.family ? `<div class="patnull-figs">
-            <span><b>${s.family}</b><i>configurations tested</i></span>
-            <span><b>${s.clear}</b><i>clear of 50%</i></span>
-            <span><b>${s.survive}</b><i>survive correction</i></span>
-          </div>` : ""}
-          <div class="patnull-foot">We publish this the same way we would publish a winner. Nothing in the table gates, sizes or creates a bet.</div>
-        </div>
-      </section>`;
     }
     // INSIGHTS: the deep dive — the headline, then EVERY configuration with its own interval
     // drawn against the 50% line, era by era, never summed.
@@ -5509,11 +5402,29 @@ export default function Home() {
         .trim();
       return t;
     }
-    // Strip whole sentences that are pure hedging.
+    /* Strip whole sentences that are pure hedging.
+       PRODUCTION COPY PASS (Leon): "remove caveat/disclaimer language… this is a public
+       production product now — confident, clean copy. Sample sizes and records stay
+       (they're the sales case); hedging paragraphs go."
+
+       So the filter also drops the served feed's stock disclaimers — the "honest read behind
+       it" dek, the "context, not a pick" line, the "we only publish when…" apology — while
+       leaving every sentence that carries a NUMBER untouched, because a record is not a
+       hedge. A blurb that would be emptied by the filter keeps its original text rather than
+       vanishing. */
+    const HEDGE_RE = /paper|experimental|caveat|not (?:a|real)\b|honest read behind it|context,? not a (?:pick|bet)|no game on (?:today'?s )?board connects|nothing here is (?:advice|a guarantee)|no guarantee|for entertainment|do(?:es)? not constitute/i;
     function cleanBlurb(s: any) {
       const parts = String(s || "").split(/(?<=[.!?])\s+/);
-      const keep = parts.filter((x) => !/paper|experimental|caveat|not (?:a|real)\b/i.test(x));
+      const keep = parts.filter((x) => !HEDGE_RE.test(x) || /\d/.test(x));
       return cleanCopy((keep.length ? keep : parts).join(" "));
+    }
+    /* Same filter, NO fallback — for the surfaces where a hedge that is the whole string
+       should simply not render (a story dek, an article paragraph). cleanBlurb keeps the
+       original in that case so a caption never disappears; here, disappearing is the point. */
+    function hedgeFree(s: any) {
+      const parts = String(s || "").split(/(?<=[.!?])\s+/);
+      const keep = parts.filter((x) => x.trim() && (!HEDGE_RE.test(x) || /\d/.test(x)));
+      return keep.length ? cleanCopy(keep.join(" ")) : "";
     }
     // Once a game is live or final, the pick label must make clear it was FROZEN before
     // first pitch — never made mid-game. Pre-game it's the branded "DiamondEdge Pick".
@@ -5647,7 +5558,6 @@ export default function Home() {
     // feed is still in flight — dark shimmer skeletons hold the space until the day's
     // load actually resolves (empty OR full). True until the first loadDay settles.
     let dayLoading = true;
-    let newsMode = "stories";
     let newsFeed: any = null;       // live sports-news feed (news_feed key, ~20-min refresh)
     let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
     let indexData: any = null;      // pregame_picks_index
@@ -6369,9 +6279,14 @@ export default function Home() {
       const name = served.name || (fd && fd.name);
       if (!name) return "";
       const era = served.era != null ? served.era : (fd && fd.era != null ? fd.era : null);
-      const bits = [`${String(name).trim()}`, era != null ? `${num(era, 2)} ERA` : ""].filter(Boolean);
+      // SURNAME ONLY on a board tile. The column is ~44px wide; "Matthew Liberatore" was
+      // being clipped to "Matthe…" on every card, which is worse than no first name at all.
+      // The full name is on the pitcher sheet this row opens, and in the title attribute.
+      const parts = String(name).trim().split(/\s+/);
+      const surname = parts.length > 1 ? parts.slice(1).join(" ") : parts[0];
+      const eraTxt = era != null ? `${num(era, 2)}` : "";
       const key = gameFeedKeys(g)[0] || String(g.game_id || "");
-      return `<span class="t-pitchsub" data-pitcher="${esc(key)}|${which}" role="button" tabindex="0"><span class="tps-nm">${esc(bits[0])}</span>${bits[1] ? `<span class="tps-era">${esc(bits[1])}</span>` : ""}</span>`;
+      return `<span class="t-pitchsub" data-pitcher="${esc(key)}|${which}" role="button" tabindex="0" title="${esc(String(name).trim())}${era != null ? ` · ${num(era, 2)} ERA` : ""}"><span class="tps-nm">${esc(surname)}</span>${eraTxt ? `<span class="tps-era"><b>${esc(eraTxt)}</b><em>ERA</em></span>` : ""}</span>`;
     }
     /* ONE TEAM LINE on a board tile: crest · abbreviation · record/streak · score once
        started. MLB also gets the probable starter + ERA beneath the team in tiny type:
@@ -6380,7 +6295,12 @@ export default function Home() {
       const rawAb = which === "away" ? g.away_abbr : g.home_abbr;
       const ab = String(rawAb || "").length > 4 ? (mlbAbbr(rawAb) || rawAb) : rawAb;
       const f = teamRecordFor(g, which);
-      const rec = f && f.rec ? `<span class="t-rec">${esc(f.rec)}${f.streak ? `<i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : "";
+      // record and streak are SEPARATE elements so neither can ever be cut mid-figure: the
+      // streak is unshrinkable, and on the very narrowest phones the season record hides
+      // entirely rather than shipping a truncated (i.e. wrong) number.
+      const rec = f && f.rec
+        ? `<span class="t-rec" title="${esc(f.rec)}${f.streak ? ` · ${esc(f.streak)}` : ""}"><em>${esc(f.rec)}</em>${f.streak ? `<i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>`
+        : "";
       const pitcher = tilePitcherMeta(g, which);
       const sc = gs.score;
       const started = gs.kind !== "pre";
@@ -6417,7 +6337,7 @@ export default function Home() {
           <span class="unob-arrow" aria-hidden="true">vs</span>
           <span class="unob-cell real"><i>${esc(fmtOdds(u.best))}</i><em>best real${u.book ? ` · ${esc(bookName(u.book))}` : ""}</em></span>
         </span>
-        <span class="unob-note">No book was quoting ${esc(String(u.side || "").toUpperCase())}${u.line != null ? ` ${esc(lineStr(u.line))}` : ""} at that number${where ? ` (${esc(where)})` : ""}. The edge was priced off a bet nobody could place — so this is a lean, not a pick.</span>
+        <span class="unob-note">No book was quoting ${esc(String(u.side || "").toUpperCase())}${u.line != null ? ` ${esc(lineStr(u.line))}` : ""} at that number${where ? ` (${esc(where)})` : ""}. We do not write a ticket we cannot fill.</span>
       </div>`;
     }
     /* ════════════ THE TILE'S VERDICT — resolved once, in one place ════════════
@@ -6486,23 +6406,24 @@ export default function Home() {
        rendered as a labelled note ATTACHED to the call, never as a verdict of its own, and
        AGAINST is never styled as a warning: taking a price the room dislikes is the job.
        Unserved / NO_BET / PENDING ⇒ null and every surface degrades. */
-    const AGREE_COPY: any = {
-      ALIGNED: { lab: "Ticket matches desk read", cls: "ag-with" },
-      MIXED: { lab: "Mixed desk read", cls: "ag-mixed" },
-      AGAINST: { lab: "Ticket vs desk read", cls: "ag-against" },
-    };
+    /* LABELS REMOVED (Leon, production push): "Mixed desk read" / "Ticket matches desk read" /
+       "Ticket vs desk read" were chips printed beside the pick on every board and game
+       surface. They read as a hedge on our own call — three words qualifying a bet we had
+       already made — and they said nothing the four direction marks under the tile don't
+       already show. The STATE is still computed (the desk's own reconciliation drives the
+       one-sentence read on the desk slide); only the label chips are gone. */
+    const AGREE_STATES = ["ALIGNED", "MIXED", "AGAINST"];
     function deskAgreement(g: any) {
       const chief = deskChief(g);
       const raw = chief && chief.raw ? chief.raw : null;
       const st = String((raw && (raw.desk_agreement || raw.deskAgreement)) || "").toUpperCase().trim();
-      const meta = AGREE_COPY[st];
-      if (!meta) return null;                 // PENDING / NO_BET / absent ⇒ silent
+      if (AGREE_STATES.indexOf(st) < 0) return null;   // PENDING / NO_BET / absent ⇒ silent
       // how the four actually split, when the rows are there to count
       const ans = deskAnalysts(g).filter((a: any) => a.dir);
       const pl = displayPick(g);
       const ourDir = pl && /under/i.test(String(pl.side || "")) ? "under" : pl && /over/i.test(String(pl.side || "")) ? "over" : "";
       const withUs = ourDir ? ans.filter((a: any) => a.dir === ourDir).length : null;
-      return { state: st, ...meta, n: ans.length, withUs, ourDir };
+      return { state: st, n: ans.length, withUs, ourDir };
     }
     function deskAgreementWhy(g: any, a: any) {
       const pl = displayPick(g);
@@ -6511,26 +6432,23 @@ export default function Home() {
       const priceTxt = pl && pl.price != null ? ` at ${fmtOdds(pl.price)}` : "";
       const ticket = sideTxt ? `${sideTxt}${lineTxt}${priceTxt}` : "the ticket above";
       const other = sideTxt === "under" ? "over" : sideTxt === "over" ? "under" : "the other way";
+      // CONFIDENT VOICE (production copy pass): these sentences used to spend their second
+      // half qualifying the bet they had just named. They now state the call and the reason
+      // for it, once, and stop.
       if (a && a.state === "AGAINST") {
-        if (sideTxt === "under") {
-          return `The ticket is ${ticket}. Some analyst reads see scoring, but the price says this total is high enough to bet under.`;
-        }
-        if (sideTxt === "over") {
-          return `The ticket is ${ticket}. Some analyst reads see fewer runs, but the price says this total is low enough to bet over.`;
-        }
-        return "The analyst reads are context. The ticket is priced separately against the posted number.";
+        if (sideTxt === "under") return `We are on ${ticket}. The room sees scoring; the price says this total is too high.`;
+        if (sideTxt === "over") return `We are on ${ticket}. The room sees a quiet game; the price says this total is too low.`;
+        return "We took the side the room dislikes — that is where the price was.";
       }
       if (a && a.state === "MIXED") {
         return sideTxt
-          ? `The analyst reads are mixed, so this comes down to the number: ${ticket} is the side our price says is worth playing.`
-          : "The analyst reads are mixed. The official DiamondEdge Pick is priced separately.";
+          ? `The desk splits, so the number decides it: ${ticket}.`
+          : "The desk splits, and the number decides it.";
       }
       if (a && a.state === "ALIGNED") {
-        return sideTxt
-          ? `The analyst reads and the ticket point the same way. The bet still has to clear the number and price: ${ticket}.`
-          : "The analyst reads point the same way as the ticket, but only the ticket above is the bet.";
+        return sideTxt ? `The desk and the number agree: ${ticket}.` : "The desk and the number agree.";
       }
-      return "Only the DiamondEdge ticket above is the bet.";
+      return "";
     }
     function ticketLabel(pl: any) {
       if (!pl) return "";
@@ -6546,17 +6464,44 @@ export default function Home() {
       const v = vegasLine(g, "total");
       return v ? v.replace(/^O\/U\s*/i, "") : "";
     }
-    function compactDePickHtml(g: any, pl: any, locked = false, cls = "") {
-      const line = ouLineForPick(g, pl);
+    /* ════════════ THE COMPACT DIAMONDEDGE PICK ════════════
+       Leon: "the pick element takes too much room — show the O/U figure plus the DE diamond
+       logo and an up/down direction symbol. Much cleaner, much smaller."
+
+       So the whole call is ONE inline unit, three glyphs wide: ◆ · O/U 8.5 · ▲. No "OVER"
+       word (the triangle IS the word, and it survives greyscale), no kicker row above it,
+       no chip around it. Locked redacts the direction and keeps the number.
+
+       THE DEFECT THIS ALSO FIXES. The size modifier used to be the bare string "tile" —
+       which put the literal class `tile` on this span, and `tile` is the BOARD CARD class:
+       white paper, 16px padding, a card shadow and `flex-direction:column`. Every pick on
+       the board was therefore rendered as a second card nested inside its own card, ~115px
+       tall, wide enough to push the tile into horizontal overflow (204px of content in a
+       163px column — which is what was clipping the result chip and the team names beside
+       it). Modifiers are namespaced now so a layout class can never be adopted by accident. */
+    function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false) {
+      const line = noPick ? (ouLineForPick(g, null) || ouLineForPick(g, pl)) : ouLineForPick(g, pl);
       const sideRaw = String((pl && pl.side) || "");
-      const over = /over/i.test(sideRaw);
-      const under = /under/i.test(sideRaw);
+      const over = !noPick && /over/i.test(sideRaw);
+      const under = !noPick && /under/i.test(sideRaw);
       const dir = over ? "over" : under ? "under" : "";
       const word = over ? "OVER" : under ? "UNDER" : "";
-      const title = locked ? "DiamondEdge Pick locked" : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}` : "DiamondEdge Pick";
-      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${cls ? ` ${esc(cls)}` : ""}" title="${esc(title)}">
-        <span class="de-mini-ou">O/U${line ? ` <b>${esc(line)}</b>` : ""}</span>
-        <span class="de-mini-call"><i class="de-mini-logo" aria-hidden="true">◆</i>${locked ? `<span class="tv-dots" aria-hidden="true">●●●</span>` : `<span class="de-mini-arrow" aria-hidden="true">${over ? "▲" : under ? "▼" : "•"}</span>${word ? `<b>${esc(word)}</b>` : ""}`}</span>
+      const mod = cls ? ` dmp-${esc(String(cls).replace(/[^a-z0-9-]/gi, ""))}` : "";
+      const title = noPick ? `Market total${line ? ` ${line}` : ""}`
+        : locked ? "DiamondEdge Pick locked"
+          : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}` : "DiamondEdge Pick";
+      const aria = noPick ? `Market total ${line || ""}`.trim()
+        : locked ? "DiamondEdge Pick — locked"
+          : `DiamondEdge Pick ${word || ""} ${line || ""}`.trim();
+      /* THE RIGHT SLOT. A pick fills it with the DiamondEdge diamond and a direction mark;
+         a no-pick game leaves it EMPTY — no logo, no word, no "Pass". The slot itself is the
+         signal, so a reader scanning a column of tiles sees "we are on this one" as a shape
+         rather than as a label to read. */
+      const mark = noPick ? ""
+        : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i>${
+          locked ? `<i class="de-mini-lockdots"></i>` : `<i class="de-mini-arrow"></i>`}</span>`;
+      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${mod}" title="${esc(title)}" role="img" aria-label="${esc(aria)}">
+        <span class="de-mini-ou">O/U${line ? ` <b>${esc(line)}</b>` : ""}</span>${mark}
       </span>`;
     }
     function deskTicketWhy(g: any) {
@@ -6593,15 +6538,6 @@ export default function Home() {
       if (!dir) return null;
       const ln = _fin(blk.line != null ? blk.line : raw.line);
       return { dir, line: ln, txt: `${dir === "over" ? "Over" : "Under"}${ln != null ? ` ${lineStr(ln)}` : ""}` };
-    }
-    function deskAgreementRow(g: any, locked = false) {
-      if (locked) return "";                  // the count implies the side
-      const a = deskAgreement(g);
-      if (!a) return "";
-      return `<div class="deskag ${a.cls}">
-        <span class="dag-k">${esc(a.lab)}</span>
-        <span class="dag-note"><b>Plain English:</b> ${esc(deskAgreementWhy(g, a))}</span>
-      </div>`;
     }
     /* ════════ THE DESK ROW — WHAT THE FOUR SAID, NOT JUST THAT THEY SPOKE ════════
        LEON, AND THE WHOLE POINT OF THIS PASS: "the main screen it's really hard to know
@@ -6643,6 +6579,62 @@ export default function Home() {
       return `<span class="tsigs" role="img" aria-label="The desk: ${esc(words.join(", "))}">${marks}</span>`;
     }
 
+    /* ════════ THE RECORD MOVES WHEN A GAME GOES FINAL ════════
+       Leon: "games go final → the card should reflect updated records/streaks."
+
+       A graded tile is the only place on the board where a number actually changed, and
+       until now it changed silently: the tile flipped to a ✓ or ✗ and the running record
+       lived three taps away on Insights. It now carries the two figures that just moved —
+       the day's record after this game, and the current win/loss run.
+
+       READ DEFENSIVELY, NEWEST CONTRACT FIRST. The adaptive-desk backend is landing
+       `record.daily` (keyed by date) and `record.streaks` ({current} signed, or
+       {longest_win,longest_loss}) alongside the existing `record.headline`. Until they
+       arrive we fall back to `by_date_record` (already served) and to a streak derived
+       from the graded games in order. Anything missing simply doesn't render — no chip,
+       no placeholder, no error. */
+    function recordRoot() { return (betaData && betaData.record) || (betaLiveData && betaLiveData.record) || {}; }
+    function dailyRecordFor(dateISO: string) {
+      const rec = recordRoot();
+      const daily = rec && typeof rec.daily === "object" && rec.daily ? rec.daily : null;
+      const fromNew = daily && typeof daily[dateISO] === "object" ? daily[dateISO] : null;
+      const fromOld = betaData && betaData.by_date_record && typeof betaData.by_date_record[dateISO] === "object"
+        ? betaData.by_date_record[dateISO] : null;
+      const d = fromNew || fromOld;
+      if (!d) return null;
+      const w = _fin(d.wins != null ? d.wins : d.win), l = _fin(d.losses != null ? d.losses : d.loss);
+      const p = _fin(d.pushes != null ? d.pushes : d.push) || 0;
+      if (w == null && l == null) return null;
+      return { w: w || 0, l: l || 0, p, n: _fin(d.n_graded) };
+    }
+    // current run: served record.streaks.current (signed) wins; else derive from graded games.
+    function currentRun() {
+      const st = recordRoot().streaks;
+      if (st && typeof st === "object") {
+        const c = _fin(st.current != null ? st.current : st.current_run);
+        if (c != null && c !== 0) return c > 0 ? `W${Math.round(c)}` : `L${Math.round(Math.abs(c))}`;
+        if (typeof st.current === "string" && /^[WL]\d+$/i.test(st.current)) return st.current.toUpperCase();
+      }
+      const graded = (((betaData && betaData.games) || []) as any[])
+        .filter((x: any) => x.pick && (x.pick.result === "win" || x.pick.result === "loss"))
+        .sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
+      if (!graded.length) return "";
+      let run = 0, last = "";
+      graded.forEach((x: any) => { const r = x.pick.result; if (r === last) run++; else { run = 1; last = r; } });
+      return `${last === "win" ? "W" : "L"}${run}`;
+    }
+    function deskRunChip(g: any, st: string) {
+      if (st !== "won" && st !== "lost" && st !== "pushed") return "";
+      const d = dailyRecordFor(gameLocalDay(g) || curDate);
+      const run = currentRun();
+      if (!d && !run) return "";
+      const bits = [
+        d ? `<span class="trc-rec"><i>Today</i><b>${d.w}–${d.l}${d.p ? `–${d.p}` : ""}</b></span>` : "",
+        run ? `<span class="trc-run ${run[0] === "W" ? "up" : "down"}"><i>Run</i><b>${esc(run)}</b></span>` : "",
+      ].filter(Boolean).join("");
+      return `<div class="tl-runchip">${bits}</div>`;
+    }
+
     /* ════════════════════════ THE BOARD TILE ════════════════════════
        Leon: "the new UX has WAYY too much information — we need to make it a 2 by X matrix
        of games." This used to be a full-width slab carrying, in one vertical stack: two
@@ -6681,35 +6673,28 @@ export default function Home() {
       const state = pick && !locked ? pickStateTxt(g, pick, st) : null;
       const dirCls = vd && /under/i.test(vd.side) ? "ou-under" : vd && /over/i.test(vd.side) ? "ou-over" : "";
       const arrow = vd && /under/i.test(vd.side) ? "▼" : vd && /over/i.test(vd.side) ? "▲" : "";
-      // THE DESK'S OWN VIEW OF THE TICKET, one line, only when it is interesting: a bet the
-      // desk disagrees with (or is split on) is a real story; "the desk agrees" on a game
-      // whose sigil row already shows four marks on one side is not, so it stays silent.
-      const ag = vd && vd.kind !== "pass" && !locked ? deskAgreement(g) : null;
-      const agRow = "";
-      // THE CALL WE DID NOT BET. On a pass the desk still has a direction, and it is now
-      // stated — in the call language, never the bet language (hollow mark, sentence case,
-      // no price). Null on a served bet and on any game the backend gave no direction for.
-      const dc = null;
       const passLine = lockedTot || (pg && pg.total && pg.total.line != null ? lineStr(pg.total.line) : "");
-      // THE VERDICT LINE. Locked ⇒ crisp dots, never a blur, and the whole tile becomes the
-      // unlock affordance — the signed-out redaction contract is unchanged.
+      // A FINAL GAME MOVES THE RECORD — so say so on the card that just graded. This shows
+      // to signed-out readers too: the SIDE is the paywall, the RECORD is the sales case.
+      const runChip = gs.kind === "final" ? deskRunChip(g, st) : "";
+      /* THE VERDICT LINE — ONE ROW, NOT FOUR.
+         WAS: a kicker row ("DIAMONDEDGE PICK" in 10px caps + a result chip) stacked above a
+         call row, above a live chip, above a desk-agreement note. Four stacked rows and a
+         redundant brand word on a 163px column, which is what made this element eat half
+         the tile — and what pushed the result chip past the tile's right edge.
+         NOW: the ◆ inside the compact pick IS the brand, so the kicker is gone and the
+         call and its result sit on one baseline. Locked ⇒ crisp dots, never a blur, and the
+         whole tile stays the unlock affordance (redaction contract unchanged). */
       const callHtml = !vd ? ""
-        : locked && vd.kind !== "pass"
-          ? compactDePickHtml(g, vd.pl || pick, true, "tile")
-          : vd.kind === "pass"
-            ? `<span class="tv-market"><b>O/U${passLine ? ` ${esc(passLine)}` : ""}</b></span>`
-            : compactDePickHtml(g, vd.pl || pick, false, "tile");
-      const starHtml = "";
+        : vd.kind === "pass"
+          ? compactDePickHtml(g, null, false, "tile", true)
+          : compactDePickHtml(g, vd.pl || pick, locked, "tile");
       const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
-      // the kicker names the register: a bet says what kind of bet, a call says DESK CALL
-      // and wears a NO BET chip so the two can never be read as the same thing
-      const kick = vd ? vd.word : "";
       const verdictBlk = vd
-        ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}${dc ? " is-call" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-krow"><span class="tv-k">${esc(kick)}</span>${starHtml}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
-             <div class="tv-callrow">${callHtml}</div>
+        ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
+             <div class="tv-callrow">${callHtml}${state ? `<span class="tv-res ${state.cls}">${state.txt}</span>` : ""}</div>
              ${liveCash}
-             ${agRow}
+             ${runChip}
              ${locked ? `<span class="tv-unlock">${lockSvg}${esc(unlockCtaTxt())}</span>` : ""}
            </div>`
         : "";
@@ -7893,21 +7878,6 @@ export default function Home() {
       }
       return "DiamondEdge — every official sports pick graded in the open.";
     }
-    function socialShareBar() {
-      const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.origin + location.pathname; } })();
-      const txt = shareTagline();
-      const enc = encodeURIComponent, u = enc(url), t = enc(txt);
-      return `<div class="social">
-        <span class="soc-lab">Share DiamondEdge</span>
-        <div class="soc-btns">
-          <button class="soc-btn native" id="soc-native" aria-label="Share"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg>Share</button>
-          <a class="soc-btn x" href="https://twitter.com/intent/tweet?text=${t}&url=${u}" target="_blank" rel="noopener" aria-label="Share on X">X</a>
-          <a class="soc-btn fb" href="https://www.facebook.com/sharer/sharer.php?u=${u}" target="_blank" rel="noopener" aria-label="Share on Facebook">f</a>
-          <a class="soc-btn rd" href="https://www.reddit.com/submit?url=${u}&title=${t}" target="_blank" rel="noopener" aria-label="Share on Reddit">R</a>
-          <button class="soc-btn copy" id="soc-copy" aria-label="Copy link"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>Copy link</button>
-        </div>
-      </div>`;
-    }
     // ===================== LIVE DETAIL (box score — live_detail key) =====================
     // A NEW small key the backend ships: { updated_at, games: { "<game_id>": {
     //   line_score:[{inning,away,home}], totals:{away:{R,H,E},home:{R,H,E}},
@@ -8431,8 +8401,7 @@ export default function Home() {
       // Box score pane also carries the recap for a final game (folded in — no separate tab).
       const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${isFinal ? gameRecap(g) : ""}${boxScorePanel(g)}</div>` : "";
       // The star-tier legend was cut from the bottom of the board (it explained a five-step
-      // scale to every reader on every visit). It lives HERE now — on the page where the
-      // stars are actually being argued — which is also what keeps #tl-how a live target.
+      // scale to every reader on every visit).
       const dePane = `<div class="gp-pane" data-pane="odds" style="display:${detailTab === "odds" ? "block" : "none"}">
         ${marketsTable(g)}
         ${diamondEdgeReasoning(g, lead, leadLocked)}
@@ -8510,7 +8479,10 @@ export default function Home() {
       // (#cc-unlock's binding lived here until 2026-07-31. The locked-pick CTA lost that id in
       //  the "Scorify nav" round and every unlock affordance now carries [data-up], which the
       //  delegated handler above already covers — so the binding was dead weight, not a gate.)
-      bindClick("tl-how", (e: any) => { e.stopPropagation(); closeDetail(false, true); setTimeout(() => switchTab("beta"), 120); });
+      // (#tl-how's binding lived here until this production round. The tier legend markup it
+      //  opened was removed in "Make picks binary and refresh strategies" (08c30ba) and never
+      //  came back, so the binding had been firing the dead-click-target guard on every game
+      //  page since. Removed, not silenced — it is in git if the legend returns.)
       bindClick("gp-share", (e: any) => { e.stopPropagation(); shareGame(g); });
       bindSwipeBack($("gamepage"));
       // tab switching (no re-fetch; just show/hide + move the ink)
@@ -9410,61 +9382,10 @@ export default function Home() {
       });
     }
 
-    // ===================== TODAY (daily brief homepage) =====================
-    const briefSource = () => (livePayload && livePayload.daily_brief) || (payload && payload.daily_brief) || null;
     const findGameLive = (gid: any) => {
       const src = livePayload || payload;
       return ((src && src.games) || []).find((g: any) => String(g.game_id) === String(gid)) || null;
     };
-    // Degrade path: no served daily_brief → compose a minimal brief from display_pick games.
-    function fallbackBrief() {
-      const src = livePayload || payload;
-      if (!src) return null;
-      const t = todayISO();
-      const picks: any[] = [];
-      ((src.games || []) as any[]).forEach((g: any) => {
-        const st0 = String(g.status || "pre").toLowerCase();
-        const d = gameLocalDay(g);
-        if (st0 !== "live" && d && d !== t) return; // today's slate only
-        const pl = displayPick(g);
-        if (!pl || pl.action !== "TAKE") return;
-        const st = playState(g, pl);
-        picks.push({
-          sport: g.sport, game_id: String(g.game_id),
-          matchup: g.matchup || `${g.away_abbr} @ ${g.home_abbr}`,
-          bet: `${pl.side || ""}${pl.price != null ? " · " + fmtOdds(pl.price) : ""}`,
-          quality: qualityOf(pl),
-          blurb: whySentences(g, pl).slice(0, 2).join(" "),
-          result: st === "won" ? "hit" : st === "lost" ? "miss" : st === "pushed" ? "push" : null,
-          _fb: true, // composed client-side — first sentence names the side, so lock the whole blurb
-        });
-      });
-      picks.sort((a, b) => Q_RANK[a.quality] - Q_RANK[b.quality]);
-      const counts: any = { strong: 0, good: 0, lean: 0 };
-      picks.forEach((p) => counts[p.quality]++);
-      const mix = ["strong", "good", "lean"].filter((q) => counts[q]).map((q) => `${counts[q]} ${Q_LABEL[q]}`).join(", ");
-      const rh = recipeHistory();
-      return {
-        date: t,
-        headline: picks.length
-          ? `${picks.length} pick${picks.length > 1 ? "s" : ""} on today's board — ${mix}.`
-          : "No picks today — the lines look right to us. Passing is the strategy working, not missing.",
-        themes: [], top_picks: picks,
-        record_line: `DiamondEdge publishes one official pick strategy per slate, then grades the picks as the games finish.`,
-        _fallback: true,
-      };
-    }
-    // Carousel order: exact p_correct behind the scenes (full precision, never shown),
-    // quality rank as the stand-in — the featured game rides first.
-    function orderTopPicks(list: any[]) {
-      const withKey = list.map((p: any, i: number) => {
-        const g = findGameLive(p.game_id);
-        const pl = g ? displayPick(g) : null;
-        return { p, i, exp: pl && pl.action === "TAKE" && pl.p != null ? Number(pl.p) : null, qr: Q_RANK[p.quality] != null ? Q_RANK[p.quality] : 3 };
-      });
-      withKey.sort((a: any, b: any) => convictionSort(a.exp, a.qr, b.exp, b.qr) || (a.i - b.i));
-      return withKey.map((w: any) => w.p);
-    }
     // Branded record line for the masthead + footer — leads with the HONEST forward expectation,
     // with the in-sample backtest labelled as such (never sold as the forward number).
     // ONE rule for every number that leaves this page (strips, share text, taglines): quote
@@ -9475,7 +9396,7 @@ export default function Home() {
       const hr = headlineStrategyRecord(betaData);
       if (hr && hr.live) {
         const since = stratDateTxt(hr.activation);
-        return `Live-served picks, graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}. Backtested history is reported separately.`;
+        return `Every pick graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}.`;
       }
       return `Every pick graded in the open, win or lose.`;
     }
@@ -9501,48 +9422,6 @@ export default function Home() {
       if (diff < 172800) return "yesterday";
       return new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
     }
-    function newsStory(s: any, big = false, key = "") {
-      if (!s || !(s.headline || s.title)) return "";
-      const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
-      // Always render a branded gradient "matchup card" underneath; overlay the real photo only
-      // if it loads at usable resolution. Blurry/tiny/missing/broken images fall back gracefully
-      // to an intentional-looking graphic instead of a broken or fuzzy box.
-      const sc = esc(String(s.sport || "gen").toLowerCase().replace(/[^a-z]/g, ""));
-      const mline = s.angle && typeof s.angle === "object" && s.angle.matchup ? esc(String(s.angle.matchup)) : "";
-      // If the story maps to a game on our slate, the fallback is a real logo-vs-logo crest card.
-      const gid = s.angle && typeof s.angle === "object" ? s.angle.game_id : null;
-      const g = gid ? findGameLive(gid) : null;
-      const crestRow = g ? `<span class="nf-vs-row">${gCrest(g, "away", "nf-crest")}<span class="nf-vs-x">vs</span>${gCrest(g, "home", "nf-crest")}</span>` : "";
-      const muTxt = g ? `${esc(g.away_abbr)} @ ${esc(g.home_abbr)}` : mline;
-      const photo = s.image_url
-        ? `<img class="nf-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onload="if(!this.naturalWidth||this.naturalWidth<240){this.classList.add('bad')}" onerror="this.classList.add('bad')">`
-        : "";
-      const img = `<div class="nf-img nf-gen s-${sc}${g ? " nf-vs" : ""}"><span class="nf-gen-dia"></span>${crestRow || `<span class="nf-gen-lab">${lab || "DIAMONDEDGE"}</span>`}${muTxt ? `<span class="nf-gen-mu">${muTxt}</span>` : ""}${photo}</div>`;
-      // Our own desk byline — the card opens OUR article in-app (not a link out to the source).
-      const when = niceTime(s.published_at, s.published_display);
-      const meta = `${lab} · DiamondEdge${when ? " · " + esc(when) : ""}`;
-      return `<a class="nf-story ${big ? "nf-hero" : ""}" href="#" data-nf="${esc(key)}" rel="noopener">
-        ${img}
-        <div class="nf-body"><div class="nf-kick">${meta}</div>
-        <h3 class="nf-title">${esc(s.title || s.headline)}</h3>
-        ${big && (s.dek || s.summary) ? `<p class="nf-sum clamp2">${esc(cleanBlurb(s.dek || s.summary))}</p>` : ""}</div></a>`;
-    }
-    function newsMiniStory(s: any, key = "", tone = "") {
-      if (!s || !(s.headline || s.title)) return "";
-      const lab = esc((SPORT_LABEL[s.sport] || s.sport || "Story").toUpperCase());
-      const sc = esc(String(s.sport || "gen").toLowerCase().replace(/[^a-z]/g, ""));
-      const gid = s.angle && typeof s.angle === "object" ? s.angle.game_id : null;
-      const g = gid ? findGameLive(gid) : null;
-      const crestRow = g ? `<span class="nf-vs-row">${gCrest(g, "away", "nf-crest")}<span class="nf-vs-x">vs</span>${gCrest(g, "home", "nf-crest")}</span>` : "";
-      const mline = s.angle && typeof s.angle === "object" && s.angle.matchup ? esc(String(s.angle.matchup)) : "";
-      const photo = s.image_url
-        ? `<img class="nf-photo" src="${esc(String(s.image_url))}" alt="" loading="lazy" onload="if(!this.naturalWidth||this.naturalWidth<180){this.classList.add('bad')}" onerror="this.classList.add('bad')">`
-        : "";
-      return `<a class="nf-mini ${esc(tone)}" href="#" data-nf="${esc(key)}" rel="noopener">
-        <span class="nf-mini-img nf-img nf-gen s-${sc}">${crestRow || `<span class="nf-gen-lab">${lab}</span>`}${mline ? `<span class="nf-gen-mu">${mline}</span>` : ""}${photo}</span>
-        <span class="nf-mini-body"><i>${lab}</i><b>${esc(s.title || s.headline)}</b></span>
-      </a>`;
-    }
     // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
     // render and the article reader's prev/next nav so keys/order always agree.
     function newsDedupedHeadlines(): any[] {
@@ -9558,27 +9437,6 @@ export default function Home() {
       if (!newsFeed || !newsFeed.lead) return [];
       const orig = (newsFeed.headlines || []) as any[];
       return ["L", ...newsDedupedHeadlines().map((s) => String(orig.indexOf(s)))];
-    }
-    function newsFront() {
-      const nf = newsFeed;
-      if (!nf || !nf.lead) return "";
-      const hl = newsDedupedHeadlines();
-      // Honest freshness — pulse "live" only if the feed actually refreshed recently; otherwise
-      // just show when it last updated. No fake "live".
-      const updT = Date.parse(String(nf.updated_at || nf.generated_at || ""));
-      const fresh = !isNaN(updT) && (Date.now() - updT) < 40 * 60 * 1000;
-      const updTxt = niceTime(nf.updated_at || nf.generated_at);
-      const head = fresh
-        ? `<span class="nf-live"><span class="livedot"></span>live${updTxt ? ` · ${esc(updTxt)}` : ""}</span>`
-        : (updTxt ? `<span class="nf-upd">Updated ${esc(updTxt)}</span>` : "");
-      return `<section class="newsfront">
-        <div class="nf-head"><span class="nf-lab">Around the league</span>${head}</div>
-        <div class="nf-topline">
-          ${newsStory(nf.lead, true, "L")}
-          ${hl.length ? `<div class="nf-momentum">${hl.slice(0, 3).map((s, i) => newsMiniStory(s, String((nf.headlines || []).indexOf(s)), i === 0 ? "hot" : i === 1 ? "move" : "watch")).join("")}</div>` : ""}
-        </div>
-        ${hl.length > 3 ? `<div class="nf-list">${hl.slice(3).map((s) => newsStory(s, false, String((nf.headlines || []).indexOf(s)))).join("")}</div>` : ""}
-      </section>`;
     }
     // Resolve a story card back to its object, then open OUR article reader.
     function newsStoryByKey(key: string) {
@@ -9602,9 +9460,9 @@ export default function Home() {
       const g = gid != null ? (findGameLive(gid) || findGame(gid) || gameById(gid) || null) : null;
       // cleanBlurb() scrubs AI-tell meta-filler ("… storyline, translated into what it means for
       // the number", "to the board") per ARTICLE_SPEC while preserving **bold** lead-ins.
-      const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => cleanBlurb(x.trim()))
-        .filter((p) => p && !/^—\s*DiamondEdge/i.test(p));           // drop any trailing byline line
-      const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(cleanBlurb(s.summary || ""))}</p>`;
+      const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => hedgeFree(x.trim()))
+        .filter((p) => p && !/^—\s*DiamondEdge/i.test(p));           // drop any trailing byline + hedge paragraphs
+      const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(hedgeFree(s.summary || ""))}</p>`;
       const words = paras.join(" ").split(/\s+/).filter(Boolean).length;
       const readMin = Math.max(1, Math.round(words / 200));
       const angleChip = newsAngle(s.angle);
@@ -9621,7 +9479,7 @@ export default function Home() {
             ${s.image_url ? `<div class="art-visual"><img src="${esc(String(s.image_url))}" alt="" onload="if(!this.naturalWidth||this.naturalWidth<260){this.parentElement.classList.add('is-fallback')}" onerror="this.parentElement.classList.add('is-fallback')"></div>` : g ? `<div class="art-visual art-vs">${gCrest(g, "away", "art-hero-crest")}<span>vs</span>${gCrest(g, "home", "art-hero-crest")}</div>` : `<div class="art-visual is-fallback"><span>◆</span></div>`}
             <div class="sh-sport">${lab} · DiamondEdge</div>
             <div class="art-title">${esc(s.headline || s.title)}</div>
-            ${s.dek ? `<div class="sh-meta">${esc(cleanBlurb(s.dek))}</div>` : ""}
+            ${hedgeFree(s.dek) ? `<div class="sh-meta">${esc(hedgeFree(s.dek))}</div>` : ""}
           </div>
           <div class="sh-body">
             <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span><button class="art-share" id="art-share" aria-label="Share this story">Share ↗</button></div>
@@ -9670,68 +9528,6 @@ export default function Home() {
       };
       bindSheetDrag($("sheet"), $("sh-grab"));
     }
-    // The LEAD-STORY card — the front-page format Leon loves — reusable for ANY game (the
-    // feature bet + the top games to watch). Woven-score matchup image, matchup headline (never
-    // the pick), a game-focused lede, streak chips, and the pick tease on the cover.
-    function leadStoryCard(g: any, kicker: string, dateTxt: string) {
-      if (!g) return "";
-      const gs = gameState(g);
-      const pl = displayPick(g);
-      const q = pl ? qualityOf(pl) : null;
-      const locked = pl ? pickLocked(pl, playState(g, pl)) : false;
-      const started = isStarted(g);
-      const live = gs.kind === "live";
-      const stks = gameStreaks(g).slice(0, 3).map((s: any) => `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
-      const tint = heroTintFor(g, pl);
-      const headline = matchupHeadline(g, pl);
-      const lede = gameLede(g);
-      // "Started" only for a pre-status game that's begun — never for live (has its own badge) or final.
-      const startedTag = gs.kind === "pre" && started ? `<span class="ls-fig-tag started">● Started</span>` : "";
-      const sport = SPORT_LABEL[g.sport] || String(g.sport || "").toUpperCase();
-      const cta = locked ? "Unlock the full preview →" : "Read the full preview →";
-      // Show the pick tease for ANY pick (even the slightest lean, clearly flagged low-confidence);
-      // only true PASS games (no lean at all) stay a clean matchup.
-      const cover = isPick(pl) ? heroPickCover(g, "lead", true) : "";
-      return `<article class="leadstory q-${q || "lean"}${cover ? "" : " nopick"}" data-gid="${esc(g.game_id)}"${locked ? ' data-locked="1"' : ""} role="button" tabindex="0" aria-label="${esc(kicker)} — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}">
-        <div class="ls-figure">${heroImage(g, tint, "lead")}${!live ? `<span class="ls-fig-kick">${esc(kicker)} · ${esc(sport)}</span>` : ""}${startedTag}${heroLiveBadge(g, "lead")}${cover}</div>
-        <div class="ls-body">
-          <h3 class="ls-match">${headline}</h3>
-          <div class="ls-byline">${esc(kicker)} · DiamondEdge${dateTxt ? ` · ${esc(dateTxt)}` : ""}</div>
-          ${deskMiniRow(g, locked)}
-          ${deskStarTake(g, locked)}
-          ${lede ? `<p class="ls-lede small">${esc(lede)}</p>` : ""}
-          ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
-          <span class="hero-cta">${cta}</span>
-        </div>
-      </article>`;
-    }
-    // "Next up" — a live countdown to the soonest upcoming first pitch on today's slate, so the
-    // News front always shows when the next game (and its pick) goes live.
-    function nextUpBanner() {
-      const src = livePayload || payload;
-      if (!src || !src.games) return "";
-      const now = Date.now();
-      let next: any = null;
-      (src.games as any[]).forEach((g: any) => {
-        if (String(g.status || "pre").toLowerCase() !== "pre") return;
-        if (gameLocalDay(g) && gameLocalDay(g) !== todayISO()) return;
-        const ts = firstPitchTs(g);
-        if (ts && ts > now && (!next || ts < next.ts)) next = { g, ts };
-      });
-      if (!next) return "";
-      const g = next.g;
-      return `<button class="nextup" data-gid="${esc(g.game_id)}" aria-label="Next game — ${esc(g.away_abbr)} at ${esc(g.home_abbr)}">
-        <span class="nu-k">◷ Next up</span>
-        <span class="nu-mu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>
-        <span class="nu-cd">first pitch in <b class="fnc-val" data-drop="${next.ts}">${fmtCountdown(next.ts - now)}</b></span>
-      </button>`;
-    }
-    // A News-shaped loading skeleton — a lead-story card + a 2-up grid of them — so the loading
-    // state matches the actual content format (not a stack of compact-card shims).
-    function skeletonNews() {
-      const card = `<div class="skls"><span class="sk sk-fig"></span><div class="skls-b"><span class="sk sk-line w60"></span><span class="sk sk-line w40"></span></div></div>`;
-      return `<div class="news"><div class="masthead lead"><span class="sk sk-line" style="height:34px;width:58%;display:block"></span></div><div class="mh-rule"></div>${card}<div class="sk-topgrid">${card}${card}</div></div>`;
-    }
     // ═════════════════ CINEMATIC STORIES (the News tab's default mode) ═════════════════
     // Instagram-stories-style: full-viewport dark-glass cards advanced one-by-one — tap
     // right/left = next/prev, swipe supported, thin segmented progress bars up top,
@@ -9748,13 +9544,16 @@ export default function Home() {
       // header and dock stay hidden on whatever surface the reader lands on next
       try { document.body.classList.remove("stories-on"); } catch {}
     }
-    function setNewsMode(m: "stories" | "grid") {
-      newsMode = "stories";
-      try { localStorage.setItem("de_newsmode_v2", "stories"); } catch {}
-      if (m !== "stories") { stopStories(); switchTab("games"); return; }
-      todayFresh = false;
-      renderToday();
-      if (tab === "today") todayFresh = true;
+    /* THE NEWS TAB IS THE BRIEFING. There is no second mode.
+       Leon: "remove the non-stories news page entirely. Stories IS the news tab now."
+       The classic scrollable front — masthead, lead-story card, momentum rail, headline
+       list, share bar, record footer — is deleted (newsFront/newsStory/newsMiniStory/
+       leadStoryCard/nextUpBanner/socialShareBar/skeletonNews/fallbackBrief and the whole
+       dead half of renderToday went with it). It was also where the tint/wash artefacts
+       lived. Exiting the deck now means exactly one thing: go to the board. */
+    function exitBriefing() {
+      stopStories();
+      switchTab("games");
     }
     // Yesterday's graded record + its picks (for the recap slide). Null when ungraded.
     function yesterdayRecap() {
@@ -9768,6 +9567,124 @@ export default function Home() {
     }
     // Assemble the day's slide deck: flagship pick → desk/recap intelligence →
     // every deduped news item → a compact hand-off to the games board.
+    /* ════════ WINNING PICKS, AS CELEBRATION ════════
+       Leon: "a mix of picks that were right and then upcoming games we are excited about."
+       The winners come off the LIVE board first (a pick that cashed twenty minutes ago
+       belongs at the top of the briefing) and then out of the graded history, newest first.
+       Every field is read defensively — anything missing simply keeps that winner out. */
+    function recentWinners(max = 3) {
+      const out: any[] = [];
+      const seen = new Set<string>();
+      const src = livePayload || payload;
+      (((src || {}) as any).games || []).forEach((g: any) => {
+        const pl = displayPick(g);
+        if (!pl || pl.action !== "TAKE") return;
+        if (gameState(g).kind !== "final" || playState(g, pl) !== "won") return;
+        const key = String(g.game_id);
+        if (seen.has(key)) return;
+        seen.add(key);
+        const fs = finalScore(g);
+        out.push({
+          key, date: gameLocalDay(g) || curDate, g, pl,
+          away: g.away_abbr, home: g.home_abbr,
+          side: String(pl.side || ""), line: pl.line != null ? lineStr(pl.line) : "",
+          stars: pl.stars, price: pl.price,
+          total: fs && fs.away != null && fs.home != null ? Number(fs.away) + Number(fs.home) : null,
+          score: fs && fs.away != null ? `${num(fs.away, 0)}–${num(fs.home, 0)}` : "",
+        });
+      });
+      (((betaData && betaData.games) || []) as any[])
+        .filter((x: any) => x && x.pick && x.pick.result === "win" && x.final)
+        .sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)))
+        .forEach((x: any) => {
+          const key = String(x.game_id);
+          if (seen.has(key) || out.length >= max * 3) return;
+          seen.add(key);
+          const aAb = x.away_abbr || mlbAbbr(x.away), hAb = x.home_abbr || mlbAbbr(x.home);
+          const tot = _fin(x.final.total_runs);
+          out.push({
+            key, date: x.date, g: { sport: x.sport || "mlb", away_abbr: aAb, home_abbr: hAb, game_id: x.game_id }, pl: null,
+            away: aAb, home: hAb,
+            side: /over/i.test(String(x.pick.side)) ? "OVER" : "UNDER",
+            line: x.pick.line != null ? lineStr(x.pick.line) : "",
+            stars: x.pick.stars, price: x.pick.price,
+            total: tot,
+            score: _fin(x.final.away_runs) != null ? `${num(x.final.away_runs, 0)}–${num(x.final.home_runs, 0)}` : "",
+          });
+        });
+      return out.slice(0, max);
+    }
+    /* ════════ THE GAMES WE ARE CIRCLED ON ════════
+       An upcoming game earns a slide for a REASON, and the reason is the headline. In
+       priority order: the whole desk on one side, the desk at war with itself, the biggest
+       number on the board, and the highest-conviction ticket left to play. */
+    function hypeGames(pool: any[], excludeIds: string[], max = 2) {
+      const ex = new Set((excludeIds || []).map(String));
+      const upcoming = pool.filter((g: any) => gameState(g).kind === "pre" && !ex.has(String(g.game_id)));
+      if (!upcoming.length) return [];
+      const totalOf = (g: any) => {
+        const pg = pregameLine(g);
+        return pg && pg.total && pg.total.line != null ? Number(pg.total.line) : null;
+      };
+      const totals = upcoming.map(totalOf).filter((x: any) => x != null) as number[];
+      const biggest = totals.length ? Math.max(...totals) : null;
+      const scored = upcoming.map((g: any) => {
+        const c = deskConsensus(g);
+        const ans = deskAnalysts(g).filter((a: any) => a.dir);
+        const pl = displayPick(g);
+        const stars = pl && pl.stars != null ? Number(pl.stars) : 0;
+        const tot = totalOf(g);
+        let rank = 0, kicker = "", head = "";
+        if (c && c.state === "UNANIMOUS" && ans.length >= 3) {
+          rank = 5; kicker = "The desk is united";
+          head = `All ${ans.length} analysts are on the ${String(c.side || "").toUpperCase() || "same side"}.`;
+        } else if (c && c.state === "SPLIT" && ans.length >= 4) {
+          rank = 4; kicker = "The desk is at war";
+          head = `${c.nOver}–${c.nUnder}. Nobody at the desk can talk anybody else out of it.`;
+        } else if (biggest != null && tot != null && tot >= biggest) {
+          rank = 3; kicker = "The biggest number on the board";
+          head = `${lineStr(tot)} runs is the highest total we are pricing today.`;
+        } else if (stars >= 4) {
+          rank = 2; kicker = "Highest conviction left";
+          head = `${Math.round(stars)}-star ticket, still to play.`;
+        } else if (c && c.state === "MAJORITY" && ans.length >= 3) {
+          rank = 1; kicker = "The desk leans";
+          head = `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)} ${String(c.side || "").toUpperCase()}.`;
+        }
+        return { g, rank, kicker, head, tot, stars };
+      }).filter((r: any) => r.rank > 0);
+      scored.sort((a: any, b: any) => (b.rank - a.rank) || (b.stars - a.stars) || (firstPitchTs(a.g) || 0) - (firstPitchTs(b.g) || 0));
+      // never two of the same reason back to back
+      const outHype: any[] = []; const kinds = new Set<number>();
+      scored.forEach((r: any) => { if (outHype.length < max && !kinds.has(r.rank)) { kinds.add(r.rank); outHype.push(r); } });
+      return outHype;
+    }
+    /* ════════ MORE ANALYST PERSONALITY ════════
+       Leon: "more analyst personality data." Each spotlight is one analyst as a CHARACTER —
+       their slice of the game, their record, their current form, what they filed today, and
+       who they are beating. Ranked by how much of a story they currently are: a hot streak
+       first, then the best ledger, then the biggest sample. Records only; nothing invented. */
+    function analystSpotlights(max = 2) {
+      const rows = deskRecordRows();
+      if (!rows.length) return [];
+      const runOf = (l10: string[]) => {
+        if (!l10 || !l10.length) return { mark: "", n: 0 };
+        const last = l10[l10.length - 1];
+        if (last !== "W" && last !== "L") return { mark: "", n: 0 };
+        let n = 0;
+        for (let i = l10.length - 1; i >= 0 && l10[i] === last; i--) n++;
+        return { mark: last, n };
+      };
+      const scored = rows.map((r: any) => {
+        const run = runOf(r.last10);
+        const heat = run.mark === "W" ? run.n * 3 : 0;
+        const roi = r.roi != null ? Number(r.roi) * 20 : 0;
+        return { r, run, score: heat + roi + Math.min(r.n, 40) / 10 };
+      }).filter((x: any) => x.r.n > 0);
+      if (!scored.length) return [];
+      scored.sort((a: any, b: any) => b.score - a.score);
+      return scored.slice(0, max);
+    }
     function buildStorySlides() {
       const src = livePayload || payload;
       const pool = (((src || {}) as any).games || []).filter((g0: any) => {
@@ -9788,39 +9705,70 @@ export default function Home() {
         const orig = (newsFeed.headlines || []) as any[];
         newsDedupedHeadlines().forEach((s: any) => news.push({ s, key: String(orig.indexOf(s)) }));
       }
-      const slides: any[] = [];
-      if (picks[0]) slides.push({ t: "pick", g: picks[0].g, pl: picks[0].pl, rank: 1 });
-      // PACING. News is now the only Today surface, so every deduped headline gets a slide.
-      // Picks and desk intelligence are still interwoven, but there is no separate news grid.
-      // ANALYST DESK slide: the day's strongest consensus is the strongest possible story —
-      // "all four analysts agree" leads; a 3–1 majority still makes the deck; a split gets
-      // the "desk divided" treatment only when nothing stronger exists.
+      /* ════════ THE RUNNING ORDER ════════
+         Leon: "a mix of picks that were right and then upcoming games we are excited about…
+         and more analyst personality data."
+
+         The deck used to be picks → desk → history → every headline in a row, which read as
+         two products stapled together: a results page followed by a wire feed. It is now cut
+         like a magazine, and it alternates REGISTERS on purpose — a call, a result, a story,
+         a character, a game to look forward to — so no two consecutive cards ask the reader
+         for the same kind of attention. Every strand degrades independently: no winners yet,
+         no upcoming games, no served analyst records ⇒ those beats simply don't appear. */
+      const winners = recentWinners(3);
+      const spots = analystSpotlights(2);
       const consRank: any = { UNANIMOUS: 3, MAJORITY: 2, SPLIT: 1 };
       const deskBest = pool
         .map((g0: any) => ({ g: g0, c: deskConsensus(g0), n: deskAnalysts(g0).length }))
         .filter((r: any) => r.n >= 2 && r.c && consRank[r.c.state])
         .sort((a: any, b: any) => (consRank[b.c.state] - consRank[a.c.state]) ||
           (((displayPick(b.g) || {}).stars || 0) - ((displayPick(a.g) || {}).stars || 0)))[0] || null;
-      if (deskBest) slides.push({ t: "desk", g: deskBest.g, c: deskBest.c });
-      // LAST NIGHT AT THE DESK — the nightly recap is the marquee morning story: winner
-      // crowned, best call quoted, worst call owned. Rides right behind the day's desk story.
+      const usedIds = picks.map((p: any) => String(p.g.game_id)).concat(deskBest ? [String(deskBest.g.game_id)] : []);
+      const hype = hypeGames(pool, usedIds, 2);
       const drc = latestDeskRecap();
-      if (drc) slides.push({ t: "lastnight", rc: drc });
-      // the competition scoreboard rides the deck too — stories is the DEFAULT home mode,
-      // and the standings are the top-of-home promise
-      if (deskRecordRows().length) slides.push({ t: "standings" });
-      // THE PATTERNS — the boldest measured tendency as its own revelation slide
-      // the patterns slide now stands on a FINDING or on a well-powered null — both are results
-      if (patternHighlights().length || (patternsHeadline() && patternsHeadline().line)) slides.push({ t: "patterns" });
       const recap = yesterdayRecap();
-      if (recap) slides.push({ t: "recap", ...recap });
-      let pi = 1, ni = 0;
-      while ((pi < Math.min(picks.length, 2) || ni < news.length) && slides.length < STORY_MAX) {
-        if (ni < news.length) slides.push({ t: "news", ...news[ni++] });
-        if (pi < Math.min(picks.length, 2) && slides.length < STORY_MAX) { slides.push({ t: "pick", g: picks[pi].g, pl: picks[pi].pl, rank: pi + 1 }); pi++; }
+      const havePatterns = patternHighlights().length || (patternsHeadline() && patternsHeadline().line);
+
+      // one strand per beat; the interleaver below pulls from them in a fixed rhythm
+      const strand = {
+        pick: picks.map((p: any, i: number) => ({ t: "pick", g: p.g, pl: p.pl, rank: i + 1 })),
+        win: winners.map((w: any) => ({ t: "win", w })),
+        news: news.map((n: any) => ({ t: "news", ...n })),
+        hype: hype.map((h: any) => ({ t: "hype", ...h })),
+        anl: spots.map((s: any) => ({ t: "anlspot", ...s })),
+        desk: [
+          ...(deskBest ? [{ t: "desk", g: deskBest.g, c: deskBest.c }] : []),
+          ...(drc ? [{ t: "lastnight", rc: drc }] : []),
+          ...(havePatterns ? [{ t: "patterns" }] : []),
+          ...(deskRecordRows().length ? [{ t: "standings" }] : []),
+          ...(recap ? [{ t: "recap", ...recap }] : []),
+        ],
+      } as any;
+      // THE RHYTHM. Read it top to bottom: the day's flagship call, the win it just banked,
+      // the story everyone is talking about, the game we're circled on, the desk's argument,
+      // an analyst as a person, and around again.
+      const RHYTHM = ["pick", "win", "news", "hype", "desk", "anl", "news", "pick", "win", "news", "desk", "hype", "news", "anl", "desk", "news", "desk", "news", "desk", "news"];
+      const at: any = { pick: 0, win: 0, news: 0, hype: 0, anl: 0, desk: 0 };
+      const slides: any[] = [];
+      RHYTHM.forEach((k) => {
+        if (slides.length >= STORY_MAX - 1) return;
+        const s = strand[k];
+        if (s && at[k] < s.length) slides.push(s[at[k]++]);
+      });
+      // anything left over (a long news day) still gets in — ROUND-ROBIN, not drained, so a
+      // twelve-headline morning doesn't end the deck with a wall of eight identical cards.
+      const rest = ["news", "desk", "win", "pick", "hype", "anl"];
+      let moved = true;
+      while (moved && slides.length < STORY_MAX - 1) {
+        moved = false;
+        for (const k of rest) {
+          if (slides.length >= STORY_MAX - 1) break;
+          const s = strand[k];
+          if (s && at[k] < s.length) { slides.push(s[at[k]++]); moved = true; }
+        }
       }
-      // the board summary always closes the deck — it is the hand-off to the games tab
-      if (slides.length < STORY_MAX) slides.push({ t: "summary", picks });
+      // the end card always closes the deck — it is the hand-off to the games board
+      slides.push({ t: "summary", picks });
       return slides.slice(0, STORY_MAX);
     }
     // THE VOICES on a pick slide: the strongest agreeing analyst gets quoted under the call;
@@ -9910,10 +9858,12 @@ export default function Home() {
       return `<div class="sts sts-pick tier-${tier}">
         <div class="sts-bg" aria-hidden="true"></div>
         <div class="sts-kick"><span>◆ ${sl.rank === 1 ? "Flagship Pick" : `Top Pick #${sl.rank}`}</span>${when}</div>
-        <div class="sts-mu">${team("away")}${mid}${team("home")}</div>
-        <div class="sts-callwrap">${call}</div>
+        <div class="sts-open" ${locked ? `data-go="unlock"` : `data-go="pick" data-gid="${esc(g.game_id)}"`} role="button" tabindex="0" aria-label="${locked ? "Unlock this pick" : "Open the full pick"}">
+          <div class="sts-mu">${team("away")}${mid}${team("home")}</div>
+          <div class="sts-callwrap">${call}</div>
+          ${locked ? "" : `<span class="sts-openchip" aria-hidden="true">The full pick <i>↗</i></span>`}
+        </div>
         ${storyVoiceQuote(g, pl, locked)}
-        ${locked ? "" : `<button class="st-cta" data-go="pick" data-gid="${esc(g.game_id)}">See the full pick →</button>`}
       </div>`;
     }
     function storyNewsSlide(sl: any) {
@@ -9928,11 +9878,11 @@ export default function Home() {
         <div class="sts-bg" aria-hidden="true"></div>
         ${img}
         <div class="sts-scrim" aria-hidden="true"></div>
-        <div class="sts-newsbody">
+        <div class="sts-newsbody sts-open" data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Open this story">
           <div class="sts-kick"><span>${lab || "AROUND THE LEAGUE"} · DiamondEdge</span>${when ? `<span class="sts-when">${esc(when)}</span>` : ""}</div>
           <h3 class="sts-head">${esc(s.headline || s.title || "")}</h3>
-          ${(s.dek || s.summary) ? `<p class="sts-dek">${esc(cleanBlurb(s.dek || s.summary))}</p>` : ""}
-          <button class="st-cta" data-go="news" data-nf="${esc(sl.key)}">Read the story →</button>
+          ${hedgeFree(s.dek || s.summary) ? `<p class="sts-dek">${esc(hedgeFree(s.dek || s.summary))}</p>` : ""}
+          <span class="sts-openchip" aria-hidden="true">Read the story <i>↗</i></span>
         </div>
       </div>`;
     }
@@ -9957,19 +9907,117 @@ export default function Home() {
         <button class="st-cta" data-go="results">See the full record →</button>
       </div>`;
     }
+    /* ════════ A WINNER, CELEBRATED ════════
+       The result page states that a pick won. This card CELEBRATES it, because a graded
+       winner is the single most persuasive thing this product owns: the call, the number it
+       had to beat, the number the game actually produced, and the margin between them. */
+    function storyWinSlide(sl: any) {
+      const w = sl.w;
+      const over = /over/i.test(w.side);
+      const word = over ? "OVER" : "UNDER";
+      const lineN = _fin(w.line);
+      const margin = w.total != null && lineN != null ? Math.abs(Number(w.total) - lineN) : null;
+      const dd = (() => { const d = new Date(String(w.date) + "T12:00:00"); return isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); })();
+      const crest = (side: "away" | "home") =>
+        `<div class="sts-team"><span class="sts-crest">${gCrest(w.g, side)}</span><b>${esc(side === "away" ? w.away : w.home)}</b></div>`;
+      return `<div class="sts sts-win">
+        <div class="sts-bg" aria-hidden="true"></div>
+        <div class="sts-kick"><span>◆ That's a winner</span>${dd ? `<span class="sts-when">${esc(dd)}</span>` : ""}</div>
+        <div class="sts-open" ${w.g && w.g.game_id != null ? `data-go="pick" data-gid="${esc(String(w.g.game_id))}"` : `data-go="results"`} role="button" tabindex="0" aria-label="Open this result">
+          <div class="sts-mu">${crest("away")}${w.score ? `<div class="sts-score fin">${esc(w.score)}</div>` : `<div class="sts-at">@</div>`}${crest("home")}</div>
+        <div class="sts-wincall ${over ? "ou-over" : "ou-under"}">
+          <span class="sts-winmark" aria-hidden="true">${over ? "▲" : "▼"}</span>
+          <b>${word}${w.line ? ` ${esc(w.line)}` : ""}</b>
+          ${w.price != null ? `<i>${fmtOdds(w.price)}</i>` : ""}
+        </div>
+        <div class="sts-winstamp"><span class="sts-wintick" aria-hidden="true">✓</span>CASHED</div>
+        </div>
+        ${w.total != null ? `<div class="sts-winmath">
+          <span><i>Line</i><b>${esc(w.line || (lineN != null ? lineStr(lineN) : "—"))}</b></span>
+          <span class="sep" aria-hidden="true">→</span>
+          <span><i>Final total</i><b>${num(w.total, 0)}</b></span>
+          ${margin != null ? `<span class="by"><i>Clear by</i><b>${num(margin, margin % 1 ? 1 : 0)}</b></span>` : ""}
+        </div>` : ""}
+        ${w.stars != null ? `<div class="sts-meta">${bStars(w.stars)}</div>` : ""}
+        <button class="st-cta" data-go="results">Every graded call →</button>
+      </div>`;
+    }
+    /* ════════ THE GAME WE ARE CIRCLED ON ════════
+       An upcoming game with a stated reason to care — the desk united, the desk at war, the
+       biggest number on the board, or the highest-conviction ticket still to play. */
+    function storyHypeSlide(sl: any) {
+      const g = sl.g;
+      const gs = gameState(g);
+      const when = gs.si && gs.si.hasTime && gs.si.time ? gs.si.time : (gs.si && gs.si.date) || "";
+      const team = (side: "away" | "home") => {
+        const f = teamRecordFor(g, side);
+        return `<div class="sts-team"><span class="sts-crest">${gCrest(g, side)}</span><b>${esc(side === "away" ? g.away_abbr : g.home_abbr)}</b>${f && f.rec ? `<i>${esc(f.rec)}</i>` : ""}</div>`;
+      };
+      const marks = deskAnalysts(g).filter((a: any) => a.dir).map((a: any) =>
+        `<span class="sts-hmark an-${esc(a.key)} ${a.dir === "over" ? "up" : "down"}" data-an="${esc(a.key)}" role="button" tabindex="0" title="${esc(a.name)} — ${esc(a.dir)}">${deskGlyph(a.key, 17)}<i aria-hidden="true"></i></span>`).join("");
+      return `<div class="sts sts-hype">
+        <div class="sts-bg" aria-hidden="true"></div>
+        <div class="sts-kick"><span>◆ ${esc(sl.kicker)}</span>${when ? `<span class="sts-when">${esc(when)}</span>` : ""}</div>
+        <div class="sts-open" data-go="pick" data-gid="${esc(String(g.game_id))}" role="button" tabindex="0" aria-label="Open this matchup">
+          <h3 class="sts-head">${esc(sl.head)}</h3>
+          <div class="sts-mu">${team("away")}<div class="sts-at">vs</div>${team("home")}</div>
+          ${sl.tot != null ? `<div class="sts-hypeline"><i>Total</i><b>${esc(lineStr(sl.tot))}</b></div>` : ""}
+          <span class="sts-openchip" aria-hidden="true">Open the matchup <i>↗</i></span>
+        </div>
+        ${marks ? `<div class="sts-hmarks" role="img" aria-label="the desk's four reads">${marks}</div>` : ""}
+      </div>`;
+    }
+    /* ════════ AN ANALYST AS A PERSON ════════
+       The standings slide ranks the four. This one is about ONE of them: their slice of the
+       game, their ledger, the run they are on, and how many calls they filed today. */
+    function storyAnalystSlide(sl: any) {
+      const r = sl.r, run = sl.run || { mark: "", n: 0 };
+      const graded = r.win + r.loss + r.push > 0;
+      const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0";
+      const thesis = r.persona || deskThesis(r.key, r) || "";
+      const edge = deskEdgeLine(r.key, r) || "";
+      const todayN = (() => { try { return anlTodayCount(r.key); } catch { return 0; } })();
+      const runTxt = run.n >= 2 ? `${run.mark}${run.n}` : "";
+      return `<div class="sts sts-anlspot an-${esc(r.key)}">
+        <div class="sts-bg" aria-hidden="true"></div>
+        <div class="sts-kick"><span>◆ Analyst spotlight</span>${runTxt ? `<span class="sts-when ${run.mark === "W" ? "hot" : ""}">on a ${esc(runTxt)}</span>` : ""}</div>
+        <div class="sts-anlhead" data-an="${esc(r.key)}" role="button" tabindex="0">
+          <span class="sts-anlsig">${deskGlyph(r.key, 40)}</span>
+          <span class="sts-anlid"><b>${esc(r.name)}</b><i>${esc(r.title || "")}</i></span>
+        </div>
+        ${edge || thesis ? `<p class="sts-anledge">${esc(edge || thesis)}</p>` : ""}
+        <div class="sts-anlrec">
+          <span><i>Record</i><b>${esc(rec)}</b></span>
+          ${r.hit != null ? `<span><i>Hit</i><b>${(Number(r.hit) * 100).toFixed(0)}%</b></span>` : ""}
+          ${r.roi != null ? `<span class="${Number(r.roi) >= 0 ? "up" : "down"}"><i>ROI</i><b>${Number(r.roi) >= 0 ? "+" : ""}${(Number(r.roi) * 100).toFixed(1)}%</b></span>` : ""}
+          <span><i>Sample</i><b>${r.n}</b></span>
+        </div>
+        ${r.last10 && r.last10.length ? `<div class="sts-anll10">${deskL10Dots(r.last10)}<em>last ${r.last10.length}</em></div>` : ""}
+        ${todayN ? `<div class="sts-substat">${todayN} call${todayN === 1 ? "" : "s"} filed on today's board.</div>` : ""}
+        <button class="st-cta" data-an="${esc(r.key)}">Open ${esc(r.name)}'s card →</button>
+      </div>`;
+    }
+    /* ════════ THE END CARD ════════
+       Leon: "at the end of the feed, a big satisfying end-card; tapping it (or anything
+       after it) pans to the Games tab." So it is the only slide in the deck that is a
+       single, deliberate, full-bleed gesture — a struck diamond, one line, one door. The
+       whole card is the target, and advancing past it pans to Games (see nextStory). */
     function storySummarySlide(sl: any) {
-      const rows = (sl.picks || []).map((r: any, i: number) => {
+      const rows = (sl.picks || []).slice(0, 4).map((r: any, i: number) => {
         const g = r.g, pl = r.pl;
         const locked = pickLocked(pl, playState(g, pl));
         const side = locked ? `<span class="sts-dots sm" aria-hidden="true">●●●</span>` : `${esc(pl.side || "")}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}`;
         return `<div class="sts-srow" data-gid="${esc(g.game_id)}" role="button" tabindex="0"><span class="sts-srank">#${i + 1}</span><span class="sts-smu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span><span class="sts-sside">${side}</span>${bStars(pl.stars != null ? pl.stars : 1)}</div>`;
       }).join("");
-      return `<div class="sts sts-summary caughtup" data-go="games" role="button" tabindex="0" aria-label="All caught up — open games">
+      const n = (sl.picks || []).length;
+      return `<div class="sts sts-summary caughtup" data-go="games" role="button" tabindex="0" aria-label="All caught up — open the games board">
         <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ All caught up</span></div>
-        <div class="sts-head sm">${sl.picks.length ? `${sl.picks.length} DiamondEdge Pick${sl.picks.length === 1 ? "" : "s"} on the board` : "The board is ready"}</div>
-        ${rows ? `<div class="sts-srows">${rows}</div>` : `<p class="sts-dek">Open the games board for live scores, start times, odds and every matchup preview.</p>`}
-        <button class="st-cta big" data-go="games">Go to Games →</button>
+        <div class="cu-mark" aria-hidden="true"><span class="cu-dia">◆</span><span class="cu-ring"></span><span class="cu-ring r2"></span></div>
+        <div class="cu-kick">All caught up</div>
+        <h3 class="cu-head">${n ? `${n} DiamondEdge Pick${n === 1 ? "" : "s"}<br>on today's board.` : "The board is live."}</h3>
+        ${rows ? `<div class="sts-srows">${rows}</div>` : ""}
+        <button class="st-cta big" data-go="games">Go to the board →</button>
+        <div class="cu-foot">Tap anywhere to open Games</div>
       </div>`;
     }
     // THE ANALYST DESK slide — the consensus as cinema: "All four say OVER." with the four
@@ -10005,11 +10053,13 @@ export default function Home() {
       return `<div class="sts sts-desk cons-${stCls}">
         <div class="sts-bg" aria-hidden="true"></div>
         <div class="sts-kick"><span>◆ The Analyst Desk</span><span class="sts-when">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span></div>
-        <h3 class="sts-head deskhead">${esc(head)}</h3>
-        <div class="sts-drows">${rows}</div>
-        ${verdict}
+        <div class="sts-open" data-go="pick" data-gid="${esc(g.game_id)}" role="button" tabindex="0" aria-label="Open the desk's full read">
+          <h3 class="sts-head deskhead">${esc(head)}</h3>
+          <div class="sts-drows">${rows}</div>
+          ${verdict}
+          <span class="sts-openchip" aria-hidden="true">The desk's full read <i>↗</i></span>
+        </div>
         ${simSaysChip(g, "big")}
-        <button class="st-cta" data-go="pick" data-gid="${esc(g.game_id)}">See the desk's full read →</button>
       </div>`;
     }
     // DESK STANDINGS as cinema: the four analysts ranked, records front and center.
@@ -10038,7 +10088,7 @@ export default function Home() {
         <div class="sts-kick"><span>◆ Desk Standings</span></div>
         <h3 class="sts-head deskhead">Four analysts.<br>Not one league table.</h3>
         <div class="sts-strows">${items}</div>
-        <div class="sts-substat">Every record starts in ${recordEraMonth()}, and only a record past ${ANALYST_MIN_N} graded calls gets a place — tap an analyst for the full card.</div>
+        <div class="sts-substat">Records open in ${recordEraMonth()}. ${ANALYST_MIN_N}+ graded calls earns a place — tap any analyst for the full card.</div>
         <button class="st-cta" data-go="results">See the full record →</button>
       </div>`;
     }
@@ -10050,6 +10100,9 @@ export default function Home() {
         : sl.t === "lastnight" ? storyLastNightSlide(sl)
         : sl.t === "standings" ? storyStandingsSlide()
         : sl.t === "patterns" ? storyPatternsSlide()
+        : sl.t === "win" ? storyWinSlide(sl)
+        : sl.t === "hype" ? storyHypeSlide(sl)
+        : sl.t === "anlspot" ? storyAnalystSlide(sl)
         : storySummarySlide(sl);
       return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
     }
@@ -10063,16 +10116,42 @@ export default function Home() {
     function gotoStory(i: number) {
       if (i < 0) i = 0;
       if (i > storyLen - 1) i = storyLen - 1;
+      // DIRECTION OF TRAVEL drives the slide transition — forward slides in from the right,
+      // back from the left (see .st-stage.st-fwd / .st-back). Re-armed by toggling the class
+      // off and back on inside a frame so the animation restarts on every advance.
+      const fwd = i >= storyIdx;
       storyIdx = i;
       storyAcc = 0; storyT0 = performance.now();
+      const wrap0 = $("stories");
+      if (wrap0) wrap0.classList.toggle("hint-off", i > 0);  // the tap-zone hint is a first-card thing
       const stage = $("st-stage");
-      if (stage) stage.querySelectorAll(".st-slide").forEach((s: any) => s.classList.toggle("on", Number(s.dataset.si) === i));
+      if (stage) {
+        stage.classList.remove("st-fwd", "st-back");
+        // force a reflow so re-adding the class restarts the keyframes
+        void stage.offsetWidth;
+        if (!REDUCE) stage.classList.add(fwd ? "st-fwd" : "st-back");
+        stage.querySelectorAll(".st-slide").forEach((s: any) => s.classList.toggle("on", Number(s.dataset.si) === i));
+      }
       storyFillsSync();
     }
-    const nextStory = () => { if (storyIdx < storyLen - 1) gotoStory(storyIdx + 1); else { const f = document.querySelector(`.st-fill[data-sf="${storyIdx}"]`) as any; if (f) f.style.width = "100%"; storyAcc = STORY_MS; } };
+    /* THE END OF THE FEED IS A DOOR, NOT A WALL.
+       Leon: "tapping it (or anything after it) pans to the Games tab." Advancing past the
+       last card — by tap, by swipe, by arrow key, or by letting the auto-advance run out —
+       hands off to the board with the same left-to-right pan every other navigation uses.
+       The deck used to just stop dead on the last slide, which is where readers left. */
+    let storyHandedOff = false;
+    function storyHandOff() {
+      if (storyHandedOff) return;
+      storyHandedOff = true;
+      const f = document.querySelector(`.st-fill[data-sf="${storyIdx}"]`) as any;
+      if (f) f.style.width = "100%";
+      storyAcc = STORY_MS;
+      switchTab("games");
+    }
+    const nextStory = () => { if (storyIdx < storyLen - 1) gotoStory(storyIdx + 1); else storyHandOff(); };
     const prevStory = () => gotoStory(Math.max(0, storyIdx - 1));
     function storyTick(now: number) {
-      if (tab !== "today" || newsMode !== "stories" || !$("stories")) { stopStories(); return; }
+      if (tab !== "today" || !$("stories")) { stopStories(); return; }
       // pause while held, while a sheet/detail covers the stories, or while backgrounded
       if (storyHold || document.hidden || document.body.classList.contains("sheet-open")) {
         storyT0 = now;
@@ -10083,7 +10162,7 @@ export default function Home() {
         if (f) f.style.width = pct.toFixed(1) + "%";
         if (elapsed >= STORY_MS) {
           if (storyIdx < storyLen - 1) gotoStory(storyIdx + 1);
-          else storyAcc = STORY_MS; // end of the deck — hold on the last card
+          else storyHandOff();      // end of the deck — hand off to the games board
         }
       }
       storyRafId = requestAnimationFrame(storyTick);
@@ -10093,6 +10172,7 @@ export default function Home() {
       // stopStories() drops the full-screen body state; re-assert it whenever the deck is
       // actually mounted, so returning to Today from another tab restores the layer.
       if (tab === "today" && $("stories")) document.body.classList.add("stories-on");
+      storyHandedOff = false;   // a freshly mounted deck can hand off again
       if (REDUCE) { // no auto-advance under reduced motion — fills read as position only
         storyFillsSync();
         const f = document.querySelector(`.st-fill[data-sf="${storyIdx}"]`) as any; if (f) f.style.width = "100%";
@@ -10103,7 +10183,7 @@ export default function Home() {
     }
     function bindStories(view: any) {
       const wrap = $("stories"), stage = $("st-stage");
-      bindClick("st-gridbtn", (e: any) => { e.stopPropagation(); setNewsMode("grid"); });
+      bindClick("st-gridbtn", (e: any) => { e.stopPropagation(); exitBriefing(); });
       bindClick("st-sharebtn", async (e: any) => {
         e.stopPropagation();
         const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.origin + location.pathname; } })();
@@ -10126,6 +10206,14 @@ export default function Home() {
         rw.onclick = open;
         rw.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
       });
+      // the edge rails: explicit, and they never advance on a drag (that is a swipe)
+      const railTap = (id: string, fn: () => void) => bindClick(id, (e: any) => { e.stopPropagation(); fn(); });
+      railTap("st-zone-l", prevStory);
+      railTap("st-zone-r", nextStory);
+      // every content block that opens a popover answers the keyboard too
+      view.querySelectorAll(".sts-open,[data-an]").forEach((el: any) => {
+        el.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); } };
+      });
       if (!stage) return;
       let pdX = 0, pdAt = 0;
       const hold = () => {
@@ -10138,7 +10226,7 @@ export default function Home() {
         const dx = e.clientX - pdX, dt = Date.now() - pdAt;
         if (Math.abs(dx) > 44) { if (dx < 0) nextStory(); else prevStory(); return; }   // swipe
         if (dt >= 420) return;                                                          // hold-release: no advance
-        if (e.target && e.target.closest && e.target.closest(".st-cta,[data-go],[data-gid],[data-up],a,button")) return;
+        if (e.target && e.target.closest && e.target.closest(".st-cta,[data-go],[data-gid],[data-an],[data-up],a,button")) return;
         const rect = stage.getBoundingClientRect();
         if (e.clientX - rect.left < rect.width * 0.34) prevStory(); else nextStory();    // tap zones
       });
@@ -10148,7 +10236,7 @@ export default function Home() {
         if (e.key === "ArrowRight") { e.preventDefault(); nextStory(); }
         if (e.key === "ArrowLeft") { e.preventDefault(); prevStory(); }
         // a full-screen surface must answer Escape — the X and this are the same door
-        if (e.key === "Escape") { e.preventDefault(); setNewsMode("grid"); }
+        if (e.key === "Escape") { e.preventDefault(); exitBriefing(); }
       };
       // give the deck focus so the arrow keys and Escape work without a click first
       if (wrap && tab === "today") { try { wrap.focus({ preventScroll: true }); } catch {} }
@@ -10194,7 +10282,13 @@ export default function Home() {
             </div>
           </div>
           <div class="st-stage" id="st-stage">${slides.map((s: any, i: number) => storySlideHtml(s, i)).join("")}</div>
-          <div class="st-hint" aria-hidden="true"><span>Tap right to go on · left to go back · hold to pause</span></div>
+          <!-- TWO GESTURES, TWO SURFACES. The content column opens the story in a popover;
+               these transparent edge rails move the deck. Making the rails real elements is
+               what makes the two unambiguous — before this, "tap right to advance" and "tap
+               the headline to open" were the same 331px of screen. -->
+          <button class="st-zone left" id="st-zone-l" aria-label="Previous story" tabindex="-1"></button>
+          <button class="st-zone right" id="st-zone-r" aria-label="Next story" tabindex="-1"></button>
+          <div class="st-hint" aria-hidden="true"><span>Tap the story to open · tap either edge to move</span></div>
         </div>`;
       // ONLY when the briefing is the surface actually on screen. renderToday() runs at boot
       // to prewarm the tab, so an unconditional class here would hide the header and the dock
@@ -10211,126 +10305,6 @@ export default function Home() {
       renderStories(view);
       if (tab !== "today") todayFresh = false;
       return;
-      stopStories();
-      const db = briefSource() || fallbackBrief();
-      if (!db) { view.innerHTML = skeletonNews(); return; }
-      const dd = new Date(String(db.date || todayISO()) + "T12:00:00");
-      const dateTxt = isNaN(dd.getTime()) ? String(db.date || "") : dd.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      const isToday = curDate === todayISO();
-      const picksAll = orderTopPicks((db.top_picks || []) as any[]);
-      const leadPick = picksAll[0] || null;
-      // LEAD STORY — the day's feature bet = the BEST pick on today's slate under the
-      // (v4-first) displayPick, falling back to the served brief's top pick.
-      // Hero pool = today + live + ANY upcoming (incl. tomorrow) so once today's slate is
-      // final the headline reaches to the next actionable pick instead of stranding a loser.
-      const ftPool = (((livePayload || payload) || {}).games || []).filter((g0: any) => {
-        const k = gameState(g0).kind;
-        const d0 = gameLocalDay(g0);
-        return k === "live" || k === "pre" || d0 === todayISO();
-      });
-      const ftBest = isToday ? dayLockedPick(ftPool, 1) : featuredPick(ftPool);
-      const leadGame = (ftBest && ftBest.g) || (leadPick ? findGameLive(leadPick.game_id) : null);
-      // optional SECOND flagship — only when it's a genuinely strong (3★+) call
-      const ft2 = isToday && leadGame ? dayLockedPick(ftPool, 2, String(leadGame.game_id)) : null;
-      const flag2 = ft2 && ft2.pl && (ft2.pl.stars || 0) >= 3 ? leadStoryCard(ft2.g, "Flagship Pick", dateTxt) : "";
-      let leadStory = "";
-      if (leadGame) {
-        leadStory = leadStoryCard(leadGame, "Today's Flagship Pick", dateTxt);
-      } else {
-        // NOTHING CLEARED: say which bar it failed at. The board's own pass tally is the
-        // honest version of "no pick today" — and where the reason is a price that isn't
-        // really on offer, that is worth a sentence of its own. Degrades to the plain line.
-        const roF = passReadout(ftPool);
-        const nUnobF = roF ? ((roF.kinds.find((k: any) => k.key === "price_not_obtainable") || {}).n || 0) : 0;
-        const ledeF = roF
-          ? `The desk priced ${roF.n} game${roF.n === 1 ? "" : "s"} and not one became an official DiamondEdge Pick. ${nUnobF ? `On ${nUnobF} of them our number liked the side, but the needed price was not available at that line. ` : ""}Every read is still on the board, and every past call stays graded on the Record tab.`
-          : "Today none did. The top games to watch are below, and every past call stays graded on the Record tab.";
-        leadStory = `<article class="leadstory pass">
-          <div class="ls-body">
-            <div class="ls-kick"><span class="ls-lab">Feature bet</span></div>
-            <h3 class="ls-match">No DiamondEdge Pick today — we only publish when the numbers clear our bar.</h3>
-            <p class="ls-lede">${esc(ledeF)}</p>
-            <div class="ls-ctas"><span class="hero-cta" data-nav="results">See the record →</span><span class="hero-cta alt" data-nav="games">Browse today's board →</span></div>
-          </div>
-        </article>`;
-      }
-      // TIGHT MASTHEAD — kicker (the ONE red accent) + short punchy headline + small dek.
-      // It's the page NAMEPLATE now — it leads the front, above the hero and the two surfaces.
-      // The masthead nameplate is computed from the MODEL's board (never the old brief):
-      // how many starred picks are live on today's slate right now.
-      const nTakes = ftPool.filter((g0: any) => isBet(displayPick(g0))).length;
-      const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
-      let tightHead = !isToday ? "The board, recapped"
-        : nTakes === 0 ? "The board fills in as game time nears"
-        : `${WORDS[Math.min(nTakes, 9)]} pick${nTakes === 1 ? "" : "s"} on the board today`;
-      const headDek = ""; // the read lives in the hero + game page; the nameplate stays one clean line
-      view.innerHTML = `
-        <div class="news">
-          ${newsFront() || ""}
-          <div class="masthead lead board-head">
-            <div class="mh-kicker"><span class="lk-tag">DiamondEdge Desk</span><button class="st-modebtn" id="st-storiesbtn" aria-label="Switch to stories view">▸ Stories</button></div>
-            <h2 class="lead-head">${esc(tightHead)}</h2>
-            ${headDek ? `<p class="mh-dek clamp2">${esc(headDek)}</p>` : ""}
-          </div>
-          <div class="mh-rule"></div>
-          ${deskStandingsStrip()}
-          ${patternsStrip()}
-          ${deskRecapCard()}
-          ${nextUpBanner()}
-          <section class="ng-lead front-hero">${leadStory}</section>
-          ${flag2 ? `<section class="ng-lead front-hero second">${flag2}</section>` : ""}
-          ${socialShareBar()}
-          <div class="news-foot">${esc(recordStrip())}</div>
-        </div>`;
-      // ---- bindings ----
-      bindClick("st-storiesbtn", () => setNewsMode("stories"));
-      bindClick("soc-native", async () => {
-        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
-        if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge", text: shareTagline(), url }); return; } catch {} }
-        try { await navigator.clipboard.writeText(`${shareTagline()} ${url}`); toast("Copied — paste it anywhere"); } catch { toast(url); }
-      });
-      bindClick("soc-copy", async () => {
-        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
-        try { await navigator.clipboard.writeText(url); toast("Link copied to clipboard"); } catch { toast(url); }
-      });
-      const nav = (el: any) => { const d = el.dataset.nav; if (d) switchTab(d); };
-      view.querySelectorAll("[data-nav]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); nav(b); }));
-      // storyline expand + jump
-      view.querySelectorAll(".story").forEach((s: any) => {
-        const toggle = (e: any) => {
-          const gbtn = e.target && e.target.closest && e.target.closest("[data-th-g]");
-          if (gbtn) { const ids = String(gbtn.dataset.thG || "").split(",").filter(Boolean); if (ids.length) jumpToGames(ids); return; }
-          const p = s.querySelector(".st-t");
-          const open = p && p.classList.toggle("open");
-          if (p) p.classList.toggle("clamp2", !open);
-          s.setAttribute("aria-expanded", open ? "true" : "false");
-        };
-        s.onclick = toggle;
-        s.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(e); } };
-      });
-      // lead story + carousel + story previews + board tiles → detail sheet
-      startCountdowns(); // keep the "next up" first-pitch countdown ticking
-      view.querySelectorAll(".leadstory[data-gid], .hero[data-gid], .prev[data-gid], .boardlist .tile[data-gid], .nextup[data-gid]").forEach((h: any) => {
-        const open = (e: any) => {
-          if (e.target && e.target.closest && e.target.closest("[data-up]")) { openUnlock(); return; }
-          if (e.target && e.target.closest && e.target.closest("[data-nav]")) return;
-          if (h.dataset.locked) { openUnlock(); return; }
-          const g = findGameLive(h.dataset.gid);
-          if (g) openDetail(g); else jumpToGames([h.dataset.gid]);
-        };
-        h.onclick = open;
-        h.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); } };
-      });
-      // News cards open OUR in-app article reader (not a link out).
-      view.querySelectorAll(".nf-story[data-nf]").forEach((a: any) => {
-        a.onclick = (e: any) => { e.preventDefault(); openArticleSheet(newsStoryByKey(a.dataset.nf), a.dataset.nf); };
-      });
-      // (The #tdy-picks / #tp-dots carousel-dot wiring lived here until 2026-07-31. Both ids left
-      //  the markup in the "UX/News overhaul" that replaced the picks carousel with the top-games
-      //  grid, so the whole `if (rail && dots)` block — dot tracking, its scroll listener and a
-      //  permanent window resize listener — had been unreachable ever since. Removed, not
-      //  silenced: it is in git if the carousel ever comes back.)
-      animateCounters(view);
     }
     // Theme tap: switch to the Games tab, select the right league/date, highlight the games.
     async function jumpToGames(gids: any[]) {
@@ -11498,7 +11472,10 @@ export default function Home() {
       results: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V13M12 20V6M19 20v-9"/></svg>`,
       desk: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="13" width="7.5" height="7.5" rx="2.2"/></svg>`,
       research: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5M10.2 3v6.2l-5.3 9A1.9 1.9 0 0 0 6.5 21h11a1.9 1.9 0 0 0 1.6-2.8l-5.3-9V3"/><path d="M7.2 15.4h9.6"/></svg>`,
-      account: `${personSvg}`,
+      // stroked, like every other tab icon — personSvg is the FILLED mark used on the
+      // account chip in the header, and dropping it in here made one tab in six read as a
+      // solid glyph against five outlines.
+      account: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.6"/><path d="M4.6 20c.5-3.6 3.7-5.9 7.4-5.9s6.9 2.3 7.4 5.9"/></svg>`,
     };
     function renderDock() {
       const el = $("dock"); if (!el) return;
@@ -11572,45 +11549,77 @@ export default function Home() {
       window.addEventListener("pointercancel", () => { tracking = false; }, { passive: true });
     }
 
+    /* ════════════════════ TAB NAVIGATION IS A PAN ════════════════════
+       Leon: "ANY click on a news feed item that leads elsewhere should animate — the news
+       view pans left/away, the destination tab pans in from the right… let's actually leave
+       the bottom bar there all the time."
+
+       TWO PHASES, one moving element. The old behaviour animated only the ARRIVAL (the new
+       view slid 24px in) while the outgoing view vanished instantly — which reads as a cut,
+       not a pan, because nothing ever leaves. Now `main` itself carries the whole gesture:
+       it travels OUT in the direction of travel (150ms, accelerating), the views swap while
+       it is off-stage and invisible, then it travels back IN from the opposite edge (300ms,
+       decelerating). Total ≈ 300ms of perceived motion, one transform + one opacity, no
+       reflow, and — because the header and the dock are BOTH fixed siblings of `main` — the
+       bottom bar never moves and never blinks.
+
+       Direction is the nav order: later tab ⇒ forward (content leaves left, arrives from the
+       right); earlier tab ⇒ back (mirrored). prefers-reduced-motion commits instantly. */
+    let tabPanT1 = 0, tabPanT2 = 0;
     function switchTab(t: string) {
       if (t === tab) return;
       const oldTab = tab;
       const navOrder = ["today", "desk", "games", "results", "research", "account", "upgrade", "settings", "beta"];
       const oldIdx = navOrder.indexOf(oldTab), newIdx = navOrder.indexOf(t);
       const dir = oldIdx >= 0 && newIdx >= 0 && newIdx < oldIdx ? "left" : "right";
-      document.body.classList.remove("tab-pan-left", "tab-pan-right");
-      document.body.classList.add(dir === "left" ? "tab-pan-left" : "tab-pan-right");
-      window.setTimeout(() => document.body.classList.remove("tab-pan-left", "tab-pan-right"), REDUCE ? 0 : 360);
-      // leaving Today always tears down the full-screen briefing layer (the deck is only
-      // ever mounted on Today, and its body class hides the header and the dock)
-      if (tab === "today" && t !== "today") stopStories();
-      tab = t;
-      TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
-      renderDock(); // the floating dock is the primary nav — re-render so the gold pill moves
-      // PERF: the view flip + tab highlight paint IMMEDIATELY; every heavy render is deferred
-      // one frame so switching never feels laggy. rAF is SUSPENDED in hidden/background tabs,
-      // so a setTimeout fallback guarantees the render still lands (whichever fires first wins).
-      let rendered = false;
-      const renderDeferred = () => {
-        if (rendered) return;
-        rendered = true;
-        window.scrollTo(0, 0);
-        renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
-        if (t === "today") {
-          if (!todayFresh) { renderToday(); todayFresh = true; }
-          else if (newsMode === "stories" && $("stories")) startStoryTimer(); // resume the deck on return
-        }
-        if (t === "desk") renderDesk();
-        if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
-        if (t === "research" && !$("research-view").innerHTML.trim()) renderResearch();
-        if (t === "beta" && (Date.now() - betaBuiltAt > 60 * 1000 || !$("beta-view").innerHTML.trim())) renderBeta();
-        if (t === "settings") renderSettings();
-        if (t === "upgrade") renderUpgrade();
-        if (t === "account") renderAccount();
-        if (t === "games") setTimeout(() => { positionInk(); positionLens(); recenterStrip(false); }, 30);
+      const body = document.body;
+      const clearPan = () => body.classList.remove("tab-pan-left", "tab-pan-right", "tab-leaving", "pan-fwd", "pan-back");
+      window.clearTimeout(tabPanT1); window.clearTimeout(tabPanT2);
+      clearPan();
+      // THE SWAP — everything that changes which surface is on screen. It runs only while
+      // `main` is off-stage, so the reader never sees the destination render mid-flight.
+      const commit = () => {
+        // leaving Today always tears down the full-screen briefing layer (the deck is only
+        // ever mounted on Today, and its body class hides the header)
+        if (tab === "today" && t !== "today") stopStories();
+        tab = t;
+        TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
+        renderDock(); // the floating dock is the primary nav — re-render so the gold pill moves
+        // PERF: the view flip + tab highlight paint IMMEDIATELY; every heavy render is deferred
+        // one frame so switching never feels laggy. rAF is SUSPENDED in hidden/background tabs,
+        // so a setTimeout fallback guarantees the render still lands (whichever fires first wins).
+        let rendered = false;
+        const renderDeferred = () => {
+          if (rendered) return;
+          rendered = true;
+          window.scrollTo(0, 0);
+          renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
+          if (t === "today") {
+            if (!todayFresh) { renderToday(); todayFresh = true; }
+            else if ($("stories")) startStoryTimer(); // resume the deck on return
+          }
+          if (t === "desk") renderDesk();
+          if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
+          if (t === "research" && !$("research-view").innerHTML.trim()) renderResearch();
+          if (t === "beta" && (Date.now() - betaBuiltAt > 60 * 1000 || !$("beta-view").innerHTML.trim())) renderBeta();
+          if (t === "settings") renderSettings();
+          if (t === "upgrade") renderUpgrade();
+          if (t === "account") renderAccount();
+          if (t === "games") setTimeout(() => { positionInk(); positionLens(); recenterStrip(false); }, 30);
+        };
+        requestAnimationFrame(renderDeferred);
+        setTimeout(renderDeferred, 120);
       };
-      requestAnimationFrame(renderDeferred);
-      setTimeout(renderDeferred, 120);
+      if (REDUCE) { commit(); return; }
+      // phase 1 — the surface you are on leaves in the direction of travel
+      body.classList.add("tab-leaving", dir === "left" ? "pan-back" : "pan-fwd");
+      tabPanT1 = window.setTimeout(() => {
+        commit();
+        // phase 2 — the destination arrives from the opposite edge
+        body.classList.remove("tab-leaving", "pan-fwd", "pan-back");
+        body.classList.add(dir === "left" ? "tab-pan-left" : "tab-pan-right");
+        tabPanT2 = window.setTimeout(clearPan, 360);
+      }, 152);
     }
 
     // ===================== INIT =====================
