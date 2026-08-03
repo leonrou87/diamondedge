@@ -1068,13 +1068,17 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    animation is dropped, throttled or never scheduled (a backgrounded tab, an instrumented
    browser, an extension that kills animations, a slow first paint), the modal is invisible
    and stays invisible: you tap a story and, as Leon put it, "nothing visible" happens.
-   They now REST VISIBLE and animate FROM the hidden state, so the entrance is decoration
-   and the resting state is correct on its own. */
-.sheet-bg{position:fixed;inset:0;background:rgba(13,20,32,.36);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);z-index:90;opacity:1;animation:fade .28s ease both}
+   They now REST VISIBLE and animate FROM the hidden state, and the fill mode is FORWARDS,
+   not `both`: `both` also fills BACKWARDS, which pins the element on the `from` keyframe
+   for as long as the animation has not started — so on a frozen or throttled timeline
+   `both` reproduces the exact bug it was meant to fix. With `forwards` the element shows
+   its own (visible) style until the animation actually runs, animates, then holds the end
+   frame. Verified with `* { animation: none !important }`: the sheet still lands on screen. */
+.sheet-bg{position:fixed;inset:0;background:rgba(13,20,32,.36);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);z-index:90;opacity:1;animation:fade .28s ease forwards}
 .sheet-bg.closing{animation:fadeout .28s ease forwards}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes fadeout{from{opacity:1}to{opacity:0}}
-.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:min(680px,100vw);max-height:calc(100dvh - 42px - var(--sat));background:var(--bg);z-index:91;box-shadow:0 -12px 44px var(--sh4);border:0;border-top-left-radius:28px;border-top-right-radius:28px;display:flex;flex-direction:column;overflow:hidden;transform:none;animation:sheetin .42s var(--ease) both;will-change:transform}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:min(680px,100vw);max-height:calc(100dvh - 42px - var(--sat));background:var(--bg);z-index:91;box-shadow:0 -12px 44px var(--sh4);border:0;border-top-left-radius:28px;border-top-right-radius:28px;display:flex;flex-direction:column;overflow:hidden;transform:none;animation:sheetin .42s var(--ease) forwards;will-change:transform}
 @keyframes sheetin{from{transform:translateY(100%)}to{transform:none}}
 .sheet.closing{animation:sheetout .3s var(--ease) forwards}
 @keyframes sheetout{from{transform:translateY(0)}to{transform:translateY(102%)}}
