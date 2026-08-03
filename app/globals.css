@@ -2384,7 +2384,7 @@ details.more .more-body{padding-top:12px}
    The one slide in the deck that is a single gesture: a struck diamond with two pulsing
    rings, one line of type, one door. The whole card is the target and advancing past it
    pans to Games, so it has to read as an ending AND as an invitation. */
-.stories .sts.caughtup{justify-content:center;align-items:center;text-align:center;gap:18px;cursor:pointer}
+.stories .sts.caughtup{justify-content:safe center;align-items:center;text-align:center;gap:18px;cursor:pointer}
 .stories .caughtup .sts-bg::before{content:"";position:absolute;inset:14% 8% 20%;border-radius:32px;background:linear-gradient(135deg,rgba(125,220,255,.16),rgba(245,190,66,.15));filter:blur(20px);animation:briefingGlow 4.8s ease-in-out infinite alternate}
 .stories .caughtup .st-cta.big{font-size:16px;padding:15px 28px}
 .cu-mark{position:relative;display:grid;place-items:center;width:112px;height:112px;flex-shrink:0}
@@ -2401,7 +2401,7 @@ details.more .more-body{padding-top:12px}
 .stories .caughtup .sts-srows{max-width:380px}
 
 /* ═══════════════ A WINNER, CELEBRATED ═══════════════ */
-.sts.sts-win{align-items:center;justify-content:center;text-align:center}
+.sts.sts-win{align-items:center;justify-content:safe center;text-align:center}
 .sts-win .sts-kick{align-self:stretch}
 .stories .sts-win .sts-bg::before{content:"";position:absolute;inset:8% 6% auto;height:52%;border-radius:36px;
   background:radial-gradient(60% 70% at 50% 30%,rgba(50,223,151,.3),transparent 70%);filter:blur(28px);
@@ -2427,7 +2427,7 @@ details.more .more-body{padding-top:12px}
 .sts-winmath .by b{color:var(--green)}
 
 /* ═══════════════ THE GAME WE ARE CIRCLED ON ═══════════════ */
-.sts.sts-hype{align-items:stretch;justify-content:center}
+.sts.sts-hype{align-items:stretch;justify-content:safe center}
 .stories .sts-hype .sts-bg::before{content:"";position:absolute;inset:auto 6% 12%;height:44%;border-radius:36px;
   background:radial-gradient(60% 70% at 50% 70%,rgba(125,220,255,.24),transparent 72%);filter:blur(30px);
   animation:briefingGlow 6.4s ease-in-out infinite alternate}
@@ -2466,7 +2466,7 @@ details.more .more-body{padding-top:12px}
 .sts-anledge{font-family:var(--disp);font-weight:600;font-size:clamp(19px,5.4vw,26px);line-height:1.24;letter-spacing:-.015em;
   color:var(--ink);text-wrap:balance;
   display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.sts.sts-anlspot{justify-content:center}
+.sts.sts-anlspot{justify-content:safe center}
 
 /* ═══════════════ MORE MOVEMENT ON THE DECK ═══════════════
    Leon: "more animation and movement… make it look even more compelling."
@@ -3507,7 +3507,9 @@ body.stories-on{background:#050710}
 @keyframes briefingGlow{from{transform:translate3d(-2%,-1%,0);opacity:.55}to{transform:translate3d(2%,2%,0);opacity:.88}}
 /* every slide reads from the vertical centre of the page — a short card floating at the
    top of a 812px screen with 500px of dead air under it looked unfinished */
-.stories .sts.sts-news,.stories .sts.sts-pick,.stories .sts.sts-desk,.stories .sts.sts-lastnight{justify-content:center}
+/* SAFE centring: a slide taller than the viewport must fall back to top-aligned, or its
+   headline scrolls up UNDER the sticky briefing bar and can never be read. */
+.stories .sts.sts-news,.stories .sts.sts-pick,.stories .sts.sts-desk,.stories .sts.sts-lastnight{justify-content:safe center}
 .stories .sts-newsbody{padding:2px 0 0}
 .stories .sts-voice,.stories .sts-chief{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.13);box-shadow:0 14px 32px rgba(0,0,0,.24)}
 @media(prefers-reduced-motion:reduce){
