@@ -180,26 +180,27 @@ export default function Home() {
     }
     /* Runs on every payload that lands. Cheap, and it is the only thing standing between a
        contract change and a wrong number on the surface this product is sold on. */
-    function checkRecordContract(d: any) {
+    function checkRecordContract(d: any, src = "payload") {
       if (!DEV || !d || typeof d !== "object") return;
+      const at = (m: string) => `${src}: ${m}`;
       const rec = d.record;
-      if (rec == null) { reportRecordIssue("record — absent from the payload"); return; }
-      if (typeof rec !== "object") { reportRecordIssue("record — not an object"); return; }
+      if (rec == null) { reportRecordIssue(at("record — absent from the payload")); return; }
+      if (typeof rec !== "object") { reportRecordIssue(at("record — not an object")); return; }
       const h = rec.headline;
-      if (h == null || typeof h !== "object") reportRecordIssue("record.headline — absent");
+      if (h == null || typeof h !== "object") reportRecordIssue(at("record.headline — absent"));
       else {
         REC_HEADLINE_FIELDS.forEach(({ path, alts }) => {
           const key = alts.find((a) => h[a] != null);
-          if (!key) { reportRecordIssue(`${path} — none of [${alts.join(", ")}]`); return; }
+          if (!key) { reportRecordIssue(at(`${path} — none of [${alts.join(", ")}]`)); return; }
           const v = h[key];
-          if (typeof v !== "string" && !isFinite(Number(v))) reportRecordIssue(`${path} — NaN (${String(v)})`);
+          if (typeof v !== "string" && !isFinite(Number(v))) reportRecordIssue(at(`${path} — NaN (${String(v)})`));
         });
       }
       const daily = rec.daily;
       const legacy = d.by_date_record;
-      if (daily == null && legacy == null) { reportRecordIssue("record.daily — absent, and no by_date_record to fall back on"); return; }
+      if (daily == null && legacy == null) { reportRecordIssue(at("record.daily — absent, and no by_date_record to fall back on")); return; }
       if (daily != null && !Array.isArray(daily) && typeof daily !== "object")
-        reportRecordIssue("record.daily — neither an array of day blocks nor a map keyed by date");
+        reportRecordIssue(at("record.daily — neither an array of day blocks nor a map keyed by date"));
       // the rows have to PARSE, not merely exist — a daily block nobody can read is what
       // empties the record screen while everything around it still looks healthy
       const map = dayRecordMap();
@@ -207,7 +208,7 @@ export default function Home() {
       const rawN = Array.isArray(daily) ? daily.length
         : daily && typeof daily === "object" ? Object.keys(daily).length
         : legacy && typeof legacy === "object" ? Object.keys(legacy).length : 0;
-      if (rawN > 0 && parsed === 0) reportRecordIssue(`record.daily — ${rawN} day blocks served, 0 parseable (win/loss aliases changed?)`);
+      if (rawN > 0 && parsed === 0) reportRecordIssue(at(`record.daily — ${rawN} day blocks served, 0 parseable (win/loss aliases changed?)`));
     }
     /* THE PRODUCTION HALF. A dev banner helps whoever is looking; this is what protects the
        reader who is not. Every record figure goes through here: a value that cannot be made
@@ -7019,11 +7020,69 @@ export default function Home() {
        are different facts and the board must not say them the same way: "Nothing cleared the
        bar" is a verdict, and there is no verdict here yet. The served human string wins
        whenever the feed carries one (`picks_eta`); otherwise we say the true thing plainly. */
+    /* THE BACKEND SHIPS AN OBJECT, NOT A STRING — and this read `String(c)` on it.
+       `picks_eta` arrives as `{ line, expected_utc, expected_local_pt, why }`. Stringifying
+       that gives "[object Object]", which is 15 characters — under the 22-character tag
+       budget — so the incoming tag would have rendered the words "[object Object]" on every
+       upcoming tile the moment the tag started drawing. It never got that far only because
+       the tile skipped the whole verdict block on a game with no pick (fixed alongside this).
+       Read the human line out of the object; accept a bare string too, because the contract
+       has shipped both. */
     function picksEtaRaw(g: any) {
       const src = livePayload || payload || {};
-      const cand = [g && g.picks_eta, g && g.pick && g.pick.picks_eta, (src as any).picks_eta];
-      for (const c of cand) { const t = String(c == null ? "" : c).trim(); if (t) return t; }
+      const line = (c: any) => {
+        if (c == null) return "";
+        if (typeof c === "string") return c.trim();
+        if (typeof c === "object") return String(c.line || c.text || c.short || "").trim();
+        return "";
+      };
+      /* AND IT IS NOT ALWAYS ON THE OBJECT THE BOARD IS HOLDING. Games get swapped between
+         feeds by id (see applyDeskMock's finals-tail merge), so the tile can be rendering a
+         copy of the game from a payload that predates the field. Look it up by id across the
+         loaded payloads before giving up — the ETA is a property of the DATE, not of the copy
+         of the game we happen to have in hand. */
+      const byId = (pl: any) => {
+        const gs = (pl && pl.games) || [];
+        const hit = gs.find((x: any) => x && g && x.game_id != null && String(x.game_id) === String(g.game_id) && x.picks_eta);
+        return hit ? hit.picks_eta : null;
+      };
+      const sameDay = (pl: any) => {
+        const d = String((g && g.date) || "").slice(0, 10);
+        if (!d) return null;
+        const gs = (pl && pl.games) || [];
+        const hit = gs.find((x: any) => x && x.picks_eta && String(x.date || "").slice(0, 10) === d);
+        return hit ? hit.picks_eta : null;
+      };
+      const cand = [
+        g && g.picks_eta, g && g.pick && g.pick.picks_eta,
+        byId(livePayload), byId(payload), byId(betaLiveData), byId(betaData),
+        sameDay(livePayload), sameDay(payload), sameDay(betaLiveData), sameDay(betaData),
+        (src as any).picks_eta,
+      ];
+      for (const c of cand) { const t = line(c); if (t) return t; }
       return "";
+    }
+    /* WHEN, EXACTLY. The tag is two words; the sentence beneath the board is where the time
+       belongs, and it was HARD-CODED to "6:00 AM PT" in two places. The backend serves the
+       expected publish time per day (`picks_eta.expected_local_pt`); a hard-coded time is a
+       promise the UI cannot keep the moment that schedule moves. Served value wins, and the
+       existing string is the fallback so nothing changes until it needs to. */
+    function picksEtaTime(g?: any) {
+      const scan = (pl: any) => {
+        const gs = (pl && pl.games) || [];
+        const hit = gs.find((x: any) => x && x.picks_eta && typeof x.picks_eta === "object" && x.picks_eta.expected_local_pt);
+        return hit ? hit.picks_eta : null;
+      };
+      const e = (g && typeof g.picks_eta === "object" ? g.picks_eta : null)
+        || scan(livePayload) || scan(payload) || scan(betaLiveData) || scan(betaData);
+      const iso = e && (e.expected_local_pt || e.expected_utc);
+      if (!iso) return "6:00 AM PT";
+      const d = new Date(String(iso));
+      if (isNaN(d.getTime())) return "6:00 AM PT";
+      // always rendered IN Pacific, because the sentence says "PT" — the served value is an
+      // absolute instant (offset or Z), so the zone is a formatting choice, not a guess
+      const t = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" });
+      return `${t} PT`;
     }
     const picksEtaShort = (g: any) => {
       const raw = picksEtaRaw(g);
@@ -7325,16 +7384,29 @@ export default function Home() {
           ? compactDePickHtml(g, null, false, "tile", true)
           : compactDePickHtml(g, vd.pl || pick, locked, "tile", false, state ? state.txt : "");
       const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
+      /* TOMORROW'S GAMES GET THE TAG TOO.
+         Round 4 built the `incoming` state for a future-dated game — but it only ever
+         rendered for a game that already carried a pick object to be redacted. The backend
+         now serves tomorrow's slate as `status: "upcoming"` with NO pick at all, so
+         tileVerdict() returned null, the whole verdict block was skipped, and eight tiles
+         shipped with nothing where our call goes. That is the exact confusion the incoming
+         state exists to prevent: an empty slot is how this board says "we passed", and we
+         have not passed on tomorrow — we have not looked yet. */
+      const incoming = !vd && isFutureGame(g);
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
              <div class="tv-callrow">${callHtml}</div>
              ${liveCash}
              ${locked ? `<span class="tv-unlock">${lockSvg}${esc(unlockCtaTxt())}</span>` : ""}
            </div>`
-        : "";
+        : incoming
+          ? `<div class="tl-verdict v-incoming">
+               <div class="tv-callrow">${compactDePickHtml(g, null, false, "tile", true)}</div>
+             </div>`
+          : "";
       // the number rides inside the call now; the chip is the fallback for a tile whose
       // verdict carries no figure of its own (a bare "Pass", or no verdict at all)
-      const needTot = !vd;
+      const needTot = !vd && !incoming;
       const footBits = [
         needTot && lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
         tileDeskRow(g, locked),
@@ -7891,8 +7963,9 @@ export default function Home() {
        "2:00 AM PT → 6:00 AM PT" string was wide enough to push the whole page into
        horizontal scroll at 375px. It now says the time, once, in words, and wraps. */
     function futureNote(dispDate: string, full: boolean, games?: any[]) {
-      const countdown = `<div class="fn-countdown soon"><span class="fnc-k">Picks post</span><b class="fnc-val">6:00 AM PT</b></div>`;
-      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Tonight our system replays every strategy against the latest results and locks the one it will play. This board fills in with the day's picks by <b>6:00 AM PT</b>.${full ? "" : " Until then, here is the slate."}</span></div>`;
+      const when = esc(picksEtaTime(games && games[0]));
+      const countdown = `<div class="fn-countdown soon"><span class="fnc-k">Picks post</span><b class="fnc-val">${when}</b></div>`;
+      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Tonight our system replays every strategy against the latest results and locks the one it will play. This board fills in with the day's picks by <b>${when}</b>.${full ? "" : " Until then, here is the slate."}</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     /* ═══════════ THE BOARD IS NOT REPAINTED WHILE YOU ARE SCROLLING ═══════════
@@ -12212,7 +12285,7 @@ export default function Home() {
         if (!fresh || !fresh.games || feedStampMs(bundled) >= feedStampMs(fresh)) fresh = bundled;
       }
       betaData = applyDeskMock(fresh);
-      checkRecordContract(betaData);
+      checkRecordContract(betaData, "picks_unified (history)");
       return betaData;
     }
     // LIVE picks (today + tomorrow) — the freshest copy lives in Supabase (slate_snapshots
@@ -12238,7 +12311,7 @@ export default function Home() {
       }
       betaLiveData = applyDeskMock(fresh);
       betaLiveAt = Date.now();
-      checkRecordContract(betaLiveData);
+      checkRecordContract(betaLiveData, "picks_unified_live");
       if (hadNone) reRender(); // swap in the real picks / flagship once the feed lands
       // SELF-HEAL: if we had to fall back to the bundled static file (Supabase was slow), it
       // can be days old (deploy gap) — keep retrying Supabase in the background and swap +
@@ -12250,7 +12323,7 @@ export default function Home() {
             try {
               const sb: any = await snap("picks_unified_live");
               if (sb && sb.games && sb.generated_utc !== fresh.generated_utc) {
-                betaLiveData = applyDeskMock(sb); betaLiveAt = Date.now(); checkRecordContract(betaLiveData); reRender(); return;
+                betaLiveData = applyDeskMock(sb); betaLiveAt = Date.now(); checkRecordContract(betaLiveData, "picks_unified_live"); reRender(); return;
               }
             } catch {}
           }

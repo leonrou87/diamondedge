@@ -8220,3 +8220,11 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .dev-recbar i{color:var(--b4)}
 /* two banners at the top must not stack on top of each other */
 .dev-leakbar ~ .dev-recbar{top:56px}
+
+/* THE FUTURE-NOTE'S GLYPH IS THE HOUSE MARK, not a "◆" bullet standing in for one.
+   Same treatment as the deck's eyebrow (--de-mark masked over the brand gold): the character
+   is left in the markup as the accessible/no-CSS fallback and is masked out of view. */
+.future-note .fn-ic{color:transparent;position:relative}
+.future-note .fn-ic::after{content:"";position:absolute;width:17px;height:17px;background:var(--golddeep);
+  -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
+.future-note.full .fn-ic::after{width:23px;height:23px}
