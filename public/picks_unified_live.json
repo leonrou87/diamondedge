@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-03T02:24:16Z",
+  "generated_utc": "2026-08-03T02:36:26Z",
   "dates": [
     "2026-08-02"
   ],
@@ -2358,6 +2358,28 @@
     },
     "daily": [
       {
+        "date": "2026-07-20",
+        "n": 0,
+        "win": 0,
+        "loss": 0,
+        "push": 0,
+        "record": "0-0-0",
+        "hit_rate": null,
+        "units": 0.0,
+        "roi": null,
+        "strategy": {
+          "rule_key": "prob_weighted:0.004",
+          "label": "Probabilistic analyst blend (0.4% edge)",
+          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
+          "confidence_tier": "STRONG",
+          "window_days": 21,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-20"
+        },
+        "is_today": false,
+        "no_action": true
+      },
+      {
         "date": "2026-07-21",
         "n": 0,
         "win": 0,
@@ -2640,30 +2662,8 @@
           "status": "ACTIVE",
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
-        "is_today": false,
-        "no_action": false
-      },
-      {
-        "date": "2026-08-03",
-        "n": 0,
-        "win": 0,
-        "loss": 0,
-        "push": 0,
-        "record": "0-0-0",
-        "hit_rate": null,
-        "units": 0.0,
-        "roi": null,
-        "strategy": {
-          "rule_key": "neural_tanh:l20.12:th0.54",
-          "label": "Shallow neural desk ensemble (0.54 margin)",
-          "plain_english_rule": "run a small neural-style ensemble over the four analysts: it learns vote/probability interactions, pair chemistry and disagreement shapes, then passes unless the learned margin is clear",
-          "confidence_tier": "STRONG",
-          "window_days": 35,
-          "status": "ACTIVE",
-          "full_block_at": "adaptive_strategy_by_date.2026-08-03"
-        },
         "is_today": true,
-        "no_action": true
+        "no_action": false
       }
     ],
     "streaks": {
@@ -6386,7 +6386,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-03T02:24:16Z",
+      "updated": "2026-08-03T02:36:27Z",
       "order": [
         "vega",
         "atlas",
@@ -8799,7 +8799,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -9877,7 +9877,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -10940,7 +10940,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -12009,7 +12009,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -13127,7 +13127,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -14247,7 +14247,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -15358,7 +15358,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16466,7 +16466,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -17595,7 +17595,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18711,7 +18711,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "STRONG",
@@ -19786,7 +19786,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -20908,7 +20908,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -21991,7 +21991,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "CLEAR",
@@ -23107,7 +23107,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -24080,13 +24080,7 @@
             "park_roof"
           ],
           "take": "Not all the conditions have landed \u2014 15% of what I grade is on the board for this one, and on that alone it is over 8.5 at 50%. Thinner read, stated as such.",
-          "take_kind": "standard",
-          "live_p_over": 1.0,
-          "live_state_note": "Top 8th, 12 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-03T01:56:51Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -24226,7 +24220,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T02:24:16Z",
+          "asof_utc": "2026-08-03T02:33:59Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -24787,35 +24781,7 @@
           "is_final_wall": true
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 8,
-        "half": "top",
-        "outs": 2,
-        "away_score": 8,
-        "home_score": 4,
-        "runs_so_far": 12,
-        "pregame_total": 8.5,
-        "runs_vs_pregame_total": 3.5,
-        "runs_still_needed_for_over": 0,
-        "innings_elapsed": 7.5,
-        "pace_runs_per_inning": 1.6,
-        "projected_final_runs": 14.4,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": "final-total already past the pregame line",
-        "p_hit_buckets": [
-          "LATE",
-          "HOT"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": 1.0,
-        "as_of": "2026-08-03T01:56:51Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     }
   ]
 }
