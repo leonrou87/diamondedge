@@ -7414,7 +7414,7 @@ export default function Home() {
           const rail = anyPick ? "" : (isFuture ? "" : passBoardPanel(games));
           let n = 0;
           const section = (label: string, arr: any[], cls = "") => arr.length
-            ? `<div class="slate-sec ${cls}"><div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div><div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
+            ? `<div class="slate-sec ${cls}">${label ? `<div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div>` : ""}<div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
             : "";
           // Postponed cards ride at the end of the day, after the finals —
           // visible, dimmed, VOID (never counted in the day's record).
@@ -7423,8 +7423,7 @@ export default function Home() {
             ? `<div class="slate-sec ppdsec"><div class="sec-hd"><span class="sec-lab">Postponed</span><span class="sec-n">${ppdGames.length}</span></div><div class="slate">${ppdGames.map((g: any) => ppdCard(g, pn++)).join("")}</div></div>`
             : "";
           const byPhase = games.reduce((m: any, g: any) => { const k = gameState(g).kind; m[k] = (m[k] || 0) + 1; return m; }, {});
-          const phaseLine = [byPhase.live ? `${byPhase.live} live` : "", byPhase.pre ? `${byPhase.pre} upcoming` : "", byPhase.final ? `${byPhase.final} final` : ""].filter(Boolean).join(" · ");
-          const grouped = `${section(phaseLine ? `Live first · ${phaseLine}` : "Live & Upcoming", games.slice().sort(byBoardOrder), byPhase.live ? "live mixed" : "mixed")}${ppdSec}`;
+          const grouped = `${section("", games.slice().sort(byBoardOrder), byPhase.live ? "live mixed nohead" : "mixed nohead")}${ppdSec}`;
           const lgSuffix = league === "all" ? "" : ` ${SPORT_LABEL[league]}`;
           // Future slate: the schedule is known but picks aren't published yet — banner + countdown.
           const futureBanner = isFuture && !anyPick ? futureNote(dispDate, false, games) : "";
