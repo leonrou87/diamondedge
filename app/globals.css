@@ -4650,6 +4650,14 @@ body.stories-on{background:#050710}
 .stgy-teaser .sgt-k{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:-.005em;color:var(--ink);min-width:0}
 .stgy-teaser .sgt-sum{margin-left:auto;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:500;font-size:12px;color:var(--ink3);white-space:nowrap}
 .stgy-teaser .sgt-go{color:var(--ink4);font-size:17px;line-height:1;flex-shrink:0}
+/* NOTE — `.stgy` here is the DESK/RESEARCH panel ('The desk on this game', 'Research reads
+   on this game'). The board's day-strategy strip is `.dstgy`, further down. They were BOTH
+   `.stgy` until this pass: same class, same specificity, the strip declared later, so the
+   strip silently inherited this card's `padding:14px 15px 15px` and 1px border around a bar
+   that already had its own 10/13 padding — a compact one-line strip rendering with 25px of
+   top inset and 30px of left inset, which is the 'padding around strategy selection feels
+   off' Leon reported — while this panel had its `margin:14px 0` overwritten to 0 and picked
+   up the strip's gold gradient, backdrop-filter and left rule. Two components, two names. */
 .stgy{margin:14px 0;padding:14px 15px 15px;border:1px solid var(--line2);border-radius:16px;background:rgba(var(--panec),.34)}
 .stgy-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
 .stgy-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--golddeep)}
@@ -5711,6 +5719,58 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .de-res.lost{color:#fff;background:var(--red)}
 .de-res.pushed{color:var(--push);background:var(--pushbg)}
 .de-res.inplay{color:var(--g3);background:rgba(var(--greenc),.14)}
+
+/* ══════════════ THE IN-PLAY CUSHION CHIP — ONE BADGE, FOUR STATES ══════════════
+   OUR WAY · HOLDING · CHASING · TIGHT · IN PLAY: the live read on a frozen total, and the
+   only chip on the site that describes a result that has not happened yet.
+
+   WHAT WAS WRONG. Eight surfaces (.pb-res .de-res .hpc-res .sts-res .tv-res .tpk-res
+   .ft-res .shp-res) each invented their own `.inplay` treatment — three greens, two slates
+   and a rim border — and every one of them tinted all FOUR words identically. So "CHASING",
+   which means the runs are not coming and the innings are running out, was painted the same
+   encouraging green as "OUR WAY". With no state in the colour and no badge in the shape, it
+   landed as unstyled text sitting next to the price. Leon, on a live game: it "reads as bare
+   unformatted text".
+
+   THE RECIPE. One pill, declared once, driven by four custom properties the state class
+   sets — so a surface opts in by emitting `ip-*` and inherits the whole badge, and a new
+   state is four values rather than eight rules. It borrows the pick tag's voice (display
+   face, 10px, .11em tracking, uppercase) so it belongs to the same family as `.pb-brand`,
+   and it takes a hairline ring + a pulsing dot rather than the settled stamp's solid fill —
+   an unsettled state must never be able to be mistaken for a graded one. `.inplay[class*=ip-]`
+   is (0,2,0) and declared after every per-surface rule above, so it wins on cascade without
+   an `!important` anywhere. */
+.inplay.ip-good  {--ip-bg:rgba(var(--greenc),.13); --ip-ink:var(--green); --ip-line:var(--greenline)}
+.inplay.ip-hold  {--ip-bg:rgba(var(--greenc),.06); --ip-ink:var(--g3);    --ip-line:rgba(var(--greenc),.22)}
+.inplay.ip-chase {--ip-bg:var(--amberbg);          --ip-ink:var(--amber); --ip-line:var(--goldline)}
+.inplay.ip-tight {--ip-bg:var(--slatebg);          --ip-ink:var(--slate); --ip-line:var(--pushline)}
+.inplay.ip-plain {--ip-bg:var(--slatebg);          --ip-ink:var(--slate); --ip-line:var(--pushline)}
+.inplay[class*="ip-"]{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  line-height:1;padding:3.5px 8px 3.5px 6.5px;border-radius:999px;white-space:nowrap;
+  color:var(--ip-ink);background:var(--ip-bg);
+  box-shadow:inset 0 0 0 .5px var(--ip-line);
+}
+/* the live tell: the same dot every other in-progress surface uses, in the chip's own ink */
+.inplay[class*="ip-"]::before{
+  content:"";flex:none;width:5px;height:5px;border-radius:50%;background:currentColor;
+  animation:pulse 1.4s infinite;
+}
+/* ── THE TILE VARIANT. The board tile's pick row is a 163px column at 375 and it wrapped a
+   whole tile the last time something was added to it, so the chip trades its horizontal
+   spend for the same badge at a tighter setting: no dot, less tracking, thinner side padding.
+   The vertical metrics and the colour are untouched, so it is recognisably the same object as
+   the one on the game page rather than a second design. `.de-mini-pick` (the tile's pick row)
+   also carries the CLINCHED / NOT LANDING states, which are still live — they take the same
+   pill in the settled palette so nothing on the tile is ever a naked word. */
+.dmp-res{display:inline-flex;align-items:center;flex:none;
+  font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+  line-height:1;padding:3px 6px;border-radius:999px;white-space:nowrap;margin-left:6px}
+.dmp-res.inplay[class*="ip-"]{font-size:9.5px;letter-spacing:.06em;padding:3px 6px;gap:0}
+.dmp-res.inplay[class*="ip-"]::before{display:none}
+.dmp-res.won{color:var(--green);background:var(--greenbg);box-shadow:inset 0 0 0 .5px var(--greenline)}
+.dmp-res.lost{color:var(--red);background:var(--redsoft);box-shadow:inset 0 0 0 .5px rgba(var(--redc),.26)}
 /* THE CALL — the biggest type on the card */
 .de-callrow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
 .de-side{display:inline-flex;align-items:baseline;gap:7px;min-width:0;
@@ -8277,19 +8337,35 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
    AUTO height without measuring in JS and without capping the copy at a guessed max-height.
    The panel's inner block travels a few px on the same spring so it arrives rather than
    appears, and the caret rotates with it. */
-.stgy{position:relative;margin:0;border-radius:16px;overflow:hidden;isolation:isolate;
+.dstgy{
+  /* ONE SET OF NUMBERS FOR THE WHOLE STRIP. The bar and the expanded panel used to carry
+     unrelated paddings (10/13/10/15 against 0/14/0/15), so the copy that opens UNDERNEATH the
+     label landed 29px to its left — aligned to neither the mark nor the sentence it expands.
+     The gutter, the mark and the gap are declared once here and the type column is derived
+     from them, so the mark owns the left margin for the whole strip and everything with words
+     in it sits in a single column. The narrow breakpoint retunes the three inputs and the
+     column follows. */
+  --stgy-pl:15px; --stgy-pr:14px; --stgy-mk:25px; --stgy-gap:11px;
+  --stgy-col:calc(var(--stgy-pl) + var(--stgy-mk) + var(--stgy-gap));
+  /* AND IT OWNS ITS OWN OUTER RHYTHM. This margin used to be `0` — set to beat the OTHER
+     `.stgy` (see the collision note below), which meant the strip sat flush on the first
+     board card with no gap at all. `.meta-area` gives it 12px above; it gives itself the
+     matching 12px below, so the strip reads as one band between the chrome and the board
+     instead of as the board's lid. */
+  margin:0 0 12px;
+  position:relative;border-radius:16px;overflow:hidden;isolation:isolate;
   background:linear-gradient(118deg,rgba(var(--goldc),.085),rgba(var(--panec),.62) 58%,rgba(var(--panec),.50));
   -webkit-backdrop-filter:var(--mat-filter-lite);backdrop-filter:var(--mat-filter-lite);
   box-shadow:var(--mat-spec),var(--mat-hair),0 4px 16px -8px rgba(var(--rimc),.20)}
-.stgy::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;z-index:2;pointer-events:none;
+.dstgy::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;z-index:2;pointer-events:none;
   background:linear-gradient(180deg,rgba(var(--goldc),.85),rgba(var(--goldc),.30))}
-.stgy-bar{display:flex;align-items:center;gap:11px;width:100%;
-  padding:10px 13px 10px 15px;border:0;background:transparent;text-align:left;cursor:pointer;
+.stgy-bar{display:flex;align-items:center;gap:var(--stgy-gap);width:100%;
+  padding:10px var(--stgy-pr) 10px var(--stgy-pl);border:0;background:transparent;text-align:left;cursor:pointer;
   font-family:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
-.stgy-wait .stgy-bar{cursor:default}
+.dstgy.stgy-wait .stgy-bar{cursor:default}
 .stgy-bar:active{transform:scale(.994)}
 .stgy-bar{transition:transform .16s var(--ease-out)}
-.stgy-mark{flex-shrink:0;width:25px;height:25px;display:grid;place-items:center;color:var(--golddeep)}
+.stgy-mark{flex-shrink:0;width:var(--stgy-mk);height:var(--stgy-mk);display:grid;place-items:center;color:var(--golddeep)}
 .stgy-mk{width:100%;height:100%;overflow:visible}
 .stgy-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .stgy-tx i{font-family:var(--disp);font-style:normal;font-weight:700;font-size:9.5px;
@@ -8299,15 +8375,15 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .stgy-caret{flex-shrink:0;width:20px;height:20px;display:grid;place-items:center;color:var(--ink3);
   transition:transform .34s var(--spring),color .2s ease}
 .stgy-caret svg{width:15px;height:15px}
-.stgy.open .stgy-caret{transform:rotate(180deg);color:var(--golddeep)}
+.dstgy.open .stgy-caret{transform:rotate(180deg);color:var(--golddeep)}
 /* auto-height expansion, no measured pixels */
 .stgy-more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s var(--ease-out)}
-.stgy.open .stgy-more{grid-template-rows:1fr}
+.dstgy.open .stgy-more{grid-template-rows:1fr}
 .stgy-more-in{overflow:hidden;opacity:0;transform:translateY(-5px);
   transition:opacity .2s ease,transform .34s var(--spring)}
-.stgy.open .stgy-more-in{opacity:1;transform:none;transition-delay:.05s}
-.stgy-more-in{padding:0 14px 0 15px}
-.stgy.open .stgy-more-in{padding-bottom:13px}
+.dstgy.open .stgy-more-in{opacity:1;transform:none;transition-delay:.05s}
+.stgy-more-in{padding:0 var(--stgy-pr) 0 var(--stgy-col)}
+.dstgy.open .stgy-more-in{padding-bottom:13px}
 .stgy-rule{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink2);
   padding-top:2px;border-top:1px solid rgba(var(--rimc),.10);margin-top:0}
 .stgy-rule span{display:block;font-family:var(--disp);font-weight:700;font-size:9.5px;
@@ -8345,8 +8421,8 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   .stgy-more,.stgy-more-in,.stgy-caret,.stgy-bar,.stgy-link{transition:none}
 }
 @media(max-width:380px){
-  .stgy-bar{gap:9px;padding:9px 11px 9px 13px}
-  .stgy-mark{width:22px;height:22px}
+  .dstgy{--stgy-pl:13px; --stgy-pr:11px; --stgy-mk:22px; --stgy-gap:9px}
+  .stgy-bar{padding-top:9px;padding-bottom:9px}
   .stgy-tx b{font-size:12.5px}
 }
 /* ══ …AND THE SAME FACT ON RESEARCH, IN THE LAB'S REGISTER ══
@@ -8364,3 +8440,12 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   color:var(--ink);margin:9px 0 0;letter-spacing:-.01em}
 .lab-today-p{font-family:var(--sans);font-size:13.5px;line-height:1.55;color:var(--ink2);margin:8px 0 0}
 .lab-today-w{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin:9px 0 0}
+
+/* ═════════ THE DECK'S PAINT WINDOW (the mobile crash fix — see storyPaintWindow) ═════════
+   Every slide is a full-screen absolute layer. Painting all twenty-four at once — fields,
+   grain, glass, full-res news photography — is what pushed iOS Safari over its GPU memory
+   ceiling and killed the page (white screen, reload, reader dumped on the default tab).
+   Only the live slide and its two neighbours are painted; the rest keep their layout (the
+   progress bar and the aria story count still see 24 slides) but cost nothing to render.
+   `.near` is maintained by storyPaintWindow() in page.tsx. */
+.st-slide:not(.on):not(.near){visibility:hidden}

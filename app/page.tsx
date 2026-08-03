@@ -2977,8 +2977,12 @@ export default function Home() {
       if (!lp) return "";
       const ph = pHitNow(g);
       const pctW = lp.tot != null && lp.scored != null ? Math.max(3, Math.min(100, (lp.scored / Math.max(lp.tot + 2, 1)) * 100)) : 0;
+      // THE HERO OWNS THE HALF-INNING. `liveProgress().when` exists for the board tile, which
+      // has no hero above it to say where the game is; this block renders in exactly one
+      // place — the Live pane, three inches under a hero already reading "BOTTOM 2ND" — so
+      // repeating it here is the same fact twice on one screen. The meter's subject is the
+      // LINE: runs against the number, and the runs still owed.
       const bits = [
-        lp.when ? esc(lp.when) : "",
         lp.tot != null && lp.scored != null ? `${lp.scored} of ${esc(lineStr(lp.tot))}` : "",
         lp.need != null && !lp.over ? `${lp.need} more to go over` : "",
         lp.over ? "over has cleared" : "",
@@ -3874,14 +3878,19 @@ export default function Home() {
     function atlasLiveChip(g: any, size = "tile") {
       const al = atlasLiveOf(g);
       if (!al) return "";
-      const gs = gameState(g);
-      const per = gs.kind === "live" && gs.label && gs.label !== "Live" ? gs.label : "";
+      /* NO PERIOD BADGE. This chip used to stamp itself with `gameState(g).label` — the
+         CURRENT half-inning — which was wrong twice over. It duplicated the hero, which sits
+         directly above the chip's only two render sites and already says "BOTTOM 2ND"; and it
+         stamped the current inning onto a note that is not from the current inning, so a read
+         whose own text opens "Top 1st — this state sits outside my certified range" was
+         labelled "Bottom 2nd" beside it. ATLAS's note names the state it is about, in its own
+         words, which is the honest stamp; the as-of stays on the title for anyone hovering. */
       const upd = atlasAsOfTxt(al.asOf);
       const glyph = `<span class="atl-g" aria-hidden="true">${deskGlyph("atlas", size === "full" ? 13 : 11)}</span>`;
       if (al.p == null) {
         return `<div class="atlive watch atl-${size}" title="ATLAS re-runs the simulation as the game unfolds${upd ? ` · updated ${upd}` : ""}">
           ${glyph}<b class="atl-k">ATLAS<i class="atl-livew"><em class="atl-dot" aria-hidden="true"></em>LIVE</i></b>
-          <span class="atl-tx">${esc(al.note || "watching the game")}</span>${per ? `<span class="atl-per">${esc(per)}</span>` : ""}
+          <span class="atl-tx">${esc(al.note || "watching the game")}</span>
         </div>`;
       }
       const over = al.p >= 0.5;
@@ -3890,7 +3899,6 @@ export default function Home() {
         ${glyph}<b class="atl-k">ATLAS<i class="atl-livew"><em class="atl-dot" aria-hidden="true"></em>LIVE</i></b>
         <span class="atl-p"><b>${pct}%</b> ${over ? "over" : "under"}</span>
         <span class="atl-meter" aria-hidden="true"><i style="width:${Math.max(4, Math.min(100, al.p * 100)).toFixed(0)}%"></i></span>
-        ${per ? `<span class="atl-per">${esc(per)}</span>` : ""}
         ${al.note ? `<span class="atl-tx note">${esc(al.note)}</span>` : ""}
       </div>`;
     }
@@ -6184,6 +6192,65 @@ export default function Home() {
     // Overlay the fresh live_scores snapshot onto a games array in place (status /
     // score / period / total_so_far). Used for BOTH `payload` (the Games board) and
     // `livePayload` (the Today homepage source) so every surface flips pre→live→final.
+    /* ═══════ ONE OBSERVATION OF A LIVE GAME WINS, AND IT IS THE FURTHEST ALONG ═══════
+       A live MLB game is described to this app by two independent clocks: the `live_scores`
+       Supabase snapshot (written every ~20-60s, read by the board tiles, the ticker and the
+       game hero) and MLB's own `/linescore` document (fetched directly by the box-score tab
+       on a 25s floor). They observe the same game and they are never observed at the same
+       instant, so on any given paint one of them is behind — which is how a game page came
+       to show a 1-0 hero sitting on top of a 3-0 line score.
+
+       The fix is not a third number. Runs scored and innings played only ever go FORWARD, so
+       the two clocks can be ordered, and the one further along is simply the more recent
+       observation of the SAME fact. `liveProgressKey` puts an observation on that ordering
+       (inning, then half, then runs); every writer into `current_actuals` — the snapshot
+       overlay below and the MLB adoption in `loadMlbBox` — refuses to move it backwards.
+       So `current_actuals` stays the single home for the live score, both clocks are allowed
+       to advance it, and neither can undo the other. */
+    const HALF_RANK: Record<string, number> = { top: 0, middle: 1, bottom: 2, end: 3 };
+    function liveProgressKey(label: any, runs: any) {
+      const s = String(label == null ? "" : label);
+      const mi = s.match(/(\d+)/);
+      const mh = s.match(/^\s*(top|middle|bottom|end)/i);
+      const r = Number(runs);
+      return { inn: mi ? Number(mi[1]) : null, rank: mh ? HALF_RANK[mh[1].toLowerCase()] : 0, runs: isFinite(r) && runs != null ? r : null };
+    }
+    // is observation `a` at-or-ahead of `b`? Unparseable/absent on either side ⇒ treat as
+    // current and let the write through (this is what makes the FIRST write land).
+    function liveAtLeast(a: any, b: any) {
+      if (a.inn != null && b.inn != null) {
+        if (a.inn !== b.inn) return a.inn > b.inn;
+        if (a.rank !== b.rank) return a.rank > b.rank;
+      }
+      if (a.runs != null && b.runs != null && a.runs !== b.runs) return a.runs > b.runs;
+      return true;
+    }
+    const caKey = (ca: any) => liveProgressKey(ca && ca.period_label,
+      ca && ca.total_so_far != null ? ca.total_so_far
+        : (ca && ca.away_score != null && ca.home_score != null ? Number(ca.away_score) + Number(ca.home_score) : null));
+    /* MLB's own line score, promoted into the shared live fact. Called when a box-score
+       document lands: it is usually the freshest thing on the page, and letting it advance
+       `current_actuals` is what makes the hero and the grid beneath it one number instead of
+       two. Guarded by the ordering above, so a 25s-stale cached document can never drag the
+       score back. Only ever runs on a game the app still considers live. */
+    function adoptMlbLive(g: any, ls: any) {
+      if (!g || !ls || !ls.teams) return false;
+      if (gameState(g).kind !== "live") return false;
+      const a = ls.teams.away, h = ls.teams.home;
+      if (!a || !h || a.runs == null || h.runs == null) return false;
+      const away = Number(a.runs), home = Number(h.runs);
+      if (!isFinite(away) || !isFinite(home)) return false;
+      const label = ls.inningState && ls.currentInningOrdinal ? `${ls.inningState} ${ls.currentInningOrdinal}` : "";
+      const ca = g.current_actuals || (g.current_actuals = {});
+      if (!liveAtLeast(liveProgressKey(label, away + home), caKey(ca))) return false;
+      const changed = ca.away_score !== away || ca.home_score !== home || (!!label && ca.period_label !== label);
+      ca.away_score = away; ca.home_score = home;
+      if (label) ca.period_label = label;
+      ca.total_so_far = away + home;
+      // the frozen pregame ticket's live progress fill reads the same fact (contract §"live")
+      if (g.display_pick && g.display_pick.progress) g.display_pick.progress.total_so_far = ca.total_so_far;
+      return changed;
+    }
     function overlayInto(games: any[]) {
       if (!liveScores || !liveScores.games || !Array.isArray(games)) return false;
       let changed = false;
@@ -6194,15 +6261,24 @@ export default function Home() {
         if ((st === "pre" || st === "live" || st === "final") && st !== String(g.status || "pre").toLowerCase()) { g.status = st; changed = true; }
         if (ls.home_score != null && ls.away_score != null) {
           const ca = g.current_actuals || (g.current_actuals = {});
-          if (ca.home_score !== ls.home_score || ca.away_score !== ls.away_score || (ls.period_label != null && ca.period_label !== ls.period_label)) changed = true;
-          ca.home_score = ls.home_score; ca.away_score = ls.away_score;
-          if (ls.period_label != null) ca.period_label = ls.period_label;
-          ca.total_so_far = ls.total_so_far != null ? ls.total_so_far : Number(ls.home_score) + Number(ls.away_score);
+          const tsf = ls.total_so_far != null ? ls.total_so_far : Number(ls.home_score) + Number(ls.away_score);
+          // Never move the shared live fact backwards (see liveProgressKey): a snapshot that
+          // is a beat behind MLB's own document must not un-score a run the page already
+          // showed. A `final` flip is handled above and is unaffected by this gate.
+          if (st === "final" || liveAtLeast(liveProgressKey(ls.period_label, tsf), caKey(ca))) {
+            if (ca.home_score !== ls.home_score || ca.away_score !== ls.away_score || (ls.period_label != null && ca.period_label !== ls.period_label)) changed = true;
+            ca.home_score = ls.home_score; ca.away_score = ls.away_score;
+            if (ls.period_label != null) ca.period_label = ls.period_label;
+            ca.total_so_far = tsf;
+          }
         }
-        // keep the frozen display_pick's live progress fill fresh (contract §"live")
-        if (g.display_pick && g.display_pick.progress && ls.total_so_far != null) {
-          if (g.display_pick.progress.total_so_far !== ls.total_so_far) changed = true;
-          g.display_pick.progress.total_so_far = ls.total_so_far;
+        // keep the frozen display_pick's live progress fill fresh (contract §"live") — off
+        // `current_actuals`, the fact that just survived the gate above, so the meter under
+        // the pick and the score in the hero can never be two different run totals.
+        const caT = g.current_actuals && g.current_actuals.total_so_far;
+        if (g.display_pick && g.display_pick.progress && caT != null) {
+          if (g.display_pick.progress.total_so_far !== caT) changed = true;
+          g.display_pick.progress.total_so_far = caT;
         }
       });
       return changed;
@@ -6283,13 +6359,22 @@ export default function Home() {
     }
     // Update an open detail PAGE's score in place (no re-render, keeps scroll). Refreshes
     // the fused hero score + the live box-score pane if the "How it's going" tab is mounted.
-    function refreshSheetScore(g: any) {
+    // THE HERO SCORE, PAINTED IN ONE PLACE. Both the live-score poller and an arriving MLB
+    // box document advance the same fact and so must repaint the same element the same way;
+    // when this was inlined only the poller could move the hero, which is why a fresh box
+    // score could sit under a stale hero.
+    function paintHeroScore(g: any) {
       const page = $("gamepage"); if (!page) return;
       const gs = gameState(g);
       const el = page.querySelector(".gp-center");
       if (el && gs.score && gs.score.split && gs.score.home != null) {
         el.innerHTML = `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`;
       }
+    }
+    function refreshSheetScore(g: any) {
+      const page = $("gamepage"); if (!page) return;
+      const gs = gameState(g);
+      paintHeroScore(g);
       // the box score is its own tab now — repaint the pane, and pull a fresh MLB document
       repaintBoxPane();
       if (gs.kind === "live") loadMlbBox(g, true).then((m: any) => { if (m) { repaintBoxPane(); repaintGameLeaders(); } }).catch(() => {});
@@ -6786,16 +6871,34 @@ export default function Home() {
             const total = Number(ca.total_so_far);
             const over = /over/i.test(String(pl.side || ""));
             const cushion = Number(line) - total;
+            /* THE CUSHION CHIP CARRIES ITS OWN STATE. All four words used to ship the single
+               class `inplay`, which every surface then tinted GREEN — so "CHASING" (we are
+               behind the number and running out of innings) was painted the same encouraging
+               green as "OUR WAY". One class for four opposite meanings is not a badge, it is
+               a label with the meaning left out, which is why it read as unformatted text.
+               Each state now names itself and the shared recipe (globals.css, "the in-play
+               cushion chip") tints it: good ▸ green, hold ▸ quiet green, chase ▸ amber,
+               tight ▸ slate. */
             if (over) {
               const need = Math.floor(Number(line)) + 1 - total;
-              return { txt: need <= 2 ? "OUR WAY" : "CHASING", cls: "inplay" };
+              return need <= 2 ? { txt: "OUR WAY", cls: "inplay ip-good" } : { txt: "CHASING", cls: "inplay ip-chase" };
             }
-            return { txt: cushion >= 3 ? "OUR WAY" : cushion >= 1 ? "HOLDING" : "TIGHT", cls: "inplay" };
+            return cushion >= 3 ? { txt: "OUR WAY", cls: "inplay ip-good" }
+              : cushion >= 1 ? { txt: "HOLDING", cls: "inplay ip-hold" }
+              : { txt: "TIGHT", cls: "inplay ip-tight" };
           }
         }
-        return { txt: "IN PLAY", cls: "inplay" };
+        return { txt: "IN PLAY", cls: "inplay ip-plain" };
       }
       return null;
+    }
+    /* pickStateTxt's result → the chip element. A settled state is ALREADY an element
+       (resultStamp's seal), so it passes through; everything unsettled gets the badge with
+       its own state class, which is what makes `.inplay[class*="ip-"]` (globals.css) apply. */
+    function stateChipHtml(state: any) {
+      if (!state || !state.txt) return "";
+      if (/^stamped\b/.test(String(state.cls || ""))) return state.txt;
+      return `<span class="dmp-res ${state.cls}">${state.txt}</span>`;
     }
     // ===================== DIAMONDEDGE PICK BANNER =====================
     // The branded, frozen pick — pinned to every tile that has one, in every game state.
@@ -7600,7 +7703,15 @@ export default function Home() {
       const callHtml = !vd ? ""
         : vd.kind === "pass"
           ? compactDePickHtml(g, null, false, "tile", true)
-          : compactDePickHtml(g, vd.pl || pick, locked, "tile", false, state ? state.txt : "");
+          /* THE TILE'S LIVE STATE WAS A BARE STRING. `stamp` is injected as raw HTML into
+             the pick row, and a SETTLED state arrives as a real element (resultStamp's sealed
+             glyph). Every UNSETTLED state — OUR WAY / CHASING / HOLDING / TIGHT / ✓ CLINCHED /
+             ✗ NOT LANDING — arrived as the naked word with `state.cls` thrown away at this
+             call site, so the one surface a reader actually watches a live game on rendered
+             it as unstyled text next to the price. Leon, looking at exactly this: it "reads
+             as bare unformatted text". Wrap it in the chip and hand the class through; the
+             settled case is already an element and passes untouched. */
+          : compactDePickHtml(g, vd.pl || pick, locked, "tile", false, stateChipHtml(state));
       const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
       /* TOMORROW'S GAMES GET THE TAG TOO.
          Round 4 built the `incoming` state for a future-dated game — but it only ever
@@ -8135,18 +8246,21 @@ export default function Home() {
     function strategyBarHtml(dateISO = curDate) {
       if (!(league === "all" || league === "mlb")) return "";
       if (rangeMode) return "";
-      /* TODAY ONLY, and that is a scoping decision rather than a technical limit. A PAST
-         board's strategy is a record question and the record screens own those. A FORWARD
-         board already carries futureNote() — "Tonight our system replays every strategy
-         against the latest results and locks the one it will play. This board fills in with
-         the day's picks by 6:00 AM PT" — which is the anticipation state, at length, in the
-         app's own words. Two versions of one sentence stacked on the same screen is worse
-         than one, so the strip stands down and lets the banner have it. */
+      /* TODAY AND BACKWARD. Every board that HAS a strategy shows it — Leon: "strategy is
+         missing on past days." A past board's strip reads in the past tense and never shows
+         the anticipation state (nothing is coming for a finished day). A FORWARD board
+         already carries futureNote() — "Tonight our system replays every strategy against
+         the latest results and locks the one it will play…" — which is the anticipation
+         state, at length, in the app's own words, so the strip still stands down there. */
       const today = todayISO();
-      if (dateISO !== today) return "";
+      if (dateISO > today) return "";
+      const isPast = dateISO < today;
       const s = dayStrategyBlock(dateISO);
-      const eyebrow = "Today's strategy";
+      const eyebrow = isPast
+        ? `${new Date(dateISO + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" })}'s strategy`
+        : "Today's strategy";
       if (!s) {
+        if (isPast) return ""; // a past day with no served strategy row simply has no strip
         /* ANTICIPATION — the six-hour window each morning where the schedule is up and the
            overnight run has not published. Only rendered when the app can honestly say
            something is still coming (the day's picks are pending); otherwise no bar at all,
@@ -8154,7 +8268,7 @@ export default function Home() {
         if (!datePicksPending(dateISO)) return "";
         const when = picksEtaTime();
         const line = `Chosen by the overnight run — it lands with today's picks by ${when}`;
-        return `<div class="stgy stgy-wait" id="stgy"><div class="stgy-bar" role="status">
+        return `<div class="dstgy stgy-wait" id="stgy"><div class="stgy-bar" role="status">
             <span class="stgy-mark waiting">${strategyMark()}</span>
             <span class="stgy-tx"><i>${esc(eyebrow)}</i><b>${esc(line)}</b></span>
           </div></div>`;
@@ -8162,17 +8276,24 @@ export default function Home() {
       const label = strategyLabelPublic(s) || "Chosen overnight from the last three weeks";
       const rule = strategySentence(s);
       const days = s.window_days ? Number(s.window_days) : 0;
-      const windowTxt = days
-        ? `Chosen from the last ${days === 21 ? "three weeks" : `${days} days`} of finished games — before a single first pitch today.`
-        : `Chosen from the last three weeks of finished games — before a single first pitch today.`;
+      const windowSpan = days
+        ? ({ 14: "two weeks", 21: "three weeks", 28: "four weeks", 35: "five weeks" } as any)[days] || `${days} days`
+        : "three weeks";
+      const windowTxt = isPast
+        ? `Chosen from the ${windowSpan} of finished games before it — locked before a single first pitch that day.`
+        : `Chosen from the last ${windowSpan} of finished games — before a single first pitch today.`;
       const n = dayStrategyPickCount(dateISO);
-      const pending = datePicksPending(dateISO);
+      const pending = !isPast && datePicksPending(dateISO);
       const countTxt = pending && !n
         ? `Today's picks land by ${picksEtaTime()}.`
         : n === 0
-          ? `It has passed on every game on today's board so far — passing is the strategy working, not the strategy missing.`
-          : `It has produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on today's board.`;
-      return `<div class="stgy" id="stgy">
+          ? isPast
+            ? `It passed on every game on this board — passing is the strategy working, not the strategy missing.`
+            : `It has passed on every game on today's board so far — passing is the strategy working, not the strategy missing.`
+          : isPast
+            ? `It produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on this board.`
+            : `It has produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on today's board.`;
+      return `<div class="dstgy" id="stgy">
         <button class="stgy-bar" id="stgy-btn" type="button" aria-expanded="false" aria-controls="stgy-more">
           <span class="stgy-mark">${strategyMark()}</span>
           <span class="stgy-tx"><i>${esc(eyebrow)}</i><b>${esc(label)}</b></span>
@@ -8790,7 +8911,7 @@ export default function Home() {
           <span class="shp-side">${esc(pl.side || "—")}</span>
           ${pl.price != null ? `<span class="shp-px">${fmtOdds(pl.price)}</span>` : ""}
           <span class="shp-q">${pl.stars != null ? pickStars(pl) : Q_LABEL[qualityOf(pl)]}</span>
-          ${resTxt ? `<span class="shp-res ${rCls || "inplay"}">${resTxt}</span>` : ""}
+          ${resTxt ? `<span class="shp-res ${rCls || "inplay ip-plain"}">${resTxt}</span>` : ""}
         </div>`;
       } else {
         // a pass names the number it judged — the line + the plain-English why
@@ -9309,6 +9430,11 @@ export default function Home() {
         ]);
         if (!ls && !bs) { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
         mlbBox[pk] = { ls, bs, fl, at: Date.now(), loading: false, final: gameState(g).kind === "final" };
+        /* MLB'S DOCUMENT IS AN OBSERVATION OF THE SHARED FACT, NOT A SECOND ONE. Promote it
+           into `current_actuals` (guarded, forward-only) so the hero above the grid reads the
+           same run total the grid does — and repaint the hero here, because nothing else will:
+           the box-score repaint path only ever touched the pane. */
+        if (adoptMlbLive(g, ls) && detail && String(detail.game_id) === String(g.game_id)) paintHeroScore(g);
         return mlbBox[pk];
       } catch { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
     }
@@ -9394,6 +9520,27 @@ export default function Home() {
        line score first (it is the game), then a segmented control, then hitters, then
        pitchers. Never any horizontal page overflow — the innings grid scrolls inside its own
        container with the team column and the R/H/E block pinned to the two edges. */
+    /* THE STRIP OVER THE LINE SCORE — and the half-inning it is NOT allowed to say.
+       This printed `gs.label` and then MLB's own `inningState + currentInningOrdinal`, so the
+       half-inning appeared TWICE in one 40px strip, from two different clocks, directly under
+       a hero that had already said it a third time. On production that read literally
+       "TOP 2ND · MIDDLE 2ND · 3 OUT" — the live_scores snapshot still on the top of the 2nd
+       while MLB's feed had already retired the side. Two homes for one fact is exactly what
+       the single-home rule forbids, and this was the loudest instance of it left in the app.
+
+       THE HERO OWNS THE HALF-INNING. This strip carries only what the hero cannot: the outs,
+       and the count while a batter is actually in the box (during Middle/End there is no
+       batter, and a leftover count is a stale number pretending to be a live one). With
+       neither fact available the strip is absent rather than restating the hero. */
+    function bxStateStrip(ls: any) {
+      if (!ls) return "";
+      const midHalf = /^(middle|end)/i.test(String(ls.inningState || ""));
+      const bits: string[] = [];
+      if (ls.outs != null) bits.push(`${Number(ls.outs)} out`);
+      if (!midHalf && ls.balls != null && ls.strikes != null) bits.push(`${Number(ls.balls)}–${Number(ls.strikes)} count`);
+      if (!bits.length) return "";
+      return `<div class="bx-state"><span class="livedot"></span>${bits.map((b) => esc(b)).join(" · ")}</div>`;
+    }
     function boxScoreTab(g: any) {
       const gs = gameState(g);
       if (gs.kind === "pre") {
@@ -9421,7 +9568,7 @@ export default function Home() {
       const tables = bs ? boxTables(bs, boxSide) : "";
       const loading = !m || m.loading;
       return `<div class="boxscore">
-        ${gs.kind === "live" ? `<div class="bx-state"><span class="livedot"></span>${esc(gs.label || "Live")}${ls && ls.outs != null && ls.inningState ? ` · ${esc(String(ls.inningState))} ${esc(String(ls.currentInningOrdinal || ""))} · ${ls.outs} out` : ""}</div>` : ""}
+        ${gs.kind === "live" ? bxStateStrip(ls) : ""}
         ${grid || ""}
         ${bs ? `<div class="bx-seg" role="tablist" aria-label="Box score team">
             <button class="bx-segb ${boxSide === "away" ? "on" : ""}" data-bxside="away" role="tab">${away}</button>
@@ -10001,8 +10148,22 @@ export default function Home() {
               final   Box Score · Preview · Stats · Odds        (4)
          Preview owns the pregame narrative, Box Score owns what happened, and no block
          appears in two of them. */
+      /* THE LIVE TAB IS NOT ALLOWED TO BE EMPTY. Its entire content is the live-vs-line
+         meter, and that meter is the tracking read on an UNSETTLED pick — so `liveVsLineBlock`
+         returns "" the moment the pick is locked. Signed-out is the default state of every
+         visitor, which meant the most common way to see a live game was a fifth tab that
+         opened onto nothing: a dead click on the one surface where the reader is most
+         actively tapping. The pane is built FIRST and the tab is conditioned on it having
+         something to show, so the tab set is a function of what exists rather than a
+         promise the pane may not keep. Signed-out live therefore reads Box Score · Preview ·
+         Stats · Odds, exactly like a final; entitled live gets the fifth tab. */
+      const liveVsLineHtml = showLive && !isFinal ? liveVsLineBlock(g, leadLocked) : "";
+      const hasLivePane = !!liveVsLineHtml;
+      // …and a restored/remembered "live" tab must not strand the reader on a tab we just
+      // withdrew: fall back to the tab a live game opens on anyway.
+      if (detailTab === "live" && !hasLivePane) detailTab = showLive ? "box" : "preview";
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
-        ${showLive && !isFinal ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Live</button>` : ""}
+        ${hasLivePane ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">Live</button>` : ""}
         ${showLive ? `<button class="gp-tab ${detailTab === "box" ? "on" : ""}" data-dtab="box" role="tab">Box Score</button>` : ""}
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
         <button class="gp-tab ${detailTab === "stats" ? "on" : ""}" data-dtab="stats" role="tab">Stats</button>
@@ -10081,7 +10242,7 @@ export default function Home() {
       // box score's job (gameRecap drops its own `finalTxt` chip for the same reason).
       // RECAP RETIRED (see the tab-set note): a final game has no live/recap pane at all, and
       // the live pane exists only while the game is actually in progress.
-      const livePane = showLive && !isFinal ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${liveVsLineBlock(g, leadLocked)}</div>` : "";
+      const livePane = hasLivePane ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${liveVsLineHtml}</div>` : "";
       // The star-tier legend was cut from the bottom of the board (it explained a five-step
       // scale to every reader on every visit).
       /* ═══════════ ODDS: THE MARKET DETAIL ═══════════
@@ -11686,7 +11847,7 @@ export default function Home() {
          sits directly ON the image at display weight with tight leading; the metadata is
          a whisper. There is NO button. The card is the target (the standing gesture rule)
          and the affordance is a chevron text-link — the same thing Apple ships. */
-      const img = s.image_url ? `<img class="nws-shot" src="${esc(String(s.image_url))}" alt="" decoding="async" onload="var p=this.closest('.nws-card');var r=this.naturalWidth/this.naturalHeight;if(!p)return;if(!this.naturalWidth||this.naturalWidth<300||r>2.6){this.remove();return}p.style.setProperty('--shot-ar',r.toFixed(3));p.classList.remove('nofoto');p.classList.add(r>=1.24?'foto-band':'foto-bleed')" onerror="this.remove()">` : "";
+      const img = s.image_url ? `<img class="nws-shot" data-src="${esc(String(s.image_url))}" alt="" decoding="async" onload="var p=this.closest('.nws-card');var r=this.naturalWidth/this.naturalHeight;if(!p)return;if(!this.naturalWidth||this.naturalWidth<300||r>2.6){this.remove();return}p.style.setProperty('--shot-ar',r.toFixed(3));p.classList.remove('nofoto');p.classList.add(r>=1.24?'foto-band':'foto-bleed')" onerror="this.remove()">` : "";
       const dek = newsDek(s);
       return `<div class="sts sts-news">
         ${storyField("news")}
@@ -11995,6 +12156,27 @@ export default function Home() {
         if (j === storyIdx && storyAcc === 0) el.style.width = "0%";
       });
     }
+    /* THE PAINT WINDOW — the mobile crash fix. Every slide is `position:absolute; inset:0`,
+       so before this the deck asked the compositor to paint TWENTY-FOUR full-screen layers
+       at once — fields, grain, glass and full-resolution news photography — the moment the
+       News tab opened. A desktop GPU shrugs; iOS Safari hits its memory ceiling and kills
+       the page, which the reader experiences as "News went white and dumped me on Games"
+       (a WebKit renderer death auto-reloads onto the default tab). Only the live slide and
+       its two neighbours are painted now (`visibility:hidden` on the rest, in CSS), and a
+       news photo's bytes are not even REQUESTED until its slide is one step away —
+       `data-src` hydrates here, so opening the deck costs three slides, not the whole
+       morning's photography. */
+    function storyPaintWindow() {
+      const stage = $("st-stage"); if (!stage) return;
+      stage.querySelectorAll(".st-slide").forEach((s: any) => {
+        const j = Number(s.dataset.si);
+        const near = Math.abs(j - storyIdx) <= 1;
+        s.classList.toggle("near", near && j !== storyIdx);
+        if (near) s.querySelectorAll("img[data-src]").forEach((im: any) => {
+          im.src = im.dataset.src; im.removeAttribute("data-src");
+        });
+      });
+    }
     function gotoStory(i: number) {
       if (i < 0) i = 0;
       if (i > storyLen - 1) i = storyLen - 1;
@@ -12014,6 +12196,7 @@ export default function Home() {
         if (!REDUCE) stage.classList.add(fwd ? "st-fwd" : "st-back");
         stage.querySelectorAll(".st-slide").forEach((s: any) => s.classList.toggle("on", Number(s.dataset.si) === i));
       }
+      storyPaintWindow();
       storyFillsSync();
     }
     /* THE END OF THE FEED IS A DOOR, NOT A WALL.
@@ -12038,9 +12221,14 @@ export default function Home() {
        Fail any one and the hand-off is a no-op: the deck simply stays where it is, and the
        loading/retry state below is what the reader gets instead. */
     let storyDeckReal = false;
+    let storyMountAt = 0;
     function storyHandOff() {
       if (!storyDeckReal || storyLen < 2 || storyIdx < storyLen - 1) return;
       if (storyHandedOff) return;
+      /* A deck that JUST mounted cannot navigate. Every legitimate hand-off follows at
+         least one full slide of reading; anything faster is a rebuild that landed at the
+         end — a state, not a gesture — and a state must never move the reader off a tab. */
+      if (Date.now() - storyMountAt < 1500) return;
       storyHandedOff = true;
       const f = document.querySelector(`.st-fill[data-sf="${storyIdx}"]`) as any;
       if (f) f.style.width = "100%";
@@ -12186,7 +12374,14 @@ export default function Home() {
       }
       storyWaitStart = 0;
       storyLen = slides.length;
-      if (storyIdx > storyLen - 1) storyIdx = 0;
+      /* A MOUNT NEVER LANDS ON THE END CARD. `storyIdx` survives rebuilds so a reader who
+         left mid-deck resumes where they were — but a reader who FINISHED the deck last
+         visit would resume ON the summary card, and seven seconds later the auto-advance
+         would find "reader on last slide of a real deck" and hand off to the Games board.
+         Opening the News tab became a navigation to Games. A finished deck starts over,
+         like every stories product the reader knows. (>= and not >: the out-of-range case
+         and the resumed-onto-the-end case are the same bug.) */
+      if (storyIdx >= storyLen - 1) storyIdx = 0;
       const dateTxt = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       const segs = slides.map((_: any, i: number) =>
         `<span class="st-seg"><i class="st-fill" data-sf="${i}" style="width:${i < storyIdx ? 100 : 0}%"></i></span>`).join("");
@@ -12229,6 +12424,8 @@ export default function Home() {
       // A REAL deck is mounted: this — and only this — is what licenses the auto-advance to
       // hand off to the board when the reader reaches the end of it (see storyHandOff).
       storyDeckReal = true;
+      storyMountAt = Date.now();
+      storyPaintWindow();   // paint + hydrate only the live slide and its neighbours
       // ONLY when the briefing is the surface actually on screen. renderToday() runs at boot
       // to prewarm the tab, so an unconditional class here would hide the header and the dock
       // on whatever tab the reader is actually looking at.
@@ -12265,6 +12462,22 @@ export default function Home() {
       }
       if (tab !== "today") todayFresh = false;
       return;
+    }
+    /* THE POLLERS' DOOR INTO THE BRIEFING — and the only one they get. A feed landing
+       mid-session used to call renderToday() directly, which rebuilt the whole deck OUT
+       FROM UNDER a reader who was inside it: a full innerHTML swap (a white flash on a
+       phone), the timer restarted, and — when the new deck was a different length — the
+       reader teleported to whatever slide number they USED to be on, sometimes the end
+       card, which the auto-advance then "finished" straight onto the Games board. On a
+       live-game day the pick feed changes every cycle, so this fired all afternoon.
+       The rule now: fresh content only ever repaints a deck the reader has not started
+       (the shimmer, the fail state, or slide zero). A reader mid-deck keeps the deck
+       they are reading; the next visit to the tab gets the new one. */
+    function repaintToday() {
+      todayFresh = false;
+      if (tab !== "today") return;
+      if (storyDeckReal && $("stories") && storyIdx > 0) return; // mid-read — defer to next visit
+      renderToday(); todayFresh = true;
     }
     // Theme tap: switch to the Games tab, select the right league/date, highlight the games.
     async function jumpToGames(gids: any[]) {
@@ -14945,8 +15158,8 @@ export default function Home() {
       // V4 = the default pick source: start both feeds NOW; re-render the pick surfaces
       // the moment they land so every game flips from a placeholder PASS to its real pick.
       Promise.allSettled([loadBetaLive(), loadBeta()]).then(() => {
-        todayFresh = false; deskStale = true;
-        if (tab === "today") { renderToday(); todayFresh = true; }
+        deskStale = true;
+        repaintToday();
         if (tab === "games" || $("slate-body")) renderSlate(true);
       });
       // keep the live pick feed fresh: re-fetch every 5 min while the tab is visible
@@ -14955,8 +15168,8 @@ export default function Home() {
         const before = betaLiveData && betaLiveData.generated_utc;
         loadBetaLive().then((lv: any) => {
           if (lv && lv.generated_utc !== before) {
-            todayFresh = false; deskStale = true;
-            if (tab === "today") { renderToday(); todayFresh = true; }
+            deskStale = true;
+            repaintToday();
             if (tab === "games" || $("slate-body")) renderSlate(true);
           }
         }).catch(() => {});
@@ -14969,8 +15182,7 @@ export default function Home() {
          moment it lands. Two independent failures instead of one compound one. */
       loadNewsFeed().then((nf: any) => {
         if (!nf) return;
-        todayFresh = false;
-        if (tab === "today") { renderToday(); todayFresh = true; }
+        repaintToday();
       }).catch(() => {});
       try {
         await loadIndex();
