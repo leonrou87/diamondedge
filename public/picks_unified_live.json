@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-03T03:50:25Z",
+  "generated_utc": "2026-08-03T05:04:08Z",
   "dates": [
     "2026-08-02"
   ],
@@ -1401,6 +1401,39 @@
       ],
       "note": "Non-premium clients read the PUBLIC payload variant, where every premium field is ABSENT (not null, not masked) on any game carrying a live pick, and every free-text field that could name a side is replaced with the teaser. The record, the number of calls the desk made, and the analysts' personality content stay fully public. Nothing in the public variant contains the pick in any recoverable field \u2014 desk_policy.leak_scan() is the rail that proves it."
     },
+    "copy": {
+      "policy_id": "adaptive_desk_display_v1",
+      "effective_date": "2026-08-02",
+      "story_safe": [
+        "record.headline",
+        "record.daily",
+        "record.streaks",
+        "record.by_month",
+        "games[].pick",
+        "games[].analysts[].take",
+        "games[].matchup",
+        "games[].final",
+        "games[].diamondedge.rationale_line"
+      ],
+      "research_only": [
+        "record.patterns",
+        "record.analyst_profiles",
+        "record.desk_calls",
+        "record.by_strategy",
+        "record.consensus_history",
+        "record.farm",
+        "record.coverage",
+        "record.spread_stream",
+        "record.sim_stream",
+        "record.scout_stream",
+        "record.expanded_band",
+        "record.insights",
+        "record.diagnostics",
+        "desk_fit"
+      ],
+      "the_product_record": "record.headline",
+      "rule": "story / news / desk copy reads ONLY the story_safe blocks. The research_only blocks keep every measurement, sample and interval they have always carried \u2014 they are for the Research surface, which reframes a null as 'we tested this, the market prices it, so we bet elsewhere'. No story-safe field may carry null-finding language, and nothing in the payload ranks a research block onto the record or desk surfaces: record.headline is the only product record."
+    },
     "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
   },
   "premium_spec": {
@@ -2134,26 +2167,26 @@
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
       "n": 125,
-      "win": 51,
-      "loss": 69,
-      "push": 5,
-      "record": "51-69-5",
-      "decided": 120,
-      "hit_rate": 0.425,
-      "units": -18.075,
+      "win": 65,
+      "loss": 56,
+      "push": 4,
+      "record": "65-56-4",
+      "decided": 121,
+      "hit_rate": 0.5372,
+      "units": 8.451,
       "units_weighted": {
-        "units": -23.487,
-        "staked": 146.5,
-        "roi": -0.1603,
+        "units": 16.901,
+        "staked": 242.0,
+        "roi": 0.0698,
         "n_offladder_flat_1u": 0
       },
-      "roi": -0.1506,
+      "roi": 0.0698,
       "hit_rate_ci": [
-        0.3686,
-        0.4835
+        0.479,
+        0.5944
       ],
       "hit_rate_ci_level": 0.8,
-      "n_days": 25,
+      "n_days": 21,
       "first": "2026-07-02",
       "through": "2026-08-02",
       "status": "live",
@@ -2161,75 +2194,75 @@
         {
           "month": "2026-07",
           "n": 114,
-          "win": 45,
-          "loss": 64,
-          "push": 5,
-          "record": "45-64-5",
-          "hit_rate": 0.4128,
-          "units": -19.085,
-          "roi": -0.1751
+          "win": 59,
+          "loss": 52,
+          "push": 3,
+          "record": "59-52-3",
+          "hit_rate": 0.5315,
+          "units": 6.53,
+          "roi": 0.0588
         },
         {
           "month": "2026-08",
           "n": 11,
           "win": 6,
-          "loss": 5,
-          "push": 0,
-          "record": "6-5-0",
-          "hit_rate": 0.5455,
-          "units": 1.009,
-          "roi": 0.0918
+          "loss": 4,
+          "push": 1,
+          "record": "6-4-1",
+          "hit_rate": 0.6,
+          "units": 1.921,
+          "roi": 0.1921
         }
       ],
       "by_engine": {
         "champion_model": {
-          "n": 117,
-          "win": 46,
-          "loss": 66,
-          "push": 5,
-          "record": "46-66-5",
-          "decided": 112,
-          "hit_rate": 0.4107,
-          "units": -20.035,
+          "n": 2,
+          "win": 0,
+          "loss": 2,
+          "push": 0,
+          "record": "0-2-0",
+          "decided": 2,
+          "hit_rate": 0.0,
+          "units": -2.0,
           "units_weighted": {
-            "units": -27.406,
-            "staked": 130.5,
-            "roi": -0.21,
+            "units": -4.0,
+            "staked": 4.0,
+            "roi": -1.0,
             "n_offladder_flat_1u": 0
           },
-          "roi": -0.1789,
+          "roi": -1.0,
           "hit_rate_ci": [
-            0.3528,
-            0.4712
+            0.0,
+            0.4509
           ],
           "hit_rate_ci_level": 0.8,
-          "n_days": 24,
+          "n_days": 2,
           "first": "2026-07-02",
-          "through": "2026-08-01"
+          "through": "2026-07-03"
         },
         "adaptive_desk": {
-          "n": 8,
-          "win": 5,
-          "loss": 3,
-          "push": 0,
-          "record": "5-3-0",
-          "decided": 8,
-          "hit_rate": 0.625,
-          "units": 1.959,
+          "n": 123,
+          "win": 65,
+          "loss": 54,
+          "push": 4,
+          "record": "65-54-4",
+          "decided": 119,
+          "hit_rate": 0.5462,
+          "units": 10.451,
           "units_weighted": {
-            "units": 3.919,
-            "staked": 16.0,
-            "roi": 0.2449,
+            "units": 20.901,
+            "staked": 238.0,
+            "roi": 0.0878,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.2449,
+          "roi": 0.0878,
           "hit_rate_ci": [
-            0.4028,
-            0.8046
+            0.4875,
+            0.6037
           ],
           "hit_rate_ci_level": 0.8,
-          "n_days": 1,
-          "first": "2026-08-02",
+          "n_days": 19,
+          "first": "2026-07-12",
           "through": "2026-08-02"
         }
       },
@@ -2528,8 +2561,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-02"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": "no_locked_price_evidence",
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2558,158 +2593,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-03"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
-        "walk_forward": false,
-        "counts_in_record": true,
-        "model_generation": "v1",
-        "is_model_seam": false,
-        "window_spans_model_seam": false,
-        "is_today": false,
-        "no_action": false
-      },
-      {
-        "date": "2026-07-07",
-        "n": 4,
-        "win": 2,
-        "loss": 1,
-        "push": 1,
-        "record": "2-1-1",
-        "hit_rate": 0.6667,
-        "units": 1.04,
-        "roi": 0.3467,
-        "strategy": {
-          "rule_key": "pair_follow:vega,nova",
-          "label": "Follow VEGA + NOVA when they agree",
-          "plain_english_rule": "bet with VEGA and NOVA only when they agree",
-          "confidence_tier": "LEAN",
-          "window_days": 10,
-          "status": "ACTIVE",
-          "full_block_at": "adaptive_strategy_by_date.2026-07-07"
-        },
-        "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
-        "is_engine_changeover": false,
-        "walk_forward": false,
-        "counts_in_record": true,
-        "model_generation": "v1",
-        "is_model_seam": false,
-        "window_spans_model_seam": false,
-        "is_today": false,
-        "no_action": false
-      },
-      {
-        "date": "2026-07-08",
-        "n": 5,
-        "win": 2,
-        "loss": 3,
-        "push": 0,
-        "record": "2-3-0",
-        "hit_rate": 0.4,
-        "units": -1.0,
-        "roi": -0.2,
-        "strategy": {
-          "rule_key": "pair_fade:atlas,scout",
-          "label": "Fade ATLAS + SCOUT when they agree",
-          "plain_english_rule": "bet against ATLAS and SCOUT only when they agree",
-          "confidence_tier": "LEAN",
-          "window_days": 10,
-          "status": "ACTIVE",
-          "full_block_at": "adaptive_strategy_by_date.2026-07-08"
-        },
-        "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
-        "is_engine_changeover": false,
-        "walk_forward": false,
-        "counts_in_record": true,
-        "model_generation": "v1",
-        "is_model_seam": false,
-        "window_spans_model_seam": false,
-        "is_today": false,
-        "no_action": false
-      },
-      {
-        "date": "2026-07-09",
-        "n": 3,
-        "win": 2,
-        "loss": 1,
-        "push": 0,
-        "record": "2-1-0",
-        "hit_rate": 0.6667,
-        "units": 0.909,
-        "roi": 0.303,
-        "strategy": {
-          "rule_key": "pair_fade:atlas,scout",
-          "label": "Fade ATLAS + SCOUT when they agree",
-          "plain_english_rule": "bet against ATLAS and SCOUT only when they agree",
-          "confidence_tier": "LEAN",
-          "window_days": 10,
-          "status": "ACTIVE",
-          "full_block_at": "adaptive_strategy_by_date.2026-07-09"
-        },
-        "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
-        "is_engine_changeover": false,
-        "walk_forward": false,
-        "counts_in_record": true,
-        "model_generation": "v1",
-        "is_model_seam": false,
-        "window_spans_model_seam": false,
-        "is_today": false,
-        "no_action": false
-      },
-      {
-        "date": "2026-07-10",
-        "n": 7,
-        "win": 1,
-        "loss": 6,
-        "push": 0,
-        "record": "1-6-0",
-        "hit_rate": 0.1429,
-        "units": -5.02,
-        "roi": -0.7171,
-        "strategy": {
-          "rule_key": "prob_weighted:0.004",
-          "label": "Probabilistic analyst blend (0.4% edge)",
-          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
-          "confidence_tier": "LEAN",
-          "window_days": 10,
-          "status": "ACTIVE",
-          "full_block_at": "adaptive_strategy_by_date.2026-07-10"
-        },
-        "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
-        "is_engine_changeover": false,
-        "walk_forward": false,
-        "counts_in_record": true,
-        "model_generation": "v1",
-        "is_model_seam": false,
-        "window_spans_model_seam": false,
-        "is_today": false,
-        "no_action": false
-      },
-      {
-        "date": "2026-07-11",
-        "n": 5,
-        "win": 2,
-        "loss": 3,
-        "push": 0,
-        "record": "2-3-0",
-        "hit_rate": 0.4,
-        "units": -1.02,
-        "roi": -0.2039,
-        "strategy": {
-          "rule_key": "prob_weighted:0.004",
-          "label": "Probabilistic analyst blend (0.4% edge)",
-          "plain_english_rule": "turn each analyst's probability into a weighted vote, reward analysts whose recent probabilities have been right, fade analysts whose probabilities have been backwards, and pass when the combined edge is small",
-          "confidence_tier": "LEAN",
-          "window_days": 10,
-          "status": "ACTIVE",
-          "full_block_at": "adaptive_strategy_by_date.2026-07-11"
-        },
-        "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
-        "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": "no_locked_price_evidence",
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2720,14 +2607,14 @@
       },
       {
         "date": "2026-07-12",
-        "n": 6,
-        "win": 4,
-        "loss": 2,
+        "n": 11,
+        "win": 6,
+        "loss": 5,
         "push": 0,
-        "record": "4-2-0",
-        "hit_rate": 0.6667,
-        "units": 1.85,
-        "roi": 0.3083,
+        "record": "6-5-0",
+        "hit_rate": 0.5455,
+        "units": 0.892,
+        "roi": 0.0811,
         "strategy": {
           "rule_key": "prob_weighted:0.004",
           "label": "Probabilistic analyst blend (0.4% edge)",
@@ -2738,8 +2625,42 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-12"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
+        "walk_forward": false,
+        "counts_in_record": true,
+        "model_generation": "v1",
+        "is_model_seam": false,
+        "window_spans_model_seam": false,
+        "is_today": false,
+        "no_action": false
+      },
+      {
+        "date": "2026-07-16",
+        "n": 1,
+        "win": 1,
+        "loss": 0,
+        "push": 0,
+        "record": "1-0-0",
+        "hit_rate": 1.0,
+        "units": 0.962,
+        "roi": 0.9615,
+        "strategy": {
+          "rule_key": "pair_fade:atlas,scout",
+          "label": "Fade ATLAS + SCOUT when they agree",
+          "plain_english_rule": "bet against ATLAS and SCOUT only when they agree",
+          "confidence_tier": "STRONG",
+          "window_days": 14,
+          "status": "ACTIVE",
+          "full_block_at": "adaptive_strategy_by_date.2026-07-16"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "adaptive_desk",
+        "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2750,14 +2671,14 @@
       },
       {
         "date": "2026-07-17",
-        "n": 5,
-        "win": 2,
-        "loss": 2,
+        "n": 10,
+        "win": 4,
+        "loss": 5,
         "push": 1,
-        "record": "2-2-1",
-        "hit_rate": 0.5,
-        "units": -0.095,
-        "roi": -0.0238,
+        "record": "4-5-1",
+        "hit_rate": 0.4444,
+        "units": -1.152,
+        "roi": -0.128,
         "strategy": {
           "rule_key": "weighted_form:0.06",
           "label": "Weighted four-analyst form blend (6% threshold)",
@@ -2768,8 +2689,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-17"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2780,14 +2703,14 @@
       },
       {
         "date": "2026-07-18",
-        "n": 6,
+        "n": 5,
         "win": 1,
         "loss": 3,
-        "push": 2,
-        "record": "1-3-2",
+        "push": 1,
+        "record": "1-3-1",
         "hit_rate": 0.25,
-        "units": -2.074,
-        "roi": -0.5185,
+        "units": -2.02,
+        "roi": -0.5049,
         "strategy": {
           "rule_key": "group_fade:atlas,nova,scout",
           "label": "Fade ATLAS + NOVA + SCOUT when that block agrees",
@@ -2798,8 +2721,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-18"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2810,14 +2735,14 @@
       },
       {
         "date": "2026-07-19",
-        "n": 8,
-        "win": 4,
-        "loss": 4,
+        "n": 12,
+        "win": 7,
+        "loss": 5,
         "push": 0,
-        "record": "4-4-0",
-        "hit_rate": 0.5,
-        "units": 0.01,
-        "roi": 0.0012,
+        "record": "7-5-0",
+        "hit_rate": 0.5833,
+        "units": 1.963,
+        "roi": 0.1636,
         "strategy": {
           "rule_key": "prob_weighted:0.004",
           "label": "Probabilistic analyst blend (0.4% edge)",
@@ -2828,8 +2753,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-19"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2840,14 +2767,14 @@
       },
       {
         "date": "2026-07-20",
-        "n": 6,
-        "win": 4,
+        "n": 10,
+        "win": 8,
         "loss": 2,
         "push": 0,
-        "record": "4-2-0",
-        "hit_rate": 0.6667,
-        "units": 2.12,
-        "roi": 0.3534,
+        "record": "8-2-0",
+        "hit_rate": 0.8,
+        "units": 5.79,
+        "roi": 0.579,
         "strategy": {
           "rule_key": "prob_weighted:0.004",
           "label": "Probabilistic analyst blend (0.4% edge)",
@@ -2858,8 +2785,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-20"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2871,13 +2800,13 @@
       {
         "date": "2026-07-21",
         "n": 7,
-        "win": 4,
-        "loss": 3,
+        "win": 2,
+        "loss": 5,
         "push": 0,
-        "record": "4-3-0",
-        "hit_rate": 0.5714,
-        "units": 0.975,
-        "roi": 0.1393,
+        "record": "2-5-0",
+        "hit_rate": 0.2857,
+        "units": -3.0,
+        "roi": -0.4286,
         "strategy": {
           "rule_key": "meta_logit:l20.45:th0.46",
           "label": "Regularized desk meta-model (0.46 margin)",
@@ -2888,8 +2817,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-21"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2900,14 +2831,14 @@
       },
       {
         "date": "2026-07-22",
-        "n": 7,
-        "win": 2,
-        "loss": 4,
+        "n": 9,
+        "win": 1,
+        "loss": 7,
         "push": 1,
-        "record": "2-4-1",
-        "hit_rate": 0.3333,
-        "units": -2.115,
-        "roi": -0.3525,
+        "record": "1-7-1",
+        "hit_rate": 0.125,
+        "units": -6.048,
+        "roi": -0.756,
         "strategy": {
           "rule_key": "meta_logit:l20.45:th0.46",
           "label": "Regularized desk meta-model (0.46 margin)",
@@ -2918,8 +2849,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-22"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2931,13 +2864,13 @@
       {
         "date": "2026-07-23",
         "n": 1,
-        "win": 1,
-        "loss": 0,
+        "win": 0,
+        "loss": 1,
         "push": 0,
-        "record": "1-0-0",
-        "hit_rate": 1.0,
-        "units": 1.07,
-        "roi": 1.07,
+        "record": "0-1-0",
+        "hit_rate": 0.0,
+        "units": -1.0,
+        "roi": -1.0,
         "strategy": {
           "rule_key": "group_fade:atlas,nova,scout",
           "label": "Fade ATLAS + NOVA + SCOUT when that block agrees",
@@ -2948,8 +2881,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-23"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2960,14 +2895,14 @@
       },
       {
         "date": "2026-07-24",
-        "n": 2,
-        "win": 1,
-        "loss": 1,
+        "n": 7,
+        "win": 5,
+        "loss": 2,
         "push": 0,
-        "record": "1-1-0",
-        "hit_rate": 0.5,
-        "units": 0.0,
-        "roi": 0.0,
+        "record": "5-2-0",
+        "hit_rate": 0.7143,
+        "units": 2.814,
+        "roi": 0.4021,
         "strategy": {
           "rule_key": "stacked_rules:top5:v2:th0.12",
           "label": "Stacked analyst-rule model (top 5, 2+ signals)",
@@ -2978,8 +2913,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-24"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -2990,14 +2927,14 @@
       },
       {
         "date": "2026-07-25",
-        "n": 8,
-        "win": 2,
+        "n": 9,
+        "win": 3,
         "loss": 6,
         "push": 0,
-        "record": "2-6-0",
-        "hit_rate": 0.25,
-        "units": -4.165,
-        "roi": -0.5206,
+        "record": "3-6-0",
+        "hit_rate": 0.3333,
+        "units": -2.84,
+        "roi": -0.3156,
         "strategy": {
           "rule_key": "meta_logit:l20.45:th0.46",
           "label": "Regularized desk meta-model (0.46 margin)",
@@ -3008,8 +2945,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-25"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -3020,14 +2959,14 @@
       },
       {
         "date": "2026-07-26",
-        "n": 4,
-        "win": 3,
-        "loss": 1,
+        "n": 6,
+        "win": 4,
+        "loss": 2,
         "push": 0,
-        "record": "3-1-0",
-        "hit_rate": 0.75,
-        "units": 2.19,
-        "roi": 0.5475,
+        "record": "4-2-0",
+        "hit_rate": 0.6667,
+        "units": 2.025,
+        "roi": 0.3375,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -3038,8 +2977,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-26"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -3050,14 +2991,14 @@
       },
       {
         "date": "2026-07-27",
-        "n": 10,
-        "win": 3,
-        "loss": 7,
+        "n": 4,
+        "win": 2,
+        "loss": 2,
         "push": 0,
-        "record": "3-7-0",
-        "hit_rate": 0.3,
-        "units": -4.061,
-        "roi": -0.4061,
+        "record": "2-2-0",
+        "hit_rate": 0.5,
+        "units": -0.045,
+        "roi": -0.0114,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -3068,8 +3009,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-27"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -3080,14 +3023,14 @@
       },
       {
         "date": "2026-07-28",
-        "n": 8,
-        "win": 3,
-        "loss": 5,
+        "n": 7,
+        "win": 5,
+        "loss": 2,
         "push": 0,
-        "record": "3-5-0",
-        "hit_rate": 0.375,
-        "units": -1.77,
-        "roi": -0.2212,
+        "record": "5-2-0",
+        "hit_rate": 0.7143,
+        "units": 3.35,
+        "roi": 0.4786,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -3098,8 +3041,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-28"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -3110,14 +3055,14 @@
       },
       {
         "date": "2026-07-29",
-        "n": 5,
-        "win": 1,
-        "loss": 4,
+        "n": 7,
+        "win": 4,
+        "loss": 3,
         "push": 0,
-        "record": "1-4-0",
-        "hit_rate": 0.2,
-        "units": -2.91,
-        "roi": -0.582,
+        "record": "4-3-0",
+        "hit_rate": 0.5714,
+        "units": 1.011,
+        "roi": 0.1445,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -3128,8 +3073,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-29"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -3140,14 +3087,14 @@
       },
       {
         "date": "2026-07-30",
-        "n": 2,
-        "win": 0,
-        "loss": 2,
+        "n": 3,
+        "win": 3,
+        "loss": 0,
         "push": 0,
-        "record": "0-2-0",
-        "hit_rate": 0.0,
-        "units": -2.0,
-        "roi": -1.0,
+        "record": "3-0-0",
+        "hit_rate": 1.0,
+        "units": 2.918,
+        "roi": 0.9726,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -3158,8 +3105,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-30"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v1",
@@ -3171,13 +3120,13 @@
       {
         "date": "2026-07-31",
         "n": 3,
-        "win": 1,
-        "loss": 2,
+        "win": 3,
+        "loss": 0,
         "push": 0,
-        "record": "1-2-0",
-        "hit_rate": 0.3333,
-        "units": -1.02,
-        "roi": -0.3399,
+        "record": "3-0-0",
+        "hit_rate": 1.0,
+        "units": 2.909,
+        "roi": 0.9698,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -3188,8 +3137,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-31"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v2",
@@ -3202,12 +3153,12 @@
         "date": "2026-08-01",
         "n": 3,
         "win": 1,
-        "loss": 2,
-        "push": 0,
-        "record": "1-2-0",
-        "hit_rate": 0.3333,
-        "units": -0.95,
-        "roi": -0.3167,
+        "loss": 1,
+        "push": 1,
+        "record": "1-1-1",
+        "hit_rate": 0.5,
+        "units": -0.038,
+        "roi": -0.0192,
         "strategy": {
           "rule_key": "vote_count:2:under",
           "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
@@ -3218,8 +3169,10 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-01"
         },
         "selector_version": "adaptive_desk_v20",
-        "engine": "champion_model",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v2",
@@ -3250,6 +3203,8 @@
         "selector_version": "adaptive_desk_v20",
         "engine": "adaptive_desk",
         "is_engine_changeover": true,
+        "basis": "process_replay",
+        "no_action_reason": null,
         "walk_forward": false,
         "counts_in_record": true,
         "model_generation": "v2",
@@ -3266,9 +3221,9 @@
           "type": "win",
           "length": 1
         },
-        "best_win_streak": 4,
-        "best_loss_streak": 6,
-        "n_decided": 120
+        "best_win_streak": 8,
+        "best_loss_streak": 8,
+        "n_decided": 121
       },
       "by_analyst": {
         "vega": {
@@ -3315,6 +3270,63 @@
         "scout"
       ],
       "note": "pushes are neutral \u2014 they neither extend nor break a streak. `site` runs over the SAME served picks record.headline counts, straight through the engine changeover; each analyst's runs over that analyst's own v2 reads, which are a different and much larger population \u2014 the two are never summed."
+    },
+    "product_record": "headline",
+    "surfaces": {
+      "record": [
+        "headline",
+        "daily",
+        "streaks"
+      ],
+      "research": [
+        "patterns",
+        "analyst_profiles",
+        "desk_calls",
+        "by_strategy",
+        "consensus_history",
+        "farm",
+        "coverage",
+        "spread_stream",
+        "sim_stream",
+        "scout_stream",
+        "expanded_band",
+        "insights",
+        "diagnostics"
+      ],
+      "note": "record.headline is the DiamondEdge record. Every other stream/strategy record in this payload is a RESEARCH variant: still graded, still honest, still published \u2014 and not a product record. Nothing here ranks or features them."
+    },
+    "copy_policy": {
+      "policy_id": "adaptive_desk_display_v1",
+      "effective_date": "2026-08-02",
+      "story_safe": [
+        "record.headline",
+        "record.daily",
+        "record.streaks",
+        "record.by_month",
+        "games[].pick",
+        "games[].analysts[].take",
+        "games[].matchup",
+        "games[].final",
+        "games[].diamondedge.rationale_line"
+      ],
+      "research_only": [
+        "record.patterns",
+        "record.analyst_profiles",
+        "record.desk_calls",
+        "record.by_strategy",
+        "record.consensus_history",
+        "record.farm",
+        "record.coverage",
+        "record.spread_stream",
+        "record.sim_stream",
+        "record.scout_stream",
+        "record.expanded_band",
+        "record.insights",
+        "record.diagnostics",
+        "desk_fit"
+      ],
+      "the_product_record": "record.headline",
+      "rule": "story / news / desk copy reads ONLY the story_safe blocks. The research_only blocks keep every measurement, sample and interval they have always carried \u2014 they are for the Research surface, which reframes a null as 'we tested this, the market prices it, so we bet elsewhere'. No story-safe field may carry null-finding language, and nothing in the payload ranks a research block onto the record or desk surfaces: record.headline is the only product record."
     },
     "diagnostics": {
       "adaptive_selector_replay": {
@@ -3420,6 +3432,39 @@
           "status"
         ],
         "note": "Non-premium clients read the PUBLIC payload variant, where every premium field is ABSENT (not null, not masked) on any game carrying a live pick, and every free-text field that could name a side is replaced with the teaser. The record, the number of calls the desk made, and the analysts' personality content stay fully public. Nothing in the public variant contains the pick in any recoverable field \u2014 desk_policy.leak_scan() is the rail that proves it."
+      },
+      "copy": {
+        "policy_id": "adaptive_desk_display_v1",
+        "effective_date": "2026-08-02",
+        "story_safe": [
+          "record.headline",
+          "record.daily",
+          "record.streaks",
+          "record.by_month",
+          "games[].pick",
+          "games[].analysts[].take",
+          "games[].matchup",
+          "games[].final",
+          "games[].diamondedge.rationale_line"
+        ],
+        "research_only": [
+          "record.patterns",
+          "record.analyst_profiles",
+          "record.desk_calls",
+          "record.by_strategy",
+          "record.consensus_history",
+          "record.farm",
+          "record.coverage",
+          "record.spread_stream",
+          "record.sim_stream",
+          "record.scout_stream",
+          "record.expanded_band",
+          "record.insights",
+          "record.diagnostics",
+          "desk_fit"
+        ],
+        "the_product_record": "record.headline",
+        "rule": "story / news / desk copy reads ONLY the story_safe blocks. The research_only blocks keep every measurement, sample and interval they have always carried \u2014 they are for the Research surface, which reframes a null as 'we tested this, the market prices it, so we bet elsewhere'. No story-safe field may carry null-finding language, and nothing in the payload ranks a research block onto the record or desk surfaces: record.headline is the only product record."
       },
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
@@ -3943,20 +3988,20 @@
         "last_graded_date": "2026-08-02",
         "evidence_split": {
           "forward_paper_live": {
-            "n": 7,
+            "n": 5,
             "win": 2,
-            "loss": 4,
+            "loss": 2,
             "push": 1,
-            "roi": -0.3551,
-            "hit_rate": 0.3333,
-            "units_flat": -2.13,
+            "roi": -0.0326,
+            "hit_rate": 0.5,
+            "units_flat": -0.13,
             "units_weighted": {
-              "units": -4.261,
-              "staked": 10.0,
-              "roi": -0.4261,
+              "units": -0.261,
+              "staked": 6.0,
+              "roi": -0.0435,
               "n_offladder_flat_1u": 0
             },
-            "first_graded_date": "2026-07-02",
+            "first_graded_date": "2026-07-12",
             "last_graded_date": "2026-08-02",
             "kind": "live",
             "what": "logged forward in the champion's paper ledger before first pitch"
@@ -3998,6 +4043,25 @@
             "last_graded_date": "2026-07-08",
             "kind": "live",
             "what": "a live day whose board was unstable (2026-07-08 serving bug) and was reconstructed under the fixed pipeline"
+          },
+          "served_archive": {
+            "n": 2,
+            "win": 0,
+            "loss": 2,
+            "push": 0,
+            "roi": -1.0,
+            "hit_rate": 0.0,
+            "units_flat": -2.0,
+            "units_weighted": {
+              "units": -4.0,
+              "staked": 4.0,
+              "roi": -1.0,
+              "n_offladder_flat_1u": 0
+            },
+            "first_graded_date": "2026-07-02",
+            "last_graded_date": "2026-07-03",
+            "kind": "live",
+            "what": "source not stamped"
           }
         },
         "backtest": [
@@ -7019,7 +7083,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-03T03:50:26Z",
+      "updated": "2026-08-03T05:04:22Z",
       "order": [
         "vega",
         "atlas",
@@ -9290,7 +9354,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is over 7.5 at 51%. Thinner read, stated as such.",
+          "take": "On the conditions I read, it is over 7.5 at 51%.",
           "take_kind": "standard"
         },
         {
@@ -9332,7 +9396,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "The bats aren't fully on the board yet \u2014 93% of what I grade is on the board for this one, and on that alone it is under 7.5 at 50%. Thinner read, stated as such.",
+          "take": "On the bats, it is under 7.5 at 50%.",
           "take_kind": "standard"
         },
         {
@@ -9432,7 +9496,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -10368,7 +10432,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "No plate assignment yet, so this is the ballpark on its own: 0.42 runs above a neutral night, 8.9 against 8.5. The umpire can still move it.",
+          "take": "The ballpark is doing the work in this one: 0.42 runs above a neutral night, 8.9 against 8.5.",
           "take_kind": "standard"
         },
         {
@@ -10410,7 +10474,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "Lineups aren't up yet, so I'm reading the projected card and how these two offences have actually been scoring: 0.06 runs above average, 8.6 against 8.5. Ask me again when the nine names are posted.",
+          "take": "These two offences have been scoring 0.06 runs above average, which puts them 8.6 against 8.5.",
           "take_kind": "standard"
         },
         {
@@ -10510,7 +10574,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -11473,7 +11537,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "No lineup card yet \u2014 this is the offences themselves, nothing more. On what these bats have been doing: under 9 at 52%, and it is a weaker read than the one I'll have tonight.",
+          "take": "This is the offences themselves and nothing more. On what these bats have been doing: under 9 at 52%.",
           "take_kind": "standard"
         },
         {
@@ -11573,7 +11637,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -12642,7 +12706,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -13660,7 +13724,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "The bats aren't fully on the board yet \u2014 93% of what I grade is on the board for this one, and on that alone it is over 7.5 at 51%. Thinner read, stated as such.",
+          "take": "On the bats, it is over 7.5 at 51%.",
           "take_kind": "standard"
         },
         {
@@ -13760,7 +13824,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -14738,7 +14802,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "No plate assignment yet, so this is the ballpark on its own: 0.03 runs above a neutral night, 8.5 against 8.5. The umpire can still move it.",
+          "take": "The ballpark is doing the work in this one: 0.03 runs above a neutral night, 8.5 against 8.5.",
           "take_kind": "standard"
         },
         {
@@ -14780,7 +14844,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "No lineup card yet \u2014 this is the offences themselves, nothing more. On what these bats have been doing: over 8.5 at 51%, and it is a weaker read than the one I'll have tonight.",
+          "take": "This is the offences themselves and nothing more. On what these bats have been doing: over 8.5 at 51%.",
           "take_kind": "standard"
         },
         {
@@ -14880,7 +14944,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -15891,7 +15955,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "The bats aren't fully on the board yet \u2014 93% of what I grade is on the board for this one, and on that alone it is over 8.5 at 50%. Thinner read, stated as such.",
+          "take": "On the bats, it is over 8.5 at 50%.",
           "take_kind": "standard"
         },
         {
@@ -15991,7 +16055,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16957,7 +17021,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "No plate assignment yet, so this is the ballpark on its own: 0.94 runs below a neutral night, 7.6 against 8.5. The umpire can still move it.",
+          "take": "The ballpark is doing the work in this one: 0.94 runs below a neutral night, 7.6 against 8.5.",
           "take_kind": "standard"
         },
         {
@@ -16999,7 +17063,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "No lineup card yet \u2014 this is the offences themselves, nothing more. On what these bats have been doing: under 8.5 at 51%, and it is a weaker read than the one I'll have tonight.",
+          "take": "This is the offences themselves and nothing more. On what these bats have been doing: under 8.5 at 51%.",
           "take_kind": "standard"
         },
         {
@@ -17099,7 +17163,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -18086,7 +18150,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is under 6.5 at 51%. Thinner read, stated as such.",
+          "take": "On the conditions I read, it is under 6.5 at 51%.",
           "take_kind": "standard"
         },
         {
@@ -18128,7 +18192,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "The bats aren't fully on the board yet \u2014 93% of what I grade is on the board for this one, and on that alone it is over 6.5 at 52%. Thinner read, stated as such.",
+          "take": "On the bats, it is over 6.5 at 52%.",
           "take_kind": "standard"
         },
         {
@@ -18228,7 +18292,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "SLIGHT",
@@ -19202,7 +19266,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "The park is the half of my slice that is knowable this early, and on the park alone it is over 11.5 at 65%. I'll take the plate umpire when they post one.",
+          "take": "On the ballpark itself this is over 11.5 at 65%. Air, dimensions and how the yard has actually been playing.",
           "take_kind": "standard"
         },
         {
@@ -19244,7 +19308,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "The bats aren't fully on the board yet \u2014 93% of what I grade is on the board for this one, and on that alone it is over 11.5 at 52%. Thinner read, stated as such.",
+          "take": "On the bats, it is over 11.5 at 52%.",
           "take_kind": "standard"
         },
         {
@@ -19344,7 +19408,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "STRONG",
@@ -20277,7 +20341,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "The park is the half of my slice that is knowable this early, and on the park alone it is over 7.5 at 52%. I'll take the plate umpire when they post one.",
+          "take": "On the ballpark itself this is over 7.5 at 52%. Air, dimensions and how the yard has actually been playing.",
           "take_kind": "standard"
         },
         {
@@ -20319,7 +20383,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "The bats aren't fully on the board yet \u2014 93% of what I grade is on the board for this one, and on that alone it is under 7.5 at 51%. Thinner read, stated as such.",
+          "take": "On the bats, it is under 7.5 at 51%.",
           "take_kind": "standard"
         },
         {
@@ -20419,7 +20483,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -21399,7 +21463,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is over 11 at 55%. Thinner read, stated as such.",
+          "take": "On the conditions I read, it is over 11 at 55%.",
           "take_kind": "standard"
         },
         {
@@ -21441,7 +21505,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "No lineup card yet \u2014 this is the offences themselves, nothing more. On what these bats have been doing: over 11 at 53%, and it is a weaker read than the one I'll have tonight.",
+          "take": "This is the offences themselves and nothing more. On what these bats have been doing: over 11 at 53%.",
           "take_kind": "standard"
         },
         {
@@ -21541,7 +21605,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -22482,7 +22546,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "Not all the conditions have landed \u2014 85% of what I grade is on the board for this one, and on that alone it is under 7 at 56%. Thinner read, stated as such.",
+          "take": "On the conditions I read, it is under 7 at 56%.",
           "take_kind": "standard"
         },
         {
@@ -22524,7 +22588,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "Lineups aren't up yet, so I'm reading the projected card and how these two offences have actually been scoring: 0.01 runs below average, 7.0 against 7. Ask me again when the nine names are posted.",
+          "take": "These two offences have been scoring 0.01 runs below average, which puts them 7.0 against 7.",
           "take_kind": "standard"
         },
         {
@@ -22624,7 +22688,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "CLEAR",
@@ -23598,7 +23662,7 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "take": "No plate assignment yet, so this is the ballpark on its own: 0.19 runs below a neutral night, 7.8 against 8. The umpire can still move it.",
+          "take": "The ballpark is doing the work in this one: 0.19 runs below a neutral night, 7.8 against 8.",
           "take_kind": "standard"
         },
         {
@@ -23640,7 +23704,7 @@
             "bats_vs_hand",
             "bats_lineups_known"
           ],
-          "take": "No lineup card yet \u2014 this is the offences themselves, nothing more. On what these bats have been doing: under 8 at 51%, and it is a weaker read than the one I'll have tonight.",
+          "take": "This is the offences themselves and nothing more. On what these bats have been doing: under 8 at 51%.",
           "take_kind": "standard"
         },
         {
@@ -23740,7 +23804,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -24712,7 +24776,7 @@
             "park_altitude",
             "park_roof"
           ],
-          "take": "Not all the conditions have landed \u2014 15% of what I grade is on the board for this one, and on that alone it is over 8.5 at 50%. Thinner read, stated as such.",
+          "take": "On the conditions I read, it is over 8.5 at 50%.",
           "take_kind": "standard"
         },
         {
@@ -24853,7 +24917,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T03:48:00Z",
+          "asof_utc": "2026-08-03T05:01:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",

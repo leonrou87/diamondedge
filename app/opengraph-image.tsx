@@ -218,22 +218,25 @@ function buildCurveSvg(s: any) {
 
 // ---- Card variants -----------------------------------------------------------
 
+/* The share card carries the same lockup as the masthead and the app icon: the drawn house
+   mark (rhombus outline + solid core, flat gold, no bevel) and the wordmark whose contrast is
+   WEIGHT rather than a second use of the accent. See the mark note in globals.css. */
 function Brand() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "26px" }}>
-      <div
-        style={{
-          width: 56,
-          height: 56,
-          transform: "rotate(45deg)",
-          borderRadius: 13,
-          background: "linear-gradient(135deg, #f6dd94, #e0ac20)",
-          boxShadow: "0 0 40px rgba(224,172,32,0.5)",
-        }}
-      />
-      <div style={{ display: "flex", fontSize: 50, fontWeight: 800, letterSpacing: "-1px" }}>
-        <span>Diamond</span>
-        <span style={{ color: "#e0ac20" }}>Edge</span>
+    <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+      <svg width="58" height="58" viewBox="0 0 32 32">
+        <path
+          d="M16 3.4 28.6 16 16 28.6 3.4 16Z"
+          fill="none"
+          stroke="#f5be42"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        <path d="M16 10.6 21.4 16 16 21.4 10.6 16Z" fill="#f5be42" />
+      </svg>
+      <div style={{ display: "flex", fontSize: 44, letterSpacing: "5px", color: "#f2f6fc" }}>
+        <span style={{ fontWeight: 300 }}>DIAMOND</span>
+        <span style={{ fontWeight: 800, letterSpacing: "3px" }}>EDGE</span>
       </div>
     </div>
   );

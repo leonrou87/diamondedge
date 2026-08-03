@@ -151,7 +151,14 @@
      making its argument with. This is a real serif stack — the faces that ship on Apple and
      Windows, no webfont, no extra bytes — and it is used ONLY on Research and inside a
      paper. Everywhere else the app stays sans, which is what makes the switch mean anything. */
-  --research-serif:'Iowan Old Style','Charter','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+  /* RESEARCH IS ON BRAND. Leon rejected the serif masthead direction outright: Research uses
+     the same Outfit/Figtree system as the rest of the app, and its scholarly register comes
+     from LAYOUT, STRUCTURE and FIGURES — a masthead rule, a numbered section spine, tabular
+     evidence — not from borrowing somebody else's typeface for one screen. The token stays as
+     an alias so the ~11 call sites keep reading naturally; it now resolves to the house faces:
+     display for headings, body sans for prose. */
+  --research-serif:var(--sans);
+  --research-disp:var(--disp);
 
   /* ── SPACE / RADII / MOTION ── */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px;
@@ -296,15 +303,52 @@ header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px 
   padding:8px max(18px,var(--sal)) 8px max(18px,var(--sar));
   min-height:var(--hbar-h);display:flex;align-items:center;justify-content:center;gap:14px}
 .brand-tx{overflow:hidden}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer;border-radius:16px;padding:2px 4px;
-  background:none;box-shadow:none}
-/* the mark keeps its real gold — a solid metallic shape reads beautifully on
-   white, where gold TEXT would not (see --gold / --golddeep) */
-.diamond{width:var(--brand-mark);height:var(--brand-mark);transform:rotate(45deg);border-radius:calc(var(--brand-mark) * .28);background:var(--brandgrad);position:relative;
-  box-shadow:0 1px 2px rgba(140,92,6,.34),0 8px 18px -10px rgba(var(--goldc),.9)}
-.diamond::after{content:"";position:absolute;inset:26%;border:2px solid rgba(255,255,255,.92);border-radius:2px}
-.brand h1{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.055em;text-transform:uppercase;line-height:1;color:#f2f6fc}
-.brand h1 b{color:#f0c14e}
+/* THE TACKY BEVEL WAS A DEFAULT BUTTON BORDER. `.brand` is a <button> whose `border` was
+   never reset, so the UA drew a 2px OUTSET (3D-shaded) border on it — a rounded, bevelled
+   capsule around the lockup, in every browser, on every screen. That, plus the gradient badge
+   and its gold glow, is what read as "a bit tacky". It is a bare button now. */
+.brand{display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer;border:0;border-radius:16px;padding:2px 4px;
+  background:none;box-shadow:none;-webkit-appearance:none;appearance:none}
+/* ═══════════════════ THE MARK — "CUT DIAMOND" ═══════════════════
+   Leon: "the logo at the top looks a bit tacky, do a full overhaul of the logo and branding."
+
+   HE IS RIGHT, AND THE DIAGNOSIS IS SPECIFIC. The old mark was a rotated rounded SQUARE
+   filled with a gold gradient, carrying a bevel highlight, a coloured drop shadow and a
+   white outlined square floating inside it. Four effects on one 23px shape: that is a 2013
+   app-store badge, and no amount of good type beside it can rescue it.
+
+   THE NEW MARK IS DRAWN, NOT DECORATED. One geometry — a true rhombus outline with a solid
+   core sitting inside it — monoline, flat, no gradient, no bevel, no shadow. It is the same
+   geometry the stories deck strikes through its fields (FIELD_MARK in page.tsx), so the
+   house has ONE shape everywhere instead of a badge here and a glyph there. It is carried as
+   a mask, so it takes `currentColor`-style tinting from whatever surface it lands on: gold on
+   the dark masthead, ink on a light sheet, knocked out of black on the app icon.
+
+   THREE DIRECTIONS WERE DRAWN. (A) this one; (B) a solid two-tone facet — a hard light/dark
+   split with no outline, which reads well at 24px and turns to mud at favicon size; (C) an
+   ink tile with the diamond knocked out, which is a good app icon and a bad masthead, because
+   a filled tile in a bar reads as a button. (A) is the only one that holds from 16px to 512px
+   and in both a positive and a knockout, so it is the system.
+
+   WHY IT SURVIVES 16px: the outline is 2.6 units of a 32 unit box (≈8%), and the core is a
+   solid 6-unit diamond — both above the hairline threshold at every size we ship. */
+:root{
+  --de-mark:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 1.7 30.3 16 16 30.3 1.7 16Z' fill='none' stroke='%23000' stroke-width='2.6' stroke-linejoin='round'/><path d='M16 10 22 16 16 22 10 16Z' fill='%23000'/></svg>");
+  --de-mark-solid:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 1.7 30.3 16 16 30.3 1.7 16Z' fill='%23000'/></svg>");
+}
+.diamond{width:var(--brand-mark);height:var(--brand-mark);flex-shrink:0;
+  background:var(--gold);border-radius:0;transform:none;box-shadow:none;position:relative;
+  -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
+.diamond::after{display:none}
+/* ═══════════════════ THE WORDMARK ═══════════════════
+   The gold used to be spent TWICE — a gold badge and a gold "EDGE" — which is why the
+   lockup read as decorated rather than designed. The accent is now spent ONCE, on the mark,
+   and the wordmark carries its contrast in WEIGHT alone: DIAMOND at 300 against EDGE at 800,
+   one ink, tracked open. That is the fintech move, and it is the classier version of exactly
+   the contrast Leon asked to keep. */
+.brand h1{font-family:var(--disp);font-weight:300;font-size:19px;letter-spacing:.13em;
+  text-transform:uppercase;line-height:1;color:#f2f6fc;white-space:nowrap}
+.brand h1 b{font-weight:800;letter-spacing:.075em;color:#f8fbff}
 .brand:active{transform:scale(.96)}
 .brand{transition:transform .16s var(--ease-out)}
 .brand .tag{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-top:3px}
@@ -393,7 +437,14 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
    A plain underline rail — the CBS/ESPN scoreboard convention — instead of a floating
    pill bar with a glowing travelling ink. On white, a filled pill under every league is
    four competing shapes before the reader reaches a game. */
-.subhead{position:sticky;top:calc(var(--hdr-h,0px) - 1px);z-index:60;padding:0;margin:0;
+/* ZERO MOVEMENT ON SCROLL (Leon: "when scrolling up the date section scrolls marginally,
+   or the header… should never scroll"). The sticky offset was `--hdr-h - 1px`, a hairline
+   fudge to hide the seam under the masthead — which means the rail sat ONE PIXEL LOWER at
+   rest than when pinned, and snapped up the moment the page moved. One pixel is all it
+   takes to read as "the chrome jiggles". The offset is now exactly the header height
+   (published as a fractional value, so a 46.5px bar does not round into a sliver) and the
+   seam is covered by a drawn strip instead of by an offset. */
+.subhead{position:sticky;top:var(--hdr-h,0px);z-index:60;padding:0;margin:0;
   background:var(--chrome-bg);-webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
   box-shadow:0 1px 0 var(--line2)}
 .sporttabs{position:relative;display:flex;gap:2px;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;overscroll-behavior-x:contain;overscroll-behavior-y:none;touch-action:pan-x}
@@ -2022,8 +2073,8 @@ details.more .more-body{padding-top:12px}
 .gp-brand{display:inline-flex;align-items:center;gap:10px;border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:10px;transition:background .2s ease}
 .gp-brand:hover{background:rgba(var(--tintc),.06)}.gp-brand:active{transform:scale(.97)}
 .gp-brand .diamond{width:24px;height:24px;flex-shrink:0}
-.gp-brand .gp-brand-tx{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:.045em;text-transform:uppercase;color:var(--ink);line-height:1}
-.gp-brand .gp-brand-tx b{font-weight:700;color:var(--golddeep)}
+.gp-brand .gp-brand-tx{font-family:var(--disp);font-weight:300;font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);line-height:1;white-space:nowrap}
+.gp-brand .gp-brand-tx b{font-weight:800;letter-spacing:.07em;color:var(--ink)}
 /* PAGE BODY (scrolls) */
 .gp-body{position:relative;z-index:1;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   padding:14px max(14px,var(--sar)) calc(34px + var(--sab)) max(14px,var(--sal))}
@@ -2370,15 +2421,32 @@ details.more .more-body{padding-top:12px}
    wildly by font and renders as a hollow outline in several fallbacks. Modifier classes are
    NAMESPACED (`dmp-tile`, `dmp-detail`) — the old bare `tile` modifier collided with the
    board-card class and rendered this chip as a nested 115px card. */
-.de-mini-pick{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:100%;white-space:nowrap;line-height:1}
-/* THE CALL, IN WORDS. Display face, tabular figures, ink — the word and the number read as
-   one phrase ("OVER 8.5"), which is how a person says it out loud. */
-.de-mini-ou{display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.005em;color:var(--ink);min-width:0}
-.de-mini-ou b{font-variant-numeric:tabular-nums;font-size:17px;color:var(--ink)}
-.de-mini-word{font-size:15px;letter-spacing:.03em}
+/* ════════════ THE PICK ROW, THIRD ITERATION ════════════
+   Leon's rule: "ALWAYS show the O/U number; to its RIGHT the DiamondEdge pick (DE mark +
+   Over/Under word); and the result check/X must NOT cover content."
+
+   Three cells, all in normal flow, nothing absolutely positioned over anything:
+
+     [ O/U 8.5 ] · [ ◆DE ▲ OVER ] ······ [ ✓ ]
+       market        our call            outcome, flush right
+
+   The seal used to be `position:absolute; top:-9px; right:-7px` on the whole unit, which is
+   precisely why it landed on top of the number. It is a flow item on `margin-left:auto` now,
+   so at every width from 360px up it sits in clear space at the end of the row and can
+   cover nothing. */
+.de-mini-pick{position:relative;display:flex;align-items:center;gap:7px;width:100%;min-width:0;line-height:1}
+/* THE MARKET NUMBER — always present, always meaning the market. Quiet label, loud figure. */
+.de-mini-ou{display:inline-flex;align-items:baseline;gap:4px;flex-shrink:0;min-width:0;
+  font-family:var(--disp);font-weight:800;letter-spacing:.005em;color:var(--ink)}
+.de-mini-ou i{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.11em;color:var(--ink3)}
+.de-mini-ou b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:16px;letter-spacing:-.03em;color:var(--ink)}
+/* the hairline between the market and our call — two facts, visibly two facts */
+.dmp-sep{flex-shrink:0;width:1px;height:14px;background:var(--line);border-radius:1px}
+/* OUR CALL — the brand lockup and the word, as one object */
+.de-mini-call{display:inline-flex;align-items:center;gap:6px;min-width:0}
+.de-mini-word{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.03em;color:var(--ink)}
 .de-mini-pick.over .de-mini-word{color:var(--over)}
 .de-mini-pick.under .de-mini-word{color:var(--under)}
-/* THE BRAND SLOT. Fixed footprint whether or not it is filled, so the phrase never shifts. */
 /* THE BRAND LOCKUP. A gold chip carrying the diamond AND the letters DE, so the unit reads
    as OUR call rather than as a decorated number. The gold is the real brand gradient on the
    glyph and deep bronze ink on the letters — gold text at 9px would not survive the contrast
@@ -2387,64 +2455,64 @@ details.more .more-body{padding-top:12px}
   border-radius:999px;padding:3px 8px 3px 6px;
   background:linear-gradient(180deg,rgba(var(--goldc),.16),rgba(var(--goldc),.07));
   box-shadow:inset 0 0 0 1px rgba(var(--goldc),.30)}
-.de-mini-logo{font-style:normal;flex-shrink:0;font-size:13px;line-height:1;
-  background:var(--brandgrad);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 1px 1px var(--sh2))}
+.de-mini-logo{font-style:normal;flex-shrink:0;display:inline-block;width:13px;height:13px;line-height:0;
+  color:transparent;background:var(--gold);
+  -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
 .de-mini-de{font-style:normal;flex-shrink:0;font-family:var(--disp);font-weight:850;font-size:10px;
   letter-spacing:.06em;line-height:1;color:var(--golddeep)}
-/* the direction mark now REINFORCES the word rather than replacing it: a solid triangle,
-   apex up for over and down for under, so the call still survives greyscale and every kind
-   of colour blindness even if the word is missed */
+/* the direction mark REINFORCES the word rather than replacing it: a solid triangle, apex up
+   for over and down for under, so the call survives greyscale and every kind of colour
+   blindness even if the word is missed */
 .de-mini-arrow{display:block;flex-shrink:0;width:10px;height:8px;background:currentColor;color:var(--ink3);
   clip-path:polygon(50% 0,100% 100%,0 100%)}
 .de-mini-pick.over .de-mini-arrow{color:var(--over)}
-/* the lockup keeps its GOLD in every direction — it identifies the publisher, not the
-   side; the word and the triangle beside it are what carry over/under */
+/* the lockup keeps its GOLD in every direction — it identifies the publisher, not the side */
 .de-mini-pick.under .de-mini-arrow{color:var(--under);clip-path:polygon(0 0,100% 0,50% 100%)}
 /* REDACTION IS CRISP, NEVER A BLUR. The word's slot becomes a hatched bar the exact width a
    word would occupy — so a locked board and an unlocked board have identical geometry, and
    nothing about the real value is in the DOM to un-blur. */
 .de-mini-lockdots{display:block;flex-shrink:0;width:11px;height:5px;border-radius:999px;background:rgba(var(--goldc),.42)}
-.de-mini-redact{display:inline-block;width:44px;height:11px;border-radius:3px;vertical-align:-1px;
+.de-mini-redact{display:inline-block;flex-shrink:0;width:44px;height:11px;border-radius:3px;
   background:repeating-linear-gradient(115deg,rgba(var(--goldc),.30) 0 3px,rgba(var(--goldc),.10) 3px 6px)}
-/* ── THE OUTCOME AS A CORNER SEAL ──
-   Leon: "the CHECK and X can be a bit smaller, maybe top right of the pick somehow."
-   It sits on the pick's top-right corner, overlapping it slightly, at 17px — small enough
-   that the call is still the hero, and placed like something applied AFTER the fact, which
-   is what a graded result is. `has-seal` reserves the room so it never overlaps the word. */
-.de-mini-pick{position:relative}
-.de-mini-pick.has-seal{padding-right:7px}
-.de-mini-pick .restamp.rs-mini{position:absolute;top:-9px;right:-7px;width:17px;height:17px;
-  box-shadow:0 1px 3px var(--sh3),0 0 0 2px var(--paper)}
-.de-mini-pick .restamp.rs-mini .rs-g{width:17px;height:17px}
-.de-mini-pick .restamp.rs-mini .rs-g svg{width:10px;height:10px;stroke-width:3.6}
+/* ── THE OUTCOME, AT THE END OF THE ROW AND OVER NOTHING ── */
+.de-mini-pick .restamp.rs-mini{margin-left:auto;flex-shrink:0;width:19px;height:19px;
+  box-shadow:0 1px 3px var(--sh3)}
+.de-mini-pick .restamp.rs-mini .rs-g{width:19px;height:19px}
+.de-mini-pick .restamp.rs-mini .rs-g svg{width:11px;height:11px;stroke-width:3.6}
 .tl-verdict .tv-callrow{padding-top:5px}
 /* NO PICK ⇒ the market number alone, quiet, and no brand slot beside it. */
-.de-mini-pick.nopick .de-mini-ou{color:var(--ink4);font-weight:700}
+.de-mini-pick.nopick .de-mini-ou{color:var(--ink4)}
 .de-mini-pick.nopick .de-mini-ou b{color:var(--ink2)}
 @media(prefers-reduced-motion:no-preference){
   .tile.v-play .de-mini-arrow{animation:pick-nod 1.9s ease-in-out infinite}
   .tile.v-lean .de-mini-arrow{animation:pick-nod 2.7s ease-in-out infinite}
 }
-/* ON A BOARD TILE the column is ~137px of usable width and it has to carry the mark, the
-   word, the number AND the result stamp on ONE line. The pill around the mark was spending
-   14px of that on padding, which is what pushed "OVER 8.5" into clipping to "OVER 8." — so
-   on the tile (and only on the tile) the mark loses its container and becomes two bare
-   glyphs. Nothing truncates: the call is the reason the tile exists. */
-.de-mini-pick.dmp-tile{gap:6px}
-.de-mini-pick.dmp-tile .de-mini-ou{font-size:13px;gap:4px;white-space:nowrap}
-.de-mini-pick.dmp-tile .de-mini-ou b{font-size:15px}
-.de-mini-pick.dmp-tile .de-mini-word{font-size:13px;letter-spacing:.01em}
-.de-mini-pick.dmp-tile .de-mini-logo{font-size:11px}
-.de-mini-pick.dmp-tile .de-mini-mark{padding:0;gap:4px;background:none;box-shadow:none}
-.de-mini-pick.dmp-tile .de-mini-redact{width:34px;height:10px}
+/* ON A BOARD TILE the row has 127px of usable width and it must carry ALL THREE cells plus
+   the seal on ONE line at 360px. The budget, measured:
+       market 44  +  rule 1  +  call 53  +  seal 16  +  three gaps 12  =  126
+   Everything below is that budget. Three things are given up to make it fit, in this order:
+   the pill around the brand mark, the letters "DE" beside the diamond, and the direction
+   triangle — the triangle last, because the WORD is still there and still colour-coded, and
+   at detail size (where there is room) the triangle comes straight back. What is NOT given
+   up is any of the three facts, or the rule that the seal covers nothing. */
+.de-mini-pick.dmp-tile{gap:4px}
+.de-mini-pick.dmp-tile .de-mini-ou{gap:3px}
+.de-mini-pick.dmp-tile .de-mini-ou i{font-size:8.5px;letter-spacing:.08em}
+.de-mini-pick.dmp-tile .de-mini-ou b{font-size:13.5px}
+.de-mini-pick.dmp-tile .de-mini-word{font-size:12.5px;letter-spacing:.01em;flex-shrink:0}
+.de-mini-pick.dmp-tile .de-mini-logo{width:11px;height:11px}
+.de-mini-pick.dmp-tile .de-mini-mark{padding:0;gap:3px;background:none;box-shadow:none}
+.de-mini-pick.dmp-tile .de-mini-de,
+.de-mini-pick.dmp-tile .de-mini-arrow{display:none}
+.de-mini-pick.dmp-tile .de-mini-call{gap:4px}
+.de-mini-pick.dmp-tile .de-mini-redact{width:30px;height:10px}
+.de-mini-pick.dmp-tile .dmp-sep{height:12px}
+.de-mini-pick.dmp-tile .restamp.rs-mini{width:16px;height:16px;margin-left:auto}
+.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g{width:16px;height:16px}
+.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g svg{width:10px;height:10px}
 @media(max-width:400px){
-  .de-mini-pick.dmp-tile{gap:5px}
-  .de-mini-pick.dmp-tile .de-mini-word{font-size:12px}
-  .de-mini-pick.dmp-tile .de-mini-ou b{font-size:14px}
-  .restamp.rs-mini{width:19px;height:19px}
-  .restamp.rs-mini .rs-g{width:19px;height:19px}
-  .restamp.rs-mini .rs-g svg{width:12px;height:12px}
+  .de-mini-pick.dmp-tile .de-mini-word{font-size:11.5px}
+  .de-mini-pick.dmp-tile .de-mini-ou b{font-size:13px}
 }
 .de-mini-pick.dmp-detail{gap:10px}
 .de-mini-pick.dmp-detail .de-mini-ou b{font-size:19px}
@@ -2535,57 +2603,94 @@ details.more .more-body{padding-top:12px}
 .article-story .sh-meta,.article-story .art-byline{color:rgba(238,246,255,.78)}
 .article-story .art-mu img,.article-story .art-hero-crest img{background:rgba(255,255,255,.9);border-radius:16px;padding:5px}
 
-/* ═══════════════ THE END CARD ═══════════════
-   The one slide in the deck that is a single gesture: a struck diamond with two pulsing
-   rings, one line of type, one door. The whole card is the target and advancing past it
-   pans to Games, so it has to read as an ending AND as an invitation. */
-.stories .sts.caughtup{justify-content:safe center;align-items:center;text-align:center;gap:18px;cursor:pointer}
-.stories .caughtup .sts-bg::before{content:"";position:absolute;inset:14% 8% 20%;border-radius:32px;background:linear-gradient(135deg,rgba(125,220,255,.16),rgba(245,190,66,.15));filter:blur(20px);animation:briefingGlow 4.8s ease-in-out infinite alternate}
-.stories .caughtup .st-cta.big{font-size:16px;padding:15px 28px}
-.cu-mark{position:relative;display:grid;place-items:center;width:112px;height:112px;flex-shrink:0}
-.cu-dia{position:relative;z-index:2;font-size:46px;line-height:1;
-  background:linear-gradient(140deg,#ffe08a,#f5be42 48%,#c98a12);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 22px rgba(245,190,66,.55));animation:cuDia 3.2s ease-in-out infinite}
-.cu-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(245,190,66,.42);animation:cuRing 2.8s var(--ease-out) infinite}
-.cu-ring.r2{animation-delay:1.4s}
-@keyframes cuDia{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.1) rotate(45deg)}}
-@keyframes cuRing{0%{transform:scale(.55);opacity:0}35%{opacity:.9}100%{transform:scale(1.25);opacity:0}}
-.cu-kick{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:rgba(245,190,66,.92)}
-.cu-head{font-family:var(--disp);font-weight:700;font-size:clamp(28px,8vw,44px);line-height:1.06;letter-spacing:-.01em;color:#f8fbff;text-wrap:balance}
-.cu-foot{font-family:var(--sans);font-size:12px;letter-spacing:.02em;color:rgba(235,244,255,.5)}
-.stories .caughtup .sts-srows{max-width:380px}
+/* ══════════════════════ THE END CARD — a completion, then a door ══════════════════════
+   Leon's spec: "at the end of the feed, a big satisfying end-card; tapping it (or anything
+   after it) pans to the Games tab."
 
-/* ═══════════════ A WINNER, CELEBRATED ═══════════════ */
-.sts.sts-win{align-items:center;justify-content:safe center;text-align:center}
-.sts-win .sts-kick{align-self:stretch}
-.stories .sts-win .sts-bg::before{content:"";position:absolute;inset:8% 6% auto;height:52%;border-radius:36px;
-  background:radial-gradient(60% 70% at 50% 30%,rgba(50,223,151,.3),transparent 70%);filter:blur(28px);
-  animation:briefingGlow 5.2s ease-in-out infinite alternate}
+   The satisfying part is the SENTENCE — so "All caught up." is the dominant type on the
+   card, at up to 68px, struck through by a house diamond that DRAWS ITSELF rather than an
+   emoji that spins. Then a rule, the receipt (today's picks), and one oversized door. */
+.stories .sts.caughtup{cursor:pointer}
+.stories .caughtup .sts-core{align-items:center;text-align:center;gap:16px}
+.stories .caughtup .st-cta.big{font-size:16.5px;padding:16px 34px;letter-spacing:.005em}
+.cu-mark{position:relative;display:grid;place-items:center;width:clamp(96px,26vw,124px);aspect-ratio:1;flex-shrink:0}
+.cu-svg{position:relative;z-index:2;width:100%;height:100%;overflow:visible}
+.cu-svg path{fill:none;stroke:url(#cuGold);stroke:#f5be42;stroke-linejoin:round;
+  filter:drop-shadow(0 0 14px rgba(245,190,66,.55))}
+.cu-p1{stroke-width:2.2;stroke-dasharray:312;stroke-dashoffset:312;animation:cuDraw .9s var(--ease-out) .06s forwards}
+.cu-p2{stroke-width:1.6;opacity:0;stroke:#ffe08a;animation:cuFade .5s ease .62s forwards}
+.cu-p3{stroke:none;fill:#f5be42;opacity:0;transform-origin:60px 60px;animation:cuPop .5s var(--spring) .8s forwards}
+.cu-halo{position:absolute;inset:-28%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(245,190,66,.30),transparent 66%);filter:blur(12px);
+  opacity:0;animation:cuHalo 1.4s ease-out .5s forwards}
+@keyframes cuDraw{to{stroke-dashoffset:0}}
+@keyframes cuFade{to{opacity:.82}}
+@keyframes cuPop{from{opacity:0;transform:scale(.2) rotate(-45deg)}to{opacity:1;transform:none}}
+@keyframes cuHalo{0%{opacity:0;transform:scale(.7)}55%{opacity:1}100%{opacity:.72;transform:scale(1)}}
+.cu-head{font-family:var(--disp);font-weight:800;font-size:clamp(38px,12.4vw,62px);line-height:.96;
+  letter-spacing:-.035em;color:#f8fbff;text-wrap:balance;text-shadow:0 18px 46px rgba(0,0,0,.5)}
+.cu-rule{width:clamp(60px,22vw,110px);height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,rgba(245,190,66,.95),transparent)}
+.cu-sub{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(245,190,66,.94);text-wrap:balance;line-height:1.5}
+.cu-foot{font-family:var(--sans);font-size:12px;letter-spacing:.02em;color:rgba(235,244,255,.48)}
+.stories .caughtup .sts-srows{max-width:360px}
+.stories .caughtup .sts-foot{gap:12px}
+
+/* ══════════════════════ A WINNER, CELEBRATED — the struck seal ══════════════════════
+   The cashed moment is the product's best emotional beat and it used to be a small green
+   pill. It is a SEAL now: a rotated, double-ruled gold-foil plate that lands from 1.9× and
+   blurred with a spring, two rings ride out from under it once, and a single foil sweep
+   crosses the word a beat later. Gold, because gold is the house — not confetti. */
+.stories .sts-win .sts-core{align-items:center;text-align:center;gap:20px}
+/* the celebration does not sit in a grey plate — the seal, the call and the crests stand on
+   the field itself, and the affordance is the chip plus the press state */
+.stories .sts-win .sts-open{background:transparent;box-shadow:none;padding:4px 8px;gap:16px}
+.stories .sts-win .sts-open:hover{background:rgba(255,255,255,.05);box-shadow:none}
+.cash-seal{position:relative;display:grid;place-items:center;padding:6px 0 2px;flex-shrink:0}
+.cash-plate{position:relative;z-index:2;display:inline-flex;align-items:center;gap:11px;overflow:hidden;
+  transform:rotate(-5.5deg);padding:11px 26px 11px 20px;border-radius:8px;
+  background:linear-gradient(146deg,#3b2c06,#171106 62%,#241a04);
+  box-shadow:0 0 0 2px rgba(245,190,66,.95),0 0 0 5px rgba(5,7,16,.9),0 0 0 6.5px rgba(245,190,66,.42),
+    0 22px 52px rgba(0,0,0,.55),0 0 46px rgba(245,190,66,.28),inset 0 1px 0 rgba(255,224,138,.32);
+  animation:cashLand .62s cubic-bezier(.2,1.36,.36,1) both}
+.cash-plate b{font-family:var(--disp);font-weight:800;font-size:clamp(24px,7.2vw,34px);letter-spacing:.24em;
+  line-height:1;padding-left:.06em;
+  background:linear-gradient(168deg,#fff3cf,#f5be42 46%,#c98a12);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cash-tick{font-style:normal;display:grid;place-items:center;width:26px;height:26px;flex-shrink:0;border-radius:50%;
+  font-size:14px;font-weight:800;color:#04301f;background:linear-gradient(150deg,#6ef0b8,#1fc086);
+  box-shadow:0 5px 14px rgba(25,197,138,.5)}
+.cash-foil{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(104deg,transparent 34%,rgba(255,255,255,.4) 48%,transparent 62%);
+  transform:translateX(-130%);animation:cashFoil 4.6s ease-in-out .85s infinite}
+.cash-ring{position:absolute;width:150px;height:150px;border-radius:50%;pointer-events:none;
+  border:1.5px solid rgba(245,190,66,.55);opacity:0;animation:cashRing 1.5s var(--ease-out) .2s 1}
+.cash-ring.r2{animation-delay:.46s;border-color:rgba(50,223,151,.45)}
+@keyframes cashLand{
+  0%{opacity:0;transform:scale(1.9) rotate(-17deg);filter:blur(7px)}
+  62%{opacity:1;filter:blur(0)}
+  78%{transform:scale(.965) rotate(-3.6deg)}
+  100%{opacity:1;transform:rotate(-5.5deg);filter:blur(0)}}
+@keyframes cashFoil{0%,62%{transform:translateX(-130%)}82%,100%{transform:translateX(130%)}}
+@keyframes cashRing{0%{opacity:0;transform:scale(.4)}30%{opacity:.9}100%{opacity:0;transform:scale(1.55)}}
 .sts-wincall{display:inline-flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
   font-family:var(--disp);font-weight:800;font-size:clamp(30px,9vw,52px);line-height:1;letter-spacing:-.02em;color:var(--ink)}
 .sts-wincall.ou-over{color:var(--over)}
 .sts-wincall.ou-under{color:var(--under)}
 .sts-wincall i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:15px;color:var(--ink3);letter-spacing:-.02em}
 .sts-winmark{line-height:1;animation:winPop .6s var(--spring) both}
-.sts-winstamp{display:inline-flex;align-items:center;gap:8px;align-self:center;
-  font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.26em;text-transform:uppercase;
-  color:#04301f;background:linear-gradient(135deg,#54e7ab,#1fc086);border-radius:999px;padding:8px 20px 8px 16px;
-  box-shadow:0 14px 34px rgba(25,197,138,.34);animation:winStamp .5s var(--spring) both;animation-delay:.14s}
-.sts-wintick{font-size:16px;line-height:1}
 @keyframes winPop{from{opacity:0;transform:translateY(10px) scale(.7)}to{opacity:1;transform:none}}
-@keyframes winStamp{from{opacity:0;transform:scale(.82) rotate(-4deg)}to{opacity:1;transform:none}}
-.sts-winmath{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
-.sts-winmath>span{display:flex;flex-direction:column;align-items:center;gap:2px}
+/* the maths rail: line → what the game produced → the margin. Gold on the margin, because
+   the margin is the part that is worth being proud of. */
+.sts-winmath{display:flex;align-items:flex-start;justify-content:center;gap:14px;flex-wrap:wrap;
+  border-radius:16px;padding:12px 16px;background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.sts-winmath>span{display:flex;flex-direction:column;align-items:center;gap:3px}
 .sts-winmath i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4)}
-.sts-winmath b{font-family:var(--mono);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;color:var(--ink)}
-.sts-winmath .sep{align-self:center;font-size:18px;color:var(--ink4);margin-top:10px}
-.sts-winmath .by b{color:var(--green)}
+.sts-winmath b{font-family:var(--mono);font-weight:700;font-size:23px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.sts-winmath .sep{align-self:center;font-size:18px;color:var(--ink4);margin-top:12px}
+.sts-winmath .by b{color:#f5be42;text-shadow:0 0 18px rgba(245,190,66,.4)}
 
 /* ═══════════════ THE GAME WE ARE CIRCLED ON ═══════════════ */
-.sts.sts-hype{align-items:stretch;justify-content:safe center}
-.stories .sts-hype .sts-bg::before{content:"";position:absolute;inset:auto 6% 12%;height:44%;border-radius:36px;
-  background:radial-gradient(60% 70% at 50% 70%,rgba(125,220,255,.24),transparent 72%);filter:blur(30px);
-  animation:briefingGlow 6.4s ease-in-out infinite alternate}
 .sts-hypeline{display:inline-flex;align-items:baseline;justify-content:center;gap:9px;align-self:center;
   border-radius:999px;padding:7px 18px;background:rgba(var(--tintc),.09);box-shadow:inset 0 0 0 1px var(--line2)}
 .sts-hypeline i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
@@ -2598,50 +2703,102 @@ details.more .more-body{padding-top:12px}
 .sts-hmark.down i{border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--under)}
 @media(prefers-reduced-motion:no-preference){.sts-hmark i{animation:pick-nod 2.2s ease-in-out infinite}}
 
-/* ═══════════════ AN ANALYST AS A PERSON ═══════════════ */
+/* ═══════════════ AN ANALYST AS A TRADING CARD ═══════════════
+   The persona used to be a header, a quote and a stat grid stacked loosely down the page.
+   It is one OBJECT now, with a frame: the analyst's accent as a rim and a top rule, the
+   corners notched, the sigil struck through the card at 240px, a foil corner, the name at
+   display size, the voice as a pull-quote and the ledger as a stat block along the foot.
+   The whole card is the tap target and opens that analyst's own sheet. */
 .sts-anlspot .sts-when.hot{color:var(--green)}
-.sts-anlhead{display:flex;align-items:center;gap:14px;min-width:0;cursor:pointer}
-.sts-anlsig{display:grid;place-items:center;width:66px;height:66px;flex-shrink:0;border-radius:20px;
-  color:var(--anc,var(--ink));background:var(--anbg,rgba(var(--tintc),.1));box-shadow:inset 0 0 0 1px var(--anline,var(--line2))}
-.sts-anlid{display:flex;flex-direction:column;gap:2px;min-width:0}
-.sts-anlid b{font-family:var(--disp);font-weight:800;font-size:clamp(24px,7vw,34px);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);line-height:1}
-.sts-anlid i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--anc,var(--ink3))}
-.sts-anlrec{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:8px}
-.sts-anlrec>span{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:13px;padding:9px 6px;
-  background:rgba(var(--tintc),.075);box-shadow:inset 0 0 0 1px var(--line3)}
-.sts-anlrec i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink4)}
-.sts-anlrec b{font-family:var(--mono);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink)}
-.sts-anlrec .up b{color:var(--green)}
-.sts-anlrec .down b{color:var(--red)}
-.sts-anll10{display:flex;align-items:center;gap:9px;justify-content:center}
-.sts-anll10 em{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink4)}
-/* THE PULL-QUOTE. One line of the analyst in their own voice — the shortest true statement
-   of what they read. It replaces the four-line persona paragraph, which clamped mid-word on
-   a phone and repeated the sentence directly under it. */
-.sts-anledge{font-family:var(--disp);font-weight:600;font-size:clamp(19px,5.4vw,26px);line-height:1.24;letter-spacing:-.015em;
-  color:var(--ink);text-wrap:balance;
+.anl-card{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:14px;width:100%;
+  padding:20px 18px 18px;cursor:pointer;isolation:isolate;
+  border-radius:24px;
+  background:linear-gradient(163deg,rgba(var(--anrgb),.20),rgba(255,255,255,.05) 42%,rgba(0,0,0,.16));
+  box-shadow:inset 0 0 0 1px rgba(var(--anrgb),.4),inset 0 1px 0 rgba(255,255,255,.16),
+    0 26px 64px rgba(0,0,0,.46),0 0 60px rgba(var(--anrgb),.12);
+  transition:transform .16s var(--ease),box-shadow .2s var(--ease)}
+.anl-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;z-index:3;
+  background:linear-gradient(90deg,transparent,rgba(var(--anrgb),1) 22%,rgba(var(--anrgb),1) 78%,transparent)}
+.anl-card:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 1px rgba(var(--anrgb),.6),inset 0 1px 0 rgba(255,255,255,.2),0 30px 72px rgba(0,0,0,.5),0 0 76px rgba(var(--anrgb),.2)}
+.anl-card:active{transform:scale(.988)}
+.anl-card:focus-visible{outline:2px solid rgba(var(--anrgb),.85);outline-offset:3px}
+.anl-ghost{position:absolute;right:-22%;bottom:-18%;z-index:0;pointer-events:none;
+  color:rgba(var(--anrgb),.13);line-height:0;transform:rotate(-9deg)}
+.anl-ghost svg{width:240px;height:240px;display:block}
+.anl-foil{position:absolute;right:0;top:0;width:96px;height:96px;z-index:1;pointer-events:none;
+  background:linear-gradient(214deg,rgba(255,255,255,.20),transparent 58%);
+  clip-path:polygon(100% 0,0 0,100% 100%)}
+.anl-card>*:not(.anl-ghost):not(.anl-foil){position:relative;z-index:2}
+.anl-head{display:flex;align-items:center;gap:13px;min-width:0}
+.anl-sig{display:grid;place-items:center;width:54px;height:54px;flex-shrink:0;border-radius:17px;
+  color:var(--anc);background:rgba(5,7,16,.55);
+  box-shadow:inset 0 0 0 1.5px rgba(var(--anrgb),.55),0 8px 22px rgba(0,0,0,.4)}
+.anl-id{display:flex;flex-direction:column;gap:3px;min-width:0}
+.anl-id b{font-family:var(--disp);font-weight:800;font-size:clamp(30px,9vw,44px);letter-spacing:.05em;
+  text-transform:uppercase;color:#f8fbff;line-height:.94;text-shadow:0 10px 30px rgba(0,0,0,.4)}
+.anl-id i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--anc)}
+.anl-quote{position:relative;font-family:var(--disp);font-weight:600;font-size:clamp(18px,5.1vw,25px);
+  line-height:1.26;letter-spacing:-.015em;color:#eef4fc;text-wrap:balance;padding-left:15px;
   display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.sts.sts-anlspot{justify-content:safe center}
+.anl-quote::before{content:"";position:absolute;left:0;top:.2em;bottom:.16em;width:3px;border-radius:3px;
+  background:linear-gradient(180deg,rgba(var(--anrgb),1),rgba(var(--anrgb),.15))}
+.anl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:7px}
+.anl-stats>span{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:13px;padding:9px 4px;
+  min-width:0;background:rgba(5,7,16,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+.anl-stats i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:rgba(235,244,255,.56)}
+/* a full ledger reads "178–189–8": it must never wrap inside its tile */
+.anl-stats b{font-family:var(--mono);font-weight:700;font-size:clamp(12.5px,3.8vw,16px);letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums;color:#f6faff;white-space:nowrap;max-width:100%;overflow:hidden}
+.anl-stats .up b{color:var(--green)}
+.anl-stats .down b{color:var(--red)}
+.anl-form{display:flex;align-items:center;gap:9px;justify-content:center}
+.anl-form em{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:rgba(235,244,255,.5)}
+.anl-filed{font-family:var(--sans);font-size:12.5px;text-align:center;color:rgba(235,244,255,.6)}
+.anl-card .sts-openchip{align-self:center;margin-top:2px}
 
-/* ═══════════════ MORE MOVEMENT ON THE DECK ═══════════════
-   Leon: "more animation and movement… make it look even more compelling."
-   Slides no longer cross-fade in place: each one TRAVELS in the direction you asked for
-   (forward from the right, back from the left) with a whisper of scale, then its contents
-   rise in a stagger on top of that. Under prefers-reduced-motion it is a plain cut. */
-.st-stage.st-fwd .st-slide.on{animation:stSlideFwd .38s var(--ease-out) both}
-.st-stage.st-back .st-slide.on{animation:stSlideBack .38s var(--ease-out) both}
-@keyframes stSlideFwd{from{opacity:0;transform:translate3d(8%,0,0) scale(.98)}to{opacity:1;transform:none}}
-@keyframes stSlideBack{from{opacity:0;transform:translate3d(-8%,0,0) scale(.98)}to{opacity:1;transform:none}}
+/* ═════════════════════════ MOTION INVENTORY ═════════════════════════
+   Every moving thing in the deck, in one place, and every one of them is off under
+   prefers-reduced-motion (the block at the foot of this section).
+
+     TRAVEL     .st-slide entry — 360ms, direction of travel, a whisper of scale
+     RISE       slide contents, staggered 40ms apart on top of the travel
+     PER TYPE   pick eases up · win lands hard · news cross-dissolves · end card blooms
+     KEN BURNS  a full-bleed news photograph drifts 14s, 1.06× — never a loop that snaps
+     STAMP      the CASHED seal: land + two rings + a foil sweep every 4.6s
+     DRAW       the end card's diamond strokes itself in 900ms, then the core pops
+     PROGRESS   the active segment carries a light; completed segments hold at full
+     AMBIENT    crests float, desk rows breathe, the field's wash drifts
+
+   The budget is one transform/opacity per moving element and nothing that reads layout,
+   so the deck holds 60fps on a 375px phone. */
+.st-stage.st-fwd .st-slide.on{animation:stSlideFwd .36s var(--ease-out) both}
+.st-stage.st-back .st-slide.on{animation:stSlideBack .36s var(--ease-out) both}
+@keyframes stSlideFwd{from{opacity:0;transform:translate3d(7%,0,0) scale(.982)}to{opacity:1;transform:none}}
+@keyframes stSlideBack{from{opacity:0;transform:translate3d(-7%,0,0) scale(.982)}to{opacity:1;transform:none}}
+/* per-type arrivals: the register of the card decides how it enters */
+.st-slide[data-kind="win"].on .sts-core{animation:stEnterDrop .42s var(--ease-out) both}
+.st-slide[data-kind="summary"].on .sts-core{animation:stEnterBloom .55s var(--ease-out) both}
+.st-slide[data-kind="news"].on .sts-core{animation:stEnterLift .46s var(--ease-out) both}
+@keyframes stEnterDrop{from{opacity:0;transform:translateY(-10px) scale(.99)}to{opacity:1;transform:none}}
+@keyframes stEnterBloom{from{opacity:0;transform:scale(.955)}to{opacity:1;transform:none}}
+@keyframes stEnterLift{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .stories .st-fill{transition:box-shadow .3s ease}
 .stories .st-slide.on .sts-kick{animation:briefingRise .44s var(--ease-out) both}
-@media(prefers-reduced-motion:reduce){
-  .st-stage.st-fwd .st-slide.on,.st-stage.st-back .st-slide.on,
-  .cu-dia,.cu-ring,.sts-winmark,.sts-winstamp,.sts-hmark i{animation:none!important}
-}
 .stories .sts-crest{animation:storyLogoFloat calc(2.4s + var(--i,0)*.08s) ease-in-out infinite alternate}
 .stories .sts-drow,.stories .sts-strow,.stories .sts-voice{animation:storyAgentPulse 2.8s ease-in-out infinite alternate}
 @keyframes storyLogoFloat{from{transform:translateY(0) rotate(-1deg)}to{transform:translateY(-3px) rotate(1deg)}}
 @keyframes storyAgentPulse{from{transform:translateY(0);filter:saturate(1)}to{transform:translateY(-2px);filter:saturate(1.12)}}
+@media(prefers-reduced-motion:reduce){
+  .st-stage.st-fwd .st-slide.on,.st-stage.st-back .st-slide.on,
+  .st-slide.on .sts-core,.cu-svg path,.cu-halo,.cash-plate,.cash-ring,.cash-foil,
+  .sts-winmark,.sts-hmark i,.nws-shot{animation:none!important}
+  .cu-p1{stroke-dashoffset:0}.cu-p2{opacity:.82}.cu-p3{opacity:1}.cu-halo{opacity:.72}
+  .cash-plate{opacity:1;transform:rotate(-5.5deg);filter:none}
+  .cash-foil{display:none}
+}
 
 /* ══ THE 14-DAY WIDGET — the proof-of-life surface ══
    Leon: "make it genuinely compelling — this is the proof-of-life surface."
@@ -2808,7 +2965,7 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 /* — Masthead: confident nameplate + action row — */
 .ix-masthead{padding:6px 4px 4px;margin-bottom:20px;animation:rise .5s var(--ease) both}
 .ix-eyebrow{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc2)}
-.ix-mast-h{font-family:var(--serif)!important;font-weight:600;font-size:clamp(30px,5.6vw,52px);line-height:1.02;letter-spacing:-.028em;color:var(--ink);margin-top:8px}
+.ix-mast-h{font-family:var(--disp)!important;font-weight:700;font-size:clamp(30px,5.6vw,52px);line-height:1.02;letter-spacing:-.028em;color:var(--ink);margin-top:8px}
 .ix-mast-sub{font-size:16px;line-height:1.55;color:var(--ink2);max-width:660px;margin-top:12px}
 .ix-mast-act{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .ix-btn{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;letter-spacing:.02em;color:var(--ink);background:var(--paper);border:1px solid var(--line2);border-radius:11px;padding:10px 16px;cursor:pointer;box-shadow:var(--e0);transition:transform .18s var(--ease),box-shadow .2s ease}
@@ -3222,22 +3379,31 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
   display:flex;align-items:stretch;justify-content:space-around;gap:0;
   width:100%;max-width:520px;min-height:var(--dock-h);padding:0 5px;
   border-radius:calc(var(--dock-h) / 2);
-  /* a whisper of the brand's warmth in the material, so the capsule reads as chrome of the
-     same family as the masthead rather than as a neutral pane of frosted glass */
-  background:linear-gradient(180deg,rgba(255,252,244,.54),rgba(247,244,236,.36));
-  -webkit-backdrop-filter:saturate(200%) brightness(106%) blur(30px);
-  backdrop-filter:saturate(200%) brightness(106%) blur(30px);
+  /* ROUND 3 — SMOKED GLASS, NOT WHITE GLASS.
+     Leon: "let's have bottom bar glass a bit more translucent" and "change background colour
+     of it to be a tiny tiny bit more darker for contrast."
+
+     Two changes, together: the fill drops from .54/.36 to .37/.26 so materially more of the
+     board reads through the blur, AND the tint itself moves off white onto a faint warm
+     NEUTRAL-DARK. The capsule now separates from a white page by being very slightly deeper
+     than it — smoked glass — instead of by being more opaque, which is what let the alpha
+     come down in the first place. The legibility work moves to the filter: saturation and
+     blur both go up, so the material stays optically dense while being more see-through.
+     A whisper of smoke, not a dark bar. */
+  background:linear-gradient(180deg,rgba(104,100,90,.30),rgba(78,76,70,.21));
+  -webkit-backdrop-filter:saturate(215%) brightness(104%) blur(34px);
+  backdrop-filter:saturate(215%) brightness(104%) blur(34px);
   border:0;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.95),
-    inset 0 0 0 .5px rgba(var(--rimc),.13),
-    inset 0 -1px 0 rgba(255,255,255,.45),
-    0 2px 6px -2px rgba(var(--rimc),.14),
-    0 16px 38px -10px rgba(var(--rimc),.26);
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 0 0 .5px rgba(var(--rimc),.16),
+    inset 0 -1px 0 rgba(255,255,255,.4),
+    0 2px 6px -2px rgba(var(--rimc),.16),
+    0 16px 38px -10px rgba(var(--rimc),.3);
   animation:dockIn .34s var(--ease-out) both}
 /* the specular sweep — the detail that separates "liquid glass" from "translucent box" */
 .dock::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
-  background:linear-gradient(180deg,rgba(255,255,255,.60),rgba(255,255,255,0) 52%);
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 52%);
   mix-blend-mode:overlay}
 @keyframes dockIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .dock-item{position:relative;flex:1 1 0;min-width:0;max-width:120px;
@@ -3320,27 +3486,16 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
   .dock-lab{font-size:11px}
 }
 @media (prefers-reduced-motion:reduce){.dock{animation:none}.dock-item,.dock-item.main{transition:none}}
-/* THE DARK MATERIAL. The deck is a dark surface, so the bar takes iOS's dark glass there —
-   same four layers, inverted: the specular rim goes white-at-low-alpha, the tint goes deep,
-   and the ambient drop disappears (a dark pane on a dark page needs a rim, not a shadow). */
-body.stories-on .dock{
-  background:linear-gradient(180deg,rgba(30,37,52,.52),rgba(12,16,26,.38));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.22),
-    inset 0 0 0 .5px rgba(255,255,255,.10),
-    inset 0 -1px 0 rgba(255,255,255,.07),
-    0 18px 40px -12px rgba(0,0,0,.62)}
-body.stories-on .dock::before{background:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,0) 50%)}
-body.stories-on .dock-item{color:rgba(232,240,250,.80)}
-body.stories-on .dock-item.on{color:#f5be42}
-body.stories-on .dock-item.on::before{background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.05));box-shadow:inset 0 .5px 0 rgba(255,255,255,.2)}
-body.stories-on .dock-item.main .dock-ic::after{
-  background:linear-gradient(180deg,rgba(52,60,78,.86),rgba(26,32,46,.72));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),inset 0 0 0 .5px rgba(255,255,255,.10),0 10px 24px -8px rgba(0,0,0,.6)}
-body.stories-on .dock-item.main.on .dock-ic::after{
-  background:linear-gradient(180deg,rgba(246,199,69,.96),rgba(211,155,32,.86));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 0 .5px rgba(246,199,69,.5),0 12px 26px -8px rgba(246,199,69,.4)}
-body.stories-on .dock-item.main.on .dock-ic{color:#3a2a05}
+/* NO APP CHROME WHILE IMMERSED — the Instagram rule.
+   Leon, with an IG story as the explicit reference: "the two instructions on the story are
+   covered by the bottom bar… let's just remove the bar."
+
+   Round 2 kept the floating dock visible on the deck on the argument that stories are a TAB,
+   not a sheet. In practice the bar ate the foot of every slide — the hint, the primary
+   action, the end card's door — and it broke the immersion that a story deck exists to
+   create. The whole dark-glass restyle that lived here is gone with it: the deck now has
+   exactly two pieces of chrome, both at the top, both Instagram's — segmented progress and a
+   compact identity row with a 39px X on the right. The X (and the end card) put the bar back.
 /* content must clear the bar — the pill is inset from the bottom now, so this grew with it */
 /* nothing may sit under the capsule at the bottom of a scroll: its full footprint is the
    bar height + its bottom inset + a breath of clearance */
@@ -3389,10 +3544,16 @@ body.sheet-open .dock{pointer-events:none}
    70% over the last 12% of its height, so tiles ghosted through the bar as they scrolled
    under it. Content passes beneath, never through. z 55 = below the header (65), sheets
    (90+) and the dock (340); above the tiles. */
-.games-chrome{position:sticky;top:calc(var(--hdr-h,0px) - 1px);z-index:55;padding-block:0;
+.games-chrome{position:sticky;top:var(--hdr-h,0px);z-index:55;padding-block:0;
   margin-inline:calc(-1 * max(18px,var(--sal))) calc(-1 * max(18px,var(--sar)));
   padding-inline:max(18px,var(--sal)) max(18px,var(--sar));
   background:var(--paper);box-shadow:0 1px 0 var(--line2),0 10px 16px -14px var(--sh5)}
+/* the seam-cover: a 1px strip drawn ABOVE the chrome in its own colour, so the pinned bar
+   meets the masthead with no hairline and without needing a 1px offset that moves. */
+.games-chrome::before,.subhead::before{content:"";position:absolute;left:0;right:0;top:-1.5px;height:2px;
+  background:var(--paper);pointer-events:none}
+.subhead::before{background:var(--chrome-bg)}
+.games-chrome .subhead::before{display:none}
 .games-chrome .datebar.lead{margin-block:0;padding-block:3px;
   margin-inline:calc(-1 * max(18px,var(--sal))) calc(-1 * max(18px,var(--sar)));
   padding-inline:max(18px,var(--sal)) max(18px,var(--sar));
@@ -3561,8 +3722,10 @@ input[type=text],input[type=email],input[type=date],input[type=tel]{color-scheme
    segments, tap zones, hold-to-pause, swipe, reduced-motion — is unchanged. */
 body.stories-on{overflow:hidden}
 body.stories-on header#app-header{opacity:0;pointer-events:none;transform:translateY(-8px)}
-/* the stories deck is not a sheet — it is a full-screen TAB surface, and the bar stays. */
-body.stories-on:not(.sheet-open) .dockwrap{opacity:1;pointer-events:auto;transform:none}
+/* THE BAR GOES. See the note by the deleted dark-glass dock block above: an immersive story
+   deck has no app chrome, and the bar was covering the instructions, the actions and the end
+   card's door. Leaving the deck (the X, or the end card) brings it straight back. */
+body.stories-on .dockwrap{opacity:0;pointer-events:none;transform:translateY(16px)}
 body.stories-on main{position:fixed;inset:0;z-index:399;width:100vw;height:100dvh;margin:0;padding:0 !important;max-width:none;overflow:hidden}
 body.stories-on #today-view{animation:none!important;transform:none!important}
 
@@ -3578,7 +3741,11 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .st-fill{display:block;height:100%;width:0;border-radius:2px;background:var(--ink)}
 .st-bar{display:flex;align-items:center;gap:10px}
 .st-brand{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
-.st-brand .st-dia{color:var(--gold)}
+/* the deck's identity row and every slide eyebrow carry the SAME drawn mark as the masthead
+   — the "◆" glyph they used before was a typographic bullet standing in for a logo. */
+.st-brand .st-dia,.kick-dia{display:inline-block;flex-shrink:0;background:var(--gold);color:transparent;
+  -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
+.st-brand .st-dia{width:13px;height:13px}
 .st-date{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:500;font-size:12px;color:var(--ink3)}
 /* THE DOOR OUT — 40px, top right, and unmistakably an X */
 .st-gridbtn{pointer-events:auto;margin-left:auto;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;cursor:pointer;
@@ -3590,32 +3757,64 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .st-slide.on{opacity:1;pointer-events:auto}
 @media(prefers-reduced-motion:reduce){.st-slide{transition:none}}
 /* the tap-zone hint: shown once at the foot of the deck, never animated */
-.st-hint{position:absolute;left:0;right:0;bottom:calc(var(--sab) + 76px);z-index:7;text-align:center;pointer-events:none}
+/* THE HINT IS READABLE AGAIN. It always taught the gesture from the foot of the deck, and
+   the tab bar sat exactly on top of it (Leon: "the two instructions on the story are covered
+   by the bottom bar… let's just remove the bar"). With the bar gone the foot is clear, so it
+   stays where a story hint belongs — and it now retires on a timer as well as on the first
+   advance, the way Instagram's does. */
+.st-hint{position:absolute;left:0;right:0;bottom:calc(var(--sab) + 14px);z-index:7;text-align:center;pointer-events:none}
 .st-hint span{font-family:var(--sans);font-size:11px;letter-spacing:.03em;color:var(--ink4);
   background:var(--paper);border:1px solid var(--line3);border-radius:999px;padding:5px 12px}
 
-/* one slide = a full page of paper, content centred in a readable column */
-/* TOP-ALIGNED, NOT CENTRED. Centring a short slide inside a full-screen page floats it
-   as an island with ~200px of dead air above the kicker — and the deck's slides vary
-   enormously in height (a locked pick against a seven-row standings table), so centring
-   also made every advance jump the composition. Each slide now starts under the bar and
-   reads down, the way a page does. */
+/* ═══════════ ONE SLIDE = ONE PAGE, ON A THREE-ZONE GRID ═══════════
+   ROUND 3. Round 2 made every slide a flat flex column, top-aligned, and then hand-tuned
+   `justify-content:safe center` onto four of the eight types. The result was that the
+   eyebrow, the headline and the action landed at a different y on every card, so advancing
+   the deck jumped the composition and short slides floated as islands in 400px of dead air.
+
+   Every slide now uses the SAME grid, and the grid is what makes the deck feel designed:
+
+     ZONE 1  .sts-kick   the eyebrow. Same type, same tracking, same y. Always.
+     ZONE 2  .sts-core   the composition. flex:1 0 auto, so it CENTRES in the space it is
+                         given and GROWS past it when the content is genuinely tall —
+                         which is what keeps the essentials above the fold on a long
+                         standings card instead of centring them off the top of the page.
+     ZONE 3  .sts-foot   the action. Pinned to the bottom safe area on every card, so the
+                         primary control never moves between slides.
+
+   Safe areas are the same on all four edges of every card, so nothing in the deck can ever
+   collide with the briefing bar at the top or the floating dock at the foot. */
 .sts{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-start;gap:15px;
   padding:calc(var(--sat) + 78px) max(22px,var(--sal)) calc(var(--sab) + 62px) max(22px,var(--sar));
-  overflow-y:auto;overflow-x:hidden;max-width:620px;margin:0 auto}
+  overflow-y:auto;overflow-x:hidden;max-width:620px;margin:0 auto;
+  overscroll-behavior:contain;scrollbar-width:none}
 .sts::-webkit-scrollbar{display:none}
+.sts-core{flex:1 0 auto;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:15px}
+.sts-foot{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:4px}
 .sts-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background:var(--bg)}
 .sts>*:not(.sts-bg):not(.sts-photo):not(.sts-scrim){position:relative;z-index:2}
 /* TIER is one hairline rule at the top of the page, not a bloom behind the type */
-.sts-pick .sts-bg::before{content:"";position:absolute;left:0;right:0;top:0;height:3px}
+.sts-pick .sts-bg::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;z-index:5}
 .sts-pick.tier-gold .sts-bg::before{background:var(--gold)}
 .sts-pick.tier-green .sts-bg::before{background:var(--green)}
 .sts-pick.tier-blue .sts-bg::before{background:var(--blue)}
-.sts-kick{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
-.sts-when{margin-left:auto;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--ink3)}
+.sts-kick{flex-shrink:0;display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.kick-dia{width:10px;height:10px;line-height:0}
+.kick-lab{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sts-when{margin-left:auto;flex-shrink:0;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--ink3)}
 .sts-when.live{display:inline-flex;align-items:center;gap:5px;color:var(--red);font-family:var(--disp);font-weight:700}
 .sts-when.live .livedot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite}
 .sts-mu{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+/* THE MATCHUP AS A RAIL. On a pick or a winner the CALL is the dominant element and the
+   matchup is the caption under it — at the old 64px crest it competed, and the slide had
+   no focal point at all. */
+.sts-mu.rail{gap:10px}
+.sts-mu.rail .sts-crest{width:44px;height:44px;border-radius:14px}
+.sts-mu.rail .sts-crest img,.sts-mu.rail .sts-crest .crest{width:29px;height:29px}
+.sts-mu.rail .sts-team b{font-size:14px;letter-spacing:.06em}
+.sts-mu.rail .sts-team i{font-size:11px}
+.sts-mu.rail .sts-team{gap:5px}
+.sts-mu.rail .sts-score{font-size:23px}
 .sts-team{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
 .sts-team b{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:.03em;color:var(--ink)}
 .sts-team i{font-style:normal;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;color:var(--ink3)}
@@ -3646,31 +3845,12 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .sts-lockwrap{display:flex;flex-direction:column;align-items:center;gap:11px}
 .st-cta{align-self:center;display:inline-flex;align-items:center;gap:7px;border:0;cursor:pointer;
   background:var(--ink);color:var(--paper);font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.01em;
-  border-radius:999px;padding:12px 22px;box-shadow:var(--e1);transition:.18s var(--ease)}
+  border-radius:999px;padding:13px 24px;box-shadow:var(--e1);transition:.18s var(--ease)}
 .st-cta:hover{transform:translateY(-1px);box-shadow:var(--e2)}
 .st-cta:active{transform:translateY(0) scale(.98)}
 .st-cta.lock{background:var(--ink);color:var(--paper)}
 .st-cta.lock svg{color:var(--goldlight,#f0c34a)}
 .st-cta svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-/* news slide: the photo becomes a real inset card, not a full-bleed upscale */
-.sts-news{justify-content:center}
-/* ══ THE STORY IMAGE — aspect-aware, never a beheading ══
-   Leon: "images get cut off."  A single fixed height with object-fit:cover and a centre
-   origin crops the middle band out of every landscape photo, which on a photo of a person
-   removes their head. The two classes below are applied on load from the image's own
-   aspect ratio (see storyNewsSlide):
-     .fit-tall — portrait/square, cropped with the focal point at 30% from the top, where a
-                 face sits in almost every sports wire photo
-     .fit-wide — landscape, shown WHOLE on a brand-tinted letterbox field. A wide photo
-                 complete beats a wide photo partial.
-   An ultra-wide or tiny source is removed by the loader; the gradient card is better. */
-.sts-photo{position:relative;z-index:2;width:100%;border-radius:var(--r-md);box-shadow:var(--e1);opacity:1}
-.sts-photo.fit-tall{max-height:38vh;object-fit:cover;object-position:50% 30%}
-.sts-photo.fit-wide{aspect-ratio:16/9;max-height:34vh;object-fit:contain;
-  background:linear-gradient(150deg,rgba(var(--goldc),.14),rgba(var(--rimc),.10))}
-.sts-scrim{display:none}
-.sts-newsbody{position:relative;z-index:2;display:flex;flex-direction:column;gap:12px}
-.sts-newsbody .st-cta{align-self:flex-start}
 .sts-head{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.1;letter-spacing:-.03em;color:var(--ink)}
 .sts-head.sm{font-size:22px;text-align:center}
 .sts-dek{font-family:var(--sans);font-size:16px;line-height:1.55;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
@@ -3692,6 +3872,7 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .sts-rres.lost{color:#fff;background:var(--red)}
 .sts-rres.pushed{color:var(--push);background:var(--pushbg)}
 .sts-srank{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:11px;color:var(--ink3);background:var(--sunken);border-radius:5px;padding:2px 6px;flex-shrink:0}
+.sts-lnrows{display:flex;flex-direction:column;gap:8px}
 .sts-skel{gap:12px;justify-content:center;align-items:flex-start}
 .sts-skel .sk-line{height:16px;display:block}
 
@@ -3758,24 +3939,29 @@ body.stories-on{background:#050710}
   border:1px solid rgba(255,255,255,.6) !important;
   box-shadow:0 10px 26px rgba(0,0,0,.34),inset 0 1px 0 #fff !important}
 .stories .sts-crest .crest{color:#1b2432}
+/* THE HOUSE ATMOSPHERE, now that every slide brings its own field: a single slow sweep and
+   a vignette, and nothing else. Round 2 painted a second grid and a second wash here, which
+   doubled up with the per-slide field and turned every card the same muddy grey. */
 .stories::before{content:"";position:absolute;inset:-18%;z-index:0;pointer-events:none;
-  background:
-    linear-gradient(115deg,rgba(61,179,255,.18),transparent 34%,rgba(245,190,66,.12) 64%,transparent 82%),
-    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 18px);
-  opacity:.72;animation:briefingSweep 13s ease-in-out infinite alternate}
+  background:linear-gradient(115deg,rgba(61,179,255,.10),transparent 38%,rgba(245,190,66,.07) 66%,transparent 84%);
+  opacity:.7;animation:briefingSweep 15s ease-in-out infinite alternate}
 .stories::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.045),transparent 18%,transparent 78%,rgba(0,0,0,.48)),
-    repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 6px);
-  mix-blend-mode:screen;opacity:.6}
+  background:radial-gradient(140% 92% at 50% 42%,transparent 46%,rgba(0,0,0,.5))}
 @keyframes briefingSweep{from{transform:translate3d(-4%,-2%,0) rotate(-2deg)}to{transform:translate3d(4%,2%,0) rotate(2deg)}}
-.stories .st-top{padding:calc(var(--sat) + 4px) max(12px,var(--sar)) 10px max(12px,var(--sal));
+.stories .st-top{padding:calc(var(--sat) + 9px) max(12px,var(--sar)) 11px max(12px,var(--sal));
   background:linear-gradient(180deg,rgba(5,7,16,.98) 0%,rgba(5,7,16,.76) 64%,transparent 100%)}
-.stories .st-progress{gap:3px;margin-bottom:8px}
-.stories .st-seg{height:3px;background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
-.stories .st-fill{background:linear-gradient(90deg,#7ddcff,#f5be42);box-shadow:0 0 12px rgba(125,220,255,.62)}
+/* PROGRESS THAT READS AS PROGRESS, NOT AS A DASHED BORDER. Twenty-four segments across a
+   375px phone is 11px each: at 3px tall, flush to the top edge, they read as a hairline
+   rule. They now sit 9px down, are 2.5px of soft rail, and only THREE states are visible —
+   spent (a calm white), running (a lit gradient with a leading glow), and ahead (a whisper).
+   That is what makes it feel native rather than decorative. */
+.stories .st-progress{gap:3px;margin-bottom:10px}
+.stories .st-seg{height:2.5px;border-radius:2px;background:rgba(255,255,255,.16)}
+.stories .st-fill{border-radius:2px;background:linear-gradient(90deg,#cfe9ff,#f5be42);
+  box-shadow:0 0 10px rgba(245,190,66,.5)}
 .stories .st-bar{gap:8px}
 .stories .st-brand{color:#fff;text-shadow:0 0 18px rgba(125,220,255,.42)}
-.stories .st-brand .st-dia{color:#f5be42;filter:drop-shadow(0 0 9px rgba(245,190,66,.6));animation:briefingPulse 2.8s ease-in-out infinite}
+.stories .st-brand .st-dia{background:#f5be42;filter:drop-shadow(0 0 9px rgba(245,190,66,.55))}
 .stories .st-date{color:rgba(235,244,255,.66)}
 .st-sharebtn,.stories .st-gridbtn{pointer-events:auto;display:grid;place-items:center;width:39px;height:39px;border-radius:50%;cursor:pointer;
   border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);color:#f8fbff;
@@ -3804,7 +3990,7 @@ body.stories-on{background:#050710}
 /* THE CONTENT COLUMN reads as a control: a pressable card with a named exit chip. */
 .sts-open{position:relative;display:flex;flex-direction:column;gap:14px;width:100%;min-width:0;
   border-radius:22px;padding:16px 16px 14px;cursor:pointer;text-align:inherit;
-  background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);
+  background:rgba(255,255,255,.032);box-shadow:inset 0 0 0 1px rgba(255,255,255,.075);
   transition:background .18s var(--ease),box-shadow .18s var(--ease),transform .14s var(--ease)}
 .sts-open:hover{background:rgba(255,255,255,.075);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
 .sts-open:active{transform:scale(.988)}
@@ -3815,19 +4001,168 @@ body.stories-on{background:#050710}
   background:rgba(255,255,255,.09);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .sts-openchip i{font-style:normal;font-size:13px;line-height:1}
 .sts-win .sts-open,.sts-hype .sts-open,.sts-pick .sts-open{align-items:center}
-.stories .st-hint{bottom:calc(var(--sab) + 76px);transition:opacity .3s ease}
+.stories .st-hint{bottom:calc(var(--sab) + 14px);transition:opacity .45s ease;animation:hintOut .5s ease 6.5s both}
+@keyframes hintOut{to{opacity:0}}
 /* the tap-zone hint teaches the gesture once, on the first card, then gets out of the way —
    it was overlapping the foot of every long slide */
 .stories.hint-off .st-hint{opacity:0}
 .stories .st-hint span{color:rgba(235,244,255,.66);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);box-shadow:0 10px 24px rgba(0,0,0,.25)}
-.stories .sts{z-index:2;max-width:680px;padding:calc(var(--sat) + 54px) max(22px,var(--sal)) calc(var(--sab) + 128px) max(22px,var(--sar));gap:16px}
+.stories .sts{z-index:2;max-width:680px;
+  padding:calc(var(--sat) + 76px) max(20px,var(--sal)) calc(var(--sab) + 26px) max(20px,var(--sar));gap:18px}
+.stories .sts-core{gap:16px}
+
+/* ════════════════════════════ THE FIELD ════════════════════════════
+   The designed ground under every slide, and the whole answer to "the images kind of get
+   cut off / it should look more compelling". Four decorative layers, no pointer events,
+   one per-type colour pair (--fldc / --fld2):
+
+     .fld-wash    the slide's colour bloom — two soft radials, gently drifting
+     .fld-mark    the house diamond, ghosted, bled off the lower-right corner at 92% of
+                  the slide width. THIS IS THE FALLBACK IMAGE: a slide with no photograph
+                  is not empty, it is a brand field with the sigil struck through it.
+     .fld-rule    the editorial rule grid — the paper the page is printed on
+     .fld-grain   an SVG-noise pass so no gradient in the deck can band
+
+   A slide with a photograph pushes it into the same layer (.sts-shotwrap) and adds
+   .fld-scrim, so the photo and the field are one system rather than two. */
 .stories .sts-bg{background:transparent}
+.sts-field{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  --fldc:125,220,255;--fld2:245,190,66}
+/* each layer owns its own box — a shared `inset:0` here would out-specify every one of
+   them (a class+type selector beats a bare class) and pin the sigil to the whole slide */
+.sts-field>span{position:absolute;pointer-events:none}
+.sts-field .fld-wash,.sts-field .fld-mark,.sts-field .fld-rule,
+.sts-field .fld-grain{display:block}
+.fld-wash{inset:-10%;background:
+  radial-gradient(78% 46% at 6% 2%,rgba(var(--fldc),.34),transparent 66%),
+  radial-gradient(70% 44% at 98% 98%,rgba(var(--fld2),.26),transparent 70%);
+  animation:fldDrift 18s ease-in-out infinite alternate}
+@keyframes fldDrift{from{transform:translate3d(-1.4%,-1%,0) scale(1.01)}to{transform:translate3d(1.4%,1.2%,0) scale(1.05)}}
+.fld-mark{right:-32%;bottom:-22%;width:104%;aspect-ratio:1;
+  color:rgba(var(--fldc),.15);line-height:0;transform:rotate(-7deg)}
+.fld-mark svg{width:100%;height:100%;display:block}
+.fld-rule{inset:0;background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.028) 0 1px,transparent 1px 38px),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 38px);
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.95),rgba(0,0,0,.22) 62%,transparent);
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.95),rgba(0,0,0,.22) 62%,transparent)}
+.fld-grain{inset:0;opacity:.22;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.5'/></svg>");
+  background-size:140px 140px}
+/* ONE COLOUR PAIR PER REGISTER — you know what kind of card you are on before you read it */
+.f-pick{--fldc:110,161,255;--fld2:125,220,255}
+.f-pickgold{--fldc:245,190,66;--fld2:125,220,255}
+.f-pickgreen{--fldc:47,214,160;--fld2:110,161,255}
+.f-win{--fldc:47,214,160;--fld2:245,190,66}
+.f-news{--fldc:125,220,255;--fld2:167,139,250}
+.f-desk{--fldc:110,161,255;--fld2:63,208,240}
+.f-desksplit{--fldc:255,77,104;--fld2:110,161,255}
+.f-lastnight{--fldc:167,139,250;--fld2:245,190,66}
+.f-standings{--fldc:63,208,240;--fld2:110,161,255}
+.f-patterns{--fldc:167,139,250;--fld2:63,208,240}
+.f-recap{--fldc:47,214,160;--fld2:110,161,255}
+.f-recapneg{--fldc:147,161,184;--fld2:110,161,255}
+.f-hype{--fldc:63,208,240;--fld2:245,190,66}
+.f-end{--fldc:245,190,66;--fld2:125,220,255}
+/* the spotlight field borrows the analyst's own accent — the card and its ground agree */
+.sts-anlspot .f-anl{--fldc:var(--anrgb,180,157,255);--fld2:245,190,66}
+
+/* ══════════════ THE NEWS SLIDE — AN APP-STORE "TODAY" CARD ══════════════
+   Leon: "the news image and the way the headline and click-to-read button really doesn't
+   feel modern — find a way to make it feel way more modern iOS style."
+
+   The dated thing was the ANATOMY, not the picture: photo, then headline, then a boxed
+   button under it — a web article teaser. This is the Apple News / App Store Today card:
+
+     · ONE large card, continuous corners, floating on the field. No border anywhere; the
+       separation comes from a deep soft shadow and a hairline of inner light, which is how
+       iOS separates a card from its background.
+     · The photograph FILLS the card (or bands the top of it at its own aspect — the crop
+       system is unchanged), and a gradient scrim rises from the foot of the card.
+     · The kicker is quiet small caps, the headline sits directly ON the image at display
+       weight with tight leading, the timestamp is a whisper.
+     · NO BUTTON. The card is the tap target (the standing gesture rule) and the affordance
+       is a chevron text-link — exactly what Apple ships.
+
+   `border-radius:34px` with a 1.6:1 ratio between the outer and the padding approximates a
+   continuous (squircle) corner closely enough that the difference is invisible at 375px. */
+.stories .sts-news .sts-core{padding:0;gap:0}
+.nws-card{position:relative;flex:1 0 auto;display:flex;flex-direction:column;justify-content:flex-end;
+  min-height:0;overflow:hidden;isolation:isolate;cursor:pointer;padding:0;gap:0;
+  border-radius:34px;background:linear-gradient(168deg,#141b27,#0a0e18);
+  box-shadow:0 34px 74px -18px rgba(0,0,0,.78),0 6px 22px -8px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.09);
+  transition:transform .18s var(--ease-out)}
+.nws-card:active{transform:scale(.982)}
+@media(hover:hover){.nws-card:hover{transform:translateY(-2px)}}
+.nws-card:focus-visible{outline:2px solid rgba(125,220,255,.8);outline-offset:3px}
+.nws-shotwrap{position:absolute;inset:0;z-index:0;display:block;overflow:hidden}
+.nws-shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 26%;
+  opacity:0;transition:opacity .55s var(--ease)}
+/* PORTRAIT / SQUARE → fills the card. Cropped by definition (the card is taller than 3:4),
+   so this is the one that earns the ken-burns drift. */
+.nws-card.foto-bleed .nws-shot{opacity:1;animation:kenBurns 16s ease-out both}
+@keyframes kenBurns{from{transform:scale(1.07) translate3d(.9%,-.7%,0)}to{transform:none}}
+/* WIDE → a band across the top of the card at the photo's OWN aspect: full width, no side
+   crop, no letterbox bars, and no ken-burns (a 6% scale is a 6% crop, and the band's whole
+   promise is that the picture is shown whole). Its lower edge dissolves into the card.
+   The band is IN FLOW here, not absolute, so the story sits directly beneath it and the card
+   shrink-wraps to band + story — which is what stops a wide photo leaving 300px of hole
+   between the picture and the headline. The card then centres in the slide. */
+.nws-card.foto-band{flex:0 0 auto;justify-content:flex-start}
+.nws-card.foto-band .nws-shotwrap{position:relative;inset:auto;flex:0 0 auto;width:100%;
+  aspect-ratio:var(--shot-ar,1.6);max-height:56dvh;
+  -webkit-mask-image:linear-gradient(180deg,#000 78%,transparent);mask-image:linear-gradient(180deg,#000 78%,transparent)}
+.nws-card.foto-band .nws-shot{opacity:1;object-position:50% 40%}
+.nws-card.foto-band .nws-body{padding-top:6px;margin-top:-8%}
+/* the scrim is authored for the worst case — a blown-out white sky — not tuned to today's
+   picture, so the headline clears contrast over ANY photograph the wire sends */
+.nws-scrim{position:absolute;inset:0;z-index:1;display:block;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(6,9,18,.55) 0,transparent 22%,transparent 34%,
+      rgba(6,9,18,.62) 58%,rgba(6,9,18,.9) 76%,rgba(6,9,18,.97) 100%),
+    linear-gradient(66deg,rgba(6,9,18,.42),transparent 62%)}
+.nws-card.foto-band .nws-scrim{background:
+  linear-gradient(180deg,rgba(6,9,18,.5) 0,transparent 20%,rgba(6,9,18,.5) 46%,rgba(6,9,18,.9) 62%,rgba(6,9,18,.97) 100%)}
+/* NO PHOTOGRAPH IS ALSO A DESIGN. The card fills with the brand field, the league is set
+   as a ghosted masthead across it, and the house diamond is struck through the corner. */
+.nws-card.nofoto{background:
+  radial-gradient(90% 52% at 8% 4%,rgba(var(--fldc,125,220,255),.30),transparent 66%),
+  radial-gradient(80% 50% at 98% 96%,rgba(var(--fld2,167,139,250),.24),transparent 70%),
+  linear-gradient(168deg,#141b27,#080c15)}
+.nws-league{position:absolute;left:0;right:0;top:16%;z-index:0;display:none;
+  font-family:var(--disp);font-weight:800;font-size:clamp(56px,19vw,132px);line-height:.78;
+  letter-spacing:-.055em;text-align:center;white-space:nowrap;pointer-events:none;
+  color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.16);
+  text-shadow:0 0 70px rgba(var(--fldc,125,220,255),.2)}
+.nws-card.nofoto .nws-league{display:block}
+.nws-body{position:relative;z-index:2;display:flex;flex-direction:column;gap:10px;
+  padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px) * 0)}
+/* quiet small caps, then the one dominant element, then a whisper */
+.nws-kick{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:700;
+  font-size:10.5px;letter-spacing:.19em;text-transform:uppercase;color:rgba(236,244,255,.72)}
+.nws-kick b{font-weight:800;color:rgba(245,190,66,.96)}
+.nws-kick em{font-style:normal;font-family:var(--sans);font-weight:600;font-size:11.5px;letter-spacing:.02em;
+  text-transform:none;font-variant-numeric:tabular-nums;color:rgba(236,244,255,.56)}
+.nws-kick em::before{content:"·";margin-right:8px;color:rgba(236,244,255,.34)}
+.stories .nws-card .sts-head{font-size:clamp(30px,8.6vw,50px);line-height:1.015;letter-spacing:-.028em;
+  font-weight:700;text-wrap:balance;text-shadow:0 14px 40px rgba(0,0,0,.6)}
+.stories .nws-card .sts-dek{font-size:15.5px;line-height:1.5;color:rgba(236,244,255,.78);
+  -webkit-line-clamp:3;text-shadow:0 8px 22px rgba(0,0,0,.5)}
+/* THE AFFORDANCE IS A TEXT LINK, NOT A BUTTON */
+.nws-read{display:inline-flex;align-items:center;gap:3px;margin-top:2px;
+  font-family:var(--disp);font-weight:700;font-size:14.5px;letter-spacing:.005em;color:#7ddcff}
+.nws-read i{display:inline-flex;line-height:0;transition:transform .18s var(--ease-out)}
+.nws-card:active .nws-read i{transform:translateX(3px)}
+@media(hover:hover){.nws-card:hover .nws-read i{transform:translateX(3px)}}
+
 .stories .sts-pick .sts-bg::before{height:4px;box-shadow:0 0 18px currentColor}
 .stories .sts-kick,.stories .sts-when,.stories .sts-substat,.stories .sts .ps-signals,.stories .sts .pk-made{color:rgba(235,244,255,.68)}
+.stories .kick-dia{background:#f5be42;filter:drop-shadow(0 0 7px rgba(245,190,66,.55))}
 .stories .sts-head,.stories .sts-team b,.stories .sts-score,.stories .sts-bigwl,.stories .sts-rmu,.stories .sts-smu,.stories .sts-strec b,.stories .sts-stnm{color:#f8fbff}
-.stories .sts-head{font-size:clamp(30px,8vw,54px);line-height:1.02;letter-spacing:0;text-wrap:balance;text-shadow:0 12px 34px rgba(0,0,0,.38)}
+.stories .sts-head{font-size:clamp(31px,8.4vw,54px);line-height:1.02;letter-spacing:-.018em;text-wrap:balance;text-shadow:0 12px 34px rgba(0,0,0,.5)}
 .stories .sts-head.sm{font-size:clamp(24px,6vw,38px)}
-.stories .sts-dek{color:rgba(235,244,255,.76);font-size:16px}
+.stories .sts-dek{color:rgba(235,244,255,.8);font-size:16px;-webkit-line-clamp:3}
 .stories .sts-rrow,.stories .sts-srow,.stories .sts-strow{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 30px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.13)}
 .stories .sts-team i,.stories .sts-rside,.stories .sts-sside,.stories .sts-strank,.stories .sts-strow2 i{color:rgba(235,244,255,.62)}
 .stories .sts-call{font-size:clamp(40px,13vw,72px);color:#f8fbff;text-shadow:0 0 26px rgba(125,220,255,.24)}
@@ -3835,24 +4170,11 @@ body.stories-on{background:#050710}
 .stories .sts-meta .pgrade,.stories .sts .pk-count,.stories .sts-srank{background:rgba(255,255,255,.1);color:rgba(245,251,255,.82)}
 .stories .st-cta{background:linear-gradient(135deg,#f8fbff,#cde9ff);color:#07101d;box-shadow:0 14px 34px rgba(125,220,255,.22),inset 0 1px 0 rgba(255,255,255,.8)}
 .stories .st-cta.lock{background:linear-gradient(135deg,#f5be42,#ffe08a);color:#090b14}
-.stories .sts-news .sts-bg::before{content:"";position:absolute;inset:72px 16px auto;height:44vh;border-radius:24px;
-  background:linear-gradient(135deg,rgba(125,220,255,.18),rgba(245,190,66,.12),rgba(255,255,255,.05));
-  filter:blur(26px);opacity:.72;animation:briefingGlow 5.8s ease-in-out infinite alternate}
-.stories .sts-photo{border-radius:18px;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 52px rgba(0,0,0,.38);
-  animation:briefingPhoto 7s ease-in-out infinite alternate;transform-origin:center}
-.stories .sts-photo.fit-tall{max-height:42vh}
-.stories .sts-photo.fit-wide{max-height:32vh;background:linear-gradient(150deg,rgba(246,199,69,.16),rgba(255,255,255,.05))}
-@keyframes briefingPhoto{from{transform:translateY(0) scale(1)}to{transform:translateY(-4px) scale(1.018)}}
 @keyframes briefingGlow{from{transform:translate3d(-2%,-1%,0);opacity:.55}to{transform:translate3d(2%,2%,0);opacity:.88}}
-/* every slide reads from the vertical centre of the page — a short card floating at the
-   top of a 812px screen with 500px of dead air under it looked unfinished */
-/* SAFE centring: a slide taller than the viewport must fall back to top-aligned, or its
-   headline scrolls up UNDER the sticky briefing bar and can never be read. */
-.stories .sts.sts-news,.stories .sts.sts-pick,.stories .sts.sts-desk,.stories .sts.sts-lastnight{justify-content:safe center}
-.stories .sts-newsbody{padding:2px 0 0}
 .stories .sts-voice,.stories .sts-chief{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.13);box-shadow:0 14px 32px rgba(0,0,0,.24)}
 @media(prefers-reduced-motion:reduce){
-  .stories::before,.stories .st-brand .st-dia,.stories .sts-crest,.stories .sts-photo,.stories .sts-news .sts-bg::before,.stories .st-slide.on .sts>*{animation:none!important}
+  .stories::before,.stories .st-brand .st-dia,.stories .sts-crest,.fld-wash,
+  .stories .st-slide.on .sts>*{animation:none!important}
 }
 
 /* ══ (6+11) INSIGHTS — charts, streak tiles, why-framing, past picks, upsell ══ */
@@ -4648,7 +4970,12 @@ body.stories-on{background:#050710}
 .sts-chief i{font-style:normal;font-family:var(--mono);font-weight:800;font-size:12px;letter-spacing:.03em;color:var(--ink)}
 .sts-chief .sts-stars{font-style:normal;display:inline-flex}
 .sts-chief .sts-stars .bstars{font-size:13px}
-.sts-chief span{font-family:var(--sans);font-weight:500;font-size:13px;line-height:1.45;color:var(--ink2);text-align:center}
+/* THE VERDICT IS A VERDICT, NOT AN ESSAY. The chief's rationale arrives as a full research
+   paragraph — eleven lines of it on a 375px story slide, which pushed the card's own action
+   off the bottom of the screen and is precisely the "text dropped in" reading this pass is
+   fixing. Three lines here; the whole argument is one tap away on the game page. */
+.sts-chief span{font-family:var(--sans);font-weight:500;font-size:13px;line-height:1.45;color:var(--ink2);text-align:center;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .sts-chief.ch-play{background:rgba(var(--goldc),.08);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.3)}
 .sts-chief.ch-play b{color:var(--gold)}
 .sts-chief.ch-lean{background:rgba(var(--bluec),.07);box-shadow:inset 0 0 0 1px rgba(var(--bluec),.22)}
@@ -5412,7 +5739,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .an-atlas .anmark,.anportrait.an-atlas{--an-dance:an-atlas-orbit;--an-dur:3.15s;animation-delay:-.65s}
 .an-nova .anmark,.anportrait.an-nova{--an-dance:an-nova-swing;--an-dur:2.55s;animation-delay:-1.1s}
 .an-scout .anmark,.anportrait.an-scout{--an-dance:an-scout-hop;--an-dur:2.85s;animation-delay:-1.55s}
-.brand .diamond,.gp-brand .diamond{filter:drop-shadow(0 3px 7px rgba(var(--goldc),.22))}
+/* the mark is FLAT — no coloured drop shadow. That glow was half of what made it tacky. */
 @keyframes an-bob{0%,100%{transform:translateY(0) rotate(0) scale(1)}34%{transform:translateY(var(--an-lift,-4px)) rotate(var(--an-rot,5deg)) scale(var(--an-pop,1.05))}62%{transform:translateY(var(--an-drop,2px)) rotate(var(--an-rot-neg,-3deg)) scale(.98)}}
 @keyframes an-vega-tick{0%,100%{transform:translate(0,0) rotate(0) scale(1)}12%{transform:translate(var(--an-shift,3px),var(--an-lift,-5px)) rotate(var(--an-bigrot,11deg)) scale(var(--an-pop,1.08))}25%{transform:translate(var(--an-shift-neg,-2px),var(--an-drop,2px)) rotate(var(--an-bigrot-neg,-8deg)) scale(.97)}42%{transform:translate(var(--an-shift,3px),var(--an-smalllift,-3px)) rotate(var(--an-rot,5deg)) scale(1.04)}61%{transform:translate(var(--an-shift-neg,-1px),0) rotate(var(--an-rot-neg,-2deg)) scale(1.01)}}
 @keyframes an-atlas-orbit{0%,100%{transform:translate(0,0) rotate(0) scale(1)}20%{transform:translate(var(--an-shift-neg,-3px),var(--an-lift,-5px)) rotate(var(--an-bigrot-neg,-10deg)) scale(1.05)}43%{transform:translate(var(--an-shift,4px),var(--an-smalllift,-1px)) rotate(var(--an-rot,8deg)) scale(1.02)}66%{transform:translate(var(--an-smallshift,1px),var(--an-drop,3px)) rotate(2deg) scale(.97)}84%{transform:translate(var(--an-shift-neg,-2px),var(--an-smallshift,1px)) rotate(var(--an-rot-neg,-5deg)) scale(1.01)}}
@@ -5433,7 +5760,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   .tsig .anmark,.dsk-cell .anmark,.sts-voice-id .anmark,.rost-art .anportrait,.anlp-hero .anportrait{
     animation:none!important;transform:none!important;
   }
-  .brand .diamond,.gp-brand .diamond{animation:none!important;transform:rotate(45deg)!important}
+  .brand .diamond,.gp-brand .diamond{animation:none!important;transform:none!important}
 }
 .rost-idw{min-width:0;display:flex;flex-direction:column;gap:3px}
 .rost-name{font-family:var(--disp);font-weight:800;font-size:21px;line-height:1;letter-spacing:-.01em;color:var(--ink)}
@@ -5453,6 +5780,9 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .rost-wl{display:inline-flex;align-items:baseline;gap:6px;line-height:1}
 .rost-wl b{font-family:var(--mono);font-weight:700;font-size:23px;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.05em}
 .rost-rec.none .rost-wl b{color:var(--ink3)}
+/* the zero state is a SENTENCE, not a number — see zeroScopeTxt in page.tsx */
+.rost-wl.none b{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:0;color:var(--ink3)}
+.dpr-wl.none{font-family:var(--disp);font-weight:700;font-size:clamp(17px,4.6vw,22px);letter-spacing:0;color:var(--ink2)}
 .rost-wl i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9px;
   letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
 .rost-sts{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px;min-width:0}
@@ -5634,8 +5964,29 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .gp-lead .de-side{font-size:34px}
 @media(max-width:559px){.gp-lead .de-side{font-size:29px}}
 /* the banner variant never grows a second column of rows */
-.decall.is-banner{gap:8px}
-.decall.is-banner .de-callrow{align-items:center;row-gap:4px}
+/* ═══════ THE HERO'S BETTING STRIP ═══════
+   One row, the board's pick language, inside the hero block — no legacy banner styling left.
+   See the note on deCallBlock's compact branch for what this replaces. */
+.decall.is-strip{display:flex;flex-direction:column;gap:8px;padding:12px 14px;margin:0;border:0;border-radius:0;
+  background:var(--paper);box-shadow:inset 0 1px 0 var(--line3)}
+.destrip{display:flex;align-items:center;gap:10px;min-width:0}
+.destrip .de-mini-pick{flex:0 1 auto;min-width:0}
+.destrip .de-mini-pick .restamp.rs-mini{margin-left:2px}
+.destrip-price{flex-shrink:0;margin-left:auto;font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:-.03em;
+  color:var(--ink3);font-variant-numeric:tabular-nums}
+.destrip-unlock{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;cursor:pointer;
+  font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--golddeep);border-radius:999px;padding:6px 13px;background:rgba(var(--goldc),.13);
+  box-shadow:inset 0 0 0 1px rgba(var(--goldc),.34)}
+.destrip-unlock svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2}
+/* the strip's own size step of the pick row — bigger than a tile, smaller than the odds detail */
+.de-mini-pick.dmp-strip{gap:9px}
+.de-mini-pick.dmp-strip .de-mini-ou i{font-size:9.5px}
+.de-mini-pick.dmp-strip .de-mini-ou b{font-size:17px}
+.de-mini-pick.dmp-strip .de-mini-word{font-size:15px}
+.de-mini-pick.dmp-strip .restamp.rs-mini{width:21px;height:21px}
+.de-mini-pick.dmp-strip .restamp.rs-mini .rs-g{width:21px;height:21px}
+.de-mini-pick.dmp-strip .restamp.rs-mini .rs-g svg{width:12px;height:12px}
 /* the stamp is its own object — the old pill frame around .de-res would double it */
 .de-res.stamped{background:none;padding:0;border-radius:0}
 /* TOP PICKS rail: the cards were sized for 8.5px chrome. At the new type scale a 254px card
@@ -6718,9 +7069,9 @@ main.swiping{transition:none !important;will-change:transform}
    science here" is an argument that typography makes faster than prose can. Everything else
    — the tokens, the spacing scale, the dark/light handling — is unchanged. */
 .labmast{padding:6px 0 4px;margin-bottom:20px}
-.labmast-id{font-family:var(--research-serif);font-weight:600;font-size:12px;letter-spacing:.26em;
+.labmast-id{font-family:var(--research-disp);font-weight:600;font-size:12px;letter-spacing:.26em;
   text-transform:uppercase;color:var(--gold)}
-.labmast-h{font-family:var(--research-serif);font-weight:600;font-size:34px;line-height:1.08;
+.labmast-h{font-family:var(--research-disp);font-weight:700;font-size:34px;line-height:1.06;letter-spacing:-.028em;
   letter-spacing:-.02em;color:var(--ink);margin:9px 0 10px}
 .labmast-sub{font-family:var(--research-serif);font-size:16.5px;line-height:1.62;color:var(--ink2);max-width:60ch}
 .labmast-rule{height:3px;margin:18px 0 14px;
@@ -6739,7 +7090,7 @@ main.swiping{transition:none !important;will-change:transform}
   padding:15px 16px;border-radius:16px;background:var(--paper);border:1px solid rgba(var(--rimc),.10);box-shadow:var(--e0)}
 .papercard:active{background:var(--wash)}
 .pc-cat{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
-.pc-title{font-family:var(--research-serif);font-weight:600;font-size:18px;line-height:1.26;letter-spacing:-.012em;color:var(--ink)}
+.pc-title{font-family:var(--research-disp);font-weight:700;font-size:18px;line-height:1.24;letter-spacing:-.02em;color:var(--ink)}
 .pc-abs{font-family:var(--research-serif);font-size:14px;line-height:1.58;color:var(--ink3)}
 .pc-foot{display:flex;align-items:baseline;gap:8px;width:100%;margin-top:3px;
   font-family:var(--sans);font-size:11.5px;color:var(--ink4)}
@@ -6755,7 +7106,7 @@ main.swiping{transition:none !important;will-change:transform}
 .lab-nulls{margin:22px 0;padding:19px 18px;border-radius:18px;
   background:linear-gradient(160deg,rgba(var(--slatec),.10),rgba(var(--panec),.9) 60%);
   border:1px solid rgba(var(--rimc),.11)}
-.lab-nulls-k{font-family:var(--research-serif);font-weight:600;font-size:19px;letter-spacing:-.015em;color:var(--ink);margin-bottom:7px}
+.lab-nulls-k{font-family:var(--research-disp);font-weight:700;font-size:19px;letter-spacing:-.022em;color:var(--ink);margin-bottom:7px}
 .lab-nulls p{font-family:var(--research-serif);font-size:15px;line-height:1.62;color:var(--ink2);margin:0}
 .lab-nulls b{font-family:var(--mono);font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
 .lab-notes-k{margin-top:26px;padding-top:16px;border-top:1px solid var(--line3)}
@@ -6766,7 +7117,7 @@ main.swiping{transition:none !important;will-change:transform}
 .paperpage .gp-body{background:var(--paper)}
 .paper{max-width:68ch;margin:0 auto;padding:6px 2px 40px}
 .pp-cat{font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
-.pp-title{font-family:var(--research-serif);font-weight:600;font-size:31px;line-height:1.16;letter-spacing:-.022em;
+.pp-title{font-family:var(--research-disp);font-weight:700;font-size:31px;line-height:1.1;letter-spacing:-.03em;
   color:var(--ink);margin:10px 0 8px}
 .pp-byline{font-family:var(--sans);font-size:13px;color:var(--ink3);padding-bottom:16px;border-bottom:1px solid var(--line3)}
 .pp-abstract{margin:18px 0;padding:16px 17px;border-radius:14px;background:var(--sunken)}
@@ -6774,7 +7125,7 @@ main.swiping{transition:none !important;will-change:transform}
   color:var(--ink3);margin-bottom:7px}
 .pp-abstract p{font-family:var(--research-serif);font-size:16px;line-height:1.68;color:var(--ink);margin:0}
 .pp-sec{margin-top:24px}
-.pp-sec h2{font-family:var(--research-serif);font-weight:600;font-size:21px;letter-spacing:-.015em;color:var(--ink);margin-bottom:9px}
+.pp-sec h2{font-family:var(--research-disp);font-weight:700;font-size:21px;letter-spacing:-.022em;color:var(--ink);margin-bottom:9px}
 .pp-sec p{font-family:var(--research-serif);font-size:16.5px;line-height:1.72;color:var(--ink2);margin:0 0 13px}
 .pp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line3)}
 .pp-tags span{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--ink3);
@@ -6889,12 +7240,18 @@ main.swiping{transition:none !important;will-change:transform}
 .stories .sts{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .stories .sts::-webkit-scrollbar{display:none}
 .st-zone{width:22%}
-/* the card reads as a card: a real surface, a real affordance, a real pressed state */
-.sts-open.is-card{display:flex;flex-direction:column;gap:9px;cursor:pointer;border-radius:20px;
-  padding:16px 17px 14px;background:rgba(255,255,255,.07);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13);
+/* ROUND 3: THE NEWS BODY IS NOT A PLATE. Round 2 gave it a translucent card so the reader
+   could tell it opened something — correct then, because the photo was a thumbnail floating
+   above it. Now the photograph is the page, and a grey plate laid over a full-bleed cover is
+   exactly the "card with text dropped in" look this pass exists to kill. The affordance
+   moves entirely to the chip and the pressed state: no fill at rest, a whisper of fill on
+   press, and a target that still spans the full column plus its gutters. */
+.sts-open.is-card{display:flex;flex-direction:column;gap:11px;cursor:pointer;border-radius:20px;
+  padding:14px 14px 12px;margin:0 -14px;background:transparent;box-shadow:none;
   transition:transform .16s var(--ease-out),background .16s ease}
-.sts-open.is-card:active{transform:scale(.985);background:rgba(255,255,255,.12)}
+.sts-open.is-card:active{transform:scale(.985);background:rgba(255,255,255,.09)}
+@media(hover:hover){.sts-open.is-card:hover{background:rgba(255,255,255,.05)}}
+.sts-open.is-card:focus-visible{outline:2px solid rgba(125,220,255,.7);outline-offset:2px}
 .stories .sts-openchip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:2px;
   padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.14);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.20);
@@ -6902,3 +7259,98 @@ main.swiping{transition:none !important;will-change:transform}
   color:#f4f8ff}
 .stories .sts-openchip i{font-style:normal}
 @media(prefers-reduced-motion:reduce){.sts-open.is-card{transition:none}}
+
+/* ═══════════════════════ THE BOX SCORE ═══════════════════════
+   Leon, with two CBS screenshots: line score with innings and R/H/E, a segmented team
+   control, a HITTERS table and a PITCHERS table. Their palette is dark; we take the
+   INFORMATION HIERARCHY and the density and render it in our light theme and our type.
+
+   The one hard constraint is width: nine innings plus R/H/E plus a team column is more than
+   375px can hold. The grid therefore scrolls inside its OWN container with the team column
+   pinned left and the R/H/E block pinned right — so the two things a reader looks for first
+   are always on screen, and the page itself never scrolls sideways. */
+.boxscore{display:flex;flex-direction:column;gap:16px;padding:2px 0 6px}
+.bx-state{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;
+  font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--red);border-radius:999px;padding:5px 12px;background:var(--redsoft)}
+.bx-state .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite}
+/* ── the line score grid ── */
+.bx-lswrap{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  border-radius:var(--r-md);background:var(--paper);box-shadow:var(--e0)}
+.bx-lswrap::-webkit-scrollbar{display:none}
+.bx-ls{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
+.bx-ls th,.bx-ls td{padding:9px 0;text-align:center;min-width:22px;
+  font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap}
+.bx-ls thead th{padding:8px 0;font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.08em;
+  color:var(--ink3);background:var(--sunken);box-shadow:inset 0 -1px 0 var(--line3)}
+.bx-ls tbody tr+tr th,.bx-ls tbody tr+tr td{box-shadow:inset 0 1px 0 var(--line3)}
+/* the team column is pinned to the left edge and carries its own crest */
+/* the pinned columns must be OPAQUE — a sticky cell with a transparent fill lets the inning
+   underneath print straight through it, which is exactly what an extra-innings game did */
+.bx-ls .bx-team{position:sticky;left:0;z-index:3;min-width:78px;width:78px;text-align:left;
+  padding-left:12px;padding-right:8px;background-color:var(--paper);background-clip:padding-box}
+.bx-ls thead .bx-team{background-color:var(--sunken);z-index:4}
+.bx-ls .bx-team b{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.04em;color:var(--ink)}
+.bx-crest{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:7px;vertical-align:-6px}
+.bx-crest img,.bx-crest .crest{width:20px;height:20px;object-fit:contain}
+.bx-vis{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.08em;color:var(--ink4)}
+/* …and R/H/E is pinned to the right edge, so the totals are never scrolled away */
+.bx-ls .bx-rhe{position:sticky;z-index:3;min-width:26px;background-color:var(--paper);background-clip:padding-box;color:var(--ink)}
+.bx-ls thead .bx-rhe{background-color:var(--sunken);z-index:4}
+.bx-ls .bx-rhe:nth-last-child(3){right:56px}
+.bx-ls .bx-rhe:nth-last-child(2){right:30px}
+.bx-ls .bx-rhe:nth-last-child(1){right:0;padding-right:10px;min-width:30px}
+.bx-ls .bx-r{box-shadow:inset 1px 0 0 var(--line2),-7px 0 7px -7px rgba(0,0,0,.16)!important}
+.bx-ls tbody .bx-r{font-weight:800;font-size:16px}
+/* an inning that was never played prints a dash — a shortened Final/6 must read clean */
+.bx-none{color:var(--ink4);font-weight:600}
+.bx-simple{display:flex;gap:18px;padding:14px 16px;border-radius:var(--r-md);background:var(--paper);box-shadow:var(--e0);
+  font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink2)}
+.bx-simple b{font-family:var(--mono);font-size:20px;color:var(--ink);margin-left:6px}
+/* ── the segmented team control ── */
+.bx-seg{display:flex;gap:3px;padding:3px;border-radius:12px;background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line3)}
+.bx-segb{flex:1;border:0;cursor:pointer;border-radius:9px;padding:9px 8px;background:transparent;
+  font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.05em;color:var(--ink3);
+  transition:background .16s var(--ease),color .16s var(--ease)}
+.bx-segb.on{background:var(--paper);color:var(--ink);box-shadow:var(--e0)}
+/* ── the hitters / pitchers tables ── */
+.bx-tblwrap{border-radius:var(--r-md);background:var(--paper);box-shadow:var(--e0);overflow:hidden}
+.bx-th{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink3);padding:12px 14px 8px}
+.bx-tbl{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;table-layout:fixed}
+.bx-tbl th,.bx-tbl td{padding:8px 2px;text-align:center;font-family:var(--mono);font-weight:600;font-size:13px;color:var(--ink2)}
+.bx-tbl thead th{padding:7px 2px;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.07em;
+  color:var(--ink4);background:var(--sunken);box-shadow:inset 0 -1px 0 var(--line3)}
+.bx-tbl tbody tr+tr th,.bx-tbl tbody tr+tr td{box-shadow:inset 0 1px 0 var(--line3)}
+.bx-tbl .bx-nm{width:44%;text-align:left;padding-left:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bx-tbl tbody .bx-nm b{font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--ink)}
+.bx-tbl tbody .bx-nm i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink4);margin-left:6px}
+.bx-dec{border-radius:5px;padding:1px 5px;margin-left:6px;color:#fff!important}
+.bx-dec.w{background:var(--green)}
+.bx-dec.l{background:var(--red)}
+.bx-dec.s{background:var(--blue)}
+.bx-empty{display:flex;flex-direction:column;gap:5px;padding:22px 18px;border-radius:var(--r-md);
+  background:var(--paper);box-shadow:var(--e0);text-align:center}
+.bx-empty b{font-family:var(--disp);font-weight:700;font-size:16px;color:var(--ink)}
+.bx-empty span{font-family:var(--sans);font-size:13.5px;line-height:1.5;color:var(--ink3)}
+.bx-empty.small{padding:16px}
+.bx-empty.small b{font-size:14px}
+@media(max-width:400px){
+  /* nine innings + R/H/E + the team column must FIT at 360 without scrolling: 68 + 9x19 +
+     3x24 = 311 inside a 332px column. Extra innings still scroll, with both ends pinned. */
+  .bx-ls th,.bx-ls td{min-width:19px;font-size:12.5px}
+  .bx-ls .bx-team{min-width:68px;width:68px;padding-left:9px}
+  .bx-ls .bx-team b{font-size:12px}
+  .bx-crest{width:19px;height:19px;margin-right:5px;vertical-align:-5px}
+  .bx-crest img,.bx-crest .crest{width:17px;height:17px}
+  .bx-ls .bx-rhe{min-width:24px}
+  .bx-ls .bx-rhe:nth-last-child(3){right:52px}
+  .bx-ls .bx-rhe:nth-last-child(2){right:28px}
+  .bx-ls .bx-rhe:nth-last-child(1){min-width:28px;padding-right:8px}
+  .bx-tbl th,.bx-tbl td{font-size:12px}
+  .bx-tbl .bx-nm{width:40%;padding-left:10px}
+  .bx-tbl tbody .bx-nm b{font-size:12.5px}
+}
+/* the hero is ONE object — crests, records, score, state and the betting strip together */
+.gp-heroblk{display:flex;flex-direction:column}

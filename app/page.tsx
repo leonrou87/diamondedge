@@ -2760,9 +2760,25 @@ export default function Home() {
       const head = `<div class="de-head"><span class="de-brand"><i class="de-dia" aria-hidden="true">◆</i>The DiamondEdge Pick</span>${actChip}${state ? `<span class="de-res ${state.cls}">${state.txt}</span>` : ""}</div>`;
       const callRow = callHtml ? `<div class="de-callrow">${callHtml}${atLine}</div>` : "";
       const unlockRow = locked ? `<div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : "";
+      /* ═══════ THE HERO'S BETTING STRIP — the SAME pick language as the board ═══════
+         Leon asked whether the pick cleanup covers the game page. It does, and this is where.
+
+         The compact banner used to be its own vocabulary: a brand kicker row, an action chip,
+         a result chip, then a big "▲ OVER 8.5 −110" call row and a separate "priced at 8.5"
+         line — four rows and three type sizes for the same three facts the board tile now
+         says in one. It is the board's row here too:  O/U 8.5 │ ◆DE ▲ OVER  ·  −110  ·  ✓
+         — market number, then our call, then the price, then the seal at the far right where
+         it covers nothing. Premium gating is unchanged (the row redacts the WORD, keeps the
+         market number) and the whole strip stays the unlock affordance when locked. */
       if (compact) {
-        return `<section class="decall ${cls} is-banner${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
-          ${head}${callRow}${unlockRow}
+        const stamp = st === "won" || st === "lost" || st === "pushed" ? resultStamp(st, "mini") : "";
+        const priceTxt = !locked && !avoid && pl && pl.price != null ? `<span class="destrip-price">${fmtOdds(pl.price)}</span>` : "";
+        return `<section class="decall ${cls} is-strip${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
+          <div class="destrip">
+            ${compactDePickHtml(g, pl, locked, "strip", avoid, stamp)}
+            ${priceTxt}
+          </div>
+          ${locked ? `<div class="destrip-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : ""}
         </section>`;
       }
       return `<section class="decall ${cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
@@ -4444,13 +4460,15 @@ export default function Home() {
         const pick0 = items.find((x) => x.kind === "contrarian") || items[0];
         const more = items.length > 1 ? `<div class="sts-substat">${items.length - 1} more pattern${items.length === 2 ? "" : "s"} on Insights</div>` : "";
         return `<div class="sts sts-patterns">
-          <div class="sts-bg" aria-hidden="true"></div>
-          <div class="sts-kick"><span>◆ The Patterns</span></div>
-          <div class="sts-patlead">${esc(patternLead(pick0))}</div>
-          <h3 class="sts-head pat">${patternBody(pick0)}</h3>
-          <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">emerging signal</span>` : ""}</div>
-          ${more}
-          <button class="st-cta" data-go="results">Every pattern, graded →</button>
+          ${storyField("patterns")}
+          ${storyEyebrow("The Patterns")}
+          <div class="sts-core">
+            <div class="sts-patlead">${esc(patternLead(pick0))}</div>
+            <h3 class="sts-head pat">${patternBody(pick0)}</h3>
+            <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">emerging signal</span>` : ""}</div>
+            ${more}
+          </div>
+          <div class="sts-foot"><button class="st-cta" data-go="results">Every pattern, graded →</button></div>
         </div>`;
       }
       /* ═══ THE "THE ANSWER IS NO" SLIDE IS GONE FROM THE DECK ═══
@@ -5936,9 +5954,9 @@ export default function Home() {
       if (el && gs.score && gs.score.split && gs.score.home != null) {
         el.innerHTML = `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`;
       }
-      // the line score is above the tabs now (see topBox), not inside the live pane
-      const box = page.querySelector(".gp-topbox");
-      if (box) box.innerHTML = boxScorePanel(g, gameLocked(g));
+      // the box score is its own tab now — repaint the pane, and pull a fresh MLB document
+      repaintBoxPane();
+      if (gs.kind === "live") loadMlbBox(g, true).then((m: any) => { if (m) repaintBoxPane(); }).catch(() => {});
       // Keep the hero's live tracking read in step with the fresh score (else it goes stale
       // vs the score right above it). Only the served-meter-absent fallback lives here.
       const trendEl = page.querySelector(".gp-trend");
@@ -6754,20 +6772,38 @@ export default function Home() {
          diamond AND the letters DE, which is unmistakably a brand mark rather than
          punctuation — and the direction triangle sits after it, so the unit reads
          "DiamondEdge · over · 8.5" left to right. */
+      /* ════════ THE ROW, THIRD ITERATION ════════
+         Leon's rule, stated plainly: "ALWAYS show the O/U number; to its RIGHT the
+         DiamondEdge pick (DE mark + Over/Under word); and the result check/X must NOT cover
+         content — the checkmark today covers up things."
+
+         WHAT WAS WRONG. The market number and our call shared one slot: the tile printed
+         "◆DE ▲ OVER 8.5", so the 8.5 was doing double duty as the market total AND as the
+         number our pick was written at, and a game we passed on showed a bare "O/U 8.5" in
+         the same slot with a different meaning. Worse, the outcome seal was ABSOLUTELY
+         positioned at top:-9px/right:-7px of that unit — which is exactly why the check was
+         landing on top of the number.
+
+         THE ROW NOW HAS THREE CELLS, all in flow, none overlapping anything:
+           [ O/U 8.5 ]   ·   [ ◆DE ▲ OVER ]   ······   [ ✓ ]
+             market            our call, or nothing        outcome, flush right
+         The market number is always present and always means the market. The call is a
+         separate object with the brand lockup inside it. The seal sits at the row's far
+         right on `margin-left:auto`, so it cannot cover a team name, a figure or a word at
+         any width — which was the whole complaint. */
       const mark = noPick ? ""
         : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i>${
           locked ? `<i class="de-mini-lockdots"></i>` : `<i class="de-mini-arrow"></i>`}</span>`;
-      // Locked keeps the market number (public) and redacts only the direction word.
-      const callTxt = noPick
-        ? `<span class="de-mini-ou">O/U${line ? ` <b>${esc(line)}</b>` : ""}</span>`
-        : locked
-          ? `<span class="de-mini-ou locked"><i class="de-mini-redact" aria-hidden="true"></i>${line ? `<b>${esc(line)}</b>` : ""}</span>`
-          : `<span class="de-mini-ou"><b class="de-mini-word">${esc(word || "O/U")}</b>${line ? ` <b>${esc(line)}</b>` : ""}</span>`;
-      /* `stamp` rides INSIDE the pick as a corner seal — see gameCard. Leon: "the CHECK and
-         X can be a bit smaller, maybe top right of the pick somehow." The word stays the
-         hero; the outcome is a small seal applied to it, which is also what a stamp is. */
+      // the market total — ALWAYS rendered, always meaning the market
+      const ouCell = `<span class="de-mini-ou"><i>O/U</i>${line ? `<b>${esc(line)}</b>` : `<b>—</b>`}</span>`;
+      // our call — the brand lockup plus the word. A pass renders nothing here; the empty
+      // slot is the signal (see the note above about scanning a column of tiles).
+      const callCell = noPick ? ""
+        : `<span class="de-mini-call">${mark}${locked
+            ? `<i class="de-mini-redact" aria-hidden="true"></i>`
+            : `<b class="de-mini-word">${esc(word || "PICK")}</b>`}</span>`;
       return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(title)}" role="img" aria-label="${esc(aria)}">
-        ${mark}${callTxt}${stamp}
+        ${ouCell}${callCell ? `<i class="dmp-sep" aria-hidden="true"></i>${callCell}` : ""}${stamp}
       </span>`;
     }
     /* ════════ THE RESULT STAMP — a different object from the pick ════════
@@ -8236,6 +8272,216 @@ export default function Home() {
       if (!g || !liveDetail || !liveDetail.games) return null;
       return liveDetail.games[String(g.game_id)] || (g.game_pk != null ? liveDetail.games[String(g.game_pk)] : null) || null;
     }
+    /* ══════════════════════ THE BOX SCORE ══════════════════════
+       Leon, with two CBS screenshots: the box score is what a game page is FOR, and ours was
+       missing the half that matters — a line score with no innings on most games, and
+       "hitters" and "pitchers" that were pre-formatted STRINGS rather than tables.
+
+       WHY IT WAS MISSING. Everything the page could draw came from the `live_detail` Supabase
+       snapshot, which serves the line score as `line_score[]` and the player lines as single
+       formatted strings (`pitching[side].line`, `batting_leaders[].line`). No AB/R/H/RBI/BB/K
+       fields exist anywhere in any feed this app is served — so no table could be built from
+       them, at all, no matter how the page was laid out.
+
+       WHERE THE DATA COMES FROM NOW. MLB's own StatsAPI, straight from the browser. It is
+       public, needs no key, and (verified) sends `Access-Control-Allow-Origin: *`, so no proxy
+       is required. Two small documents per game, fetched in parallel off `game_pk`:
+         · /api/v1/game/<pk>/linescore  → innings[].{num,away:{runs,hits,errors},home:{…}},
+                                          teams.{away,home}.{runs,hits,errors}, scheduledInnings
+         · /api/v1/game/<pk>/boxscore   → teams.{away,home}.{team, players{ID<id>}, batters[],
+                                          pitchers[], battingOrder[]} with per-player
+                                          stats.batting {atBats,runs,hits,rbi,homeRuns,
+                                          baseOnBalls,strikeOuts,summary} and stats.pitching
+                                          {inningsPitched,hits,runs,earnedRuns,baseOnBalls,
+                                          strikeOuts,wins,losses,saves}
+       Cached per gamePk. A FINAL game is fetched once and never again; a LIVE game refreshes
+       on the live cycle (25s floor). Any failure is silent and the page falls back to the
+       served `live_detail` line score, and below that to the plain score — three tiers, so
+       this surface can degrade but never disappear. */
+    const MLB_BOX_TTL = 25000;
+    const mlbBox: any = {};                       // gamePk -> { ls, bs, at, final, loading }
+    function mlbBoxFor(g: any) {
+      const pk = mlbPk(g);
+      return pk ? mlbBox[pk] || null : null;
+    }
+    // only MLB has a StatsAPI gamePk; anything else simply has no box score to fetch
+    const isMlbGame = (g: any) => {
+      const sp = String((g && g.sport) || "mlb").toLowerCase();
+      return sp === "mlb" || sp === "baseball" || sp === "baseball_mlb" || sp === "";
+    };
+    /* THE gamePk IS NOT ALWAYS ON `game_pk`. The served feeds carry both `game_pk` (a number)
+       and a long composite `game_id`; the app's own normalised game shape keeps only the
+       NUMERIC id — so on a game page `g.game_pk` is undefined and `g.game_id` is "824807".
+       Read both, in that order, and accept a numeric game_id as the pk. */
+    function mlbPk(g: any) {
+      if (!g) return "";
+      if (g.game_pk != null && /^\d{4,}$/.test(String(g.game_pk))) return String(g.game_pk);
+      if (g.game_id != null && /^\d{4,}$/.test(String(g.game_id))) return String(g.game_id);
+      const m = String((g && g.game_id) || "").match(/(\d{5,})\s*$/);
+      return m ? m[1] : "";
+    }
+    async function loadMlbBox(g: any, force = false) {
+      const pk = mlbPk(g);
+      if (!pk || !isMlbGame(g)) return null;
+      const cur = mlbBox[pk];
+      if (cur && cur.loading) return null;
+      if (cur && !force && (cur.final || Date.now() - cur.at < MLB_BOX_TTL)) return cur;
+      mlbBox[pk] = { ...(cur || {}), loading: true };
+      try {
+        const base = `https://statsapi.mlb.com/api/v1/game/${encodeURIComponent(pk)}`;
+        const [ls, bs] = await Promise.all([
+          fetch(`${base}/linescore`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetch(`${base}/boxscore`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        ]);
+        if (!ls && !bs) { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
+        mlbBox[pk] = { ls, bs, at: Date.now(), loading: false, final: gameState(g).kind === "final" };
+        return mlbBox[pk];
+      } catch { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
+    }
+    const IP_SORT = (v: any) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+    const bxN = (v: any) => (v == null || v === "" ? "0" : String(v));
+    /* THE LINE SCORE GRID — innings across, R/H/E pinned.
+       Partial and shortened games are the case that breaks naive grids: a rain-shortened
+       Final/6 must still read clean, and a live game must not pretend innings that have not
+       been played exist as zeroes. Innings up to `scheduledInnings` are always columns; a
+       column with no half played prints an en dash, and the bottom of the ninth prints one
+       too when the home side never batted. Nothing is invented. */
+    function lineScoreGrid(g: any, ls: any) {
+      const inn = (ls && Array.isArray(ls.innings) ? ls.innings : []) as any[];
+      if (!inn.length) return "";
+      const sched = Math.max(Number(ls.scheduledInnings) || 9, inn.length);
+      const cols: number[] = [];
+      for (let i = 1; i <= sched; i++) cols.push(i);
+      const cell = (i: number, side: "away" | "home") => {
+        const row = inn.find((x: any) => Number(x.num) === i);
+        const v = row && row[side] && row[side].runs;
+        return v == null ? `<span class="bx-none">–</span>` : String(v);
+      };
+      const tot = (side: "away" | "home", k: string) => {
+        const t = ls.teams && ls.teams[side];
+        return t && t[k] != null ? String(t[k]) : "–";
+      };
+      const teamRow = (side: "away" | "home") => `<tr>
+        <th scope="row" class="bx-team"><span class="bx-crest">${gCrest(g, side)}</span><b>${esc(side === "away" ? g.away_abbr : g.home_abbr)}</b></th>
+        ${cols.map((i) => `<td>${cell(i, side)}</td>`).join("")}
+        <td class="bx-rhe bx-r">${tot(side, "runs")}</td>
+        <td class="bx-rhe">${tot(side, "hits")}</td>
+        <td class="bx-rhe">${tot(side, "errors")}</td>
+      </tr>`;
+      return `<div class="bx-lswrap"><table class="bx-ls">
+        <thead><tr><th class="bx-team"><span class="bx-vis">Team</span></th>${cols.map((i) => `<th>${i}</th>`).join("")}<th class="bx-rhe bx-r">R</th><th class="bx-rhe">H</th><th class="bx-rhe">E</th></tr></thead>
+        <tbody>${teamRow("away")}${teamRow("home")}</tbody>
+      </table></div>`;
+    }
+    // one side's hitters and pitchers, as real tables
+    function boxTables(bs: any, side: "away" | "home") {
+      const t = bs && bs.teams && bs.teams[side];
+      if (!t || !t.players) return "";
+      const P = t.players;
+      const bat = (t.batters || []) as any[];
+      const pit = (t.pitchers || []) as any[];
+      const hRows = bat.map((id: any) => {
+        const p = P["ID" + id]; if (!p) return "";
+        const s = (p.stats && p.stats.batting) || {};
+        if (s.atBats == null && s.plateAppearances == null) return "";
+        const sub = !((t.battingOrder || []).some((o: any) => Number(o) === Number(id) || Number(o) === Number(id) * 100));
+        return `<tr>
+          <th scope="row" class="bx-nm"><b>${esc(p.person && p.person.fullName ? shortName(p.person.fullName) : "")}</b><i>${esc((p.position && p.position.abbreviation) || "")}</i></th>
+          <td>${bxN(s.atBats)}</td><td>${bxN(s.runs)}</td><td>${bxN(s.hits)}</td><td>${bxN(s.rbi)}</td>
+          <td>${bxN(s.homeRuns)}</td><td>${bxN(s.baseOnBalls)}</td><td>${bxN(s.strikeOuts)}</td>
+        </tr>`;
+      }).filter(Boolean).join("");
+      const pRows = pit.map((id: any) => {
+        const p = P["ID" + id]; if (!p) return "";
+        const s = (p.stats && p.stats.pitching) || {};
+        if (s.inningsPitched == null) return "";
+        const dec = s.wins ? "W" : s.losses ? "L" : s.saves ? "S" : s.holds ? "H" : "";
+        return `<tr>
+          <th scope="row" class="bx-nm"><b>${esc(p.person && p.person.fullName ? shortName(p.person.fullName) : "")}</b>${dec ? `<i class="bx-dec ${dec === "W" ? "w" : dec === "L" ? "l" : "s"}">${dec}</i>` : ""}</th>
+          <td>${esc(String(s.inningsPitched))}</td><td>${bxN(s.hits)}</td><td>${bxN(s.runs)}</td>
+          <td>${bxN(s.earnedRuns)}</td><td>${bxN(s.baseOnBalls)}</td><td>${bxN(s.strikeOuts)}</td>
+        </tr>`;
+      }).filter(Boolean).join("");
+      return `${hRows ? `<div class="bx-tblwrap"><h4 class="bx-th">Hitters</h4><table class="bx-tbl bat">
+          <thead><tr><th class="bx-nm">Batter</th><th>AB</th><th>R</th><th>H</th><th>RBI</th><th>HR</th><th>BB</th><th>K</th></tr></thead>
+          <tbody>${hRows}</tbody></table></div>` : ""}
+        ${pRows ? `<div class="bx-tblwrap"><h4 class="bx-th">Pitchers</h4><table class="bx-tbl pit">
+          <thead><tr><th class="bx-nm">Pitcher</th><th>IP</th><th>H</th><th>R</th><th>ER</th><th>BB</th><th>K</th></tr></thead>
+          <tbody>${pRows}</tbody></table></div>` : ""}`;
+    }
+    // "Michael Wacha" → "M. Wacha" — a 375px table column cannot carry a full name
+    function shortName(full: string) {
+      const w = String(full || "").trim().split(/\s+/);
+      if (w.length < 2) return String(full || "");
+      return `${w[0][0]}. ${w.slice(1).join(" ")}`;
+    }
+    let boxSide: "away" | "home" = "away";
+    /* THE BOX SCORE TAB. CBS's information order, our type and our light theme:
+       line score first (it is the game), then a segmented control, then hitters, then
+       pitchers. Never any horizontal page overflow — the innings grid scrolls inside its own
+       container with the team column and the R/H/E block pinned to the two edges. */
+    function boxScoreTab(g: any) {
+      const gs = gameState(g);
+      if (gs.kind === "pre") {
+        return `<div class="bx-empty"><b>First pitch hasn't happened</b><span>The line score, hitters and pitchers appear here once ${esc(g.away_abbr)} @ ${esc(g.home_abbr)} is underway.</span></div>`;
+      }
+      const m = mlbBoxFor(g);
+      /* SELF-HEALING. The pane kicks off its own fetch when there is nothing cached for this
+         gamePk, so the box score can never depend on which caller happened to wire it first
+         (open, tab switch, live poll and the async feed rebuild all reach this same render). */
+      if (!m && isMlbGame(g) && mlbPk(g)) {
+        loadMlbBox(g).then((r: any) => { if (r && detail && String(detail.game_id) === String(g.game_id)) repaintBoxPane(); }).catch(() => {});
+      }
+      const ls = m && m.ls;
+      const bs = m && m.bs;
+      // tier 1: MLB's own line score · tier 2: the served live_detail grid · tier 3: the score
+      let grid = ls ? lineScoreGrid(g, ls) : "";
+      if (!grid) {
+        const d = liveDetailFor(g);
+        if (d && Array.isArray(d.line_score) && d.line_score.length) grid = legacyLineScore(g, d);
+      }
+      if (!grid && gs.score && gs.score.home != null) {
+        grid = `<div class="bx-simple"><span>${esc(g.away_abbr)} <b>${num(gs.score.away, 0)}</b></span><span>${esc(g.home_abbr)} <b>${num(gs.score.home, 0)}</b></span></div>`;
+      }
+      const away = esc(g.away_abbr), home = esc(g.home_abbr);
+      const tables = bs ? boxTables(bs, boxSide) : "";
+      const loading = !m || m.loading;
+      return `<div class="boxscore">
+        ${gs.kind === "live" ? `<div class="bx-state"><span class="livedot"></span>${esc(gs.label || "Live")}${ls && ls.outs != null && ls.inningState ? ` · ${esc(String(ls.inningState))} ${esc(String(ls.currentInningOrdinal || ""))} · ${ls.outs} out` : ""}</div>` : ""}
+        ${grid || ""}
+        ${bs ? `<div class="bx-seg" role="tablist" aria-label="Box score team">
+            <button class="bx-segb ${boxSide === "away" ? "on" : ""}" data-bxside="away" role="tab">${away}</button>
+            <button class="bx-segb ${boxSide === "home" ? "on" : ""}" data-bxside="home" role="tab">${home}</button>
+          </div>${tables}`
+          : `<div class="bx-empty small">${loading ? "<b>Loading the box score…</b>" : "<b>Player lines aren't posted for this game yet</b>"}<span>The line score above updates as the game does.</span></div>`}
+      </div>`;
+    }
+    // the served live_detail grid, kept as the second tier when MLB's own feed is unreachable
+    function legacyLineScore(g: any, d: any) {
+      const innings = d.line_score as any[];
+      const cell = (r: any, side: string) => (r && r[side] != null ? String(r[side]) : `<span class="bx-none">–</span>`);
+      const tot = (side: string, k: string) => (d.totals && d.totals[side] && d.totals[side][k] != null ? String(d.totals[side][k]) : "–");
+      const row = (side: "away" | "home") => `<tr>
+        <th scope="row" class="bx-team"><span class="bx-crest">${gCrest(g, side)}</span><b>${esc(side === "away" ? g.away_abbr : g.home_abbr)}</b></th>
+        ${innings.map((r: any) => `<td>${cell(r, side)}</td>`).join("")}
+        <td class="bx-rhe bx-r">${tot(side, "R")}</td><td class="bx-rhe">${tot(side, "H")}</td><td class="bx-rhe">${tot(side, "E")}</td>
+      </tr>`;
+      return `<div class="bx-lswrap"><table class="bx-ls">
+        <thead><tr><th class="bx-team"><span class="bx-vis">Team</span></th>${innings.map((r: any) => `<th>${esc(String(r.inning))}</th>`).join("")}<th class="bx-rhe bx-r">R</th><th class="bx-rhe">H</th><th class="bx-rhe">E</th></tr></thead>
+        <tbody>${row("away")}${row("home")}</tbody></table></div>`;
+    }
+    // repaint just the box-score pane in place (feed arrival, side switch, live cycle)
+    function repaintBoxPane() {
+      const pane = document.querySelector('.gp-pane[data-pane="box"]') as any;
+      if (!pane || !detail) return;
+      pane.innerHTML = boxScoreTab(detail);
+      wireBoxPane();
+    }
+    function wireBoxPane() {
+      document.querySelectorAll("[data-bxside]").forEach((b: any) => {
+        b.onclick = (e: any) => { e.stopPropagation(); boxSide = b.dataset.bxside === "home" ? "home" : "away"; repaintBoxPane(); };
+      });
+    }
     // The "How it's going" box-score panel. Real served detail first; graceful fallback to
     // the score/inning we already overlay when live_detail hasn't landed.
     /* THE BOX SCORE IS PUBLIC; THE TICKET ON IT IS NOT (while it is live).
@@ -8501,8 +8747,6 @@ export default function Home() {
         ${debate && stratHtml ? `<details class="dskdb-raw"><summary><span>The raw model streams behind the desk</span><span class="sgc-caret" aria-hidden="true">›</span></summary>${stratHtml.replace(' id="stgy-panel"', "")}</details>` : ""}
         ${narrative}
         ${div ? `<div class="de-sec"><div class="de-h">Our number vs the market</div>${div}</div>` : ""}
-        ${viz ? `<div class="de-sec"><div class="de-h">The numbers</div>${viz}</div>` : ""}
-        ${(facts.length || stks) ? `<div class="de-sec"><div class="de-h">What's driving it</div>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</div>` : ""}
       </div>`;
     }
     // POST-GAME RECAP (own tab, only when final): the result, how our pick did, and a served
@@ -8511,7 +8755,10 @@ export default function Home() {
       const gs = gameState(g);
       const sc = gs.score;
       const away = g.away_abbr, home = g.home_abbr;
-      const finalTxt = sc && sc.split && sc.home != null ? `Final — ${esc(away)} ${num(sc.away, 0)}, ${esc(home)} ${num(sc.home, 0)}` : "Final";
+      /* NARRATIVE ONLY. The `.de-sub` used to print "Final — PHI 8, BAL 0" directly under a
+         hero already showing 8 and 0, and directly above a paragraph saying "Philadelphia
+         took it 8–0". Three renderings of one fact inside 200px. The recap keeps the prose;
+         the hero owns the score and the Box Score tab owns the rest. */
       const bits: string[] = [];
       if (sc && sc.split && sc.home != null) {
         if (sc.home === sc.away) bits.push(`${esc(g.away_team || away)} and ${esc(g.home_team || home)} finished level at ${num(sc.away, 0)}–${num(sc.home, 0)}.`);
@@ -8535,7 +8782,7 @@ export default function Home() {
       const recapRaw = art && (art as any).recap;
       const recapParas = Array.isArray(recapRaw) ? recapRaw : (recapRaw ? [String(recapRaw)] : []);
       return `<div class="de-pane">
-        <div class="de-lead"><div class="de-k">◆ Recap</div><p class="de-sub">${finalTxt}</p></div>
+        <div class="de-lead"><div class="de-k">◆ Recap</div><p class="de-sub">How it finished, and how our call did.</p></div>
         ${bits.length ? `<div class="de-sec"><div class="de-h">How it finished</div>${bits.map((b) => `<p>${b}</p>`).join("")}</div>` : ""}
         ${recapParas.length ? `<div class="de-sec"><div class="de-h">The story</div>${recapParas.map((p: any) => `<p>${mdBold(cleanBlurb(String(p)))}</p>`).join("")}</div>` : ""}
       </div>`;
@@ -8545,8 +8792,9 @@ export default function Home() {
       // Live & finished games open straight to "How it's going" (box score); only pre-game
       // games default to the Preview narrative.
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
-      // final + live → Box score (recap folds into it); pre-game → Preview narrative.
-      detailTab = restoreTab === "de" ? "odds" : (restoreTab || (_gsk === "final" || _gsk === "live" ? "live" : "preview"));
+      // A game that has started opens on the BOX SCORE — Leon has asked twice for the box
+      // score to be the thing a finished game shows first. Pre-game opens on the Preview.
+      detailTab = restoreTab === "de" ? "odds" : (restoreTab || (_gsk === "final" || _gsk === "live" ? "box" : "preview"));
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       // Everything the detail body renders is derived FROM g (+ the live feeds by key), so it's
@@ -8630,13 +8878,18 @@ export default function Home() {
       // The Athletic-style data-visual rail (predicted score, win prob, form bars, etc.).
       // Context (pitchers w/ ERA, team records+form, matchup viz) is FREE — always shown,
       // even when the PICK itself is premium-locked. Only the narrative read is gated.
-      const vizRail = previewViz(g);
+      /* THE VIZ RAIL BELONGS TO STATS, AND ONLY TO STATS.
+         `previewViz` bundles predicted score, win probability, form bars, team records, the
+         pitcher cards and head-to-head. It was called THREE times per page — here, again as
+         six individual calls in the Stats pane, and a third time inside diamondEdgeReasoning
+         on the Odds pane — so a reader met the same six charts on three of four tabs. Preview
+         is the STORY now: masthead, setup prose, the lines sentence. */
       const previewBlock = leadLocked
-        ? `${vizRail}<div class="whycard">
+        ? `<div class="whycard">
             <div class="wc-k">Game preview</div>
             <p>The full read behind this pick — the model number, the line it beats, and the history of calls made exactly this way — is part of DiamondEdge Premium. The quality rating above is the real one.</p>
           </div>`
-        : `${vizRail}<div class="whycard preview">
+        : `<div class="whycard preview">
             <div class="wc-k">The setup</div>
             ${bodyParas.map((w) => `<p>${mdBold(w)}</p>`).join("")}
             ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
@@ -8680,9 +8933,7 @@ export default function Home() {
         <div class="more-body">
           <div class="dsec"><div class="dsec-h">Every market's number</div><div class="dsec-b shp-wrap">
             ${MARKETS.map((mk) => sheetPlay(g, P[mk])).join("")}
-            
           </div></div>
-          ${intelSection(g)}
         </div>
       </details>`;
 
@@ -8740,13 +8991,24 @@ export default function Home() {
       const hasStrats = gameStrategies(g).length > 0 && !leadLocked;
       /* THE TAB BAR — iOS segmented rhythm: equal-width targets, the ink rail under the
          active one, and a Box score tab that exists only once there is a box score. */
+      /* CBS's ORDER, ONCE THE GAME HAS STARTED: Recap · Box Score · Stats · Odds. Before it
+         starts there is no recap and no box score, so it is Preview · Stats · Odds. The box
+         score is one tap from arrival on every game that has one — and it is the tab the page
+         OPENS on for a live or finished game, because that is the fact the page is opened
+         for. (It used to be a block wedged above the tabs, which is why it collided with the
+         hero's score; see the single-home discipline note on buildBody.) */
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
-        <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
+        ${showLive
+          ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">${isFinal ? "Recap" : "Live"}</button>
+             <button class="gp-tab ${detailTab === "box" ? "on" : ""}" data-dtab="box" role="tab">Box Score</button>`
+          : `<button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>`}
         <button class="gp-tab ${detailTab === "stats" ? "on" : ""}" data-dtab="stats" role="tab">Stats</button>
         <button class="gp-tab ${detailTab === "odds" ? "on" : ""}" data-dtab="odds" role="tab">Odds</button>
-        ${showLive ? `<button class="gp-tab ${detailTab === "live" ? "on" : ""}" data-dtab="live" role="tab">${isFinal ? "Recap" : "Live"}</button>` : ""}
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
+      const boxPane = showLive
+        ? `<div class="gp-pane" data-pane="box" style="display:${detailTab === "box" ? "block" : "none"}">${boxScoreTab(g)}</div>`
+        : "";
       /* PREVIEW IS THE STORY. The pick's own banner sits ABOVE the tabs now (see gpBanner),
          so this pane no longer repeats it — it is the masthead, the setup prose, the lines
          sentence and the strategy teaser, in reading order. */
@@ -8799,9 +9061,15 @@ export default function Home() {
          for any game that is live or final. The pick's outcome stamp follows it in one
          compact line. Tabs and depth are below. A pre-game page is unchanged: there is no
          box score to lead with, so the pick banner keeps the slot. */
-      const topBox = showLive ? `<div class="gp-topbox">${boxScorePanel(g, leadLocked)}</div>` : "";
-      // The pane keeps the RECAP prose (and the live read) — the line score moved up top, so
-      // the tab is now "what happened" rather than a second copy of the scoreboard.
+      /* SINGLE HOME — the block that used to sit here is gone. `topBox` rendered the whole
+         box-score panel ABOVE the tabs, which meant the score existed twice on arrival (hero
+         + line score), the graded ticket existed twice (hero strip + `.lp-graded`), and on
+         the common path where `line_score` was absent it printed `.lp-simplescore` — a THIRD
+         copy of the same two numbers, 40px under the hero that already showed them. The Box
+         Score tab owns every in-game number now; the hero owns the score. Nothing else on the
+         page prints either. */
+      // RECAP IS NARRATIVE ONLY — the score blocks that used to open it are the hero's and the
+      // box score's job (gameRecap drops its own `finalTxt` chip for the same reason).
       const livePane = showLive ? `<div class="gp-pane" data-pane="live" style="display:${detailTab === "live" ? "block" : "none"}">${isFinal ? gameRecap(g) : liveVsLineBlock(g, leadLocked)}</div>` : "";
       // The star-tier legend was cut from the bottom of the board (it explained a five-step
       // scale to every reader on every visit).
@@ -8811,12 +9079,19 @@ export default function Home() {
          every pick on this game is graded against — it was above the tabs, competing with
          the pick banner, and it belongs with the market), then the live-vs-line read, then
          every market's current number, then the reasoning and the per-market detail. */
+      /* SINGLE HOME, APPLIED. Three blocks left this pane in the dedup pass, and each one was
+         a verbatim second rendering rather than a second SHAPE of the same fact:
+           · liveVsLineBlock — also rendered by the Live pane. The live read is "what is
+             happening", which is the Live tab's whole subject; Odds keeps the market.
+           · deCallBlock (full) — the hero's betting strip is the same component in compact
+             form: same side, same line, same price, same result chip, ~200px apart. The
+             headline call belongs to the hero; the ARGUMENT (diamondEdgeReasoning) stays here.
+           · `more` → intelSection — also rendered by Stats, which is where matchup intel
+             belongs. The fold keeps every market's number, which is Odds-only material. */
       const dePane = `<div class="gp-pane" data-pane="odds" style="display:${detailTab === "odds" ? "block" : "none"}">
         ${pregameLineBlock(g, "big")}
-        ${gs.kind === "live" ? liveVsLineBlock(g, leadLocked) : ""}
         ${marketsTable(g)}
         ${gpUnob}
-        ${deCallBlock(g, leadLocked)}
         ${diamondEdgeReasoning(g, lead, leadLocked)}
         ${leadLocked ? "" : more}
       </div>`;
@@ -8846,10 +9121,16 @@ export default function Home() {
          The banner that remains is the answer to the only question the page is opened to
          ask. A pass renders NOTHING — an empty slot above the tabs is the honest shape of
          "we are not on this game", and it costs zero pixels. */
-      /* THE ORDER, ONCE: header → box score (if any) → the pick → tabs → panes.
-         On a pre-game page topBox is empty and the pick banner sits directly under the
-         header, which is the same hierarchy with the first row absent. */
-      return `${gameHero}${topBox}${gpBanner ? `<div class="gp-lead">${gpBanner}</div>` : ""}${tabsBar}${previewPane}${statsPane}${dePane}${livePane}`;
+      /* THE ORDER, ONCE: hero (crests · records · score · state · the betting strip) → tabs →
+         one pane. Every fact on this page now has exactly ONE home:
+           hero      score, state, crests, records, the headline line + gated pick + result
+           Recap     narrative only — no score blocks, no chips
+           Box Score every in-game number: line score, hitters, pitchers
+           Stats     pregame and analytical material, including the four reads
+           Odds      market detail and the argument behind the call
+         The betting strip is INSIDE the hero rather than a banner below it, so the hero is a
+         single object the way CBS's is, and nothing sits between the header and the tabs. */
+      return `<div class="gp-heroblk">${gameHero}${gpBanner ? `<div class="gp-lead">${gpBanner}</div>` : ""}</div>${tabsBar}${previewPane}${boxPane}${statsPane}${dePane}${livePane}`;
       }
 
       // Wire the handlers that live INSIDE #gp-body (tabs). Called after every (re)build so a
@@ -8873,6 +9154,12 @@ export default function Home() {
         }));
         // every locked chip inside the detail body routes to the unlock flow
         page.querySelectorAll("[data-up]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => openUnlock(), 60); }));
+        wireBoxPane();
+        // MLB's own box score is fetched on open (and on the live cycle) and repaints in place
+        const gk = gameState(g).kind;
+        if (gk === "live" || gk === "final") {
+          loadMlbBox(g).then((m: any) => { if (m && detail && String(detail.game_id) === String(g.game_id)) repaintBoxPane(); }).catch(() => {});
+        }
       }
       // Rebuild #gp-body in place when a feed lands after first paint. Guarded to the SAME game
       // still being open. Preserves the active tab (buildBody reads detailTab), re-wires tabs,
@@ -8969,6 +9256,10 @@ export default function Home() {
       page.querySelectorAll(".gp-pane").forEach((p: any) => { p.style.display = p.dataset.pane === t ? "block" : "none"; });
       positionDetailInk();
       if (t === "live") { pollLiveDetail(); const b = $("gp-body"); if (b) b.scrollTop = b.scrollTop; }
+      // arriving on the box score pulls a fresh MLB document if the cached one is stale
+      if (t === "box" && detail) {
+        loadMlbBox(detail).then((m: any) => { if (m) repaintBoxPane(); }).catch(() => {});
+      }
     }
     function closeDetail(fromHistory = false, forceRoot = false) {
       if (!fromHistory && !forceRoot && detail && detail._backToGame && restoreGameDetail(detail._backToGame)) return;
@@ -9008,11 +9299,9 @@ export default function Home() {
       const fresh = !liveDetail || ld.updated_at !== liveDetail.updated_at;
       liveDetail = ld;
       if (!fresh) return;
-      // update the live pane in place (no scroll jump) if it's mounted + visible
-      const page = $("gamepage"); if (!page) return;
-      // the line score lives ABOVE the tabs now — repaint it there, not in the pane
-      const box = page.querySelector(".gp-topbox");
-      if (box) box.innerHTML = boxScorePanel(detail, gameLocked(detail));
+      // the box score is a TAB now — repaint the pane in place, no scroll jump
+      if (!$("gamepage")) return;
+      repaintBoxPane();
     }
     function bindSheetDrag(sheet: any, grab: any) {
       if (!sheet || !grab) return;
@@ -10126,6 +10415,41 @@ export default function Home() {
       }
       return out ? `<div class="sts-voices">${out}</div>` : "";
     }
+    /* ══════════════ THE FIELD — every slide stands on designed ground ══════════════
+       ROUND 3. Leon: "really revamp this whole page to make it look EVEN more compelling
+       and amazing… the images also kind of get cut off… I feel like we can do better."
+
+       Until this pass every slide was a flat column of components sitting on one shared
+       page background, which is exactly why each of them read as "a card with text dropped
+       in". Each slide now stands on a FIELD: four decorative layers that give that page a
+       ground of its own, and a composition that is deliberate rather than stacked.
+
+         · fld-wash  — the slide's own colour bloom. Gold for a flagship call, green-into-
+                       gold for a winner, the analyst's own accent for a spotlight, cyan for
+                       a game we're circled on. You know what kind of card you are on before
+                       you have read a word of it.
+         · fld-mark  — the house diamond, ghosted and bled off the lower-right corner at 92%
+                       of the slide width. THIS IS THE FALLBACK IMAGE. It is why a slide with
+                       no photograph reads as designed instead of as empty — the requirement
+                       was a fallback field that looks intentional, and a brand sigil struck
+                       through the page at that scale is intentional.
+         · fld-rule  — an editorial rule grid, masked away toward the foot. The paper.
+         · fld-grain — a fine noise pass so no gradient anywhere in the deck can band.
+
+       A slide WITH a photograph passes the photo in as `inner`, and the same four layers
+       become its scrim. One system; no per-slide backgrounds anywhere. */
+    const FIELD_MARK = `<svg viewBox="0 0 200 200" fill="none" aria-hidden="true" focusable="false"><path d="M100 3 197 100 100 197 3 100Z" stroke="currentColor" stroke-width="1.5"/><path d="M100 34 166 100 100 166 34 100Z" stroke="currentColor" stroke-width="1.1" opacity=".72"/><path d="M100 66 134 100 100 134 66 100Z" fill="currentColor" opacity=".5"/></svg>`;
+    // the iOS disclosure chevron — the affordance that replaces every boxed button in the deck
+    const CHEV_R = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`;
+    function storyField(kind: string, inner = "") {
+      return `<div class="sts-bg sts-field f-${esc(kind)}" aria-hidden="true"><span class="fld-wash"></span><span class="fld-mark">${FIELD_MARK}</span><span class="fld-rule"></span><span class="fld-grain"></span>${inner}</div>`;
+    }
+    /* THE EYEBROW is the one fixed element in the deck: same type, same tracking, same y on
+       every single slide, so advancing never jumps the composition. Everything below it is
+       free to differ. `right` carries the slide's trailing metadata (kickoff, date, streak). */
+    function storyEyebrow(label: string, right = "") {
+      return `<div class="sts-kick"><span class="kick-dia" aria-hidden="true">◆</span><span class="kick-lab">${label}</span>${right}</div>`;
+    }
     // THE NIGHTLY RECAP as a marquee story: "Last Night at the Desk" — the winner's glyph
     // crowned, the best call quoted, the worst call owned honestly. Daily fresh content.
     function storyLastNightSlide(sl: any) {
@@ -10133,18 +10457,20 @@ export default function Home() {
       const winnerCast = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner] : null;
       const head = rc.headline || recapWinnerLineTxt(rc) || "The desk, graded overnight.";
       return `<div class="sts sts-lastnight${rc.winner ? ` an-${esc(rc.winner)}` : ""}">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ Last Night at the Desk</span>${rc.date ? `<span class="sts-when">${esc(recapDateTxt(rc.date))}</span>` : ""}</div>
-        ${winnerCast ? `<div class="sts-ln-winner an-${esc(rc.winner)}" data-an="${esc(rc.winner)}" role="button" tabindex="0">
-          <span class="sts-ln-glyph"><span class="sts-ln-crown">${crownSvg(16)}</span>${deskGlyph(rc.winner, 30)}</span>
-          <span class="sts-ln-nm"><b>${esc(winnerCast.name)}</b><i>${esc(winnerCast.title)}</i></span>
-        </div>` : ""}
-        <h3 class="sts-head deskhead ln">${esc(head)}</h3>
-        ${(rc.best || rc.worst)
-          ? `${recapCallRow(rc.best, "best")}${recapCallRow(rc.worst, "worst")}`
-          : (rc.lines.length ? `<div class="rcap-lines sts-ln-lines">${recapLineRows(rc)}</div>` : "")}
-        ${rc.note ? `<div class="sts-substat">${esc(rc.note)}</div>` : ""}
-        <button class="st-cta" data-go="results">The full desk record →</button>
+        ${storyField("lastnight")}
+        ${storyEyebrow("Last Night at the Desk", rc.date ? `<span class="sts-when">${esc(recapDateTxt(rc.date))}</span>` : "")}
+        <div class="sts-core">
+          ${winnerCast ? `<div class="sts-ln-winner an-${esc(rc.winner)}" data-an="${esc(rc.winner)}" role="button" tabindex="0">
+            <span class="sts-ln-glyph"><span class="sts-ln-crown">${crownSvg(16)}</span>${deskGlyph(rc.winner, 30)}</span>
+            <span class="sts-ln-nm"><b>${esc(winnerCast.name)}</b><i>${esc(winnerCast.title)}</i></span>
+          </div>` : ""}
+          <h3 class="sts-head deskhead ln">${esc(head)}</h3>
+          ${(rc.best || rc.worst)
+            ? `<div class="sts-lnrows">${recapCallRow(rc.best, "best")}${recapCallRow(rc.worst, "worst")}</div>`
+            : (rc.lines.length ? `<div class="rcap-lines sts-ln-lines">${recapLineRows(rc)}</div>` : "")}
+          ${rc.note ? `<div class="sts-substat">${esc(rc.note)}</div>` : ""}
+        </div>
+        <div class="sts-foot"><button class="st-cta" data-go="results">The full desk record →</button></div>
       </div>`;
     }
     function storyPickSlide(sl: any) {
@@ -10181,47 +10507,77 @@ export default function Home() {
            <div class="sts-meta">${pickStars(pl)}${pickGrade(pl)}${state ? `<span class="sts-res ${state.cls}">${state.txt}</span>` : (gs.kind === "pre" ? countdownChip(g, gs) : "")}</div>
            ${signalRow(pl)}
            ${pickMadeMeta(pl)}`;
+      /* COMPOSITION: eyebrow, then ONE dominant element (the call, set at up to 72px), with
+         the matchup demoted to a rail above it and the evidence stepped down beneath. The
+         matchup used to be the same visual weight as the call, which is why the flagship
+         slide had no focal point at all. */
       return `<div class="sts sts-pick tier-${tier}">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ ${sl.rank === 1 ? "Flagship Pick" : `Top Pick #${sl.rank}`}</span>${when}</div>
-        <div class="sts-open" ${locked ? `data-go="unlock"` : `data-go="pick" data-gid="${esc(g.game_id)}"`} role="button" tabindex="0" aria-label="${locked ? "Unlock this pick" : "Open the full pick"}">
-          <div class="sts-mu">${team("away")}${mid}${team("home")}</div>
-          <div class="sts-callwrap">${call}</div>
-          ${locked ? "" : `<span class="sts-openchip" aria-hidden="true">The full pick <i>↗</i></span>`}
+        ${storyField(stars >= 4 ? "pickgold" : stars === 3 ? "pickgreen" : "pick")}
+        ${storyEyebrow(sl.rank === 1 ? "Flagship Pick" : `Top Pick #${sl.rank}`, when)}
+        <div class="sts-core">
+          <div class="sts-open" ${locked ? `data-go="unlock"` : `data-go="pick" data-gid="${esc(g.game_id)}"`} role="button" tabindex="0" aria-label="${locked ? "Unlock this pick" : "Open the full pick"}">
+            <div class="sts-mu rail">${team("away")}${mid}${team("home")}</div>
+            <div class="sts-callwrap">${call}</div>
+            ${locked ? "" : `<span class="sts-openchip" aria-hidden="true">The full pick <i>↗</i></span>`}
+          </div>
+          ${storyVoiceQuote(g, pl, locked)}
         </div>
-        ${storyVoiceQuote(g, pl, locked)}
       </div>`;
     }
     function storyNewsSlide(sl: any) {
       const s = sl.s || {};
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
       const when = niceTime(s.published_at, s.published_display);
-      // Full-bleed cover on a portrait slide needs a tall source; small landscape
-      // photos blown up 3-4x read as blur. Gate on natural size once loaded:
-      // tiny/broken → drop to the gradient bg; low-res → crisp inset photo card.
-      /* ═══ THE CROP SYSTEM (Leon: "images get cut off") ═══
-         The old rule was one fixed max-height with `object-fit:cover` and a centre origin.
-         On a landscape news photo that crops the middle band out of a 16:9 frame — which on
-         a photo of a person is a beheading, and is exactly what Leon is seeing.
+      /* ═══ THE CROP SYSTEM, ROUND 3 (Leon: "the images also kind of get cut off") ═══
+         Round 2 stopped the beheadings by shrinking every photo into an inset rounded card
+         with a letterbox behind it. Nothing was cut off any more — but a 16:9 wire photo
+         floating in a box in the middle of an 812px page is a THUMBNAIL, not a cover, and it
+         was the single biggest reason this deck read as cards rather than as a magazine.
 
-         THREE BEHAVIOURS, chosen from the image's own aspect once it has loaded:
-           · PORTRAIT / SQUARE (≥0.8)  → cover, focal point at 30% from the top, which is
-             where a face sits in almost every sports wire photo
-           · WIDE (1.3–2.2)            → contain, letterboxed on a brand-tinted field. A
-             wide photo shown whole beats a wide photo shown partly.
-           · ULTRA-WIDE or TINY        → dropped entirely; the gradient card is better than
-             a bad crop, and always was.
-         The class is applied on load, so nothing is guessed from a URL. */
-      const img = s.image_url ? `<img class="sts-photo" src="${esc(String(s.image_url))}" alt="" decoding="async" onload="var r=this.naturalWidth/this.naturalHeight;if(!this.naturalWidth||this.naturalWidth<240||r>2.2){this.remove()}else if(r>=1.3){this.classList.add('fit-wide')}else{this.classList.add('fit-tall')}" onerror="this.remove()">` : "";
+         Round 3 puts the photograph back to the edges and picks the composition from the
+         source's own aspect ratio, measured on load — never guessed from a URL:
+
+           · PORTRAIT / SQUARE (r < 1.24) → FULL BLEED. The source is already the shape of
+             the slide, so cover takes a few percent off the height and nothing else; the
+             focal point is pinned at 26% from the top, where a face sits in almost every
+             sports wire photo. Type rides a two-stop scrim over it.
+           · WIDE (1.24 ≤ r ≤ 2.6) → TOP BAND, edge to edge, at the photo's OWN aspect ratio
+             (written to --shot-ar on load). Full width, zero side crop, no letterbox bars:
+             the photo is shown WHOLE and the field carries the type beneath it.
+           · ULTRA-WIDE / TINY / BROKEN → the designed field takes over, with the league set
+             huge and ghosted behind the headline. Never a hole, never a bad crop.
+
+         The card starts in `.nofoto` and only leaves it once a photo has actually decoded,
+         so a slow or dead image never flashes an empty frame.
+
+         ═══ AND THE PRESENTATION IS AN APP-STORE "TODAY" CARD ═══
+         Leon: "the news image and the way the headline and click-to-read button is really
+         doesn't feel modern — find a way to make it feel way more modern iOS style."
+
+         The dated part was the ANATOMY, not the picture: a photo, then a headline, then a
+         boxed button underneath it, which is a web article teaser from 2016. This is the
+         Apple News / App Store Today card instead — one large continuous-corner card floating
+         on the field with a deep soft shadow and no border at all; the photograph fills it;
+         a gradient scrim rises from the foot; the kicker is quiet small caps; the headline
+         sits directly ON the image at display weight with tight leading; the metadata is
+         a whisper. There is NO button. The card is the target (the standing gesture rule)
+         and the affordance is a chevron text-link — the same thing Apple ships. */
+      const img = s.image_url ? `<img class="nws-shot" src="${esc(String(s.image_url))}" alt="" decoding="async" onload="var p=this.closest('.nws-card');var r=this.naturalWidth/this.naturalHeight;if(!p)return;if(!this.naturalWidth||this.naturalWidth<300||r>2.6){this.remove();return}p.style.setProperty('--shot-ar',r.toFixed(3));p.classList.remove('nofoto');p.classList.add(r>=1.24?'foto-band':'foto-bleed')" onerror="this.remove()">` : "";
+      const dek = hedgeFree(s.dek || s.summary);
       return `<div class="sts sts-news">
-        <div class="sts-bg" aria-hidden="true"></div>
-        ${img}
-        <div class="sts-scrim" aria-hidden="true"></div>
-        <div class="sts-newsbody sts-open is-card" data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Read this story">
-          <div class="sts-kick"><span>${lab || "AROUND THE LEAGUE"} · DiamondEdge</span>${when ? `<span class="sts-when">${esc(when)}</span>` : ""}</div>
-          <h3 class="sts-head">${esc(s.headline || s.title || "")}</h3>
-          ${hedgeFree(s.dek || s.summary) ? `<p class="sts-dek">${esc(hedgeFree(s.dek || s.summary))}</p>` : ""}
-          <span class="sts-openchip">Read the full story <i>↗</i></span>
+        ${storyField("news")}
+        <div class="sts-core">
+          <article class="nws-card sts-open nofoto" data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Read this story">
+            <span class="nws-shotwrap" aria-hidden="true">${img}</span>
+            <span class="nws-league" aria-hidden="true">${lab || "DIAMONDEDGE"}</span>
+            <span class="nws-scrim" aria-hidden="true"></span>
+            <div class="nws-body">
+              <div class="nws-kick"><b>${lab || "AROUND THE LEAGUE"}</b>${when ? `<em>${esc(when)}</em>` : ""}</div>
+              <h3 class="sts-head">${esc(s.headline || s.title || "")}</h3>
+              ${dek ? `<p class="sts-dek">${esc(dek)}</p>` : ""}
+              <span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span>
+            </div>
+          </article>
         </div>
       </div>`;
     }
@@ -10238,12 +10594,14 @@ export default function Home() {
       }).join("");
       const dd = new Date(sl.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
       return `<div class="sts sts-recap ${pos ? "pos" : "neg"}">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ Yesterday's Record</span><span class="sts-when">${esc(dd)}</span></div>
-        <div class="sts-bigwl">${wl}</div>
-        <div class="sts-substat">${r.hit_rate != null ? `${(r.hit_rate * 100).toFixed(0)}% hit` : ""}${roi ? ` · ${roi}` : ""} · graded in the open</div>
-        ${rows ? `<div class="sts-rrows">${rows}</div>` : ""}
-        <button class="st-cta" data-go="results">See the full record →</button>
+        ${storyField(pos ? "recap" : "recapneg")}
+        ${storyEyebrow("Yesterday's Record", `<span class="sts-when">${esc(dd)}</span>`)}
+        <div class="sts-core">
+          <div class="sts-bigwl">${wl}</div>
+          <div class="sts-substat">${r.hit_rate != null ? `${(r.hit_rate * 100).toFixed(0)}% hit` : ""}${roi ? ` · ${roi}` : ""} · graded in the open</div>
+          ${rows ? `<div class="sts-rrows">${rows}</div>` : ""}
+        </div>
+        <div class="sts-foot"><button class="st-cta" data-go="results">See the full record →</button></div>
       </div>`;
     }
     /* ════════ A WINNER, CELEBRATED ════════
@@ -10259,26 +10617,39 @@ export default function Home() {
       const dd = (() => { const d = new Date(String(w.date) + "T12:00:00"); return isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); })();
       const crest = (side: "away" | "home") =>
         `<div class="sts-team"><span class="sts-crest">${gCrest(w.g, side)}</span><b>${esc(side === "away" ? w.away : w.home)}</b></div>`;
+      /* ═══ THE STAMP ═══
+         The cashed moment is this product's best emotional beat and it was a small green
+         pill. It is now a struck SEAL: a rotated, double-ruled gold-foil plate that lands
+         with a spring from 1.9× and blurred, two rings ride out from under it once, and a
+         single foil sweep crosses the word a beat later. Gold, not confetti — the celebration
+         has to look like the house, not like a slot machine. Everything here is behind
+         prefers-reduced-motion; with motion off the seal simply IS. */
       return `<div class="sts sts-win">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ That's a winner</span>${dd ? `<span class="sts-when">${esc(dd)}</span>` : ""}</div>
-        <div class="sts-open" ${w.g && w.g.game_id != null ? `data-go="pick" data-gid="${esc(String(w.g.game_id))}"` : `data-go="results"`} role="button" tabindex="0" aria-label="Open this result">
-          <div class="sts-mu">${crest("away")}${w.score ? `<div class="sts-score fin">${esc(w.score)}</div>` : `<div class="sts-at">@</div>`}${crest("home")}</div>
-        <div class="sts-wincall ${over ? "ou-over" : "ou-under"}">
-          <span class="sts-winmark" aria-hidden="true">${over ? "▲" : "▼"}</span>
-          <b>${word}${w.line ? ` ${esc(w.line)}` : ""}</b>
-          ${w.price != null ? `<i>${fmtOdds(w.price)}</i>` : ""}
+        ${storyField("win")}
+        ${storyEyebrow("That's a winner", dd ? `<span class="sts-when">${esc(dd)}</span>` : "")}
+        <div class="sts-core">
+          <div class="cash-seal" role="img" aria-label="This pick cashed">
+            <span class="cash-ring" aria-hidden="true"></span><span class="cash-ring r2" aria-hidden="true"></span>
+            <span class="cash-plate"><i class="cash-tick" aria-hidden="true">✓</i><b>CASHED</b><span class="cash-foil" aria-hidden="true"></span></span>
+          </div>
+          <div class="sts-open" ${w.g && w.g.game_id != null ? `data-go="pick" data-gid="${esc(String(w.g.game_id))}"` : `data-go="results"`} role="button" tabindex="0" aria-label="Open this result">
+            <div class="sts-wincall ${over ? "ou-over" : "ou-under"}">
+              <span class="sts-winmark" aria-hidden="true">${over ? "▲" : "▼"}</span>
+              <b>${word}${w.line ? ` ${esc(w.line)}` : ""}</b>
+              ${w.price != null ? `<i>${fmtOdds(w.price)}</i>` : ""}
+            </div>
+            <div class="sts-mu rail">${crest("away")}${w.score ? `<div class="sts-score fin">${esc(w.score)}</div>` : `<div class="sts-at">@</div>`}${crest("home")}</div>
+            ${w.stars != null ? `<div class="sts-meta">${bStars(w.stars)}</div>` : ""}
+            <span class="sts-openchip" aria-hidden="true">The graded call <i>↗</i></span>
+          </div>
+          ${w.total != null ? `<div class="sts-winmath">
+            <span><i>Line</i><b>${esc(w.line || (lineN != null ? lineStr(lineN) : "—"))}</b></span>
+            <span class="sep" aria-hidden="true">→</span>
+            <span><i>Final total</i><b>${num(w.total, 0)}</b></span>
+            ${margin != null ? `<span class="by"><i>Clear by</i><b>${num(margin, margin % 1 ? 1 : 0)}</b></span>` : ""}
+          </div>` : ""}
         </div>
-        <div class="sts-winstamp"><span class="sts-wintick" aria-hidden="true">✓</span>CASHED</div>
-        </div>
-        ${w.total != null ? `<div class="sts-winmath">
-          <span><i>Line</i><b>${esc(w.line || (lineN != null ? lineStr(lineN) : "—"))}</b></span>
-          <span class="sep" aria-hidden="true">→</span>
-          <span><i>Final total</i><b>${num(w.total, 0)}</b></span>
-          ${margin != null ? `<span class="by"><i>Clear by</i><b>${num(margin, margin % 1 ? 1 : 0)}</b></span>` : ""}
-        </div>` : ""}
-        ${w.stars != null ? `<div class="sts-meta">${bStars(w.stars)}</div>` : ""}
-        <button class="st-cta" data-go="results">Every graded call →</button>
+        <div class="sts-foot"><button class="st-cta" data-go="results">Every graded call →</button></div>
       </div>`;
     }
     /* ════════ THE GAME WE ARE CIRCLED ON ════════
@@ -10301,15 +10672,17 @@ export default function Home() {
         return `<span class="sts-hmark an-${esc(a.key)} ${dc}" data-an="${esc(a.key)}" role="button" tabindex="0" title="${esc(a.name)} — ${esc(said)}">${deskGlyph(a.key, 17)}<i aria-hidden="true"></i></span>`;
       }).join("");
       return `<div class="sts sts-hype">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ ${esc(sl.kicker)}</span>${when ? `<span class="sts-when">${esc(when)}</span>` : ""}</div>
-        <div class="sts-open" data-go="pick" data-gid="${esc(String(g.game_id))}" role="button" tabindex="0" aria-label="Open this matchup">
-          <h3 class="sts-head">${esc(sl.head)}</h3>
-          <div class="sts-mu">${team("away")}<div class="sts-at">vs</div>${team("home")}</div>
-          ${sl.tot != null ? `<div class="sts-hypeline"><i>Total</i><b>${esc(lineStr(sl.tot))}</b></div>` : ""}
-          <span class="sts-openchip" aria-hidden="true">Open the matchup <i>↗</i></span>
+        ${storyField("hype")}
+        ${storyEyebrow(esc(sl.kicker), when ? `<span class="sts-when">${esc(when)}</span>` : "")}
+        <div class="sts-core">
+          <div class="sts-open" data-go="pick" data-gid="${esc(String(g.game_id))}" role="button" tabindex="0" aria-label="Open this matchup">
+            <h3 class="sts-head">${esc(sl.head)}</h3>
+            <div class="sts-mu rail">${team("away")}<div class="sts-at">vs</div>${team("home")}</div>
+            ${sl.tot != null ? `<div class="sts-hypeline"><i>Total</i><b>${esc(lineStr(sl.tot))}</b></div>` : ""}
+            <span class="sts-openchip" aria-hidden="true">Open the matchup <i>↗</i></span>
+          </div>
         </div>
-        ${marks ? `<div class="sts-hmarks" role="img" aria-label="the desk's four reads">${marks}</div>` : ""}
+        ${marks ? `<div class="sts-foot"><div class="sts-hmarks" role="img" aria-label="the desk's four reads">${marks}</div></div>` : ""}
       </div>`;
     }
     /* ════════ AN ANALYST AS A PERSON ════════
@@ -10318,28 +10691,39 @@ export default function Home() {
     function storyAnalystSlide(sl: any) {
       const r = sl.r, run = sl.run || { mark: "", n: 0 };
       const graded = r.win + r.loss + r.push > 0;
-      const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0";
+      const rec = graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "—";
       const thesis = r.persona || deskThesis(r.key, r) || "";
       const edge = deskEdgeLine(r.key, r) || "";
       const todayN = (() => { try { return anlTodayCount(r.key); } catch { return 0; } })();
       const runTxt = run.n >= 2 ? `${run.mark}${run.n}` : "";
+      /* THE TRADING CARD. The persona was a header, a quote and a stat grid stacked loosely
+         down the page; it is now one object with a frame — accent rim, notched corners, the
+         sigil struck through it at 240px, a foil corner, the name at display size, the voice
+         as a pull-quote and the ledger as a stat block along the foot. The whole card is the
+         tap target and opens the analyst's own sheet. */
       return `<div class="sts sts-anlspot an-${esc(r.key)}">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ Analyst spotlight</span>${runTxt ? `<span class="sts-when ${run.mark === "W" ? "hot" : ""}">on a ${esc(runTxt)}</span>` : ""}</div>
-        <div class="sts-anlhead" data-an="${esc(r.key)}" role="button" tabindex="0">
-          <span class="sts-anlsig">${deskGlyph(r.key, 40)}</span>
-          <span class="sts-anlid"><b>${esc(r.name)}</b><i>${esc(r.title || "")}</i></span>
+        ${storyField("anl")}
+        ${storyEyebrow("Analyst spotlight", runTxt ? `<span class="sts-when ${run.mark === "W" ? "hot" : ""}">on a ${esc(runTxt)}</span>` : "")}
+        <div class="sts-core">
+          <div class="anl-card" data-an="${esc(r.key)}" role="button" tabindex="0" aria-label="Open ${esc(r.name)}'s analyst card">
+            <span class="anl-ghost" aria-hidden="true">${deskGlyph(r.key, 240)}</span>
+            <span class="anl-foil" aria-hidden="true"></span>
+            <div class="anl-head">
+              <span class="anl-sig">${deskGlyph(r.key, 30)}</span>
+              <span class="anl-id"><b>${esc(r.name)}</b><i>${esc(r.title || "")}</i></span>
+            </div>
+            ${edge || thesis ? `<p class="anl-quote">${esc(edge || thesis)}</p>` : ""}
+            <div class="anl-stats">
+              <span><i>Record</i><b>${esc(rec)}</b></span>
+              ${r.hit != null ? `<span><i>Hit</i><b>${(Number(r.hit) * 100).toFixed(0)}%</b></span>` : ""}
+              ${r.roi != null ? `<span class="${Number(r.roi) >= 0 ? "up" : "down"}"><i>ROI</i><b>${Number(r.roi) >= 0 ? "+" : ""}${(Number(r.roi) * 100).toFixed(1)}%</b></span>` : ""}
+              <span><i>Sample</i><b>${r.n}</b></span>
+            </div>
+            ${r.last10 && r.last10.length ? `<div class="anl-form">${deskL10Dots(r.last10)}<em>last ${r.last10.length}</em></div>` : ""}
+            ${todayN ? `<div class="anl-filed">${todayN} call${todayN === 1 ? "" : "s"} filed on today's board</div>` : ""}
+            <span class="sts-openchip" aria-hidden="true">Open ${esc(r.name)}'s card <i>↗</i></span>
+          </div>
         </div>
-        ${edge || thesis ? `<p class="sts-anledge">${esc(edge || thesis)}</p>` : ""}
-        <div class="sts-anlrec">
-          <span><i>Record</i><b>${esc(rec)}</b></span>
-          ${r.hit != null ? `<span><i>Hit</i><b>${(Number(r.hit) * 100).toFixed(0)}%</b></span>` : ""}
-          ${r.roi != null ? `<span class="${Number(r.roi) >= 0 ? "up" : "down"}"><i>ROI</i><b>${Number(r.roi) >= 0 ? "+" : ""}${(Number(r.roi) * 100).toFixed(1)}%</b></span>` : ""}
-          <span><i>Sample</i><b>${r.n}</b></span>
-        </div>
-        ${r.last10 && r.last10.length ? `<div class="sts-anll10">${deskL10Dots(r.last10)}<em>last ${r.last10.length}</em></div>` : ""}
-        ${todayN ? `<div class="sts-substat">${todayN} call${todayN === 1 ? "" : "s"} filed on today's board.</div>` : ""}
-        <button class="st-cta" data-an="${esc(r.key)}">Open ${esc(r.name)}'s card →</button>
       </div>`;
     }
     /* ════════ THE END CARD ════════
@@ -10355,14 +10739,27 @@ export default function Home() {
         return `<div class="sts-srow" data-gid="${esc(g.game_id)}" role="button" tabindex="0"><span class="sts-srank">#${i + 1}</span><span class="sts-smu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span><span class="sts-sside">${side}</span>${bStars(pl.stars != null ? pl.stars : 1)}</div>`;
       }).join("");
       const n = (sl.picks || []).length;
+      /* THE END CARD IS A COMPLETION, THEN A DOOR. The satisfying part is the sentence
+         "you're done" said at full size — so ALL CAUGHT UP is the dominant type, struck
+         through by a diamond that DRAWS ITSELF (stroke-dash, 900ms) rather than an emoji
+         that spins. The picks list is the receipt, and the door is a single oversized
+         control. Advancing past this card pans to Games (see storyHandOff). */
       return `<div class="sts sts-summary caughtup" data-go="games" role="button" tabindex="0" aria-label="All caught up — open the games board">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="cu-mark" aria-hidden="true"><span class="cu-dia">◆</span><span class="cu-ring"></span><span class="cu-ring r2"></span></div>
-        <div class="cu-kick">All caught up</div>
-        <h3 class="cu-head">${n ? `${n} DiamondEdge Pick${n === 1 ? "" : "s"}<br>on today's board.` : "The board is live."}</h3>
-        ${rows ? `<div class="sts-srows">${rows}</div>` : ""}
-        <button class="st-cta big" data-go="games">Go to the board →</button>
-        <div class="cu-foot">Tap anywhere to open Games</div>
+        ${storyField("end")}
+        <div class="sts-core">
+          <div class="cu-mark" aria-hidden="true">
+            <svg class="cu-svg" viewBox="0 0 120 120" fill="none"><path class="cu-p1" d="M60 5 115 60 60 115 5 60Z"/><path class="cu-p2" d="M60 27 93 60 60 93 27 60Z"/><path class="cu-p3" d="M60 47 73 60 60 73 47 60Z"/></svg>
+            <span class="cu-halo"></span>
+          </div>
+          <h3 class="cu-head">All caught<br>up.</h3>
+          <div class="cu-rule" aria-hidden="true"></div>
+          <div class="cu-sub">${n ? `${n} DiamondEdge pick${n === 1 ? "" : "s"} on today's board` : "The board is live"}</div>
+          ${rows ? `<div class="sts-srows">${rows}</div>` : ""}
+        </div>
+        <div class="sts-foot">
+          <button class="st-cta big" data-go="games">Go to the board <span aria-hidden="true">→</span></button>
+          <div class="cu-foot">Tap anywhere to open Games</div>
+        </div>
       </div>`;
     }
     // THE ANALYST DESK slide — the consensus as cinema: "All four say OVER." with the four
@@ -10396,15 +10793,17 @@ export default function Home() {
         : "";
       const stCls = state === "UNANIMOUS" ? "unan" : state === "MAJORITY" ? "maj" : "split";
       return `<div class="sts sts-desk cons-${stCls}">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ The Analyst Desk</span><span class="sts-when">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span></div>
-        <div class="sts-open" data-go="pick" data-gid="${esc(g.game_id)}" role="button" tabindex="0" aria-label="Open the desk's full read">
-          <h3 class="sts-head deskhead">${esc(head)}</h3>
-          <div class="sts-drows">${rows}</div>
-          ${verdict}
-          <span class="sts-openchip" aria-hidden="true">The desk's full read <i>↗</i></span>
+        ${storyField(state === "SPLIT" ? "desksplit" : "desk")}
+        ${storyEyebrow("The Analyst Desk", `<span class="sts-when">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>`)}
+        <div class="sts-core">
+          <div class="sts-open" data-go="pick" data-gid="${esc(g.game_id)}" role="button" tabindex="0" aria-label="Open the desk's full read">
+            <h3 class="sts-head deskhead">${esc(head)}</h3>
+            <div class="sts-drows">${rows}</div>
+            ${verdict}
+            <span class="sts-openchip" aria-hidden="true">The desk's full read <i>↗</i></span>
+          </div>
+          ${simSaysChip(g, "big", locked)}
         </div>
-        ${simSaysChip(g, "big", locked)}
       </div>`;
     }
     // DESK STANDINGS as cinema: the four analysts ranked, records front and center.
@@ -10421,7 +10820,7 @@ export default function Home() {
           return `<button class="sts-strow an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked && grp.ordinals && i === 0 ? " lead" : ""}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}">
             <span class="sts-strank">${grp.ranked ? (grp.ordinals ? ordinal(i) : "◆") : `<i>${ledgerMark(r)}</i>`}</span>
             <span class="sts-stbody">
-              <span class="sts-strow1">${deskGlyph(r.key, 15)}<b class="sts-stnm">${esc(r.name)}</b><span class="sts-strec"><b>${graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "0–0"}</b></span></span>
+              <span class="sts-strow1">${deskGlyph(r.key, 15)}<b class="sts-stnm">${esc(r.name)}</b><span class="sts-strec"><b>${graded ? `${r.win}–${r.loss}${r.push ? `–${r.push}` : ""}` : "—"}</b></span></span>
               <span class="sts-strow2"><i>${esc(graded ? `${r.n} graded · ${ledgerShort(r)}` : `no graded calls · ${ledgerShort(r)}`)}</i>${r.roi != null ? ledgerRoi(r, "sts-stroi") : ""}${deskL10Dots(r.last10.slice(-5))}</span>
             </span>
           </button>`;
@@ -10429,12 +10828,14 @@ export default function Home() {
         return `<div class="sts-stgrp ${esc(grp.id)}"><span class="sts-stgk">${esc(grp.head)}</span>${rows}</div>`;
       }).join("");
       return `<div class="sts sts-standings">
-        <div class="sts-bg" aria-hidden="true"></div>
-        <div class="sts-kick"><span>◆ Desk Standings</span></div>
-        <h3 class="sts-head deskhead">Four analysts.<br>Not one league table.</h3>
-        <div class="sts-strows">${items}</div>
-        <div class="sts-substat">Records open in ${recordEraMonth()}. ${ANALYST_MIN_N}+ graded calls earns a place — tap any analyst for the full card.</div>
-        <button class="st-cta" data-go="results">See the full record →</button>
+        ${storyField("standings")}
+        ${storyEyebrow("Desk Standings")}
+        <div class="sts-core">
+          <h3 class="sts-head deskhead">Four analysts.<br>Not one league table.</h3>
+          <div class="sts-strows">${items}</div>
+          <div class="sts-substat">Records open in ${recordEraMonth()}. ${ANALYST_MIN_N}+ graded calls earns a place — tap any analyst for the full card.</div>
+        </div>
+        <div class="sts-foot"><button class="st-cta" data-go="results">See the full record →</button></div>
       </div>`;
     }
     function storySlideHtml(sl: any, i: number) {
@@ -10449,7 +10850,9 @@ export default function Home() {
         : sl.t === "hype" ? storyHypeSlide(sl)
         : sl.t === "anlspot" ? storyAnalystSlide(sl)
         : storySummarySlide(sl);
-      return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
+      // data-kind drives the per-type entry motion (see the MOTION INVENTORY in globals.css):
+      // a pick eases up, a winner lands, a news cover cross-dissolves, the end card blooms.
+      return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" data-kind="${esc(String(sl.t || "summary"))}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
     }
     function storyFillsSync() {
       document.querySelectorAll(".st-fill[data-sf]").forEach((el: any) => {
@@ -12022,7 +12425,9 @@ export default function Home() {
       const cast = DESK_CAST[k] || { name: k, title: "Analyst" };
       const bio = DESK_BIO[k] || {};
       const graded = rec && (rec.win + rec.loss + rec.push) > 0;
-      const wl = graded ? `${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}` : "0–0";
+      // NEVER 0–0: an ungraded analyst says so in words (see zeroScopeTxt) rather than
+      // publishing a zero that reads like a measured result.
+      const wl = graded ? `${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ""}` : "";
       const hit = graded && rec.hit != null ? `${(rec.hit * 100).toFixed(0)}%` : "";
       const roi = graded && rec.roi != null ? `${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(1)}%` : "";
       const today = anlTodayCount(k);
@@ -12045,7 +12450,9 @@ export default function Home() {
         </header>
         <p class="rost-tag">${esc(edge)}</p>
         <div class="rost-rec${graded ? "" : " none"}${young ? " young" : ""}">
-          <span class="rost-wl"><b>${esc(wl)}</b><i>W–L</i></span>
+          ${wl
+            ? `<span class="rost-wl"><b>${esc(wl)}</b><i>W–L</i></span>`
+            : `<span class="rost-wl none"><b>${today ? `${today} filed today` : "No graded calls yet"}</b></span>`}
           <span class="rost-sts">${hit ? `<span class="rost-st">${esc(hit)} <i>hit</i></span>` : ""}${roi ? `<span class="rost-st ${rec.roi >= 0 ? "pos" : "neg"}">${esc(roi)} <i>ROI</i></span>` : ""}</span>
           <span class="rost-n">${esc(nTx)}${young ? ` · ` : ""}</span>
         </div>
@@ -12165,7 +12572,7 @@ export default function Home() {
       ].filter(Boolean).join("") : "";
       return `<div class="dp-recordhero">
         <div class="dpr-k">The DiamondEdge record${sinceTxt ? ` · since ${esc(sinceTxt)}` : ""}</div>
-        <div class="dpr-wl">${esc(r ? r.wl : "0–0")}</div>
+        <div class="dpr-wl${r && r.wl ? "" : " none"}">${esc(r && r.wl ? r.wl : zeroScopeTxt(true))}</div>
         ${figs ? `<div class="dpr-figs">${figs}</div>` : ""}
         <div class="dpr-live"><span class="dpr-livedot" aria-hidden="true"></span><b>Every pick we published, graded against the final score.</b></div>
       </div>`;
@@ -12244,9 +12651,38 @@ export default function Home() {
 
        Every scope is summed from the SAME day ledger the widget draws, so a scope can never
        disagree with the days inside it. */
-    function scopeRow(label: string, sub: string, sum: any) {
+    /* ════════ A ZERO IS NOT A RECORD ════════
+       Leon: "Saying it starts at 0-0-0 doesn't mean anything."
+
+       He is right, and it is worse than meaningless: a scope that prints 0–0–0 looks like a
+       measured result of zero rather than an absence of measurement, and on the day's first
+       screen — before a single game has finished — that is the first number a reader meets.
+
+       Every zero state in the app now says the true, useful thing instead. Where picks are
+       live, it says how many and when they grade; where nothing is live it says when the
+       first grade lands; where an analyst has no ledger it says so in words. The rule: never
+       print a record that is all zeroes. */
+    function picksInPlayToday() {
+      const src = livePayload || payload;
+      let n = 0;
+      (((src || {}) as any).games || []).forEach((g: any) => {
+        if (gameLocalDay(g) !== todayISO()) return;
+        const pl = displayPick(g);
+        if (!isBet(pl)) return;
+        const st = playState(g, pl);
+        if (st === "won" || st === "lost" || st === "pushed") return;
+        n++;
+      });
+      return n;
+    }
+    function zeroScopeTxt(isToday: boolean) {
+      if (!isToday) return "No graded picks in this window";
+      const n = picksInPlayToday();
+      return n ? `${n} pick${n === 1 ? "" : "s"} in play · first grades tonight` : "First grades tonight";
+    }
+    function scopeRow(label: string, sub: string, sum: any, zeroTxt = "") {
       const dec = sum.w + sum.l;
-      if (!(dec + sum.p)) return `<div class="scoperow empty"><span class="sc-k">${esc(label)}</span><span class="sc-none">No graded picks</span></div>`;
+      if (!(dec + sum.p)) return `<div class="scoperow empty"><span class="sc-k">${esc(label)}</span><span class="sc-none">${esc(zeroTxt || "No graded picks in this window")}</span></div>`;
       const hit = dec ? sum.w / dec : null;
       const up = sum.units >= 0;
       return `<div class="scoperow">
@@ -12268,8 +12704,8 @@ export default function Home() {
       })();
       const monthName = new Date(today + "T12:00:00").toLocaleDateString("en-US", { month: "long" });
       const rows = [
-        scopeRow("Today", "", dailyRecordSince(today)),
-        scopeRow(monthName, "this month so far", dailyRecordSince(monthStart)),
+        scopeRow("Today", "", dailyRecordSince(today), zeroScopeTxt(true)),
+        scopeRow(monthName, "this month so far", dailyRecordSince(monthStart), zeroScopeTxt(false)),
       ];
       // "since July 1" is only its own row when it is a wider window than the month
       if (since < monthStart) rows.push(scopeRow(`Since ${stratDateTxt(since).replace(/,\s*\d{4}$/, "")}`, "every pick we have published", dailyRecordSince(since)));
@@ -12565,10 +13001,12 @@ export default function Home() {
     // show its label behind a glowing gold pill. Re-rendered on every switchTab.
     const DOCK_ICONS: any = {
       today: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M19 9h1.5v9.5a1.5 1.5 0 0 1-3 0"/><path d="M8 9h5M8 13h7M8 17h4"/></svg>`,
-      // THE CENTRE TAB. Games is the product, so its mark is the brand's own diamond and it
-      // is drawn to be read at 34px, not 25px: a heavier rotated square with a solid core,
-      // so the extra size reads as weight rather than as the same thin outline enlarged.
-      games: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4.9" y="4.9" width="14.2" height="14.2" rx="3" transform="rotate(45 12 12)"/><rect x="9.05" y="9.05" width="5.9" height="5.9" rx="1.4" transform="rotate(45 12 12)" fill="currentColor" stroke="none"/></svg>`,
+      // THE CENTRE TAB carries the house mark itself — the SAME geometry as the masthead, the
+      // app icon and the pick lockup (see --de-mark in globals.css). It used to be a rotated
+      // ROUNDED SQUARE, a near-miss of the real mark, which is a large part of why the brand
+      // never read as one system: a rounded square in the bar, a rounded square in the icon,
+      // and a pointed ◆ glyph everywhere else.
+      games: `<svg viewBox="0 0 32 32" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M16 3.4 28.6 16 16 28.6 3.4 16Z"/><path d="M16 10.6 21.4 16 16 21.4 10.6 16Z" fill="currentColor" stroke="none"/></svg>`,
       results: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 20V13M12 20V6M19 20v-9"/></svg>`,
       desk: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="13" width="7.5" height="7.5" rx="2.2"/></svg>`,
       research: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5M10.2 3v6.2l-5.3 9A1.9 1.9 0 0 0 6.5 21h11a1.9 1.9 0 0 0 1.6-2.8l-5.3-9V3"/><path d="M7.2 15.4h9.6"/></svg>`,
@@ -12883,22 +13321,54 @@ export default function Home() {
       // loadBeta did not — so on a slow connection the chip went dead and stayed dead, and the
       // record-breakdown sheet with it. Never repaint #meta-area without bindMeta().
       loadBeta().then(() => { try { const m = $("meta-area"); if (m) { m.innerHTML = metaRow(); bindMeta(); } } catch {} }).catch(() => {});
-      // ── PULL-TO-REFRESH (mobile): drag down from the very top → full refresh ──
-      // A hard reload re-fetches every feed (and any new deploy). Indicator shows pull
-      // progress; fires past 70px. Desktop unaffected (touch-only).
+      /* ── PULL-TO-REFRESH: THE GAME PAGE, AND NOWHERE ELSE ──
+         Leon: "remove it from all pages other than the game page", and it must not fire from
+         inside a popover.
+
+         WHAT IT USED TO DO. It was bound to the document and armed on every surface in the
+         app EXCEPT a game page (`!detail`) — the exact inverse of what it should be. On the
+         stories deck, the desk, research and the account screens a downward drag from the top
+         reloaded the whole app; and because the guard only checked `detail`, a drag inside any
+         popover that happened to be scrolled to its top reloaded the page underneath it.
+
+         THE RULE NOW, in one predicate (ptrArmed):
+           1. a GAME PAGE must be open — `#gamepage` present and `detail` holding a real game
+              (not the record archive, not the recipe sheet, not an analyst or pitcher page)
+           2. NOTHING may be stacked on top of it — no `body.sheet-open`, and no second
+              element in the sheet layer
+           3. that game page's own scroller must be at the very top
+         Every other surface in the app has no pull-to-refresh at all. Feeds still refresh
+         silently on the poller everywhere (see SMART SILENT AUTO-REFRESH above), so nothing
+         is lost by removing the gesture — only the accidental reloads are. */
       (() => {
         let sy = 0, pulling = false, armed = false;
         const bar = document.createElement("div");
         bar.className = "ptr-bar"; bar.innerHTML = `<span class="ptr-ring"><span class="ptr-ic">↻</span></span><span class="ptr-t">Pull down</span><span class="ptr-meter"><i></i></span>`;
         document.body.appendChild(bar);
-        const scroller = () => document.scrollingElement || document.documentElement;
+        // the game page's own scroll container — the gesture belongs to it, not to the document
+        const scroller = () => {
+          const p = $("gamepage");
+          return (p && (p.querySelector(".gp-body") || p.querySelector(".gp-scroll"))) || null;
+        };
+        const ptrArmed = () => {
+          const p = $("gamepage");
+          if (!p || p.classList.contains("anlpage") || p.classList.contains("pitcherpage")) return false;
+          if (!detail || detail.game_id == null || detail._history || detail._recipe) return false;
+          if (document.body.classList.contains("sheet-open")) return false;   // a popover owns the drag
+          const layer = $("sheet-layer");
+          if (layer && layer.childElementCount > 1) return false;             // something is stacked above
+          return true;
+        };
         document.addEventListener("touchstart", (e: any) => {
-          if (scroller().scrollTop <= 0 && !detail) { sy = e.touches[0].clientY; pulling = true; armed = false; }
+          const sc = scroller();
+          if (sc && ptrArmed() && sc.scrollTop <= 0) { sy = e.touches[0].clientY; pulling = true; armed = false; }
         }, { passive: true });
         document.addEventListener("touchmove", (e: any) => {
           if (!pulling) return;
+          const sc = scroller();
+          if (!sc || !ptrArmed()) { pulling = false; bar.style.transform = ""; bar.classList.remove("show", "go"); armed = false; return; }
           const dy = e.touches[0].clientY - sy;
-          if (dy <= 0 || scroller().scrollTop > 0) { bar.style.transform = ""; bar.classList.remove("show", "go"); armed = false; return; }
+          if (dy <= 0 || sc.scrollTop > 0) { bar.style.transform = ""; bar.classList.remove("show", "go"); armed = false; return; }
           const pull = Math.min(110, dy * 0.55);
           bar.classList.add("show");
           (bar as any).style.setProperty("--ptrp", String(Math.min(1, pull / 76)));
@@ -12918,6 +13388,7 @@ export default function Home() {
         }, { passive: true });
       })();
       // debug hook: inject a live_scores snapshot without waiting for the poller
+      root._mlbLoad = (g: any) => loadMlbBox(g || detail, true);
       root._injectLiveScores = (ls: any) => { liveScores = ls; const ch = applyLiveScores(); if (ch) refreshLiveViews(); return ch; };
       // debug hook: attach a per-pick live_status to a live game by id, then re-render.
       // debug hook: attach a live_detail box score without waiting for the poller.
