@@ -45,8 +45,12 @@ const jetmono = JetBrains_Mono({
   fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
 });
 
+// THE DESCRIPTION HAS TO BE TRUE. It claimed five leagues ("MLB, NBA, NHL, NFL and Soccer")
+// while the board ships MLB picks and a soccer slate — the other three are model work, not a
+// product a reader can open today. A meta description is a promise made in a search result,
+// and this product's entire pitch is that it does not overclaim. It says what it does.
 const DESC =
-  "Today's story, the bets worth taking, and every pick graded in the open — MLB, NBA, NHL, NFL and Soccer.";
+  "Today's story, the bets worth taking, and every MLB pick graded in the open — win or lose, in public.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://diamondedge.kytepush.com"),
@@ -69,14 +73,23 @@ export const metadata: Metadata = {
   },
 };
 
-// Enable notch/home-indicator safe-area insets; theme colour matches the dark
-// liquid-glass background (the native shell's StatusBar/webview background keys off this).
+// Safe-area insets on; the theme colour is the MASTHEAD, because that is the surface that
+// meets the status bar.
+//
+// TWO THINGS WERE WRONG HERE AND BOTH SHOWED. `colorScheme:"dark"` declared a dark app — this
+// app is deliberately light-only, and the declaration is what tells the UA how to paint form
+// controls, scrollbars and the pull-to-refresh chrome. It was fighting the `color-scheme:light`
+// the stylesheet sets, and losing it in exactly the places CSS cannot reach. And the theme
+// colour (#0b111e) matched neither the masthead (#131a28 at its top edge) nor the manifest,
+// which was declaring #eef1f7 — three answers to one question, so the browser chrome above the
+// app never quite lined up with the bar beneath it. One value, taken from the masthead's own
+// gradient stop, used here and in the manifest.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0b111e",
-  colorScheme: "dark",
+  themeColor: "#131a28",
+  colorScheme: "light",
 };
 
 export default function RootLayout({

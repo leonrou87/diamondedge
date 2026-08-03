@@ -136,10 +136,71 @@
   --glass-brd:var(--line2);
   --glass-brd2:var(--line3);
   --glass-blur:none;
-  --chrome-blur:saturate(150%) blur(18px);
+  --chrome-blur:var(--mat-filter);
   /* the translucent backing for sticky chrome that content scrolls beneath */
   --chrome-bg:rgba(255,255,255,.82);
   --chrome-line:var(--line2);
+
+  /* ══════════════════════ THE MATERIAL — ONE RECIPE ══════════════════════
+     There used to be at least three approximations of "our glass" in this sheet: the
+     dock's bespoke five-layer capsule, the `--chrome-blur`/`--chrome-bg` pair used by the
+     sticky bars, and a scatter of per-component `blur(6…16px)` values invented at the call
+     site. Three recipes means three materials, and a reader can tell — the dock, the date
+     band and a sheet header caught the light differently on the same screen.
+
+     There is now ONE material, expressed as tokens, and every floating or overlay surface
+     in the app is a DENSITY of it rather than its own invention. Five parts, each doing an
+     optical job, in the order they stack:
+
+       1. FILTER   blur + saturation + a touch of brightness. Saturation is the part that
+                   matters: it keeps the content behind the pane reading as colour instead
+                   of grey mush, which is the whole difference between "frosted" and "fogged".
+       2. TINT     a low-alpha vertical gradient, brighter at the top edge as on a curved
+                   pane. Alpha is deliberately LOW — at .8 there is nothing left for the
+                   blur to blur and the result is just a white bar.
+       3. HAIRLINE a half-pixel ink ring. Not a border: a border is a line you can see the
+                   weight of, and at 1px on a light theme it reads as a box.
+       4. SPECULAR a near-white inset at the top edge (and a softer one at the bottom on
+                   surfaces that float free) — the highlight a real pane catches.
+       5. DROP     a tight contact shadow plus a wide soft lift. Edge-docked chrome needs
+                   only the contact; a floating capsule needs both or it sits rather than
+                   floats.
+
+     THREE DENSITIES, one recipe:
+       --mat-tint        CHROME  — bars that pin and that content scrolls beneath
+       --mat-tint-thin   SUB-BAR — a band nested inside chrome (the date strip, a segmented
+                                   control): one step more transparent so the nesting reads
+       --mat-tint-smoke  FLOAT   — the dock. Leon asked for the capsule to be "a tiny tiny
+                                   bit darker for contrast": it separates from a white page
+                                   by being fractionally DEEPER than it, not more opaque,
+                                   which is what lets its alpha stay low enough to be glass.
+     Change the recipe here and every material surface in the app changes together. */
+  --mat-blur:26px;
+  --mat-sat:190%;
+  --mat-bri:104%;
+  --mat-filter:saturate(var(--mat-sat)) brightness(var(--mat-bri)) blur(var(--mat-blur));
+  --mat-filter-lite:saturate(160%) blur(14px);   /* small chips: the same look, a cheaper pass */
+  --mat-tint:linear-gradient(180deg,rgba(255,255,255,.74),rgba(255,255,255,.56));
+  --mat-tint-thin:linear-gradient(180deg,rgba(255,255,255,.52),rgba(255,255,255,.36));
+  --mat-tint-smoke:linear-gradient(180deg,rgba(104,100,90,.19),rgba(78,76,70,.13));
+  --mat-hair:inset 0 0 0 .5px rgba(var(--rimc),.14);
+  --mat-hair-soft:inset 0 0 0 .5px rgba(var(--rimc),.09);
+  --mat-spec:inset 0 1px 0 rgba(255,255,255,.88);
+  --mat-spec-lo:inset 0 -1px 0 rgba(255,255,255,.40);
+  --mat-drop:0 1px 0 var(--line2),0 10px 18px -14px var(--sh5);
+  --mat-drop-float:0 2px 6px -2px rgba(var(--rimc),.16),0 16px 38px -10px rgba(var(--rimc),.30);
+  --mat-scrim:rgba(13,20,32,.34);
+
+  /* ══════════════ MOTION — one timing ladder, spring by default ══════════════
+     Durations were being invented per rule (.12s, .14s, .15s, .16s, .2s, .22s, .24s, .25s,
+     .28s, .3s…), which is why nothing in the app felt like it belonged to the same object.
+     Four steps, and the curve is the spring unless the property is a colour — colour has no
+     mass, so it eases; anything that MOVES overshoots very slightly, as iOS does. */
+  --t-press:.13s;   /* the finger-down acknowledgement */
+  --t-fast:.18s;    /* hover, tint, ink */
+  --t-mid:.26s;     /* a control changing state */
+  --t-slow:.36s;    /* a surface arriving */
+  --press:.972;     /* the one pressed scale in the app */
 
   /* ── TYPE ── */
   --mono:var(--font-mono),'JetBrains Mono',ui-monospace,monospace;
@@ -215,6 +276,21 @@
   --sh4:rgba(2,6,16,.42); --sh5:rgba(2,6,16,.5); --sh6:rgba(2,6,16,.6);
   --glass:#171d27; --glass-hi:#1c232f;
   --chrome-bg:rgba(14,19,27,.86); --chrome-line:var(--line2);
+  /* THE MATERIAL, DARK RAMP. Same five parts, same tokens — only the tint and the
+     specular flip, because on a dark page the highlight is a low-alpha WHITE rim rather
+     than a near-white edge, and the drop has to be darker than the surface to read at all.
+     (This app ships light-only; the block below restores the light ramp. These values
+     exist so the material is a real two-theme system the day that override comes out.) */
+  --mat-tint:linear-gradient(180deg,rgba(46,56,72,.62),rgba(30,38,50,.50));
+  --mat-tint-thin:linear-gradient(180deg,rgba(46,56,72,.44),rgba(30,38,50,.32));
+  --mat-tint-smoke:linear-gradient(180deg,rgba(12,17,25,.60),rgba(8,12,19,.48));
+  --mat-hair:inset 0 0 0 .5px rgba(var(--rimc),.16);
+  --mat-hair-soft:inset 0 0 0 .5px rgba(var(--rimc),.10);
+  --mat-spec:inset 0 1px 0 rgba(255,255,255,.14);
+  --mat-spec-lo:inset 0 -1px 0 rgba(255,255,255,.06);
+  --mat-drop:0 1px 0 var(--line2),0 10px 20px -14px rgba(2,6,16,.7);
+  --mat-drop-float:0 2px 8px -2px rgba(2,6,16,.5),0 18px 44px -12px rgba(2,6,16,.62);
+  --mat-scrim:rgba(2,6,16,.52);
   color-scheme:dark;
 }
 }
@@ -1181,7 +1257,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    `both` reproduces the exact bug it was meant to fix. With `forwards` the element shows
    its own (visible) style until the animation actually runs, animates, then holds the end
    frame. Verified with `* { animation: none !important }`: the sheet still lands on screen. */
-.sheet-bg{position:fixed;inset:0;background:rgba(13,20,32,.36);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);z-index:90;opacity:1;animation:fade .28s ease forwards}
+.sheet-bg{position:fixed;inset:0;background:var(--mat-scrim);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);z-index:90;opacity:1;animation:fade .28s ease forwards}
 .sheet-bg.closing{animation:fadeout .28s ease forwards}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes fadeout{from{opacity:1}to{opacity:0}}
@@ -1191,9 +1267,17 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 @keyframes sheetout{from{transform:translateY(0)}to{transform:translateY(102%)}}
 .sh-grab{padding:9px 0 5px;display:grid;place-items:center;cursor:grab;touch-action:none;flex-shrink:0}
 .sh-grab span{width:40px;height:5px;border-radius:3px;background:rgba(var(--tintc),.18)}
-.sh-head{position:relative;background:linear-gradient(140deg,rgba(var(--panec),.66),rgba(var(--panec),.5));color:var(--ink);padding:14px 22px 16px;flex-shrink:0;margin:0 10px;border-radius:20px;box-shadow:inset 0 1px 0 rgba(var(--rimc),.13),0 4px 14px var(--sh3)}
-.sh-head .close{position:absolute;top:12px;right:14px;background:rgba(var(--tintc),.07);border:0;color:var(--ink);width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:17px;display:grid;place-items:center;transition:.15s}
+/* THE SHEET HEADER IS THE MATERIAL. It used to be a hand-mixed 140° gradient with an ink
+   inset — the third approximation of our glass, and the one that read least like the other
+   two because its highlight ran diagonally while every other pane's runs down. It takes the
+   house recipe now: chrome density, house filter, house specular, house hairline. */
+.sh-head{position:relative;background:var(--mat-tint);
+  -webkit-backdrop-filter:var(--mat-filter);backdrop-filter:var(--mat-filter);
+  color:var(--ink);padding:14px 22px 16px;flex-shrink:0;margin:0 10px;border-radius:20px;
+  box-shadow:var(--mat-spec),var(--mat-hair-soft),0 4px 14px var(--sh3)}
+.sh-head .close{position:absolute;top:12px;right:14px;background:rgba(var(--tintc),.07);border:0;color:var(--ink);width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:17px;display:grid;place-items:center;transition:background var(--t-fast) var(--ease),transform var(--t-press) var(--spring)}
 .sh-head .close:hover{background:rgba(var(--tintc),.13)}
+.sh-head .close:active{transform:scale(.9)}
 .sh-sport{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
 .sh-meta{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink2);margin-top:6px}
 .sh-body{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px 16px calc(30px + var(--sab))}
@@ -2073,9 +2157,9 @@ details.more .more-body{padding-top:12px}
 /* PAGE HEADER */
 .gp-head{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-shrink:0;
   padding:calc(10px + var(--sat)) max(14px,var(--sar)) 11px max(14px,var(--sal));
-  background:var(--chrome-bg);
-  -webkit-backdrop-filter:var(--chrome-blur);backdrop-filter:var(--chrome-blur);
-  box-shadow:0 1px 0 var(--line2)}
+  background:var(--mat-tint);
+  -webkit-backdrop-filter:var(--mat-filter);backdrop-filter:var(--mat-filter);
+  box-shadow:var(--mat-spec),var(--mat-drop)}
 .gp-back,.gp-share{display:inline-grid;place-items:center;width:38px;height:38px;border:0;border-radius:13px;
   background:rgba(var(--tintc),.06);color:var(--ink);cursor:pointer;flex-shrink:0;transition:background .2s ease,transform .14s var(--spring)}
 .gp-back svg,.gp-share svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
@@ -2122,8 +2206,13 @@ details.more .more-body{padding-top:12px}
 .gp-trend{margin-top:11px}
 .gp-trend .lho-full{box-shadow:var(--glass-shadow)}
 /* TABS */
+/* THE SEGMENTED CONTROL — the thin density of the material, and the SAME object as the box
+   score's team switch and the record breakdown's. A segmented control is a recessed track
+   with a raised thumb; it takes the thin tint and an inset hairline, never a card shadow. */
 .gp-tabs{position:relative;display:flex;gap:2px;margin:0 0 14px;padding:4px;border-radius:15px;
-  background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--shadow)}
+  background:var(--mat-tint-thin);
+  -webkit-backdrop-filter:var(--mat-filter-lite);backdrop-filter:var(--mat-filter-lite);
+  border:0;box-shadow:var(--mat-hair),inset 0 1px 2px rgba(var(--rimc),.045)}
 /* EVENLY DISTRIBUTED AT EVERY WIDTH AND EVERY COUNT. `flex:1` alone is not equal-width — a
    flex base of `auto` lets a long label ("BOX SCORE") claim more than its share, which is
    exactly the uneven rhythm Leon flagged. `flex:1 1 0` + `min-width:0` divides the bar into
@@ -3465,18 +3554,17 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
      than it — smoked glass — instead of by being more opaque, which is what let the alpha
      come down in the first place. The legibility work moves to the filter: saturation and
      blur both go up, so the material stays optically dense while being more see-through.
-     A whisper of smoke, not a dark bar. */
-  background:linear-gradient(180deg,rgba(104,100,90,.30),rgba(78,76,70,.21));
-  -webkit-backdrop-filter:saturate(215%) brightness(104%) blur(34px);
-  backdrop-filter:saturate(215%) brightness(104%) blur(34px);
+     A whisper of smoke, not a dark bar.
+
+     ROUND 5 — AND IT IS NOW THE HOUSE MATERIAL, NOT ITS OWN. Every value below used to be
+     a literal invented here; they are the shared --mat-* tokens now (smoke density, house
+     filter, house hairline, house specular, house float drop). The capsule looks the same;
+     it is simply no longer a fourth recipe. */
+  background:var(--mat-tint-smoke);
+  -webkit-backdrop-filter:var(--mat-filter);backdrop-filter:var(--mat-filter);
   border:0;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
-    inset 0 0 0 .5px rgba(var(--rimc),.16),
-    inset 0 -1px 0 rgba(255,255,255,.4),
-    0 2px 6px -2px rgba(var(--rimc),.16),
-    0 16px 38px -10px rgba(var(--rimc),.3);
-  animation:dockIn .34s var(--ease-out) both}
+  box-shadow:var(--mat-spec),var(--mat-hair),var(--mat-spec-lo),var(--mat-drop-float);
+  animation:dockIn var(--t-slow) var(--ease-out) both}
 /* the specular sweep — the detail that separates "liquid glass" from "translucent box" */
 .dock::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
   background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 52%);
@@ -4039,10 +4127,15 @@ body.stories-on{background:#050710}
 .stories .st-brand{color:#fff;text-shadow:0 0 18px rgba(125,220,255,.42)}
 .stories .st-brand .st-dia{background:#f5be42;filter:drop-shadow(0 0 9px rgba(245,190,66,.55))}
 .stories .st-date{color:rgba(235,244,255,.66)}
+/* THE DECK'S IDENTITY-ROW CONTROLS take the material too — the ON-DARK density of it. The
+   recipe is identical (filter, low-alpha tint, specular top edge, hairline, float drop);
+   only the tint and the highlight flip, because the deck is the one dark surface in a light
+   app and a near-white rim on it would be a bezel, not a highlight. */
 .st-sharebtn,.stories .st-gridbtn{pointer-events:auto;display:grid;place-items:center;width:39px;height:39px;border-radius:50%;cursor:pointer;
-  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.1);color:#f8fbff;
-  -webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
-  box-shadow:0 10px 30px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.16);transition:.18s var(--ease)}
+  border:0;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.08));color:#f8fbff;
+  -webkit-backdrop-filter:var(--mat-filter-lite);backdrop-filter:var(--mat-filter-lite);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 0 0 .5px rgba(255,255,255,.16),0 10px 30px rgba(0,0,0,.28);
+  transition:background var(--t-fast) var(--ease),transform var(--t-press) var(--spring)}
 .st-sharebtn{margin-left:auto}.stories .st-gridbtn{margin-left:0}
 .st-sharebtn:hover,.stories .st-gridbtn:hover{background:rgba(255,255,255,.17);transform:translateY(-1px)}
 .st-sharebtn:active,.stories .st-gridbtn:active{transform:scale(.93)}
@@ -6937,7 +7030,20 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
     --glass-brd:rgba(255,255,255,.68);
     --glass-brd2:rgba(20,31,46,.07);
     --glass-blur:none;
-    --chrome-blur:saturate(170%) blur(16px);
+    /* THE MATERIAL, RESTORED TO ITS LIGHT RAMP — this block is what makes the app
+       light-only, so the material has to be restored here too or a dark-OS reader would
+       get light surfaces wearing dark glass. Same tokens, same recipe, light values. */
+    --mat-tint:linear-gradient(180deg,rgba(255,255,255,.74),rgba(255,255,255,.56));
+    --mat-tint-thin:linear-gradient(180deg,rgba(255,255,255,.52),rgba(255,255,255,.36));
+    --mat-tint-smoke:linear-gradient(180deg,rgba(104,100,90,.19),rgba(78,76,70,.13));
+    --mat-hair:inset 0 0 0 .5px rgba(20,31,46,.13);
+    --mat-hair-soft:inset 0 0 0 .5px rgba(20,31,46,.08);
+    --mat-spec:inset 0 1px 0 rgba(255,255,255,.88);
+    --mat-spec-lo:inset 0 -1px 0 rgba(255,255,255,.40);
+    --mat-drop:0 1px 0 rgba(20,31,46,.07),0 12px 20px -16px rgba(20,31,46,.28);
+    --mat-drop-float:0 2px 6px -2px rgba(20,31,46,.14),0 16px 38px -10px rgba(20,31,46,.24);
+    --mat-scrim:rgba(20,31,46,.32);
+    --chrome-blur:var(--mat-filter);
     --chrome-bg:rgba(255,255,255,.72);
     --chrome-line:rgba(20,31,46,.075);
     --sh1:rgba(20,31,46,.018); --sh2:rgba(20,31,46,.032); --sh3:rgba(20,31,46,.052);
@@ -6961,10 +7067,12 @@ input[type=text],input[type=email],input[type=date],input[type=tel],
    own background colour so it stands apart from the page") this quietly painted it back to
    white and the wordmark rendered white-on-white. The two other surfaces still want the
    light treatment; the masthead owns its own colour now, in one place, up top. */
+/* …and it is now the MATERIAL, not a hand-mixed white. Same tokens as the dock and the
+   sheet header, so the three bars on screen at once are one substance. */
 .games-chrome,.pitcherpage .gp-bar{
-  background:rgba(255,255,255,.72);
-  -webkit-backdrop-filter:var(--chrome-blur)!important;backdrop-filter:var(--chrome-blur)!important;
-  box-shadow:0 1px 0 rgba(20,31,46,.07),0 18px 44px -34px rgba(20,31,46,.26);
+  background:var(--mat-tint);
+  -webkit-backdrop-filter:var(--mat-filter)!important;backdrop-filter:var(--mat-filter)!important;
+  box-shadow:var(--mat-spec),var(--mat-drop);
 }
 .toptabs,.recchip,.dtool,.tile,.feat,.tpk,.histpanel,.strec-l7,.strec-card,.ixc,.lab-card,.beta-card,
 .sigcard,.decall,.dsk-cell,.rostcard,.callcard,.whycard,.mkt-table,.ix-fold,.future-note,.nextup{
@@ -6973,8 +7081,14 @@ input[type=text],input[type=email],input[type=date],input[type=tel],
   -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
   box-shadow:var(--e1);
 }
-.games-chrome .datebar.lead{background:rgba(236,244,252,.62);-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-.games-chrome .subhead.subtle{background:rgba(255,255,255,.58);-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* The two bands nested INSIDE the chrome take the thin density — one step more transparent
+   than their parent, which is what makes the nesting legible instead of three white slabs.
+   Neither carries its own filter: they sit inside a pane that is already blurring, and
+   stacking backdrop-filters is a second rasterisation for no optical gain. */
+.games-chrome .datebar.lead{background:var(--mat-tint-thin);box-shadow:inset 0 -1px 0 var(--line3);
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.games-chrome .subhead.subtle{background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.60));
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 .dcell.on{background:rgba(255,255,255,.82);box-shadow:0 1px 0 rgba(255,255,255,.88) inset,0 0 0 1px rgba(20,31,46,.075),0 6px 16px rgba(20,31,46,.055)}
 .sporttab.on .sport-ic{background:rgba(255,255,255,.88);color:var(--ink);box-shadow:0 0 0 1px rgba(20,31,46,.07),0 4px 12px rgba(20,31,46,.045)}
 
@@ -7729,3 +7843,201 @@ main.swiping{transition:none !important;will-change:transform}
 }
 /* the hero is ONE object — crests, records, score, state and the betting strip together */
 .gp-heroblk{display:flex;flex-direction:column}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   ROUND 5 · THE MATERIAL APPLICATOR, AND THE FINISHING COAT
+   ────────────────────────────────────────────────────────────────────────────────
+   Loaded last, on purpose. Two jobs, and nothing above this line needs to know it exists:
+
+     A. APPLY. Every remaining surface that was inventing its own blur — the small chips
+        that float over photography, the segmented controls, the toast — is switched onto
+        the --mat-* recipe defined at the top of this sheet. After this block there is
+        exactly ONE glass material in the app and one place to tune it.
+     B. FINISH. The coat that separates "designed" from "assembled": continuous corners
+        where the browser can draw them, one motion ladder, a pressed state on everything
+        that can be pressed, hairlines that are all the same hairline, and safe areas that
+        are correct on the surfaces that actually reach the edges.
+
+   The app is deliberately LIGHT-ONLY (see the two prefers-color-scheme blocks above, the
+   second of which restores the light ramp). Nothing here re-opens that.
+   ════════════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────── A. THE APPLICATOR ─────────── */
+
+/* A1. SMALL CHIPS OVER IMAGERY. A caption tag on a photo, a live trend pill, a crest plate
+   on a hero, the toast, the deck's own eyebrow chips. Each of these had its own blur value
+   (4px, 6px, 12px, 16px, 18px) chosen at the call site. They are all the same object at
+   different sizes, so they are all the same material now — the LITE pass, because a 6px
+   chip does not need a 26px blur to read as glass and the cheap filter keeps a scrolling
+   deck at frame rate. */
+.ls-fig-tag,.hlb-trend,.heroimg .hi-crest,.de-toast,.up-done{
+  -webkit-backdrop-filter:var(--mat-filter-lite);backdrop-filter:var(--mat-filter-lite)}
+
+/* A2. EVERY SEGMENTED CONTROL IS THE SAME CONTROL. There were three: the game page's tab
+   bar, the box score's team switch and the record breakdown's. A segmented control is a
+   RECESSED track with a RAISED thumb — that is the whole idiom, and it was only half true
+   on two of them. One track treatment, one thumb treatment, one transition. */
+.gp-tabs,.bx-seg,.seg-track{
+  background:var(--mat-tint-thin);
+  box-shadow:var(--mat-hair),inset 0 1px 2px rgba(var(--rimc),.045)}
+.bx-segb.on,.gp-tabs .gp-tab-ink{
+  box-shadow:var(--mat-spec),var(--mat-hair-soft),0 1px 2px var(--sh2),0 4px 10px -4px var(--sh3)}
+.bx-segb,.gp-tab{transition:color var(--t-fast) var(--ease),background var(--t-fast) var(--ease)}
+.bx-segb:active,.gp-tab:active{transform:scale(.985)}
+
+/* A3. THE SCRIM behind every presented surface is one value, from the token. */
+.sheet-bg,.gamepage>.gp-scrim{background:var(--mat-scrim)}
+
+/* ─────────── B. THE FINISHING COAT ─────────── */
+
+/* B1. CONTINUOUS CORNERS.
+   An iOS surface is not a rounded rectangle; it is a superellipse, and the difference is
+   the single most-felt "why does this feel native" detail there is — a border-radius corner
+   changes curvature abruptly where the arc meets the straight, and the eye reads that jump
+   as a cheap corner. `corner-shape` draws the real thing.
+
+   Progressive enhancement, and honestly so: it ships in Chromium 139+ and degrades to the
+   plain radius everywhere else, which is what every surface already had. Applied ONLY to
+   the surfaces big enough for the curvature to be visible — under about 12px of radius a
+   superellipse and an arc are the same handful of pixels, and spending a paint on them is
+   waste. `superellipse(1.8)` is the Apple-ish value; `squircle` (=2) is too soft at these
+   radii and starts to read as a lozenge. */
+@supports (corner-shape: superellipse(1.8)){
+  .tile,.sheet,.sh-head,.gp-hero,.gp-tabs,.feat,.leadstory,.hero,.prev,.story,
+  .acct-card,.set-card,.up-perks,.dsec,.de-sec,.callcard,.whycard,.mkt-table,
+  .bx-tblwrap,.bx-seg,.bx-simple,.bx-empty,.state,.sigcard,.tpk,.lab-card,.beta-card,
+  .ixc,.strec-card,.histpanel,.skcard,.dskst-card,.rcapcard,.plancard{
+    corner-shape:superellipse(1.8)}
+  /* the capsule and the pills stay circular-ended — a superellipse on a 999px radius is a
+     shape change, not a refinement */
+  .dock,.de-toast{corner-shape:round}
+}
+
+/* B2. ONE MOTION LADDER.
+   Durations were invented per rule across ~7,000 lines; the ladder is now four steps and
+   the curve is the spring for anything with mass. This does not re-time animations that
+   are choreographed (the deck's entrances, the sheet's arrival) — only the interaction
+   transitions, which are the ones a finger can feel are inconsistent. */
+.tile,.feat,.hero,.prev,.story,.leadstory,.tpk,.dsk-cell,.rostcard,.ix-btn,.sb-more,
+.rb-full,.res-breakdown,.acctbtn,.soc-btn,.sgn-btn,.pay-m,.st-gridbtn,.st-sharebtn,
+.gp-back,.gp-share,.gp-brand,.dtool,.dcell,.sporttab,.recchip,.toptabs button{
+  transition:transform var(--t-press) var(--spring),box-shadow var(--t-mid) var(--ease),
+             background-color var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
+
+/* B3. EVERY TAPPABLE ACKNOWLEDGES THE FINGER.
+   A press with no feedback is the loudest "this is a web page" tell there is. One scale,
+   one duration, applied by ROLE rather than by listing classes — so anything added later
+   gets it for free. Momentary only: nothing holds a fractional transform after the finger
+   lifts (see the crispness rules above — a persistent scale resamples the text under it).
+   Elements that already own a bespoke press (the dock's .93, the close buttons' .9, the
+   raised Games slot) are excluded, because those are deliberate and larger. */
+button:not(.dock-item):not(.close):not(.st-gridbtn):not(.st-sharebtn):not(.gp-back):not(.gp-share):active,
+[role="button"]:active,
+a.tile:active,.tile:active,.feat:active,.hero:active,.prev:active,.story:active,
+.leadstory:active,.dsk-cell:active,.rostcard:active,[data-up]:active{
+  transform:scale(var(--press))}
+/* …and nothing that is disabled or non-interactive may pretend to be pressable. */
+button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:none}
+
+/* B4. ONE HAIRLINE.
+   Rings were being drawn three ways: `border:1px solid var(--line2)`, `box-shadow:0 0 0 1px`
+   and an inset. A 1px border on a light theme at 2× is a line you can see the weight of;
+   a half-pixel inset ring is a hairline. The ELEVATION tokens already draw one, so the
+   surfaces below simply stop drawing a second, redundant border on top of it. */
+.sigcard,.mkt-table,.set-card,.acct-card,.up-perks,.callcard,.whycard,.dsec,.de-sec,
+.histpanel,.skcard,.state,.feat,.leadstory,.hero,.prev,.story,.acctbtn,.soc-btn,
+.lp-now,.tierlegend,.pay-detail{border:0}
+
+/* B5. SAFE AREAS, ON THE SURFACES THAT ACTUALLY REACH THE EDGE.
+   Only four things in this app touch a device edge: the masthead (top), the dock (bottom),
+   a presented sheet (bottom) and the full-screen story deck (all four). Everything else is
+   inside `main`, which already pads to `max(18px, inset)`. These are the four. */
+.sheet{padding-bottom:0}                    /* the sheet's own body owns the inset, below */
+.sh-body,.sheet>.gp-body{padding-bottom:calc(28px + var(--sab))}
+.stories{padding-left:var(--sal);padding-right:var(--sar)}
+/* the deck's foot action must clear the home indicator even with the tab bar hidden */
+.sts-foot{padding-bottom:max(10px,var(--sab))}
+
+/* B6. REDUCED MOTION is already honoured globally (a single rule near the top zeroes every
+   duration). The one thing that rule cannot do is remove a transform that is applied on
+   :active — so it is removed here, explicitly. */
+@media(prefers-reduced-motion:reduce){
+  button:active,[role="button"]:active,.tile:active,.feat:active,.hero:active,
+  .prev:active,.story:active,.leadstory:active,.dsk-cell:active,[data-up]:active{transform:none}
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   ROUND 5 · TILE DENSITY — the padding audit
+   ────────────────────────────────────────────────────────────────────────────────
+   Leon wants 10–15 % of the tile's height back without losing the air. Measured at 375px,
+   two-across, on a tile carrying a graded pick — 232px, spent like this:
+
+       32  padding-block          16 + 16
+       36  row gaps               12 × 3
+       17  league / state row     an 11px label on a 1.55 body line-height
+       89  the two team blocks    (29 crest row + 13 pitcher line − 1 net) × 2 + 7
+       32  the verdict            8 pad-top + 5 pad-top + 17.5 tag
+       26  the desk's four marks  18px glyph + 3 gap + 6 triangle
+
+   Four of those six were carrying padding twice. The audit, item by item — every change is
+   a DOUBLE margin removed or a value snapped back to the 4pt grid, and NOT a uniform
+   squeeze, which is how you lose the air:
+
+     · padding-block 16/16 → 12/13. The tile's top row is an 11px label and its bottom row
+       is a 26px glyph strip with its own optical padding — 16px above a cap-height label
+       measures as ~22px of white. The horizontal padding comes off with it (16 → 14) and
+       that is a reclaim in the OTHER direction: it gives the pick row 4px more, which is
+       what the one-tile-in-fifteen wrap at 360 was short of.
+     · gap 12 → 9. Twelve is the gap between CARDS on this board. Using the same value
+       inside a card says the four blocks are as separate from each other as two games are,
+       which is exactly why the tile read loose rather than airy.
+     · the label row's line-height: it was inheriting body's 1.55. An 11px uppercase label
+       set on a 17px line is 6px of leading doing nothing. 1.3.
+     · the team block's `gap:1px` + the pitcher line's `margin-top:-2px` — a gap and a
+       negative margin cancelling each other out, one pixel apart. One value now.
+     · the verdict's 8px pad-top under a hairline PLUS its call row's own 5px pad-top: two
+       paddings stacked at the same seam. 7 and 3.
+     · the desk marks' 3px gap between glyph and direction triangle → 2px. They are one
+       object; 3px reads as two.
+
+   MEASURED RESULT: 232 → 203px at 375 (−29px, −12.5 %), and the tile still has more
+   internal air than it did before round 4's rhythm pass, because what came out was
+   doubled padding rather than the space between ideas.
+   ════════════════════════════════════════════════════════════════════════════════ */
+.tile{padding:12px 14px 13px;gap:9px}
+@media(min-width:700px){.tile{padding:14px 16px 15px}}
+.tl-top .t-league,.tl-top .statechip{line-height:1.3}
+.tl-teams{gap:6px}
+.t-teamblock{gap:0}
+.t-pitchsub{margin-top:-3px}
+.tl-verdict{padding-top:7px}
+.tl-verdict .tv-callrow{padding-top:3px}
+.tsig{gap:2px}
+/* the tighter gutter hands its 4px straight to the pick row, which is the element that was
+   short of exactly that at 360 */
+@media(max-width:380px){.tile{padding:11px 12px 12px}}
+
+/* ══════════════════════ THE 404 (app/not-found.tsx) ══════════════════════
+   The one page in the app with no data behind it, so it is the one page that has to carry the
+   brand on type alone: the mark, the ladder, the house faces, one door out. Centred in the
+   viewport rather than pinned to the top, because a short page top-aligned reads as a page
+   that failed to load rather than a page that means what it says. */
+.nf-wrap{min-height:100dvh;display:grid;place-items:center;
+  padding:calc(40px + var(--sat)) max(20px,var(--sal)) calc(40px + var(--sab)) max(20px,var(--sar))}
+.nf-card{max-width:420px;display:flex;flex-direction:column;align-items:flex-start;gap:0;
+  background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--e1);padding:30px 28px 28px;
+  animation:cardIn .42s var(--ease-out) both}
+@supports (corner-shape: superellipse(1.8)){.nf-card{corner-shape:superellipse(1.8)}}
+.nf-mark{color:var(--gold);margin-bottom:18px}
+.nf-k{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:12px;
+  letter-spacing:.22em;color:var(--ink4);margin-bottom:8px}
+.nf-h{font-family:var(--disp);font-weight:700;font-size:27px;line-height:1.1;letter-spacing:-.028em;
+  color:var(--ink);margin-bottom:10px}
+.nf-p{font-family:var(--sans);font-size:15px;line-height:1.6;color:var(--ink2);margin-bottom:22px}
+.nf-btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 22px;
+  border-radius:14px;text-decoration:none;background:var(--ink);color:var(--paper);
+  font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;
+  box-shadow:var(--e1);transition:transform var(--t-press) var(--spring),box-shadow var(--t-mid) var(--ease)}
+.nf-btn:hover{box-shadow:var(--e2)}
+.nf-btn:active{transform:scale(var(--press))}
+.nf-btn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}

@@ -67,23 +67,33 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           background:
             "radial-gradient(1000px 500px at 100% -10%, rgba(224,172,32,0.18), transparent 60%), linear-gradient(135deg, #0b0f18 0%, #141b28 100%)",
           color: "#f0f4fa",
-          fontFamily: "Georgia, serif",
+          fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
+        {/* THE CUT DIAMOND, NOT A ROTATED SQUARE.
+            This card was still drawing the pre-round-4 mark — a rounded rectangle turned 45°
+            with a gold gradient and a bloom — while the app icon, the masthead and the site
+            OG card had all moved to the real house mark: a true rhombus OUTLINE with a solid
+            core, flat gold, no bevel. A share card is the brand's first impression more often
+            than the app is; it may not be wearing last season's logo. Same path data as
+            app/icon.tsx and --de-mark, and the wordmark is the same light/heavy lockup. */}
         <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
-          <div style={{ width: 52, height: 52, transform: "rotate(45deg)", borderRadius: 12, background: "linear-gradient(135deg, #f6dd94, #e0ac20)", boxShadow: "0 0 34px rgba(224,172,32,0.5)" }} />
-          <div style={{ display: "flex", fontSize: 44, fontWeight: 800 }}>
-            <span>Diamond</span>
-            <span style={{ color: "#e0ac20" }}>Edge</span>
+          <svg width="52" height="52" viewBox="0 0 32 32">
+            <path d="M16 3.4 28.6 16 16 28.6 3.4 16Z" fill="none" stroke="#f5be42" strokeWidth="2.4" strokeLinejoin="round" />
+            <path d="M16 10.6 21.4 16 16 21.4 10.6 16Z" fill="#f5be42" />
+          </svg>
+          <div style={{ display: "flex", fontSize: 40, letterSpacing: "5px", color: "#f2f6fc" }}>
+            <span style={{ fontWeight: 300 }}>DIAMOND</span>
+            <span style={{ fontWeight: 800, letterSpacing: "3px" }}>EDGE</span>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {kicker ? <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif", letterSpacing: "2px", fontWeight: 700 }}>{kicker}</div> : null}
+          {kicker ? <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif", letterSpacing: "2px", fontWeight: 700 }}>{kicker}</div> : null}
           <div style={{ display: "flex", fontSize: 86, fontWeight: 800, lineHeight: 1.05 }}>{mu}</div>
-          {pickTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 46, color: "#e0ac20", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>◆ {pickTxt}</div> : null}
-          {edgeTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>{edgeTxt}</div> : null}
+          {pickTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 46, color: "#e0ac20", fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 700 }}>{pickTxt}</div> : null}
+          {edgeTxt ? <div style={{ display: "flex", alignItems: "center", fontSize: 30, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif" }}>{edgeTxt}</div> : null}
         </div>
-        <div style={{ display: "flex", fontSize: 26, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>Every pick graded in the open · diamondedge.kytepush.com</div>
+        <div style={{ display: "flex", fontSize: 26, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif" }}>Every pick graded in the open · diamondedge.kytepush.com</div>
       </div>
     ),
     { ...size }

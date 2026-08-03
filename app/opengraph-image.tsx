@@ -155,7 +155,7 @@ function buildCurveSvg(s: any) {
           justifyContent: anchor,
           fontSize: 22,
           color: "#7d8ba3",
-          fontFamily: "Arial, sans-serif",
+          fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
         {p.year}
@@ -189,7 +189,7 @@ function buildCurveSvg(s: any) {
           display: "flex",
           fontSize: 22,
           color: "#7d8ba3",
-          fontFamily: "Arial, sans-serif",
+          fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
         0
@@ -206,7 +206,7 @@ function buildCurveSvg(s: any) {
           fontSize: 36,
           fontWeight: 800,
           color: "#4fe08a",
-          fontFamily: "Arial, sans-serif",
+          fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
         {endLab}
@@ -255,7 +255,7 @@ function Frame({ children }: { children: any }) {
         background:
           "radial-gradient(1000px 500px at 100% -10%, rgba(224,172,32,0.18), transparent 60%), linear-gradient(135deg, #0b0f18 0%, #141b28 100%)",
         color: "#f0f4fa",
-        fontFamily: "Georgia, serif",
+        fontFamily: "Helvetica, Arial, sans-serif",
       }}
     >
       {children}
@@ -278,10 +278,10 @@ function TextCard(rec: any) {
         <div style={{ display: "flex", fontSize: 66, fontWeight: 800, lineHeight: 1.06, maxWidth: 1000 }}>
           A real totals edge — honestly sized.
         </div>
-        <div style={{ display: "flex", fontSize: 40, color: "#4fe08a", fontFamily: "Arial, sans-serif", fontWeight: 700 }}>
+        <div style={{ display: "flex", fontSize: 40, color: "#4fe08a", fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 700 }}>
           ≈55% expected at morning prices · +3–4%
         </div>
-        <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Arial, sans-serif", maxWidth: 1000 }}>
+        <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif", maxWidth: 1000 }}>
           56.9% on 239 picks we never trained on. {backtest ? backtest + "." : "Every call graded against the final score."}
         </div>
       </div>
@@ -291,7 +291,7 @@ function TextCard(rec: any) {
           alignItems: "center",
           fontSize: 26,
           color: "#e0ac20",
-          fontFamily: "Arial, sans-serif",
+          fontFamily: "Helvetica, Arial, sans-serif",
           fontWeight: 700,
           letterSpacing: "3px",
         }}
@@ -325,7 +325,7 @@ function CurveCard(rec: any, series: any) {
             display: "flex",
             fontSize: 22,
             color: "#7d8ba3",
-            fontFamily: "Arial, sans-serif",
+            fontFamily: "Helvetica, Arial, sans-serif",
             fontWeight: 700,
             letterSpacing: "3px",
           }}
@@ -337,14 +337,14 @@ function CurveCard(rec: any, series: any) {
       {/* Hero: the honest expectation, then the curve as historical proof */}
       <div style={{ display: "flex", flexDirection: "column", marginTop: "2px" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: "18px" }}>
-          <div style={{ display: "flex", fontSize: 88, fontWeight: 800, color: "#4fe08a", fontFamily: "Georgia, serif", lineHeight: 1 }}>
+          <div style={{ display: "flex", fontSize: 88, fontWeight: 800, color: "#4fe08a", fontFamily: "Helvetica, Arial, sans-serif", lineHeight: 1 }}>
             ≈55%
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#f0f4fa", fontFamily: "Arial, sans-serif" }}>
+            <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#f0f4fa", fontFamily: "Helvetica, Arial, sans-serif" }}>
               expected on totals at morning prices
             </div>
-            <div style={{ display: "flex", fontSize: 24, color: "#8fa0b8", fontFamily: "Arial, sans-serif" }}>
+            <div style={{ display: "flex", fontSize: 24, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif" }}>
               +3–4% expected · 56.9% on 239 picks we never trained on
             </div>
           </div>
@@ -360,14 +360,14 @@ function CurveCard(rec: any, series: any) {
               display: "flex",
               fontSize: 20,
               color: "#7d8ba3",
-              fontFamily: "Arial, sans-serif",
+              fontFamily: "Helvetica, Arial, sans-serif",
               fontWeight: 700,
               letterSpacing: "2px",
             }}
           >
             BACKTEST (IN-SAMPLE):
           </div>
-          <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#cbd6e6", fontFamily: "Arial, sans-serif" }}>
+          <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#cbd6e6", fontFamily: "Helvetica, Arial, sans-serif" }}>
             {btHit ? `${btHit} · ` : ""}{btN} picks · {btRoi}
           </div>
         </div>
@@ -376,7 +376,7 @@ function CurveCard(rec: any, series: any) {
             display: "flex",
             fontSize: 24,
             color: "#e0ac20",
-            fontFamily: "Arial, sans-serif",
+            fontFamily: "Helvetica, Arial, sans-serif",
             fontWeight: 700,
             letterSpacing: "3px",
           }}
