@@ -2042,7 +2042,7 @@ details.more .more-body{padding-top:12px}
 .st-ic.sm{width:30px;height:30px;border-radius:10px}
 .st-ic.sm .eic{width:16px;height:16px}
 .st-ic.sm .eic svg{width:15px;height:15px}
-.de-toast{position:fixed;left:50%;bottom:calc(78px + var(--sab));transform:translateX(-50%) translateY(12px);z-index:130;font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.02em;color:var(--n3);background:rgba(var(--panec),.92);border:1px solid rgba(var(--rimc),.12);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:999px;padding:10px 18px;box-shadow:0 8px 26px var(--sh5);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s var(--spring);max-width:calc(100vw - 32px);text-align:center}
+.de-toast{position:fixed;left:50%;bottom:calc(max(7px,var(--sab)) + 54px + 12px);transform:translateX(-50%) translateY(12px);z-index:130;font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.02em;color:var(--n3);background:rgba(var(--panec),.92);border:1px solid rgba(var(--rimc),.12);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:999px;padding:10px 18px;box-shadow:0 8px 26px var(--sh5);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s var(--spring);max-width:calc(100vw - 32px);text-align:center}
 .de-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .social{margin:22px 2px 4px;padding:16px 4px 4px;border-top:2px solid rgba(var(--tintc),.12)}
 .soc-lab{display:block;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
@@ -3512,9 +3512,24 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
        container that breaks the row — just the one destination the product is about, given
        the weight iOS gives a primary tab. Both values stay variables so the lift can be
        tuned (or zeroed) without touching structure.                                      */
+/* ── HOW HIGH THE CAPSULE FLOATS — one token, and it is a MAX, not a SUM ──
+   Leon: "feels like it should be a little bit lower."
+
+   It was `calc(var(--sab) + 11px)`: the home-indicator inset PLUS a gap. On a notched phone
+   that is 34px of system inset with another 11 stacked on top of it — 45px of air under a
+   bar that is supposed to read as sitting near the bottom edge — and the two numbers were
+   solving the same problem twice. The safe-area inset already IS the clearance; adding a
+   gap to it is what floated the capsule up into the middle of nowhere.
+
+   `max()` instead of `+`. On a notched device the system inset wins and nothing is stacked
+   on it; on a flat one (and on desktop, where --sab is 0) --dock-gap is the whole gap. One
+   token to tune, correct on both, and the capsule drops ~15px on an iPhone and 4px on a
+   flat viewport. --dock-foot is the capsule's full footprint, so content clearance below
+   can never drift out of step with the position. */
 .dockwrap{--dock-h:54px;--dock-lift:16px;--dock-main-size:31px;--dock-main-well:54px;--dock-inset:13px;
+  --dock-gap:7px;--dock-bottom:max(var(--dock-gap),var(--sab));
   position:fixed;inset-inline:0;bottom:0;z-index:460;display:flex;justify-content:center;
-  padding:0 calc(var(--dock-inset) + var(--sar)) calc(var(--sab) + 11px) calc(var(--dock-inset) + var(--sal));
+  padding:0 calc(var(--dock-inset) + var(--sar)) var(--dock-bottom) calc(var(--dock-inset) + var(--sal));
   pointer-events:none;background:transparent}
 /* ══════════════ A FLOATING LIQUID-GLASS CAPSULE ══════════════
    Leon, three times: "still need the glassmorphic design on the bottom bar and it should be
@@ -3662,8 +3677,10 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
    compact identity row with a 39px X on the right. The X (and the end card) put the bar back.
 /* content must clear the bar — the pill is inset from the bottom now, so this grew with it */
 /* nothing may sit under the capsule at the bottom of a scroll: its full footprint is the
-   bar height + its bottom inset + a breath of clearance */
-main{padding-bottom:calc(var(--sab) + 54px + 34px) !important}
+   bar height + its bottom inset + a breath of clearance. MOVED WITH IT — this used the same
+   `--sab + gap` arithmetic the capsule used, so lowering the bar without touching this line
+   would have left a 15px hole of dead scroll under every surface. Same max(), same token. */
+main{padding-bottom:calc(max(7px,var(--sab)) + 54px + 34px) !important}
 /* ══════════ SHEETS GO OVER THE BAR — the iOS rule, and a real bug until now ══════════
    Leon: "when you have a pop-up from the bottom I can still switch tabs on the bottom… if we
    have pop-up tabs it should go over the bottom tab bar."
@@ -5830,7 +5847,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
    from July 1, so there is only one state to draw.) */
 @media(max-width:559px){.dpr-wl{font-size:50px}.dpr-figs{gap:6px 16px}.dpr-figs b{font-size:16px}}
 /* THE PITCH — one sentence, set large enough to be the second thing you read. */
-.dp-pitch{margin:15px 2px 0;font-family:var(--serif,var(--disp));font-weight:600;font-size:19px;line-height:1.42;
+.dp-pitch{margin:15px 2px 0;font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.42;
   letter-spacing:-.012em;color:var(--ink);max-width:44ch}
 @media(max-width:559px){.dp-pitch{font-size:17px;line-height:1.4}}
 .dp-recbtn{display:flex;align-items:center;gap:8px;width:100%;margin-top:11px;padding:13px 15px;border:0;cursor:pointer;
@@ -8241,3 +8258,109 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   .de-mini-pick.dmp-tile.upcoming .de-mini-word{font-size:8.5px;letter-spacing:.02em}
   .de-mini-pick.dmp-tile.upcoming .de-mini-logo{width:9px;height:9px}
 }
+
+/* ═══════════════ TODAY'S STRATEGY — THE STRIP ABOVE THE BOARD ═══════════════
+   Leon: "a bar somewhere at the top with an animated icon of DiamondEdge that kind of shows
+   the strategy, and maybe if you click on it you can expand it to read more."
+
+   WHAT IT HAD TO NOT BE. The board's top is already three stacked bands of chrome (masthead,
+   date strip, league rail), and a fourth full-weight card there would have read as a banner —
+   the thing every reader has been trained to skip. So this is a STRIP: one line tall at rest,
+   the house glass material rather than a fifth recipe, and its only ornament is the mark.
+   It earns its place by being the one sentence that says what you are looking at.
+
+   THE MATERIAL is the shared --mat-* family the dock and the sheets use: house filter, house
+   hairline, house specular. The one thing it adds is a gold-tinted left edge — the accent is
+   spent once, on the rule that ties the strip to the mark, and nowhere else.
+
+   THE EXPANSION uses grid-template-rows 0fr→1fr, which is the only way to animate to an
+   AUTO height without measuring in JS and without capping the copy at a guessed max-height.
+   The panel's inner block travels a few px on the same spring so it arrives rather than
+   appears, and the caret rotates with it. */
+.stgy{position:relative;margin:0;border-radius:16px;overflow:hidden;isolation:isolate;
+  background:linear-gradient(118deg,rgba(var(--goldc),.085),rgba(var(--panec),.62) 58%,rgba(var(--panec),.50));
+  -webkit-backdrop-filter:var(--mat-filter-lite);backdrop-filter:var(--mat-filter-lite);
+  box-shadow:var(--mat-spec),var(--mat-hair),0 4px 16px -8px rgba(var(--rimc),.20)}
+.stgy::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,rgba(var(--goldc),.85),rgba(var(--goldc),.30))}
+.stgy-bar{display:flex;align-items:center;gap:11px;width:100%;
+  padding:10px 13px 10px 15px;border:0;background:transparent;text-align:left;cursor:pointer;
+  font-family:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+.stgy-wait .stgy-bar{cursor:default}
+.stgy-bar:active{transform:scale(.994)}
+.stgy-bar{transition:transform .16s var(--ease-out)}
+.stgy-mark{flex-shrink:0;width:25px;height:25px;display:grid;place-items:center;color:var(--golddeep)}
+.stgy-mk{width:100%;height:100%;overflow:visible}
+.stgy-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.stgy-tx i{font-family:var(--disp);font-style:normal;font-weight:700;font-size:9.5px;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--golddeep)}
+.stgy-tx b{font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.32;color:var(--ink);
+  overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.stgy-caret{flex-shrink:0;width:20px;height:20px;display:grid;place-items:center;color:var(--ink3);
+  transition:transform .34s var(--spring),color .2s ease}
+.stgy-caret svg{width:15px;height:15px}
+.stgy.open .stgy-caret{transform:rotate(180deg);color:var(--golddeep)}
+/* auto-height expansion, no measured pixels */
+.stgy-more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s var(--ease-out)}
+.stgy.open .stgy-more{grid-template-rows:1fr}
+.stgy-more-in{overflow:hidden;opacity:0;transform:translateY(-5px);
+  transition:opacity .2s ease,transform .34s var(--spring)}
+.stgy.open .stgy-more-in{opacity:1;transform:none;transition-delay:.05s}
+.stgy-more-in{padding:0 14px 0 15px}
+.stgy.open .stgy-more-in{padding-bottom:13px}
+.stgy-rule{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink2);
+  padding-top:2px;border-top:1px solid rgba(var(--rimc),.10);margin-top:0}
+.stgy-rule span{display:block;font-family:var(--disp);font-weight:700;font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:9px 0 4px}
+.stgy-win,.stgy-n{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3);margin-top:7px}
+.stgy-n b{color:var(--ink);font-weight:700}
+.stgy-link{display:inline-flex;align-items:center;gap:7px;margin-top:11px;
+  padding:7px 13px;border:0;border-radius:999px;cursor:pointer;
+  font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.01em;
+  color:var(--golddeep);background:var(--goldbg);
+  box-shadow:inset 0 0 0 1px var(--goldline);transition:transform .16s var(--ease-out)}
+.stgy-link em{font-style:normal;transition:transform .2s var(--ease-out)}
+.stgy-link:active{transform:scale(.96)}
+.stgy-link:hover em{transform:translateX(3px)}
+/* ── THE MARK, BREATHING ──
+   Two loops, deliberately co-prime-ish (4.4s / 6.2s) so they never re-sync into a pulse the
+   eye can count. The core swells and lifts in opacity; a specular band crosses the facets,
+   clipped to the outer rhombus so the shine belongs to the stone rather than to a box. The
+   waiting state (no strategy served yet) runs the same motion at a lower amplitude — quieter,
+   not busier, because nothing has happened yet. */
+@keyframes stgyBreathe{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.13);opacity:1}}
+@keyframes stgySheen{0%{transform:translateX(0)}62%,100%{transform:translateX(80px)}}
+@keyframes stgyRing{0%,100%{opacity:.30}50%{opacity:.62}}
+/* transform-box:fill-box so the scale pivots on the core's own centre — without it the
+   origin is resolved against the nearest viewport and the facet swells off-axis */
+.stgy-mk-core{transform-box:fill-box;transform-origin:center;animation:stgyBreathe 4.4s var(--ease) infinite}
+.stgy-mk-mid{animation:stgyRing 6.2s var(--ease) infinite}
+.stgy-mk-sheen{animation:stgySheen 6.2s var(--ease) infinite}
+.stgy-mark.waiting{color:var(--ink3)}
+.stgy-mark.waiting .stgy-mk-core{animation-duration:5.6s}
+.stgy-mark.waiting .stgy-mk-sheen{display:none}
+@media (prefers-reduced-motion:reduce){
+  .stgy-mk-core,.stgy-mk-mid,.stgy-mk-sheen{animation:none}
+  .stgy-mk-sheen{display:none}
+  .stgy-more,.stgy-more-in,.stgy-caret,.stgy-bar,.stgy-link{transition:none}
+}
+@media(max-width:380px){
+  .stgy-bar{gap:9px;padding:9px 11px 9px 13px}
+  .stgy-mark{width:22px;height:22px}
+  .stgy-tx b{font-size:12.5px}
+}
+/* ══ …AND THE SAME FACT ON RESEARCH, IN THE LAB'S REGISTER ══
+   The board's strip is product voice; this is the journal's. Serif display, a rule under the
+   kicker, no glass — it belongs to the page it is on, not to the bar that linked here. */
+.lab-today{position:relative;margin:0 0 18px;padding:15px 17px 16px;border-radius:14px;
+  background:linear-gradient(150deg,rgba(var(--goldc),.07),rgba(var(--panec),.02) 62%);
+  box-shadow:inset 0 0 0 1px rgba(var(--goldc),.20)}
+.lab-today-k{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:700;
+  font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--golddeep)}
+.lab-today-k i{font-style:normal;font-weight:600;letter-spacing:.06em;text-transform:none;
+  color:var(--ink3);margin-left:auto;font-size:11px}
+.lab-today-mk{width:17px;height:17px;display:grid;place-items:center;color:var(--golddeep)}
+.lab-today-h{font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.24;
+  color:var(--ink);margin:9px 0 0;letter-spacing:-.01em}
+.lab-today-p{font-family:var(--sans);font-size:13.5px;line-height:1.55;color:var(--ink2);margin:8px 0 0}
+.lab-today-w{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin:9px 0 0}

@@ -1,13 +1,32 @@
 {
-  "generated_utc": "2026-08-03T06:41:23.716092+00:00",
+  "generated_utc": "2026-08-03T16:37:19.886652+00:00",
   "summary": {
     "shipped": 46,
     "testing": 5,
     "accruing": 9,
     "queued": 0,
-    "closed": 32
+    "closed": 33
   },
   "items": [
+    {
+      "id": "high_confidence_tier",
+      "title": "A \u201cHIGH CONFIDENCE\u201d pick tier \u2014 asked for, measured, refused",
+      "tagline": "Leon asked whether some picks could be badged as higher confidence. We measured every confidence signal the product already computes. None of them separates the good picks from the ordinary ones, so nothing gets badged.",
+      "status": "closed_null",
+      "category": "product",
+      "progress_pct": 100,
+      "started": "2026-08-03",
+      "eta": "closed \u2014 re-opens automatically on a stated count, not on a hunch",
+      "latest": "2026-08-03: 29 cells across seven ways of slicing five signals, on the three populations that exist \u2014 nothing clears the bar. The one idea worth keeping (how strongly the nightly committee agreed) points the right way at 59.3% vs 54.8% pooled, and is not close to significant.",
+      "detail": "The question was whether we could mark some picks as higher confidence without saying anything untrue. That is a measurement, not a design choice, so it was pre-registered first \u2014 which populations, which signals, which cut points, which floor, and what would count as a yes \u2014 and only then run.\n\nFive signals were tested. The star rating on the picks we actually served: the record only contains 4-star and 5-star picks, so there is no ladder to check, and on the one contrast that exists the 4-stars beat the 5-stars, which is the same shape as the old 5-star tier going 5-9 live. The size of the edge at the price: past the gate, a bigger edge buys nothing, and the biggest-edge bucket is the second worst of four \u2014 the same inverted-U the champion's star recalibration found from the other side. The daily strategy's own confidence label: it has said STRONG on every single day it has ever spoken, so it carries exactly as much information as no label at all. How much of the analysts' information was present: all four analysts read 119 of the 121 decided picks, so there is no contrast. And whether the analysts agreed with the pick: the only cell that looked interesting was the one where the desk was split down the middle, which fails the correction, has a fifth of the required sample, and would have us badge the picks our own desk argues about.\n\nThe fifth idea was the new one and the best one: in the nightly vote, does a pick that 19 of 21 strategies agree on beat one that 11 of 21 agree on? Over 997 picks across 205 nights it points the right way \u2014 59.3% for the near-unanimous picks against 54.8% overall \u2014 and it is not significant: the interval reaches back below the number it would have to beat, the middle bucket is the lowest of the four, and the trend across buckets has a p of 0.31. The vote distribution also explains itself: on 37% of picks at most two of the twenty-one strategies have any view at all, so a narrow margin usually means a small electorate rather than a divided one.\n\nOne correction was run across every cell of every slicing at once, as declared. Three cells survived it, and all three are two-pick cells where both picks lost \u2014 an interval of zero width and a p-value that is arithmetic, not evidence. Drop cells under ten picks and nothing survives at all. Same verdict either way, which is why both are published.\n\nWhat would change the answer, and when: the vote-margin signal needs about 103 more nights of the nightly engine running before its interval could clear zero even if the effect held exactly at today's size \u2014 roughly two thirds of a season past the end of 2026, i.e. during 2027. The useful part is that this costs nothing: the nightly engine already stamps the vote breakdown onto every row of its own shadow board and grades its own ledger, in off mode, touching nothing that serves. The evidence accrues by itself. The recommendation is to change nothing and let it.\n\nIf it ever does separate, the badge spec is written down now so a future yes cannot be invented after the fact: the signal is the vote margin at the frozen threshold, the payload carries the badge plus its own measured record beside it, the badge accrues a separate ledger from its first night so it is auditable, and adoption rides a signed fail-closed mode file like everything else. With one precondition that should not be skipped \u2014 the committee only exists inside the nightly engine, and borrowing its confidence to badge a pick some other engine made measured at nothing.",
+      "result": "NULL \u2014 no confidence signal separates. 29 cells, one BH family at q=0.10, 0 qualify; the 3 nominal survivors are two-row zero-width cells and vanish when cells under n=10 leave the family. Best candidate (committee vote margin \u226515 of 21): 59.3% hit [53.0, 65.6] on n=182 vs 54.8% pooled, +5.6pp vs the rest, p=0.18 day-clustered. Nothing wired into serving. Report: v4/models/output/HIGH_CONFIDENCE_FEASIBILITY.md; prereg: v4/models/prereg/high_confidence_tier_v1.md.",
+      "closed_doors_added": [
+        "star tier as a confidence badge on the served record \u2014 only 4\u2605/5\u2605 are ever served and the contrast runs backwards",
+        "gate EV size as a confidence badge \u2014 flat past the gate, largest bucket second worst",
+        "the adaptive selector's own confidence tier \u2014 no variance, STRONG on 123 of 123",
+        "analyst agreement / information completeness as a badge on the served picks \u2014 no contrast, and the one nominal cell is the desk DISAGREEING"
+      ]
+    },
     {
       "id": "desk_process_replay_record",
       "title": "The record, rebuilt by re-running every night of it",
@@ -1202,7 +1221,7 @@
   ],
   "papers_index": {
     "contract_version": "1.1",
-    "generated_utc": "2026-08-03T06:11:20.546529+00:00",
+    "generated_utc": "2026-08-03T09:11:59.959073+00:00",
     "n_papers": 19,
     "payload_key": "research_papers",
     "static_fallback": "/research_papers.json",

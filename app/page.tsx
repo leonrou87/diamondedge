@@ -530,10 +530,41 @@ export default function Home() {
       return datePicksPending(gameDateISO(g));
     }
 
-    async function snap(k: string) {
-      const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
-      const rows = await r.json();
-      return rows && rows[0] ? rows[0].payload : null;
+    /* ═══════════════ NO REQUEST IN THIS APP IS ALLOWED TO HANG ═══════════════
+       THE BUG CLASS, AND IT IS NOT THE SAME ONE AS THE ERROR BOUNDARIES ABOVE. A request
+       that FAILS rejects, and every caller here already catches. A request that STALLS —
+       a dead-air TCP connection, a captive portal, a phone that woke with no route, an
+       edge that accepted the socket and never answered — does neither. It never resolves
+       and it never rejects, so `await` parks forever, the surrounding try/catch never
+       runs, the retry state never renders, and the surface the reader is looking at stays
+       exactly as it was at boot. That is not a crash and no error boundary can see it;
+       from the outside it is simply "the tab hangs".
+
+       THE RULE. Every snapshot read carries an AbortController and a deadline. When the
+       deadline passes the request is aborted, which turns a hang into a REJECTION — and a
+       rejection is a thing the code above already knows how to render. The timer spans the
+       body read too (`r.json()` on a stalled body is the same hang one layer down), and it
+       is always cleared in `finally` so a fast response costs nothing. */
+    const SNAP_MS = 9000;
+    async function snap(k: string, ms = SNAP_MS) {
+      const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
+      try {
+        const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`,
+          { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, ...(ac ? { signal: ac.signal } : {}) });
+        const rows = await r.json();
+        return rows && rows[0] ? rows[0].payload : null;
+      } finally { clearTimeout(t); }
+    }
+    // The same deadline for a plain static-file read (the bundled fallbacks + the news feed).
+    async function fetchJson(url: string, opts: any = {}, ms = SNAP_MS) {
+      const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
+      try {
+        const r = await fetch(url, { ...opts, ...(ac ? { signal: ac.signal } : {}) });
+        if (!r.ok) throw new Error(`${url} ${r.status}`);
+        return await r.json();
+      } finally { clearTimeout(t); }
     }
 
     // crest markup: served logo URL (soccer home_logo/away_logo) → sport CDN / country
@@ -5996,6 +6027,28 @@ export default function Home() {
     // load actually resolves (empty OR full). True until the first loadDay settles.
     let dayLoading = true;
     let newsFeed: any = null;       // live sports-news feed (news_feed key, ~20-min refresh)
+    /* THE NEWS FEED HAD NO LOADER OF ITS OWN — it was one un-timed `await` buried at position
+       three of the boot chain (`loadIndex` → `loadDay` → `snap("news_feed")`). Two consequences,
+       both of them the reported hang: if either of the first two stalled the news read never
+       even STARTED, and if the news read itself failed it was swallowed by a bare `catch {}`
+       with nothing to retry it — `newsFeed` stayed null for the life of the session and the
+       briefing had no stories in it at all, for good. It is its own loader now: deadlined,
+       independent of the board's chain, retried with backoff, and it repaints the briefing
+       the moment it lands. `newsFeedState` is what the deck's empty state reads to decide
+       between "still coming" and "it failed — here is the way to try again". */
+    let newsFeedState: "idle" | "loading" | "ok" | "fail" = "idle";
+    let newsFeedTries = 0, newsFeedInFlight: Promise<any> | null = null;
+    function loadNewsFeed(force = false): Promise<any> {
+      if (newsFeed && !force) return Promise.resolve(newsFeed);
+      if (newsFeedInFlight) return newsFeedInFlight;
+      newsFeedState = "loading";
+      newsFeedTries++;
+      newsFeedInFlight = snap("news_feed", 8000)
+        .then((nf: any) => { if (nf && nf.lead) { newsFeed = nf; newsFeedState = "ok"; } else { newsFeedState = "fail"; } return newsFeed; })
+        .catch(() => { newsFeedState = "fail"; return null; })
+        .finally(() => { newsFeedInFlight = null; });
+      return newsFeedInFlight;
+    }
     let livePayload: any = null;    // the live board (today's key) — cached for past-day merges
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
@@ -7916,7 +7969,190 @@ export default function Home() {
        adaptiveDayStrategyHtml() and the whole adaptive-strategy family are untouched and
        still feed the Desk and Research. This row simply renders nothing now, and metaRow()
        stays as a documented no-op because renderSlate() and the boot warm-up both call it. */
-    function metaRow() { return ""; }
+    /* ═════════════════ TODAY'S STRATEGY — THE ONE LINE ABOVE THE BOARD ═════════════════
+       Leon: "a bar somewhere at the top with an animated icon of DiamondEdge that kind of
+       shows the strategy, and maybe if you click on it you can expand it to read more, or it
+       takes you to the Research/insights page… Don't reveal the full inner workings."
+
+       WHAT MAKES THIS DIFFERENT FROM THE DISCLOSURE THAT WAS CUT (see the note above — the
+       reasoning there still stands and this does not contradict it). The old row named the
+       RULE KEY and invited the reader to wonder which other rule they might have got: it was
+       machinery on a product surface. This is the opposite claim, and it is the marketing
+       one: something ran last night, it chose today's approach out of thousands, and here is
+       that approach in a sentence a person can read. The label and the plain-English rule are
+       SERVED — not one word of either is written here — and nothing below the plain-English
+       layer ever renders: no rule_key, no thresholds, no margins, no family, no candidate
+       board. That is the whole "don't reveal the inner workings" line, drawn in one place.
+
+       THE DEPTH LADDER, and each rung is a deliberate stop:
+         collapsed  the served label, one line, with the house mark breathing beside it
+         expanded   the served plain-English sentence, the window it was chosen from, and
+                    how many picks it has produced on today's board
+         Research   the paper that explains the nightly run properly
+       Public and ungated at every rung: a strategy label is not a pick. */
+    const STRATEGY_PAPER_ID = "kr-2026-003";   // "We Don't Have a System. We Have 2,848 of Them…"
+    /* THE ANIMATED MARK. The same rhombus geometry as --de-mark (masthead, app icon, centre
+       tab) so it is unmistakably the house mark and not a spinner: an outlined outer facet
+       with a solid core. The motion is TWO slow, unsynchronised loops — the core breathes on
+       a 4.4s cycle and a specular band travels across the facets every 6.2s — so it never
+       reads as a progress indicator or as something waiting on the network. Both are pure
+       CSS on the SVG's own elements, and both are switched off entirely under
+       prefers-reduced-motion, where the mark is simply the static logo. */
+    /* IDS ARE PER-INSTANCE. This mark renders on TWO surfaces at once (the board strip and
+       the Research section), and an SVG that hard-codes `id="stgy-sheen"` renders twice into
+       one document as a duplicate id — every `url(#…)` in the page then resolves to whichever
+       copy came first, so repainting the board (renderSlate does it on every poll) can rip
+       the gradient out from under the Research mark and leave it a black rectangle. Each
+       call mints its own suffix. */
+    let _stgyMarkN = 0;
+    function strategyMark() {
+      const u = `sm${++_stgyMarkN}`;
+      return `<svg class="stgy-mk" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="stgy-sheen-${u}" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="currentColor" stop-opacity="0"/>
+          <stop offset="44%" stop-color="currentColor" stop-opacity=".85"/>
+          <stop offset="56%" stop-color="currentColor" stop-opacity=".85"/>
+          <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+        </linearGradient>
+        <clipPath id="stgy-clip-${u}"><path d="M16 1.7 30.3 16 16 30.3 1.7 16Z"/></clipPath>
+      </defs>
+      <path class="stgy-mk-out" d="M16 1.7 30.3 16 16 30.3 1.7 16Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+      <path class="stgy-mk-mid" d="M16 6.6 25.4 16 16 25.4 6.6 16Z" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round" opacity=".38"/>
+      <path class="stgy-mk-core" d="M16 10 22 16 16 22 10 16Z" fill="currentColor"/>
+      <g clip-path="url(#stgy-clip-${u})"><rect class="stgy-mk-sheen" x="-34" y="-8" width="18" height="48" fill="url(#stgy-sheen-${u})"/></g>
+    </svg>`;
+    }
+    /* WHERE THE "DON'T REVEAL THE INNER WORKINGS" LINE IS ACTUALLY DRAWN.
+       The served `label` is written for a reader — "Shallow neural desk ensemble", "Adaptive
+       room-shape rule: 2 of 4 OVER → UNDER" — right up until it isn't: it carries the day's
+       THRESHOLD in a trailing parenthetical ("(0.54 margin)"). A margin of 0.54 is a tuned
+       parameter of the engine, it means nothing to anybody outside it, and it is exactly the
+       kind of number Leon asked to keep off this surface. So the public label is the served
+       label with a trailing numeric parenthetical redacted — a cut, never a rewrite. Nothing
+       is invented, the sentence underneath is still 100% the served plain-English rule, and
+       the reader gets the name of the approach without its dials. */
+    function strategyLabelPublic(s: any) {
+      const raw = humanNote(s && s.label) || "";
+      return raw.replace(/\s*\((?=[^)]*\d)[^)]*\)\s*$/, "").trim();
+    }
+    // The served rule reads as a clause ("run a small ensemble over the four analysts…")
+    // because it is written to follow a colon. It is a SENTENCE on both surfaces here, so it
+    // gets a capital and a full stop — punctuation, not editing. The words are untouched.
+    function strategySentence(s: any) {
+      const raw = humanNote((s && (s.plain_english_rule || s.summary_line || s.reason)) || "").trim();
+      if (!raw) return "";
+      return raw.charAt(0).toUpperCase() + raw.slice(1).replace(/\.$/, "") + ".";
+    }
+    // The day's chosen approach. The rich adaptive block first; the day ledger's own compact
+    // strategy block is the fallback, so the bar survives a payload that carries one and not
+    // the other. Returns null when NOTHING is served — and null means the bar does not render.
+    function dayStrategyBlock(dateISO: string) {
+      const s = adaptiveDayStrategy(dateISO);
+      if (s && s.status !== "ERROR" && (s.label || s.plain_english_rule)) return s;
+      const srcs = [livePayload, betaLiveData, betaData, payload].filter(Boolean);
+      for (const src of srcs) {
+        const daily = src && src.record && src.record.daily;
+        const rows = Array.isArray(daily) ? daily : [];
+        const row = rows.find((r: any) => r && String(r.date || "") === dateISO);
+        const st = row && row.strategy;
+        if (st && typeof st === "object" && st.status !== "ERROR" && (st.label || st.plain_english_rule)) return st;
+      }
+      return null;
+    }
+    // How many DiamondEdge Picks the strategy has actually produced on the board being viewed.
+    function dayStrategyPickCount(dateISO: string) {
+      const src = dateISO === todayISO() ? (livePayload || payload) : payload;
+      const games = src ? gamesForLeague(src, league, dateISO) : [];
+      return games.filter((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; }).length;
+    }
+    /* THE BAR ITSELF. Three states, and the third one is "render nothing":
+         SERVED       the label, and the disclosure that opens onto the served sentence
+         ANTICIPATION the strategy for this board has not been chosen yet — say what is
+                      coming and when, in the app's existing picks_eta words
+         ABSENT       nothing served at all ⇒ no bar. A strip that says nothing is worse than
+                      no strip, and this surface has been trimmed twice already for exactly
+                      that reason.
+       MLB/All only, like every other adaptive-strategy surface, and today/forward only —
+       a past board's strategy is a record question and the record screens own those. */
+    function strategyBarHtml(dateISO = curDate) {
+      if (!(league === "all" || league === "mlb")) return "";
+      if (rangeMode) return "";
+      /* TODAY ONLY, and that is a scoping decision rather than a technical limit. A PAST
+         board's strategy is a record question and the record screens own those. A FORWARD
+         board already carries futureNote() — "Tonight our system replays every strategy
+         against the latest results and locks the one it will play. This board fills in with
+         the day's picks by 6:00 AM PT" — which is the anticipation state, at length, in the
+         app's own words. Two versions of one sentence stacked on the same screen is worse
+         than one, so the strip stands down and lets the banner have it. */
+      const today = todayISO();
+      if (dateISO !== today) return "";
+      const s = dayStrategyBlock(dateISO);
+      const eyebrow = "Today's strategy";
+      if (!s) {
+        /* ANTICIPATION — the six-hour window each morning where the schedule is up and the
+           overnight run has not published. Only rendered when the app can honestly say
+           something is still coming (the day's picks are pending); otherwise no bar at all,
+           because a strip that says nothing is worse than no strip. */
+        if (!datePicksPending(dateISO)) return "";
+        const when = picksEtaTime();
+        const line = `Chosen by the overnight run — it lands with today's picks by ${when}`;
+        return `<div class="stgy stgy-wait" id="stgy"><div class="stgy-bar" role="status">
+            <span class="stgy-mark waiting">${strategyMark()}</span>
+            <span class="stgy-tx"><i>${esc(eyebrow)}</i><b>${esc(line)}</b></span>
+          </div></div>`;
+      }
+      const label = strategyLabelPublic(s) || "Chosen overnight from the last three weeks";
+      const rule = strategySentence(s);
+      const days = s.window_days ? Number(s.window_days) : 0;
+      const windowTxt = days
+        ? `Chosen from the last ${days === 21 ? "three weeks" : `${days} days`} of finished games — before a single first pitch today.`
+        : `Chosen from the last three weeks of finished games — before a single first pitch today.`;
+      const n = dayStrategyPickCount(dateISO);
+      const pending = datePicksPending(dateISO);
+      const countTxt = pending && !n
+        ? `Today's picks land by ${picksEtaTime()}.`
+        : n === 0
+          ? `It has passed on every game on today's board so far — passing is the strategy working, not the strategy missing.`
+          : `It has produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on today's board.`;
+      return `<div class="stgy" id="stgy">
+        <button class="stgy-bar" id="stgy-btn" type="button" aria-expanded="false" aria-controls="stgy-more">
+          <span class="stgy-mark">${strategyMark()}</span>
+          <span class="stgy-tx"><i>${esc(eyebrow)}</i><b>${esc(label)}</b></span>
+          <span class="stgy-caret" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
+        </button>
+        <div class="stgy-more" id="stgy-more">
+          <div class="stgy-more-in">
+            ${rule ? `<p class="stgy-rule"><span>How it reads a game</span>${esc(rule)}</p>` : ""}
+            <p class="stgy-win">${esc(windowTxt)}</p>
+            <p class="stgy-n">${countTxt}</p>
+            <button class="stgy-link" id="stgy-paper" type="button">How our nightly engine works<em>→</em></button>
+          </div>
+        </div>
+      </div>`;
+    }
+    // The bar's two bindings. Expansion is in place (no navigation, no sheet); the link is the
+    // one place the reader leaves, and it lands on the paper rather than on the tab's top.
+    function bindStrategyBar() {
+      bindClick("stgy-btn", () => {
+        const wrap = $("stgy"), btn = $("stgy-btn");
+        if (!wrap || !btn) return;
+        const open = wrap.classList.toggle("open");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+      }, { optional: "the strategy bar only renders for MLB/All on today or a forward board" });
+      bindClick("stgy-paper", (e: any) => {
+        if (e) e.stopPropagation();
+        // Papers may not be loaded yet (Research has never been opened) — load, then land.
+        loadPapers().catch(() => null).then(() => {
+          switchTab("research");
+          setTimeout(() => { try { openPaper(STRATEGY_PAPER_ID); } catch {} }, 240);
+        });
+      }, { optional: "only rendered inside the expanded strategy bar" });
+    }
+    // Contained like every other served-data renderer here: the strip reads the day ledger,
+    // the adaptive block and the board, and renderSlate assigns its output straight into the
+    // DOM. One bad field must cost the strip, never the board underneath it.
+    function metaRow() { return safeHtml("today's strategy strip", () => strategyBarHtml(), ""); }
 
     // ===================== GAMES TAB =====================
     function skeletonSlate(n = 8) {
@@ -7937,6 +8173,8 @@ export default function Home() {
       const html = `<div class="state loaderr"><div class="st-ico">◆</div><div class="big">Couldn't reach the board</div><div class="sm">Check your connection — DiamondEdge will keep trying in the background, or retry now. Every past pick stays graded once you're back.</div><button class="ld-retry" onclick="location.reload()">Retry</button></div>`;
       const t = $("today-view"); if (t) t.innerHTML = html;
       const b = $("slate-body"); if (b) b.innerHTML = html;
+      // this replaces the briefing's markup, so the deck is gone — put the chrome back
+      stopStories(); storyDeckReal = false; chromeGuard();
     }
 
     // ONE continuous frosted capsule; days are quiet typographic cells inside it and a
@@ -8242,6 +8480,9 @@ export default function Home() {
          screen, which are its two real front doors now.) */
       bindClick("daystrat-eye", (e: any) => { if (e) e.stopPropagation(); switchTab("desk"); },
         { optional: "only rendered for MLB/all dates with an adaptive day strategy" });
+      // REPAINT ⇒ REBIND: metaRow() is the strategy bar now, and every renderSlate() path
+      // repaints #meta-area — so its two handlers are re-attached from exactly here.
+      bindStrategyBar();
       // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
       // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
       bindClick("rng-back", () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); },
@@ -10933,12 +11174,34 @@ export default function Home() {
     const STORY_MS = 7000;
     const STORY_MAX = 24;
     let storyIdx = 0, storyLen = 0, storyRafId = 0, storyT0 = 0, storyAcc = 0, storyHold = false;
+    // the deadline on the briefing's LOADING state — see storyLoadingHtml/renderStories
+    let storyWatchdog = 0, storyWaitStart = 0;
     function stopStories() {
       if (storyRafId) cancelAnimationFrame(storyRafId);
       storyRafId = 0;
+      if (storyWatchdog) { clearTimeout(storyWatchdog); storyWatchdog = 0; }
       // the full-screen layer is a body state — it must come off with the deck, or the
       // header and dock stay hidden on whatever surface the reader lands on next
       try { document.body.classList.remove("stories-on"); } catch {}
+    }
+    /* ══════════ THE BAR CAN NEVER STAY HIDDEN OUTSIDE THE DECK ══════════
+       `body.stories-on` is what hides the header and the floating tab bar, and every path
+       that leaves the deck used to be individually responsible for taking it off. That is
+       fine for the paths someone thought about (the X, the end card, a tab tap) and useless
+       for the one nobody did: renderStories adds the class, and anything that throws AFTER
+       it — bindStories, startCountdowns, a slide binder over a malformed story — unwinds
+       into renderToday's catch, which rendered a perfectly good retry state UNDERNEATH a
+       hidden header and a hidden tab bar. A contained crash still looked like a dead app.
+
+       So the class is no longer removed by exit paths at all; it is ASSERTED from one
+       invariant, called on every surface change and on every error path. The bar is hidden
+       if and only if the briefing is the surface on screen AND a real deck is mounted in
+       it. Anything else — any tab, any failure, any exception — and the chrome comes back. */
+    function chromeGuard() {
+      try {
+        const deckUp = tab === "today" && !!$("stories");
+        document.body.classList.toggle("stories-on", deckUp);
+      } catch {}
     }
     /* THE NEWS TAB IS THE BRIEFING. There is no second mode.
        Leon: "remove the non-stories news page entirely. Stories IS the news tab now."
@@ -11170,7 +11433,23 @@ export default function Home() {
           if (s && at[k] < s.length) { slides.push(s[at[k]++]); moved = true; }
         }
       }
-      // the end card always closes the deck — it is the hand-off to the games board
+      /* ════════ THE END CARD IS THE REWARD FOR FINISHING, NOT THE DEFAULT ════════
+         THIS LINE WAS THE HANG. It used to be unconditional: `slides.push({t:"summary"})`
+         ran whether or not a single strand had produced anything. So on a cold boot, a
+         slow feed, a failed feed or a blocked request, `buildStorySlides()` returned a
+         deck of length ONE — the end card, alone. Three things followed, and together
+         they are exactly the reported bug:
+           1. the reader saw a card that is written to be the LAST thing you read, with
+              nothing behind it — which reads as a blank, frozen News tab;
+           2. `renderStories`' "feeds still landing" shimmer became unreachable code,
+              because the deck was never empty;
+           3. seven seconds later `storyTick` found `storyIdx === storyLen - 1`, called
+              `storyHandOff()`, and the app navigated itself to the Games board.
+         A deck with no content is not a finished deck — it is a deck that has not loaded.
+         It returns EMPTY now, and the empty return is what renderStories turns into a
+         real loading/retry state. */
+      if (!slides.length) return [];
+      // the end card always closes a REAL deck — it is the hand-off to the games board
       slides.push({ t: "summary", picks });
       return slides.slice(0, STORY_MAX);
     }
@@ -11686,7 +11965,24 @@ export default function Home() {
        hands off to the board with the same left-to-right pan every other navigation uses.
        The deck used to just stop dead on the last slide, which is where readers left. */
     let storyHandedOff = false;
+    /* ══════════ THE NAVIGATION-GATING RULE ══════════
+       THE ONLY THING IN THIS APP ALLOWED TO NAVIGATE THE READER OFF A TAB THEY CHOSE is
+       a reader gesture, or the completion of a REAL deck. Auto-advance is the one piece of
+       machinery that moves without a tap, and before this it would hand off from a deck of
+       one husk card as readily as from a finished twenty-card briefing — a load failure
+       became a navigation, which is the worst possible way to report a load failure.
+
+       Three conditions, all of them required, all of them checked HERE rather than at the
+       four call sites (tap, swipe, arrow key, timer) so no future call site can skip them:
+         1. the deck is REAL — built from served content, not a husk (`storyDeckReal`);
+         2. it has more than the end card in it (`storyLen >= 2`) — a one-card deck is by
+            definition a deck that never had anything to finish;
+         3. the reader is genuinely ON the last slide.
+       Fail any one and the hand-off is a no-op: the deck simply stays where it is, and the
+       loading/retry state below is what the reader gets instead. */
+    let storyDeckReal = false;
     function storyHandOff() {
+      if (!storyDeckReal || storyLen < 2 || storyIdx < storyLen - 1) return;
       if (storyHandedOff) return;
       storyHandedOff = true;
       const f = document.querySelector(`.st-fill[data-sf="${storyIdx}"]`) as any;
@@ -11787,16 +12083,51 @@ export default function Home() {
       // give the deck focus so the arrow keys and Escape work without a click first
       if (wrap && tab === "today") { try { wrap.focus({ preventScroll: true }); } catch {} }
     }
+    /* ══════════ THE BRIEFING'S TWO HONEST NON-STATES ══════════
+       A deck with nothing in it is either STILL COMING or BROKEN, and those are different
+       things to a reader. The shimmer is a promise; showing it forever is a lie, and a
+       spinner with no deadline behind it is the single most common way a web app "hangs".
+       So the shimmer is on a clock (storyWatchdog): it is what the reader sees while the
+       feeds have a fair chance, and after STORY_WAIT_MS — or the moment a loader has
+       actually reported failure — it becomes a designed retry state with a button that
+       re-fires every feed the briefing needs. Neither state mounts `#stories`, so neither
+       one hides the header or the tab bar, and neither one can auto-advance anywhere. */
+    const STORY_WAIT_MS = 9000;
+    function storyLoadingHtml() {
+      return `<div class="stories skel" aria-hidden="true"><div class="st-top"><div class="st-progress"><span class="st-seg"><i class="st-fill" style="width:35%"></i></span><span class="st-seg"></span><span class="st-seg"></span></div></div><div class="st-stage"><div class="st-slide on"><div class="sts sts-skel"><span class="sk sk-line w60"></span><span class="sk sk-line w48"></span><span class="sk sk-line w24"></span></div></div></div></div>`;
+    }
+    function briefingRetry() {
+      // Every feed the deck reads from, re-fired together. Whichever lands first repaints.
+      todayFresh = false;
+      newsFeedState = "idle";
+      loadNewsFeed(true).then(() => { if (tab === "today") renderToday(); }).catch(() => {});
+      betaLiveAt = 0;
+      loadBetaLive().then(() => { if (tab === "today") renderToday(); }).catch(() => { if (tab === "today") renderToday(); });
+      renderToday();
+    }
     function renderStories(view: any) {
       stopStories();
+      storyDeckReal = false;
       // The slide PLAN is served data too (picks, winners, headlines, analyst records). If the
       // plan itself cannot be built the deck degrades to its shimmer rather than to a blank tab.
       const slides = (safeRun("briefing running order", () => buildStorySlides()) || []) as any[];
       if (!slides.length) {
-        // feeds still landing — a story-shaped shimmer (never an empty stage)
-        view.innerHTML = `<div class="stories skel" aria-hidden="true"><div class="st-top"><div class="st-progress"><span class="st-seg"><i class="st-fill" style="width:35%"></i></span><span class="st-seg"></span><span class="st-seg"></span></div></div><div class="st-stage"><div class="st-slide on"><div class="sts sts-skel"><span class="sk sk-line w60"></span><span class="sk sk-line w48"></span><span class="sk sk-line w24"></span></div></div></div></div>`;
+        if (!storyWaitStart) storyWaitStart = Date.now();
+        const waited = Date.now() - storyWaitStart;
+        const failed = newsFeedState === "fail" && !betaLiveData && !livePayload && !payload;
+        if (failed || waited >= STORY_WAIT_MS) {
+          view.innerHTML = `<div class="lab-wrap">${failState("The briefing is still loading", "Today's stories haven't reached us yet. The board and the record are unaffected.", "today-retry")}</div>`;
+          bindClick("today-retry", () => { storyWaitStart = 0; briefingRetry(); },
+            { optional: "the briefing retry only exists in the empty/failed state" });
+        } else {
+          // feeds still landing — a story-shaped shimmer (never an empty stage), on a clock
+          view.innerHTML = storyLoadingHtml();
+          storyWatchdog = window.setTimeout(() => { storyWatchdog = 0; if (tab === "today") renderToday(); }, STORY_WAIT_MS - waited + 60);
+        }
+        chromeGuard();   // no deck ⇒ header and tab bar are BACK, whichever branch this was
         return;
       }
+      storyWaitStart = 0;
       storyLen = slides.length;
       if (storyIdx > storyLen - 1) storyIdx = 0;
       const dateTxt = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -11838,13 +12169,22 @@ export default function Home() {
           <button class="st-zone right" id="st-zone-r" aria-label="Next story" tabindex="-1"></button>
           <div class="st-hint" aria-hidden="true"><span>Tap the story to open · tap either edge to move</span></div>
         </div>`;
+      // A REAL deck is mounted: this — and only this — is what licenses the auto-advance to
+      // hand off to the board when the reader reaches the end of it (see storyHandOff).
+      storyDeckReal = true;
       // ONLY when the briefing is the surface actually on screen. renderToday() runs at boot
       // to prewarm the tab, so an unconditional class here would hide the header and the dock
       // on whatever tab the reader is actually looking at.
-      if (tab === "today") document.body.classList.add("stories-on");
-      bindStories(view);
-      startCountdowns();
-      startStoryTimer();
+      chromeGuard();
+      /* AND THE BINDINGS CANNOT TAKE THE CHROME WITH THEM. Everything below binds SERVED
+         data — a slide with a malformed story, an analyst row with no key — and a throw here
+         lands in renderToday's catch, which used to paint its retry state under a header and
+         a tab bar that were still hidden. Each step is contained on its own now, and the
+         guard runs again afterwards no matter which of them failed. */
+      safeRun("briefing bindings", () => bindStories(view));
+      safeRun("briefing countdowns", () => startCountdowns());
+      safeRun("briefing timer", () => startStoryTimer());
+      chromeGuard();
     }
 
     function renderToday() {
@@ -11857,8 +12197,14 @@ export default function Home() {
       } catch (e) {
         // eslint-disable-next-line no-console
         if (DEV) console.error("[DiamondEdge] surface failed: the briefing", e);
+        // THE ERROR PATH IS AN EXIT PATH. A throw out of renderStories can happen after the
+        // full-screen layer went up, so the first thing the failure does is put the chrome
+        // back — a retry state the reader cannot navigate away from is not a retry state.
+        stopStories();
+        storyDeckReal = false;
         view.innerHTML = `<div class="lab-wrap">${failState("The briefing didn't load", "Today's stories are having trouble. The board and the record are unaffected.", "today-retry")}</div>`;
-        bindClick("today-retry", () => { todayFresh = false; renderToday(); }, { optional: "the briefing retry only exists in the failed state" });
+        bindClick("today-retry", () => { storyWaitStart = 0; briefingRetry(); }, { optional: "the briefing retry only exists in the failed state" });
+        chromeGuard();
       }
       if (tab !== "today") todayFresh = false;
       return;
@@ -12419,9 +12765,8 @@ export default function Home() {
       let fresh: any = null;
       try { fresh = await Promise.race([snap("picks_unified"), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
       if (!fresh || !fresh.games || feedStampMs(fresh) < feedStampMs({ generated_utc: UNIFIED_HISTORY_MIN_UTC })) {
-        const r = await fetch(`/picks_unified.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
-        if (!r.ok) throw new Error("history fetch " + r.status);
-        const bundled = await r.json();
+        // deadlined like every other read — a stalled static fetch is the same hang
+        const bundled = await fetchJson(`/picks_unified.json?v=${new Date().toISOString().slice(0, 10)}`, { cache: "force-cache" });
         if (!fresh || !fresh.games || feedStampMs(bundled) >= feedStampMs(fresh)) fresh = bundled;
       }
       betaData = applyDeskMock(fresh);
@@ -12445,9 +12790,7 @@ export default function Home() {
       let usedFallback = false;
       if (!fresh || !fresh.games) {
         usedFallback = true;
-        const r = await fetch("/picks_unified_live.json", { cache: "no-store" });
-        if (!r.ok) throw new Error("live fetch " + r.status);
-        fresh = await r.json();
+        fresh = await fetchJson("/picks_unified_live.json", { cache: "no-store" });
       }
       betaLiveData = applyDeskMock(fresh);
       betaLiveAt = Date.now();
@@ -13498,6 +13841,26 @@ export default function Home() {
         `<div class="lab-sect-head">${head}</div><span class="sgc-caret" aria-hidden="true">›</span>`,
         () => `${sub ? `<p class="lab-sect-sub">${esc(sub)}</p>` : ""}<div class="lab-grid">${cards().join("")}</div>`);
     }
+    /* THE LINK FROM THE BOARD HAS TO LAND SOMEWHERE. The strategy bar's "How our nightly
+       engine works →" opens the paper, but a reader who taps Research directly should find
+       the same fact stated in the lab's own register — otherwise the bar is telling them
+       about a thing this page does not admit exists. Same served fields, same depth: the
+       label, the plain-English sentence, the window. No rule keys here either. */
+    function researchStrategyHtml() {
+      const s = dayStrategyBlock(todayISO());
+      if (!s) return "";
+      const label = strategyLabelPublic(s);
+      const rule = strategySentence(s);
+      if (!label && !rule) return "";
+      const days = s.window_days ? Number(s.window_days) : 0;
+      const dateTxt = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+      return `<section class="lab-today">
+        <div class="lab-today-k"><span class="lab-today-mk">${strategyMark()}</span>Today's strategy<i>${esc(dateTxt)}</i></div>
+        ${label ? `<h3 class="lab-today-h">${esc(label)}</h3>` : ""}
+        ${rule ? `<p class="lab-today-p">${esc(rule)}</p>` : ""}
+        <p class="lab-today-w">Selected by the nightly run from the last ${days ? esc(days === 21 ? "three weeks" : `${days} days`) : "three weeks"} of finished games, and locked before the first pitch. The paper below is the long version.</p>
+      </section>`;
+    }
     async function renderResearch() {
       const view = $("research-view");
       if (!view) return;
@@ -13585,6 +13948,7 @@ export default function Home() {
             ${chips ? `<div class="lab-counts">${chips}</div>` : ""}
             ${fresh}
           </header>
+          ${researchStrategyHtml()}
           ${flagship ? `<section class="lab-flag">
             ${paperCard(flagship, true)}
           </section>` : ""}
@@ -14439,10 +14803,14 @@ export default function Home() {
       // THE SWAP — everything that changes which surface is on screen. It runs only while
       // `main` is off-stage, so the reader never sees the destination render mid-flight.
       const commit = () => {
-        // leaving Today always tears down the full-screen briefing layer (the deck is only
-        // ever mounted on Today, and its body class hides the header)
-        if (tab === "today" && t !== "today") stopStories();
+        // LEAVING FOR ANYWHERE THAT IS NOT TODAY TEARS THE DECK DOWN — unconditionally. This
+        // used to be gated on `tab === "today"`, i.e. on the state variable agreeing that we
+        // were on the briefing. If anything had left `body.stories-on` set while `tab` said
+        // otherwise (an error path, a race between a re-render and a tab tap), the one line
+        // responsible for putting the header and the tab bar back simply did not run.
+        if (t !== "today") { stopStories(); storyDeckReal = false; }
         tab = t;
+        chromeGuard();   // the invariant, asserted on every single surface change
         TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
         renderDock(); // the floating dock is the primary nav — re-render so the gold pill moves
         // PERF: the view flip + tab highlight paint IMMEDIATELY; every heavy render is deferred
@@ -14455,9 +14823,15 @@ export default function Home() {
           window.scrollTo(0, 0);
           renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
           if (t === "today") {
-            if (!todayFresh) { renderToday(); todayFresh = true; }
-            else if ($("stories")) startStoryTimer(); // resume the deck on return
+            // `todayFresh` alone was not enough: a briefing that rendered its LOADING state
+            // is "fresh" and has no deck in it, so coming back to the tab resumed nothing,
+            // re-armed no watchdog, and left the reader on a shimmer with no clock behind it.
+            // No deck mounted ⇒ always re-render (which re-arms the watchdog or lands the
+            // real deck if the feeds have since arrived).
+            if (!todayFresh || !$("stories")) { renderToday(); todayFresh = true; }
+            else startStoryTimer(); // resume a real deck on return
           }
+          chromeGuard();
           // The Desk was rebuilt from scratch on every visit — 200KB of markup for a page
           // whose only volatile parts are the record and the widget. Cached like the others,
           // and invalidated by the pick-feed poller (see betaLiveData refresh).
@@ -14515,11 +14889,21 @@ export default function Home() {
           }
         }).catch(() => {});
       }, 5 * 60 * 1000);
+      /* THE NEWS FEED LEAVES THE BOARD'S CHAIN. It used to be the third serial `await` in
+         this block, which made the briefing's content hostage to two requests it does not
+         need: if the index or the day payload stalled, the news read never started, and the
+         News tab had no stories in it for the life of the session. It is fired here, in
+         parallel, with its own deadline and its own retry, and it repaints the briefing the
+         moment it lands. Two independent failures instead of one compound one. */
+      loadNewsFeed().then((nf: any) => {
+        if (!nf) return;
+        todayFresh = false;
+        if (tab === "today") { renderToday(); todayFresh = true; }
+      }).catch(() => {});
       try {
         await loadIndex();
         payload = await loadDay(curDate);
         dayLoading = false;
-        try { newsFeed = await snap("news_feed"); } catch {}
         league = bestLeague();
         root.querySelectorAll(".sporttab").forEach((x: any) => x.classList.toggle("on", x.dataset.lg === league));
         positionInk();
@@ -14550,6 +14934,13 @@ export default function Home() {
         // board ("no picks / old news"). Force the pick + history feeds fresh and re-render.
         betaLiveAt = 0; betaData = null;
         loadBetaLive().then(() => { try { if (tab === "today") renderToday(); else if (tab === "games") renderSlate(true); } catch {} }).catch(() => {});
+        // …and the briefing self-heals on the same event. A news feed that failed at boot
+        // (offline at launch is the common case) gets another go every time the app comes
+        // back to the foreground, so the News tab recovers without a reload.
+        if (newsFeedState !== "ok" && newsFeedTries < 8) {
+          loadNewsFeed(true).then((nf: any) => { if (nf) { todayFresh = false; if (tab === "today") { renderToday(); todayFresh = true; } } }).catch(() => {});
+        }
+        chromeGuard();
       } });
       window.addEventListener("focus", () => { pollLiveScores(); });
       pollLiveScores();
