@@ -5992,7 +5992,7 @@ export default function Home() {
       }
       // the box score is its own tab now — repaint the pane, and pull a fresh MLB document
       repaintBoxPane();
-      if (gs.kind === "live") loadMlbBox(g, true).then((m: any) => { if (m) repaintBoxPane(); }).catch(() => {});
+      if (gs.kind === "live") loadMlbBox(g, true).then((m: any) => { if (m) { repaintBoxPane(); repaintGameLeaders(); } }).catch(() => {});
       // Keep the hero's live tracking read in step with the fresh score (else it goes stale
       // vs the score right above it). Only the served-meter-absent fallback lives here.
       const trendEl = page.querySelector(".gp-trend");
@@ -8403,6 +8403,287 @@ export default function Home() {
       const m = String((g && g.game_id) || "").match(/(\d{5,})\s*$/);
       return m ? m[1] : "";
     }
+    /* ══════════════════════════════════════════════════════════════════════════════
+       STATCAST — THE PITCH-LEVEL LAYER
+       ──────────────────────────────────────────────────────────────────────────────
+       `/api/v1.1/game/<pk>/feed/live` carries every pitch and every batted ball: start
+       speed, pitch type, spin rate, exit velocity, launch angle, distance. The full
+       document is ~800 KB, which is not a thing to fetch three times a minute on a phone,
+       so it is requested through StatsAPI's `fields=` filter — 164 KB raw, 14 KB over the
+       wire — and it rides the box score's EXISTING cache regime rather than inventing a
+       second one: same 25 s TTL on a live game, fetched exactly once when the game is
+       final, same silent `.catch(() => null)` degradation, same repaint triggers.
+
+       TWO THINGS ABOUT `fields=` THAT ARE NOT OBVIOUS and that this URL is shaped around:
+         · it matches on key NAME and every intermediate name on the path must be listed —
+           asking for `spinRate` without `breaks` silently returns pitchData with no spin
+           at all rather than an error;
+         · there is no way to select `breaks.spinRate` alone, so listing `breaks` drags in
+           all eight break fields. That is the 99 KB → 164 KB difference, and it is worth
+           it: spin is the number that makes a velocity reading mean something.
+       Team aggregates are deliberately NOT in this URL — they live in the boxscore, which
+       this app already fetches and caches, so they cost nothing.
+
+       MEASURED COVERAGE, on four 2026 regular-season games: every play has pitch data
+       (77/77), 100 % of `isPitch` events carry `pitchData`, and startSpeed / type / spin
+       are present on every one of them. Batted-ball data is on ~65–77 % of plays — the rest
+       are strikeouts, walks and hit-by-pitches, which had no contact to measure. So the
+       pitch modules essentially never hide on a modern game and the contact modules hide
+       honestly on the games that had little contact. Older seasons, spring training and
+       some neutral-site games drop `pitchData.breaks` entirely, so everything below still
+       guards field by field. ══════════════════════════════════════════════════════════ */
+    const FEED_FIELDS = [
+      "gamePk", "gameData", "teams", "home", "away", "id", "abbreviation", "teamName",
+      "liveData", "plays", "allPlays", "about", "halfInning", "inning", "isTopInning",
+      "result", "event", "eventType", "description",
+      "matchup", "batter", "pitcher", "fullName",
+      "playEvents", "isPitch", "pitchNumber", "details", "call", "code", "type",
+      "pitchData", "startSpeed", "breaks", "spinRate",
+      "hitData", "launchSpeed", "launchAngle", "totalDistance", "trajectory",
+    ].join(",");
+    const feedLiveUrl = (pk: string) =>
+      `https://statsapi.mlb.com/api/v1.1/game/${encodeURIComponent(pk)}/feed/live?fields=${FEED_FIELDS}`;
+
+    // four-seam / two-seam / sinker / generic fastball. A cutter (FC) is NOT a fastball for
+    // a velocity leaderboard — it is thrown 3–6 mph slower on purpose, and averaging it in
+    // is how you make an ace look like he lost a tick.
+    const FB_CODES: Record<string, 1> = { FF: 1, FA: 1, FT: 1, SI: 1 };
+
+    /* Walk the feed ONCE and hand back a plain shape. Everything downstream reads this, so
+       there is exactly one place that knows the MLB JSON's field names. */
+    function statcastOf(g: any) {
+      const box = mlbBoxFor(g);
+      const fl = box && box.fl;
+      const plays = fl && fl.liveData && fl.liveData.plays && fl.liveData.plays.allPlays;
+      if (!Array.isArray(plays) || !plays.length) return null;
+      const gd = (fl.gameData && fl.gameData.teams) || {};
+      const sideOf = (p: any) => (p && p.about && p.about.halfInning === "bottom" ? "home" : "away");
+      const teamAb = (k: string) =>
+        (gd[k] && (gd[k].abbreviation || gd[k].teamName)) ||
+        (k === "home" ? g.home_abbr : g.away_abbr) || k.toUpperCase();
+      const out: any = {
+        pitches: [] as any[], hits: [] as any[],
+        abbr: { home: teamAb("home"), away: teamAb("away") },
+      };
+      plays.forEach((p: any) => {
+        const ev = Array.isArray(p && p.playEvents) ? p.playEvents : [];
+        // the BATTER's side is the half-inning's side; the PITCHER is the other one
+        const batSide = sideOf(p);
+        const pitSide = batSide === "home" ? "away" : "home";
+        const mu = (p && p.matchup) || {};
+        const pitcher = (mu.pitcher && mu.pitcher.fullName) || "";
+        const batter = (mu.batter && mu.batter.fullName) || "";
+        const res = (p && p.result) || {};
+        ev.forEach((e: any) => {
+          const pd = e && e.pitchData;
+          if (e && e.isPitch && pd && pd.startSpeed != null && !isNaN(Number(pd.startSpeed))) {
+            const t = (e.details && e.details.type) || {};
+            out.pitches.push({
+              velo: Number(pd.startSpeed),
+              spin: pd.breaks && pd.breaks.spinRate != null ? Number(pd.breaks.spinRate) : null,
+              code: String(t.code || ""), name: String(t.description || ""),
+              who: pitcher, side: pitSide,
+            });
+          }
+          const hd = e && e.hitData;
+          if (hd && hd.launchSpeed != null && !isNaN(Number(hd.launchSpeed))) {
+            out.hits.push({
+              ev: Number(hd.launchSpeed),
+              la: hd.launchAngle != null ? Number(hd.launchAngle) : null,
+              dist: hd.totalDistance != null ? Number(hd.totalDistance) : null,
+              traj: String(hd.trajectory || ""),
+              who: batter, side: batSide,
+              event: String(res.event || ""), eventType: String(res.eventType || ""),
+            });
+          }
+        });
+      });
+      if (!out.pitches.length && !out.hits.length) return null;
+      return out;
+    }
+
+    /* ── the derivations. Each returns null when the game did not produce the fact, and a
+          null is what makes its card disappear rather than print a blank. ── */
+    function scHardestPitch(sc: any) {
+      if (!sc || !sc.pitches.length) return null;
+      return sc.pitches.reduce((a: any, b: any) => (b.velo > a.velo ? b : a));
+    }
+    function scHardestHit(sc: any) {
+      if (!sc || !sc.hits.length) return null;
+      return sc.hits.reduce((a: any, b: any) => (b.ev > a.ev ? b : a));
+    }
+    function scLongestHR(sc: any) {
+      if (!sc) return null;
+      const hrs = sc.hits.filter((h: any) => h.eventType === "home_run" && h.dist != null);
+      if (!hrs.length) return null;
+      return hrs.reduce((a: any, b: any) => (b.dist > a.dist ? b : a));
+    }
+    /* FASTBALL VELOCITY, per pitcher. Five fastballs is the floor: an average of two pitches
+       is not an average, it is two pitches, and a reliever who threw one 99 at the top of an
+       inning should not out-rank a starter's 95 across ninety. Sorted by max, capped at four
+       names so the module stays a leaderboard rather than a roster. */
+    function scFastballs(sc: any) {
+      if (!sc || !sc.pitches.length) return [];
+      const by: Record<string, any> = {};
+      sc.pitches.forEach((p: any) => {
+        if (!p.who || !FB_CODES[p.code]) return;
+        const k = p.side + "|" + p.who;
+        if (!by[k]) by[k] = { who: p.who, side: p.side, n: 0, sum: 0, max: 0 };
+        by[k].n++; by[k].sum += p.velo; if (p.velo > by[k].max) by[k].max = p.velo;
+      });
+      return Object.values(by).filter((r: any) => r.n >= 5)
+        .sort((a: any, b: any) => b.max - a.max).slice(0, 4)
+        .map((r: any) => ({ ...r, avg: r.sum / r.n }));
+    }
+    /* PITCH MIX for the arm that threw the most pitches on each side — which is the starter
+       on every game that had one, without having to trust a `startingPitcher` flag that the
+       filtered feed does not carry. Under 20 pitches there is no mix worth drawing. */
+    function scMix(sc: any, side: string) {
+      if (!sc || !sc.pitches.length) return null;
+      const mine = sc.pitches.filter((p: any) => p.side === side && p.who);
+      if (!mine.length) return null;
+      const cnt: Record<string, number> = {};
+      mine.forEach((p: any) => { cnt[p.who] = (cnt[p.who] || 0) + 1; });
+      const who = Object.keys(cnt).reduce((a, b) => (cnt[b] > cnt[a] ? b : a));
+      const his = mine.filter((p: any) => p.who === who);
+      if (his.length < 20) return null;
+      const byType: Record<string, any> = {};
+      his.forEach((p: any) => {
+        const k = p.code || "—";
+        if (!byType[k]) byType[k] = { code: k, name: p.name || k, n: 0, sum: 0 };
+        byType[k].n++; byType[k].sum += p.velo;
+      });
+      const rows = Object.values(byType).sort((a: any, b: any) => b.n - a.n)
+        .map((r: any) => ({ ...r, pct: r.n / his.length, avg: r.sum / r.n }));
+      return { who, side, total: his.length, rows };
+    }
+    /* TEAM AGGREGATES come from the BOXSCORE, not the feed — LOB and RISP exist there only as
+       pre-formatted strings under `.info`, and the numeric `teamStats.batting.leftOnBase` is a
+       DIFFERENT statistic (the per-plate-appearance sum) that disagrees with the LOB a reader
+       recognises. Printing that number under the label "LOB" would be wrong, so it is the
+       string or nothing. Bullpen innings have no field at all and are summed off the pitcher
+       list — and `"1.1"` innings means one and a THIRD, not one point one. */
+    function scInfoVal(team: any, label: string) {
+      const info = (team && team.info) || [];
+      for (const grp of info) {
+        for (const f of (grp && grp.fieldList) || []) {
+          if (String(f.label || "").toLowerCase() === label.toLowerCase()) {
+            return String(f.value || "").replace(/\.\s*$/, "");
+          }
+        }
+      }
+      return "";
+    }
+    const ipToOuts = (v: any) => {
+      const s = String(v == null ? "" : v); const m = s.match(/^(\d+)(?:\.(\d))?$/);
+      if (!m) return 0; return Number(m[1]) * 3 + Number(m[2] || 0);
+    };
+    const outsToIp = (o: number) => `${Math.floor(o / 3)}${o % 3 ? "." + (o % 3) : ""}`;
+    function scTeamAgg(g: any, side: string) {
+      const box = mlbBoxFor(g);
+      const t = box && box.bs && box.bs.teams && box.bs.teams[side];
+      if (!t) return null;
+      const pit = (t.teamStats && t.teamStats.pitching) || {};
+      const ids = Array.isArray(t.pitchers) ? t.pitchers : [];
+      const ipOf = (id: any) => {
+        const p = t.players && t.players["ID" + id];
+        return p && p.stats && p.stats.pitching ? ipToOuts(p.stats.pitching.inningsPitched) : 0;
+      };
+      const penOuts = ids.slice(1).reduce((s: number, id: any) => s + ipOf(id), 0);
+      const row = {
+        lob: scInfoVal(t, "Team LOB"),
+        risp: scInfoVal(t, "Team RISP"),
+        pen: ids.length > 1 ? `${outsToIp(penOuts)} IP · ${ids.length - 1} arm${ids.length - 1 === 1 ? "" : "s"}` : "",
+        pitches: pit.numberOfPitches != null ? `${pit.numberOfPitches}` : "",
+        strikes: pit.strikes != null && pit.numberOfPitches != null ? `${pit.strikes}/${pit.numberOfPitches}` : "",
+      };
+      return (row.lob || row.risp || row.pen || row.strikes) ? row : null;
+    }
+
+    /* ══ GAME LEADERS — the module. Every card is one fact, and a card the game did not
+          produce is ABSENT, never blank. If nothing survives, the whole section is absent. ══ */
+    function gameLeaders(g: any) {
+      if (!isMlbGame(g)) return "";
+      const sc = statcastOf(g);
+      if (!sc) return "";
+      const ab = (s: string) => esc(sc.abbr[s] || "");
+      const mph = (v: any) => `${Number(v).toFixed(1)}`;
+      const cards: string[] = [];
+
+      const hp = scHardestPitch(sc);
+      if (hp) cards.push(`<div class="glcard">
+        <div class="gl-k">Hardest pitch</div>
+        <div class="gl-n">${mph(hp.velo)}<i>mph</i></div>
+        <div class="gl-w">${esc(hp.who)}<em>${ab(hp.side)}</em></div>
+        <div class="gl-s">${esc(hp.name || hp.code)}${hp.spin != null ? ` · ${Math.round(hp.spin)} rpm` : ""}</div>
+      </div>`);
+
+      const hh = scHardestHit(sc);
+      if (hh) cards.push(`<div class="glcard">
+        <div class="gl-k">Hardest hit</div>
+        <div class="gl-n">${mph(hh.ev)}<i>mph</i></div>
+        <div class="gl-w">${esc(hh.who)}<em>${ab(hh.side)}</em></div>
+        <div class="gl-s">${esc(hh.event || "In play")}${hh.la != null ? ` · ${Math.round(hh.la)}° launch` : ""}${hh.dist != null ? ` · ${Math.round(hh.dist)} ft` : ""}</div>
+      </div>`);
+
+      const hr = scLongestHR(sc);
+      if (hr) cards.push(`<div class="glcard">
+        <div class="gl-k">Longest home run</div>
+        <div class="gl-n">${Math.round(hr.dist)}<i>ft</i></div>
+        <div class="gl-w">${esc(hr.who)}<em>${ab(hr.side)}</em></div>
+        <div class="gl-s">${mph(hr.ev)} mph off the bat${hr.la != null ? ` · ${Math.round(hr.la)}°` : ""}</div>
+      </div>`);
+
+      const fbs = scFastballs(sc);
+      const fbBlock = fbs.length ? `<div class="gl-tbl">
+        <div class="gl-th"><span>Fastball velocity</span><i>max · avg</i></div>
+        ${fbs.map((r: any) => `<div class="gl-tr">
+          <span class="gl-nm">${esc(r.who)}<em>${ab(r.side)}</em></span>
+          <span class="gl-v"><b>${mph(r.max)}</b><i>${mph(r.avg)}</i></span>
+        </div>`).join("")}
+        <div class="gl-note">Four-seam, two-seam and sinker only, minimum five thrown — a cutter is not a fastball and averaging it in costs a pitcher a tick he never lost.</div>
+      </div>` : "";
+
+      const mixes = ["away", "home"].map((s) => scMix(sc, s)).filter(Boolean) as any[];
+      const mixBlock = mixes.length ? `<div class="gl-mixes">${mixes.map((m: any) => `<div class="gl-mix">
+        <div class="gl-th"><span>${esc(m.who)}</span><i>${m.total} pitches</i></div>
+        ${m.rows.map((r: any) => `<div class="gl-mixrow">
+          <span class="gl-mt">${esc(r.name || r.code)}</span>
+          <span class="gl-bar"><i style="width:${(r.pct * 100).toFixed(1)}%"></i></span>
+          <span class="gl-mp">${Math.round(r.pct * 100)}%</span>
+          <span class="gl-mv">${mph(r.avg)}</span>
+        </div>`).join("")}
+      </div>`).join("")}</div>` : "";
+
+      const aggs = ["away", "home"].map((s) => ({ s, a: scTeamAgg(g, s) })).filter((x) => x.a);
+      const aggBlock = aggs.length === 2 ? `<div class="gl-tbl gl-agg">
+        <div class="gl-th"><span>On the day</span><i><b>${ab("away")}</b><b>${ab("home")}</b></i></div>
+        ${[
+          ["Left on base", (x: any) => x.lob],
+          ["With runners in scoring position", (x: any) => x.risp],
+          ["Bullpen", (x: any) => x.pen],
+          ["Strikes / pitches", (x: any) => x.strikes],
+        ].map(([lab, get]: any) => {
+          const a = get(aggs[0].a), b = get(aggs[1].a);
+          if (!a && !b) return "";
+          return `<div class="gl-tr"><span class="gl-nm">${esc(lab)}</span><span class="gl-v"><b>${esc(a || "—")}</b><i>${esc(b || "—")}</i></span></div>`;
+        }).join("")}
+      </div>` : "";
+
+      if (!cards.length && !fbBlock && !mixBlock && !aggBlock) return "";
+      return `${cards.length ? `<div class="gl-cards">${cards.join("")}</div>` : ""}${fbBlock}${mixBlock}${aggBlock}`;
+    }
+
+    function glSection(g: any) {
+      const gl = safeHtml("gameLeaders", () => gameLeaders(g));
+      return gl ? `<section class="st-sec"><h3 class="st-h">Game leaders</h3>${gl}</section>` : "";
+    }
+    function repaintGameLeaders() {
+      const slot = document.getElementById("gl-slot");
+      if (!slot || !detail) return;
+      slot.innerHTML = glSection(detail);
+    }
+
     async function loadMlbBox(g: any, force = false) {
       const pk = mlbPk(g);
       if (!pk || !isMlbGame(g)) return null;
@@ -8412,12 +8693,13 @@ export default function Home() {
       mlbBox[pk] = { ...(cur || {}), loading: true };
       try {
         const base = `https://statsapi.mlb.com/api/v1/game/${encodeURIComponent(pk)}`;
-        const [ls, bs] = await Promise.all([
+        const [ls, bs, fl] = await Promise.all([
           fetch(`${base}/linescore`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
           fetch(`${base}/boxscore`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetch(feedLiveUrl(pk)).then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ]);
         if (!ls && !bs) { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
-        mlbBox[pk] = { ls, bs, at: Date.now(), loading: false, final: gameState(g).kind === "final" };
+        mlbBox[pk] = { ls, bs, fl, at: Date.now(), loading: false, final: gameState(g).kind === "final" };
         return mlbBox[pk];
       } catch { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
     }
@@ -8513,7 +8795,7 @@ export default function Home() {
          gamePk, so the box score can never depend on which caller happened to wire it first
          (open, tab switch, live poll and the async feed rebuild all reach this same render). */
       if (!m && isMlbGame(g) && mlbPk(g)) {
-        loadMlbBox(g).then((r: any) => { if (r && detail && String(detail.game_id) === String(g.game_id)) repaintBoxPane(); }).catch(() => {});
+        loadMlbBox(g).then((r: any) => { if (r && detail && String(detail.game_id) === String(g.game_id)) { repaintBoxPane(); repaintGameLeaders(); } }).catch(() => {});
       }
       const ls = m && m.ls;
       const bs = m && m.bs;
@@ -9134,6 +9416,11 @@ export default function Home() {
          here is gated: context is free, the CALL is the product. */
       const statsPane = `<div class="gp-pane" data-pane="stats" style="display:${detailTab === "stats" ? "block" : "none"}">
         <div class="de-pane statspane">
+          ${/* A STABLE SLOT, so the Statcast feed can land after first paint and fill it
+                without the pane being rebuilt underneath the reader's scroll position. Empty
+                until there is something true to put in it — a game with no pitch data renders
+                no slot content and therefore no heading, which is the app's standing rule. */""}
+          <div id="gl-slot">${glSection(g)}</div>
           ${vizPitchers(g) ? `<section class="st-sec"><h3 class="st-h">Starting pitchers</h3>${vizPitchers(g)}</section>` : ""}
           ${vizTeamRecords(g) || vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Team performance</h3>${vizTeamRecords(g)}${vizFormStrip(g)}</section>` : ""}
           ${vizPredScore(g) || vizWinProb(g) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
@@ -9256,7 +9543,7 @@ export default function Home() {
         // MLB's own box score is fetched on open (and on the live cycle) and repaints in place
         const gk = gameState(g).kind;
         if (gk === "live" || gk === "final") {
-          loadMlbBox(g).then((m: any) => { if (m && detail && String(detail.game_id) === String(g.game_id)) repaintBoxPane(); }).catch(() => {});
+          loadMlbBox(g).then((m: any) => { if (m && detail && String(detail.game_id) === String(g.game_id)) { repaintBoxPane(); repaintGameLeaders(); } }).catch(() => {});
         }
       }
       // Rebuild #gp-body in place when a feed lands after first paint. Guarded to the SAME game
@@ -9355,8 +9642,11 @@ export default function Home() {
       positionDetailInk();
       if (t === "live") { pollLiveDetail(); const b = $("gp-body"); if (b) b.scrollTop = b.scrollTop; }
       // arriving on the box score pulls a fresh MLB document if the cached one is stale
-      if (t === "box" && detail) {
-        loadMlbBox(detail).then((m: any) => { if (m) repaintBoxPane(); }).catch(() => {});
+      // arriving on the box score OR the stats tab pulls a fresh MLB document if the cached
+      // one is stale — the Statcast leaders read the same cached document as the box score,
+      // so a reader who opens Stats first is not made to wait for a tab they never visited.
+      if ((t === "box" || t === "stats") && detail) {
+        loadMlbBox(detail).then((m: any) => { if (m) { repaintBoxPane(); repaintGameLeaders(); } }).catch(() => {});
       }
     }
     function closeDetail(fromHistory = false, forceRoot = false) {
@@ -10219,10 +10509,30 @@ export default function Home() {
           <div class="sh-grab" id="sh-grab"><span></span></div>
           <div class="sh-head">
             <button class="close" id="sheet-close" aria-label="Close">✕</button>
-            ${s.image_url ? `<div class="art-visual"><img src="${esc(String(s.image_url))}" alt="" onload="if(!this.naturalWidth||this.naturalWidth<260){this.parentElement.classList.add('is-fallback')}" onerror="this.parentElement.classList.add('is-fallback')"></div>` : g ? `<div class="art-visual art-vs">${gCrest(g, "away", "art-hero-crest")}<span>vs</span>${gCrest(g, "home", "art-hero-crest")}</div>` : `<div class="art-visual is-fallback"><span>◆</span></div>`}
-            <div class="sh-sport">${lab} · DiamondEdge</div>
-            <div class="art-title">${esc(s.headline || s.title)}</div>
-            ${hedgeFree(s.dek) ? `<div class="sh-meta">${esc(hedgeFree(s.dek))}</div>` : ""}
+            ${/* THE HEADER IS THE CARD, CONTINUED — not a photo with a headline underneath it.
+                  The news card the reader just tapped is an App-Store "Today" card: the picture
+                  FILLS it, a scrim rises from the foot, and the headline sits ON the image. The
+                  sheet then broke that: the same picture came back in its own 190px rounded box
+                  with the kicker and the headline stacked BELOW it — the web-article-teaser
+                  anatomy the Today card exists to replace. Tapping a card and landing on a
+                  different composition of the same story is the moment the illusion drops.
+                  Same anatomy now, one register bigger. The image is the same URL the card
+                  already painted, so it is warm in cache and lands with no flash; it enters by
+                  continuing the card's crop (1.05 → 1) rather than fading in as a new picture,
+                  and the headline settles in behind it. That is the "carry through". */""}
+            <div class="art-hero${s.image_url ? "" : g ? " art-vs" : " is-fallback"}">
+              ${s.image_url
+                ? `<span class="art-hero-shotwrap"><img class="art-hero-shot" src="${esc(String(s.image_url))}" alt="" decoding="async" onload="if(!this.naturalWidth||this.naturalWidth<260){this.closest('.art-hero').classList.add('is-fallback')}" onerror="this.closest('.art-hero').classList.add('is-fallback')"></span>`
+                : g
+                  ? `<span class="art-hero-crests">${gCrest(g, "away", "art-hero-crest")}<em>vs</em>${gCrest(g, "home", "art-hero-crest")}</span>`
+                  : `<span class="art-hero-mark" aria-hidden="true"></span>`}
+              <span class="art-hero-scrim"></span>
+              <span class="art-hero-body">
+                <span class="sh-sport">${lab} · DiamondEdge</span>
+                <span class="art-title">${esc(s.headline || s.title)}</span>
+                ${hedgeFree(s.dek) ? `<span class="sh-meta">${esc(hedgeFree(s.dek))}</span>` : ""}
+              </span>
+            </div>
           </div>
           <div class="sh-body">
             <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span><button class="art-share" id="art-share" aria-label="Share this story">Share ↗</button></div>
