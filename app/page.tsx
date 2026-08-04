@@ -1358,6 +1358,29 @@ export default function Home() {
       if (pl.premium === true && (pl.side == null || pl.side === "")) return true;
       return false;
     }
+    /* ═════════ AD SLOTS (Leon: full production sports-scores app — free tier carries
+       ads, premium gets the picks AND zero ads). The slot is the CONTRACT: a stable,
+       reserved, labeled container (`data-ad-slot`) an ad network can later fill by key
+       without a layout change. Until a network is wired, every slot runs the house ad —
+       the premium upsell — so no reader ever sees an empty gray box. Premium renders
+       NO slot at all: ad-free is part of what they bought. */
+    const AD_SLOTS_ON = true;
+    function adSlot(key: string) {
+      if (!AD_SLOTS_ON) return "";
+      if (entitled()) return "";
+      return `<aside class="ad-slot" data-ad-slot="${esc(key)}" aria-label="Sponsored">
+        <span class="ad-eyebrow">Sponsored</span>
+        <div class="ad-house" role="button" tabindex="0" aria-label="Go premium — ad-free with every DiamondEdge Pick">
+          <span class="ad-house-mark" aria-hidden="true">◆</span>
+          <span class="ad-house-tx"><b>Go ad-free — and unlock every DiamondEdge Pick</b><i>Premium members see zero ads and the full board.</i></span>
+          <span class="ad-house-cta">Upgrade</span>
+        </div>
+      </aside>`;
+    }
+    document.addEventListener("click", (e: any) => {
+      const el = e.target && e.target.closest && e.target.closest(".ad-house");
+      if (el) { e.stopPropagation(); openUnlock(); }
+    }, true);
     function pickLocked(pl: any, st: string) {
       if (!pl) return false;
       if (servedRedacted(pl)) return true;          // the server's word beats any local flag
@@ -6315,6 +6338,34 @@ export default function Home() {
       if (g.display_pick && g.display_pick.progress) g.display_pick.progress.total_so_far = ca.total_so_far;
       return changed;
     }
+    // game_id -> {n runs, side, at} — run events recorded by overlayInto, painted (and
+    // consumed) by flashRunScored after the next re-render.
+    const runFlash: any = {};
+    function flashRunScored() {
+      if (REDUCE) { Object.keys(runFlash).forEach((k) => delete runFlash[k]); return; }
+      const now = Date.now();
+      Object.keys(runFlash).forEach((gid) => {
+        const ev = runFlash[gid];
+        if (!ev || now - ev.at > 15000) { delete runFlash[gid]; return; }
+        const tile = root.querySelector(`.tile[data-gid="${CSS.escape(gid)}"]`) as any;
+        if (!tile) return;   // not on this board — keep the event for the surface that is
+        delete runFlash[gid];
+        tile.classList.add("run-scored");
+        // the scoring side's digit pops: team rows render away-first, home-second
+        const scores = tile.querySelectorAll(".t-score");
+        const digit = scores[ev.side === "home" ? 1 : 0] || scores[0];
+        if (digit) digit.classList.add("sc-pop");
+        const float = document.createElement("i");
+        float.className = "run-float";
+        float.textContent = `+${ev.n} RUN${ev.n > 1 ? "S" : ""}`;
+        tile.appendChild(float);
+        setTimeout(() => {
+          tile.classList.remove("run-scored");
+          if (digit) digit.classList.remove("sc-pop");
+          float.remove();
+        }, 2400);
+      });
+    }
     function overlayInto(games: any[]) {
       if (!liveScores || !liveScores.games || !Array.isArray(games)) return false;
       let changed = false;
@@ -6331,6 +6382,16 @@ export default function Home() {
           // showed. A `final` flip is handled above and is unaffected by this gate.
           if (st === "final" || liveAtLeast(liveProgressKey(ls.period_label, tsf), caKey(ca))) {
             if (ca.home_score !== ls.home_score || ca.away_score !== ls.away_score || (ls.period_label != null && ca.period_label !== ls.period_label)) changed = true;
+            /* RUNS SCORED = A MOMENT (Leon: "animations when games have runs scored —
+               make it look very cool"). A live total moving UP records the event here —
+               the one place every score change already passes through — and
+               flashRunScored() paints it after the re-render: the tile flashes, the
+               scoring side's digit pops, a small +N floats off it. */
+            const prevT = ca.total_so_far != null ? Number(ca.total_so_far) : null;
+            if (st === "live" && prevT != null && tsf > prevT) {
+              const dHome = Number(ls.home_score) - Number(ca.home_score != null ? ca.home_score : ls.home_score);
+              runFlash[String(g.game_id)] = { n: tsf - prevT, side: dHome > 0 ? "home" : "away", at: Date.now() };
+            }
             ca.home_score = ls.home_score; ca.away_score = ls.away_score;
             if (ls.period_label != null) ca.period_label = ls.period_label;
             ca.total_so_far = tsf;
@@ -6394,6 +6455,8 @@ export default function Home() {
       if (tab === "today") repaintToday();
       else { todayFresh = false; if (tab === "games" && !rangeMode) renderSlate(true); }
       if (detail && detail.game_id != null) refreshSheetScore(detail);
+      // after the fresh scores have painted: celebrate any runs that just landed
+      requestAnimationFrame(() => { try { flashRunScored(); } catch {} });
     }
     // ---- BANDWIDTH-SMART big-payload refresh: the pregame_picks payload changes ~every
     // 30 min. Re-fetch infrequently and ONLY apply when generated_at advanced (no wasteful
@@ -7515,7 +7578,9 @@ export default function Home() {
     const STAMP_GLYPH: any = {
       check: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
       cross: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>`,
-      dash: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg>`,
+      // "even" is two bars, not one — a single dash in a disc read as nothing at all
+      // (Leon: "the push logo isn't clear enough").
+      dash: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5h11M6.5 14.5h11"/></svg>`,
     };
     /* THREE SIZES, AND THE SMALLEST ONE DROPS THE WORD.
        Leon: "the RIGHT/✓ treatment is wrapping onto multiple lines and looks odd… make it a
@@ -7532,7 +7597,9 @@ export default function Home() {
       const r = RESULT_STAMP[String(st || "")];
       if (!r) return "";
       const aria = `This pick ${r.k === "won" ? "cashed" : r.k === "lost" ? "missed" : "pushed"}`;
-      const word = size === "mini" ? "" : `<b>${r.w}</b>`;
+      // mini drops the word — EXCEPT for a push: ✓ and ✗ are self-evident, "=" is not,
+      // and PUSH is short enough to keep at any size.
+      const word = size === "mini" && r.k !== "pushed" ? "" : `<b>${r.w}</b>`;
       return `<span class="restamp ${r.k}${size ? ` rs-${size}` : ""}" role="img" aria-label="${esc(aria)}" title="${esc(r.w)}">`
         + `<i class="rs-g" aria-hidden="true">${STAMP_GLYPH[r.g]}</i>${word}</span>`;
     }
@@ -8769,9 +8836,14 @@ export default function Home() {
           // of each reason. A future slate has no reads yet, so it keeps its own banner.
 
           let n = 0;
-          const section = (label: string, arr: any[], cls = "") => arr.length
-            ? `<div class="slate-sec ${cls}">${label ? `<div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div>` : ""}<div class="slate">${arr.map((g: any) => gameCard(g, n++)).join("")}</div></div>`
-            : "";
+          const section = (label: string, arr: any[], cls = "") => {
+            if (!arr.length) return "";
+            const cardsArr = arr.map((g: any) => gameCard(g, n++));
+            // ONE ad slot mid-board on a full slate (free tier only — adSlot returns ""
+            // for premium). Spliced after the sixth card so it never leads the board.
+            if (!label && cardsArr.length > 6) cardsArr.splice(6, 0, adSlot("board-mid"));
+            return `<div class="slate-sec ${cls}">${label ? `<div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div>` : ""}<div class="slate">${cardsArr.join("")}</div></div>`;
+          };
           // Postponed cards ride at the end of the day, after the finals —
           // visible, dimmed, VOID (never counted in the day's record).
           let pn = 0;
@@ -11561,6 +11633,7 @@ export default function Home() {
             ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
             ${angleChip ? `<div class="art-angle-row${gid != null ? " art-angle-go" : ""}"${gid != null ? ` data-gid="${esc(String(gid))}" role="button" tabindex="0" aria-label="See our full pick"` : ""}><span class="art-take-lab">Our take</span>${angleChip}${artRes}${gid != null ? `<span class="art-go">See our full pick →</span>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
+            ${adSlot("article-end")}
             ${prevKey != null || nextKey != null ? `<div class="art-nav">${prevKey != null ? `<button class="art-navbtn" data-navk="${esc(prevKey)}">← Previous</button>` : `<span></span>`}${nextKey != null ? `<button class="art-navbtn next" data-navk="${esc(nextKey)}">Next story →</button>` : `<span></span>`}</div>` : ""}
           </div>
         </div>`;
@@ -15428,7 +15501,10 @@ export default function Home() {
       //   · live_scores (tiny)   → every ~50s while a game is live/near-start
       //   · live_detail (box)    → every ~40s ONLY while a live game's detail page is open
       //   · pregame_picks (big)  → every ~4 min, applied only when generated_at advances
-      setInterval(pollLiveScores, 50 * 1000);
+      // 25s (was 50): the writer refreshes ~20s, so a 50s read left tiles a poll behind
+      // the data that already existed. The snapshot is ~1.5KB — reading it at writer
+      // cadence costs nothing and roughly halves run-to-screen on the board.
+      setInterval(pollLiveScores, 25 * 1000);
       // 40s → 25s: this tick now also pulls MLB's own box document (see pollLiveDetail), and
       // 25s is that document's cache TTL — a slower tick would just let the cache go stale
       // between fetches, which is the whole latency the change is there to remove. Runs only

@@ -8481,3 +8481,43 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   margin-left:5px;font-size:9px;letter-spacing:.02em;opacity:.85;
   font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){.dmp-res.has-meter .ipm-fill{transition:none}}
+
+/* A pushed mini stamp keeps its word — "=" alone in a disc read as nothing (Leon).
+   PUSH is four characters; the pill stretches, nothing else changes. */
+.de-mini-pick .restamp.rs-mini.pushed{width:auto;border-radius:10px;padding:0 7px 0 4px;gap:3px}
+.de-mini-pick .restamp.rs-mini.pushed b{font-size:8.5px;font-weight:800;letter-spacing:.07em}
+
+/* ═════════ RUNS SCORED — the board celebrates (scores-app moment) ═════════
+   A gold ring blooms off the tile, the scoring side's digit pops, and a small
+   +N RUNS tag floats off the top corner. ~2.4s, then everything settles. */
+@keyframes runRing{0%{box-shadow:0 0 0 0 rgba(198,161,66,0)}16%{box-shadow:0 0 0 3px rgba(198,161,66,.5),0 10px 30px rgba(198,161,66,.22)}100%{box-shadow:0 0 0 0 rgba(198,161,66,0)}}
+.tile.run-scored{animation:runRing 2.2s var(--ease-out);z-index:2}
+@keyframes scPop{0%{transform:scale(1)}28%{transform:scale(1.5)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
+.t-score.sc-pop{animation:scPop .9s var(--ease-out);color:var(--golddeep);transform-origin:center right}
+@keyframes runFloat{0%{opacity:0;transform:translateY(4px) scale(.8)}18%{opacity:1;transform:translateY(-2px) scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
+.run-float{position:absolute;top:8px;right:10px;z-index:3;pointer-events:none;
+  font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.09em;
+  color:#fff;background:var(--golddeep);padding:3px 7px;border-radius:8px;
+  box-shadow:0 4px 14px rgba(198,161,66,.4);animation:runFloat 2.4s var(--ease-out) both}
+@media(prefers-reduced-motion:reduce){
+  .tile.run-scored,.t-score.sc-pop,.run-float{animation:none}
+  .run-float{display:none}
+}
+
+/* ═════════ AD SLOTS — reserved, labeled, filled by the house until a network is wired.
+   Premium renders none (adSlot returns "" when entitled). ═════════ */
+.ad-slot{grid-column:1 / -1;display:block;margin:2px 0}
+.ad-eyebrow{display:block;font-family:var(--sans);font-weight:700;font-size:8.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 2px 4px}
+.ad-house{display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;
+  background:linear-gradient(135deg,rgba(198,161,66,.09),rgba(198,161,66,.03));
+  border-radius:14px;box-shadow:inset 0 0 0 1px rgba(198,161,66,.22)}
+.ad-house:active{transform:scale(.99)}
+.ad-house-mark{flex:none;width:30px;height:30px;display:grid;place-items:center;
+  font-size:15px;color:var(--golddeep);background:rgba(198,161,66,.12);border-radius:9px}
+.ad-house-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ad-house-tx b{font-family:var(--sans);font-weight:700;font-size:12.5px;line-height:1.3;color:var(--ink)}
+.ad-house-tx i{font-style:normal;font-family:var(--sans);font-size:11px;color:var(--ink3)}
+.ad-house-cta{flex:none;font-family:var(--sans);font-weight:800;font-size:11px;
+  letter-spacing:.04em;color:#fff;background:var(--golddeep);padding:7px 12px;border-radius:10px}
+.sh-body .ad-slot{margin:16px 0 4px}
