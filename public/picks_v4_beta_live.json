@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-04T01:12:44Z",
+  "generated_utc": "2026-08-04T01:49:34Z",
   "dates": [
     "2026-08-03"
   ],
@@ -1049,7 +1049,10 @@
           "was": -110,
           "book": "lowvig",
           "ts": "2026-08-04T01:09:22Z"
-        }
+        },
+        "locked": true,
+        "locked_wall": "T-12h",
+        "locked_at_utc": "2026-08-04T01:49:29Z"
       },
       {
         "model": "champion_v2",
@@ -1122,7 +1125,10 @@
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.3% vs median break-even 58.0% at -138 (median ev -6.28% < +1.5% min)",
-        "asof_utc": "2026-08-03T16:49:09Z"
+        "asof_utc": "2026-08-03T16:49:09Z",
+        "locked": true,
+        "locked_wall": "T-6h",
+        "locked_at_utc": "2026-08-04T01:49:29Z"
       },
       {
         "model": "champion_v2",
@@ -1195,7 +1201,10 @@
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.3% vs median break-even 58.0% at -138 (median ev -6.28% < +1.5% min)",
-        "asof_utc": "2026-08-03T21:33:37Z"
+        "asof_utc": "2026-08-03T21:33:37Z",
+        "locked": true,
+        "locked_wall": "T-3h",
+        "locked_at_utc": "2026-08-04T01:49:29Z"
       },
       {
         "model": "champion_v2",
@@ -1268,7 +1277,10 @@
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.3% vs median break-even 57.1% at -133 (median ev -4.80% < +1.5% min)",
-        "asof_utc": "2026-08-03T23:58:57Z"
+        "asof_utc": "2026-08-03T23:58:57Z",
+        "locked": true,
+        "locked_wall": "T-1h",
+        "locked_at_utc": "2026-08-04T01:49:29Z"
       }
     ],
     "n_picks_on_board": 4,
@@ -1280,7 +1292,7 @@
     "wall_rows_first_write_wins": true,
     "locked_this_cycle": {
       "n_locked_now": 10,
-      "n_locked_total": 94
+      "n_locked_total": 104
     },
     "note": "once now >= first_pitch_utc a game's rows are IMMUTABLE: locked:true, no re-evaluation, no side/price/line/star changes \u2014 the payload permanently carries the last PRE-START state (the judged Vegas line) and grading uses exactly that locked state. Each wall row is also first-write-wins: once written at its wall it is never overwritten by a later cycle. Game cards carry locked/locked_at (wall + utc + line) for the UI badge, e.g. 'Locked at T-1h \u00b7 O/U 8.5'."
   },
@@ -1518,7 +1530,7 @@
         "n_cleared": 0
       },
       "champion_v2": {
-        "n_flagged": 1,
+        "n_flagged": 0,
         "n_cleared": 0
       }
     },
@@ -2682,8 +2694,8 @@
         "our_prob": 0.4113,
         "ev": -0.0363,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T01:49:33Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -3076,8 +3088,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T01:49:33Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -3549,8 +3561,8 @@
           "wx_temp_f": 109.04
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T01:49:33Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
@@ -6308,7 +6320,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 50.8% < break-even 51.5% at -106 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-04T01:49:33Z"
         },
         {
           "lead_time": "T-12h",
@@ -6347,7 +6361,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 50.4% < break-even 51.0% at -104 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-04T01:49:33Z"
         },
         {
           "lead_time": "T-6h",
@@ -6386,7 +6402,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 48.7% < break-even 52.1% at -109 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-04T01:49:33Z"
         },
         {
           "lead_time": "T-3h",
@@ -6425,7 +6443,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 48.3% < break-even 52.8% at -112 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-04T01:49:33Z"
         },
         {
           "lead_time": "T-1h",
@@ -6464,10 +6484,19 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 48.2% < break-even 53.0% at -113 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-04T01:49:33Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-04T01:49:33Z",
+        "line": 9.0,
+        "label": "Locked at T-1h \u00b7 O/U 9.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     }
   ]
 }

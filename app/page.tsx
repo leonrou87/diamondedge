@@ -11592,6 +11592,19 @@ export default function Home() {
       const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(hedgeFree(s.summary || ""))}</p>`;
       const words = paras.join(" ").split(/\s+/).filter(Boolean).length;
       const readMin = Math.max(1, Math.round(words / 200));
+      /* THE STORY IS FREE. THE CALL IS THE PRODUCT.
+         The news pipeline used to write our side and our number straight into the article
+         body — "Our model likes the OVER 8.5 in …" — which every reader could read, signed
+         in or not, while the angle chip six inches above it sat locked. One surface said
+         "unlock to see the pick" and the next one gave it away.
+         serve_news now returns the pick as its OWN field (`take`), keeping the article body
+         to journalism, and it renders here under the same gate the chip uses. A signed-out
+         reader still gets the whole story — the trade, the form, the matchup, the race —
+         and the one sentence that is the paid product stays paid. */
+      const takeTxt = s.take ? hedgeFree(String(s.take)) : "";
+      const takeHtml = takeTxt && entitled()
+        ? `<div class="art-take"><span class="art-take-k">◆ Our take</span><p>${mdBold(takeTxt)}</p></div>`
+        : "";
       const angleChip = newsAngle(s.angle);
       // If the mapped game already finished, say — honestly — whether our pick hit.
       const gpick = g ? displayPick(g) : null;
@@ -11633,6 +11646,7 @@ export default function Home() {
             ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
             ${angleChip ? `<div class="art-angle-row${gid != null ? " art-angle-go" : ""}"${gid != null ? ` data-gid="${esc(String(gid))}" role="button" tabindex="0" aria-label="See our full pick"` : ""}><span class="art-take-lab">Our take</span>${angleChip}${artRes}${gid != null ? `<span class="art-go">See our full pick →</span>` : ""}</div>` : ""}
             <div class="art-body">${body}</div>
+            ${takeHtml}
             ${adSlot("article-end")}
             ${prevKey != null || nextKey != null ? `<div class="art-nav">${prevKey != null ? `<button class="art-navbtn" data-navk="${esc(prevKey)}">← Previous</button>` : `<span></span>`}${nextKey != null ? `<button class="art-navbtn next" data-navk="${esc(nextKey)}">Next story →</button>` : `<span></span>`}</div>` : ""}
           </div>

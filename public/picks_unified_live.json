@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-04T01:15:04Z",
+  "generated_utc": "2026-08-04T01:52:03Z",
   "dates": [
     "2026-08-03"
   ],
@@ -2184,11 +2184,11 @@
       "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "n": 125,
+      "n": 126,
       "win": 65,
       "loss": 56,
-      "push": 4,
-      "record": "65-56-4",
+      "push": 5,
+      "record": "65-56-5",
       "decided": 121,
       "hit_rate": 0.5372,
       "units": 8.451,
@@ -2204,9 +2204,9 @@
         0.5944
       ],
       "hit_rate_ci_level": 0.8,
-      "n_days": 21,
+      "n_days": 22,
       "first": "2026-07-02",
-      "through": "2026-08-02",
+      "through": "2026-08-03",
       "status": "live",
       "by_month": [
         {
@@ -2222,11 +2222,11 @@
         },
         {
           "month": "2026-08",
-          "n": 11,
+          "n": 12,
           "win": 6,
           "loss": 4,
-          "push": 1,
-          "record": "6-4-1",
+          "push": 2,
+          "record": "6-4-2",
           "hit_rate": 0.6,
           "units": 1.921,
           "roi": 0.1921
@@ -2259,11 +2259,11 @@
           "through": "2026-07-03"
         },
         "adaptive_desk": {
-          "n": 123,
+          "n": 124,
           "win": 65,
           "loss": 54,
-          "push": 4,
-          "record": "65-54-4",
+          "push": 5,
+          "record": "65-54-5",
           "decided": 119,
           "hit_rate": 0.5462,
           "units": 10.451,
@@ -2279,9 +2279,9 @@
             0.6037
           ],
           "hit_rate_ci_level": 0.8,
-          "n_days": 19,
+          "n_days": 20,
           "first": "2026-07-12",
-          "through": "2026-08-02"
+          "through": "2026-08-03"
         }
       },
       "engine_changeover": "2026-08-02",
@@ -3233,11 +3233,11 @@
       },
       {
         "date": "2026-08-03",
-        "n": 0,
+        "n": 1,
         "win": 0,
         "loss": 0,
-        "push": 0,
-        "record": "0-0-0",
+        "push": 1,
+        "record": "0-0-1",
         "hit_rate": null,
         "units": 0.0,
         "roi": null,
@@ -3254,14 +3254,14 @@
         "engine": "adaptive_desk",
         "is_engine_changeover": false,
         "basis": "served_locked",
-        "no_action_reason": "strategy_passed",
+        "no_action_reason": null,
         "walk_forward": true,
-        "counts_in_record": false,
+        "counts_in_record": true,
         "model_generation": "v2",
         "is_model_seam": false,
         "window_spans_model_seam": true,
         "is_today": true,
-        "no_action": true
+        "no_action": false
       }
     ],
     "streaks": {
@@ -3519,10 +3519,10 @@
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
     "overall": {
-      "n": 17,
+      "n": 18,
       "win": 12,
       "loss": 4,
-      "push": 1,
+      "push": 2,
       "roi": 0.4843,
       "hit_rate": 0.75,
       "units_flat": 7.748,
@@ -3535,10 +3535,10 @@
     },
     "by_star_tier": {
       "5": {
-        "n": 11,
+        "n": 12,
         "win": 6,
         "loss": 4,
-        "push": 1,
+        "push": 2,
         "roi": 0.1921,
         "hit_rate": 0.6,
         "units_flat": 1.921,
@@ -3631,10 +3631,10 @@
         }
       },
       "adaptive_desk": {
-        "n": 17,
+        "n": 18,
         "win": 12,
         "loss": 4,
-        "push": 1,
+        "push": 2,
         "roi": 0.4843,
         "hit_rate": 0.75,
         "units_flat": 7.748,
@@ -3651,7 +3651,7 @@
       "model",
       "adaptive_desk"
     ],
-    "n_unified_picks": 17,
+    "n_unified_picks": 18,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -3727,11 +3727,17 @@
           "units_flat": 7.748,
           "units_weighted": 15.496,
           "n": 17
+        },
+        {
+          "date": "2026-08-03",
+          "units_flat": 7.748,
+          "units_weighted": 15.496,
+          "n": 18
         }
       ],
       "by_star_perf": {
         "5": {
-          "n": 11,
+          "n": 12,
           "hit": 0.6,
           "roi": 0.1921
         },
@@ -3778,10 +3784,10 @@
         },
         {
           "month": "2026-08",
-          "n": 11,
+          "n": 12,
           "win": 6,
           "loss": 4,
-          "push": 1,
+          "push": 2,
           "hit": 0.6,
           "roi": 0.1921,
           "units_flat": 1.921
@@ -3973,10 +3979,10 @@
         "what": "The one pick we actually serve on this game: the champion's play if it has one, otherwise the model's best playable lean, otherwise a PASS.",
         "is_headline": true,
         "activation_date": "2026-07-20",
-        "n": 17,
+        "n": 18,
         "win": 12,
         "loss": 4,
-        "push": 1,
+        "push": 2,
         "roi": 0.4843,
         "hit_rate": 0.75,
         "units_flat": 7.748,
@@ -3987,13 +3993,13 @@
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-30",
-        "last_graded_date": "2026-08-02",
+        "last_graded_date": "2026-08-03",
         "evidence_split": {
           "unknown": {
-            "n": 17,
+            "n": 18,
             "win": 12,
             "loss": 4,
-            "push": 1,
+            "push": 2,
             "roi": 0.4843,
             "hit_rate": 0.75,
             "units_flat": 7.748,
@@ -4004,7 +4010,7 @@
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-30",
-            "last_graded_date": "2026-08-02",
+            "last_graded_date": "2026-08-03",
             "kind": "live",
             "what": "source not stamped"
           }
@@ -4488,10 +4494,10 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 375,
+          "n": 376,
           "win": 184,
           "loss": 183,
-          "push": 8,
+          "push": 9,
           "hit_rate": 0.5014,
           "decided": 367,
           "is_betting_record": false,
@@ -4500,17 +4506,17 @@
             0.4505,
             0.5522
           ],
-          "last10": "L-W-L-W-L-L-W-L-L-P",
+          "last10": "W-L-W-L-L-W-L-L-P-P",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-02",
+          "last_date": "2026-08-03",
           "n_reconstructed_oos": 331,
-          "n_live": 44,
-          "own_side_over_rate": 0.424,
+          "n_live": 45,
+          "own_side_over_rate": 0.4255,
           "mean_abs_edge_vs_market": 0.0136,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 45 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -4525,10 +4531,10 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 375,
+          "n": 376,
           "win": 161,
           "loss": 206,
-          "push": 8,
+          "push": 9,
           "hit_rate": 0.4387,
           "decided": 367,
           "is_betting_record": false,
@@ -4537,17 +4543,17 @@
             0.3888,
             0.4898
           ],
-          "last10": "L-W-L-L-L-W-L-W-L-P",
+          "last10": "W-L-L-L-W-L-W-L-P-P",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-02",
+          "last_date": "2026-08-03",
           "n_reconstructed_oos": 331,
-          "n_live": 44,
-          "own_side_over_rate": 0.5067,
+          "n_live": 45,
+          "own_side_over_rate": 0.5053,
           "mean_abs_edge_vs_market": 0.032,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 45 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "nova": {
           "key": "nova",
@@ -4562,10 +4568,10 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 375,
+          "n": 376,
           "win": 178,
           "loss": 189,
-          "push": 8,
+          "push": 9,
           "hit_rate": 0.485,
           "decided": 367,
           "is_betting_record": false,
@@ -4574,17 +4580,17 @@
             0.4343,
             0.536
           ],
-          "last10": "L-W-W-L-L-W-W-L-L-P",
+          "last10": "W-W-L-L-W-W-L-L-P-P",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-02",
+          "last_date": "2026-08-03",
           "n_reconstructed_oos": 331,
-          "n_live": 44,
-          "own_side_over_rate": 0.544,
-          "mean_abs_edge_vs_market": 0.0223,
+          "n_live": 45,
+          "own_side_over_rate": 0.5452,
+          "mean_abs_edge_vs_market": 0.0222,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 45 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "scout": {
           "key": "scout",
@@ -4599,10 +4605,10 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 375,
+          "n": 376,
           "win": 174,
           "loss": 193,
-          "push": 8,
+          "push": 9,
           "hit_rate": 0.4741,
           "decided": 367,
           "is_betting_record": false,
@@ -4611,22 +4617,22 @@
             0.4236,
             0.5252
           ],
-          "last10": "W-L-W-L-L-W-L-W-W-P",
+          "last10": "L-W-L-L-W-L-W-W-P-P",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-02",
+          "last_date": "2026-08-03",
           "n_reconstructed_oos": 331,
-          "n_live": 44,
-          "own_side_over_rate": 0.424,
-          "mean_abs_edge_vs_market": 0.0265,
+          "n_live": 45,
+          "own_side_over_rate": 0.4255,
+          "mean_abs_edge_vs_market": 0.0264,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 44 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 45 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-03T09:11:34Z",
+      "updated": "2026-08-04T01:49:33Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -4648,10 +4654,10 @@
           "bh_significant": false
         },
         "MAJORITY": {
-          "n": 5,
+          "n": 6,
           "win": 3,
           "loss": 2,
-          "push": 0,
+          "push": 1,
           "hit_rate": 0.6,
           "roi": 0.1799,
           "n_decided": 5,
@@ -4679,6 +4685,27 @@
         }
       },
       "by_configuration": {
+        "MAJORITY_3-1|dissent=atlas|over": {
+          "n": 1,
+          "win": 0,
+          "loss": 0,
+          "push": 1,
+          "hit_rate": null,
+          "roi": null,
+          "n_decided": 0,
+          "hit_ci95": [
+            null,
+            null
+          ],
+          "p_vs_coinflip": null,
+          "bh_significant": false,
+          "family": "MAJORITY_3-1",
+          "call": "over",
+          "detail": {
+            "dissenter": "atlas",
+            "side": "over"
+          }
+        },
         "MAJORITY_3-1|dissent=scout|over": {
           "n": 3,
           "win": 2,
@@ -4803,9 +4830,9 @@
           }
         }
       },
-      "n_games_with_all_four_graded": 17,
-      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 8 rows this table renders, on 17 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
-      "n_rows_rendered": 8,
+      "n_games_with_all_four_graded": 18,
+      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 9 rows this table renders, on 18 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
+      "n_rows_rendered": 9,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
       "source": "analyst_v2_stream.reads_for_date \u2014 the v2 analysts, re-architected 2026-07-31 onto disjoint feature slices. See analyst_v2_spec.chief_contract.",
@@ -7133,7 +7160,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-04T01:15:27Z",
+      "updated": "2026-08-04T01:52:18Z",
       "order": [
         "vega",
         "atlas",
@@ -7957,13 +7984,13 @@
             "VEGA \u00b7 The Price",
             "ATLAS \u00b7 The Conditions"
           ],
-          "n_disagreements": 183,
+          "n_disagreements": 184,
           "wins": {
             "vega": 102,
             "atlas": 79
           },
-          "pushes": 2,
-          "n_both_graded": 375,
+          "pushes": 3,
+          "n_both_graded": 376,
           "line": "When VEGA and ATLAS disagree: VEGA 102, ATLAS 79"
         },
         {
@@ -7981,7 +8008,7 @@
             "nova": 87
           },
           "pushes": 1,
-          "n_both_graded": 375,
+          "n_both_graded": 376,
           "line": "When VEGA and NOVA disagree: VEGA 93, NOVA 87"
         },
         {
@@ -7999,7 +8026,7 @@
             "scout": 90
           },
           "pushes": 2,
-          "n_both_graded": 375,
+          "n_both_graded": 376,
           "line": "When VEGA and SCOUT disagree: VEGA 100, SCOUT 90"
         },
         {
@@ -8011,13 +8038,13 @@
             "ATLAS \u00b7 The Conditions",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 160,
+          "n_disagreements": 161,
           "wins": {
             "atlas": 71,
             "nova": 88
           },
-          "pushes": 1,
-          "n_both_graded": 375,
+          "pushes": 2,
+          "n_both_graded": 376,
           "line": "When ATLAS and NOVA disagree: ATLAS 71, NOVA 88"
         },
         {
@@ -8029,13 +8056,13 @@
             "ATLAS \u00b7 The Conditions",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 159,
+          "n_disagreements": 160,
           "wins": {
             "atlas": 72,
             "scout": 85
           },
-          "pushes": 2,
-          "n_both_graded": 375,
+          "pushes": 3,
+          "n_both_graded": 376,
           "line": "When ATLAS and SCOUT disagree: ATLAS 72, SCOUT 85"
         },
         {
@@ -8053,7 +8080,7 @@
             "scout": 79
           },
           "pushes": 3,
-          "n_both_graded": 375,
+          "n_both_graded": 376,
           "line": "When NOVA and SCOUT disagree: NOVA 83, SCOUT 79"
         }
       ],
@@ -8065,45 +8092,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 0,
+          "n": 1,
           "win": 0,
           "loss": 0,
-          "push": 0,
+          "push": 1,
           "hit_rate": null,
-          "line": "0-0",
+          "line": "0-0-1",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 0,
+          "n": 1,
           "win": 0,
           "loss": 0,
-          "push": 0,
+          "push": 1,
           "hit_rate": null,
-          "line": "0-0",
+          "line": "0-0-1",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 0,
+          "n": 1,
           "win": 0,
           "loss": 0,
-          "push": 0,
+          "push": 1,
           "hit_rate": null,
-          "line": "0-0",
+          "line": "0-0-1",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 0,
+          "n": 1,
           "win": 0,
           "loss": 0,
-          "push": 0,
+          "push": 1,
           "hit_rate": null,
-          "line": "0-0",
+          "line": "0-0-1",
           "is_betting_record": false
         }
       },
@@ -8168,12 +8195,12 @@
   "adaptive_strategy_record": {
     "version": "adaptive_desk_v20",
     "record_start": "2026-07-01",
-    "through": "2026-08-02",
+    "through": "2026-08-03",
     "overall": {
-      "n": 17,
+      "n": 18,
       "win": 12,
       "loss": 4,
-      "push": 1,
+      "push": 2,
       "roi": 0.4843,
       "hit_rate": 0.75,
       "units_flat": 7.748,
@@ -8220,6 +8247,15 @@
         "hit_rate": 0.625,
         "strategy_ref": "neural_tanh:l20.12:th0.54",
         "strategy_at": "adaptive_strategy_by_date.2026-08-02"
+      },
+      "2026-08-03": {
+        "n": 1,
+        "win": 0,
+        "loss": 0,
+        "push": 1,
+        "hit_rate": null,
+        "strategy_ref": "neural_tanh:l20.12:th0.54",
+        "strategy_at": "adaptive_strategy_by_date.2026-08-03"
       }
     },
     "strategy_by_date": {
@@ -9112,16 +9148,16 @@
       "source": "adaptive_desk"
     },
     "2026-08-03": {
-      "n_picks": 0,
-      "n_graded": 0,
+      "n_picks": 1,
+      "n_graded": 1,
       "wins": 0,
       "losses": 0,
-      "pushes": 0,
+      "pushes": 1,
       "hit_rate": null,
       "roi": null,
       "units": 0.0,
       "units_weighted": 0.0,
-      "source": "all_pass"
+      "source": "adaptive_desk"
     },
     "2026-08-04": {
       "n_picks": 0,
@@ -9249,8 +9285,8 @@
     "note": "Per-analyst read counts over the SERVED cards. The four reads come from analyst_v2_stream.reads_for_date and nothing else, so `native` is every read and `coverage` is permanently 0 \u2014 FORCED COVERAGE IS RETIRED. It used to manufacture a fallback read for whichever of the four dismantled engines had frozen nothing on a game, which guaranteed a full board by construction. The v2 stream prices a game only where its T-3h feature frame exists, so a no-read is a real statement about the feed for that game and is counted here rather than filled in from a different model."
   },
   "line_now_audit": {
-    "n_emitted": 1,
-    "n_suppressed_started": 7,
+    "n_emitted": 0,
+    "n_suppressed_started": 8,
     "n_suppressed_implausible": 0,
     "n_suppressed_basis_disagreement": 0,
     "n_no_current": 0,
@@ -9278,7 +9314,7 @@
         "star_tier": "Adaptive desk STRONG (35d trailing)",
         "price": 103.0,
         "suggested_units": 2.0,
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-03T22:46:07Z",
         "timestamp": "2026-08-03T22:46:07Z",
@@ -9412,7 +9448,7 @@
           "price": 103.0,
           "stars": 5,
           "score": 5.0,
-          "result": null,
+          "result": "push",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -9668,13 +9704,7 @@
           "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
           "take": "Bats and arms both travel; the ballpark does not. 0.07 runs of environment says under at 9, and I'll stand there alone.",
-          "take_kind": "dissent",
-          "live_p_over": null,
-          "live_state_note": "Bot 8th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-04T01:12:41Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "dissent"
         },
         {
           "key": "nova",
@@ -9791,7 +9821,7 @@
         "score": 5.0,
         "price": 103.0,
         "suggested_units": 2.0,
-        "result": null,
+        "result": "push",
         "locked": true,
         "lead_time": "T-3h",
         "source": "adaptive_desk",
@@ -9816,7 +9846,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -10377,34 +10407,7 @@
           "is_final_wall": true
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 8,
-        "half": "bottom",
-        "outs": 3,
-        "away_score": 3,
-        "home_score": 6,
-        "runs_so_far": 9,
-        "pregame_total": 9.0,
-        "runs_vs_pregame_total": 0.0,
-        "runs_still_needed_for_over": 0,
-        "innings_elapsed": 8.0,
-        "pace_runs_per_inning": 1.12,
-        "projected_final_runs": 10.1,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-04T01:12:41Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-03-St. Louis Cardinals-New York Yankees-823520",
@@ -10816,8 +10819,8 @@
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.12 runs above an average night \u2014 8.1 against 8.",
           "take_kind": "standard",
           "live_p_over": 1.0,
-          "live_state_note": "Top 6th, 9 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-04T01:12:41Z",
+          "live_state_note": "Bot 7th, 11 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-04T01:49:31Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -10962,7 +10965,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -11525,18 +11528,18 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 6,
-        "half": "top",
-        "outs": 1,
+        "inning": 7,
+        "half": "bottom",
+        "outs": 2,
         "away_score": 6,
-        "home_score": 3,
-        "runs_so_far": 9,
+        "home_score": 5,
+        "runs_so_far": 11,
         "pregame_total": 8.0,
-        "runs_vs_pregame_total": 1.0,
+        "runs_vs_pregame_total": 3.0,
         "runs_still_needed_for_over": 0,
-        "innings_elapsed": 5.5,
-        "pace_runs_per_inning": 1.64,
-        "projected_final_runs": 14.8,
+        "innings_elapsed": 7.0,
+        "pace_runs_per_inning": 1.57,
+        "projected_final_runs": 14.1,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -11548,7 +11551,7 @@
         ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": 1.0,
-        "as_of": "2026-08-04T01:12:41Z",
+        "as_of": "2026-08-04T01:49:31Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -11967,9 +11970,9 @@
           ],
           "take": "Bats and arms both travel; the ballpark does not. 0.34 runs of environment says under at 8.5, and I'll stand there alone.",
           "take_kind": "dissent",
-          "live_p_over": 0.5072,
-          "live_state_note": "Top 6th, 5 runs in \u2014 my number's moved to 51% over.",
-          "as_of": "2026-08-04T01:12:41Z",
+          "live_p_over": null,
+          "live_state_note": "Bot 7th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T01:49:31Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -12114,7 +12117,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -12677,29 +12680,29 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 6,
-        "half": "top",
+        "inning": 7,
+        "half": "bottom",
         "outs": 3,
         "away_score": 4,
-        "home_score": 1,
-        "runs_so_far": 5,
+        "home_score": 3,
+        "runs_so_far": 7,
         "pregame_total": 8.5,
-        "runs_vs_pregame_total": -3.5,
-        "runs_still_needed_for_over": 4,
-        "innings_elapsed": 5.5,
-        "pace_runs_per_inning": 0.91,
-        "projected_final_runs": 8.2,
-        "p_hit_now": 0.4928,
-        "p_hit_side": "under",
-        "p_hit_side_basis": "engine_pick",
-        "p_hit_certified": true,
-        "p_hit_basis": "certified conditional rest-of-game engine (buckets: LATE)",
+        "runs_vs_pregame_total": -1.5,
+        "runs_still_needed_for_over": 2,
+        "innings_elapsed": 7.0,
+        "pace_runs_per_inning": 1.0,
+        "projected_final_runs": 9.0,
+        "p_hit_now": null,
+        "p_hit_side": null,
+        "p_hit_side_basis": null,
+        "p_hit_certified": false,
+        "p_hit_basis": null,
         "p_hit_buckets": [
           "LATE"
         ],
-        "p_hit_note": "Top 6th, 5 runs in \u2014 my number's moved to 51% over.",
-        "live_p_over": 0.5072,
-        "as_of": "2026-08-04T01:12:41Z",
+        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
+        "live_p_over": null,
+        "as_of": "2026-08-04T01:49:31Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -13114,8 +13117,8 @@
           "take": "I grade the place and the umpire and nothing else. On those alone: under 8, 51%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 4th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-04T01:12:41Z",
+          "live_state_note": "Bot 6th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T01:49:31Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -13260,7 +13263,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -13819,27 +13822,29 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 4,
-        "half": "top",
-        "outs": 3,
+        "inning": 6,
+        "half": "bottom",
+        "outs": 2,
         "away_score": 3,
         "home_score": 0,
         "runs_so_far": 3,
         "pregame_total": 8.0,
         "runs_vs_pregame_total": -5.0,
         "runs_still_needed_for_over": 5,
-        "innings_elapsed": 3.5,
-        "pace_runs_per_inning": 0.86,
-        "projected_final_runs": 7.7,
+        "innings_elapsed": 6.0,
+        "pace_runs_per_inning": 0.5,
+        "projected_final_runs": 4.5,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
         "p_hit_certified": false,
         "p_hit_basis": null,
-        "p_hit_buckets": [],
+        "p_hit_buckets": [
+          "LATE"
+        ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-04T01:12:41Z",
+        "as_of": "2026-08-04T01:49:31Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -14259,8 +14264,8 @@
           "take": "The conditions are loud here \u2014 0.31 runs of deviation from a neutral night, and they point over on 8.",
           "take_kind": "standard",
           "live_p_over": 1.0,
-          "live_state_note": "Bot 4th, 10 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-04T01:12:41Z",
+          "live_state_note": "Bot 6th, 12 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-04T01:49:31Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -14405,7 +14410,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -14964,29 +14969,30 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 4,
+        "inning": 6,
         "half": "bottom",
         "outs": 0,
-        "away_score": 4,
-        "home_score": 6,
-        "runs_so_far": 10,
+        "away_score": 5,
+        "home_score": 7,
+        "runs_so_far": 12,
         "pregame_total": 8.0,
-        "runs_vs_pregame_total": 2.0,
+        "runs_vs_pregame_total": 4.0,
         "runs_still_needed_for_over": 0,
-        "innings_elapsed": 4.0,
-        "pace_runs_per_inning": 2.5,
-        "projected_final_runs": 22.5,
-        "p_hit_now": 1.0,
-        "p_hit_side": "over",
-        "p_hit_side_basis": "engine_pick",
-        "p_hit_certified": true,
+        "innings_elapsed": 6.0,
+        "pace_runs_per_inning": 2.0,
+        "projected_final_runs": 18.0,
+        "p_hit_now": null,
+        "p_hit_side": null,
+        "p_hit_side_basis": null,
+        "p_hit_certified": false,
         "p_hit_basis": "final-total already past the pregame line",
         "p_hit_buckets": [
+          "LATE",
           "HOT"
         ],
-        "p_hit_note": "Bot 4th, 10 runs in \u2014 the over's already home; nothing left to price.",
+        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": 1.0,
-        "as_of": "2026-08-04T01:12:41Z",
+        "as_of": "2026-08-04T01:49:31Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -15406,9 +15412,9 @@
           ],
           "take": "On the conditions I read, it is under 9 at 54%.",
           "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 4th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-04T01:12:41Z",
+          "live_p_over": 0.1296,
+          "live_state_note": "Bot 6th, 3 runs in \u2014 my number's moved to 13% over.",
+          "as_of": "2026-08-04T01:49:31Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -15553,7 +15559,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -16105,27 +16111,29 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 4,
+        "inning": 6,
         "half": "bottom",
-        "outs": 0,
+        "outs": 2,
         "away_score": 3,
         "home_score": 0,
         "runs_so_far": 3,
         "pregame_total": 9.0,
         "runs_vs_pregame_total": -6.0,
         "runs_still_needed_for_over": 6,
-        "innings_elapsed": 4.0,
-        "pace_runs_per_inning": 0.75,
-        "projected_final_runs": 6.8,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-04T01:12:41Z",
+        "innings_elapsed": 6.0,
+        "pace_runs_per_inning": 0.5,
+        "projected_final_runs": 4.5,
+        "p_hit_now": 0.8704,
+        "p_hit_side": "under",
+        "p_hit_side_basis": "engine_pick",
+        "p_hit_certified": true,
+        "p_hit_basis": "certified conditional rest-of-game engine (buckets: LATE)",
+        "p_hit_buckets": [
+          "LATE"
+        ],
+        "p_hit_note": "Bot 6th, 3 runs in \u2014 my number's moved to 13% over.",
+        "live_p_over": 0.1296,
+        "as_of": "2026-08-04T01:49:31Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -16553,9 +16561,9 @@
           ],
           "take": "On the ballpark itself this is over 11.5 at 66%. Air, dimensions and how the yard has actually been playing.",
           "take_kind": "standard",
-          "live_p_over": 0.8615,
-          "live_state_note": "Top 2nd, 6 runs in \u2014 my number's moved to 86% over.",
-          "as_of": "2026-08-04T01:12:41Z",
+          "live_p_over": null,
+          "live_state_note": "Bot 4th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T01:49:31Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -16700,7 +16708,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "STRONG",
@@ -17219,29 +17227,30 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 2,
-        "half": "top",
-        "outs": 3,
-        "away_score": 6,
-        "home_score": 0,
-        "runs_so_far": 6,
+        "inning": 4,
+        "half": "bottom",
+        "outs": 1,
+        "away_score": 8,
+        "home_score": 1,
+        "runs_so_far": 9,
         "pregame_total": 11.5,
-        "runs_vs_pregame_total": -5.5,
-        "runs_still_needed_for_over": 6,
-        "innings_elapsed": 1.5,
-        "pace_runs_per_inning": 4.0,
-        "projected_final_runs": 36.0,
-        "p_hit_now": 0.8615,
-        "p_hit_side": "over",
-        "p_hit_side_basis": "engine_pick",
-        "p_hit_certified": true,
-        "p_hit_basis": "certified conditional rest-of-game engine (buckets: HIGH)",
+        "runs_vs_pregame_total": -2.5,
+        "runs_still_needed_for_over": 3,
+        "innings_elapsed": 4.0,
+        "pace_runs_per_inning": 2.25,
+        "projected_final_runs": 20.2,
+        "p_hit_now": null,
+        "p_hit_side": null,
+        "p_hit_side_basis": null,
+        "p_hit_certified": false,
+        "p_hit_basis": null,
         "p_hit_buckets": [
-          "HIGH"
+          "HIGH",
+          "HOT"
         ],
-        "p_hit_note": "Top 2nd, 6 runs in \u2014 my number's moved to 86% over.",
-        "live_p_over": 0.8615,
-        "as_of": "2026-08-04T01:12:41Z",
+        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
+        "live_p_over": null,
+        "as_of": "2026-08-04T01:49:31Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -17265,9 +17274,9 @@
         "price": 102.0,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": "2026-08-03T12:40:24Z",
+        "locked": true,
+        "locked_at_utc": "2026-08-04T01:49:29Z",
+        "timestamp": "2026-08-04T01:49:29Z",
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "our_prob": 0.4867,
@@ -17343,8 +17352,8 @@
         "our_prob": 0.4113,
         "ev": -0.0363,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T01:49:33Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -17374,8 +17383,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T01:49:33Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -17409,7 +17418,7 @@
           "score": 5.0,
           "result": null,
           "lead_time": "T-3h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": null,
           "reason": "Adaptive desk STRONG"
@@ -17428,7 +17437,7 @@
           "score": 4.13,
           "result": null,
           "lead_time": "T-12h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": null,
           "reason": "Strong"
@@ -17447,7 +17456,7 @@
           "score": 0.56,
           "result": null,
           "lead_time": "T-12h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "ev_gate",
           "reason": "Priced out \u2014 no value at the real price"
@@ -17485,7 +17494,7 @@
           "score": 0.31,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Honest lean \u2014 NEW unproven spread stream (graded in public from day one; low confidence, not a bet)",
@@ -17506,7 +17515,7 @@
           "score": null,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
@@ -17544,8 +17553,8 @@
           "wx_temp_f": 109.04
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T01:49:33Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
@@ -17574,14 +17583,14 @@
         "run_line_price_home": 128.0,
         "run_line_price_away": -157.0,
         "book": "pinnacle",
-        "captured_at": "2026-08-04T01:12:40Z",
+        "captured_at": "2026-08-04T01:49:29Z",
         "wall": "T-1h",
-        "locked_at": null,
+        "locked_at": "2026-08-04T01:49:29Z",
         "game_pk": 825095,
         "date": "2026-08-03",
         "first_pitch_utc": "2026-08-04T01:40:00+00:00",
         "total_line_at_book": 8.5,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 8.5,
         "total_move": 0.5,
         "p_over_devig": 0.4891657638136511,
@@ -17590,32 +17599,7 @@
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: the market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'ATLAS: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
-      "line_now": {
-        "total": 8.5,
-        "pregame_total_compared": 9.0,
-        "total_price_over": -118.0,
-        "total_price_under": 105.0,
-        "book": null,
-        "comparison_basis": "book_consensus_median",
-        "same_basis": true,
-        "same_book_check": {
-          "book": "pinnacle",
-          "pregame_total": 8.5,
-          "total": 8.5,
-          "move": 0.0,
-          "total_price_over": -118.0,
-          "total_price_under": 105.0
-        },
-        "n_books": 22,
-        "as_of": "2026-08-04T01:09:22Z",
-        "source": "odds_snapshots_pregame_totals",
-        "market": "full_game_total",
-        "moved_vs_pregame": true,
-        "move": -0.5,
-        "max_plausible_move": 2.0,
-        "display_only": true,
-        "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
-      },
+      "line_now": null,
       "analysts": [
         {
           "key": "vega",
@@ -17688,7 +17672,13 @@
           "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
           "take": "I grade the place and the umpire and nothing else. On those alone: over 9, 51%.",
-          "take_kind": "standard"
+          "take_kind": "standard",
+          "live_p_over": null,
+          "live_state_note": "Bot 1st \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T01:49:31Z",
+          "live_display_only": true,
+          "live_source": "live_atlas",
+          "live_is_this_analysts_read": false
         },
         {
           "key": "nova",
@@ -17806,7 +17796,7 @@
         "price": 102.0,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
+        "locked": true,
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "expanded_band": false,
@@ -17830,7 +17820,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-04T01:12:44Z",
+          "asof_utc": "2026-08-04T01:49:34Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -17961,7 +17951,7 @@
             "line_basis": "served_bet_line",
             "pregame_total": 9.0,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": 102.0,
             "desk_votes": {
               "over": 2,
@@ -18379,7 +18369,32 @@
           "is_final_wall": true
         }
       ],
-      "live_progress": null
+      "live_progress": {
+        "status": "in_progress",
+        "inning": 1,
+        "half": "bottom",
+        "outs": 1,
+        "away_score": 0,
+        "home_score": 0,
+        "runs_so_far": 0,
+        "pregame_total": 9.0,
+        "runs_vs_pregame_total": -9.0,
+        "runs_still_needed_for_over": 9,
+        "innings_elapsed": 1.0,
+        "pace_runs_per_inning": 0.0,
+        "projected_final_runs": 0.0,
+        "p_hit_now": null,
+        "p_hit_side": null,
+        "p_hit_side_basis": null,
+        "p_hit_certified": false,
+        "p_hit_basis": null,
+        "p_hit_buckets": [],
+        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
+        "live_p_over": null,
+        "as_of": "2026-08-04T01:49:31Z",
+        "display_only": true,
+        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
+      }
     },
     {
       "game_id": "824805",
@@ -18409,7 +18424,7 @@
         }
       },
       "probables": {
-        "away": null,
+        "away": "Grayson Rodriguez",
         "home": null
       },
       "picks_eta": {

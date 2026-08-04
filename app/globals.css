@@ -2457,6 +2457,19 @@ details.more .more-body{padding-top:12px}
 .art-share:active{transform:scale(.95)}
 .art-take-lab{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
 
+/* --- Our take: the one paid sentence, set apart from the free story above it ---
+   The article body is journalism and reads as body copy; this is the house talking,
+   so it gets the gold rail and a slightly tighter, heavier set. It sits AFTER the
+   story deliberately — you read the news, then you get the call. */
+.art-take{margin:18px 0 4px;padding:14px 16px;border-radius:14px;border:1px solid rgba(var(--goldc),.32);
+  border-left:3px solid var(--golddeep);background:rgba(var(--goldc),.09)}
+.art-take-k{display:block;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--golddeep);margin-bottom:6px}
+.art-take p{margin:0;font-size:16px;line-height:1.55;font-weight:600;color:var(--ink)}
+.article-story .art-take{background:rgba(var(--goldc),.14);border-color:rgba(var(--goldc),.4)}
+.article-story .art-take p{color:#fff}
+.article-story .art-take-k{color:rgba(var(--goldc),.95)}
+
 /* --- News freshness: muted "Updated" when not live-fresh --- */
 .nf-upd{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
 
