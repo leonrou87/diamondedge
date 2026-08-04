@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-04T00:38:58Z",
+ "generated_utc": "2026-08-04T01:15:31Z",
  "by_game": {
   "822783": {
    "away": {
@@ -4148,7 +4148,8 @@
       "res": "ND"
      }
     ],
-    "team": "TB"
+    "team": "TB",
+    "actual_starter": true
    },
    "home": {
     "id": 547179,
@@ -4265,7 +4266,8 @@
       "res": "ND"
      }
     ],
-    "team": "COL"
+    "team": "COL",
+    "actual_starter": true
    }
   },
   "824647": {

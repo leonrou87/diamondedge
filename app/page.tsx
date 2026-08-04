@@ -961,7 +961,61 @@ export default function Home() {
           return { prob, dir, pct, delta };
         }
       }
-      return null;
+      /* THE ESTIMATE FALLBACK (Leon: "a percent chance… some kind of simple heuristic on
+         average runs per inning and how it's trending"). The served live_status rides the
+         champion's live model — but the adaptive picks the site serves today carry none,
+         which left this whole family (the % to cash meter, the tile chip, the hero bar)
+         DEAD CODE on every live game. When nothing is served, estimate P(cash) for a
+         totals pick from the runs pace: league-average combined runs per inning, blended
+         with THIS game's pace (the trend — its weight grows with innings played), pushed
+         through a Poisson tail for the innings that remain. Served numbers always win;
+         the estimate only fills silence, and both flow through the same shape so every
+         surface agrees on the number. */
+      const hp = heuristicCashProb(g, pl);
+      if (hp == null) return null;
+      const dir = hp >= 0.62 ? "trending_hit" : hp <= 0.42 ? "trending_miss" : "too_close";
+      return { prob: hp, dir, pct: hp, delta: null, est: true };
+    }
+    function poissonCdf(k: number, lam: number) {
+      if (k < 0) return 0;
+      if (lam <= 0) return 1;
+      let term = Math.exp(-lam), sum = term;
+      for (let i = 1; i <= k; i++) { term *= lam / i; sum += term; }
+      return Math.min(1, sum);
+    }
+    // Fractional innings completed, parsed from the same label every board chip shows.
+    function inningsDone(gs: any) {
+      const m = String((gs && gs.label) || "").match(/(top|mid|bot|end)\w*\s+(\d+)/i);
+      if (!m) return null;
+      const inn = Number(m[2]);
+      if (!inn) return null;
+      const half = m[1].toLowerCase();
+      return half === "top" ? inn - 0.75 : half === "mid" ? inn - 0.5 : half === "bot" ? inn - 0.25 : inn;
+    }
+    function heuristicCashProb(g: any, pl: any) {
+      if (!pl || pl.market !== "total") return null;
+      const ca = g.current_actuals || {};
+      if (ca.total_so_far == null) return null;
+      const line = pl.line != null ? Number(pl.line)
+        : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
+      if (line == null || isNaN(line)) return null;
+      const gs = gameState(g);
+      if (gs.kind !== "live") return null;
+      const done = inningsDone(gs);
+      if (done == null) return null;
+      const left = Math.max(0.5, 9 - done);
+      const total = Number(ca.total_so_far);
+      const LEAGUE_RPI = 1.0;                              // ~9 combined runs over 9 innings
+      const pace = done >= 1 ? total / done : LEAGUE_RPI;  // this game's own scoring pace
+      const w = Math.min(0.45, (done / 9) * 0.75);         // the trend earns weight with sample
+      const lam = Math.max(0.2, (1 - w) * LEAGUE_RPI + w * pace) * left;
+      const over = /over/i.test(String(pl.side || ""));
+      if (over) {
+        const need = Math.floor(line) + 1 - total;         // runs still needed to clear the line
+        return need <= 0 ? 1 : Math.max(0.01, Math.min(0.99, 1 - poissonCdf(need - 1, lam)));
+      }
+      const allow = Math.ceil(line) - 1 - total;           // most runs the under can absorb
+      return allow < 0 ? 0 : Math.max(0.01, Math.min(0.99, poissonCdf(allow, lam)));
     }
     const LIVE_DIR: any = {
       trending_hit: { cls: "hit", word: "trending our way", short: "our way" },
@@ -6893,13 +6947,22 @@ export default function Home() {
                Each state now names itself and the shared recipe (globals.css, "the in-play
                cushion chip") tints it: good ▸ green, hold ▸ quiet green, chase ▸ amber,
                tight ▸ slate. */
+            /* THE CLINCH METER (Leon: "a percent chance… a very small progress meter like
+               in a superhero game leading up to when it's clinched — but don't take up
+               more room"). The chance to cash — served live model first, runs-pace
+               estimate otherwise (liveStatusOf) — rides INSIDE the pill: a tinted fill
+               behind the word at prob% and the number after it. The bar always fills
+               toward a WIN, over and under alike, and it reaches full exactly when the
+               pick clinches (where the state flips to the CLINCHED stamp). */
+            const lp = (liveStatusOf(g, pl) || {}).prob;
+            const pcv = lp != null ? Math.max(0.01, Math.min(0.99, Number(lp))) : null;
             if (over) {
               const need = Math.floor(Number(line)) + 1 - total;
-              return need <= 2 ? { txt: "OUR WAY", cls: "inplay ip-good" } : { txt: "CHASING", cls: "inplay ip-chase" };
+              return need <= 2 ? { txt: "OUR WAY", cls: "inplay ip-good", pct: pcv } : { txt: "CHASING", cls: "inplay ip-chase", pct: pcv };
             }
-            return cushion >= 3 ? { txt: "OUR WAY", cls: "inplay ip-good" }
-              : cushion >= 1 ? { txt: "HOLDING", cls: "inplay ip-hold" }
-              : { txt: "TIGHT", cls: "inplay ip-tight" };
+            return cushion >= 3 ? { txt: "OUR WAY", cls: "inplay ip-good", pct: pcv }
+              : cushion >= 1 ? { txt: "HOLDING", cls: "inplay ip-hold", pct: pcv }
+              : { txt: "TIGHT", cls: "inplay ip-tight", pct: pcv };
           }
         }
         return { txt: "IN PLAY", cls: "inplay ip-plain" };
@@ -6908,10 +6971,18 @@ export default function Home() {
     }
     /* pickStateTxt's result → the chip element. A settled state is ALREADY an element
        (resultStamp's seal), so it passes through; everything unsettled gets the badge with
-       its own state class, which is what makes `.inplay[class*="ip-"]` (globals.css) apply. */
+       its own state class, which is what makes `.inplay[class*="ip-"]` (globals.css) apply.
+       An in-play state carrying `pct` renders the clinch meter inside the same pill —
+       same footprint, the fill and the number ride behind/beside the word. */
     function stateChipHtml(state: any) {
       if (!state || !state.txt) return "";
       if (/^stamped\b/.test(String(state.cls || ""))) return state.txt;
+      if (state.pct != null) {
+        const p = Math.round(state.pct * 100);
+        return `<span class="dmp-res ${state.cls} has-meter" title="${p}% chance this pick cashes — live estimate">` +
+          `<i class="ipm-fill" style="width:${p}%" aria-hidden="true"></i>` +
+          `<b class="ipm-txt">${state.txt}</b><em class="ipm-pct">${p}%</em></span>`;
+      }
       return `<span class="dmp-res ${state.cls}">${state.txt}</span>`;
     }
     // ===================== DIAMONDEDGE PICK BANNER =====================
@@ -7726,7 +7797,10 @@ export default function Home() {
              as bare unformatted text". Wrap it in the chip and hand the class through; the
              settled case is already an element and passes untouched. */
           : compactDePickHtml(g, vd.pl || pick, locked, "tile", false, stateChipHtml(state));
-      const liveCash = gs.kind === "live" && pick && !locked ? liveCashChip(g, pick) : "";
+      /* liveCashChip RETIRED HERE: the % to cash lives inside the cushion pill now (the
+         clinch meter, stateChipHtml) — two chips reading the same number on one tile is
+         the duplication rule this board was scrubbed for. */
+      const liveCash = "";
       /* TOMORROW'S GAMES GET THE TAG TOO.
          Round 4 built the `incoming` state for a future-dated game — but it only ever
          rendered for a game that already carried a pick object to be redacted. The backend
@@ -8225,11 +8299,15 @@ export default function Home() {
     function strategyFriendly(s: any) {
       const lab = String((s && s.label) || "");
       const rule = String((s && (s.plain_english_rule || s.summary_line || s.reason)) || "");
+      /* The names read like NAMED PLAYS (Leon: "get more creative… super interesting, but
+         indicate the spirit of what it does — and not take up too much space"). Short,
+         definite-article, the kind of thing a bettor would call a move; the blurb under
+         each one carries the honest mechanics. */
       if (/^fade\b/i.test(lab) || /^bet against/i.test(rule)) {
         const who = ["VEGA", "ATLAS", "NOVA", "SCOUT"].filter((n) => new RegExp("\\b" + n + "\\b", "i").test(lab + " " + rule));
         const names = who.length > 1 ? who.slice(0, -1).join(", ") + " and " + who[who.length - 1] : who[0] || "";
         return {
-          name: who.length ? `Going against ${who.join(" + ")}` : "Going against the room",
+          name: who.length ? `The ${who.join(" + ")} Fade` : "The Room Fade",
           blurb: who.length
             ? `When ${names} ${who.length > 1 ? "agree on a side" : "takes a side"}, DiamondEdge plays the other way — over the last few weeks the winning bet has been against that read.`
             : `When this group of analysts agrees on a side, DiamondEdge plays the other way.`,
@@ -8238,31 +8316,31 @@ export default function Home() {
       if (/room-shape/i.test(lab)) {
         const m = rule.match(/exactly (\w+) of the four analysts say (\w+), take (\w+)/i);
         return {
-          name: "Playing the split room",
+          name: "The Split-Room Fade",
           blurb: m
             ? `When exactly ${m[1]} of our four analysts like the ${m[2].toLowerCase()}, DiamondEdge takes the ${m[3].toLowerCase()} — a half-convinced room has been a tell.`
             : `When the four analysts split a particular way, DiamondEdge takes the side that split has favored.`,
         };
       }
       if (/probabilistic/i.test(lab)) return {
-        name: "Weighing the analysts' votes",
+        name: "The Weighted Ballot",
         blurb: "Each of our four analysts gets a vote, sized by how right they've been lately — analysts running backwards get faded, and coin-flip games get passed.",
       };
       if (/form blend/i.test(lab)) return {
-        name: "Riding the hot hands",
+        name: "The Hot Hand",
         blurb: "The analysts in the best recent form carry the most weight, cold ones get faded, and when the vote is close DiamondEdge passes.",
       };
       if (/regularized|meta-model/i.test(lab)) return {
-        name: "Reading the whole board",
+        name: "The Full-Board Read",
         blurb: "The engine looks at how all four analysts line up on a game — who's in, how confident, who agrees with whom — and only bets when that read is clear.",
       };
       if (/stacked/i.test(lab)) return {
-        name: "Stacking the winning angles",
+        name: "The Angle Stack",
         blurb: "Several angles that have each been winning lately vote together — and a bet needs more than one of them pointing the same way.",
       };
       if (/neural|ensemble/i.test(lab)) return {
-        name: "Pattern-reading the desk",
-        blurb: "The engine studies how the four analysts' votes and confidence play off each other, and only bets when the pattern is strong.",
+        name: "The Chemistry Read",
+        blurb: "The engine studies how the four analysts' votes and confidence play off each other — the chemistry between reads — and only bets when the pattern is strong.",
       };
       return null;
     }

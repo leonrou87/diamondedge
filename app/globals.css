@@ -8467,3 +8467,17 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 @keyframes paneIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .gp-pane{animation:paneIn .24s var(--ease-out) both}
 @media(prefers-reduced-motion:reduce){.gp-pane{animation:none}}
+
+/* THE CLINCH METER — the chance-to-cash rides inside the cushion pill: a tinted fill
+   behind the word at prob%, and the small number after it. Same footprint as the bare
+   pill; the fill uses currentColor so every state (good/hold/chase/tight) tints its own
+   meter. The bar fills toward a WIN for over and under alike, and hits full exactly when
+   the state flips to the CLINCHED stamp. */
+.dmp-res.has-meter{position:relative;overflow:hidden}
+.dmp-res.has-meter .ipm-fill{position:absolute;left:0;top:0;bottom:0;background:currentColor;
+  opacity:.14;pointer-events:none;transition:width .6s var(--ease)}
+.dmp-res.has-meter .ipm-txt{position:relative}
+.dmp-res.has-meter .ipm-pct{position:relative;font-style:normal;font-weight:800;
+  margin-left:5px;font-size:9px;letter-spacing:.02em;opacity:.85;
+  font-variant-numeric:tabular-nums}
+@media(prefers-reduced-motion:reduce){.dmp-res.has-meter .ipm-fill{transition:none}}
