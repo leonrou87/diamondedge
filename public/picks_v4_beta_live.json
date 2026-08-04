@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-03T23:22:21Z",
+  "generated_utc": "2026-08-03T23:59:02Z",
   "dates": [
     "2026-08-03"
   ],
@@ -1190,9 +1190,82 @@
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.3% vs median break-even 58.0% at -138 (median ev -6.28% < +1.5% min)",
         "asof_utc": "2026-08-03T21:33:37Z"
+      },
+      {
+        "model": "champion_v2",
+        "source": "live",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-1h",
+        "date": "2026-08-03",
+        "game_pk": 825095,
+        "game_id": "2026-08-03-SD-AZ",
+        "matchup": "SD @ AZ",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-08-04T01:40:00Z",
+        "market_line": 9.0,
+        "pick_side": null,
+        "pick_line": 8.5,
+        "lean": {
+          "side": "over",
+          "line": 8.5
+        },
+        "our_prob": 0.5434,
+        "per_side_price": -121,
+        "best_book": "onexbet",
+        "median_price": -133,
+        "p_breakeven": 0.5475,
+        "ev": -0.0075,
+        "ev_min": 0.015,
+        "take": false,
+        "playable": false,
+        "gate_price": -133,
+        "gate_ev": -0.048,
+        "gate_p_breakeven": 0.5708,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.44,
+        "gate_reason": "negative_ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0294,
+          "signed_edge": 0.0294,
+          "side": "over",
+          "frozen_at": "2026-08-03T12:12:57.352941+00:00",
+          "morning_price": -117,
+          "nlines": 1
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0294,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "price": {
+          "basis": "served/graded at the BEST executable per-side price across books quoting the pick's line at the latest pregame snapshot (v4 odds store); the +EV GATE evaluates at the MEDIAN-in-decimal price at the same line (EXECUTION LAYER, Leon 2026-07-09 \u2014 gate at MEDIAN, price/grade at BEST: the proven config)",
+          "snapshot_ts": "2026-08-03T23:55:51Z",
+          "n_books_at_line": 5,
+          "best_price": -121,
+          "best_book": "onexbet",
+          "median_price": -133,
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.05
+        },
+        "informational_lean": "over",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 54.3% vs median break-even 57.1% at -133 (median ev -4.80% < +1.5% min)",
+        "asof_utc": "2026-08-03T23:58:57Z"
       }
     ],
-    "n_picks_on_board": 3,
+    "n_picks_on_board": 4,
     "n_voided": 0
   },
   "board_notice": null,
@@ -1201,7 +1274,7 @@
     "wall_rows_first_write_wins": true,
     "locked_this_cycle": {
       "n_locked_now": 10,
-      "n_locked_total": 44
+      "n_locked_total": 54
     },
     "note": "once now >= first_pitch_utc a game's rows are IMMUTABLE: locked:true, no re-evaluation, no side/price/line/star changes \u2014 the payload permanently carries the last PRE-START state (the judged Vegas line) and grading uses exactly that locked state. Each wall row is also first-write-wins: once written at its wall it is never overwritten by a later cycle. Game cards carry locked/locked_at (wall + utc + line) for the UI badge, e.g. 'Locked at T-1h \u00b7 O/U 8.5'."
   },
@@ -2332,17 +2405,17 @@
   },
   "board_census": {
     "n_games": 8,
-    "n_rows": 38,
+    "n_rows": 39,
     "n_voided": 0,
     "n_playable": 0,
     "n_takes": 0,
-    "n_passes": 38,
+    "n_passes": 39,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 0,
       "2": 0,
-      "1": 38
+      "1": 39
     }
   },
   "spread_stream": {
@@ -2468,8 +2541,8 @@
         "our_prob": 0.4019,
         "ev": -0.0084,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-03T23:59:01Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -2569,16 +2642,16 @@
         "line": 1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": 108,
+        "price": 109,
         "best_book": null,
         "stars": 1,
-        "score": 0.94,
-        "our_prob": 0.4836,
-        "ev": 0.0058,
+        "score": 0.74,
+        "our_prob": 0.4777,
+        "ev": -0.0016,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2807,8 +2880,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-03T23:59:01Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -2908,22 +2981,22 @@
         "side": "over",
         "line": 11.5,
         "vegas_line": 11.5,
-        "p_over": 0.5547,
-        "p_over_market": 0.4877,
-        "sim_edge": 0.0671,
-        "price": 104.0,
-        "best_book": "matchbook",
+        "p_over": 0.585,
+        "p_over_market": 0.4826,
+        "sim_edge": 0.1024,
+        "price": 105.0,
+        "best_book": "bovada",
         "stars": 1,
         "score": null,
-        "sim_mu": 12.885,
-        "sim_median": 12,
-        "sim_sd": 5.432,
+        "sim_mu": 13.25,
+        "sim_median": 13,
+        "sim_sd": 5.478,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2937,7 +3010,8 @@
           "T-24h",
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "824647": {
@@ -3238,8 +3312,8 @@
           "wx_temp_f": 74.48
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-03T23:59:01Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
@@ -3352,15 +3426,15 @@
       },
       "824324": {
         "status": "LEAN",
-        "side": "over",
+        "side": "under",
         "line": 11.5,
         "vegas_line": 11.5,
-        "p_over": 0.4901,
-        "p_over_market": 0.4877,
-        "scout_edge": 0.0024,
-        "conviction": 0.4901,
-        "price": 104.0,
-        "best_book": "matchbook",
+        "p_over": 0.479,
+        "p_over_market": 0.4826,
+        "scout_edge": -0.0037,
+        "conviction": 0.521,
+        "price": -111.0,
+        "best_book": "onexbet",
         "stars": null,
         "score": null,
         "n_train": 11106,
@@ -3373,12 +3447,12 @@
           "pen_home_era_std": 5.2763,
           "pen_away_era_std": 4.0204,
           "enr_park_run_factor_3y": 1.2711,
-          "wx_temp_f": 93.56
+          "wx_temp_f": 88.88
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3392,7 +3466,8 @@
           "T-24h",
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "824647": {
@@ -5070,7 +5145,9 @@
               "the 2-star model-fill bucket is losing live",
               "the early T-24h model-fill wall is losing live"
             ]
-          }
+          },
+          "locked": true,
+          "locked_at_utc": "2026-08-03T23:59:01Z"
         },
         {
           "lead_time": "T-12h",
@@ -5109,7 +5186,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 48.0% < break-even 52.4% at -110 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-03T23:59:01Z"
         },
         {
           "lead_time": "T-6h",
@@ -5148,7 +5227,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 48.4% < break-even 52.6% at -111 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-03T23:59:01Z"
         },
         {
           "lead_time": "T-3h",
@@ -5187,7 +5268,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 47.9% < break-even 52.6% at -111 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-03T23:59:01Z"
         },
         {
           "lead_time": "T-1h",
@@ -5226,10 +5309,19 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 48.6% < break-even 51.7% at -107 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-03T23:59:01Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-03T23:59:01Z",
+        "line": 8.5,
+        "label": "Locked at T-1h \u00b7 O/U 8.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-03-Los Angeles Dodgers-Chicago Cubs-824647",
@@ -5884,7 +5976,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -6042,6 +6135,45 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 48.1% < break-even 52.4% at -110 \u2014 priced out (-EV)",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.5,
+          "per_side_price": -111,
+          "our_prob": 0.4799,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4799,
+          "p_breakeven": 0.5261,
+          "ev": -0.0113,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.28,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 11.5
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0012,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 48.0% < break-even 52.6% at -111 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
         }
       ],

@@ -10529,6 +10529,24 @@ export default function Home() {
       if (!detail || detail.game_id == null) return;
       const gs = gameState(detail);
       if (gs.kind !== "live" && gs.kind !== "final") return;
+      /* THE OPEN GAME PAGE DOES NOT WAIT FOR THE WRITER. Every MLB refetch on this page used
+         to hang off a SNAPSHOT changing: `refreshSheetScore` pulls a fresh box only when
+         `live_scores` moves, and this poller returned below the moment `live_detail` was
+         unchanged. So when the writer stalled — measured on production 2026-08-03: nominal
+         20-22s, but multi-minute gaps in the same afternoon — the page stalled with it, even
+         though MLB's own document was sitting there current. One transition took 110s to
+         reach the screen against 80s writer-side; the extra 30s was this page declining to
+         look. It now pulls MLB's document on its own tick, before the snapshot gate, so the
+         live surface degrades to MLB's freshness rather than to the writer's. It is not an
+         extra request: `loadMlbBox` is the same 25s-TTL cache the box score already rides, so
+         a call inside the TTL returns the cached document and costs nothing. `adoptMlbLive`
+         inside it advances the shared score and repaints the hero. */
+      if (gs.kind === "live" && $("gamepage")) {
+        try {
+          const m = await loadMlbBox(detail);
+          if (m) { repaintBoxPane(); repaintGameLeaders(); }
+        } catch {}
+      }
       let ld: any = null;
       try { ld = await snap("live_detail"); } catch {}
       liveDetailTried = true;
@@ -15277,7 +15295,11 @@ export default function Home() {
       //   · live_detail (box)    → every ~40s ONLY while a live game's detail page is open
       //   · pregame_picks (big)  → every ~4 min, applied only when generated_at advances
       setInterval(pollLiveScores, 50 * 1000);
-      setInterval(() => { if (detail && detail.game_id != null) pollLiveDetail(); }, 40 * 1000);
+      // 40s → 25s: this tick now also pulls MLB's own box document (see pollLiveDetail), and
+      // 25s is that document's cache TTL — a slower tick would just let the cache go stale
+      // between fetches, which is the whole latency the change is there to remove. Runs only
+      // while a game page is open, and only for a live one.
+      setInterval(() => { if (detail && detail.game_id != null) pollLiveDetail(); }, 25 * 1000);
       setInterval(pollPregame, 4 * 60 * 1000);
       // resume with one immediate fetch on focus; pausing is handled inside each poller.
       document.addEventListener("visibilitychange", () => { if (!document.hidden) {
