@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-04T00:01:27Z",
+  "generated_utc": "2026-08-04T00:38:07Z",
   "dates": [
     "2026-08-03"
   ],
@@ -7133,7 +7133,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-04T00:01:50Z",
+      "updated": "2026-08-04T00:38:30Z",
       "order": [
         "vega",
         "atlas",
@@ -9219,16 +9219,16 @@
     },
     "first_wall_with_a_read": {
       "vega": {
-        "T-24h": 8
+        "T-3h": 8
       },
       "atlas": {
-        "T-24h": 8
+        "T-3h": 8
       },
       "nova": {
-        "T-24h": 8
+        "T-3h": 8
       },
       "scout": {
-        "T-24h": 8
+        "T-3h": 8
       }
     },
     "no_read_reason_codes": {},
@@ -9249,25 +9249,14 @@
     "note": "Per-analyst read counts over the SERVED cards. The four reads come from analyst_v2_stream.reads_for_date and nothing else, so `native` is every read and `coverage` is permanently 0 \u2014 FORCED COVERAGE IS RETIRED. It used to manufacture a fallback read for whichever of the four dismantled engines had frozen nothing on a game, which guaranteed a full board by construction. The v2 stream prices a game only where its T-3h feature frame exists, so a no-read is a real statement about the feed for that game and is counted here rather than filled in from a different model."
   },
   "line_now_audit": {
-    "n_emitted": 4,
-    "n_suppressed_started": 3,
+    "n_emitted": 2,
+    "n_suppressed_started": 6,
     "n_suppressed_implausible": 0,
-    "n_suppressed_basis_disagreement": 1,
+    "n_suppressed_basis_disagreement": 0,
     "n_no_current": 0,
     "n_no_pregame": 0,
     "max_plausible_move": 2.0,
-    "rejects": [
-      {
-        "game_pk": 824647,
-        "date": "2026-08-03",
-        "pregame": 8.0,
-        "now": 7.5,
-        "move": -0.5,
-        "basis": "book_consensus_median",
-        "book": "betrivers",
-        "reason": "consensus move -0.5 disagrees in direction with betrivers's own +0.5"
-      }
-    ],
+    "rejects": [],
     "note": "line_now is the SAME full-game pregame totals market as the locked line, compared same-book or on the identical book-consensus-median basis, suppressed once the game starts, and refused when the implied move exceeds what a full-game total can do. Refusals appear here; they are never shipped as a move."
   },
   "games": [
@@ -9630,9 +9619,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -9644,9 +9630,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 51.6% over on 9 and I read 52.8% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -9672,9 +9655,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -9687,14 +9667,11 @@
           "completeness_tier": "full",
           "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Bats and arms both travel; the ballpark does not. 0.07 runs of environment says under at 9, and I'll stand there alone.",
           "take_kind": "dissent",
           "live_p_over": null,
-          "live_state_note": "Bot 5th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-03T23:58:58Z",
+          "live_state_note": "Bot 7th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T00:35:42Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -9721,9 +9698,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -9742,9 +9716,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "This is the offences themselves and nothing more. On what these bats have been doing: over 9 at 52%.",
           "take_kind": "standard"
         },
@@ -9770,9 +9741,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -9785,9 +9753,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Two starters and the two bullpens behind them, and nothing else: 0.07 runs above an average staff \u2014 9.1 against 9.",
           "take_kind": "standard"
         }
@@ -9814,17 +9779,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PICK",
@@ -9857,10 +9813,10 @@
             "no_read": 0
           },
           "consensus_state": "MAJORITY",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -10363,88 +10319,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 9.0,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.2365,
-              "z": 1.8626,
-              "beta": 0.126991
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            },
-            {
-              "lever": "price_dispersion",
-              "runs": -0.1159,
-              "z": 2.3488,
-              "beta": -0.049351
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5587,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4686,
-                "market_line": 9.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4815,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5282,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5599,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -10457,103 +10336,11 @@
           "delta_runs": -0.0724,
           "conviction_runs": 0.0724,
           "mu_shown": 8.93,
-          "mu_absolute": 8.81,
-          "center_used": -0.034671,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "ump_runs",
-              "runs": -0.087,
-              "z": -0.8971,
-              "beta": 0.096997
-            },
-            {
-              "lever": "park_altitude",
-              "runs": -0.0839,
-              "z": -0.2995,
-              "beta": 0.280061
-            },
-            {
-              "lever": "park_run_factor",
-              "runs": 0.0633,
-              "z": 0.2323,
-              "beta": 0.272312
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5026,
-                "delta_runs": 0.034,
-                "conviction_runs": 0.034,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5023,
-                "delta_runs": 0.0293,
-                "conviction_runs": 0.0293,
-                "market_line": 9.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5022,
-                "delta_runs": 0.0271,
-                "conviction_runs": 0.0271,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4936,
-                "delta_runs": -0.0724,
-                "conviction_runs": 0.0724,
-                "market_line": 9.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4936,
-                "delta_runs": -0.0724,
-                "conviction_runs": 0.0724,
-                "market_line": 9.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -10566,103 +10353,11 @@
           "delta_runs": 0.2751,
           "conviction_runs": 0.2751,
           "mu_shown": 9.28,
-          "mu_absolute": 9.4,
-          "center_used": 0.20801,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_power",
-              "runs": 0.4041,
-              "z": 1.6471,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_top5_woba",
-              "runs": 0.0794,
-              "z": 0.4019,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_woba",
-              "runs": -0.0,
-              "z": -0.037,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5248,
-                "delta_runs": 0.2865,
-                "conviction_runs": 0.2865,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5251,
-                "delta_runs": 0.2883,
-                "conviction_runs": 0.2883,
-                "market_line": 9.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5235,
-                "delta_runs": 0.2676,
-                "conviction_runs": 0.2676,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5231,
-                "delta_runs": 0.2751,
-                "conviction_runs": 0.2751,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5232,
-                "delta_runs": 0.2764,
-                "conviction_runs": 0.2764,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -10675,128 +10370,38 @@
           "delta_runs": 0.0711,
           "conviction_runs": 0.0711,
           "mu_shown": 9.07,
-          "mu_absolute": 8.98,
-          "center_used": -0.005713,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "sp_rest",
-              "runs": -0.1707,
-              "z": 4.0,
-              "beta": -0.042673
-            },
-            {
-              "lever": "sp_length",
-              "runs": 0.0857,
-              "z": -1.1396,
-              "beta": -0.075169
-            },
-            {
-              "lever": "sp_recent_form",
-              "runs": 0.0811,
-              "z": 0.5851,
-              "beta": 0.138549
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5032,
-                "delta_runs": 0.0569,
-                "conviction_runs": 0.0569,
-                "market_line": 9.0,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5024,
-                "delta_runs": 0.0453,
-                "conviction_runs": 0.0453,
-                "market_line": 9.5,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5075,
-                "delta_runs": 0.0859,
-                "conviction_runs": 0.0859,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5062,
-                "delta_runs": 0.0711,
-                "conviction_runs": 0.0711,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5064,
-                "delta_runs": 0.0735,
-                "conviction_runs": 0.0735,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 5,
+        "inning": 7,
         "half": "bottom",
-        "outs": 0,
+        "outs": 1,
         "away_score": 3,
         "home_score": 0,
         "runs_so_far": 3,
         "pregame_total": 9.0,
         "runs_vs_pregame_total": -6.0,
         "runs_still_needed_for_over": 6,
-        "innings_elapsed": 5.0,
-        "pace_runs_per_inning": 0.6,
-        "projected_final_runs": 5.4,
+        "innings_elapsed": 7.0,
+        "pace_runs_per_inning": 0.43,
+        "projected_final_runs": 3.9,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
         "p_hit_certified": false,
         "p_hit_basis": null,
-        "p_hit_buckets": [],
+        "p_hit_buckets": [
+          "LATE"
+        ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-03T23:58:58Z",
+        "as_of": "2026-08-04T00:35:42Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -11160,9 +10765,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -11174,9 +10776,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 48.8% over on 8 and I read 51.5% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -11202,9 +10801,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -11217,14 +10813,11 @@
           "completeness_tier": "full",
           "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.12 runs above an average night \u2014 8.1 against 8.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Bot 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-03T23:58:58Z",
+          "live_state_note": "Bot 4th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T00:35:42Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -11251,9 +10844,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -11272,9 +10862,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the bats, it is over 8 at 50%.",
           "take_kind": "standard"
         },
@@ -11300,9 +10887,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -11315,9 +10899,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Everything starts with who's throwing. 0.32 runs off neutral on the arms, under 8 \u2014 I'll take that against the room.",
           "take_kind": "dissent"
         }
@@ -11344,17 +10925,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PICK",
@@ -11387,10 +10959,10 @@
             "no_read": 0
           },
           "consensus_state": "MAJORITY",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -11893,88 +11465,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 8.0,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.2993,
-              "z": 2.3569,
-              "beta": 0.126991
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            },
-            {
-              "lever": "price_dispersion",
-              "runs": -0.1107,
-              "z": 2.2423,
-              "beta": -0.049351
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6241,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.466,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4718,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5149,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5284,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -11987,103 +11482,11 @@
           "delta_runs": 0.1242,
           "conviction_runs": 0.1242,
           "mu_shown": 8.12,
-          "mu_absolute": 9.01,
-          "center_used": -0.034671,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "ump_runs",
-              "runs": 0.2864,
-              "z": 2.9526,
-              "beta": 0.096997
-            },
-            {
-              "lever": "park_run_factor",
-              "runs": -0.1233,
-              "z": -0.4528,
-              "beta": 0.272312
-            },
-            {
-              "lever": "park_altitude",
-              "runs": -0.074,
-              "z": -0.2643,
-              "beta": 0.280061
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4864,
-                "delta_runs": -0.1795,
-                "conviction_runs": 0.1795,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4864,
-                "delta_runs": -0.1715,
-                "conviction_runs": 0.1715,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4874,
-                "delta_runs": -0.1566,
-                "conviction_runs": 0.1566,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5109,
-                "delta_runs": 0.1242,
-                "conviction_runs": 0.1242,
-                "market_line": 8.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5109,
-                "delta_runs": 0.1242,
-                "conviction_runs": 0.1242,
-                "market_line": 8.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -12096,103 +11499,11 @@
           "delta_runs": 0.0034,
           "conviction_runs": 0.0034,
           "mu_shown": 8.0,
-          "mu_absolute": 9.13,
-          "center_used": 0.20801,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_top5_woba",
-              "runs": 0.1303,
-              "z": 0.6591,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_power",
-              "runs": 0.0816,
-              "z": 0.3326,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_woba",
-              "runs": 0.0,
-              "z": 0.2346,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5007,
-                "delta_runs": 0.0082,
-                "conviction_runs": 0.0082,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4996,
-                "delta_runs": -0.0049,
-                "conviction_runs": 0.0049,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5006,
-                "delta_runs": 0.0073,
-                "conviction_runs": 0.0073,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5003,
-                "delta_runs": 0.0034,
-                "conviction_runs": 0.0034,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4991,
-                "delta_runs": -0.0106,
-                "conviction_runs": 0.0106,
-                "market_line": 8.0,
-                "lineup_posted": true,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -12205,117 +11516,25 @@
           "delta_runs": -0.3155,
           "conviction_runs": 0.3155,
           "mu_shown": 7.68,
-          "mu_absolute": 8.59,
-          "center_used": -0.005713,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "sp_rest",
-              "runs": -0.1707,
-              "z": 4.0,
-              "beta": -0.042673
-            },
-            {
-              "lever": "sp_recent_form",
-              "runs": -0.067,
-              "z": -0.4835,
-              "beta": 0.138549
-            },
-            {
-              "lever": "sp_contact_quality",
-              "runs": -0.0638,
-              "z": -0.3909,
-              "beta": 0.163098
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4724,
-                "delta_runs": -0.3553,
-                "conviction_runs": 0.3553,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 11,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4762,
-                "delta_runs": -0.2729,
-                "conviction_runs": 0.2729,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4724,
-                "delta_runs": -0.3152,
-                "conviction_runs": 0.3152,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4723,
-                "delta_runs": -0.3155,
-                "conviction_runs": 0.3155,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4725,
-                "delta_runs": -0.3135,
-                "conviction_runs": 0.3135,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 2,
+        "inning": 4,
         "half": "bottom",
-        "outs": 3,
-        "away_score": 3,
+        "outs": 0,
+        "away_score": 6,
         "home_score": 0,
-        "runs_so_far": 3,
+        "runs_so_far": 6,
         "pregame_total": 8.0,
-        "runs_vs_pregame_total": -5.0,
-        "runs_still_needed_for_over": 5,
-        "innings_elapsed": 2.0,
+        "runs_vs_pregame_total": -2.0,
+        "runs_still_needed_for_over": 2,
+        "innings_elapsed": 4.0,
         "pace_runs_per_inning": 1.5,
         "projected_final_runs": 13.5,
         "p_hit_now": null,
@@ -12323,10 +11542,12 @@
         "p_hit_side_basis": null,
         "p_hit_certified": false,
         "p_hit_basis": null,
-        "p_hit_buckets": [],
+        "p_hit_buckets": [
+          "HOT"
+        ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-03T23:58:58Z",
+        "as_of": "2026-08-04T00:35:42Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -12690,9 +11911,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -12704,9 +11922,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 48.8% over on 8.5 and I read 54.0% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -12732,9 +11947,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": false,
           "starters_announced": null,
@@ -12752,14 +11964,11 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Bats and arms both travel; the ballpark does not. 0.34 runs of environment says under at 8.5, and I'll stand there alone.",
           "take_kind": "dissent",
           "live_p_over": null,
-          "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-03T23:58:58Z",
+          "live_state_note": "Top 4th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T00:35:42Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -12786,9 +11995,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -12807,9 +12013,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "These two offences have been scoring 0.40 runs above average, which puts them 8.9 against 8.5.",
           "take_kind": "standard"
         },
@@ -12835,9 +12038,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -12850,9 +12050,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read over 8.5 at 50%.",
           "take_kind": "standard"
         }
@@ -12879,17 +12076,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PICK",
@@ -12922,10 +12110,10 @@
             "no_read": 0
           },
           "consensus_state": "MAJORITY",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -13428,88 +12616,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 8.5,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.2945,
-              "z": 2.3192,
-              "beta": 0.126991
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            },
-            {
-              "lever": "n_books",
-              "runs": 0.1054,
-              "z": 4.0,
-              "beta": 0.026343
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6053,
-                "market_line": 8.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5182,
-                "market_line": 8.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4784,
-                "market_line": 8.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5397,
-                "market_line": 8.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5032,
-                "market_line": 8.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -13522,103 +12633,11 @@
           "delta_runs": -0.345,
           "conviction_runs": 0.345,
           "mu_shown": 8.15,
-          "mu_absolute": 8.53,
-          "center_used": -0.034671,
           "market_line": 8.5,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "park_roof",
-              "runs": -0.3704,
-              "z": 2.3044,
-              "beta": -0.160743
-            },
-            {
-              "lever": "park_run_factor",
-              "runs": -0.1208,
-              "z": -0.4435,
-              "beta": 0.272312
-            },
-            {
-              "lever": "park_altitude",
-              "runs": 0.1007,
-              "z": 0.3594,
-              "beta": 0.280061
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4706,
-                "delta_runs": -0.3903,
-                "conviction_runs": 0.3903,
-                "market_line": 8.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4725,
-                "delta_runs": -0.346,
-                "conviction_runs": 0.346,
-                "market_line": 8.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4725,
-                "delta_runs": -0.3429,
-                "conviction_runs": 0.3429,
-                "market_line": 8.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4721,
-                "delta_runs": -0.345,
-                "conviction_runs": 0.345,
-                "market_line": 8.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4448,
-                "delta_runs": -0.6294,
-                "conviction_runs": 0.6294,
-                "market_line": 8.5,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -13631,103 +12650,11 @@
           "delta_runs": 0.3982,
           "conviction_runs": 0.3982,
           "mu_shown": 8.9,
-          "mu_absolute": 9.52,
-          "center_used": 0.20801,
           "market_line": 8.5,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_power",
-              "runs": 0.3546,
-              "z": 1.4452,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_top5_woba",
-              "runs": 0.2521,
-              "z": 1.2753,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_woba",
-              "runs": 0.0,
-              "z": 1.6265,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5399,
-                "delta_runs": 0.461,
-                "conviction_runs": 0.461,
-                "market_line": 8.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.538,
-                "delta_runs": 0.4363,
-                "conviction_runs": 0.4363,
-                "market_line": 8.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5367,
-                "delta_runs": 0.4194,
-                "conviction_runs": 0.4194,
-                "market_line": 8.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5335,
-                "delta_runs": 0.3982,
-                "conviction_runs": 0.3982,
-                "market_line": 8.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5338,
-                "delta_runs": 0.4019,
-                "conviction_runs": 0.4019,
-                "market_line": 8.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -13740,119 +12667,27 @@
           "delta_runs": 0.0296,
           "conviction_runs": 0.0296,
           "mu_shown": 8.53,
-          "mu_absolute": 8.94,
-          "center_used": -0.005713,
           "market_line": 8.5,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "sp_rest",
-              "runs": -0.1707,
-              "z": 4.0,
-              "beta": -0.042673
-            },
-            {
-              "lever": "sp_contact_quality",
-              "runs": 0.0793,
-              "z": 0.486,
-              "beta": 0.163098
-            },
-            {
-              "lever": "pen_era",
-              "runs": 0.0507,
-              "z": 0.2525,
-              "beta": 0.200968
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5132,
-                "delta_runs": 0.1527,
-                "conviction_runs": 0.1527,
-                "market_line": 8.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5139,
-                "delta_runs": 0.1596,
-                "conviction_runs": 0.1596,
-                "market_line": 8.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5036,
-                "delta_runs": 0.0408,
-                "conviction_runs": 0.0408,
-                "market_line": 8.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5026,
-                "delta_runs": 0.0296,
-                "conviction_runs": 0.0296,
-                "market_line": 8.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5028,
-                "delta_runs": 0.0317,
-                "conviction_runs": 0.0317,
-                "market_line": 8.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 2,
+        "inning": 4,
         "half": "top",
-        "outs": 2,
-        "away_score": 0,
+        "outs": 1,
+        "away_score": 3,
         "home_score": 0,
-        "runs_so_far": 0,
+        "runs_so_far": 3,
         "pregame_total": 8.5,
-        "runs_vs_pregame_total": -8.5,
-        "runs_still_needed_for_over": 9,
-        "innings_elapsed": 1.5,
-        "pace_runs_per_inning": 0.0,
-        "projected_final_runs": 0.0,
+        "runs_vs_pregame_total": -5.5,
+        "runs_still_needed_for_over": 6,
+        "innings_elapsed": 3.5,
+        "pace_runs_per_inning": 0.86,
+        "projected_final_runs": 7.7,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -13861,7 +12696,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-03T23:58:58Z",
+        "as_of": "2026-08-04T00:35:42Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -13885,9 +12720,9 @@
         "price": -102.0,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
+        "timestamp": "2026-08-04T00:35:44Z",
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "our_prob": 0.4922,
@@ -13954,8 +12789,8 @@
         "our_prob": 0.3533,
         "ev": 0.002,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -13985,8 +12820,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -14020,7 +12855,7 @@
           "score": 5.0,
           "result": null,
           "lead_time": "T-3h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": null,
           "reason": "Adaptive desk STRONG"
@@ -14058,7 +12893,7 @@
           "score": 1.71,
           "result": null,
           "lead_time": "T-24h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "ev_gate",
           "reason": "Priced out \u2014 no value at the real price"
@@ -14096,7 +12931,7 @@
           "score": 0.92,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Honest lean \u2014 NEW unproven spread stream (graded in public from day one; low confidence, not a bet)",
@@ -14117,7 +12952,7 @@
           "score": null,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
@@ -14155,8 +12990,8 @@
           "wx_temp_f": 98.96
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
@@ -14185,14 +13020,14 @@
         "run_line_price_home": 175.0,
         "run_line_price_away": -182.0,
         "book": "pinnacle",
-        "captured_at": "2026-08-03T23:58:57Z",
+        "captured_at": "2026-08-04T00:35:41Z",
         "wall": "T-1h",
-        "locked_at": null,
+        "locked_at": "2026-08-04T00:35:41Z",
         "game_pk": 822867,
         "date": "2026-08-03",
         "first_pitch_utc": "2026-08-04T00:05:00+00:00",
         "total_line_at_book": 7.5,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 8.5,
         "total_move": -0.5,
         "p_over_devig": 0.50288959639565,
@@ -14201,32 +13036,7 @@
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: the market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'ATLAS: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
-      "line_now": {
-        "total": 8.0,
-        "pregame_total_compared": 8.0,
-        "total_price_over": -106.0,
-        "total_price_under": -106.0,
-        "book": null,
-        "comparison_basis": "book_consensus_median",
-        "same_basis": true,
-        "same_book_check": {
-          "book": "pinnacle",
-          "pregame_total": 7.5,
-          "total": 8.0,
-          "move": 0.5,
-          "total_price_over": -106.0,
-          "total_price_under": -106.0
-        },
-        "n_books": 22,
-        "as_of": "2026-08-03T23:55:51Z",
-        "source": "odds_snapshots_pregame_totals",
-        "market": "full_game_total",
-        "moved_vs_pregame": false,
-        "move": 0.0,
-        "max_plausible_move": 2.0,
-        "display_only": true,
-        "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
-      },
+      "line_now": null,
       "analysts": [
         {
           "key": "vega",
@@ -14250,9 +13060,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -14264,9 +13071,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Three theories against me and none of them can see the number. The price says over at 8 and I read it 53%.",
           "take_kind": "dissent"
         },
@@ -14292,9 +13096,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -14307,14 +13108,11 @@
           "completeness_tier": "full",
           "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "I grade the place and the umpire and nothing else. On those alone: under 8, 51%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-03T23:58:58Z",
+          "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T00:35:42Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -14341,9 +13139,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -14362,9 +13157,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the bats, it is under 8 at 50%.",
           "take_kind": "standard"
         },
@@ -14390,9 +13182,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -14405,9 +13194,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "0.55 runs of separation on the staffs alone \u2014 that's the under of 8 without looking at a single bat.",
           "take_kind": "standard"
         }
@@ -14434,17 +13220,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PICK",
@@ -14456,7 +13233,7 @@
         "price": -102.0,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
+        "locked": true,
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "expanded_band": false,
@@ -14477,10 +13254,10 @@
             "no_read": 0
           },
           "consensus_state": "MAJORITY",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -14615,7 +13392,7 @@
             "line_basis": "served_bet_line",
             "pregame_total": 8.0,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": -102.0,
             "desk_votes": {
               "over": 1,
@@ -14979,88 +13756,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 8.0,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.2365,
-              "z": 1.8626,
-              "beta": 0.126991
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            },
-            {
-              "lever": "n_books",
-              "runs": 0.1054,
-              "z": 4.0,
-              "beta": 0.026343
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5698,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.5027,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.5026,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5287,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5385,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -15073,103 +13773,11 @@
           "delta_runs": -0.1175,
           "conviction_runs": 0.1175,
           "mu_shown": 7.88,
-          "mu_absolute": 8.76,
-          "center_used": -0.034671,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "park_roof",
-              "runs": -0.3704,
-              "z": 2.3044,
-              "beta": -0.160743
-            },
-            {
-              "lever": "ump_runs",
-              "runs": 0.3453,
-              "z": 3.5604,
-              "beta": 0.096997
-            },
-            {
-              "lever": "park_run_factor",
-              "runs": -0.2045,
-              "z": -0.7508,
-              "beta": 0.272312
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4613,
-                "delta_runs": -0.5129,
-                "conviction_runs": 0.5129,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4633,
-                "delta_runs": -0.4626,
-                "conviction_runs": 0.4626,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4637,
-                "delta_runs": -0.4518,
-                "conviction_runs": 0.4518,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4897,
-                "delta_runs": -0.1175,
-                "conviction_runs": 0.1175,
-                "market_line": 8.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4897,
-                "delta_runs": -0.1175,
-                "conviction_runs": 0.1175,
-                "market_line": 8.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -15182,103 +13790,11 @@
           "delta_runs": -0.0178,
           "conviction_runs": 0.0178,
           "mu_shown": 7.98,
-          "mu_absolute": 9.11,
-          "center_used": 0.20801,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_power",
-              "runs": 0.2262,
-              "z": 0.9219,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_top5_woba",
-              "runs": -0.0355,
-              "z": -0.1795,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_woba",
-              "runs": -0.0,
-              "z": -0.9228,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.495,
-                "delta_runs": -0.0577,
-                "conviction_runs": 0.0577,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4963,
-                "delta_runs": -0.0422,
-                "conviction_runs": 0.0422,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4961,
-                "delta_runs": -0.0444,
-                "conviction_runs": 0.0444,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4985,
-                "delta_runs": -0.0178,
-                "conviction_runs": 0.0178,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4854,
-                "delta_runs": -0.173,
-                "conviction_runs": 0.173,
-                "market_line": 8.0,
-                "lineup_posted": true,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -15291,119 +13807,27 @@
           "delta_runs": -0.5467,
           "conviction_runs": 0.5467,
           "mu_shown": 7.45,
-          "mu_absolute": 8.36,
-          "center_used": -0.005713,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "sp_groundballs",
-              "runs": -0.1872,
-              "z": 1.8167,
-              "beta": -0.103054
-            },
-            {
-              "lever": "sp_rest",
-              "runs": -0.1707,
-              "z": 4.0,
-              "beta": -0.042673
-            },
-            {
-              "lever": "sp_recent_form",
-              "runs": -0.0984,
-              "z": -0.7101,
-              "beta": 0.138549
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4963,
-                "delta_runs": -0.0657,
-                "conviction_runs": 0.0657,
-                "market_line": 8.0,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4973,
-                "delta_runs": -0.0511,
-                "conviction_runs": 0.0511,
-                "market_line": 8.0,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4949,
-                "delta_runs": -0.1124,
-                "conviction_runs": 0.1124,
-                "market_line": 8.0,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4521,
-                "delta_runs": -0.5467,
-                "conviction_runs": 0.5467,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4522,
-                "delta_runs": -0.5458,
-                "conviction_runs": 0.5458,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 1,
+        "inning": 2,
         "half": "top",
-        "outs": 0,
-        "away_score": 0,
+        "outs": 3,
+        "away_score": 2,
         "home_score": 0,
-        "runs_so_far": 0,
+        "runs_so_far": 2,
         "pregame_total": 8.0,
-        "runs_vs_pregame_total": -8.0,
-        "runs_still_needed_for_over": 8,
-        "innings_elapsed": 0.5,
-        "pace_runs_per_inning": 0.0,
-        "projected_final_runs": 0.0,
+        "runs_vs_pregame_total": -6.0,
+        "runs_still_needed_for_over": 6,
+        "innings_elapsed": 1.5,
+        "pace_runs_per_inning": 1.33,
+        "projected_final_runs": 12.0,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -15412,7 +13836,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-03T23:58:58Z",
+        "as_of": "2026-08-04T00:35:42Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -15436,9 +13860,9 @@
         "price": -108.0,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
+        "timestamp": "2026-08-04T00:35:44Z",
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "our_prob": 0.5159,
@@ -15510,8 +13934,8 @@
         "our_prob": 0.5905,
         "ev": 0.0034,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -15541,8 +13965,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -15576,7 +14000,7 @@
           "score": 5.0,
           "result": null,
           "lead_time": "T-3h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": null,
           "reason": "Adaptive desk STRONG"
@@ -15614,7 +14038,7 @@
           "score": 1.66,
           "result": null,
           "lead_time": "T-24h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "ev_gate",
           "reason": "Priced out \u2014 no value at the real price"
@@ -15652,7 +14076,7 @@
           "score": 0.95,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Honest lean \u2014 NEW unproven spread stream (graded in public from day one; low confidence, not a bet)",
@@ -15673,7 +14097,7 @@
           "score": null,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
@@ -15711,8 +14135,8 @@
           "wx_temp_f": 72.86
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
@@ -15741,14 +14165,14 @@
         "run_line_price_home": -143.0,
         "run_line_price_away": 138.0,
         "book": "betrivers",
-        "captured_at": "2026-08-03T23:58:57Z",
+        "captured_at": "2026-08-04T00:35:41Z",
         "wall": "T-1h",
-        "locked_at": null,
+        "locked_at": "2026-08-04T00:35:41Z",
         "game_pk": 824647,
         "date": "2026-08-03",
         "first_pitch_utc": "2026-08-04T00:05:00+00:00",
         "total_line_at_book": 7.5,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 8.5,
         "total_move": -0.5,
         "p_over_devig": 0.5086721415882648,
@@ -15781,9 +14205,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -15795,9 +14216,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "My number sits 2.9% off the market's on 8. That gap is the whole position \u2014 over.",
           "take_kind": "standard"
         },
@@ -15823,9 +14241,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -15838,14 +14253,11 @@
           "completeness_tier": "full",
           "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The conditions are loud here \u2014 0.31 runs of deviation from a neutral night, and they point over on 8.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-03T23:58:58Z",
+          "live_state_note": "Bot 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T00:35:42Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -15872,9 +14284,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -15893,9 +14302,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "These two offences have been scoring 0.36 runs above average, which puts them 8.4 against 8.",
           "take_kind": "standard"
         },
@@ -15921,9 +14327,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -15936,9 +14339,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Everything starts with who's throwing. 0.26 runs off neutral on the arms, under 8 \u2014 I'll take that against the room.",
           "take_kind": "dissent"
         }
@@ -15965,17 +14365,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PICK",
@@ -15987,7 +14378,7 @@
         "price": -108.0,
         "suggested_units": 2.0,
         "result": null,
-        "locked": false,
+        "locked": true,
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "expanded_band": false,
@@ -16008,10 +14399,10 @@
             "no_read": 0
           },
           "consensus_state": "MAJORITY",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -16146,7 +14537,7 @@
             "line_basis": "served_bet_line",
             "pregame_total": 8.0,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": -108.0,
             "desk_votes": {
               "over": 3,
@@ -16510,88 +14901,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 8.0,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.2615,
-              "z": 2.0592,
-              "beta": 0.126991
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            },
-            {
-              "lever": "n_books",
-              "runs": 0.1054,
-              "z": 4.0,
-              "beta": 0.026343
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5397,
-                "market_line": 8.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5495,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4951,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5286,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5441,
-                "market_line": 8.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -16604,103 +14918,11 @@
           "delta_runs": 0.3097,
           "conviction_runs": 0.3097,
           "mu_shown": 8.31,
-          "mu_absolute": 9.19,
-          "center_used": -0.034671,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "park_run_factor",
-              "runs": 0.2168,
-              "z": 0.7962,
-              "beta": 0.272312
-            },
-            {
-              "lever": "park_altitude",
-              "runs": 0.0918,
-              "z": 0.3277,
-              "beta": 0.280061
-            },
-            {
-              "lever": "ump_runs",
-              "runs": -0.0337,
-              "z": -0.3472,
-              "beta": 0.096997
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5296,
-                "delta_runs": 0.3918,
-                "conviction_runs": 0.3918,
-                "market_line": 8.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5297,
-                "delta_runs": 0.3743,
-                "conviction_runs": 0.3743,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5287,
-                "delta_runs": 0.3578,
-                "conviction_runs": 0.3578,
-                "market_line": 8.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5272,
-                "delta_runs": 0.3097,
-                "conviction_runs": 0.3097,
-                "market_line": 8.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5272,
-                "delta_runs": 0.3097,
-                "conviction_runs": 0.3097,
-                "market_line": 8.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -16713,103 +14935,11 @@
           "delta_runs": 0.3605,
           "conviction_runs": 0.3605,
           "mu_shown": 8.36,
-          "mu_absolute": 9.48,
-          "center_used": 0.20801,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_power",
-              "runs": 0.3333,
-              "z": 1.3584,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_top5_woba",
-              "runs": 0.2357,
-              "z": 1.1923,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_woba",
-              "runs": 0.0,
-              "z": 1.6234,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5308,
-                "delta_runs": 0.3557,
-                "conviction_runs": 0.3557,
-                "market_line": 8.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5297,
-                "delta_runs": 0.3407,
-                "conviction_runs": 0.3407,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5285,
-                "delta_runs": 0.3253,
-                "conviction_runs": 0.3253,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5303,
-                "delta_runs": 0.3605,
-                "conviction_runs": 0.3605,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5306,
-                "delta_runs": 0.3643,
-                "conviction_runs": 0.3643,
-                "market_line": 8.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -16822,119 +14952,27 @@
           "delta_runs": -0.2572,
           "conviction_runs": 0.2572,
           "mu_shown": 7.74,
-          "mu_absolute": 8.65,
-          "center_used": -0.005713,
           "market_line": 8.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "sp_rest",
-              "runs": -0.1707,
-              "z": 4.0,
-              "beta": -0.042673
-            },
-            {
-              "lever": "pen_era",
-              "runs": 0.0544,
-              "z": 0.2706,
-              "beta": 0.200968
-            },
-            {
-              "lever": "sp_groundballs",
-              "runs": -0.041,
-              "z": 0.3977,
-              "beta": -0.103054
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5044,
-                "delta_runs": 0.0788,
-                "conviction_runs": 0.0788,
-                "market_line": 8.5,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5033,
-                "delta_runs": 0.0606,
-                "conviction_runs": 0.0606,
-                "market_line": 8.0,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.501,
-                "delta_runs": 0.0213,
-                "conviction_runs": 0.0213,
-                "market_line": 8.0,
-                "starters_announced": false,
-                "n_levers_present": 6,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4774,
-                "delta_runs": -0.2572,
-                "conviction_runs": 0.2572,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4776,
-                "delta_runs": -0.2549,
-                "conviction_runs": 0.2549,
-                "market_line": 8.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 1,
-        "half": "top",
-        "outs": 0,
-        "away_score": 0,
-        "home_score": 0,
-        "runs_so_far": 0,
+        "inning": 2,
+        "half": "bottom",
+        "outs": 1,
+        "away_score": 3,
+        "home_score": 2,
+        "runs_so_far": 5,
         "pregame_total": 8.0,
-        "runs_vs_pregame_total": -8.0,
-        "runs_still_needed_for_over": 8,
-        "innings_elapsed": 0.5,
-        "pace_runs_per_inning": 0.0,
-        "projected_final_runs": 0.0,
+        "runs_vs_pregame_total": -3.0,
+        "runs_still_needed_for_over": 3,
+        "innings_elapsed": 2.0,
+        "pace_runs_per_inning": 2.5,
+        "projected_final_runs": 22.5,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -16943,7 +14981,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-03T23:58:58Z",
+        "as_of": "2026-08-04T00:35:42Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -16967,9 +15005,9 @@
         "price": null,
         "suggested_units": null,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
+        "timestamp": "2026-08-04T00:35:44Z",
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "our_prob": 0.5122,
@@ -17037,8 +15075,8 @@
         "our_prob": 0.4028,
         "ev": 0.0272,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -17068,8 +15106,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -17103,7 +15141,7 @@
           "score": 1.0,
           "result": null,
           "lead_time": "T-3h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "adaptive_rule_no_fire",
           "reason": "Today's trailing rule did not fire for this analyst pattern."
@@ -17141,7 +15179,7 @@
           "score": 0.94,
           "result": null,
           "lead_time": "T-24h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "ev_gate",
           "reason": "Priced out \u2014 no value at the real price"
@@ -17179,7 +15217,7 @@
           "score": 1.99,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Honest lean \u2014 NEW unproven spread stream (graded in public from day one; low confidence, not a bet)",
@@ -17200,7 +15238,7 @@
           "score": null,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
@@ -17238,8 +15276,8 @@
           "wx_temp_f": 91.22
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-04T00:35:44Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
@@ -17268,14 +15306,14 @@
         "run_line_price_home": 155.0,
         "run_line_price_away": -161.0,
         "book": "betrivers",
-        "captured_at": "2026-08-03T23:58:57Z",
+        "captured_at": "2026-08-04T00:35:41Z",
         "wall": "T-1h",
-        "locked_at": null,
+        "locked_at": "2026-08-04T00:35:41Z",
         "game_pk": 824160,
         "date": "2026-08-03",
         "first_pitch_utc": "2026-08-04T00:10:00+00:00",
         "total_line_at_book": 9.0,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 9.0,
         "total_move": 0.0,
         "p_over_devig": 0.5217391304347826,
@@ -17284,32 +15322,7 @@
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: the market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'ATLAS: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
-      "line_now": {
-        "total": 9.0,
-        "pregame_total_compared": 9.0,
-        "total_price_over": -120.0,
-        "total_price_under": 100.0,
-        "book": null,
-        "comparison_basis": "book_consensus_median",
-        "same_basis": true,
-        "same_book_check": {
-          "book": "betrivers",
-          "pregame_total": 9.0,
-          "total": 9.0,
-          "move": 0.0,
-          "total_price_over": -120.0,
-          "total_price_under": 100.0
-        },
-        "n_books": 22,
-        "as_of": "2026-08-03T23:55:51Z",
-        "source": "odds_snapshots_pregame_totals",
-        "market": "full_game_total",
-        "moved_vs_pregame": false,
-        "move": 0.0,
-        "max_plausible_move": 2.0,
-        "display_only": true,
-        "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
-      },
+      "line_now": null,
       "analysts": [
         {
           "key": "vega",
@@ -17333,9 +15346,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -17347,9 +15357,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 51.5% over on 9 and I read 52.8% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -17375,9 +15382,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": false,
           "starters_announced": null,
@@ -17395,14 +15399,11 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the conditions I read, it is under 9 at 54%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-03T23:58:58Z",
+          "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T00:35:42Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -17429,9 +15430,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -17450,9 +15448,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the bats, it is under 9 at 52%.",
           "take_kind": "standard"
         },
@@ -17478,9 +15473,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -17493,9 +15485,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read over 9 at 58%.",
           "take_kind": "standard"
         }
@@ -17522,17 +15511,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PASS",
@@ -17544,7 +15524,7 @@
         "price": null,
         "suggested_units": null,
         "result": null,
-        "locked": false,
+        "locked": true,
         "lead_time": "T-3h",
         "source": "adaptive_desk",
         "expanded_band": false,
@@ -17565,10 +15545,10 @@
             "no_read": 0
           },
           "consensus_state": "SPLIT",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -17702,7 +15682,7 @@
             "line_basis": "locked_pregame_total",
             "pregame_total": 9.0,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": null,
             "desk_votes": {
               "over": 2,
@@ -18060,88 +16040,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 9.0,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.2325,
-              "z": 1.8305,
-              "beta": 0.126991
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            },
-            {
-              "lever": "n_books",
-              "runs": 0.1054,
-              "z": 4.0,
-              "beta": 0.026343
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6188,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.5019,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4907,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5277,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5626,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -18154,103 +16057,11 @@
           "delta_runs": -0.5295,
           "conviction_runs": 0.5295,
           "mu_shown": 8.47,
-          "mu_absolute": 8.34,
-          "center_used": -0.034671,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "park_roof",
-              "runs": -0.3704,
-              "z": 2.3044,
-              "beta": -0.160743
-            },
-            {
-              "lever": "park_run_factor",
-              "runs": -0.1207,
-              "z": -0.4432,
-              "beta": 0.272312
-            },
-            {
-              "lever": "park_altitude",
-              "runs": -0.0839,
-              "z": -0.2995,
-              "beta": 0.280061
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4568,
-                "delta_runs": -0.573,
-                "conviction_runs": 0.573,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4582,
-                "delta_runs": -0.5263,
-                "conviction_runs": 0.5263,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.458,
-                "delta_runs": -0.523,
-                "conviction_runs": 0.523,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4572,
-                "delta_runs": -0.5295,
-                "conviction_runs": 0.5295,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4793,
-                "delta_runs": -0.2353,
-                "conviction_runs": 0.2353,
-                "market_line": 9.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -18263,103 +16074,11 @@
           "delta_runs": -0.2116,
           "conviction_runs": 0.2116,
           "mu_shown": 8.79,
-          "mu_absolute": 8.91,
-          "center_used": 0.20801,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_top5_woba",
-              "runs": -0.0736,
-              "z": -0.3724,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_power",
-              "runs": 0.0705,
-              "z": 0.2872,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_woba",
-              "runs": -0.0,
-              "z": -0.2191,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4789,
-                "delta_runs": -0.2433,
-                "conviction_runs": 0.2433,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4803,
-                "delta_runs": -0.2256,
-                "conviction_runs": 0.2256,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4811,
-                "delta_runs": -0.2158,
-                "conviction_runs": 0.2158,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4822,
-                "delta_runs": -0.2116,
-                "conviction_runs": 0.2116,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4826,
-                "delta_runs": -0.2066,
-                "conviction_runs": 0.2066,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -18372,119 +16091,27 @@
           "delta_runs": 0.9385,
           "conviction_runs": 0.9385,
           "mu_shown": 9.94,
-          "mu_absolute": 9.85,
-          "center_used": -0.005713,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "sp_recent_form",
-              "runs": 0.4658,
-              "z": 3.3621,
-              "beta": 0.138549
-            },
-            {
-              "lever": "sp_contact_quality",
-              "runs": 0.3438,
-              "z": 2.108,
-              "beta": 0.163098
-            },
-            {
-              "lever": "sp_length",
-              "runs": 0.1904,
-              "z": -2.5325,
-              "beta": -0.075169
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5716,
-                "delta_runs": 0.8304,
-                "conviction_runs": 0.8304,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5854,
-                "delta_runs": 0.986,
-                "conviction_runs": 0.986,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5824,
-                "delta_runs": 0.9463,
-                "conviction_runs": 0.9463,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5818,
-                "delta_runs": 0.9385,
-                "conviction_runs": 0.9385,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5818,
-                "delta_runs": 0.9388,
-                "conviction_runs": 0.9388,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 1,
+        "inning": 2,
         "half": "top",
-        "outs": 0,
-        "away_score": 0,
+        "outs": 3,
+        "away_score": 1,
         "home_score": 0,
-        "runs_so_far": 0,
+        "runs_so_far": 1,
         "pregame_total": 9.0,
-        "runs_vs_pregame_total": -9.0,
-        "runs_still_needed_for_over": 9,
-        "innings_elapsed": 0.5,
-        "pace_runs_per_inning": 0.0,
-        "projected_final_runs": 0.0,
+        "runs_vs_pregame_total": -8.0,
+        "runs_still_needed_for_over": 8,
+        "innings_elapsed": 1.5,
+        "pace_runs_per_inning": 0.67,
+        "projected_final_runs": 6.0,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -18493,7 +16120,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-03T23:58:58Z",
+        "as_of": "2026-08-04T00:35:42Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -18826,7 +16453,7 @@
         "run_line_price_home": 109.0,
         "run_line_price_away": -115.0,
         "book": "bovada",
-        "captured_at": "2026-08-03T23:58:57Z",
+        "captured_at": "2026-08-04T00:35:41Z",
         "wall": "T-1h",
         "locked_at": null,
         "game_pk": 824324,
@@ -18859,7 +16486,7 @@
           "total_price_under": -125.0
         },
         "n_books": 22,
-        "as_of": "2026-08-03T23:55:51Z",
+        "as_of": "2026-08-04T00:32:43Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -18891,9 +16518,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -18905,9 +16529,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 48.8% over on 11.5 and I read 50.8% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -18933,9 +16554,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": false,
           "starters_announced": null,
@@ -18953,11 +16571,14 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the ballpark itself this is over 11.5 at 66%. Air, dimensions and how the yard has actually been playing.",
-          "take_kind": "standard"
+          "take_kind": "standard",
+          "live_p_over": null,
+          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-04T00:35:42Z",
+          "live_display_only": true,
+          "live_source": "live_atlas",
+          "live_is_this_analysts_read": false
         },
         {
           "key": "nova",
@@ -18981,9 +16602,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -19002,9 +16620,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "These two offences have been scoring 0.39 runs above average, which puts them 11.9 against 11.5.",
           "take_kind": "standard"
         },
@@ -19030,9 +16645,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -19045,9 +16657,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "0.31 runs of separation on the staffs alone \u2014 that's the over of 11.5 without looking at a single bat.",
           "take_kind": "standard"
         }
@@ -19074,17 +16683,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PICK",
@@ -19117,10 +16717,10 @@
             "no_read": 0
           },
           "consensus_state": "UNANIMOUS",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "STRONG",
@@ -19579,88 +17179,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 11.5,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.1728,
-              "z": 1.3607,
-              "beta": 0.126991
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            },
-            {
-              "lever": "n_books",
-              "runs": 0.1054,
-              "z": 4.0,
-              "beta": 0.026343
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6163,
-                "market_line": 11.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5168,
-                "market_line": 11.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.4939,
-                "market_line": 11.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5077,
-                "market_line": 11.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5119,
-                "market_line": 11.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -19673,103 +17196,11 @@
           "delta_runs": 2.0342,
           "conviction_runs": 2.0342,
           "mu_shown": 13.53,
-          "mu_absolute": 10.9,
-          "center_used": -0.034671,
           "market_line": 11.5,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "park_altitude",
-              "runs": 1.1202,
-              "z": 4.0,
-              "beta": 0.280061
-            },
-            {
-              "lever": "park_run_factor",
-              "runs": 0.8684,
-              "z": 3.1891,
-              "beta": 0.272312
-            },
-            {
-              "lever": "park_roof",
-              "runs": -0.0,
-              "z": 0.0,
-              "beta": -0.160743
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6655,
-                "delta_runs": 2.2586,
-                "conviction_runs": 2.2586,
-                "market_line": 11.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6639,
-                "delta_runs": 2.1231,
-                "conviction_runs": 2.1231,
-                "market_line": 11.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6594,
-                "delta_runs": 2.0391,
-                "conviction_runs": 2.0391,
-                "market_line": 11.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.66,
-                "delta_runs": 2.0342,
-                "conviction_runs": 2.0342,
-                "market_line": 11.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6662,
-                "delta_runs": 1.9481,
-                "conviction_runs": 1.9481,
-                "market_line": 11.5,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -19782,103 +17213,11 @@
           "delta_runs": 0.3882,
           "conviction_runs": 0.3882,
           "mu_shown": 11.89,
-          "mu_absolute": 9.51,
-          "center_used": 0.20801,
           "market_line": 11.5,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_power",
-              "runs": 0.3891,
-              "z": 1.5858,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_top5_woba",
-              "runs": 0.2076,
-              "z": 1.0503,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_woba",
-              "runs": 0.0,
-              "z": 1.0956,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5365,
-                "delta_runs": 0.4212,
-                "conviction_runs": 0.4212,
-                "market_line": 11.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5353,
-                "delta_runs": 0.4055,
-                "conviction_runs": 0.4055,
-                "market_line": 11.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5338,
-                "delta_runs": 0.3858,
-                "conviction_runs": 0.3858,
-                "market_line": 11.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5326,
-                "delta_runs": 0.3882,
-                "conviction_runs": 0.3882,
-                "market_line": 11.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5371,
-                "delta_runs": 0.4412,
-                "conviction_runs": 0.4412,
-                "market_line": 11.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -19891,106 +17230,39 @@
           "delta_runs": 0.3056,
           "conviction_runs": 0.3056,
           "mu_shown": 11.81,
-          "mu_absolute": 9.22,
-          "center_used": -0.005713,
           "market_line": 11.5,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "pen_era",
-              "runs": 0.2857,
-              "z": 1.4217,
-              "beta": 0.200968
-            },
-            {
-              "lever": "sp_rest",
-              "runs": -0.1707,
-              "z": 4.0,
-              "beta": -0.042673
-            },
-            {
-              "lever": "sp_length",
-              "runs": 0.0992,
-              "z": -1.3203,
-              "beta": -0.075169
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5469,
-                "delta_runs": 0.5421,
-                "conviction_runs": 0.5421,
-                "market_line": 11.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5335,
-                "delta_runs": 0.3849,
-                "conviction_runs": 0.3849,
-                "market_line": 11.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5281,
-                "delta_runs": 0.3206,
-                "conviction_runs": 0.3206,
-                "market_line": 11.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5268,
-                "delta_runs": 0.3056,
-                "conviction_runs": 0.3056,
-                "market_line": 11.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-1h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5272,
-                "delta_runs": 0.3101,
-                "conviction_runs": 0.3101,
-                "market_line": 11.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-1h",
-            "n_walls_read": 5,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
-      "live_progress": null
+      "live_progress": {
+        "status": "in_progress",
+        "inning": 1,
+        "half": "top",
+        "outs": 0,
+        "away_score": 0,
+        "home_score": 0,
+        "runs_so_far": 0,
+        "pregame_total": 11.5,
+        "runs_vs_pregame_total": -11.5,
+        "runs_still_needed_for_over": 12,
+        "innings_elapsed": 0.5,
+        "pace_runs_per_inning": 0.0,
+        "projected_final_runs": 0.0,
+        "p_hit_now": null,
+        "p_hit_side": null,
+        "p_hit_side_basis": null,
+        "p_hit_certified": false,
+        "p_hit_basis": null,
+        "p_hit_buckets": [],
+        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
+        "live_p_over": null,
+        "as_of": "2026-08-04T00:35:42Z",
+        "display_only": true,
+        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
+      }
     },
     {
       "game_id": "2026-08-03-San Diego Padres-Arizona Diamondbacks-825095",
@@ -20318,7 +17590,7 @@
         "run_line_price_home": -157.0,
         "run_line_price_away": 128.0,
         "book": "pinnacle",
-        "captured_at": "2026-08-03T23:58:57Z",
+        "captured_at": "2026-08-04T00:35:41Z",
         "wall": "T-3h",
         "locked_at": null,
         "game_pk": 825095,
@@ -20351,7 +17623,7 @@
           "total_price_under": -114.0
         },
         "n_books": 22,
-        "as_of": "2026-08-03T23:55:51Z",
+        "as_of": "2026-08-04T00:32:43Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -20383,9 +17655,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -20397,9 +17666,6 @@
           "completeness_tier": "full",
           "completeness_note": "VEGA read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "My number sits 1.1% off the market's on 9. That gap is the whole position \u2014 over.",
           "take_kind": "standard"
         },
@@ -20425,9 +17691,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -20440,9 +17703,6 @@
           "completeness_tier": "full",
           "completeness_note": "ATLAS read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "I grade the place and the umpire and nothing else. On those alone: over 9, 51%.",
           "take_kind": "standard"
         },
@@ -20468,9 +17728,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -20489,9 +17746,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "This is the offences themselves and nothing more. On what these bats have been doing: under 9 at 54%.",
           "take_kind": "standard"
         },
@@ -20517,9 +17771,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -20532,9 +17783,6 @@
           "completeness_tier": "full",
           "completeness_note": "SCOUT read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "0.29 runs of separation on the staffs alone \u2014 that's the under of 9 without looking at a single bat.",
           "take_kind": "standard"
         }
@@ -20561,17 +17809,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "status": "PICK",
@@ -20604,10 +17843,10 @@
             "no_read": 0
           },
           "consensus_state": "SPLIT",
-          "wall": "T-3h",
+          "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-03T23:59:02Z",
+          "asof_utc": "2026-08-04T00:35:46Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -21098,79 +18337,11 @@
           "delta_runs": null,
           "conviction_runs": null,
           "mu_shown": null,
-          "mu_absolute": null,
-          "center_used": null,
           "market_line": 9.0,
-          "model_kind": "pricer",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "book_disagreement",
-              "runs": 0.2693,
-              "z": 2.1206,
-              "beta": 0.126991
-            },
-            {
-              "lever": "price_dispersion",
-              "runs": -0.15,
-              "z": 3.039,
-              "beta": -0.049351
-            },
-            {
-              "lever": "stale_gap",
-              "runs": -0.127,
-              "z": 1.9124,
-              "beta": -0.066403
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.6119,
-                "market_line": 8.5,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4755,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.457,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5002,
-                "market_line": 9.0,
-                "n_levers_present": 8,
-                "n_levers_total": 8
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 4,
-            "changed_side_across_walls": true,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "atlas",
@@ -21183,91 +18354,11 @@
           "delta_runs": 0.1395,
           "conviction_runs": 0.1395,
           "mu_shown": 9.14,
-          "mu_absolute": 9.02,
-          "center_used": -0.034671,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "park_roof",
-              "runs": -0.3704,
-              "z": 2.3044,
-              "beta": -0.160743
-            },
-            {
-              "lever": "park_run_factor",
-              "runs": 0.2859,
-              "z": 1.0499,
-              "beta": 0.272312
-            },
-            {
-              "lever": "park_altitude",
-              "runs": 0.2368,
-              "z": 0.8457,
-              "beta": 0.280061
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5175,
-                "delta_runs": 0.2313,
-                "conviction_runs": 0.2313,
-                "market_line": 8.5,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5196,
-                "delta_runs": 0.246,
-                "conviction_runs": 0.246,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.517,
-                "delta_runs": 0.2116,
-                "conviction_runs": 0.2116,
-                "market_line": 9.0,
-                "umpire_assigned": false,
-                "n_levers_present": 4,
-                "n_levers_total": 7
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "over",
-                "p_over": 0.5123,
-                "delta_runs": 0.1395,
-                "conviction_runs": 0.1395,
-                "market_line": 9.0,
-                "umpire_assigned": true,
-                "n_levers_present": 7,
-                "n_levers_total": 7
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 4,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "nova",
@@ -21280,91 +18371,11 @@
           "delta_runs": -0.4773,
           "conviction_runs": 0.4773,
           "mu_shown": 8.52,
-          "mu_absolute": 8.65,
-          "center_used": 0.20801,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "bats_top5_woba",
-              "runs": -0.1832,
-              "z": -0.927,
-              "beta": 0.197667
-            },
-            {
-              "lever": "bats_power",
-              "runs": -0.0855,
-              "z": -0.3487,
-              "beta": 0.24535
-            },
-            {
-              "lever": "bats_woba",
-              "runs": -0.0,
-              "z": -0.6049,
-              "beta": 0.0
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4539,
-                "delta_runs": -0.5333,
-                "conviction_runs": 0.5333,
-                "market_line": 8.5,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4561,
-                "delta_runs": -0.5037,
-                "conviction_runs": 0.5037,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4581,
-                "delta_runs": -0.4792,
-                "conviction_runs": 0.4792,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 6
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4599,
-                "delta_runs": -0.4773,
-                "conviction_runs": 0.4773,
-                "market_line": 9.0,
-                "lineup_posted": false,
-                "n_levers_present": 6,
-                "n_levers_total": 9
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 4,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         },
         {
           "analyst": "scout",
@@ -21377,91 +18388,11 @@
           "delta_runs": -0.2936,
           "conviction_runs": 0.2936,
           "mu_shown": 8.71,
-          "mu_absolute": 8.62,
-          "center_used": -0.005713,
           "market_line": 9.0,
-          "model_kind": "projector",
           "basis": "live",
           "is_bet": false,
-          "top_drivers": [
-            {
-              "lever": "sp_rest",
-              "runs": -0.1707,
-              "z": 4.0,
-              "beta": -0.042673
-            },
-            {
-              "lever": "pen_era",
-              "runs": -0.0983,
-              "z": -0.4894,
-              "beta": 0.200968
-            },
-            {
-              "lever": "sp_groundballs",
-              "runs": -0.0726,
-              "z": 0.7044,
-              "beta": -0.103054
-            }
-          ],
           "read_wall": "T-3h",
-          "is_final_wall": true,
-          "wall_timeline": {
-            "walls": [
-              {
-                "wall": "T-24h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4774,
-                "delta_runs": -0.2612,
-                "conviction_runs": 0.2612,
-                "market_line": 8.5,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-12h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4939,
-                "delta_runs": -0.0702,
-                "conviction_runs": 0.0702,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-6h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4744,
-                "delta_runs": -0.292,
-                "conviction_runs": 0.292,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              },
-              {
-                "wall": "T-3h",
-                "has_read": true,
-                "side": "under",
-                "p_over": 0.4743,
-                "delta_runs": -0.2936,
-                "conviction_runs": 0.2936,
-                "market_line": 9.0,
-                "starters_announced": true,
-                "n_levers_present": 14,
-                "n_levers_total": 14
-              }
-            ],
-            "first_wall_with_a_read": "T-24h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 4,
-            "changed_side_across_walls": false,
-            "no_read": null
-          }
+          "is_final_wall": true
         }
       ],
       "live_progress": null
@@ -22301,7 +19232,7 @@
       },
       "probables": {
         "away": null,
-        "home": null
+        "home": "Emerson Hancock"
       },
       "picks_eta": {
         "line": "Picks drop tomorrow morning",

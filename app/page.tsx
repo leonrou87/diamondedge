@@ -1941,9 +1941,9 @@ export default function Home() {
          rule id, "lookback evidence" is a training term, and "0.54 margin" is a threshold.
          It now leads with what the reader can act on — the RECORD the chosen rule is on —
          and keeps the label in the fold, where a curious reader will find it. */
-      const label = humanNote(s.label) || "Today's strategy";
+      const label = strategyLabelPublic(s) || "Today's strategy";
       const rec = humanNote(s.record);
-      const line = humanNote(s.summary_line || s.reason || s.plain_english_rule);
+      const line = strategySentence(s) || humanNote(s.summary_line || s.reason || s.plain_english_rule);
       const win = s.window_days ? `${s.window_days} days` : "four weeks";
       return `<details class="daystrat" title="${esc(line)}">
         <summary>
@@ -1959,8 +1959,8 @@ export default function Home() {
       </details>`;
     }
     function adaptiveStrategySheetCopy(s: any, dateISO: string) {
-      const label = humanNote(s && s.label) || "Adaptive strategy";
-      const rule = humanNote((s && (s.plain_english_rule || s.reason)) || label).replace(/\.$/, "");
+      const label = strategyLabelPublic(s) || humanNote(s && s.label) || "Adaptive strategy";
+      const rule = (strategySentence(s) || humanNote((s && (s.plain_english_rule || s.reason)) || label)).replace(/\.$/, "");
       const days = s && s.window_days ? Number(s.window_days) : 28;
       const start = stratDateTxt(shiftDate(dateISO, -days)) || `${days} days back`;
       const end = stratDateTxt(shiftDate(dateISO, -1)) || "yesterday";
@@ -2119,8 +2119,8 @@ export default function Home() {
       const ruleCount = new Set(days.map((k) => by[k] && by[k].rule_key).filter(Boolean)).size;
       const since = stratDateTxt(root.record_start) || "July 2026";
       const thru = stratDateTxt(root.through) || "today";
-      const label = latest ? humanNote(latest.label) : "Daily adaptive strategy";
-      const line = latest ? humanNote(latest.summary_line || latest.plain_english_rule) : humanNote(root.note);
+      const label = latest ? (strategyLabelPublic(latest) || humanNote(latest.label)) : "Daily adaptive strategy";
+      const line = latest ? (strategySentence(latest) || humanNote(latest.summary_line || latest.plain_english_rule)) : humanNote(root.note);
       return `<div class="ixc adapt-insight">
         <div class="ixc-h">Daily strategy record</div>
         <div class="ixc-sub">One rule is picked before each slate, then the official DiamondEdge Picks from that slate build the record.</div>
@@ -2577,8 +2577,8 @@ export default function Home() {
         : null;
       const strategy = stRaw
         ? {
-            label: humanNote(stRaw.label),
-            rule: humanNote(stRaw.plain_english_rule),
+            label: strategyLabelPublic(stRaw) || humanNote(stRaw.label),
+            rule: strategySentence(stRaw) || humanNote(stRaw.plain_english_rule),
             summary: humanNote(stRaw.summary_line),
             record: humanNote(stRaw.record),
             windowDays: stRaw.window_days != null ? Number(stRaw.window_days) : null,
@@ -8214,7 +8214,61 @@ export default function Home() {
        label with a trailing numeric parenthetical redacted — a cut, never a rewrite. Nothing
        is invented, the sentence underneath is still 100% the served plain-English rule, and
        the reader gets the name of the approach without its dials. */
+    /* BETTOR-SPEAK (Leon: "the strategy terminology is hard for a layman to understand").
+       The engine names its rules like the machinery they are — "Shallow neural desk
+       ensemble (0.54 margin)", "Regularized desk meta-model" — and no one buying picks
+       should need those words. This table translates each SERVED family into the sentence
+       a bettor would use, keyed by what the rule actually does and never claiming what it
+       doesn't. The match keys off the served label/rule text, so a family the engine has
+       not shipped yet simply falls back to the served label with its dials stripped —
+       unknown never becomes wrong. ARCHIVE stores stay verbatim; this is display copy. */
+    function strategyFriendly(s: any) {
+      const lab = String((s && s.label) || "");
+      const rule = String((s && (s.plain_english_rule || s.summary_line || s.reason)) || "");
+      if (/^fade\b/i.test(lab) || /^bet against/i.test(rule)) {
+        const who = ["VEGA", "ATLAS", "NOVA", "SCOUT"].filter((n) => new RegExp("\\b" + n + "\\b", "i").test(lab + " " + rule));
+        const names = who.length > 1 ? who.slice(0, -1).join(", ") + " and " + who[who.length - 1] : who[0] || "";
+        return {
+          name: who.length ? `Going against ${who.join(" + ")}` : "Going against the room",
+          blurb: who.length
+            ? `When ${names} ${who.length > 1 ? "agree on a side" : "takes a side"}, DiamondEdge plays the other way — over the last few weeks the winning bet has been against that read.`
+            : `When this group of analysts agrees on a side, DiamondEdge plays the other way.`,
+        };
+      }
+      if (/room-shape/i.test(lab)) {
+        const m = rule.match(/exactly (\w+) of the four analysts say (\w+), take (\w+)/i);
+        return {
+          name: "Playing the split room",
+          blurb: m
+            ? `When exactly ${m[1]} of our four analysts like the ${m[2].toLowerCase()}, DiamondEdge takes the ${m[3].toLowerCase()} — a half-convinced room has been a tell.`
+            : `When the four analysts split a particular way, DiamondEdge takes the side that split has favored.`,
+        };
+      }
+      if (/probabilistic/i.test(lab)) return {
+        name: "Weighing the analysts' votes",
+        blurb: "Each of our four analysts gets a vote, sized by how right they've been lately — analysts running backwards get faded, and coin-flip games get passed.",
+      };
+      if (/form blend/i.test(lab)) return {
+        name: "Riding the hot hands",
+        blurb: "The analysts in the best recent form carry the most weight, cold ones get faded, and when the vote is close DiamondEdge passes.",
+      };
+      if (/regularized|meta-model/i.test(lab)) return {
+        name: "Reading the whole board",
+        blurb: "The engine looks at how all four analysts line up on a game — who's in, how confident, who agrees with whom — and only bets when that read is clear.",
+      };
+      if (/stacked/i.test(lab)) return {
+        name: "Stacking the winning angles",
+        blurb: "Several angles that have each been winning lately vote together — and a bet needs more than one of them pointing the same way.",
+      };
+      if (/neural|ensemble/i.test(lab)) return {
+        name: "Pattern-reading the desk",
+        blurb: "The engine studies how the four analysts' votes and confidence play off each other, and only bets when the pattern is strong.",
+      };
+      return null;
+    }
     function strategyLabelPublic(s: any) {
+      const f = strategyFriendly(s);
+      if (f) return f.name;
       const raw = humanNote(s && s.label) || "";
       return raw.replace(/\s*\((?=[^)]*\d)[^)]*\)\s*$/, "").trim();
     }
@@ -8222,6 +8276,8 @@ export default function Home() {
     // because it is written to follow a colon. It is a SENTENCE on both surfaces here, so it
     // gets a capital and a full stop — punctuation, not editing. The words are untouched.
     function strategySentence(s: any) {
+      const f = strategyFriendly(s);
+      if (f && f.blurb) return f.blurb;
       const raw = humanNote((s && (s.plain_english_rule || s.summary_line || s.reason)) || "").trim();
       if (!raw) return "";
       return raw.charAt(0).toUpperCase() + raw.slice(1).replace(/\.$/, "") + ".";
