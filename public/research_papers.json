@@ -2,7 +2,7 @@
  "contract_version": "1.1",
  "schema_note": "KytePush Research paper library. Render `papers[]` in the order given (category order, then id). Each paper is {id, title, subtitle, category, author, date, tags[], abstract, sections[{heading, role, body}], key_figures[{label, value, note, source}], visuals[{type, title, caption, source, data[], ...}], sources[], roadmap_ids[], related_papers[], verdict, reading_minutes, word_count}. `abstract` is plain text. `sections[].body` is markdown; headings inside a section start at ###. `sections[].role` is one of abstract-less roles methods / results / discussion / takeaway / extra \u2014 key on role, not on the English heading. `visuals[].type` is one of bar / compare / funnel / interval / line / scoreboard / timeline; every visual carries its data inline, so no chart needs a second fetch. `interval` rows are {label, value, low, high} and are the house signature chart \u2014 a number with the range around it. `compare` visuals carry left_label/right_label and rows of {label, left, right}; left/right may be numbers OR short strings. `line` visuals declare `series`: [names] and each row is {label, <series name>: value, ...}. `bar`/`funnel`/`scoreboard` rows are {label, value, note?} \u2014 scoreboard values may be strings. Rows may carry `highlight: true` to mark the row the paper is about, and `reference` on the visual marks a threshold line (e.g. break-even 52.4). `key_figures[].source` and `visuals[].source` are repo-relative paths to the report the number came from and are always present in that paper's `sources[]`. `roadmap_ids` join to research_roadmap.json items[].id; `related_papers` join to papers[].id. Author is always 'KytePush Research' \u2014 there are no other bylines and no external citations.",
  "house": "KytePush Research",
- "generated_utc": "2026-08-03T09:11:59.959073+00:00",
+ "generated_utc": "2026-08-06T09:16:55.595624+00:00",
  "categories": [
   {
    "name": "Start Here",
@@ -42,7 +42,7 @@
   "corpus": {
    "reports": "~40 research reports under v4/models/output/",
    "preregistrations": "60+ under v4/models/prereg/ and per-campaign prereg dirs",
-   "roadmap_items": 92
+   "roadmap_items": 93
   }
  },
  "papers": [

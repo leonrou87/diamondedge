@@ -14453,6 +14453,224 @@ export default function Home() {
         <p class="lab-today-w">Selected by the nightly run from the last ${days ? esc(days === 21 ? "three weeks" : `${days} days`) : "three weeks"} of finished games, and locked before the first pitch. The paper below is the long version.</p>
       </section>`;
     }
+    /* ══════════════════ THE NIGHTLY SEARCH — "How we chose today's strategy" ══════════════════
+       Leon: "the sheer volume of strategies tried over the last 3-4 week lookback window, and
+       which one had the best record — that's the one we use."
+
+       The section above this one names the play. This one is about the SEARCH, and deliberately
+       does NOT celebrate any single strategy family: the argument is that nothing on this
+       product is permanent, that a recipe earns one day at a time, and that it is thrown away
+       at midnight whether it won or lost. Front a favourite rule here and you have sold a
+       system, which is the exact opposite of what the engine does.
+
+       EVERY NUMBER ON THIS SURFACE IS READ, NEVER AUTHORED:
+         · the pool size          → the library's own paper publishes it as a key figure
+                                    (searchPoolFigure); the fallback is a labelled spec constant
+         · the window and its games → the served day block's window_days / training_games
+         · nights, recipes, families, handovers → counted off the served adaptive map
+         · the random-control unit figure → the same paper's key figure, quoted verbatim
+       Anything the payload does not carry is simply not said. */
+    /* THE ONE CONSTANT ON THIS SURFACE, and it is a documented engine setting rather than a
+       claim: the nightly winner is not crowned alone — the trailing top-N candidates vote and
+       a tie abstains. N = 21.
+       SOURCE: v4/serve/ENGINE_EXPANSION.md §2 ("Top-21 committee vote, tie abstains") and
+       v4/models/characteristic_lab/SELECTOR_OPTIMIZATION.md knob 4. If the engine re-tunes it,
+       this is the single line to change. */
+    const SEARCH_SPEC = {
+      committee: 21,
+      // Fallback pool size only — used when the served library has no figure to read.
+      // 2,848 tournament specs + 882 added by the expanded families = 3,730
+      // (v4/serve/ENGINE_EXPANSION.md §1, table total).
+      poolFallback: 3730,
+    };
+    /* THE SIZE OF THE POOL, SERVED FIRST. The library sitting six inches below this section
+       publishes "Strategies in the pool" as a key figure on its own paper, and two different
+       counts on one screen is worse than no count at all — so the served figure wins and the
+       spec constant is only the floor under it. Returns the figure's own formatted string, so
+       the page prints exactly what the paper prints. */
+    function searchPoolFigure() {
+      const want = /strateg\w*\s+in\s+the\s+pool|pool\s+of\s+strateg/i;
+      const papers = allPapers();
+      for (const p of papers) {
+        for (const f of (p.figures || [])) {
+          if (!want.test(f.label || "")) continue;
+          const n = Number(String(f.value).replace(/[^\d]/g, ""));
+          if (n > 1) return { txt: String(f.value).trim(), note: f.note || "", paper: p.id };
+        }
+      }
+      return { txt: SEARCH_SPEC.poolFallback.toLocaleString("en-US"), note: "", paper: "" };
+    }
+    // One served key figure, by label, wherever in the library it lives. Used for the control
+    // result at the foot of the section; absent ⇒ that line simply does not render.
+    function searchPaperFigure(re: RegExp) {
+      for (const p of allPapers()) {
+        for (const f of (p.figures || [])) {
+          if (re.test(f.label || "")) return { ...f, paper: p.id };
+        }
+      }
+      return null;
+    }
+    // Every night the engine has locked a strategy for, merged across whichever payloads
+    // answered. The map is the receipt: it is how the counts below can be counted rather
+    // than asserted.
+    function adaptiveStrategyMap() {
+      const out: any = {};
+      [payload, livePayload, betaData, betaLiveData].filter(Boolean).forEach((src: any) => {
+        [src.adaptive_strategy_by_date, src.adaptive_strategy_record && src.adaptive_strategy_record.strategy_by_date]
+          .forEach((m: any) => {
+            if (!m || typeof m !== "object") return;
+            Object.keys(m).forEach((k) => {
+              const v = m[k];
+              if (!out[k] && v && typeof v === "object" && v.status !== "ERROR") out[k] = v;
+            });
+          });
+      });
+      return out;
+    }
+    /* WHAT THE LEDGER PROVES ABOUT THE SEARCH — four counts, all arithmetic on served rows:
+       how many nights it has run, how many DIFFERENT recipes have held the slot, how many
+       families have won at least one of those nights, and how often the play actually changed
+       hands from one night to the next. Together they are the evidence for the claim the copy
+       makes, which is that nothing here is permanent. */
+    function nightlySearchStats() {
+      const map = adaptiveStrategyMap();
+      const days = Object.keys(map).sort();
+      if (!days.length) return null;
+      const keyOf = (s: any) => String((s && (s.rule_key || s.label)) || "").trim();
+      const famOf = (s: any) => String((s && s.rule_family) || "").trim();
+      const keys = days.map((d) => keyOf(map[d])).filter(Boolean);
+      const fams = days.map((d) => famOf(map[d])).filter(Boolean);
+      let flips = 0, handovers = 0;
+      for (let i = 1; i < days.length; i++) {
+        const a = keyOf(map[days[i - 1]]), b = keyOf(map[days[i]]);
+        if (!a || !b) continue;
+        handovers++;
+        if (a !== b) flips++;
+      }
+      return {
+        nights: days.length,
+        recipes: new Set(keys).size,
+        families: new Set(fams).size,
+        flips, handovers,
+        first: days[0], last: days[days.length - 1],
+      };
+    }
+    /* ═══════════ THE FUNNEL — thousands in, twenty-one voting, one on the card ═══════════
+       Drawn, not photographed: three bands whose WIDTH is the argument, the funnel walls
+       between them, the mechanism written on each step down, and a dashed return line from
+       the bottom back up to the top — because the loop is the whole point. The top band opens
+       with a dense comb of hairlines so the pool reads as a mass before it reads as a number.
+
+       Scales by viewBox (width:100%), so 375px and 900px are the same drawing. Colour comes
+       entirely from CSS classes on tokens, so both themes are handled by the stylesheet and
+       nothing here hard-codes a hex. */
+    function searchFunnelSvg(poolTxt: string, windowTxt: string, gamesTxt: string) {
+      const cx = 186;
+      const comb = Array.from({ length: 45 }, (_, i) => {
+        const x = 48 + i * 6.3;
+        return `<line class="nsf-tick" x1="${x.toFixed(1)}" y1="18" x2="${x.toFixed(1)}" y2="${(28 + (i % 3) * 3).toFixed(1)}"/>`;
+      }).join("");
+      const capA = [
+        windowTxt && gamesTxt ? `every one replayed over the last ${windowTxt},` : `every one replayed over the trailing window,`,
+        windowTxt && gamesTxt ? `${gamesTxt} — graded at the real number` : `graded at the real number`,
+      ];
+      const capB = [`the best ${SEARCH_SPEC.committee} vote on tonight's side`, `a tie is a pass, not a coin flip`];
+      return `<svg class="nsfunnel" viewBox="0 0 340 338" role="img"
+        aria-label="${esc(`${poolTxt} candidate strategies are replayed against the trailing window; the top ${SEARCH_SPEC.committee} vote; one strategy is locked onto today's card, then discarded.`)}">
+        <g class="nsf-walls" aria-hidden="true">
+          <path class="nsf-wall" d="M40 86 L332 86 L280 124 L92 124 Z"/>
+          <path class="nsf-wall" d="M92 194 L280 194 L240 232 L132 232 Z"/>
+        </g>
+        <g class="nsf-band b1">
+          <rect x="40" y="10" width="292" height="76" rx="12"/>
+          ${comb}
+          <text class="nsf-n" x="${cx}" y="66" text-anchor="middle">${esc(poolTxt)}</text>
+          <text class="nsf-l" x="${cx}" y="80" text-anchor="middle">WAYS TO PLAY THE FOUR ANALYSTS</text>
+        </g>
+        <text class="nsf-cap" x="${cx}" y="101" text-anchor="middle">${esc(capA[0])}</text>
+        <text class="nsf-cap" x="${cx}" y="114" text-anchor="middle">${esc(capA[1])}</text>
+        <g class="nsf-band b2">
+          <rect x="92" y="124" width="188" height="70" rx="12"/>
+          <text class="nsf-n" x="${cx}" y="166" text-anchor="middle">${SEARCH_SPEC.committee}</text>
+          <text class="nsf-l" x="${cx}" y="182" text-anchor="middle">MAKE THE COMMITTEE</text>
+        </g>
+        <text class="nsf-cap" x="${cx}" y="209" text-anchor="middle">${esc(capB[0])}</text>
+        <text class="nsf-cap" x="${cx}" y="222" text-anchor="middle">${esc(capB[1])}</text>
+        <g class="nsf-band b3">
+          <rect x="132" y="232" width="108" height="62" rx="12"/>
+          <text class="nsf-n" x="${cx}" y="270" text-anchor="middle">1</text>
+          <text class="nsf-l" x="${cx}" y="286" text-anchor="middle">ON TODAY'S CARD</text>
+        </g>
+        <g class="nsf-loopg" aria-hidden="true">
+          <path class="nsf-loop" d="M186 294 L186 302 Q186 308 180 308 L26 308 Q20 308 20 302 L20 54 Q20 48 26 48 L33 48"/>
+          <path class="nsf-arw" d="M33 43.5 L41 48 L33 52.5 Z"/>
+          ${/* The loop is the argument, so it is captioned rather than left to be inferred —
+                a dashed line running back to the top reads as "repeats" on its own, and the
+                thing that has to land is that the WINNER IS THROWN OUT, not just that the
+                job runs again. */""}
+          <text class="nsf-l loop" x="103" y="326" text-anchor="middle">DISCARDED AT MIDNIGHT</text>
+        </g>
+      </svg>`;
+    }
+    /* THE SECTION. It renders on served data or it does not render: no day block ⇒ no window
+       to describe, and a section that says "we search a lot" with nothing behind it is the
+       marketing this page exists to not be. */
+    function researchSearchHtml() {
+      const s = dayStrategyBlock(todayISO());
+      const st = nightlySearchStats();
+      if (!s && !st) return "";
+      const pool = searchPoolFigure();
+      const wd = s && Number(s.window_days) > 0 ? Number(s.window_days) : 0;
+      const windowTxt = wd ? (wd % 7 === 0 ? `${wd / 7} weeks` : `${wd} nights`) : "";
+      const games = s && Number(s.training_games) > 0 ? Number(s.training_games) : 0;
+      const gamesTxt = games ? `${games.toLocaleString("en-US")} finished games` : "";
+      // The control the library already published: what this costs you if you skip the search
+      // and just grab a strategy. Quoted verbatim from the served figure, never paraphrased.
+      const ctl = searchPaperFigure(/control that matters|at random/i);
+      const lede = [
+        `There is no house system here.`,
+        `Every night, while the league sleeps, DiamondEdge takes <b>${esc(pool.txt)}</b> different ways of playing its four analysts and replays every single one of them against the games that just finished${windowTxt ? ` — the last <b>${esc(windowTxt)}</b>${gamesTxt ? `, <b>${esc(gamesTxt)}</b>` : ""}` : ""}.`,
+        `It ranks them on what they would actually have paid. The best ${SEARCH_SPEC.committee} vote. One recipe comes out the other side, and that is the one on your card before the first pitch.`,
+        `Then it gets thrown away — win or lose — and tomorrow the whole search runs again from nothing.`,
+      ].join(" ");
+      const steps = [
+        ["Replay", "Every recipe in the pool re-plays the trailing window, game by game, against results it never got to see coming."],
+        ["Score", "Each one is marked on a slice of that window it was held back from — so a recipe cannot pass by memorising the same nights it was built on."],
+        ["Vote", `The top ${SEARCH_SPEC.committee} get a ballot on tonight's side. Split the room and there is no bet.`],
+        ["Lock", "One strategy goes on the card and is frozen before first pitch. At midnight it is deleted."],
+      ].map(([k, v], i) => `<li class="nss-step"><span class="nss-num">${i + 1}</span><span class="nss-sw"><b>${esc(k)}</b><i>${esc(v)}</i></span></li>`).join("");
+      const stats = st ? [
+        [String(st.nights), st.nights === 1 ? "night searched" : "nights searched", "one search, one night, every night"],
+        [String(st.recipes), "different recipes", "have held the slot since the search went live"],
+        [String(st.families), "families of strategy", "have won at least one of those nights"],
+        [st.handovers ? `${st.flips}/${st.handovers}` : "", "nights it changed hands", "the play was replaced overnight this often"],
+      ].filter((r) => r[0]).map((r) => `<div class="nss-stat"><b>${esc(r[0])}</b><i>${esc(r[1])}</i><em>${esc(r[2])}</em></div>`).join("") : "";
+      return `<section class="nss">
+        <div class="nss-glow" aria-hidden="true"></div>
+        <header class="nss-head">
+          <span class="nss-kick">The nightly search</span>
+          <h3 class="nss-h">How we chose today's strategy</h3>
+        </header>
+        <p class="nss-lede">${lede}</p>
+        <figure class="nss-fig">
+          ${searchFunnelSvg(pool.txt, windowTxt, gamesTxt)}
+          <figcaption>Tonight it runs again from zero, and yesterday's winner has to win the job back.</figcaption>
+        </figure>
+        ${pool.note ? `<p class="nss-poolnote">What is in that pool: ${esc(pool.note)}</p>` : ""}
+        <ol class="nss-steps">${steps}</ol>
+        ${stats ? `<div class="nss-statsk">Nothing here is permanent</div><div class="nss-stats">${stats}</div>` : ""}
+        ${/* THE CONTROL, QUOTED — never paraphrased, and the served figure's own `note` is
+              left in the paper rather than repeated here: it closes on "3.4 standard
+              deviations", which is the exact register this surface is written to avoid.
+              The line under it is ours; the number above it is theirs. */""}
+        ${ctl ? `<div class="nss-ctl">
+          <span class="nss-ctl-k">Why bother searching</span>
+          <p><b>${esc(ctl.label)}:</b> ${esc(String(ctl.value).replace(/\.\s*$/, ""))}.</p>
+          <p class="nss-ctl-x">That is what the search is worth. Everything else on this page sits downstream of it.</p>
+          ${ctl.paper ? `<button class="nss-ctl-go" data-paper="${esc(ctl.paper)}">Read the paper<span aria-hidden="true"> →</span></button>` : ""}
+        </div>` : ""}
+      </section>`;
+    }
     async function renderResearch() {
       const view = $("research-view");
       if (!view) return;
@@ -14541,6 +14759,11 @@ export default function Home() {
             ${fresh}
           </header>
           ${researchStrategyHtml()}
+          <!-- The play, then how the play got picked. researchStrategyHtml() names today's
+               strategy; this one is about the SEARCH that produced it — and is the section a
+               reader who does not care which rule won still needs, because it is the argument
+               that the rule is disposable. -->
+          ${researchSearchHtml()}
           ${flagship ? `<section class="lab-flag">
             ${paperCard(flagship, true)}
           </section>` : ""}
