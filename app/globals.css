@@ -8575,6 +8575,150 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   .nsf-loop{stroke-dashoffset:0}
 }
 
+/* ══════════ FIGURE: THE FORTNIGHT LEDGER (researchCalHtml) ══════════
+   The receipt for the panel above it, and deliberately its QUIETER TWIN: `.nss` is a gold
+   panel with a bloom behind the masthead, because it is making an argument. This one is a
+   plate — a plain card, a sunken figure ground inside it, a rule, a caption — because it is
+   presenting evidence, and evidence that shouts is evidence a reader discounts. Gold appears
+   exactly twice: on the kicker and on the index letters that join the grid to the ledger.
+
+   IT IS NOT `.cal-cell`. The Desk's calendar is a 1:1 heat square carrying a date and a W–L,
+   sized to be glanced at under a headline. These cells are TALL, carry four facts each
+   (index letter, date, record, net units) and encode the day's weight as a column rising
+   from the floor rather than as a background tint — so the fortnight reads as a chart with
+   a calendar's shape, which is the register Research is written in.
+
+   Every colour is a token, so both ramps come free and there is no theme branch. */
+.rcal{margin:0 0 24px;padding:19px 17px 17px;border-radius:20px;
+  background:var(--paper);border:1px solid var(--line2);box-shadow:var(--e0)}
+.rcal-kick{display:inline-block;font-family:var(--disp);font-weight:800;font-size:9.5px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--golddeep)}
+.rcal-kick::after{content:"";display:block;width:26px;height:2px;margin-top:6px;background:var(--gold);opacity:.75}
+.rcal-h{font-family:var(--research-disp);font-weight:700;font-size:21px;line-height:1.12;
+  letter-spacing:-.024em;color:var(--ink);margin:10px 0 0}
+.rcal-lede{font-family:var(--research-serif);font-size:13.5px;line-height:1.58;color:var(--ink2);
+  margin:8px 0 0;max-width:60ch}
+.rcal-lede b{font-family:var(--mono);font-weight:800;font-size:.96em;color:var(--ink)}
+
+/* the figure ground — one step sunken from the card, which is what makes it read as a plate */
+.rcal-body{margin-top:15px}
+.rcal-plate{padding:11px 10px 10px;border-radius:15px;
+  background:var(--sunken);box-shadow:inset 0 0 0 1px var(--line3)}
+.rcal-dows,.rcal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.rcal-dows{margin-bottom:6px}
+.rcal-dow{min-width:0;text-align:center;font-family:var(--disp);font-weight:750;font-size:9px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink4);white-space:nowrap;overflow:hidden}
+.rcal-dow i{font-style:normal}
+@media(max-width:600px){.rcal-dow i{display:none}}
+
+.rcal-cell{position:relative;overflow:hidden;min-width:0;min-height:64px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:5px 3px 6px;border-radius:12px;
+  background:rgba(var(--tintc),.04);box-shadow:inset 0 0 0 1px var(--line3)}
+.rcal-cell.blank{background:none;box-shadow:none;min-height:0}
+/* THE WEIGHT CHANNEL: a column rising from the floor, height = |units| against the window's
+   biggest night. It sits under the type, never behind a word it has to stay legible through. */
+.rcal-fill{position:absolute;left:0;right:0;bottom:0;z-index:0;pointer-events:none;
+  transform-origin:50% 100%;animation:rcalRise .52s var(--spring) both}
+.rcal-cell.up .rcal-fill{background:linear-gradient(to top,rgba(var(--greenc),.30),rgba(var(--greenc),.07))}
+.rcal-cell.down .rcal-fill{background:linear-gradient(to top,rgba(var(--redc),.26),rgba(var(--redc),.06))}
+.rcal-cell.flat .rcal-fill{background:linear-gradient(to top,rgba(var(--tintc),.13),rgba(var(--tintc),.03))}
+@keyframes rcalRise{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}
+
+.rcal-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;
+  gap:2px;width:100%;padding:0 1px}
+.rcal-ix{flex:0 0 auto;display:grid;place-items:center;width:14px;height:14px;border-radius:5px;
+  font-style:normal;font-family:var(--mono);font-weight:800;font-size:8.5px;line-height:1;
+  color:var(--golddeep);background:rgba(var(--goldc),.14);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.26)}
+.rcal-ix.ghost{background:none;box-shadow:none}
+.rcal-dnum{font-family:var(--disp);font-weight:750;font-size:11.5px;line-height:1;color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.rcal-wl{position:relative;z-index:1;margin-top:3px;font-family:var(--mono);font-weight:800;font-size:10px;
+  line-height:1;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rcal-u{position:relative;z-index:1;font-style:normal;font-family:var(--mono);font-weight:700;font-size:8.5px;
+  line-height:1;color:var(--ink4);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rcal-cell.up .rcal-wl,.rcal-cell.up .rcal-u{color:var(--g3)}
+.rcal-cell.down .rcal-wl,.rcal-cell.down .rcal-u{color:var(--r3)}
+/* A ZERO IS NOT A RECORD. A night with no served card says so in words — it never prints
+   0–0–0, which would read as a measured result of nothing. */
+.rcal-none{margin-top:5px;font-style:normal;font-family:var(--sans);font-weight:500;font-size:8.5px;
+  line-height:1.15;text-align:center;color:var(--ink4);opacity:.8}
+/* TODAY is ringed, never recoloured — the fill channel is already carrying the result */
+.rcal-cell.is-today{box-shadow:inset 0 0 0 2px rgba(var(--goldc),.5)}
+.rcal-cell.is-today .rcal-dnum{color:var(--golddeep)}
+
+.rcal-foot{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  margin-top:10px;padding-top:9px;border-top:1px solid var(--line3)}
+.rcal-fk{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink4)}
+.rcal-fv{display:inline-flex;align-items:baseline;gap:9px;font-variant-numeric:tabular-nums}
+.rcal-fv b{font-family:var(--mono);font-weight:800;font-size:13px;color:var(--ink)}
+.rcal-fv i{font-style:normal;font-family:var(--mono);font-weight:800;font-size:13px;color:var(--ink3)}
+.rcal-fv i.pos{color:var(--g3)} .rcal-fv i.neg{color:var(--r3)}
+
+/* THE LEDGER OF PLAYS — the join key for the letters above, and the payoff of the whole
+   figure: how many different things held the slot, and what each of them came back with. */
+.rcal-legwrap{min-width:0}
+.rcal-legk{margin:17px 0 3px;font-family:var(--disp);font-weight:800;font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ink3)}
+.rcal-leg{list-style:none;margin:0;padding:0}
+.rcal-lrow{display:flex;align-items:flex-start;gap:11px;padding:9px 0}
+.rcal-lrow + .rcal-lrow{border-top:1px solid var(--line3)}
+.rcal-lix{flex:0 0 auto;display:grid;place-items:center;width:21px;height:21px;margin-top:1px;
+  border-radius:7px;font-style:normal;font-family:var(--mono);font-weight:800;font-size:10.5px;
+  color:var(--golddeep);background:rgba(var(--goldc),.13);box-shadow:inset 0 0 0 1px rgba(var(--goldc),.26)}
+.rcal-lbody{min-width:0;flex:1 1 auto}
+.rcal-lname{display:block;font-family:var(--disp);font-weight:750;font-size:13.5px;line-height:1.25;
+  color:var(--ink);overflow-wrap:anywhere}
+.rcal-lmeta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:4px;
+  font-variant-numeric:tabular-nums}
+.rcal-lmeta em{font-style:normal;font-family:var(--sans);font-size:11.5px;color:var(--ink4)}
+.rcal-lmeta b{font-family:var(--mono);font-weight:800;font-size:11.5px;color:var(--ink2)}
+.rcal-lmeta b.quiet{font-family:var(--sans);font-weight:500;color:var(--ink4)}
+.rcal-lmeta i{font-style:normal;font-family:var(--mono);font-weight:800;font-size:11.5px;color:var(--ink3)}
+.rcal-lmeta i.pos{color:var(--g3)} .rcal-lmeta i.neg{color:var(--r3)}
+
+.rcal-cap{margin:13px 0 0;padding-top:12px;border-top:1px solid var(--line3);
+  font-family:var(--sans);font-size:12px;line-height:1.55;color:var(--ink3);max-width:66ch}
+.rcal-cap b{font-family:var(--disp);font-weight:750;color:var(--ink2)}
+
+/* WIDE: the plate and its key sit SIDE BY SIDE. Left to stretch, seven columns across a
+   desktop card give 180×64 cells — a letterbox, and a fortnight that has stopped looking
+   like a fortnight. Pairing the grid with its legend spends the width on the thing the
+   figure is actually for (which play, which nights, what it returned) and hands the cells
+   back a shape you can read a date in. */
+@media(min-width:900px){
+  .rcal{padding:24px 24px 21px}
+  .rcal-h{font-size:24px}
+  .rcal-lede{font-size:14px}
+  .rcal-body{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(250px,.75fr);
+    gap:24px;align-items:start}
+  .rcal-cell{min-height:82px;border-radius:14px;padding:7px 6px 8px}
+  .rcal-ix{width:16px;height:16px;font-size:9.5px;border-radius:6px}
+  .rcal-dnum{font-size:13px}
+  .rcal-wl{margin-top:6px;font-size:12px}
+  .rcal-u{font-size:9.5px}
+  .rcal-none{font-size:10px}
+  .rcal-legwrap .rcal-legk{margin-top:0}
+}
+@media(max-width:400px){
+  .rcal{padding:16px 13px 15px;border-radius:17px}
+  .rcal-h{font-size:19px}
+  .rcal-lede{font-size:13px}
+  .rcal-plate{padding:9px 8px 9px;border-radius:13px}
+  .rcal-dows,.rcal-grid{gap:4px}
+  .rcal-cell{min-height:60px;border-radius:10px;padding:4px 2px 5px}
+  .rcal-ix{width:13px;height:13px;font-size:8px;border-radius:4px}
+  .rcal-dnum{font-size:11px}
+  .rcal-wl{font-size:9.5px}
+  .rcal-u{font-size:8px}
+  .rcal-none{font-size:8px}
+  .rcal-lname{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .rcal-fill{animation:none;transform:none;opacity:1}
+}
+
 /* ═════════ THE DECK'S PAINT WINDOW (the mobile crash fix — see storyPaintWindow) ═════════
    Every slide is a full-screen absolute layer. Painting all twenty-four at once — fields,
    grain, glass, full-res news photography — is what pushed iOS Safari over its GPU memory

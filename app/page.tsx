@@ -14671,10 +14671,185 @@ export default function Home() {
         </div>` : ""}
       </section>`;
     }
+    /* ═══════════════ FIGURE: THE FORTNIGHT LEDGER ═══════════════
+       Leon: "on the research tab there should be a cool calendar view… records based on
+       picks made for the last 14 days or so."
+
+       It belongs HERE rather than only on the Desk because of what the section above it
+       claims: the search runs from zero every night and hands the slot to whatever won it.
+       That is an assertion until you can see the handovers. So this plate is the evidence —
+       fourteen nights in their true weekday columns, each one carrying the record it
+       returned AND a letter naming which play was on the card. When the letters change
+       mid-week, the argument above is proved by the figure below it.
+
+       IT IS NOT THE DESK WIDGET. The Desk's `.cal-cell` is a scoreboard glance: a square, a
+       date, a W–L. This one is a research plate — taller cells with a units column rising
+       from the floor, an index letter joining every night to a ledger of the plays, and a
+       caption stating the window and the provenance. Same tokens, same faces, different job.
+
+       THE NUMBERS ARE NOT RECOMPUTED. `dayRecordMap()` is the exact ledger the Desk widget
+       draws, so a night can never read one way here and another way there. The only thing
+       this function reads on its own is the day's STRATEGY block, which the record ledger
+       normalises away. */
+    function researchCalDays() {
+      // The label of record is whatever the payload hangs on the day's own ledger row; the
+      // adaptive by-date store is the fallback for a row that carries none. Nothing here
+      // knows or cares what any particular strategy is CALLED — first source with a block
+      // for that date wins, and the translator downstream does the naming.
+      const byDate: any = {};
+      const srcs = [betaData, betaLiveData, livePayload, payload].filter(Boolean);
+      for (const src of srcs) {
+        const daily = src && src.record && src.record.daily;
+        const rows: any[] = Array.isArray(daily)
+          ? daily
+          : daily && typeof daily === "object"
+            ? Object.keys(daily).map((k) => ({ date: k, ...(daily[k] || {}) }))
+            : [];
+        rows.forEach((r: any) => {
+          const k = String((r && r.date) || "").slice(0, 10);
+          if (!k || byDate[k]) return;
+          const s = r && r.strategy;
+          if (s && typeof s === "object") byDate[k] = { s, why: r.no_action_reason || null };
+        });
+      }
+      const map = dayRecordMap();
+      const days: string[] = [];
+      for (let i = 13; i >= 0; i--) days.push(shiftDate(todayISO(), -i));
+      return days.map((k) => {
+        const r = map[k];
+        const hit = byDate[k] || null;
+        const s = (hit && hit.s) || adaptiveDayStrategy(k) || null;
+        return {
+          k,
+          n: r ? r.n : 0,
+          w: r ? r.w : 0,
+          l: r ? r.l : 0,
+          p: r ? r.p : 0,
+          units: r && r.units != null ? Number(r.units) : null,
+          s,
+          why: hit ? hit.why : null,
+        };
+      });
+    }
+    function researchCalHtml() {
+      const rows = researchCalDays();
+      if (!rows.some((r) => r.n > 0)) return "";
+      /* THE PLAYS, INDEXED. A day is joined to the ledger by the name a READER sees, not by
+         the engine's rule key — two rule keys that translate to the same play would print
+         the same letter twice otherwise, and "two different strategies" that a reader cannot
+         tell apart is a claim the figure has not earned. A day whose payload carries no
+         usable label simply gets no letter; it is still a night with a record. */
+      const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const plays: any[] = [];
+      const idxOf: any = {};
+      rows.forEach((r) => {
+        const name = r.s ? strategyLabelPublic(r.s) : "";
+        if (!name) return;
+        if (idxOf[name] == null) {
+          idxOf[name] = plays.length;
+          plays.push({ name, ix: LETTERS[plays.length] || "•", nights: 0, w: 0, l: 0, p: 0, units: 0, graded: 0 });
+        }
+        const P = plays[idxOf[name]];
+        P.nights++;
+        if (r.n > 0) { P.graded++; P.w += r.w; P.l += r.l; P.p += r.p; P.units += Number(r.units || 0); }
+      });
+      const maxU = Math.max(1, ...rows.map((r) => Math.abs(Number(r.units || 0))));
+      // ONE UNITS FORMATTER for every number in this figure, so a cell, a play's total and
+      // the fortnight line can never disagree about how a sign is drawn or where zero is.
+      const uTxt = (x: number) => (Math.abs(x) < 0.05 ? "0.0" : `${x > 0 ? "+" : "−"}${Math.abs(x).toFixed(1)}`);
+      const uCls = (x: number) => (Math.abs(x) < 0.05 ? "" : x > 0 ? "pos" : "neg");
+      const today = todayISO();
+      const first = new Date(rows[0].k + "T12:00:00");
+      const lead = isNaN(first.getTime()) ? 0 : first.getDay();
+      const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const head = DOW.map((x) => `<span class="rcal-dow"><b>${x[0]}</b><i>${x.slice(1)}</i></span>`).join("");
+      const blanks = Array.from({ length: lead }, () => `<span class="rcal-cell blank" aria-hidden="true"></span>`).join("");
+      const cells = rows.map((r, i) => {
+        const dd = new Date(r.k + "T12:00:00");
+        const dnum = isNaN(dd.getTime()) ? "" : String(dd.getDate());
+        const u = Number(r.units || 0);
+        const name = r.s ? strategyLabelPublic(r.s) : "";
+        const ix = name && idxOf[name] != null ? plays[idxOf[name]].ix : "";
+        const played = r.n > 0;
+        /* THE COLOUR AND THE NUMBER HAVE TO AGREE. A night that lands at −0.045u rounds to
+           one decimal as "0.0" — and printing "−0.0" in a red cell is a rounding artefact
+           being sold as a losing night. Anything inside half a tenth is FLAT on both
+           channels: no sign, no tint, which is the honest reading of a night that moved
+           nothing. The tooltip still carries the true figure to two decimals. */
+        const flatish = Math.abs(u) < 0.05;
+        const tone = !played ? "none" : flatish ? "flat" : u > 0 ? "up" : "down";
+        // The fill is the day's WEIGHT: how far the night moved the ledger, floored so a
+        // wafer-thin day still shows as a sliver rather than as nothing.
+        const fill = played ? Math.max(9, Math.round((Math.abs(u) / maxU) * 100)) : 0;
+        const wl = played ? wlTxt(r) : "";
+        const utxt = played ? uTxt(u) : "";
+        const tip = `${stratDateTxt(r.k) || r.k}${played ? ` · ${wl} · ${u >= 0 ? "+" : "−"}${Math.abs(u).toFixed(2)}u` : ` · no picks${r.why ? ` (${String(r.why).replace(/_/g, " ")})` : ""}`}${name ? ` · ${name}` : ""}`;
+        return `<span class="rcal-cell ${tone}${r.k === today ? " is-today" : ""}" title="${esc(tip)}">
+          ${played ? `<i class="rcal-fill" style="height:${fill}%;animation-delay:${(i * 26)}ms"></i>` : ""}
+          <span class="rcal-top">${ix ? `<i class="rcal-ix">${esc(ix)}</i>` : `<i class="rcal-ix ghost" aria-hidden="true"></i>`}<b class="rcal-dnum">${esc(dnum)}</b></span>
+          ${played
+            ? `<b class="rcal-wl">${esc(wl)}</b><i class="rcal-u">${esc(utxt)}</i>`
+            : `<i class="rcal-none">no picks</i>`}
+        </span>`;
+      }).join("");
+      const legend = plays.map((P) => {
+        const rec = P.graded ? wlTxt(P) : "";
+        const un = P.graded ? `${uTxt(P.units)}u` : "";
+        return `<li class="rcal-lrow">
+          <i class="rcal-lix">${esc(P.ix)}</i>
+          <span class="rcal-lbody">
+            <b class="rcal-lname">${esc(P.name)}</b>
+            <span class="rcal-lmeta">
+              <em>${P.nights} ${P.nights === 1 ? "night" : "nights"}</em>
+              ${rec ? `<b>${esc(rec)}</b><i class="${uCls(P.units)}">${esc(un)}</i>` : `<b class="quiet">no card</b>`}
+            </span>
+          </span>
+        </li>`;
+      }).join("");
+      const startTxt = stratDateTxt(rows[0].k) || rows[0].k;
+      const endTxt = stratDateTxt(rows[rows.length - 1].k) || rows[rows.length - 1].k;
+      const nPlay = plays.length;
+      const nBlank = rows.filter((r) => !r.n).length;
+      const netU = rows.reduce((a, r) => a + Number(r.units || 0), 0);
+      const tw = rows.reduce((a, r) => a + (r.n ? r.w : 0), 0);
+      const tl = rows.reduce((a, r) => a + (r.n ? r.l : 0), 0);
+      const tp = rows.reduce((a, r) => a + (r.n ? r.p : 0), 0);
+      const lede = nPlay > 1
+        ? `<b>${nPlay}</b> different plays held the slot across these fourteen nights. The letters say which one was on the card; the columns say what it came back with.`
+        : nPlay === 1
+          ? `One play has held the slot for every night in this window — it has won the search back each morning. The columns say what it came back with.`
+          : `Fourteen nights of served cards, each one graded at the prices we were actually given.`;
+      return `<section class="rcal" aria-labelledby="rcal-h">
+        <header class="rcal-head">
+          <span class="rcal-kick">Figure — the last fourteen nights</span>
+          <h3 class="rcal-h" id="rcal-h">What the search actually returned</h3>
+          <p class="rcal-lede">${lede}</p>
+        </header>
+        <div class="rcal-body">
+        <div class="rcal-plate">
+          <div class="rcal-dows" aria-hidden="true">${head}</div>
+          <div class="rcal-grid" role="img" aria-label="Fourteen nights, ${esc(startTxt)} to ${esc(endTxt)}: ${esc(rows.map((r) => `${r.k}, ${r.n ? `${r.w} and ${r.l}` : "no picks"}`).join("; "))}">${blanks}${cells}</div>
+          <div class="rcal-foot">
+            <span class="rcal-fk">Fortnight</span>
+            <span class="rcal-fv"><b>${esc(wlTxt({ w: tw, l: tl, p: tp }))}</b><i class="${uCls(netU)}">${esc(uTxt(netU))}u</i></span>
+          </div>
+        </div>
+        ${legend ? `<div class="rcal-legwrap"><div class="rcal-legk">Who held the slot</div><ol class="rcal-leg">${legend}</ol></div>` : ""}
+        </div>
+        <p class="rcal-cap">Window: ${esc(startTxt)} – ${esc(endTxt)}. These are the cards DiamondEdge actually served on those nights, graded at the prices we were given — not a backtest of today's strategy run backwards.${nBlank ? ` ${nBlank === 1 ? "One night is" : `${nBlank} nights are`} marked <b>no picks</b>: the search served no card, so there is nothing to grade.` : ""}</p>
+      </section>`;
+    }
     async function renderResearch() {
       const view = $("research-view");
       if (!view) return;
       if (!roadmapData) view.innerHTML = `<div class="lab-wrap"><div class="beta-skel">Loading the study index…</div></div>`;
+      // The day ledger this page's evaluation charts and fortnight figure are drawn from.
+      // Research can be the first tab a reader lands on, and the pick feed is not what
+      // gates this render — so it is fetched beside the roadmap and painted in when it
+      // lands, exactly as the Desk does it. Neither block blocks the page.
+      if (!betaData) {
+        loadBeta().then(() => { if (tab === "research") renderResearch(); }).catch(() => {});
+      }
       let d: any;
       try { d = await loadRoadmap(); } catch {
         view.innerHTML = `<div class="lab-wrap"><div class="state"><div class="big">Research is loading</div><div class="sm">The study index didn't load — try again shortly.</div></div></div>`;
@@ -14764,6 +14939,11 @@ export default function Home() {
                reader who does not care which rule won still needs, because it is the argument
                that the rule is disposable. -->
           ${researchSearchHtml()}
+          <!-- THE CLAIM, THEN THE RECEIPT. The section above asserts that the play is
+               disposable and has to win the job back every morning. This figure is the
+               fourteen nights that assertion is made of: the handovers are visible in the
+               letters, and each night carries the record the served card actually returned. -->
+          ${researchCalHtml()}
           ${flagship ? `<section class="lab-flag">
             ${paperCard(flagship, true)}
           </section>` : ""}

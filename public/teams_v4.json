@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-06T18:47:09Z",
+ "generated_utc": "2026-08-07T16:23:54Z",
  "by_team": {
   "TB": {
    "name": "Rays",
@@ -23,82 +23,82 @@
   },
   "BOS": {
    "name": "Red Sox",
-   "record": "62-51",
-   "pct": 0.549,
+   "record": "63-51",
+   "pct": 0.553,
    "last10": "9-1",
-   "streak": "W7",
-   "gb": 5.5,
-   "rs_pg": 4.35,
-   "ra_pg": 3.68
+   "streak": "W8",
+   "gb": 5.0,
+   "rs_pg": 4.42,
+   "ra_pg": 3.75
   },
   "BAL": {
    "name": "Orioles",
-   "record": "56-58",
-   "pct": 0.491,
-   "last10": "6-4",
-   "streak": "W2",
-   "gb": 12.0,
-   "rs_pg": 4.52,
-   "ra_pg": 4.78
-  },
-  "TOR": {
-   "name": "Blue Jays",
-   "record": "54-61",
-   "pct": 0.47,
-   "last10": "6-4",
-   "streak": "W1",
-   "gb": 14.5,
-   "rs_pg": 3.9,
-   "ra_pg": 4.43
-  },
-  "CHW": {
-   "name": "White Sox",
-   "record": "59-54",
-   "pct": 0.522,
-   "last10": "5-5",
-   "streak": "L2",
-   "gb": null,
-   "rs_pg": 4.72,
-   "ra_pg": 4.37
-  },
-  "CLE": {
-   "name": "Guardians",
-   "record": "57-58",
-   "pct": 0.496,
-   "last10": "3-7",
-   "streak": "L2",
-   "gb": 3.0,
-   "rs_pg": 3.94,
-   "ra_pg": 4.12
-  },
-  "MIN": {
-   "name": "Twins",
    "record": "56-59",
    "pct": 0.487,
    "last10": "5-5",
-   "streak": "L4",
-   "gb": 4.0,
+   "streak": "L1",
+   "gb": 12.5,
+   "rs_pg": 4.49,
+   "ra_pg": 4.77
+  },
+  "TOR": {
+   "name": "Blue Jays",
+   "record": "54-62",
+   "pct": 0.466,
+   "last10": "6-4",
+   "streak": "L1",
+   "gb": 15.0,
+   "rs_pg": 3.89,
+   "ra_pg": 4.41
+  },
+  "CHW": {
+   "name": "White Sox",
+   "record": "59-55",
+   "pct": 0.518,
+   "last10": "4-6",
+   "streak": "L3",
+   "gb": null,
+   "rs_pg": 4.77,
+   "ra_pg": 4.44
+  },
+  "MIN": {
+   "name": "Twins",
+   "record": "57-59",
+   "pct": 0.491,
+   "last10": "5-5",
+   "streak": "W1",
+   "gb": 3.0,
    "rs_pg": 4.65,
-   "ra_pg": 4.97
+   "ra_pg": 4.95
+  },
+  "CLE": {
+   "name": "Guardians",
+   "record": "57-59",
+   "pct": 0.491,
+   "last10": "3-7",
+   "streak": "L3",
+   "gb": 3.0,
+   "rs_pg": 3.96,
+   "ra_pg": 4.2
   },
   "DET": {
    "name": "Tigers",
-   "record": "55-59",
-   "pct": 0.482,
-   "last10": "5-5",
-   "streak": "L1",
-   "gb": 4.5,
-   "rs_pg": 4.52,
-   "ra_pg": 3.91
+   "record": "56-59",
+   "pct": 0.487,
+   "last10": "6-4",
+   "streak": "W1",
+   "gb": 3.5,
+   "rs_pg": 4.57,
+   "ra_pg": 3.88
   },
   "KC": {
    "name": "Royals",
-   "record": "48-67",
-   "pct": 0.417,
-   "last10": "5-5",
-   "streak": "W2",
+   "record": "48-68",
+   "pct": 0.414,
+   "last10": "4-6",
+   "streak": "L1",
    "gb": 12.0,
-   "rs_pg": 4.15,
+   "rs_pg": 4.14,
    "ra_pg": 5.03
   },
   "HOU": {
@@ -123,103 +123,103 @@
   },
   "SEA": {
    "name": "Mariners",
-   "record": "56-59",
-   "pct": 0.487,
-   "last10": "5-5",
-   "streak": "W1",
-   "gb": 2.5,
-   "rs_pg": 3.98,
-   "ra_pg": 4.01
+   "record": "56-60",
+   "pct": 0.483,
+   "last10": "4-6",
+   "streak": "L1",
+   "gb": 3.0,
+   "rs_pg": 3.95,
+   "ra_pg": 4.07
   },
   "ATH": {
    "name": "Athletics",
-   "record": "45-69",
-   "pct": 0.395,
+   "record": "45-70",
+   "pct": 0.391,
    "last10": "1-9",
-   "streak": "L7",
-   "gb": 13.0,
-   "rs_pg": 4.32,
-   "ra_pg": 5.69
+   "streak": "L8",
+   "gb": 13.5,
+   "rs_pg": 4.33,
+   "ra_pg": 5.7
   },
   "LAA": {
    "name": "Angels",
-   "record": "43-71",
-   "pct": 0.377,
-   "last10": "2-8",
-   "streak": "L2",
-   "gb": 15.0,
+   "record": "44-71",
+   "pct": 0.383,
+   "last10": "3-7",
+   "streak": "W1",
+   "gb": 14.5,
    "rs_pg": 4.15,
-   "ra_pg": 4.84
+   "ra_pg": 4.81
   },
   "ATL": {
    "name": "Braves",
-   "record": "69-45",
-   "pct": 0.605,
+   "record": "70-45",
+   "pct": 0.609,
    "last10": "8-2",
-   "streak": "W7",
+   "streak": "W8",
    "gb": null,
-   "rs_pg": 4.89,
+   "rs_pg": 4.94,
    "ra_pg": 3.89
   },
   "PHI": {
    "name": "Phillies",
-   "record": "61-54",
-   "pct": 0.53,
+   "record": "62-54",
+   "pct": 0.534,
    "last10": "5-5",
-   "streak": "L1",
+   "streak": "W1",
    "gb": 8.5,
-   "rs_pg": 4.39,
-   "ra_pg": 4.41
+   "rs_pg": 4.41,
+   "ra_pg": 4.4
   },
   "MIA": {
    "name": "Marlins",
-   "record": "58-57",
-   "pct": 0.504,
+   "record": "58-58",
+   "pct": 0.5,
    "last10": "6-4",
-   "streak": "L2",
-   "gb": 11.5,
-   "rs_pg": 4.34,
-   "ra_pg": 4.27
+   "streak": "L3",
+   "gb": 12.5,
+   "rs_pg": 4.33,
+   "ra_pg": 4.33
   },
   "WSH": {
    "name": "Nationals",
-   "record": "56-60",
-   "pct": 0.483,
+   "record": "56-61",
+   "pct": 0.479,
    "last10": "2-8",
-   "streak": "W1",
-   "gb": 14.0,
-   "rs_pg": 5.34,
-   "ra_pg": 5.22
+   "streak": "L1",
+   "gb": 15.0,
+   "rs_pg": 5.32,
+   "ra_pg": 5.24
   },
   "NYM": {
    "name": "Mets",
-   "record": "49-66",
-   "pct": 0.426,
+   "record": "50-66",
+   "pct": 0.431,
    "last10": "6-4",
-   "streak": "W2",
+   "streak": "W3",
    "gb": 20.5,
-   "rs_pg": 4.08,
-   "ra_pg": 4.54
+   "rs_pg": 4.16,
+   "ra_pg": 4.55
   },
   "MIL": {
    "name": "Brewers",
-   "record": "71-43",
-   "pct": 0.623,
+   "record": "72-43",
+   "pct": 0.626,
    "last10": "6-4",
-   "streak": "W2",
+   "streak": "W3",
    "gb": null,
-   "rs_pg": 4.96,
-   "ra_pg": 3.75
+   "rs_pg": 4.97,
+   "ra_pg": 3.74
   },
   "CHC": {
    "name": "Cubs",
-   "record": "66-49",
-   "pct": 0.574,
+   "record": "67-49",
+   "pct": 0.578,
    "last10": "7-3",
-   "streak": "W3",
+   "streak": "W4",
    "gb": 5.5,
-   "rs_pg": 5.15,
-   "ra_pg": 4.29
+   "rs_pg": 5.13,
+   "ra_pg": 4.27
   },
   "STL": {
    "name": "Cardinals",
@@ -227,29 +227,29 @@
    "pct": 0.496,
    "last10": "4-6",
    "streak": "W1",
-   "gb": 14.5,
+   "gb": 15.0,
    "rs_pg": 4.34,
    "ra_pg": 4.43
   },
-  "PIT": {
-   "name": "Pirates",
-   "record": "57-59",
-   "pct": 0.491,
-   "last10": "3-7",
-   "streak": "L2",
-   "gb": 15.0,
-   "rs_pg": 5.05,
-   "ra_pg": 4.82
-  },
   "CIN": {
    "name": "Reds",
-   "record": "55-58",
-   "pct": 0.487,
+   "record": "56-58",
+   "pct": 0.491,
    "last10": "7-3",
-   "streak": "W3",
+   "streak": "W4",
    "gb": 15.5,
-   "rs_pg": 4.16,
+   "rs_pg": 4.18,
    "ra_pg": 4.7
+  },
+  "PIT": {
+   "name": "Pirates",
+   "record": "57-60",
+   "pct": 0.487,
+   "last10": "2-8",
+   "streak": "L3",
+   "gb": 16.0,
+   "rs_pg": 5.03,
+   "ra_pg": 4.82
   },
   "LAD": {
    "name": "Dodgers",
@@ -263,23 +263,23 @@
   },
   "ARI": {
    "name": "D-backs",
-   "record": "61-54",
-   "pct": 0.53,
+   "record": "61-55",
+   "pct": 0.526,
    "last10": "6-4",
-   "streak": "W1",
-   "gb": 8.0,
-   "rs_pg": 4.58,
-   "ra_pg": 4.52
+   "streak": "L1",
+   "gb": 8.5,
+   "rs_pg": 4.55,
+   "ra_pg": 4.53
   },
   "SD": {
    "name": "Padres",
-   "record": "59-56",
-   "pct": 0.513,
+   "record": "60-56",
+   "pct": 0.517,
    "last10": "7-3",
-   "streak": "L1",
-   "gb": 10.0,
+   "streak": "W1",
+   "gb": 9.5,
    "rs_pg": 4.23,
-   "ra_pg": 4.37
+   "ra_pg": 4.34
   },
   "SF": {
    "name": "Giants",
