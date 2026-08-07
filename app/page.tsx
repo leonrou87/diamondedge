@@ -8380,6 +8380,20 @@ export default function Home() {
             : `When this group of analysts agrees on a side, DiamondEdge plays the other way.`,
         };
       }
+      /* THE NIGHTLY ENGINE'S COMMITTEE (2026-08-07). The engine names its winner by id
+         — "X5_stack3_F2+R2+R4_a2" — which is a fine primary key and an unspeakable label.
+         The payload already ships a human label and a plain-English sentence for it, so
+         this branch is belt and braces: even a payload that only carried the id would
+         still read as a named play here rather than as machinery. */
+      if (/full committee|committee/i.test(lab) || /^X\d_/.test(lab)) {
+        const n = (rule.match(/\b(\d+)\s+strategies\b/i) || lab.match(/\b(\d+)\s+strategies\b/i) || [])[1];
+        return {
+          name: "The Full Committee",
+          blurb: n
+            ? `The ${n} approaches that have held up best over the last few weeks each get a vote on every game — DiamondEdge plays the side the majority lands on, and passes when they split.`
+            : `The approaches that have held up best over the last few weeks each get a vote on every game — DiamondEdge plays the side the majority lands on, and passes when they split.`,
+        };
+      }
       if (/room-shape/i.test(lab)) {
         const m = rule.match(/exactly (\w+) of the four analysts say (\w+), take (\w+)/i);
         return {
