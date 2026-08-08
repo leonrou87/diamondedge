@@ -4,7 +4,7 @@
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
   "record_basis": "headline = CHAMPION V2 stream (champion picks x +EV gate at real per-side prices); v4 model grid record = sealed 2026 walk (42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f), star-capped take set, TOTALS ONLY",
-  "generated_utc": "2026-08-08T17:00:06Z",
+  "generated_utc": "2026-08-08T22:13:00Z",
   "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
   "recipe_sha256": "ecac66ecf0bc6b198550786b38930c345d7d20669f7f32719fe075407adc9b48",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
@@ -105,19 +105,19 @@
           }
         },
         "1_pass_leans_informational": {
-          "n": 85,
-          "win": 39,
+          "n": 86,
+          "win": 40,
           "loss": 39,
           "push": 7,
-          "record": "39-39-7",
-          "hit_rate": 0.5,
-          "roi": -0.034,
-          "units": -2.656,
+          "record": "40-39-7",
+          "hit_rate": 0.5063,
+          "roi": -0.0201,
+          "units": -1.586,
           "units_weighted": {
-            "units": -2.656,
-            "staked": 78.0,
-            "roi": -0.034,
-            "n_offladder_flat_1u": 78
+            "units": -1.586,
+            "staked": 79.0,
+            "roi": -0.0201,
+            "n_offladder_flat_1u": 79
           }
         }
       },
@@ -332,8 +332,8 @@
       },
       "gated_out": {
         "n": 91,
-        "n_graded": 85,
-        "n_pending_or_no_result": 6,
+        "n_graded": 86,
+        "n_pending_or_no_result": 5,
         "by_reason": {
           "ev_gate": 87,
           "price_only": 0,
@@ -341,19 +341,19 @@
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 85,
-          "win": 39,
+          "n": 86,
+          "win": 40,
           "loss": 39,
           "push": 7,
-          "record": "39-39-7",
-          "hit_rate": 0.5,
-          "roi": -0.034,
-          "units": -2.656,
+          "record": "40-39-7",
+          "hit_rate": 0.5063,
+          "roi": -0.0201,
+          "units": -1.586,
           "units_weighted": {
-            "units": -2.656,
-            "staked": 78.0,
-            "roi": -0.034,
-            "n_offladder_flat_1u": 78
+            "units": -1.586,
+            "staked": 79.0,
+            "roi": -0.0201,
+            "n_offladder_flat_1u": 79
           }
         }
       },
@@ -496,18 +496,18 @@
           }
         },
         "best": {
-          "n": 116,
-          "win": 57,
+          "n": 117,
+          "win": 58,
           "loss": 55,
           "push": 4,
-          "record": "57-55-4",
-          "hit_rate": 0.5089,
-          "roi": -0.0227,
-          "units": -2.539,
+          "record": "58-55-4",
+          "hit_rate": 0.5133,
+          "roi": -0.013,
+          "units": -1.469,
           "units_weighted": {
-            "units": -2.352,
-            "staked": 196.5,
-            "roi": -0.012,
+            "units": -1.282,
+            "staked": 197.5,
+            "roi": -0.0065,
             "n_offladder_flat_1u": 0
           },
           "n_playable": 123,
@@ -529,18 +529,18 @@
               }
             },
             "3": {
-              "n": 27,
-              "win": 13,
+              "n": 28,
+              "win": 14,
               "loss": 13,
               "push": 1,
-              "record": "13-13-1",
-              "hit_rate": 0.5,
-              "roi": -0.0472,
-              "units": -1.226,
+              "record": "14-13-1",
+              "hit_rate": 0.5185,
+              "roi": -0.0058,
+              "units": -0.156,
               "units_weighted": {
-                "units": -1.226,
-                "staked": 26.0,
-                "roi": -0.0472,
+                "units": -0.156,
+                "staked": 27.0,
+                "roi": -0.0058,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -581,18 +581,18 @@
           "note": "the MEDIAN-gated playable set, priced + graded at the best executable price \u2014 THE PROVEN CONFIG (median_gate_best). Pure price improvement of the median set, no gate expansion"
         },
         "newly_playable_record": {
-          "n": 29,
-          "win": 12,
+          "n": 30,
+          "win": 13,
           "loss": 15,
           "push": 2,
-          "record": "12-15-2",
-          "hit_rate": 0.4444,
-          "roi": -0.1396,
-          "units": -3.768,
+          "record": "13-15-2",
+          "hit_rate": 0.4643,
+          "roi": -0.0964,
+          "units": -2.698,
           "units_weighted": {
-            "units": -2.705,
-            "staked": 39.5,
-            "roi": -0.0685,
+            "units": -1.635,
+            "staked": 40.5,
+            "roi": -0.0404,
             "n_offladder_flat_1u": 0
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
@@ -971,7 +971,7 @@
             "best_price": 107,
             "best_book": "lowvig",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min)",
-            "result": null
+            "result": "win"
           }
         ],
         "n_dropped_at_best": 0,
@@ -981,7 +981,7 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-08-08T17:00:06Z",
+    "record_generated_utc": "2026-08-08T22:13:00Z",
     "backfill": {
       "n_rows": 149,
       "sources": {
@@ -10493,7 +10493,9 @@
         "informational_lean": "over",
         "pass_why": "ev_gate",
         "pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min); +EV at best 107 but gate-expansion picks measured -25% ROI \u2014 not a bet",
-        "result": null,
+        "result": "win",
+        "pnl": 1.07,
+        "graded_line": 7.5,
         "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
       }
     ]
@@ -10563,7 +10565,7 @@
     },
     "n_playable_scores": 537,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-08T17:00:06Z",
+    "generated_utc": "2026-08-08T22:13:00Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
     "n_nonplayable_scores": 6119
@@ -10577,7 +10579,7 @@
     "n_playable": 537,
     "n_nonplayable": 6119,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-08T17:00:06Z",
+    "generated_utc": "2026-08-08T22:13:00Z",
     "basis": "v3.2 frozen season reference: percentile ranks of |model divergence| and EV (0.5/0.5 blend) over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill); non-playable rows rank in their own frozen distribution (tail-inverted edge measure + pass EV position). Frozen for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: no score promotes a non-playable row.",
     "playable": {
       "n": 537,
@@ -14385,19 +14387,19 @@
           }
         },
         "1_pass_leans_informational": {
-          "n": 85,
-          "win": 39,
+          "n": 86,
+          "win": 40,
           "loss": 39,
           "push": 7,
-          "record": "39-39-7",
-          "hit_rate": 0.5,
-          "roi": -0.034,
-          "units": -2.656,
+          "record": "40-39-7",
+          "hit_rate": 0.5063,
+          "roi": -0.0201,
+          "units": -1.586,
           "units_weighted": {
-            "units": -2.656,
-            "staked": 78.0,
-            "roi": -0.034,
-            "n_offladder_flat_1u": 78
+            "units": -1.586,
+            "staked": 79.0,
+            "roi": -0.0201,
+            "n_offladder_flat_1u": 79
           }
         }
       },
@@ -14612,8 +14614,8 @@
       },
       "gated_out": {
         "n": 91,
-        "n_graded": 85,
-        "n_pending_or_no_result": 6,
+        "n_graded": 86,
+        "n_pending_or_no_result": 5,
         "by_reason": {
           "ev_gate": 87,
           "price_only": 0,
@@ -14621,19 +14623,19 @@
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 85,
-          "win": 39,
+          "n": 86,
+          "win": 40,
           "loss": 39,
           "push": 7,
-          "record": "39-39-7",
-          "hit_rate": 0.5,
-          "roi": -0.034,
-          "units": -2.656,
+          "record": "40-39-7",
+          "hit_rate": 0.5063,
+          "roi": -0.0201,
+          "units": -1.586,
           "units_weighted": {
-            "units": -2.656,
-            "staked": 78.0,
-            "roi": -0.034,
-            "n_offladder_flat_1u": 78
+            "units": -1.586,
+            "staked": 79.0,
+            "roi": -0.0201,
+            "n_offladder_flat_1u": 79
           }
         }
       },
@@ -14776,18 +14778,18 @@
           }
         },
         "best": {
-          "n": 116,
-          "win": 57,
+          "n": 117,
+          "win": 58,
           "loss": 55,
           "push": 4,
-          "record": "57-55-4",
-          "hit_rate": 0.5089,
-          "roi": -0.0227,
-          "units": -2.539,
+          "record": "58-55-4",
+          "hit_rate": 0.5133,
+          "roi": -0.013,
+          "units": -1.469,
           "units_weighted": {
-            "units": -2.352,
-            "staked": 196.5,
-            "roi": -0.012,
+            "units": -1.282,
+            "staked": 197.5,
+            "roi": -0.0065,
             "n_offladder_flat_1u": 0
           },
           "n_playable": 123,
@@ -14809,18 +14811,18 @@
               }
             },
             "3": {
-              "n": 27,
-              "win": 13,
+              "n": 28,
+              "win": 14,
               "loss": 13,
               "push": 1,
-              "record": "13-13-1",
-              "hit_rate": 0.5,
-              "roi": -0.0472,
-              "units": -1.226,
+              "record": "14-13-1",
+              "hit_rate": 0.5185,
+              "roi": -0.0058,
+              "units": -0.156,
               "units_weighted": {
-                "units": -1.226,
-                "staked": 26.0,
-                "roi": -0.0472,
+                "units": -0.156,
+                "staked": 27.0,
+                "roi": -0.0058,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -14861,18 +14863,18 @@
           "note": "the MEDIAN-gated playable set, priced + graded at the best executable price \u2014 THE PROVEN CONFIG (median_gate_best). Pure price improvement of the median set, no gate expansion"
         },
         "newly_playable_record": {
-          "n": 29,
-          "win": 12,
+          "n": 30,
+          "win": 13,
           "loss": 15,
           "push": 2,
-          "record": "12-15-2",
-          "hit_rate": 0.4444,
-          "roi": -0.1396,
-          "units": -3.768,
+          "record": "13-15-2",
+          "hit_rate": 0.4643,
+          "roi": -0.0964,
+          "units": -2.698,
           "units_weighted": {
-            "units": -2.705,
-            "staked": 39.5,
-            "roi": -0.0685,
+            "units": -1.635,
+            "staked": 40.5,
+            "roi": -0.0404,
             "n_offladder_flat_1u": 0
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
@@ -15251,7 +15253,7 @@
             "best_price": 107,
             "best_book": "lowvig",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min)",
-            "result": null
+            "result": "win"
           }
         ],
         "n_dropped_at_best": 0,

@@ -8764,9 +8764,29 @@ export default function Home() {
       const windowSpan = days
         ? ({ 14: "two weeks", 21: "three weeks", 28: "four weeks", 35: "five weeks" } as any)[days] || `${days} days`
         : "three weeks";
-      const windowTxt = isPast
-        ? `Chosen from the ${windowSpan} of finished games before it — locked before a single first pitch that day.`
-        : `Chosen from the last ${windowSpan} of finished games — before a single first pitch today.`;
+      /* THE WINDOW LINE, AND THE ONE CLAIM IT IS NOT ALLOWED TO MAKE BY DEFAULT.
+         "Locked before a single first pitch" is a factual assertion about WHEN the rule was
+         chosen, and on 2026-08-08 — the first board the strategy forge ever served — it was
+         false: the rule was applied mid-afternoon, after three games had started, which is
+         exactly why those three kept the picks they already had. The served block says so
+         itself (`selector_evidence.n_selector_picks_served` is short of the board's own pick
+         count, and `board_is_mixed_note` explains it), and the strip was reading straight
+         past that and printing the strong claim anyway.
+         So the strong claim is now EARNED, not assumed: it renders only when the rule owns
+         every pick on the board. On a mixed board the app says the thing that is true and
+         is the point anyway — the window ends the night before, so nothing on this board
+         helped choose the rule. Once the nightly job locks the rule at 02:00 the board is
+         whole and the original line comes back on its own. */
+      const selEv: any = (s as any).selector_evidence || null;
+      const nSelector = selEv && Number.isFinite(Number(selEv.n_selector_picks_served))
+        ? Number(selEv.n_selector_picks_served) : null;
+      const nBoard = dayStrategyPickCount(dateISO);
+      const ruleOwnsBoard = nSelector === null || nSelector >= nBoard;
+      const windowTxt = !ruleOwnsBoard
+        ? `Chosen from the last ${windowSpan} of finished games — the window ends the night before, so no game on this board helped choose it.`
+        : isPast
+          ? `Chosen from the ${windowSpan} of finished games before it — locked before a single first pitch that day.`
+          : `Chosen from the last ${windowSpan} of finished games — before a single first pitch today.`;
       /* THE SMALL "HOW IT'S DOING" STAT (Leon: "add some kind of percent that's small on
          how well it's doing"). Served numbers only, never computed fresh here: today shows
          the headline record's hit rate (every pick since July 1); a past day shows its own
@@ -8795,8 +8815,18 @@ export default function Home() {
         }
       }
       const statHtml = statPct ? `<span class="stgy-stat"><b>${esc(statPct)}</b><i>${esc(statSub)}</i></span>` : "";
-      const n = dayStrategyPickCount(dateISO);
+      /* THE COUNT, WHICH MUST NEVER CREDIT THE RULE WITH PICKS IT DID NOT MAKE. This counted
+         every TAKE on the board and attributed all of them to the day's strategy. On a mixed
+         board that is simply wrong — on 2026-08-08 it read "It has produced 12 DiamondEdge
+         Picks" when the rule had made 5 and the other 7 were already on the board when it
+         was applied. The served block carries the real number; use it, and say plainly where
+         the rest came from. */
+      const n = ruleOwnsBoard ? nBoard : (nSelector as number);
       const pending = !isPast && datePicksPending(dateISO);
+      const rest = nBoard - n;
+      const restTxt = rest > 0
+        ? ` The other ${rest} ${rest === 1 ? "was" : "were"} already on the board when it was applied.`
+        : "";
       const countTxt = pending && !n
         ? `Today's picks land by ${picksEtaTime()}.`
         : n === 0
@@ -8804,8 +8834,8 @@ export default function Home() {
             ? `It passed on every game on this board — passing is the strategy working, not the strategy missing.`
             : `It has passed on every game on today's board so far — passing is the strategy working, not the strategy missing.`
           : isPast
-            ? `It produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on this board.`
-            : `It has produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on today's board.`;
+            ? `It produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on this board.${restTxt}`
+            : `It has produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on today's board.${restTxt}`;
       return `<div class="dstgy" id="stgy">
         <button class="stgy-bar" id="stgy-btn" type="button" aria-expanded="false" aria-controls="stgy-more">
           <span class="stgy-mark">${strategyMark()}</span>

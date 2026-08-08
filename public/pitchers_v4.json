@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-08T17:50:51Z",
+ "generated_utc": "2026-08-08T23:22:41Z",
  "by_game": {
   "822699": {
    "away": {
@@ -2156,7 +2156,7 @@
     "id": 663738,
     "name": "Daniel Lynch IV",
     "throws": "L",
-    "era": 2.64,
+    "era": 2.45,
     "wl": "4-3",
     "ip": 47.2,
     "k9": 6.99,
@@ -2918,7 +2918,8 @@
       "res": "W"
      }
     ],
-    "team": "CIN"
+    "team": "CIN",
+    "actual_starter": true
    },
    "home": {
     "id": 674841,
@@ -3035,7 +3036,8 @@
       "res": "ND"
      }
     ],
-    "team": "WSH"
+    "team": "WSH",
+    "actual_starter": true
    }
   },
   "822864": {
@@ -3154,7 +3156,8 @@
       "res": "W"
      }
     ],
-    "team": "BAL"
+    "team": "BAL",
+    "actual_starter": true
    },
    "home": {
     "id": 594798,
@@ -3271,7 +3274,8 @@
       "res": "ND"
      }
     ],
-    "team": "TEX"
+    "team": "TEX",
+    "actual_starter": true
    }
   },
   "823021": {
@@ -3390,7 +3394,8 @@
       "res": "ND"
      }
     ],
-    "team": "COL"
+    "team": "COL",
+    "actual_starter": true
    },
    "home": {
     "id": 669461,
@@ -3507,7 +3512,8 @@
       "res": "L"
      }
     ],
-    "team": "STL"
+    "team": "STL",
+    "actual_starter": true
    }
   },
   "823102": {
@@ -3757,7 +3763,8 @@
     "k9": null,
     "whip": null,
     "starts": [],
-    "team": "DET"
+    "team": "DET",
+    "actual_starter": true
    },
    "home": {
     "id": 694738,
@@ -3874,7 +3881,8 @@
       "res": "ND"
      }
     ],
-    "team": "SF"
+    "team": "SF",
+    "actual_starter": true
    }
   },
   "823267": {
@@ -3993,7 +4001,8 @@
       "res": "ND"
      }
     ],
-    "team": "HOU"
+    "team": "HOU",
+    "actual_starter": true
    },
    "home": {
     "id": 650633,
@@ -4110,7 +4119,8 @@
       "res": "W"
      }
     ],
-    "team": "SD"
+    "team": "SD",
+    "actual_starter": true
    }
   },
   "823348": {
@@ -4138,7 +4148,8 @@
       "res": "L"
      }
     ],
-    "team": "NYM"
+    "team": "NYM",
+    "actual_starter": true
    },
    "home": {
     "id": 696149,
@@ -4255,7 +4266,8 @@
       "res": "ND"
      }
     ],
-    "team": "PIT"
+    "team": "PIT",
+    "actual_starter": true
    }
   },
   "823426": {
@@ -4374,7 +4386,8 @@
       "res": "W"
      }
     ],
-    "team": "TOR"
+    "team": "TOR",
+    "actual_starter": true
    },
    "home": {
     "id": 605400,
@@ -4491,7 +4504,8 @@
       "res": "ND"
      }
     ],
-    "team": "PHI"
+    "team": "PHI",
+    "actual_starter": true
    }
   },
   "823514": {
@@ -4501,8 +4515,8 @@
     "throws": "L",
     "era": 2.08,
     "wl": "12-6",
-    "ip": 117.0,
-    "k9": 11.0,
+    "ip": 121.0,
+    "k9": 11.08,
     "whip": 1.02,
     "starts": [
      {
@@ -4595,32 +4609,20 @@
       "k": 7,
       "p": 101,
       "res": "ND"
-     },
-     {
-      "date": "2026-06-10",
-      "opp": "CHW",
-      "at": "A",
-      "ip": 5.2,
-      "h": 6,
-      "r": 2,
-      "er": 2,
-      "bb": 1,
-      "k": 6,
-      "p": 103,
-      "res": "L"
      }
     ],
-    "team": "ATL"
+    "team": "ATL",
+    "actual_starter": true
    },
    "home": {
     "id": 543037,
     "name": "Gerrit Cole",
     "throws": "R",
-    "era": 3.42,
+    "era": 3.43,
     "wl": "5-5",
-    "ip": 73.2,
-    "k9": 9.53,
-    "whip": 1.1,
+    "ip": 78.2,
+    "k9": 9.72,
+    "whip": 1.11,
     "starts": [
      {
       "date": "2026-08-02",
@@ -4712,22 +4714,10 @@
       "k": 5,
       "p": 89,
       "res": "L"
-     },
-     {
-      "date": "2026-06-22",
-      "opp": "DET",
-      "at": "A",
-      "ip": 4.1,
-      "h": 9,
-      "r": 5,
-      "er": 5,
-      "bb": 1,
-      "k": 5,
-      "p": 89,
-      "res": "L"
      }
     ],
-    "team": "NYY"
+    "team": "NYY",
+    "actual_starter": true
    }
   },
   "823752": {
@@ -4846,7 +4836,8 @@
       "res": "ND"
      }
     ],
-    "team": "MIN"
+    "team": "MIN",
+    "actual_starter": true
    },
    "home": {
     "id": 688107,
@@ -4963,7 +4954,8 @@
       "res": "ND"
      }
     ],
-    "team": "MIL"
+    "team": "MIL",
+    "actual_starter": true
    }
   },
   "823834": {
@@ -4971,11 +4963,11 @@
     "id": 700712,
     "name": "Walbert Ure\u00f1a",
     "throws": "R",
-    "era": 2.54,
+    "era": 2.52,
     "wl": "7-7",
-    "ip": 99.1,
-    "k9": 8.61,
-    "whip": 1.25,
+    "ip": 100.0,
+    "k9": 8.55,
+    "whip": 1.24,
     "starts": [
      {
       "date": "2026-08-02",
@@ -5067,32 +5059,20 @@
       "k": 6,
       "p": 90,
       "res": "W"
-     },
-     {
-      "date": "2026-06-15",
-      "opp": "ARI",
-      "at": "A",
-      "ip": 7.0,
-      "h": 7,
-      "r": 4,
-      "er": 3,
-      "bb": 2,
-      "k": 3,
-      "p": 88,
-      "res": "L"
      }
     ],
-    "team": "LAA"
+    "team": "LAA",
+    "actual_starter": true
    },
    "home": {
     "id": 645261,
     "name": "Sandy Alcantara",
     "throws": "R",
-    "era": 3.68,
+    "era": 3.65,
     "wl": "12-6",
-    "ip": 156.2,
-    "k9": 6.89,
-    "whip": 1.2,
+    "ip": 157.2,
+    "k9": 6.96,
+    "whip": 1.19,
     "starts": [
      {
       "date": "2026-08-02",
@@ -5184,22 +5164,10 @@
       "k": 3,
       "p": 96,
       "res": "W"
-     },
-     {
-      "date": "2026-06-23",
-      "opp": "TEX",
-      "at": "H",
-      "ip": 6.2,
-      "h": 5,
-      "r": 1,
-      "er": 1,
-      "bb": 3,
-      "k": 4,
-      "p": 109,
-      "res": "W"
      }
     ],
-    "team": "MIA"
+    "team": "MIA",
+    "actual_starter": true
    }
   },
   "824079": {
@@ -5318,7 +5286,8 @@
       "res": "W"
      }
     ],
-    "team": "CHC"
+    "team": "CHC",
+    "actual_starter": true
    },
    "home": {
     "id": 607625,
@@ -5435,7 +5404,8 @@
       "res": "L"
      }
     ],
-    "team": "KC"
+    "team": "KC",
+    "actual_starter": true
    }
   },
   "824565": {
@@ -5679,11 +5649,11 @@
     "id": 695611,
     "name": "Gage Jump",
     "throws": "L",
-    "era": 4.59,
+    "era": 4.57,
     "wl": "4-7",
-    "ip": 66.2,
-    "k9": 9.86,
-    "whip": 1.47,
+    "ip": 67.0,
+    "k9": 9.81,
+    "whip": 1.49,
     "starts": [
      {
       "date": "2026-08-02",
@@ -5775,32 +5745,20 @@
       "k": 5,
       "p": 91,
       "res": "L"
-     },
-     {
-      "date": "2026-06-24",
-      "opp": "SF",
-      "at": "A",
-      "ip": 5.0,
-      "h": 3,
-      "r": 0,
-      "er": 0,
-      "bb": 1,
-      "k": 9,
-      "p": 97,
-      "res": "ND"
      }
     ],
-    "team": "ATH"
+    "team": "ATH",
+    "actual_starter": true
    },
    "home": {
     "id": 687562,
     "name": "Jake Bennett",
     "throws": "L",
-    "era": 2.9,
+    "era": 2.86,
     "wl": "7-4",
-    "ip": 71.1,
-    "k9": 6.31,
-    "whip": 1.01,
+    "ip": 72.1,
+    "k9": 6.35,
+    "whip": 1.0,
     "starts": [
      {
       "date": "2026-08-02",
@@ -5892,22 +5850,10 @@
       "k": 3,
       "p": 87,
       "res": "W"
-     },
-     {
-      "date": "2026-06-22",
-      "opp": "COL",
-      "at": "A",
-      "ip": 6.0,
-      "h": 4,
-      "r": 0,
-      "er": 0,
-      "bb": 0,
-      "k": 9,
-      "p": 72,
-      "res": "ND"
      }
     ],
-    "team": "BOS"
+    "team": "BOS",
+    "actual_starter": true
    }
   },
   "825049": {
@@ -7040,6 +6986,86 @@
     "team": "SF"
    }
   },
+  "823268": {
+   "away": {
+    "id": 664299,
+    "name": "Cristian Javier",
+    "throws": "R",
+    "era": 6.59,
+    "wl": "1-2",
+    "ip": 27.1,
+    "k9": 7.57,
+    "whip": 1.68,
+    "starts": [
+     {
+      "date": "2026-08-03",
+      "opp": "TOR",
+      "at": "H",
+      "ip": 6.0,
+      "h": 7,
+      "r": 3,
+      "er": 3,
+      "bb": 0,
+      "k": 2,
+      "p": 85,
+      "res": "L"
+     },
+     {
+      "date": "2026-07-12",
+      "opp": "TEX",
+      "at": "A",
+      "ip": 3.0,
+      "h": 4,
+      "r": 3,
+      "er": 3,
+      "bb": 3,
+      "k": 4,
+      "p": 60,
+      "res": "ND"
+     },
+     {
+      "date": "2026-04-08",
+      "opp": "COL",
+      "at": "A",
+      "ip": 1.0,
+      "h": 3,
+      "r": 1,
+      "er": 1,
+      "bb": 0,
+      "k": 1,
+      "p": 20,
+      "res": "ND"
+     },
+     {
+      "date": "2026-04-03",
+      "opp": "ATH",
+      "at": "A",
+      "ip": 3.2,
+      "h": 6,
+      "r": 6,
+      "er": 6,
+      "bb": 5,
+      "k": 2,
+      "p": 82,
+      "res": "L"
+     },
+     {
+      "date": "2026-03-28",
+      "opp": "LAA",
+      "at": "H",
+      "ip": 4.2,
+      "h": 4,
+      "r": 6,
+      "er": 6,
+      "bb": 4,
+      "k": 1,
+      "p": 74,
+      "res": "ND"
+     }
+    ],
+    "team": "HOU"
+   }
+  },
   "823345": {
    "away": {
     "id": 640455,
@@ -7277,6 +7303,123 @@
    }
   },
   "823425": {
+   "away": {
+    "id": 669456,
+    "name": "Shane Bieber",
+    "throws": "R",
+    "era": 5.11,
+    "wl": "3-2",
+    "ip": 37.0,
+    "k9": 6.81,
+    "whip": 1.68,
+    "starts": [
+     {
+      "date": "2026-08-03",
+      "opp": "HOU",
+      "at": "A",
+      "ip": 5.2,
+      "h": 9,
+      "r": 1,
+      "er": 1,
+      "bb": 2,
+      "k": 6,
+      "p": 87,
+      "res": "W"
+     },
+     {
+      "date": "2026-07-28",
+      "opp": "WSH",
+      "at": "A",
+      "ip": 0.2,
+      "h": 1,
+      "r": 4,
+      "er": 4,
+      "bb": 6,
+      "k": 0,
+      "p": 42,
+      "res": "L"
+     },
+     {
+      "date": "2026-07-23",
+      "opp": "TB",
+      "at": "H",
+      "ip": 7.0,
+      "h": 3,
+      "r": 1,
+      "er": 1,
+      "bb": 0,
+      "k": 3,
+      "p": 86,
+      "res": "W"
+     },
+     {
+      "date": "2026-07-18",
+      "opp": "CHW",
+      "at": "H",
+      "ip": 6.0,
+      "h": 3,
+      "r": 0,
+      "er": 0,
+      "bb": 2,
+      "k": 6,
+      "p": 80,
+      "res": "W"
+     },
+     {
+      "date": "2026-07-10",
+      "opp": "SD",
+      "at": "A",
+      "ip": 4.2,
+      "h": 6,
+      "r": 2,
+      "er": 2,
+      "bb": 3,
+      "k": 4,
+      "p": 97,
+      "res": "ND"
+     },
+     {
+      "date": "2026-07-04",
+      "opp": "SEA",
+      "at": "A",
+      "ip": 4.0,
+      "h": 6,
+      "r": 7,
+      "er": 7,
+      "bb": 3,
+      "k": 3,
+      "p": 89,
+      "res": "L"
+     },
+     {
+      "date": "2026-06-28",
+      "opp": "TEX",
+      "at": "H",
+      "ip": 5.1,
+      "h": 5,
+      "r": 2,
+      "er": 2,
+      "bb": 4,
+      "k": 4,
+      "p": 92,
+      "res": "ND"
+     },
+     {
+      "date": "2026-06-23",
+      "opp": "HOU",
+      "at": "H",
+      "ip": 3.2,
+      "h": 9,
+      "r": 4,
+      "er": 4,
+      "bb": 0,
+      "k": 2,
+      "p": 75,
+      "res": "ND"
+     }
+    ],
+    "team": "TOR"
+   },
    "home": {
     "id": 666200,
     "name": "Jes\u00fas Luzardo",
