@@ -1590,6 +1590,19 @@ export default function Home() {
         fp_utc: g.first_pitch_utc || null,
         locked: !!pk.locked, locked_at_utc: pk.locked_at_utc || null,
         suggested_units: pk.suggested_units != null ? pk.suggested_units : null,
+        /* PICK STRENGTH — carried forward, never recomputed. This normaliser builds a fresh
+           object and therefore silently drops every served block it does not name, which is
+           why the tier was invisible on the board while sitting in the payload. Only the
+           strength sub-block travels (not the whole owner_strategy, which is prose and
+           provenance the board never renders), and it stays null on every pick that has no
+           committee behind it. */
+        strength: (() => {
+          const c = pk.owner_strategy && typeof pk.owner_strategy === "object"
+            ? pk.owner_strategy.committee : null;
+          const s = c && typeof c === "object" && c.strength && typeof c.strength === "object"
+            ? c.strength : null;
+          return take && s && s.tier ? s : null;
+        })(),
       };
     }
     // ═══════════ SPREAD STREAM — run lines RETURN (Leon, 2026-07-26; live 2026-07-27) ═══════════
@@ -3117,7 +3130,7 @@ export default function Home() {
         : avoid
           ? `<span class="de-side de-pass"><b>${esc(marketTxt)}</b><em class="de-leanonly">No DiamondEdge Pick here.</em></span>`
           : side
-            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(side)}</b>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}</span>`
+            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(side)}</b>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}${strengthPips(pl, !locked && !avoid)}</span>`
             : "";
       // only state the priced line when the call itself doesn't already contain that number
       const inSide = priced != null && side ? side.indexOf(lineStr(priced)) >= 0 : false;
@@ -6989,11 +7002,16 @@ export default function Home() {
       // site, and one that shares nothing visually with the pick's direction language.
       // `size` lets a cramped surface (the board tile) take the glyph-only stamp.
       if (st === "won" || st === "lost" || st === "pushed") return { txt: resultStamp(st, stampSize), cls: `stamped ${st}` };
-      if (st === "clinched") return { txt: `${condCheck} CLINCHED`, cls: "won" };
+      /* `glyph` / `word` are the SAME phrase, split (2026-08-07). Every surface with room
+         still prints `txt` exactly as before; a board tile — 139px for the number, the pick
+         tag and this chip — prints the glyph and keeps the word in the chip's title and
+         aria-label, which is the same trade the live percent makes one screen down. Nothing
+         is abbreviated and no new word is invented: it is the full phrase or the mark. */
+      if (st === "clinched") return { txt: `${condCheck} CLINCHED`, cls: "won", glyph: condCheck, word: "CLINCHED" };
       // NOT "LINE PASSED" — that read as "we passed on this line" (the product's other,
       // opposite meaning of the word). This state means the number is gone and the pick
       // can no longer land; say exactly that, in the same words the live read uses.
-      if (st === "cooked") return { txt: "✗ NOT LANDING", cls: "lost" };
+      if (st === "cooked") return { txt: "✗ NOT LANDING", cls: "lost", glyph: "✗", word: "NOT LANDING" };
       if (st === "inplay") {
         const ca = g.current_actuals || {};
         if (pl.market === "total" && ca.total_so_far != null) {
@@ -7042,9 +7060,22 @@ export default function Home() {
       if (/^stamped\b/.test(String(state.cls || ""))) return state.txt;
       if (state.pct != null) {
         const p = Math.round(state.pct * 100);
-        return `<span class="dmp-res ${state.cls} has-meter" title="${p}% chance this pick cashes — live estimate">` +
+        /* THE WORD IS IN THE TITLE AND THE ARIA LABEL, NOT ONLY IN THE PILL. On a board
+           tile the row has 139px for the number, the tag and this meter, and the word
+           ("HOLDING", "NOT LANDING") is the widest thing on it — so the tile hides the word
+           in CSS and keeps the percent, which is the fact. The state is still carried three
+           other ways there: the pill's colour, its fill, and this label. Every other surface
+           shows the word as before. */
+        const lab = `${state.txt} — ${p}% chance this pick cashes, live estimate`;
+        return `<span class="dmp-res ${state.cls} has-meter" title="${esc(lab)}" aria-label="${esc(lab)}">` +
           `<i class="ipm-fill" style="width:${p}%" aria-hidden="true"></i>` +
           `<b class="ipm-txt">${state.txt}</b><em class="ipm-pct">${p}%</em></span>`;
+      }
+      // a split phrase (CLINCHED / NOT LANDING) — the glyph always shows, the word is what a
+      // cramped tile drops, under the same rule and the same CSS hook as the meter's word
+      if (state.glyph && state.word) {
+        return `<span class="dmp-res ${state.cls} has-word" title="${esc(state.word)}" aria-label="${esc(state.word)}">` +
+          `<i class="ipm-g" aria-hidden="true">${state.glyph}</i><b class="ipm-txt">${esc(state.word)}</b></span>`;
       }
       return `<span class="dmp-res ${state.cls}">${state.txt}</span>`;
     }
@@ -7362,6 +7393,75 @@ export default function Home() {
        tall, wide enough to push the tile into horizontal overflow (204px of content in a
        163px column — which is what was clipping the result chip and the team names beside
        it). Modifiers are namespaced now so a layout class can never be adopted by accident. */
+    /* ════════════════════ PICK STRENGTH — HOW HARD THE ROOM BACKED IT ════════════════════
+       Leon: "Can we have the notion of strong picks / weak picks… For all research and stats
+       will include all picks."
+
+       THE FACT. The nightly committee seats N strategies that each vote OVER / UNDER / abstain
+       on every game, and the majority side becomes the pick. So two picks that print
+       identically on this board can be backed by completely different rooms — nineteen of
+       twenty-one seats calling it, or two of twenty-one with nineteen abstaining. Same tag,
+       same word, wildly different backing. The backend cuts that share into three
+       pre-specified tiers (see v4/serve/pick_strength.py); this reads the tier and never
+       computes one.
+
+       IT IS A FACT ON THE TAG, NOT A SECOND BADGE. Three pips at the end of the black tag,
+       filled to the tier — the same dot vocabulary the tag already uses for its lock state,
+       in the same colour as the word, so the eye reads ONE object ("UNDER, backed hard")
+       rather than two competing ones. No new chip, no new colour, no second row. On a board
+       tile it costs 15px and the row still holds one line at 375.
+
+       NEVER INVENTED. A desk-sourced or legacy pick carries no committee, so it gets NO pips
+       — not one pip, not a grey placeholder. An absent tier renders as nothing at all.
+
+       PREMIUM, EXACTLY LIKE THE SIDE. The tier is derived from the vote counts, and vote
+       counts reconstruct the direction. The backend drops the whole `committee` sub-block
+       from the public variant; here the pips are gated on the same `reveal` flag that
+       resolves the direction to "", so a locked tag has no tier in its class, its title, its
+       aria-label or anywhere else in the DOM. */
+    const STRENGTH_RANK: any = { strong: 3, standard: 2, lean: 1 };
+    /* ONE PLACE KNOWS THE PAYLOAD SHAPE. A pick reaches a renderer in two forms — the raw
+       served object straight off the feed, and the normalised `play` v4ToPlay() builds for
+       the board — so this reads BOTH: the normalised `strength` field first (v4ToPlay copies
+       it forward), then the served `owner_strategy.committee` it came from. Everything else
+       in the app asks this function and never touches the payload itself. */
+    function committeeStrength(pl: any) {
+      if (!pl || typeof pl !== "object") return null;
+      const direct = pl.strength && typeof pl.strength === "object" ? pl.strength : null;
+      const c = pl.owner_strategy && typeof pl.owner_strategy === "object"
+        ? pl.owner_strategy.committee : null;
+      const s = direct || (c && typeof c === "object" && c.strength
+        && typeof c.strength === "object" ? c.strength : null);
+      const tier = String((s && s.tier) || (c && c.strength_tier) || "").toLowerCase();
+      if (!STRENGTH_RANK[tier]) return null;
+      const rank = Math.max(1, Math.min(3, Number(s && s.rank) || STRENGTH_RANK[tier]));
+      const label = String((s && s.label) || "") || (tier.charAt(0).toUpperCase() + tier.slice(1));
+      return { tier, rank, label, blurb: String((s && s.blurb) || "") };
+    }
+    /* The pips. `reveal` is the caller's gate — pass the same flag that decides whether the
+       side may be named, so the two can never diverge. */
+    function strengthPips(pl: any, reveal: boolean) {
+      if (!reveal) return "";
+      const s = committeeStrength(pl);
+      if (!s) return "";
+      return `<span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span>`;
+    }
+    function strengthWords(pl: any, reveal: boolean) {
+      const s = reveal ? committeeStrength(pl) : null;
+      return s ? `${s.label} conviction` : "";
+    }
+    /* THE SAME PIPS, WITH THEIR NAME ON. The story deck is the one surface a reader meets at
+       walking pace, and it is where the pips get taught: same three dots, same fill, with the
+       word beside them once. Every other surface can then be silent, because by the time a
+       reader reaches the board they have already been told what the dots mean. */
+    function strengthChip(pl: any, reveal: boolean) {
+      if (!reveal) return "";
+      const s = committeeStrength(pl);
+      if (!s) return "";
+      return `<span class="strchip q-${esc(s.tier)}" title="${esc(s.blurb || "")}">
+        <span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(s.label)}</b>
+      </span>`;
+    }
     function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false, stamp = "") {
       const line = noPick ? (ouLineForPick(g, null) || ouLineForPick(g, pl)) : ouLineForPick(g, pl);
       const sideRaw = String((pl && pl.side) || "");
@@ -7379,12 +7479,14 @@ export default function Home() {
       const dir = over ? "over" : under ? "under" : "";
       const word = over ? "OVER" : under ? "UNDER" : "";
       const mod = cls ? ` dmp-${esc(String(cls).replace(/[^a-z0-9-]/gi, ""))}` : "";
+      // the strength, gated on the SAME flag the direction is — see committeeStrength()
+      const strTxt = strengthWords(pl, reveal);
       const title = noPick ? `Market total${line ? ` ${line}` : ""}`
         : locked ? "DiamondEdge Pick locked"
-          : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}` : "DiamondEdge Pick";
+          : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}${strTxt ? ` · ${strTxt}` : ""}` : "DiamondEdge Pick";
       const aria = noPick ? `Market total ${line || ""}`.trim()
         : locked ? "DiamondEdge Pick — locked"
-          : `DiamondEdge Pick ${word || ""} ${line || ""}`.trim();
+          : `DiamondEdge Pick ${word || ""} ${line || ""}${strTxt ? `, ${strTxt}` : ""}`.trim();
       /* THE RIGHT SLOT. A pick fills it with the DiamondEdge diamond and a direction mark;
          a no-pick game leaves it EMPTY — no logo, no word, no "Pass". The slot itself is the
          signal, so a reader scanning a column of tiles sees "we are on this one" as a shape
@@ -7463,7 +7565,7 @@ export default function Home() {
         : noPick ? ""
         : `<span class="de-mini-call">${mark}${locked
             ? `<i class="de-mini-redact" aria-hidden="true"></i>`
-            : `<b class="de-mini-word">${esc(word || "PICK")}</b>`}</span>`;
+            : `<b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPips(pl, reveal)}`}</span>`;
       return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${upcoming ? " upcoming" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(upcoming ? picksEtaLong(g) : title)}" role="img" aria-label="${esc(upcoming ? picksEtaLong(g) : aria)}">
         ${ouCell}${callCell || stamp ? `<span class="dmp-right">${callCell}${stamp}</span>` : ""}
       </span>`;
@@ -7877,11 +7979,27 @@ export default function Home() {
          state exists to prevent: an empty slot is how this board says "we passed", and we
          have not passed on tomorrow — we have not looked yet. */
       const incoming = !vd && picksPending(g);
+      /* ═══════ ONE LINE, ENFORCED (Leon, 2026-08-07: the percent is wrapping) ═══════
+         The pick row was rendering on two lines on an iPhone, in both states, and for two
+         different reasons:
+           · ENTITLED — the row is [O/U 8.5][◆DE UNDER][HOLDING 28%]. That is 174px of
+             content in a 139px column, so the whole right-hand group dropped to a second
+             line and the tile grew.
+           · SIGNED OUT — "Sign in to unlock" was a SIBLING of the call row, i.e. a second
+             line by construction, not by overflow.
+         Both are fixed here and in the tile rules in globals.css, and the fix is subtractive
+         rather than a squeeze: the CTA joins the row instead of sitting under it and shortens
+         to the one word that matters, the live pill drops its word and keeps its percent
+         (the colour and the fill already say the state, and the word survives in the title
+         and the aria-label), and the "O/U" label goes where a call is present because the
+         number's position already says what it is. What is NOT touched: the pick tag, the
+         market number's size, the strength pips. The row is `nowrap` at tile size now, so
+         it cannot silently wrap again — if something ever does not fit, the CTA is the one
+         element allowed to give. */
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-callrow">${callHtml}</div>
+             <div class="tv-callrow${locked ? " haslock" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>Unlock</i></span>` : ""}</div>
              ${liveCash}
-             ${locked ? `<span class="tv-unlock">${lockSvg}${esc(unlockCtaTxt())}</span>` : ""}
            </div>`
         : incoming
           ? `<div class="tl-verdict v-incoming">
@@ -12110,7 +12228,7 @@ export default function Home() {
         ? `${lockHead ? `<h3 class="sts-head sm">${esc(lockHead)}</h3>` : ""}
            <div class="sts-lockwrap"><span class="sts-dots" aria-hidden="true">●●●● ●</span>${pickStars(pl)}<button class="st-cta lock" data-go="unlock">${lockSvg} ${esc(unlockPitchTxt())}</button></div>`
         : `<div class="sts-call ${dir}">${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</div>
-           <div class="sts-meta">${pickStars(pl)}${pickGrade(pl)}${state ? `<span class="sts-res ${state.cls}">${state.txt}</span>` : (gs.kind === "pre" ? countdownChip(g, gs) : "")}</div>
+           <div class="sts-meta">${strengthChip(pl, !locked)}${pickStars(pl)}${pickGrade(pl)}${state ? `<span class="sts-res ${state.cls}">${state.txt}</span>` : (gs.kind === "pre" ? countdownChip(g, gs) : "")}</div>
            ${signalRow(pl)}
            ${pickMadeMeta(pl)}`;
       /* COMPOSITION: eyebrow, then ONE dominant element (the call, set at up to 72px), with
@@ -14685,6 +14803,74 @@ export default function Home() {
         </div>` : ""}
       </section>`;
     }
+    /* ═══════════════ THE RECORD, CUT BY PICK STRENGTH ═══════════════
+       The section above explains that the top strategies VOTE and the majority side plays.
+       This is the obvious next question and the payload can now answer it: when the room was
+       nearly unanimous, did the pick actually do better than when it scraped through?
+
+       IT IS SECONDARY BY CONSTRUCTION AND SAYS SO. The DiamondEdge record is the headline —
+       every pick, at every tier, one number — and this block is a CUT of that same
+       population, never a filter on it. The backend publishes the rail it is built on
+       (`sums_to_headline`: strong + standard + lean + untiered == headline.n) and the line
+       under the table repeats it in words, so no reader can come away thinking the strong
+       picks are the record and the rest are an asterisk.
+
+       IT RENDERS NOTHING RATHER THAN ZEROS. The product only started serving committee picks
+       on 2026-08-06, so the served cut is genuinely empty and a table of 0–0–0 rows would be
+       a measurement of nothing wearing the costume of one. When the served cut is empty, the
+       ENGINE'S OWN shadow ledger is shown instead — the same three tiers over the engine's
+       walk-forward picks — under its own heading and its own disclaimer, because it is
+       evidence about the tier and it is not our record. When neither has rows, this returns
+       "" and the page has no such section. */
+    function strengthRecordBlock() {
+      const rec: any = recordRoot();
+      const bs: any = rec && rec.by_strength;
+      if (!bs || typeof bs !== "object") return null;
+      const order: string[] = Array.isArray(bs.tier_order) && bs.tier_order.length
+        ? bs.tier_order : ["strong", "standard", "lean"];
+      const rowsFrom = (src: any) => order
+        .map((t) => ({ t, r: (src && src.tiers && src.tiers[t]) || null }))
+        .filter((x) => x.r && Number(x.r.n) > 0);
+      const served = rowsFrom(bs);
+      if (served.length) return { rows: served, own: true, src: bs };
+      const esl = bs.engine_shadow_ledger;
+      const shadow = esl && esl.available ? rowsFrom(esl) : [];
+      if (shadow.length) return { rows: shadow, own: false, src: esl };
+      return null;
+    }
+    function researchStrengthHtml() {
+      const blk = strengthRecordBlock();
+      if (!blk) return "";
+      const rank: any = { strong: 3, standard: 2, lean: 1 };
+      const rows = blk.rows.map(({ t, r }: any) => {
+        const dec = Number(r.win || 0) + Number(r.loss || 0);
+        const hit = r.hit_rate != null ? Number(r.hit_rate) : (dec ? Number(r.win) / dec : null);
+        const u = r["units_flat_-110"] != null ? Number(r["units_flat_-110"])
+          : (r.units != null ? Number(r.units) : null);
+        return `<div class="rstr-row">
+          <div class="rstr-k">
+            <span class="de-pips s${rank[t] || 1}" aria-hidden="true"><i></i><i></i><i></i></span>
+            <b>${esc(String(r.label || t))}</b>
+          </div>
+          <div class="rstr-figs">
+            <span class="rstr-f"><b>${esc(String(r.record || `${r.win}-${r.loss}-${r.push}`))}</b><i>record</i></span>
+            ${hit != null ? `<span class="rstr-f"><b>${(hit * 100).toFixed(1)}%</b><i>hit</i></span>` : ""}
+            ${u != null ? `<span class="rstr-f ${u >= 0 ? "pos" : "neg"}"><b>${u >= 0 ? "+" : ""}${u.toFixed(1)}u</b><i>net</i></span>` : ""}
+          </div>
+        </div>`;
+      }).join("");
+      const n = blk.rows.reduce((a: number, x: any) => a + Number(x.r.n || 0), 0);
+      return `<section class="rstr">
+        <header class="rstr-head">
+          <span class="rstr-kick">A cut of the record</span>
+          <h3 class="rstr-h">Does a fuller room win more often?</h3>
+        </header>
+        <p class="rstr-lede">Every pick is decided by a vote, and the votes are not always close. We count how much of the committee actually backed each side — abstentions counted against it — and file the pick as <b>Strong</b>, <b>Standard</b> or a <b>Lean</b>. The cuts were fixed in advance: half the room or more is Strong, a quarter or more is Standard.</p>
+        ${blk.own ? "" : `<p class="rstr-note">The rows below are the <b>engine's own shadow ledger</b>, not the DiamondEdge record. These are picks the engine graded against itself on nights the desk was on the card. They are evidence about the tiers; they are not a track record, and not one of them is counted anywhere else on this site.</p>`}
+        <div class="rstr-rows">${rows}</div>
+        <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers${n < 40 ? " — far too few to conclude anything yet, which is exactly why the split is published rather than claimed" : ""}. <b>Every pick counts in the DiamondEdge record regardless of its tier.</b> This is the same population cut three ways, never a shortlist.</p>
+      </section>`;
+    }
     /* ═══════════════ FIGURE: THE FORTNIGHT LEDGER ═══════════════
        Leon: "on the research tab there should be a cool calendar view… records based on
        picks made for the last 14 days or so."
@@ -14953,6 +15139,10 @@ export default function Home() {
                reader who does not care which rule won still needs, because it is the argument
                that the rule is disposable. -->
           ${researchSearchHtml()}
+          <!-- The committee votes, and the votes are not always close. This is that split,
+               graded — secondary to the headline record by construction, and rendering
+               nothing at all when there are no tiered picks to report. -->
+          ${researchStrengthHtml()}
           <!-- THE CLAIM, THEN THE RECEIPT. The section above asserts that the play is
                disposable and has to win the job back every morning. This figure is the
                fourteen nights that assertion is made of: the handovers are visible in the
@@ -15545,6 +15735,13 @@ export default function Home() {
                  203KB, rendered on every visit for content behind a closed disclosure. -->
             ${lazyFold("dp-more", `<span>The competition between them</span><span class="sgc-caret" aria-hidden="true">›</span>`,
               () => `<div class="dp-more-body">${deskRecapSection()}${weeklyRaceSection()}${rivalriesSection()}</div>`)}
+            <!-- PICK STRENGTH, AS AN INSIGHT AND NOT AS A RECORD. It sits inside a closed
+                 fold at the foot of the page, three folds below the headline number, because
+                 that is what it is: a cut, on a sample far too small to conclude from. The
+                 headline hero at the top of this page is the record and stays the record.
+                 The fold does not render at all when there are no tiered picks. -->
+            ${strengthRecordBlock() ? lazyFold("dp-strength", `<span>Strong picks vs thin ones</span><span class="sgc-caret" aria-hidden="true">›</span>`,
+              () => `<div class="dp-more-body">${researchStrengthHtml()}</div>`) : ""}
             <p class="dp-note"><b>How the records work.</b> Each analyst is measured on the calls they filed. DiamondEdge is measured on the picks it published. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
           </div>
 
