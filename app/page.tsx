@@ -3135,7 +3135,7 @@ export default function Home() {
         : avoid
           ? `<span class="de-side de-pass"><b>${esc(marketTxt)}</b><em class="de-leanonly">No DiamondEdge Pick here.</em></span>`
           : side
-            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(side)}</b>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}${strengthPips(pl, !locked && !avoid)}</span>`
+            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(side)}</b>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}${strengthPct(pl, !locked && !avoid)}</span>`
             : "";
       // only state the priced line when the call itself doesn't already contain that number
       const inSide = priced != null && side ? side.indexOf(lineStr(priced)) >= 0 : false;
@@ -7407,17 +7407,18 @@ export default function Home() {
        identically on this board can be backed by completely different rooms — nineteen of
        twenty-one seats calling it, or two of twenty-one with nineteen abstaining. Same tag,
        same word, wildly different backing. The backend cuts that share into three
-       pre-specified tiers (see v4/serve/pick_strength.py); this reads the tier and never
-       computes one.
+       pre-specified tiers (see v4/serve/pick_strength.py); this reads the tier, and only ever
+       recomputes it from the SAME published cuts when the payload ships the vote and omits the
+       label.
 
-       IT IS A FACT ON THE TAG, NOT A SECOND BADGE. Three pips at the end of the black tag,
-       filled to the tier — the same dot vocabulary the tag already uses for its lock state,
-       in the same colour as the word, so the eye reads ONE object ("UNDER, backed hard")
-       rather than two competing ones. No new chip, no new colour, no second row. On a board
-       tile it costs 15px and the row still holds one line at 375.
+       IT IS A FACT ON THE TAG, NOT A SECOND BADGE. One number at the end of the black tag —
+       a confidence percent, set in the tag's own dim mono, so the eye reads ONE object
+       ("UNDER, 62") rather than two competing ones. No new chip, no new colour, no second
+       row. On a board tile it costs ~15px, the same the three pips cost, and the row still
+       holds one line at 375 and at 360.
 
-       NEVER INVENTED. A desk-sourced or legacy pick carries no committee, so it gets NO pips
-       — not one pip, not a grey placeholder. An absent tier renders as nothing at all.
+       NEVER INVENTED. A desk-sourced or legacy pick carries no committee, so it gets NO
+       percent — not a floor value, not a placeholder. An absent committee renders as nothing.
 
        PREMIUM, EXACTLY LIKE THE SIDE. The tier is derived from the vote counts, and vote
        counts reconstruct the direction. The backend drops the whole `committee` sub-block
@@ -7425,13 +7426,83 @@ export default function Home() {
        resolves the direction to "", so a locked tag has no tier in its class, its title, its
        aria-label or anywhere else in the DOM. */
     const STRENGTH_RANK: any = { strong: 3, standard: 2, lean: 1 };
+    /* ════════════════ THE CONFIDENCE PERCENT — ONE NUMBER, HONESTLY DERIVED ════════════════
+       Leon: "goal wasn't to rank picks but rather… just have some cool percent on confidence
+       of pick."
+
+       IT IS NOT A NEW MEASUREMENT AND IT IS NOT A GUESS. It is the committee vote the payload
+       already carries, rescaled onto a readable 0–100 axis. Nothing is sampled, nothing is
+       randomised, nothing is fitted: the same board always produces the same number, and a
+       room that backed its side harder always produces a higher one.
+
+       WHAT GOES IN — two facts, both served, both already published on the pick:
+         backing   = votes_for / seats_total     the backend's own measure (pick_strength.py);
+                                                 seats_total INCLUDES abstentions, so a seat
+                                                 that stayed silent counts against the number
+         unanimity = votes_for / (votes_for + votes_against)   1.0 when nobody voted the other
+                                                 way; below 1 when the room was split
+
+       HOW IT MAPS. The percent is anchored to the SAME pre-specified cuts the tier ladder uses
+       (strong ≥ .50 of the seated committee, standard ≥ .25) so the number and the tier can
+       never contradict each other — a Strong pick always reads 85 or above, a Standard one 70
+       to 84, a Lean below 70. Inside its band the percent moves linearly with `backing`:
+
+            lean      backing 0    → .25   ⇒  50 → 69
+            standard  backing .25  → .50   ⇒  70 → 84
+            strong    backing .50  → 1.0   ⇒  85 → 99
+
+       THEN THE DISSENT HAIRCUT. A room that argued is less confident than a room that did
+       not, at identical backing, so the distance travelled ABOVE the band's floor is scaled by
+       `unanimity`. It can never push a pick below its own tier's floor — the tier is the
+       backend's call and this only positions within it.
+
+       WHY 50 IS THE FLOOR. The committee's majority side IS the pick — the pick was taken, so
+       the number that describes it starts at the coin flip and goes up. A percent under 50
+       would be describing a pick nobody made.
+
+       WHAT IT IS NOT. Not a win probability, not an edge, not a price. It says how much of the
+       room was behind the call, and nothing whatever about how often such calls land — which
+       is why the per-tier record is published separately and the number never sits next to a
+       payout. The tier name and the raw seat count both ride in the title.
+
+       NO COMMITTEE ⇒ NO NUMBER. A desk-sourced or legacy pick has no vote to read and gets
+       nothing at all — never 50, never a dash. */
+    const CONF_BANDS: any = {
+      lean: { lo: 0, hi: 0.25, floor: 50, span: 19 },
+      standard: { lo: 0.25, hi: 0.50, floor: 70, span: 14 },
+      strong: { lo: 0.50, hi: 1.00, floor: 85, span: 14 },
+    };
+    /* ABSENT IS NOT ZERO. `Number(null)` is 0 and `Number("")` is 0, so a plain Number() cast
+       turns "this pick has no committee" into "this pick had zero seats behind it" — which is
+       exactly how a desk-sourced pick with no vote at all first rendered a confident-looking
+       50%. Nullish, empty and boolean inputs are MISSING here, and missing renders nothing. */
+    const numOr = (v: any) => {
+      if (v === null || v === undefined || v === "" || typeof v === "boolean") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    function confidencePct(tier: string, backing: number | null, vf: number | null, va: number | null) {
+      const b = CONF_BANDS[tier];
+      if (!b || backing == null || !(backing >= 0)) return null;
+      const pos = Math.max(0, Math.min(1, (backing - b.lo) / (b.hi - b.lo)));
+      // the haircut only applies when BOTH counts are known; an unknown room is not a split one
+      const cast = vf != null && va != null && vf >= 0 && va >= 0 ? vf + va : null;
+      const unan = cast && cast > 0 ? Math.max(0, Math.min(1, (vf as number) / cast)) : 1;
+      return Math.max(50, Math.min(99, Math.round(b.floor + b.span * pos * unan)));
+    }
     /* ONE PLACE KNOWS THE PAYLOAD SHAPE. A pick reaches a renderer in two forms — the raw
        served object straight off the feed, and the normalised `play` v4ToPlay() builds for
        the board — so this reads BOTH: the normalised `strength` field first (v4ToPlay copies
        it forward), then the served committee block it came from — `engine_strategy` (the
        nightly engine, the board's selector since 2026-08-08) or `owner_strategy` (the
        owner-directed channel, whose already-served rows are frozen and keep their tier).
-       Everything else in the app asks this function and never touches the payload itself. */
+       Everything else in the app asks this function and never touches the payload itself.
+
+       READ DEFENSIVELY, ALWAYS. The backend is under active change, so every field below is
+       optional and every path has a fallback that ends in "render nothing": the share can come
+       from `strength.share`, from `committee.vote_share`, or be rebuilt from the raw counts;
+       the tier can be served or read off the share with the SAME published cuts; and if the
+       counts are missing entirely there is no percent, only whatever tier was served. */
     function committeeStrength(pl: any) {
       if (!pl || typeof pl !== "object") return null;
       const direct = pl.strength && typeof pl.strength === "object" ? pl.strength : null;
@@ -7441,34 +7512,80 @@ export default function Home() {
       const c = blk("engine_strategy") || blk("owner_strategy");
       const s = direct || (c && typeof c === "object" && c.strength
         && typeof c.strength === "object" ? c.strength : null);
-      const tier = String((s && s.tier) || (c && c.strength_tier) || "").toLowerCase();
+      // NO ROOM, NO READING. Every desk-sourced and legacy pick lands here and leaves empty.
+      if (!s && !(c && typeof c === "object")) return null;
+      // ── the raw room, whichever shape it arrived in ──
+      let vf = numOr(s && s.votes_for);
+      let va = numOr(s && s.votes_against);
+      let vx = numOr(s && s.votes_abstain);
+      if (vf == null && c && typeof c === "object") {
+        // the engine's block names the counts by SIDE — resolve them against the pick's side
+        const vo = numOr(c.votes_over), vu = numOr(c.votes_under);
+        const sideRaw = String((c.side != null ? c.side : pl.side) || "").toLowerCase();
+        if (vo != null && vu != null && (sideRaw === "over" || sideRaw === "under")) {
+          vf = sideRaw === "over" ? vo : vu;
+          va = sideRaw === "over" ? vu : vo;
+        }
+        if (vx == null) vx = numOr(c.votes_abstain);
+      }
+      let seats = numOr(s && s.seats_total);
+      if (seats == null && c && typeof c === "object") seats = numOr(c.seats_total);
+      if (seats == null && vf != null && va != null && vx != null) seats = vf + va + vx;
+      // ── the backing share: served first, rebuilt only if it has to be ──
+      let backing = numOr(s && s.share);
+      if (backing == null && c && typeof c === "object") backing = numOr(c.vote_share);
+      if (backing == null && vf != null && seats != null && seats > 0) backing = vf / seats;
+      if (backing != null && !(backing >= 0 && backing <= 1)) backing = null;
+      // ── the tier: served if it is there, otherwise the SAME published cuts on the share ──
+      let tier = String((s && s.tier) || (c && c.strength_tier) || "").toLowerCase();
+      if (!STRENGTH_RANK[tier] && backing != null) {
+        tier = backing >= 0.50 ? "strong" : backing >= 0.25 ? "standard" : "lean";
+      }
       if (!STRENGTH_RANK[tier]) return null;
       const rank = Math.max(1, Math.min(3, Number(s && s.rank) || STRENGTH_RANK[tier]));
       const label = String((s && s.label) || "") || (tier.charAt(0).toUpperCase() + tier.slice(1));
-      return { tier, rank, label, blurb: String((s && s.blurb) || "") };
+      const pct = confidencePct(tier, backing, vf, va);
+      return {
+        tier, rank, label, pct, seats, votesFor: vf,
+        blurb: String((s && s.blurb) || ""),
+      };
     }
-    /* The pips. `reveal` is the caller's gate — pass the same flag that decides whether the
-       side may be named, so the two can never diverge. */
-    function strengthPips(pl: any, reveal: boolean) {
+    /* THE PERCENT ON THE TAG. `reveal` is the caller's gate — pass the same flag that decides
+       whether the side may be named, so the two can never diverge: a locked tag carries no
+       tier, no number and no seat count anywhere in its DOM.
+       The tier survives underneath, in the title, exactly as the pips used to say it. */
+    function strengthConfTitle(s: any) {
+      if (!s || s.pct == null) return "";
+      const room = s.votesFor != null && s.seats
+        ? ` — ${s.votesFor} of ${s.seats} seats backed this side`
+        : "";
+      return `${s.pct}% confidence · ${s.label}${room}`;
+    }
+    function strengthPct(pl: any, reveal: boolean) {
       if (!reveal) return "";
       const s = committeeStrength(pl);
-      if (!s) return "";
-      return `<span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span>`;
+      if (!s || s.pct == null) return "";
+      return `<span class="de-conf q-${esc(s.tier)}" title="${esc(strengthConfTitle(s))}">${s.pct}%</span>`;
     }
+    /* (the pips helper retired with the pips' last call site on the tag. The dots survive as
+       markup in the two places the TIER itself is the subject — the story-deck chip below and
+       the research plate's per-tier record rows — and both write them inline.) */
     function strengthWords(pl: any, reveal: boolean) {
       const s = reveal ? committeeStrength(pl) : null;
-      return s ? `${s.label} conviction` : "";
+      if (!s) return "";
+      return s.pct != null ? strengthConfTitle(s) : `${s.label} conviction`;
     }
-    /* THE SAME PIPS, WITH THEIR NAME ON. The story deck is the one surface a reader meets at
-       walking pace, and it is where the pips get taught: same three dots, same fill, with the
-       word beside them once. Every other surface can then be silent, because by the time a
-       reader reaches the board they have already been told what the dots mean. */
+    /* WHERE THE NUMBER GETS ITS NAME. The story deck is the one surface a reader meets at
+       walking pace, and it is where the percent is taught rather than merely shown: the tier's
+       own pips, the tier's word, and the percent that came out of the same vote, side by side
+       once. By the time a reader reaches the board, "62%" on a black tag needs no caption. */
     function strengthChip(pl: any, reveal: boolean) {
       if (!reveal) return "";
       const s = committeeStrength(pl);
       if (!s) return "";
-      return `<span class="strchip q-${esc(s.tier)}" title="${esc(s.blurb || "")}">
-        <span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(s.label)}</b>
+      return `<span class="strchip q-${esc(s.tier)}" title="${esc(strengthConfTitle(s) || s.blurb || "")}">
+        <span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(s.label)}</b>${
+        s.pct != null ? `<span class="de-conf">${s.pct}%</span>` : ""}
       </span>`;
     }
     function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false, stamp = "") {
@@ -7490,6 +7607,17 @@ export default function Home() {
       const mod = cls ? ` dmp-${esc(String(cls).replace(/[^a-z0-9-]/gi, ""))}` : "";
       // the strength, gated on the SAME flag the direction is — see committeeStrength()
       const strTxt = strengthWords(pl, reveal);
+      /* ONE PERCENT PER ROW. Once a game is running, this row also carries the live clinch
+         meter — a second percent, on the same 139px line, answering a completely different
+         question ("chance this pick cashes, right now"). Two percents side by side is not a
+         denser row, it is an ambiguous one, and the live number is the one that matters after
+         the first pitch: the confidence is a PREGAME fact about how the room voted and it does
+         not move once the game starts. So the visible percent stands down for the duration of
+         the game and the fact survives in the tag's title and aria-label, which are built from
+         `strTxt` a few lines below and are not gated on this at all.
+         (It also keeps the live row inside its width budget — measured: 132px of content in a
+         139px column at 375 with the meter present, which leaves no room for a fourth cell.) */
+      const liveChip = /\bdmp-res\b/.test(String(stamp || ""));
       const title = noPick ? `Market total${line ? ` ${line}` : ""}`
         : locked ? "DiamondEdge Pick locked"
           : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}${strTxt ? ` · ${strTxt}` : ""}` : "DiamondEdge Pick";
@@ -7574,7 +7702,7 @@ export default function Home() {
         : noPick ? ""
         : `<span class="de-mini-call">${mark}${locked
             ? `<i class="de-mini-redact" aria-hidden="true"></i>`
-            : `<b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPips(pl, reveal)}`}</span>`;
+            : `<b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPct(pl, reveal && !liveChip)}`}</span>`;
       return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${upcoming ? " upcoming" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(upcoming ? picksEtaLong(g) : title)}" role="img" aria-label="${esc(upcoming ? picksEtaLong(g) : aria)}">
         ${ouCell}${callCell || stamp ? `<span class="dmp-right">${callCell}${stamp}</span>` : ""}
       </span>`;
@@ -8002,7 +8130,8 @@ export default function Home() {
          (the colour and the fill already say the state, and the word survives in the title
          and the aria-label), and the "O/U" label goes where a call is present because the
          number's position already says what it is. What is NOT touched: the pick tag, the
-         market number's size, the strength pips. The row is `nowrap` at tile size now, so
+         market number's size, the strength indicator (the confidence percent, which took the
+         pips' exact slot on the tag). The row is `nowrap` at tile size now, so
          it cannot silently wrap again — if something ever does not fit, the CTA is the one
          element allowed to give. */
       const verdictBlk = vd

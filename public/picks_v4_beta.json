@@ -4,7 +4,7 @@
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
   "record_basis": "headline = CHAMPION V2 stream (champion picks x +EV gate at real per-side prices); v4 model grid record = sealed 2026 walk (42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f), star-capped take set, TOTALS ONLY",
-  "generated_utc": "2026-08-08T09:14:57Z",
+  "generated_utc": "2026-08-08T17:00:06Z",
   "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
   "recipe_sha256": "ecac66ecf0bc6b198550786b38930c345d7d20669f7f32719fe075407adc9b48",
   "performance_claim": "NONE \u2014 data is a validation slice; no edge is claimed.",
@@ -41,34 +41,34 @@
       },
       "by_star_tier": {
         "5": {
-          "n": 38,
+          "n": 37,
           "win": 18,
-          "loss": 20,
+          "loss": 19,
           "push": 0,
-          "record": "18-20-0",
-          "hit_rate": 0.4737,
-          "roi": -0.0869,
-          "units": -3.303,
+          "record": "18-19-0",
+          "hit_rate": 0.4865,
+          "roi": -0.0623,
+          "units": -2.303,
           "units_weighted": {
-            "units": -6.607,
-            "staked": 76.0,
-            "roi": -0.0869,
+            "units": -4.607,
+            "staked": 74.0,
+            "roi": -0.0623,
             "n_offladder_flat_1u": 0
           }
         },
         "4": {
-          "n": 43,
+          "n": 44,
           "win": 22,
-          "loss": 18,
+          "loss": 19,
           "push": 3,
-          "record": "22-18-3",
-          "hit_rate": 0.55,
-          "roi": 0.058,
-          "units": 2.32,
+          "record": "22-19-3",
+          "hit_rate": 0.5366,
+          "roi": 0.0322,
+          "units": 1.32,
           "units_weighted": {
-            "units": 4.641,
-            "staked": 80.0,
-            "roi": 0.058,
+            "units": 2.641,
+            "staked": 82.0,
+            "roi": 0.0322,
             "n_offladder_flat_1u": 0
           }
         },
@@ -319,9 +319,9 @@
           }
         }
       },
-      "n_takes": 96,
-      "n_playable": 96,
-      "n_pending": 0,
+      "n_takes": 98,
+      "n_playable": 98,
+      "n_pending": 2,
       "headline_dedup": {
         "n_rows_dropped": 101,
         "note": "HEADLINE DEDUP: a game emits multiple graded rows per stream (a reconstructed/live game grades one row PER WALL). Every rollup here counts ONE result per (game x stream): the canonical row = the locked/frozen decision wall (latest lead_time, nearest first pitch), else the priced ledger entry. n_rows_dropped = the duplicate per-wall rows collapsed away before counting."
@@ -331,11 +331,11 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 90,
+        "n": 91,
         "n_graded": 85,
-        "n_pending_or_no_result": 5,
+        "n_pending_or_no_result": 6,
         "by_reason": {
-          "ev_gate": 86,
+          "ev_gate": 87,
           "price_only": 0,
           "toxic_tail": 4
         },
@@ -360,7 +360,7 @@
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate AND outside the measured >=0.065 anti-signal tail. EXECUTION LAYER (Leon, 2026-07-09 \u2014 the proven config): the +EV GATE evaluates at the MEDIAN de-vig per-side price at the pick's line (strict entry), while the served/graded per-side price is the BEST EXECUTABLE price at that same line (payout gain; the median is carried per row as median_price + gate_price/gate_ev diagnostics). A row playable only on best-book juice (fails the median gate) is NOT a pick: the median-gated set repriced at best ran +3.2% ROI (41-35-1) on the 2026 backfill, the 21 gate-expansion picks ran -25% and are EXCLUDED. record.best_vs_median_2026 carries the exact 3-way same-pick-set comparison (median / median_gate_best / best). HEADLINE DEDUP: the headline + per-tier + per-lead + per-source + per-month rollups count ONE result per (game x stream) \u2014 a game that emits multiple per-wall graded rows (reconstructed/live) counts once (the locked/latest-wall canonical); n_rows_dropped is disclosed in record.headline_dedup. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, morning shopped/median per-side prices) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot best-book price they were served at (gated at the median). Every record block also carries units_weighted \u2014 the same picks staked by the star-tier ladder (see UNITS_BASIS) \u2014 next to the flat 1u record.",
       "best_vs_median_2026": {
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
-        "n_rows_each": 146,
+        "n_rows_each": 149,
         "median": {
           "n": 87,
           "win": 45,
@@ -371,12 +371,12 @@
           "roi": -0.0008,
           "units": -0.069,
           "units_weighted": {
-            "units": -2.822,
-            "staked": 137.0,
-            "roi": -0.0206,
+            "units": -1.822,
+            "staked": 136.0,
+            "roi": -0.0134,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 87,
+          "n_playable": 89,
           "by_star_tier": {
             "4": {
               "n": 35,
@@ -395,18 +395,18 @@
               }
             },
             "3": {
-              "n": 35,
+              "n": 36,
               "win": 19,
-              "loss": 14,
+              "loss": 15,
               "push": 2,
-              "record": "19-14-2",
-              "hit_rate": 0.5758,
-              "roi": 0.0813,
-              "units": 2.683,
+              "record": "19-15-2",
+              "hit_rate": 0.5588,
+              "roi": 0.0495,
+              "units": 1.683,
               "units_weighted": {
-                "units": 2.683,
-                "staked": 33.0,
-                "roi": 0.0813,
+                "units": 1.683,
+                "staked": 34.0,
+                "roi": 0.0495,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -443,21 +443,21 @@
             "roi": 0.0022,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 87,
+          "n_playable": 89,
           "by_star_tier": {
             "4": {
-              "n": 36,
+              "n": 37,
               "win": 19,
-              "loss": 15,
+              "loss": 16,
               "push": 2,
-              "record": "19-15-2",
-              "hit_rate": 0.5588,
-              "roi": 0.0714,
-              "units": 2.427,
+              "record": "19-16-2",
+              "hit_rate": 0.5429,
+              "roi": 0.0408,
+              "units": 1.427,
               "units_weighted": {
-                "units": 4.854,
-                "staked": 68.0,
-                "roi": 0.0714,
+                "units": 2.854,
+                "staked": 70.0,
+                "roi": 0.0408,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -510,21 +510,21 @@
             "roi": -0.012,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 120,
+          "n_playable": 123,
           "by_star_tier": {
             "4": {
-              "n": 50,
+              "n": 51,
               "win": 26,
-              "loss": 21,
+              "loss": 22,
               "push": 3,
-              "record": "26-21-3",
-              "hit_rate": 0.5532,
-              "roi": 0.0636,
-              "units": 2.991,
+              "record": "26-22-3",
+              "hit_rate": 0.5417,
+              "roi": 0.0415,
+              "units": 1.991,
               "units_weighted": {
-                "units": 5.981,
-                "staked": 94.0,
-                "roi": 0.0636,
+                "units": 3.981,
+                "staked": 96.0,
+                "roi": 0.0415,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -577,7 +577,7 @@
             "roi": 0.0022,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 87,
+          "n_playable": 89,
           "note": "the MEDIAN-gated playable set, priced + graded at the best executable price \u2014 THE PROVEN CONFIG (median_gate_best). Pure price improvement of the median set, no gate expansion"
         },
         "newly_playable_record": {
@@ -597,7 +597,7 @@
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
         },
-        "n_newly_playable_at_best": 33,
+        "n_newly_playable_at_best": 34,
         "newly_playable_at_best": [
           {
             "date": "2026-03-28",
@@ -961,6 +961,17 @@
             "best_book": "lowvig",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 54.1% vs median break-even 53.5% at -115 (median ev +1.20% < +1.5% min)",
             "result": null
+          },
+          {
+            "date": "2026-08-08",
+            "matchup": "ATL @ NYY",
+            "side": "over",
+            "line": 7.5,
+            "median_price": 104,
+            "best_price": 107,
+            "best_book": "lowvig",
+            "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min)",
+            "result": null
           }
         ],
         "n_dropped_at_best": 0,
@@ -970,9 +981,9 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-08-08T09:14:56Z",
+    "record_generated_utc": "2026-08-08T17:00:06Z",
     "backfill": {
-      "n_rows": 146,
+      "n_rows": 149,
       "sources": {
         "rolling_origin_2026": {
           "n": 96,
@@ -983,10 +994,10 @@
           "what": "champion's own rolling-origin (expanding, 14-day retrain) 2026 stream, Tier A trigger, stored median morning per-side prices \u2014 bets_expanding.parquet"
         },
         "forward_paper_ledger": {
-          "n": 50,
+          "n": 53,
           "date_range": [
             "2026-07-02",
-            "2026-08-07"
+            "2026-08-08"
           ],
           "what": "the live value-plays paper track (value_plays_ledger.json), Tier A + Tier B, stored frozen morning price"
         }
@@ -1346,9 +1357,9 @@
         "gate_ev": 0.0308,
         "gate_p_breakeven": 0.5238,
         "tier": "Good",
-        "stars": 5,
-        "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.7,
+        "stars": 4,
+        "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
+        "score": 4.69,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1411,7 +1422,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.71,
+        "score": 4.7,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1474,7 +1485,7 @@
         "tier": "Good",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.52,
+        "score": 4.51,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1600,7 +1611,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.46,
+        "score": 3.45,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1856,7 +1867,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.32,
+        "score": 3.31,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -1982,7 +1993,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.9,
+        "score": 4.89,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2301,7 +2312,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.79,
+        "score": 4.78,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2492,7 +2503,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.8,
+        "score": 4.79,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2555,7 +2566,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.75,
+        "score": 4.74,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2618,7 +2629,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.45,
+        "score": 3.44,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2807,7 +2818,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.9,
+        "score": 4.91,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -2933,7 +2944,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.3,
+        "score": 4.29,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3059,7 +3070,7 @@
         "tier": "Good",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.12,
+        "score": 4.11,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3250,7 +3261,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 3.96,
+        "score": 3.95,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3441,7 +3452,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.32,
+        "score": 4.31,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3758,7 +3769,7 @@
         "tier": "Good",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.64,
+        "score": 4.63,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -3821,7 +3832,7 @@
         "tier": "Good",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.56,
+        "score": 4.55,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4199,7 +4210,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.09,
+        "score": 4.08,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4579,7 +4590,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.84,
+        "score": 3.83,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -4957,7 +4968,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.26,
+        "score": 3.25,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5083,7 +5094,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.81,
+        "score": 4.8,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5146,7 +5157,7 @@
         "tier": "Lean",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.81,
+        "score": 4.82,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5335,7 +5346,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.0,
+        "score": 3.98,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5398,7 +5409,7 @@
         "tier": "Lean",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.73,
+        "score": 4.72,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5461,7 +5472,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.76,
+        "score": 3.75,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -5910,7 +5921,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.41,
+        "score": 4.4,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -6038,7 +6049,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.43,
+        "score": 3.42,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -6227,7 +6238,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.91,
+        "score": 3.9,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -6483,7 +6494,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.43,
+        "score": 4.42,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -6611,7 +6622,7 @@
         "tier": "Lean",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.72,
+        "score": 4.71,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -6991,7 +7002,7 @@
         "tier": "Good",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.9,
+        "score": 4.91,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -7119,7 +7130,7 @@
         "tier": "Lean",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.77,
+        "score": 4.76,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -7310,7 +7321,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 3.98,
+        "score": 3.97,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -7956,7 +7967,7 @@
         "tier": "PASS",
         "stars": 1,
         "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
-        "score": 1.47,
+        "score": 1.46,
         "gate_reason": "negative_ev",
         "champion": {
           "tier": "B",
@@ -8084,7 +8095,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.05,
+        "score": 4.04,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -8147,7 +8158,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.47,
+        "score": 3.46,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -8405,7 +8416,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.59,
+        "score": 4.58,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -8988,7 +8999,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.72,
+        "score": 3.71,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -9051,7 +9062,7 @@
         "tier": "Lean",
         "stars": 3,
         "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
-        "score": 3.91,
+        "score": 3.9,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -9114,7 +9125,7 @@
         "tier": "Lean",
         "stars": 4,
         "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-        "score": 4.29,
+        "score": 4.28,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "A",
@@ -9500,7 +9511,7 @@
         "tier": "Lean",
         "stars": 5,
         "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-        "score": 4.73,
+        "score": 4.72,
         "gate_reason": "take_+ev",
         "champion": {
           "tier": "B",
@@ -10299,6 +10310,191 @@
         "pnl": 0.885,
         "graded_line": 8.0,
         "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
+      },
+      {
+        "model": "champion_v2",
+        "source": "forward_paper_ledger",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-12h",
+        "date": "2026-08-08",
+        "game_pk": 823021,
+        "game_id": "2026-08-08-COL-STL",
+        "matchup": "COL @ STL",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": null,
+        "market_line": 8.5,
+        "pick_side": "over",
+        "pick_line": 8.5,
+        "lean": {
+          "side": "over",
+          "line": 8.5
+        },
+        "our_prob": 0.5453,
+        "per_side_price": -110,
+        "best_book": "bovada",
+        "median_price": -115,
+        "p_breakeven": 0.5238,
+        "ev": 0.041,
+        "ev_min": 0.015,
+        "take": true,
+        "playable": true,
+        "gate_price": -115,
+        "gate_ev": 0.0195,
+        "gate_p_breakeven": 0.5349,
+        "tier": "Lean",
+        "stars": 4,
+        "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
+        "score": 4.34,
+        "gate_reason": "take_+ev",
+        "champion": {
+          "tier": "A",
+          "edge": 0.0345,
+          "signed_edge": 0.0345,
+          "side": "over",
+          "frozen_at": "2026-08-08T12:18:58.327929+00:00",
+          "morning_price": -115,
+          "nlines": 2
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "A",
+          "champion_edge": 0.0345,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "suggested_units": 2.0,
+        "result": null,
+        "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
+      },
+      {
+        "model": "champion_v2",
+        "source": "forward_paper_ledger",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-12h",
+        "date": "2026-08-08",
+        "game_pk": 823102,
+        "game_id": "2026-08-08-TB-SEA",
+        "matchup": "TB @ SEA",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": null,
+        "market_line": 7.0,
+        "pick_side": "over",
+        "pick_line": 7.0,
+        "lean": {
+          "side": "over",
+          "line": 7.0
+        },
+        "our_prob": 0.5584,
+        "per_side_price": -109,
+        "best_book": "betrivers",
+        "median_price": -119,
+        "p_breakeven": 0.5215,
+        "ev": 0.0707,
+        "ev_min": 0.015,
+        "take": true,
+        "playable": true,
+        "gate_price": -119,
+        "gate_ev": 0.0276,
+        "gate_p_breakeven": 0.5434,
+        "tier": "Lean",
+        "stars": 5,
+        "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
+        "score": 4.81,
+        "gate_reason": "take_+ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0393,
+          "signed_edge": 0.0393,
+          "side": "over",
+          "frozen_at": "2026-08-08T12:18:58.329578+00:00",
+          "morning_price": -119,
+          "nlines": 1
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0393,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "suggested_units": 2.0,
+        "result": null,
+        "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
+      },
+      {
+        "model": "champion_v2",
+        "source": "forward_paper_ledger",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-12h",
+        "date": "2026-08-08",
+        "game_pk": 823514,
+        "game_id": "2026-08-08-ATL-NYY",
+        "matchup": "ATL @ NYY",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": null,
+        "market_line": 7.5,
+        "pick_side": null,
+        "pick_line": 7.5,
+        "lean": {
+          "side": "over",
+          "line": 7.5
+        },
+        "our_prob": 0.4954,
+        "per_side_price": 107,
+        "best_book": "lowvig",
+        "median_price": 104,
+        "p_breakeven": 0.4831,
+        "ev": 0.0255,
+        "ev_min": 0.015,
+        "take": false,
+        "playable": false,
+        "gate_price": 104,
+        "gate_ev": 0.0106,
+        "gate_p_breakeven": 0.4902,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.95,
+        "gate_reason": "below_ev_min",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0239,
+          "signed_edge": 0.0239,
+          "side": "over",
+          "frozen_at": "2026-08-08T12:18:58.328770+00:00",
+          "morning_price": 104,
+          "nlines": 2
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0239,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "informational_lean": "over",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min); +EV at best 107 but gate-expansion picks measured -25% ROI \u2014 not a bet",
+        "result": null,
+        "price_basis": "stored frozen morning BEST executable per-side price at the pick's line (champion ledger shop; median carried as reference)"
       }
     ]
   },
@@ -10359,18 +10555,18 @@
     "version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
     "cutoff_5": 4.7,
     "cutoff_4": 3.95,
-    "cutoff_3": 2.91,
+    "cutoff_3": 2.9,
     "target_fracs": {
       "5": 0.1,
       "4": 0.25,
       "3": 0.35
     },
-    "n_playable_scores": 535,
+    "n_playable_scores": 537,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-08T09:14:56Z",
+    "generated_utc": "2026-08-08T17:00:06Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
-    "n_nonplayable_scores": 6118
+    "n_nonplayable_scores": 6119
   },
   "score_reference": {
     "version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
@@ -10378,13 +10574,13 @@
       "w_edge": 0.5,
       "w_ev": 0.5
     },
-    "n_playable": 535,
-    "n_nonplayable": 6118,
+    "n_playable": 537,
+    "n_nonplayable": 6119,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-08T09:14:56Z",
+    "generated_utc": "2026-08-08T17:00:06Z",
     "basis": "v3.2 frozen season reference: percentile ranks of |model divergence| and EV (0.5/0.5 blend) over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill); non-playable rows rank in their own frozen distribution (tail-inverted edge measure + pass EV position). Frozen for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: no score promotes a non-playable row.",
     "playable": {
-      "n": 535,
+      "n": 537,
       "edge_percentiles": {
         "0": 0.01,
         "5": 0.0105,
@@ -10392,71 +10588,71 @@
         "15": 0.0121,
         "20": 0.0127,
         "25": 0.0132,
-        "30": 0.0139,
+        "30": 0.014,
         "35": 0.0146,
         "40": 0.0153,
         "45": 0.0162,
         "50": 0.0169,
         "55": 0.0177,
         "60": 0.0185,
-        "65": 0.0198,
-        "70": 0.0227,
-        "75": 0.0257,
-        "80": 0.0317,
-        "85": 0.034,
-        "90": 0.0395,
+        "65": 0.0199,
+        "70": 0.0231,
+        "75": 0.0263,
+        "80": 0.032,
+        "85": 0.0342,
+        "90": 0.0394,
         "95": 0.0469,
         "100": 0.0623
       },
       "ev_percentiles": {
         "0": 0.0151,
         "5": 0.0176,
-        "10": 0.019,
+        "10": 0.0191,
         "15": 0.0206,
         "20": 0.0234,
         "25": 0.0255,
-        "30": 0.0273,
+        "30": 0.0274,
         "35": 0.0298,
         "40": 0.0319,
-        "45": 0.0341,
+        "45": 0.0342,
         "50": 0.0367,
-        "55": 0.0391,
-        "60": 0.0418,
+        "55": 0.0393,
+        "60": 0.042,
         "65": 0.0444,
         "70": 0.0469,
-        "75": 0.05,
-        "80": 0.0533,
-        "85": 0.0583,
+        "75": 0.0501,
+        "80": 0.0537,
+        "85": 0.0584,
         "90": 0.0642,
         "95": 0.0751,
         "100": 0.1224
       },
       "strength_percentiles": {
         "0": 0.014,
-        "5": 0.1019,
-        "10": 0.1762,
-        "15": 0.2383,
-        "20": 0.278,
-        "25": 0.3164,
-        "30": 0.3491,
-        "35": 0.385,
-        "40": 0.4093,
-        "45": 0.4304,
-        "50": 0.4626,
-        "55": 0.5126,
-        "60": 0.5593,
-        "65": 0.5958,
-        "70": 0.6388,
-        "75": 0.6925,
-        "80": 0.7364,
-        "85": 0.8,
-        "90": 0.8551,
-        "95": 0.9346,
+        "5": 0.1015,
+        "10": 0.1755,
+        "15": 0.2374,
+        "20": 0.277,
+        "25": 0.3152,
+        "30": 0.3487,
+        "35": 0.3836,
+        "40": 0.4078,
+        "45": 0.4302,
+        "50": 0.4679,
+        "55": 0.5163,
+        "60": 0.5596,
+        "65": 0.5954,
+        "70": 0.6378,
+        "75": 0.6974,
+        "80": 0.7379,
+        "85": 0.7998,
+        "90": 0.8529,
+        "95": 0.9339,
         "100": 0.9953
       }
     },
     "nonplayable": {
-      "n": 6118,
+      "n": 6119,
       "edge_percentiles": {
         "0": 0.0,
         "5": 0.0092,
@@ -10494,7 +10690,7 @@
         "50": 0.8678,
         "55": 0.8939,
         "60": 0.92,
-        "65": 0.9496,
+        "65": 0.9504,
         "70": 0.9765,
         "75": 1.0,
         "80": 1.0,
@@ -10507,23 +10703,23 @@
         "0": 0.0014,
         "5": 0.0867,
         "10": 0.1428,
-        "15": 0.2009,
+        "15": 0.2008,
         "20": 0.2578,
-        "25": 0.3061,
-        "30": 0.3473,
-        "35": 0.3922,
-        "40": 0.4338,
-        "45": 0.4772,
+        "25": 0.306,
+        "30": 0.3472,
+        "35": 0.3921,
+        "40": 0.4337,
+        "45": 0.4771,
         "50": 0.5135,
         "55": 0.5505,
-        "60": 0.5888,
-        "65": 0.6235,
-        "70": 0.6626,
-        "75": 0.6975,
-        "80": 0.7383,
-        "85": 0.7815,
-        "90": 0.8284,
-        "95": 0.896,
+        "60": 0.5896,
+        "65": 0.6234,
+        "70": 0.6625,
+        "75": 0.6973,
+        "80": 0.7382,
+        "85": 0.7814,
+        "90": 0.8288,
+        "95": 0.8959,
         "100": 0.9345
       }
     },
@@ -10591,16 +10787,16 @@
   "star_census": {
     "all_rows": {
       "5": 17,
-      "4": 97,
-      "3": 173,
-      "2": 161,
+      "4": 96,
+      "3": 175,
+      "2": 160,
       "1": 6059
     },
     "playable_only": {
       "5": 17,
-      "4": 97,
-      "3": 173,
-      "2": 161
+      "4": 96,
+      "3": 175,
+      "2": 160
     },
     "n_playable": 448,
     "n_pass_leans": 6059,
@@ -10644,7 +10840,7 @@
       "matchup": "Detroit Tigers @ San Diego Padres",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.48,
+      "score": 4.47,
       "lean": {
         "side": "under",
         "line": 7.5
@@ -10672,7 +10868,7 @@
       "matchup": "Athletics @ Toronto Blue Jays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.57,
+      "score": 4.56,
       "lean": {
         "side": "under",
         "line": 8.5
@@ -10700,7 +10896,7 @@
       "matchup": "San Francisco Giants @ San Diego Padres",
       "source_model": "residual_total_v1",
       "stars": 5,
-      "score": 4.99,
+      "score": 4.98,
       "lean": {
         "side": "under",
         "line": 7.5
@@ -10728,7 +10924,7 @@
       "matchup": "New York Mets @ San Francisco Giants",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.1,
+      "score": 4.09,
       "lean": {
         "side": "under",
         "line": 7.0
@@ -10812,7 +11008,7 @@
       "matchup": "San Diego Padres @ Pittsburgh Pirates",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.8,
+      "score": 4.79,
       "lean": {
         "side": "under",
         "line": 7.5
@@ -10826,7 +11022,7 @@
       "matchup": "Chicago White Sox @ Kansas City Royals",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.19,
+      "score": 4.18,
       "lean": {
         "side": "under",
         "line": 9.5
@@ -10854,7 +11050,7 @@
       "matchup": "Texas Rangers @ Los Angeles Dodgers",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.59,
+      "score": 4.57,
       "lean": {
         "side": "under",
         "line": 9.0
@@ -10896,7 +11092,7 @@
       "matchup": "Los Angeles Angels @ New York Yankees",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.9,
+      "score": 4.91,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -10924,7 +11120,7 @@
       "matchup": "Texas Rangers @ Athletics",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.46,
+      "score": 4.45,
       "lean": {
         "side": "over",
         "line": 9.25
@@ -10980,7 +11176,7 @@
       "matchup": "St. Louis Cardinals @ Miami Marlins",
       "source_model": "champion_v2",
       "stars": 4,
-      "score": 4.32,
+      "score": 4.31,
       "lean": {
         "side": "over",
         "line": 8.0
@@ -11036,7 +11232,7 @@
       "matchup": "Cleveland Guardians @ Toronto Blue Jays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.67,
+      "score": 4.66,
       "lean": {
         "side": "under",
         "line": 8.0
@@ -11050,7 +11246,7 @@
       "matchup": "Washington Nationals @ Chicago White Sox",
       "source_model": "champion_v2",
       "stars": 4,
-      "score": 4.56,
+      "score": 4.55,
       "lean": {
         "side": "under",
         "line": 8.5
@@ -11078,7 +11274,7 @@
       "matchup": "Boston Red Sox @ Toronto Blue Jays",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.4,
+      "score": 3.39,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -11176,7 +11372,7 @@
       "matchup": "Los Angeles Dodgers @ Houston Astros",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.71,
+      "score": 3.7,
       "lean": {
         "side": "under",
         "line": 9.0
@@ -11204,7 +11400,7 @@
       "matchup": "Texas Rangers @ New York Yankees",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.15,
+      "score": 4.14,
       "lean": {
         "side": "under",
         "line": 8.0
@@ -11218,7 +11414,7 @@
       "matchup": "Cleveland Guardians @ Kansas City Royals",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.36,
+      "score": 3.35,
       "lean": {
         "side": "over",
         "line": 9.0
@@ -11232,7 +11428,7 @@
       "matchup": "Colorado Rockies @ Philadelphia Phillies",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.3,
+      "score": 4.29,
       "lean": {
         "side": "over",
         "line": 8.0
@@ -11260,7 +11456,7 @@
       "matchup": "Atlanta Braves @ Los Angeles Dodgers",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.81,
+      "score": 4.8,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -11274,7 +11470,7 @@
       "matchup": "Los Angeles Angels @ Cleveland Guardians",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.81,
+      "score": 4.82,
       "lean": {
         "side": "under",
         "line": 8.0
@@ -11302,7 +11498,7 @@
       "matchup": "St. Louis Cardinals @ Athletics",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 3.97,
+      "score": 3.96,
       "lean": {
         "side": "over",
         "line": 10.0
@@ -11387,7 +11583,7 @@
       "matchup": "Texas Rangers @ Colorado Rockies",
       "source_model": "champion_v2",
       "stars": 4,
-      "score": 4.41,
+      "score": 4.4,
       "lean": {
         "side": "under",
         "line": 10.0
@@ -11431,7 +11627,7 @@
       "matchup": "Chicago White Sox @ San Francisco Giants",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.07,
+      "score": 4.06,
       "lean": {
         "side": "under",
         "line": 7.0
@@ -11445,7 +11641,7 @@
       "matchup": "Pittsburgh Pirates @ Toronto Blue Jays",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.47,
+      "score": 3.46,
       "lean": {
         "side": "under",
         "line": 7.5
@@ -11473,7 +11669,7 @@
       "matchup": "Colorado Rockies @ Los Angeles Dodgers",
       "source_model": "residual_total_v1",
       "stars": 2,
-      "score": 2.7,
+      "score": 2.69,
       "lean": {
         "side": "under",
         "line": 9.0
@@ -11487,7 +11683,7 @@
       "matchup": "Houston Astros @ Texas Rangers",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.06,
+      "score": 4.05,
       "lean": {
         "side": "under",
         "line": 8.5
@@ -11544,7 +11740,7 @@
       "matchup": "Detroit Tigers @ Chicago White Sox",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.72,
+      "score": 4.71,
       "lean": {
         "side": "under",
         "line": 7.5
@@ -11690,7 +11886,7 @@
       "matchup": "Texas Rangers @ Kansas City Royals",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.9,
+      "score": 4.91,
       "lean": {
         "side": "over",
         "line": 9.0
@@ -11733,7 +11929,7 @@
       "matchup": "Philadelphia Phillies @ Milwaukee Brewers",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 2.91,
+      "score": 2.92,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -11747,7 +11943,7 @@
       "matchup": "Seattle Mariners @ Washington Nationals",
       "source_model": "residual_total_v1",
       "stars": 2,
-      "score": 2.66,
+      "score": 2.65,
       "lean": {
         "side": "over",
         "line": 8.75
@@ -11806,7 +12002,7 @@
       "matchup": "Los Angeles Angels @ Arizona Diamondbacks",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.23,
+      "score": 3.22,
       "lean": {
         "side": "over",
         "line": 9.0
@@ -11820,7 +12016,7 @@
       "matchup": "New York Mets @ Philadelphia Phillies",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 3.99,
+      "score": 3.98,
       "lean": {
         "side": "over",
         "line": 9.5
@@ -11862,7 +12058,7 @@
       "matchup": "New York Mets @ Philadelphia Phillies",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 2.92,
+      "score": 2.91,
       "lean": {
         "side": "over",
         "line": 7.75
@@ -11876,7 +12072,7 @@
       "matchup": "Cleveland Guardians @ Chicago White Sox",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.62,
+      "score": 3.61,
       "lean": {
         "side": "over",
         "line": 8.0
@@ -11890,7 +12086,7 @@
       "matchup": "Seattle Mariners @ Pittsburgh Pirates",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.69,
+      "score": 3.7,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -11904,7 +12100,7 @@
       "matchup": "Kansas City Royals @ Tampa Bay Rays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.54,
+      "score": 4.53,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -11918,7 +12114,7 @@
       "matchup": "Kansas City Royals @ Tampa Bay Rays",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.81,
+      "score": 3.8,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -11932,7 +12128,7 @@
       "matchup": "Colorado Rockies @ Minnesota Twins",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.58,
+      "score": 4.59,
       "lean": {
         "side": "over",
         "line": 9.0
@@ -12002,7 +12198,7 @@
       "matchup": "Miami Marlins @ Colorado Rockies",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.23,
+      "score": 4.22,
       "lean": {
         "side": "over",
         "line": 11.0
@@ -12016,7 +12212,7 @@
       "matchup": "MIA @ COL",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.77,
+      "score": 4.76,
       "lean": {
         "side": "under",
         "line": 12.0
@@ -12030,7 +12226,7 @@
       "matchup": "New York Mets @ Atlanta Braves",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.35,
+      "score": 4.34,
       "lean": {
         "side": "over",
         "line": 9.5
@@ -12044,7 +12240,7 @@
       "matchup": "Miami Marlins @ Athletics",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.65,
+      "score": 3.64,
       "lean": {
         "side": "over",
         "line": 10.5
@@ -12073,7 +12269,7 @@
       "matchup": "New York Yankees @ Tampa Bay Rays",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.44,
+      "score": 4.43,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -12129,7 +12325,7 @@
       "matchup": "Milwaukee Brewers @ Pittsburgh Pirates",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.81,
+      "score": 3.8,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -12143,7 +12339,7 @@
       "matchup": "Cleveland Guardians @ Miami Marlins",
       "source_model": "residual_total_v1",
       "stars": 4,
-      "score": 4.39,
+      "score": 4.38,
       "lean": {
         "side": "over",
         "line": 7.5
@@ -12157,7 +12353,7 @@
       "matchup": "ATL @ STL",
       "source_model": "champion_v2",
       "stars": 4,
-      "score": 4.05,
+      "score": 4.04,
       "lean": {
         "side": "under",
         "line": 8.5
@@ -12185,7 +12381,7 @@
       "matchup": "SF @ SEA",
       "source_model": "champion_v2",
       "stars": 4,
-      "score": 4.59,
+      "score": 4.58,
       "lean": {
         "side": "over",
         "line": 7.0
@@ -12227,7 +12423,7 @@
       "matchup": "Miami Marlins @ Houston Astros",
       "source_model": "residual_total_v1",
       "stars": 5,
-      "score": 4.87,
+      "score": 4.85,
       "lean": {
         "side": "under",
         "line": 9.0
@@ -12240,8 +12436,8 @@
       "game_pk": 824896,
       "matchup": "San Diego Padres @ Atlanta Braves",
       "source_model": "residual_total_v1",
-      "stars": 5,
-      "score": 4.7,
+      "stars": 4,
+      "score": 4.69,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -12255,7 +12451,7 @@
       "matchup": "San Diego Padres @ Miami Marlins",
       "source_model": "residual_total_v1",
       "stars": 3,
-      "score": 3.38,
+      "score": 3.37,
       "lean": {
         "side": "over",
         "line": 9.0
@@ -12283,7 +12479,7 @@
       "matchup": "LAD @ NYM",
       "source_model": "champion_v2",
       "stars": 4,
-      "score": 4.29,
+      "score": 4.28,
       "lean": {
         "side": "under",
         "line": 9.0
@@ -12367,7 +12563,7 @@
       "matchup": "MIL @ LAA",
       "source_model": "champion_v2",
       "stars": 5,
-      "score": 4.73,
+      "score": 4.72,
       "lean": {
         "side": "over",
         "line": 8.5
@@ -12447,6 +12643,20 @@
       },
       "playable": true,
       "all_pass": false
+    },
+    "2026-08-08": {
+      "featured_game_id": "2026-08-08-TB-SEA",
+      "game_pk": 823102,
+      "matchup": "TB @ SEA",
+      "source_model": "champion_v2",
+      "stars": 5,
+      "score": 4.81,
+      "lean": {
+        "side": "over",
+        "line": 7.0
+      },
+      "playable": true,
+      "all_pass": false
     }
   },
   "by_date_record": {
@@ -12507,7 +12717,7 @@
       "hit_rate": 0.6364,
       "roi": 0.2846,
       "units": 3.13,
-      "units_weighted": 4.675,
+      "units_weighted": 5.19,
       "source": "walk"
     },
     "2026-03-31": {
@@ -12663,7 +12873,7 @@
       "hit_rate": 0.4,
       "roi": -0.2059,
       "units": -1.03,
-      "units_weighted": -1.03,
+      "units_weighted": -0.03,
       "source": "walk"
     },
     "2026-04-13": {
@@ -14111,34 +14321,34 @@
       },
       "by_star_tier": {
         "5": {
-          "n": 38,
+          "n": 37,
           "win": 18,
-          "loss": 20,
+          "loss": 19,
           "push": 0,
-          "record": "18-20-0",
-          "hit_rate": 0.4737,
-          "roi": -0.0869,
-          "units": -3.303,
+          "record": "18-19-0",
+          "hit_rate": 0.4865,
+          "roi": -0.0623,
+          "units": -2.303,
           "units_weighted": {
-            "units": -6.607,
-            "staked": 76.0,
-            "roi": -0.0869,
+            "units": -4.607,
+            "staked": 74.0,
+            "roi": -0.0623,
             "n_offladder_flat_1u": 0
           }
         },
         "4": {
-          "n": 43,
+          "n": 44,
           "win": 22,
-          "loss": 18,
+          "loss": 19,
           "push": 3,
-          "record": "22-18-3",
-          "hit_rate": 0.55,
-          "roi": 0.058,
-          "units": 2.32,
+          "record": "22-19-3",
+          "hit_rate": 0.5366,
+          "roi": 0.0322,
+          "units": 1.32,
           "units_weighted": {
-            "units": 4.641,
-            "staked": 80.0,
-            "roi": 0.058,
+            "units": 2.641,
+            "staked": 82.0,
+            "roi": 0.0322,
             "n_offladder_flat_1u": 0
           }
         },
@@ -14389,9 +14599,9 @@
           }
         }
       },
-      "n_takes": 96,
-      "n_playable": 96,
-      "n_pending": 0,
+      "n_takes": 98,
+      "n_playable": 98,
+      "n_pending": 2,
       "headline_dedup": {
         "n_rows_dropped": 101,
         "note": "HEADLINE DEDUP: a game emits multiple graded rows per stream (a reconstructed/live game grades one row PER WALL). Every rollup here counts ONE result per (game x stream): the canonical row = the locked/frozen decision wall (latest lead_time, nearest first pitch), else the priced ledger entry. n_rows_dropped = the duplicate per-wall rows collapsed away before counting."
@@ -14401,11 +14611,11 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 90,
+        "n": 91,
         "n_graded": 85,
-        "n_pending_or_no_result": 5,
+        "n_pending_or_no_result": 6,
         "by_reason": {
-          "ev_gate": 86,
+          "ev_gate": 87,
           "price_only": 0,
           "toxic_tail": 4
         },
@@ -14430,7 +14640,7 @@
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate AND outside the measured >=0.065 anti-signal tail. EXECUTION LAYER (Leon, 2026-07-09 \u2014 the proven config): the +EV GATE evaluates at the MEDIAN de-vig per-side price at the pick's line (strict entry), while the served/graded per-side price is the BEST EXECUTABLE price at that same line (payout gain; the median is carried per row as median_price + gate_price/gate_ev diagnostics). A row playable only on best-book juice (fails the median gate) is NOT a pick: the median-gated set repriced at best ran +3.2% ROI (41-35-1) on the 2026 backfill, the 21 gate-expansion picks ran -25% and are EXCLUDED. record.best_vs_median_2026 carries the exact 3-way same-pick-set comparison (median / median_gate_best / best). HEADLINE DEDUP: the headline + per-tier + per-lead + per-source + per-month rollups count ONE result per (game x stream) \u2014 a game that emits multiple per-wall graded rows (reconstructed/live) counts once (the locked/latest-wall canonical); n_rows_dropped is disclosed in record.headline_dedup. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, morning shopped/median per-side prices) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot best-book price they were served at (gated at the median). Every record block also carries units_weighted \u2014 the same picks staked by the star-tier ladder (see UNITS_BASIS) \u2014 next to the flat 1u record.",
       "best_vs_median_2026": {
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
-        "n_rows_each": 146,
+        "n_rows_each": 149,
         "median": {
           "n": 87,
           "win": 45,
@@ -14441,12 +14651,12 @@
           "roi": -0.0008,
           "units": -0.069,
           "units_weighted": {
-            "units": -2.822,
-            "staked": 137.0,
-            "roi": -0.0206,
+            "units": -1.822,
+            "staked": 136.0,
+            "roi": -0.0134,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 87,
+          "n_playable": 89,
           "by_star_tier": {
             "4": {
               "n": 35,
@@ -14465,18 +14675,18 @@
               }
             },
             "3": {
-              "n": 35,
+              "n": 36,
               "win": 19,
-              "loss": 14,
+              "loss": 15,
               "push": 2,
-              "record": "19-14-2",
-              "hit_rate": 0.5758,
-              "roi": 0.0813,
-              "units": 2.683,
+              "record": "19-15-2",
+              "hit_rate": 0.5588,
+              "roi": 0.0495,
+              "units": 1.683,
               "units_weighted": {
-                "units": 2.683,
-                "staked": 33.0,
-                "roi": 0.0813,
+                "units": 1.683,
+                "staked": 34.0,
+                "roi": 0.0495,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -14513,21 +14723,21 @@
             "roi": 0.0022,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 87,
+          "n_playable": 89,
           "by_star_tier": {
             "4": {
-              "n": 36,
+              "n": 37,
               "win": 19,
-              "loss": 15,
+              "loss": 16,
               "push": 2,
-              "record": "19-15-2",
-              "hit_rate": 0.5588,
-              "roi": 0.0714,
-              "units": 2.427,
+              "record": "19-16-2",
+              "hit_rate": 0.5429,
+              "roi": 0.0408,
+              "units": 1.427,
               "units_weighted": {
-                "units": 4.854,
-                "staked": 68.0,
-                "roi": 0.0714,
+                "units": 2.854,
+                "staked": 70.0,
+                "roi": 0.0408,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -14580,21 +14790,21 @@
             "roi": -0.012,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 120,
+          "n_playable": 123,
           "by_star_tier": {
             "4": {
-              "n": 50,
+              "n": 51,
               "win": 26,
-              "loss": 21,
+              "loss": 22,
               "push": 3,
-              "record": "26-21-3",
-              "hit_rate": 0.5532,
-              "roi": 0.0636,
-              "units": 2.991,
+              "record": "26-22-3",
+              "hit_rate": 0.5417,
+              "roi": 0.0415,
+              "units": 1.991,
               "units_weighted": {
-                "units": 5.981,
-                "staked": 94.0,
-                "roi": 0.0636,
+                "units": 3.981,
+                "staked": 96.0,
+                "roi": 0.0415,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -14647,7 +14857,7 @@
             "roi": 0.0022,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 87,
+          "n_playable": 89,
           "note": "the MEDIAN-gated playable set, priced + graded at the best executable price \u2014 THE PROVEN CONFIG (median_gate_best). Pure price improvement of the median set, no gate expansion"
         },
         "newly_playable_record": {
@@ -14667,7 +14877,7 @@
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
         },
-        "n_newly_playable_at_best": 33,
+        "n_newly_playable_at_best": 34,
         "newly_playable_at_best": [
           {
             "date": "2026-03-28",
@@ -15031,6 +15241,17 @@
             "best_book": "lowvig",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 54.1% vs median break-even 53.5% at -115 (median ev +1.20% < +1.5% min)",
             "result": null
+          },
+          {
+            "date": "2026-08-08",
+            "matchup": "ATL @ NYY",
+            "side": "over",
+            "line": 7.5,
+            "median_price": 104,
+            "best_price": 107,
+            "best_book": "lowvig",
+            "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min)",
+            "result": null
           }
         ],
         "n_dropped_at_best": 0,
@@ -15050,9 +15271,9 @@
       "hit_rate": 0.487,
       "units_flat": -11.558,
       "units_weighted": {
-        "units": -31.623,
-        "staked": 454.0,
-        "roi": -0.0697,
+        "units": -30.108,
+        "staked": 453.5,
+        "roi": -0.0664,
         "n_offladder_flat_1u": 0
       }
     },
@@ -15065,9 +15286,9 @@
       "hit_rate": 0.487,
       "units_flat": -11.558,
       "units_weighted": {
-        "units": -31.623,
-        "staked": 454.0,
-        "roi": -0.0697,
+        "units": -30.108,
+        "staked": 453.5,
+        "roi": -0.0664,
         "n_offladder_flat_1u": 0
       }
     },
@@ -15080,9 +15301,9 @@
       "hit_rate": 0.495,
       "units_flat": -8.416,
       "units_weighted": {
-        "units": -28.48,
-        "staked": 1930.0,
-        "roi": -0.0148,
+        "units": -26.965,
+        "staked": 1929.5,
+        "roi": -0.014,
         "n_offladder_flat_1u": 1476
       }
     },
@@ -15104,49 +15325,49 @@
         "includes_expanded_n": 0
       },
       "4": {
-        "n": 97,
+        "n": 96,
         "win": 37,
-        "loss": 54,
+        "loss": 53,
         "push": 6,
-        "roi": -0.1824,
-        "hit_rate": 0.4066,
-        "units_flat": -16.599,
+        "roi": -0.1733,
+        "hit_rate": 0.4111,
+        "units_flat": -15.599,
         "units_weighted": {
-          "units": -33.199,
-          "staked": 182.0,
-          "roi": -0.1824,
+          "units": -31.199,
+          "staked": 180.0,
+          "roi": -0.1733,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
       },
       "3": {
-        "n": 173,
-        "win": 75,
-        "loss": 89,
+        "n": 175,
+        "win": 76,
+        "loss": 90,
         "push": 9,
-        "roi": -0.0853,
-        "hit_rate": 0.4573,
-        "units_flat": -13.995,
+        "roi": -0.0841,
+        "hit_rate": 0.4578,
+        "units_flat": -13.965,
         "units_weighted": {
-          "units": -13.995,
-          "staked": 164.0,
-          "roi": -0.0853,
+          "units": -13.965,
+          "staked": 166.0,
+          "roi": -0.0841,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
       },
       "2": {
-        "n": 160,
-        "win": 84,
+        "n": 159,
+        "win": 83,
         "loss": 68,
         "push": 8,
-        "roi": 0.0987,
-        "hit_rate": 0.5526,
-        "units_flat": 15.001,
+        "roi": 0.0925,
+        "hit_rate": 0.5497,
+        "units_flat": 13.971,
         "units_weighted": {
-          "units": 7.5,
-          "staked": 76.0,
-          "roi": 0.0987,
+          "units": 6.985,
+          "staked": 75.5,
+          "roi": 0.0925,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
@@ -15183,9 +15404,9 @@
         "hit_rate": 0.487,
         "units_flat": -11.558,
         "units_weighted": {
-          "units": -31.623,
-          "staked": 454.0,
-          "roi": -0.0697,
+          "units": -30.108,
+          "staked": 453.5,
+          "roi": -0.0664,
           "n_offladder_flat_1u": 0
         }
       }
@@ -15215,9 +15436,9 @@
         "hit_rate": 0.4878,
         "units_flat": -5.462,
         "units_weighted": {
-          "units": -19.318,
-          "staked": 211.5,
-          "roi": -0.0913,
+          "units": -17.803,
+          "staked": 211.0,
+          "roi": -0.0844,
           "n_offladder_flat_1u": 0
         }
       },
@@ -15277,9 +15498,9 @@
         "hit_rate": 0.487,
         "units_flat": -11.558,
         "units_weighted": {
-          "units": -31.623,
-          "staked": 454.0,
-          "roi": -0.0697,
+          "units": -30.108,
+          "staked": 453.5,
+          "roi": -0.0664,
           "n_offladder_flat_1u": 0
         }
       }
@@ -15706,7 +15927,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.97,
+          "score": 2.96,
           "playable": true,
           "lean": {
             "side": "under",
@@ -16124,7 +16345,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.0,
+          "score": 2.99,
           "playable": true,
           "lean": {
             "side": "under",
@@ -16333,7 +16554,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.33,
+          "score": 4.32,
           "playable": true,
           "lean": {
             "side": "under",
@@ -16371,7 +16592,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.84,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -16960,7 +17181,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.47,
+          "score": 3.46,
           "playable": true,
           "lean": {
             "side": "under",
@@ -17587,7 +17808,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.73,
+          "score": 2.72,
           "playable": true,
           "lean": {
             "side": "under",
@@ -17625,7 +17846,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -17967,7 +18188,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.54,
+          "score": 3.53,
           "playable": true,
           "lean": {
             "side": "under",
@@ -18328,7 +18549,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.81,
+          "score": 1.8,
           "playable": false,
           "lean": {
             "side": "under",
@@ -18803,7 +19024,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.48,
+          "score": 4.47,
           "playable": true,
           "lean": {
             "side": "under",
@@ -18917,7 +19138,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.84,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -19050,7 +19271,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.03,
+          "score": 4.02,
           "playable": true,
           "lean": {
             "side": "under",
@@ -19430,7 +19651,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.54,
+          "score": 2.53,
           "playable": true,
           "lean": {
             "side": "under",
@@ -19677,7 +19898,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.46,
+          "score": 3.45,
           "playable": true,
           "lean": {
             "side": "under",
@@ -19886,7 +20107,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.13,
+          "score": 4.11,
           "playable": true,
           "lean": {
             "side": "under",
@@ -20304,7 +20525,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.24,
+          "score": 4.23,
           "playable": true,
           "lean": {
             "side": "under",
@@ -20513,7 +20734,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.4,
+          "score": 0.39,
           "playable": false,
           "lean": {
             "side": "under",
@@ -21140,7 +21361,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.79,
+          "score": 3.78,
           "playable": true,
           "lean": {
             "side": "under",
@@ -21520,7 +21741,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.18,
+          "score": 4.17,
           "playable": true,
           "lean": {
             "side": "under",
@@ -21976,7 +22197,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.31,
+          "score": 4.3,
           "playable": true,
           "lean": {
             "side": "under",
@@ -22261,7 +22482,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -22356,7 +22577,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.09,
+          "score": 4.08,
           "playable": true,
           "lean": {
             "side": "under",
@@ -22394,7 +22615,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.63,
+          "score": 4.62,
           "playable": true,
           "lean": {
             "side": "under",
@@ -22641,7 +22862,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -22812,7 +23033,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.57,
+          "score": 4.56,
           "playable": true,
           "lean": {
             "side": "under",
@@ -23021,7 +23242,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.36,
+          "score": 2.35,
           "playable": true,
           "lean": {
             "side": "under",
@@ -23230,7 +23451,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.03,
+          "score": 4.02,
           "playable": true,
           "lean": {
             "side": "under",
@@ -23648,7 +23869,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.11,
+          "score": 4.1,
           "playable": true,
           "lean": {
             "side": "under",
@@ -23857,7 +24078,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.14,
+          "score": 4.13,
           "playable": true,
           "lean": {
             "side": "under",
@@ -23933,7 +24154,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.67,
+          "score": 1.66,
           "playable": false,
           "lean": {
             "side": "under",
@@ -24142,7 +24363,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.94,
+          "score": 1.93,
           "playable": false,
           "lean": {
             "side": "under",
@@ -24484,7 +24705,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.86,
+          "score": 3.85,
           "playable": true,
           "lean": {
             "side": "under",
@@ -24655,7 +24876,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.43,
+          "score": 4.42,
           "playable": true,
           "lean": {
             "side": "under",
@@ -24693,7 +24914,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.85,
+          "score": 3.84,
           "playable": true,
           "lean": {
             "side": "under",
@@ -25282,7 +25503,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.21,
+          "score": 4.2,
           "playable": true,
           "lean": {
             "side": "under",
@@ -25320,7 +25541,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.68,
+          "score": 3.67,
           "playable": true,
           "lean": {
             "side": "under",
@@ -25738,7 +25959,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.14,
+          "score": 4.13,
           "playable": true,
           "lean": {
             "side": "under",
@@ -25909,7 +26130,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.34,
+          "score": 4.33,
           "playable": true,
           "lean": {
             "side": "under",
@@ -25985,7 +26206,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -26023,7 +26244,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -26992,7 +27213,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.91,
+          "score": 2.9,
           "playable": true,
           "lean": {
             "side": "under",
@@ -27201,7 +27422,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.92,
+          "score": 3.91,
           "playable": true,
           "lean": {
             "side": "under",
@@ -27617,8 +27838,8 @@
           "p_breakeven": 0.4926,
           "ev": 0.0377,
           "tier": "Good",
-          "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
-          "stars": 2,
+          "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
+          "stars": 3,
           "score": 2.9,
           "playable": true,
           "lean": {
@@ -27640,7 +27861,7 @@
           "pick_side": "under",
           "pick_line": 8.0,
           "graded_line": 8.0,
-          "suggested_units": 0.5
+          "suggested_units": 1.0
         },
         {
           "lead_time": "T-6h",
@@ -29044,7 +29265,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.82,
+          "score": 3.81,
           "playable": true,
           "lean": {
             "side": "over",
@@ -29880,7 +30101,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "over",
@@ -30127,7 +30348,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.74,
+          "score": 2.73,
           "playable": true,
           "lean": {
             "side": "under",
@@ -30507,7 +30728,7 @@
           "tier": "Strong",
           "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
           "stars": 5,
-          "score": 4.99,
+          "score": 4.98,
           "playable": true,
           "lean": {
             "side": "under",
@@ -30716,7 +30937,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.17,
+          "score": 4.15,
           "playable": true,
           "lean": {
             "side": "under",
@@ -31647,7 +31868,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.93,
+          "score": 3.92,
           "playable": true,
           "lean": {
             "side": "under",
@@ -31856,7 +32077,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.79,
+          "score": 3.78,
           "playable": true,
           "lean": {
             "side": "under",
@@ -32198,7 +32419,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.88,
+          "score": 2.87,
           "playable": true,
           "lean": {
             "side": "under",
@@ -32654,7 +32875,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -33300,7 +33521,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.62,
+          "score": 4.61,
           "playable": true,
           "lean": {
             "side": "under",
@@ -33509,7 +33730,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.27,
+          "score": 4.26,
           "playable": true,
           "lean": {
             "side": "under",
@@ -33984,7 +34205,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.38,
+          "score": 3.37,
           "playable": true,
           "lean": {
             "side": "under",
@@ -34022,7 +34243,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.57,
+          "score": 3.56,
           "playable": true,
           "lean": {
             "side": "under",
@@ -34440,7 +34661,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.1,
+          "score": 4.09,
           "playable": true,
           "lean": {
             "side": "under",
@@ -34858,7 +35079,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.93,
+          "score": 3.92,
           "playable": true,
           "lean": {
             "side": "under",
@@ -35238,7 +35459,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.94,
+          "score": 1.93,
           "playable": false,
           "lean": {
             "side": "under",
@@ -35371,7 +35592,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.76,
+          "score": 3.75,
           "playable": true,
           "lean": {
             "side": "under",
@@ -36169,7 +36390,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.26,
+          "score": 4.25,
           "playable": true,
           "lean": {
             "side": "under",
@@ -36340,7 +36561,7 @@
           "tier": "Strong",
           "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
           "stars": 5,
-          "score": 4.79,
+          "score": 4.78,
           "playable": true,
           "lean": {
             "side": "under",
@@ -36796,7 +37017,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.58,
+          "score": 3.57,
           "playable": true,
           "lean": {
             "side": "under",
@@ -36834,7 +37055,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -36967,7 +37188,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.53,
+          "score": 4.52,
           "playable": true,
           "lean": {
             "side": "under",
@@ -37214,7 +37435,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.83,
+          "score": 3.82,
           "playable": true,
           "lean": {
             "side": "under",
@@ -37499,7 +37720,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.7,
+          "score": 1.69,
           "playable": false,
           "lean": {
             "side": "under",
@@ -37841,7 +38062,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.01,
+          "score": 3.0,
           "playable": true,
           "lean": {
             "side": "under",
@@ -38259,7 +38480,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.4,
+          "score": 4.39,
           "playable": true,
           "lean": {
             "side": "under",
@@ -38677,7 +38898,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.46,
+          "score": 4.45,
           "playable": true,
           "lean": {
             "side": "under",
@@ -39095,7 +39316,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.19,
+          "score": 3.18,
           "playable": true,
           "lean": {
             "side": "under",
@@ -39133,7 +39354,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -39304,7 +39525,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.43,
+          "score": 2.44,
           "playable": true,
           "lean": {
             "side": "under",
@@ -39475,7 +39696,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.69,
+          "score": 4.68,
           "playable": true,
           "lean": {
             "side": "over",
@@ -39513,7 +39734,7 @@
           "tier": "Strong",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.85,
+          "score": 3.84,
           "playable": true,
           "lean": {
             "side": "under",
@@ -39551,7 +39772,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.74,
+          "score": 1.73,
           "playable": false,
           "lean": {
             "side": "under",
@@ -40102,7 +40323,7 @@
           "tier": "Strong",
           "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
           "stars": 5,
-          "score": 4.78,
+          "score": 4.77,
           "playable": true,
           "lean": {
             "side": "under",
@@ -41280,7 +41501,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.87,
+          "score": 2.86,
           "playable": true,
           "lean": {
             "side": "under",
@@ -41318,7 +41539,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -42249,7 +42470,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.9,
+          "score": 3.89,
           "playable": true,
           "lean": {
             "side": "under",
@@ -42838,7 +43059,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.25,
+          "score": 4.24,
           "playable": true,
           "lean": {
             "side": "under",
@@ -43256,7 +43477,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.86,
+          "score": 2.85,
           "playable": true,
           "lean": {
             "side": "under",
@@ -43465,7 +43686,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.67,
+          "score": 3.66,
           "playable": true,
           "lean": {
             "side": "under",
@@ -44643,7 +44864,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.28,
+          "score": 3.27,
           "playable": true,
           "lean": {
             "side": "under",
@@ -45137,7 +45358,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.84,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -45479,7 +45700,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.48,
+          "score": 3.47,
           "playable": true,
           "lean": {
             "side": "under",
@@ -45688,7 +45909,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.33,
+          "score": 3.32,
           "playable": true,
           "lean": {
             "side": "under",
@@ -46106,7 +46327,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.19,
+          "score": 3.18,
           "playable": true,
           "lean": {
             "side": "under",
@@ -46524,7 +46745,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.16,
+          "score": 4.15,
           "playable": true,
           "lean": {
             "side": "under",
@@ -46942,7 +47163,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.2,
+          "score": 4.19,
           "playable": true,
           "lean": {
             "side": "under",
@@ -48196,7 +48417,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -48367,7 +48588,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.78,
+          "score": 3.77,
           "playable": true,
           "lean": {
             "side": "under",
@@ -48576,7 +48797,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.57,
+          "score": 1.56,
           "playable": false,
           "lean": {
             "side": "under",
@@ -48652,7 +48873,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.84,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -48956,7 +49177,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.38,
+          "score": 4.37,
           "playable": true,
           "lean": {
             "side": "under",
@@ -49165,7 +49386,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.21,
+          "score": 4.2,
           "playable": true,
           "lean": {
             "side": "under",
@@ -49279,7 +49500,7 @@
           "tier": "Strong",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.84,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -49374,7 +49595,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.83,
+          "score": 3.82,
           "playable": true,
           "lean": {
             "side": "under",
@@ -50685,7 +50906,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.25,
+          "score": 4.24,
           "playable": true,
           "lean": {
             "side": "under",
@@ -51540,7 +51761,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.15,
+          "score": 3.14,
           "playable": true,
           "lean": {
             "side": "under",
@@ -51578,7 +51799,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.69,
+          "score": 1.68,
           "playable": false,
           "lean": {
             "side": "under",
@@ -51882,7 +52103,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.74,
+          "score": 3.72,
           "playable": true,
           "lean": {
             "side": "under",
@@ -52091,7 +52312,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.02,
+          "score": 4.01,
           "playable": true,
           "lean": {
             "side": "under",
@@ -52471,7 +52692,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.19,
+          "score": 4.18,
           "playable": true,
           "lean": {
             "side": "under",
@@ -52642,7 +52863,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.13,
+          "score": 4.12,
           "playable": true,
           "lean": {
             "side": "under",
@@ -52813,7 +53034,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.42,
+          "score": 1.41,
           "playable": false,
           "lean": {
             "side": "under",
@@ -53022,7 +53243,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.88,
+          "score": 3.87,
           "playable": true,
           "lean": {
             "side": "under",
@@ -53611,7 +53832,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.11,
+          "score": 4.1,
           "playable": true,
           "lean": {
             "side": "under",
@@ -53820,7 +54041,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.29,
+          "score": 4.28,
           "playable": true,
           "lean": {
             "side": "over",
@@ -53858,7 +54079,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.7,
+          "score": 3.68,
           "playable": true,
           "lean": {
             "side": "under",
@@ -54067,7 +54288,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.26,
+          "score": 4.25,
           "playable": true,
           "lean": {
             "side": "under",
@@ -55112,7 +55333,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.29,
+          "score": 4.28,
           "playable": true,
           "lean": {
             "side": "under",
@@ -56081,7 +56302,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.31,
+          "score": 4.3,
           "playable": true,
           "lean": {
             "side": "under",
@@ -56746,7 +56967,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.59,
+          "score": 3.58,
           "playable": true,
           "lean": {
             "side": "under",
@@ -56955,7 +57176,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.17,
+          "score": 3.16,
           "playable": true,
           "lean": {
             "side": "under",
@@ -57126,7 +57347,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.5,
+          "score": 4.49,
           "playable": true,
           "lean": {
             "side": "under",
@@ -57582,7 +57803,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.68,
+          "score": 2.67,
           "playable": true,
           "lean": {
             "side": "under",
@@ -57962,7 +58183,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.19,
+          "score": 4.18,
           "playable": true,
           "lean": {
             "side": "over",
@@ -58798,7 +59019,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.35,
+          "score": 3.34,
           "playable": true,
           "lean": {
             "side": "under",
@@ -59007,7 +59228,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.59,
+          "score": 4.57,
           "playable": true,
           "lean": {
             "side": "under",
@@ -60698,7 +60919,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.61,
+          "score": 2.6,
           "playable": true,
           "lean": {
             "side": "under",
@@ -61076,9 +61297,9 @@
           "p_breakeven": 0.5074,
           "ev": 0.0416,
           "tier": "Good",
-          "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
-          "stars": 4,
-          "score": 3.95,
+          "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
+          "stars": 3,
+          "score": 3.94,
           "playable": true,
           "lean": {
             "side": "under",
@@ -61099,7 +61320,7 @@
           "pick_side": "under",
           "pick_line": 8.0,
           "graded_line": 8.0,
-          "suggested_units": 2.0
+          "suggested_units": 1.0
         },
         {
           "lead_time": "T-6h",
@@ -62084,7 +62305,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -62388,7 +62609,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.27,
+          "score": 3.28,
           "playable": true,
           "lean": {
             "side": "under",
@@ -62768,7 +62989,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.08,
+          "score": 4.07,
           "playable": true,
           "lean": {
             "side": "under",
@@ -63395,7 +63616,7 @@
           "tier": "Strong",
           "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
           "stars": 5,
-          "score": 4.74,
+          "score": 4.73,
           "playable": true,
           "lean": {
             "side": "over",
@@ -63813,7 +64034,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.6,
+          "score": 4.59,
           "playable": true,
           "lean": {
             "side": "over",
@@ -64649,7 +64870,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.48,
+          "score": 3.47,
           "playable": true,
           "lean": {
             "side": "over",
@@ -64858,7 +65079,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.3,
+          "score": 3.29,
           "playable": true,
           "lean": {
             "side": "under",
@@ -64896,7 +65117,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.09,
+          "score": 3.08,
           "playable": true,
           "lean": {
             "side": "under",
@@ -66036,7 +66257,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.55,
+          "score": 4.54,
           "playable": true,
           "lean": {
             "side": "under",
@@ -66074,7 +66295,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.31,
+          "score": 3.3,
           "playable": true,
           "lean": {
             "side": "under",
@@ -66454,7 +66675,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.6,
+          "score": 2.59,
           "playable": true,
           "lean": {
             "side": "under",
@@ -68468,7 +68689,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.03,
+          "score": 1.02,
           "playable": false,
           "lean": {
             "side": "under",
@@ -69399,7 +69620,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.8,
+          "score": 3.79,
           "playable": true,
           "lean": {
             "side": "under",
@@ -69608,7 +69829,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.89,
+          "score": 3.88,
           "playable": true,
           "lean": {
             "side": "under",
@@ -70197,7 +70418,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.79,
+          "score": 1.78,
           "playable": false,
           "lean": {
             "side": "under",
@@ -70824,7 +71045,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.64,
+          "score": 0.63,
           "playable": false,
           "lean": {
             "side": "under",
@@ -71071,7 +71292,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.52,
+          "score": 0.51,
           "playable": false,
           "lean": {
             "side": "under",
@@ -71508,7 +71729,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.46,
+          "score": 4.45,
           "playable": true,
           "lean": {
             "side": "over",
@@ -72211,7 +72432,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.64,
+          "score": 1.63,
           "playable": false,
           "lean": {
             "side": "under",
@@ -72268,7 +72489,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.2,
+          "score": 4.19,
           "playable": true,
           "lean": {
             "side": "under",
@@ -72382,7 +72603,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.15,
+          "score": 1.14,
           "playable": false,
           "lean": {
             "side": "under",
@@ -72895,7 +73116,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.7,
+          "score": 1.69,
           "playable": false,
           "lean": {
             "side": "under",
@@ -74491,7 +74712,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.75,
+          "score": 1.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -74529,7 +74750,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "under",
@@ -74624,7 +74845,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.13,
+          "score": 3.12,
           "playable": true,
           "lean": {
             "side": "under",
@@ -75916,7 +76137,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.93,
+          "score": 2.92,
           "playable": true,
           "lean": {
             "side": "under",
@@ -76087,7 +76308,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.9,
+          "score": 3.89,
           "playable": true,
           "lean": {
             "side": "under",
@@ -76296,7 +76517,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.22,
+          "score": 4.21,
           "playable": true,
           "lean": {
             "side": "under",
@@ -77379,7 +77600,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.7,
+          "score": 0.69,
           "playable": false,
           "lean": {
             "side": "under",
@@ -77968,7 +78189,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.1,
+          "score": 3.09,
           "playable": true,
           "lean": {
             "side": "under",
@@ -79488,7 +79709,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.17,
+          "score": 2.16,
           "playable": true,
           "lean": {
             "side": "under",
@@ -80153,7 +80374,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -82813,7 +83034,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.7,
+          "score": 2.69,
           "playable": true,
           "lean": {
             "side": "under",
@@ -82984,7 +83205,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.43,
+          "score": 1.42,
           "playable": false,
           "lean": {
             "side": "over",
@@ -83022,7 +83243,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.11,
+          "score": 1.1,
           "playable": false,
           "lean": {
             "side": "under",
@@ -83611,7 +83832,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.64,
+          "score": 2.63,
           "playable": true,
           "lean": {
             "side": "over",
@@ -84903,7 +85124,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.43,
+          "score": 3.42,
           "playable": true,
           "lean": {
             "side": "under",
@@ -85967,7 +86188,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.32,
+          "score": 3.31,
           "playable": true,
           "lean": {
             "side": "over",
@@ -86556,7 +86777,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.63,
+          "score": 2.62,
           "playable": true,
           "lean": {
             "side": "over",
@@ -87316,7 +87537,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.77,
+          "score": 0.78,
           "playable": false,
           "lean": {
             "side": "under",
@@ -87354,7 +87575,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -91268,7 +91489,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.67,
+          "score": 4.66,
           "playable": true,
           "lean": {
             "side": "under",
@@ -91306,7 +91527,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.99,
+          "score": 2.98,
           "playable": true,
           "lean": {
             "side": "under",
@@ -92731,7 +92952,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -93358,7 +93579,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.65,
+          "score": 4.64,
           "playable": true,
           "lean": {
             "side": "over",
@@ -94441,7 +94662,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.48,
+          "score": 0.47,
           "playable": false,
           "lean": {
             "side": "under",
@@ -98279,7 +98500,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.51,
+          "score": 4.5,
           "playable": true,
           "lean": {
             "side": "under",
@@ -99343,7 +99564,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.4,
+          "score": 3.39,
           "playable": true,
           "lean": {
             "side": "over",
@@ -102421,7 +102642,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.17,
+          "score": 3.16,
           "playable": true,
           "lean": {
             "side": "under",
@@ -108615,7 +108836,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.5,
+          "score": 2.49,
           "playable": true,
           "lean": {
             "side": "under",
@@ -110952,7 +111173,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.36,
+          "score": 0.35,
           "playable": false,
           "lean": {
             "side": "under",
@@ -111123,7 +111344,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -111655,7 +111876,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -112054,7 +112275,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.51,
+          "score": 3.5,
           "playable": true,
           "lean": {
             "side": "over",
@@ -112681,7 +112902,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.42,
+          "score": 3.41,
           "playable": true,
           "lean": {
             "side": "over",
@@ -113042,7 +113263,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.97,
+          "score": 0.96,
           "playable": false,
           "lean": {
             "side": "under",
@@ -113897,7 +114118,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.36,
+          "score": 4.35,
           "playable": true,
           "lean": {
             "side": "under",
@@ -114695,7 +114916,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 3.96,
+          "score": 3.95,
           "playable": true,
           "lean": {
             "side": "over",
@@ -116006,7 +116227,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -118533,7 +118754,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.71,
+          "score": 3.7,
           "playable": true,
           "lean": {
             "side": "under",
@@ -119863,7 +120084,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -120832,7 +121053,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -121174,7 +121395,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.14,
+          "score": 1.13,
           "playable": false,
           "lean": {
             "side": "under",
@@ -123150,7 +123371,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -123739,7 +123960,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.66,
+          "score": 3.65,
           "playable": true,
           "lean": {
             "side": "over",
@@ -125088,7 +125309,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.15,
+          "score": 4.14,
           "playable": true,
           "lean": {
             "side": "under",
@@ -126095,7 +126316,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.36,
+          "score": 3.35,
           "playable": true,
           "lean": {
             "side": "over",
@@ -128033,7 +128254,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.3,
+          "score": 4.29,
           "playable": true,
           "lean": {
             "side": "over",
@@ -129990,7 +130211,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -131966,7 +132187,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.59,
+          "score": 2.58,
           "playable": true,
           "lean": {
             "side": "under",
@@ -132175,7 +132396,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.19,
+          "score": 1.18,
           "playable": false,
           "lean": {
             "side": "over",
@@ -134322,7 +134543,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.4,
+          "score": 2.39,
           "playable": true,
           "lean": {
             "side": "under",
@@ -135557,7 +135778,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.98,
+          "score": 0.97,
           "playable": false,
           "lean": {
             "side": "under",
@@ -136165,7 +136386,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -136925,7 +137146,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.34,
+          "score": 3.33,
           "playable": true,
           "lean": {
             "side": "over",
@@ -137932,7 +138153,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.7,
+          "score": 3.68,
           "playable": true,
           "lean": {
             "side": "under",
@@ -138084,7 +138305,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.7,
+          "score": 1.69,
           "playable": false,
           "lean": {
             "side": "under",
@@ -139319,7 +139540,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.47,
+          "score": 4.46,
           "playable": true,
           "lean": {
             "side": "under",
@@ -140782,7 +141003,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.69,
+          "score": 2.68,
           "playable": true,
           "lean": {
             "side": "under",
@@ -142758,7 +142979,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 3.97,
+          "score": 3.96,
           "playable": true,
           "lean": {
             "side": "over",
@@ -143537,7 +143758,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.44,
+          "score": 0.43,
           "playable": false,
           "lean": {
             "side": "under",
@@ -145076,7 +145297,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.02,
+          "score": 4.01,
           "playable": true,
           "lean": {
             "side": "over",
@@ -146045,7 +146266,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.71,
+          "score": 0.7,
           "playable": false,
           "lean": {
             "side": "under",
@@ -148268,7 +148489,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.61,
+          "score": 3.59,
           "playable": true,
           "lean": {
             "side": "under",
@@ -150358,7 +150579,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.7,
+          "score": 0.69,
           "playable": false,
           "lean": {
             "side": "under",
@@ -151118,7 +151339,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.12,
+          "score": 3.11,
           "playable": true,
           "lean": {
             "side": "under",
@@ -151156,7 +151377,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.32,
+          "score": 4.31,
           "playable": true,
           "lean": {
             "side": "under",
@@ -152961,7 +153182,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.98,
+          "score": 2.97,
           "playable": true,
           "lean": {
             "side": "under",
@@ -153512,7 +153733,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.98,
+          "score": 0.97,
           "playable": false,
           "lean": {
             "side": "under",
@@ -158072,7 +158293,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -159440,7 +159661,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -163525,7 +163746,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -164627,7 +164848,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.07,
+          "score": 4.06,
           "playable": true,
           "lean": {
             "side": "under",
@@ -165045,7 +165266,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.63,
+          "score": 3.62,
           "playable": true,
           "lean": {
             "side": "under",
@@ -165672,7 +165893,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.53,
+          "score": 3.52,
           "playable": true,
           "lean": {
             "side": "under",
@@ -166926,7 +167147,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.96,
+          "score": 2.95,
           "playable": true,
           "lean": {
             "side": "under",
@@ -167553,7 +167774,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.75,
+          "score": 0.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -168864,7 +169085,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.47,
+          "score": 3.46,
           "playable": true,
           "lean": {
             "side": "under",
@@ -169985,7 +170206,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.8,
+          "score": 0.79,
           "playable": false,
           "lean": {
             "side": "under",
@@ -170802,7 +171023,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.91,
+          "score": 0.9,
           "playable": false,
           "lean": {
             "side": "under",
@@ -173804,7 +174025,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.7,
+          "score": 2.69,
           "playable": true,
           "lean": {
             "side": "under",
@@ -174013,7 +174234,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.41,
+          "score": 1.4,
           "playable": false,
           "lean": {
             "side": "under",
@@ -174431,7 +174652,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -175400,7 +175621,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -176787,7 +177008,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.06,
+          "score": 4.05,
           "playable": true,
           "lean": {
             "side": "under",
@@ -178421,7 +178642,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.01,
+          "score": 4.0,
           "playable": true,
           "lean": {
             "side": "under",
@@ -179846,7 +180067,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.25,
+          "score": 3.24,
           "playable": true,
           "lean": {
             "side": "over",
@@ -184957,7 +185178,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.99,
+          "score": 0.98,
           "playable": false,
           "lean": {
             "side": "under",
@@ -185128,7 +185349,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.02,
+          "score": 1.01,
           "playable": false,
           "lean": {
             "side": "under",
@@ -189783,7 +190004,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -190201,7 +190422,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.48,
+          "score": 1.47,
           "playable": false,
           "lean": {
             "side": "under",
@@ -191626,7 +191847,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.58,
+          "score": 1.57,
           "playable": false,
           "lean": {
             "side": "under",
@@ -193602,7 +193823,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.0,
+          "score": 0.99,
           "playable": false,
           "lean": {
             "side": "under",
@@ -193887,7 +194108,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.07,
+          "score": 0.06,
           "playable": false,
           "lean": {
             "side": "under",
@@ -194058,7 +194279,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.88,
+          "score": 0.87,
           "playable": false,
           "lean": {
             "side": "under",
@@ -198618,7 +198839,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.63,
+          "score": 0.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -200290,7 +200511,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.23,
+          "score": 1.22,
           "playable": false,
           "lean": {
             "side": "under",
@@ -202532,7 +202753,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.22,
+          "score": 0.23,
           "playable": false,
           "lean": {
             "side": "under",
@@ -202665,7 +202886,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.24,
+          "score": 3.23,
           "playable": true,
           "lean": {
             "side": "over",
@@ -202874,7 +203095,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -207149,7 +207370,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -210455,7 +210676,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.67,
+          "score": 0.66,
           "playable": false,
           "lean": {
             "side": "under",
@@ -211215,7 +211436,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -211956,7 +212177,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.91,
+          "score": 0.9,
           "playable": false,
           "lean": {
             "side": "under",
@@ -213514,7 +213735,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.17,
+          "score": 2.18,
           "playable": true,
           "lean": {
             "side": "over",
@@ -214559,7 +214780,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -221703,7 +221924,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.91,
+          "score": 2.92,
           "playable": true,
           "lean": {
             "side": "over",
@@ -222653,7 +222874,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.35,
+          "score": 1.34,
           "playable": false,
           "lean": {
             "side": "over",
@@ -224154,7 +224375,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.31,
+          "score": 1.3,
           "playable": false,
           "lean": {
             "side": "over",
@@ -225218,7 +225439,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.66,
+          "score": 2.65,
           "playable": true,
           "lean": {
             "side": "over",
@@ -225598,7 +225819,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.92,
+          "score": 0.91,
           "playable": false,
           "lean": {
             "side": "over",
@@ -228011,7 +228232,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -231184,7 +231405,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.48,
+          "score": 0.47,
           "playable": false,
           "lean": {
             "side": "over",
@@ -231393,7 +231614,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.91,
+          "score": 0.9,
           "playable": false,
           "lean": {
             "side": "over",
@@ -232400,7 +232621,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "over",
@@ -234414,7 +234635,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.87,
+          "score": 0.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -234547,7 +234768,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.23,
+          "score": 3.22,
           "playable": true,
           "lean": {
             "side": "over",
@@ -234661,7 +234882,7 @@
           "tier": "Strong",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.94,
+          "score": 1.93,
           "playable": false,
           "lean": {
             "side": "over",
@@ -234794,7 +235015,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.23,
+          "score": 0.22,
           "playable": false,
           "lean": {
             "side": "over",
@@ -236694,7 +236915,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.94,
+          "score": 3.93,
           "playable": true,
           "lean": {
             "side": "over",
@@ -237321,7 +237542,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 3.99,
+          "score": 3.98,
           "playable": true,
           "lean": {
             "side": "over",
@@ -241045,7 +241266,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.15,
+          "score": 0.16,
           "playable": false,
           "lean": {
             "side": "under",
@@ -241995,7 +242216,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.16,
+          "score": 3.15,
           "playable": true,
           "lean": {
             "side": "over",
@@ -242413,7 +242634,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.22,
+          "score": 0.23,
           "playable": false,
           "lean": {
             "side": "over",
@@ -243249,7 +243470,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -243629,7 +243850,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.26,
+          "score": 2.25,
           "playable": true,
           "lean": {
             "side": "over",
@@ -244997,7 +245218,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.92,
+          "score": 2.91,
           "playable": true,
           "lean": {
             "side": "over",
@@ -246137,7 +246358,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -246175,7 +246396,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.24,
+          "score": 0.23,
           "playable": false,
           "lean": {
             "side": "over",
@@ -246612,7 +246833,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.49,
+          "score": 3.48,
           "playable": true,
           "lean": {
             "side": "over",
@@ -247030,7 +247251,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.62,
+          "score": 3.61,
           "playable": true,
           "lean": {
             "side": "over",
@@ -247657,7 +247878,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.45,
+          "score": 2.44,
           "playable": true,
           "lean": {
             "side": "over",
@@ -248949,7 +249170,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.67,
+          "score": 0.66,
           "playable": false,
           "lean": {
             "side": "over",
@@ -249842,7 +250063,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.56,
+          "score": 3.55,
           "playable": true,
           "lean": {
             "side": "over",
@@ -250222,7 +250443,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.66,
+          "score": 2.65,
           "playable": true,
           "lean": {
             "side": "over",
@@ -251267,7 +251488,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.69,
+          "score": 3.7,
           "playable": true,
           "lean": {
             "side": "over",
@@ -251818,7 +252039,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.55,
+          "score": 2.54,
           "playable": true,
           "lean": {
             "side": "over",
@@ -252445,7 +252666,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.55,
+          "score": 3.54,
           "playable": true,
           "lean": {
             "side": "over",
@@ -253205,7 +253426,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.05,
+          "score": 3.04,
           "playable": true,
           "lean": {
             "side": "over",
@@ -253414,7 +253635,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.54,
+          "score": 4.53,
           "playable": true,
           "lean": {
             "side": "over",
@@ -255675,7 +255896,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.81,
+          "score": 3.8,
           "playable": true,
           "lean": {
             "side": "over",
@@ -257195,7 +257416,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.48,
+          "score": 0.47,
           "playable": false,
           "lean": {
             "side": "over",
@@ -257613,7 +257834,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.58,
+          "score": 4.59,
           "playable": true,
           "lean": {
             "side": "over",
@@ -258240,7 +258461,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.64,
+          "score": 3.63,
           "playable": true,
           "lean": {
             "side": "over",
@@ -258449,7 +258670,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.17,
+          "score": 4.16,
           "playable": true,
           "lean": {
             "side": "over",
@@ -260368,7 +260589,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.21,
+          "score": 3.2,
           "playable": true,
           "lean": {
             "side": "over",
@@ -262515,7 +262736,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.44,
           "playable": false,
           "lean": {
             "side": "over",
@@ -269925,7 +270146,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.1,
+          "score": 1.09,
           "playable": false,
           "lean": {
             "side": "over",
@@ -271749,7 +271970,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.23,
+          "score": 4.22,
           "playable": true,
           "lean": {
             "side": "over",
@@ -272167,7 +272388,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.77,
+          "score": 3.76,
           "playable": true,
           "lean": {
             "side": "over",
@@ -275910,7 +276131,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.5,
+          "score": 3.49,
           "playable": true,
           "lean": {
             "side": "over",
@@ -276746,7 +276967,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 3.99,
+          "score": 3.98,
           "playable": true,
           "lean": {
             "side": "over",
@@ -276784,7 +277005,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.35,
+          "score": 4.34,
           "playable": true,
           "lean": {
             "side": "over",
@@ -277829,7 +278050,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.41,
+          "score": 1.4,
           "playable": false,
           "lean": {
             "side": "over",
@@ -278627,7 +278848,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.79,
+          "score": 2.78,
           "playable": true,
           "lean": {
             "side": "over",
@@ -279045,7 +279266,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.65,
+          "score": 3.64,
           "playable": true,
           "lean": {
             "side": "over",
@@ -279463,7 +279684,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.97,
+          "score": 0.96,
           "playable": false,
           "lean": {
             "side": "over",
@@ -279672,7 +279893,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.83,
+          "score": 2.82,
           "playable": true,
           "lean": {
             "side": "over",
@@ -281499,7 +281720,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.39,
+          "score": 3.38,
           "playable": true,
           "lean": {
             "side": "over",
@@ -281901,7 +282122,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.29,
+          "score": 3.28,
           "playable": true,
           "lean": {
             "side": "over",
@@ -282303,7 +282524,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.44,
+          "score": 4.43,
           "playable": true,
           "lean": {
             "side": "over",
@@ -282868,7 +283089,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.82,
+          "score": 2.81,
           "playable": true,
           "lean": {
             "side": "over",
@@ -283433,7 +283654,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.79,
+          "score": 0.78,
           "playable": false,
           "lean": {
             "side": "over",
@@ -283634,7 +283855,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.67,
+          "score": 0.66,
           "playable": false,
           "lean": {
             "side": "under",
@@ -284601,7 +284822,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.6,
+          "score": 3.59,
           "playable": true,
           "lean": {
             "side": "over",
@@ -284715,7 +284936,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.78,
+          "score": 0.77,
           "playable": false,
           "lean": {
             "side": "over",
@@ -285443,7 +285664,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.06,
+          "score": 0.07,
           "playable": false,
           "lean": {
             "side": "over",
@@ -286497,7 +286718,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.37,
+          "score": 3.36,
           "playable": true,
           "lean": {
             "side": "over",
@@ -293056,7 +293277,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.94,
+          "score": 2.93,
           "playable": true,
           "lean": {
             "side": "over",
@@ -293259,7 +293480,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.81,
+          "score": 3.8,
           "playable": true,
           "lean": {
             "side": "over",
@@ -293854,7 +294075,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.93,
+          "score": 2.92,
           "playable": true,
           "lean": {
             "side": "over",
@@ -295293,7 +295514,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.39,
+          "score": 4.38,
           "playable": true,
           "lean": {
             "side": "over",
@@ -295504,7 +295725,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.34,
+          "score": 3.33,
           "playable": true,
           "lean": {
             "side": "over",
@@ -295715,7 +295936,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.18,
+          "score": 4.17,
           "playable": true,
           "lean": {
             "side": "over",
@@ -297998,7 +298219,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "over",
@@ -298441,7 +298662,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.53,
+          "score": 3.52,
           "playable": true,
           "lean": {
             "side": "over",
@@ -298652,7 +298873,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.74,
+          "score": 2.73,
           "playable": true,
           "lean": {
             "side": "over",
@@ -299344,7 +299565,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.52,
+          "score": 3.51,
           "playable": true,
           "lean": {
             "side": "over",
@@ -299555,7 +299776,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.91,
+          "score": 0.9,
           "playable": false,
           "lean": {
             "side": "over",
@@ -299863,7 +300084,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.81,
+          "score": 3.8,
           "playable": true,
           "lean": {
             "side": "over",
@@ -299901,7 +300122,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.82,
+          "score": 2.81,
           "playable": true,
           "lean": {
             "side": "over",
@@ -300112,7 +300333,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.63,
+          "score": 0.62,
           "playable": false,
           "lean": {
             "side": "over",
@@ -301551,7 +301772,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.72,
+          "score": 2.71,
           "playable": true,
           "lean": {
             "side": "over",
@@ -306983,7 +307204,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -307080,7 +307301,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.24,
+          "score": 2.23,
           "playable": true,
           "lean": {
             "side": "over",
@@ -307540,7 +307761,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.67,
+          "score": 2.66,
           "playable": true,
           "lean": {
             "side": "over",
@@ -308308,7 +308529,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.04,
+          "score": 3.03,
           "playable": true,
           "lean": {
             "side": "over",
@@ -308806,7 +309027,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "over",
@@ -309325,7 +309546,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.1,
+          "score": 3.09,
           "playable": true,
           "lean": {
             "side": "under",
@@ -311186,7 +311407,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.81,
+          "score": 3.8,
           "playable": true,
           "lean": {
             "side": "over",
@@ -311857,7 +312078,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.07,
+          "score": 0.06,
           "playable": false,
           "lean": {
             "side": "over",
@@ -312030,7 +312251,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.52,
+          "score": 3.51,
           "playable": true,
           "lean": {
             "side": "over",
@@ -313596,7 +313817,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.54,
+          "score": 3.53,
           "playable": true,
           "lean": {
             "side": "over",
@@ -313634,7 +313855,7 @@
           "tier": "Strong",
           "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
           "stars": 5,
-          "score": 4.87,
+          "score": 4.85,
           "playable": true,
           "lean": {
             "side": "under",
@@ -313845,7 +314066,7 @@
           "tier": "Strong",
           "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
           "stars": 5,
-          "score": 4.73,
+          "score": 4.72,
           "playable": true,
           "lean": {
             "side": "over",
@@ -314470,7 +314691,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.68,
+          "score": 3.67,
           "playable": true,
           "lean": {
             "side": "over",
@@ -314795,7 +315016,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.06,
+          "score": 0.07,
           "playable": false,
           "lean": {
             "side": "under",
@@ -315314,7 +315535,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 2.98,
+          "score": 2.97,
           "playable": true,
           "lean": {
             "side": "over",
@@ -315428,7 +315649,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.71,
+          "score": 0.7,
           "playable": false,
           "lean": {
             "side": "over",
@@ -317557,9 +317778,9 @@
           "p_breakeven": 0.5,
           "ev": 0.0671,
           "tier": "Strong",
-          "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
-          "stars": 5,
-          "score": 4.7,
+          "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
+          "stars": 4,
+          "score": 4.69,
           "playable": true,
           "lean": {
             "side": "over",
@@ -321838,7 +322059,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.38,
+          "score": 3.37,
           "playable": true,
           "lean": {
             "side": "over",
@@ -323142,7 +323363,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.93,
+          "score": 3.92,
           "playable": true,
           "lean": {
             "side": "over",
@@ -323353,7 +323574,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.01,
+          "score": 4.0,
           "playable": true,
           "lean": {
             "side": "over",
@@ -324332,7 +324553,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.66,
+          "score": 3.65,
           "playable": true,
           "lean": {
             "side": "under",
@@ -325003,7 +325224,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.31,
+          "score": 4.3,
           "playable": true,
           "lean": {
             "side": "under",
@@ -325214,7 +325435,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.49,
+          "score": 3.48,
           "playable": true,
           "lean": {
             "side": "over",
@@ -325252,7 +325473,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.45,
+          "score": 0.44,
           "playable": false,
           "lean": {
             "side": "over",
@@ -326117,7 +326338,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.0,
+          "score": 2.99,
           "playable": true,
           "lean": {
             "side": "over",
@@ -327788,7 +328009,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.91,
+          "score": 0.9,
           "playable": false,
           "lean": {
             "side": "over",
@@ -328902,7 +329123,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.64,
+          "score": 3.63,
           "playable": true,
           "lean": {
             "side": "under",
@@ -329316,7 +329537,7 @@
           "tier": "Good",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.75,
+          "score": 2.74,
           "playable": true,
           "lean": {
             "side": "over",
@@ -329489,7 +329710,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.02,
+          "score": 4.01,
           "playable": true,
           "lean": {
             "side": "under",
@@ -329527,7 +329748,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.41,
+          "score": 4.4,
           "playable": true,
           "lean": {
             "side": "under",
@@ -329641,7 +329862,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -329738,7 +329959,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.79,
+          "score": 3.78,
           "playable": true,
           "lean": {
             "side": "under",
@@ -329911,7 +330132,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.21,
+          "score": 4.2,
           "playable": true,
           "lean": {
             "side": "under",
@@ -329949,7 +330170,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.64,
+          "score": 2.63,
           "playable": true,
           "lean": {
             "side": "under",
@@ -330371,7 +330592,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.57,
+          "score": 4.56,
           "playable": true,
           "lean": {
             "side": "under",
@@ -330544,7 +330765,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.39,
+          "score": 4.37,
           "playable": true,
           "lean": {
             "side": "under",
@@ -330755,7 +330976,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.64,
+          "score": 4.63,
           "playable": true,
           "lean": {
             "side": "under",
@@ -330958,7 +331179,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.69,
+          "score": 4.68,
           "playable": true,
           "lean": {
             "side": "under",
@@ -331207,7 +331428,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.01,
+          "score": 4.0,
           "playable": true,
           "lean": {
             "side": "under",
@@ -331418,7 +331639,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 3.96,
+          "score": 3.95,
           "playable": true,
           "lean": {
             "side": "under",
@@ -331629,7 +331850,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 0.91,
+          "score": 0.9,
           "playable": false,
           "lean": {
             "side": "over",
@@ -332224,7 +332445,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.05,
+          "score": 4.04,
           "playable": true,
           "lean": {
             "side": "over",
@@ -332397,7 +332618,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.33,
+          "score": 4.32,
           "playable": true,
           "lean": {
             "side": "over",
@@ -337406,7 +337627,7 @@
           "tier": "Strong",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.74,
+          "score": 3.73,
           "playable": true,
           "lean": {
             "side": "over",
@@ -338174,7 +338395,7 @@
           "tier": "Good",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.48,
+          "score": 3.47,
           "playable": true,
           "lean": {
             "side": "under",
@@ -338596,7 +338817,7 @@
           "tier": "Lean",
           "star_tier": "Playable (v3.3: remaining playable scores \u2014 clears the +EV gate, lowest playable conviction)",
           "stars": 2,
-          "score": 2.56,
+          "score": 2.55,
           "playable": true,
           "lean": {
             "side": "over",
@@ -339161,7 +339382,7 @@
           "tier": "Strong",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.42,
+          "score": 4.41,
           "playable": true,
           "lean": {
             "side": "over",
@@ -340059,7 +340280,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 4.24,
+          "score": 4.23,
           "playable": true,
           "lean": {
             "side": "under",
@@ -340274,7 +340495,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.92,
+          "score": 0.91,
           "playable": false,
           "lean": {
             "side": "over",
@@ -340666,7 +340887,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.36,
+          "score": 0.35,
           "playable": false,
           "lean": {
             "side": "under",
@@ -340842,7 +341063,7 @@
           "tier": "Good",
           "star_tier": "Strong (v3.3: next ~25% of playable scores season-wide)",
           "stars": 4,
-          "score": 3.96,
+          "score": 3.95,
           "playable": true,
           "lean": {
             "side": "under",
@@ -341019,7 +341240,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide)",
           "stars": 3,
-          "score": 3.43,
+          "score": 3.42,
           "playable": true,
           "lean": {
             "side": "under",
@@ -341869,7 +342090,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.18,
+            "original_score": 4.17,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -342329,7 +342550,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 2,
-            "original_score": 2.56,
+            "original_score": 2.55,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 2-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -342559,7 +342780,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.0,
+            "original_score": 3.99,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -343221,7 +343442,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 3,
-            "original_score": 3.93,
+            "original_score": 3.92,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -343755,7 +343976,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.3,
+          "score": 0.29,
           "playable": false,
           "lean": {
             "side": "under",
@@ -344111,7 +344332,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 3,
-            "original_score": 3.73,
+            "original_score": 3.72,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -344988,7 +345209,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 3,
-            "original_score": 3.86,
+            "original_score": 3.84,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -345012,7 +345233,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide) - live model-fill guard: stake capped at 0.5u",
           "stars": 3,
-          "score": 3.04,
+          "score": 3.03,
           "playable": true,
           "lean": {
             "side": "over",
@@ -345040,7 +345261,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 3,
-            "original_score": 3.04,
+            "original_score": 3.03,
             "lead_time": "T-12h",
             "action": "allowed_capped",
             "reason": "3-star later-wall model fill is the only positive live pocket"
@@ -345228,7 +345449,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.09,
+            "original_score": 4.08,
             "lead_time": "T-12h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -345633,7 +345854,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide) - live model-fill guard: stake capped at 0.5u",
           "stars": 3,
-          "score": 3.37,
+          "score": 3.36,
           "playable": true,
           "lean": {
             "side": "under",
@@ -345661,7 +345882,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 3,
-            "original_score": 3.37,
+            "original_score": 3.36,
             "lead_time": "T-12h",
             "action": "allowed_capped",
             "reason": "3-star later-wall model fill is the only positive live pocket"
@@ -346293,7 +346514,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.21,
+            "original_score": 4.2,
             "lead_time": "T-12h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -346483,7 +346704,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.21,
+            "original_score": 4.2,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -346713,7 +346934,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.21,
+            "original_score": 4.2,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -347466,7 +347687,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.2,
+            "original_score": 4.19,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -347491,7 +347712,7 @@
           "tier": "Lean",
           "star_tier": "Good (v3.3: next ~35% of playable scores season-wide) - live model-fill guard: stake capped at 0.5u",
           "stars": 3,
-          "score": 3.0,
+          "score": 2.99,
           "playable": true,
           "lean": {
             "side": "over",
@@ -347519,7 +347740,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 3,
-            "original_score": 3.0,
+            "original_score": 2.99,
             "lead_time": "T-12h",
             "action": "allowed_capped",
             "reason": "3-star later-wall model fill is the only positive live pocket"
@@ -348492,7 +348713,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.26,
+            "original_score": 4.25,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -348938,7 +349159,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 3,
-            "original_score": 3.74,
+            "original_score": 3.73,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -354387,7 +354608,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.5,
+          "score": 0.49,
           "playable": false,
           "lean": {
             "side": "under",
@@ -356835,7 +357056,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -357811,7 +358032,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 4,
-            "original_score": 4.25,
+            "original_score": 4.24,
             "lead_time": "T-12h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 4-star model-fill bucket is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",
@@ -359562,7 +359783,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.34,
+          "score": 0.33,
           "playable": false,
           "lean": {
             "side": "over",
@@ -360272,7 +360493,7 @@
             "start_date": "2026-08-01",
             "basis": "Forward-only model-fill health guard from 2026-08-01. Champion picks keep their own gate. V4 totals model fills stay visible as leans, but only non-expanded 3-star rows at T-12h or later can become Diamond Edge model fill picks, and those are capped at 0.5u. The guard is based on the served live ledger: 2/4/5-star model fills and expanded-band fills are negative; the surviving 3-star later-wall pocket is the only positive live slice. This does not flip sides or hide the model read.",
             "original_stars": 5,
-            "original_score": 4.9,
+            "original_score": 4.91,
             "lead_time": "T-24h",
             "action": "demoted_to_pass",
             "reason": "Model-fill health guard: this stays as a lean, not a bet, because the 5-star model-fill bucket is losing live; the early T-24h model-fill wall is losing live. We are not flipping the pick - the model still leans this side, but the live record says this bucket should not be staked right now.",

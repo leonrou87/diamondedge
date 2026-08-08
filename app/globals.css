@@ -2717,7 +2717,8 @@ details.more .more-body{padding-top:12px}
         The whole tile is already the unlock affordance (`data-up="1"`), so the CTA's job
         here is to be recognisable, not to be a sentence.
 
-   WHAT DID NOT GIVE: the pick tag, the market number's size, and the strength pips.
+   WHAT DID NOT GIVE: the pick tag, the market number's size, and the strength indicator —
+   which is the confidence percent now, sized into the exact slot the pips vacated.
    THE ROW CANNOT SILENTLY WRAP AGAIN. `flex-wrap:nowrap` at tile size makes single-line a
    structural property; `min-width:0` on the right-hand group and `flex-shrink` on the CTA
    make the CTA the one element that yields if a future addition ever overruns. */
@@ -2758,6 +2759,42 @@ details.more .more-body{padding-top:12px}
 .de-mini-pick.dmp-detail .de-mini-ou b{font-size:19px}
 .de-mini-pick.dmp-detail .de-mini-word{font-size:17px}
 
+/* ══════════════ THE CONFIDENCE PERCENT — THE TAG'S SECOND, QUIETER FIGURE ══════════════
+   Leon: "just have some cool percent on confidence of pick."
+
+   IT REPLACED THE PIPS ON THE TAG, it did not join them. Three dots and a percent would be
+   the same fact told twice in two vocabularies, and the whole discipline of this tag is that
+   it holds ONE glance. The percent wins the slot because it is self-describing: a first-time
+   reader has to be taught what ●●○ means and does not have to be taught what 62% means. The
+   tier is not lost — it rides in the element's own title, and the story deck still prints it
+   in words beside the number.
+
+   IT IS DELIBERATELY NOT THE CALL'S COLOUR. The pips took the call's mint/rose precisely so
+   the eye would fuse them into the word; a NUMERAL fused into "UNDER" would read as "62%
+   chance of under", which is a claim this product does not make. So it is set in the tag's
+   dim white — plainly an annotation on the call rather than part of it — in the mono face
+   with tabular figures, so a column of tiles has its percents on the same optical rail and a
+   two-digit number never jitters the row.
+
+   THE WIDTH BUDGET IS THE PIPS' OLD ONE. Pips cost 14.5px + a 1px nudge inside the tag's 4px
+   gap; "62%" at 9px/-.03em measures ~15px in the same gap. The tile row was measured at 126px
+   against a 128px budget at 360 and it stays inside it — verified at 360 and 375, signed out
+   and entitled, in audit-screenshots/confidence-pct/. */
+.de-conf{flex-shrink:0;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-weight:700;font-size:11px;letter-spacing:-.02em;line-height:1;
+  color:rgba(255,255,255,.62)}   /* 7.2:1 on the tag's #0d1420 — subordinate, still AA at 9px */
+/* on a board tile: ~15px, the slot the pips vacated */
+.de-mini-pick.dmp-tile .de-conf{font-size:9px;letter-spacing:-.03em}
+.de-mini-pick.dmp-detail .de-conf{font-size:12.5px}
+/* a STRONG room is the one case the number is allowed to warm up — the tag's own gold, at the
+   same weight, so the rare pick with half the committee behind it is findable in a column */
+.de-mini-call .de-conf.q-strong{color:rgba(246,199,69,.92)}
+/* the game page's full call block is INK ON PAPER, not white on black — same figure, page palette */
+.de-side .de-conf{margin-left:6px;color:var(--ink3)}
+.de-side .de-conf.q-strong{color:var(--golddeep)}
+.strchip .de-conf{color:var(--ink2)}
+.strchip.q-strong .de-conf{color:var(--golddeep)}
+
 /* ══════════════ PICK STRENGTH — THE PIPS ══════════════
    Leon: "Can we have the notion of strong picks / weak picks."
 
@@ -2768,21 +2805,16 @@ details.more .more-body{padding-top:12px}
    behind it (every desk-sourced and legacy call) draws NO pips at all — never one pip, never
    a hollow placeholder, because an absent fact and a weak one are different facts.
 
-   WHY PIPS AND NOT A WORD OR A BADGE. Leon has rejected clutter on this tag repeatedly, and
-   he is right to: the tag is the one dark object on a light board and its whole power is that
-   it reads in a single glance. A word would compete with OVER/UNDER for that glance; a badge
-   would be a second object. Dots are already this tag's own vocabulary — `.de-mini-lockdots`
-   is a dot — and they carry the tier PRE-ATTENTIVELY, as a quantity rather than as something
-   to read. They also inherit the call's colour, so the eye takes the tag as ONE unit: not
-   "a pick, and also a rating", but "UNDER, backed hard". The deck slide is where the pips get
-   their name printed beside them once; everywhere else they stay silent.
-
-   THE WIDTH BUDGET IS REAL. The tile row's measured worst case was 126px against a 128px
-   budget at 360 (see the note above), so the pips are sized to the space that exists: 15px on
-   a board tile, 17px everywhere else, on a flex-shrink:0 unit that can never squeeze the word.
+   THEY LEFT THE PICK TAG (2026-08-08) AND KEPT THEIR OTHER TWO HOMES. Leon: the goal "wasn't
+   to rank picks but rather… just have some cool percent on confidence of pick" — so on the
+   tag the percent replaced them outright rather than sitting beside them, because two
+   renderings of one vote is clutter dressed as rigour. The pips survive exactly where the
+   TIER, not the pick, is the subject: the research plate's per-tier record rows (where they
+   are the key to a table of three tiers) and the story-deck chip, which prints the tier's word
+   and the percent together once so the number on the board needs no caption.
 
    MONOCHROME-SAFE. The fill is a COUNT, so the tier survives greyscale, every kind of colour
-   blindness and a screenshot — the colour only ties the pips to the call they belong to. */
+   blindness and a screenshot. */
 .de-pips{display:inline-flex;align-items:center;gap:2px;flex-shrink:0;
   color:rgba(255,255,255,.92)}
 .de-pips i{display:block;width:4px;height:4px;border-radius:999px;
@@ -2790,18 +2822,8 @@ details.more .more-body{padding-top:12px}
 .de-pips.s1 i:nth-child(-n+1),
 .de-pips.s2 i:nth-child(-n+2),
 .de-pips.s3 i:nth-child(-n+3){opacity:1}
-/* the pips belong to the CALL, so they take the call's colour on the black tag */
-.de-mini-pick.over .de-mini-call .de-pips{color:#5fe0ac}
-.de-mini-pick.under .de-mini-call .de-pips{color:#ff8fa3}
-/* on a board tile: 3 × 3.5px + 2 × 2px gap = 14.5px, inside the measured budget */
-.de-mini-pick.dmp-tile .de-pips{gap:2px;margin-left:1px}
-.de-mini-pick.dmp-tile .de-pips i{width:3.5px;height:3.5px}
-.de-mini-pick.dmp-detail .de-pips i{width:5px;height:5px}
-/* the game page's full call block sets its pips in the page's ink palette, not the tag's */
-.de-side .de-pips{margin-left:2px;color:var(--ink2)}
-.de-side.ou-over .de-pips{color:var(--over)}
-.de-side.ou-under .de-pips{color:var(--under)}
-.de-side .de-pips i{width:5px;height:5px}
+/* (the tag's own pip rules retired with the pips — the pick tag and the game page's call
+   block both carry `.de-conf` now; see THE CONFIDENCE PERCENT above) */
 /* ── THE CHIP: the same pips, named, on the one surface with room to teach them ── */
 .strchip{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;
   padding:4px 9px 4px 8px;border-radius:999px;
