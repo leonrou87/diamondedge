@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-08T14:40:06Z",
+  "generated_utc": "2026-08-08T15:17:22Z",
   "dates": [
     "2026-08-08"
   ],
@@ -1220,10 +1220,10 @@
         },
         "asof_utc": "2026-08-08T12:48:08Z",
         "price_improved": {
-          "now": -104,
+          "now": 100,
           "was": -106,
-          "book": "lowvig",
-          "ts": "2026-08-08T14:37:18Z"
+          "book": "betus",
+          "ts": "2026-08-08T15:16:24Z"
         }
       },
       {
