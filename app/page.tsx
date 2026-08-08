@@ -1597,8 +1597,13 @@ export default function Home() {
            provenance the board never renders), and it stays null on every pick that has no
            committee behind it. */
         strength: (() => {
-          const c = pk.owner_strategy && typeof pk.owner_strategy === "object"
-            ? pk.owner_strategy.committee : null;
+          /* TWO SERVED HOMES, ONE TIER (2026-08-08). The nightly engine is now the board's
+             selector and stamps its own `engine_strategy.committee`; the owner-directed
+             channel's `owner_strategy.committee` stays, because rows already served through
+             it are frozen and must not lose their tier on a rebuild. Engine first, owner as
+             the fallback — never a recomputation, and null when neither is there. */
+          const blk = (k: string) => (pk[k] && typeof pk[k] === "object" ? pk[k].committee : null);
+          const c = blk("engine_strategy") || blk("owner_strategy");
           const s = c && typeof c === "object" && c.strength && typeof c.strength === "object"
             ? c.strength : null;
           return take && s && s.tier ? s : null;
@@ -7423,13 +7428,17 @@ export default function Home() {
     /* ONE PLACE KNOWS THE PAYLOAD SHAPE. A pick reaches a renderer in two forms — the raw
        served object straight off the feed, and the normalised `play` v4ToPlay() builds for
        the board — so this reads BOTH: the normalised `strength` field first (v4ToPlay copies
-       it forward), then the served `owner_strategy.committee` it came from. Everything else
-       in the app asks this function and never touches the payload itself. */
+       it forward), then the served committee block it came from — `engine_strategy` (the
+       nightly engine, the board's selector since 2026-08-08) or `owner_strategy` (the
+       owner-directed channel, whose already-served rows are frozen and keep their tier).
+       Everything else in the app asks this function and never touches the payload itself. */
     function committeeStrength(pl: any) {
       if (!pl || typeof pl !== "object") return null;
       const direct = pl.strength && typeof pl.strength === "object" ? pl.strength : null;
-      const c = pl.owner_strategy && typeof pl.owner_strategy === "object"
-        ? pl.owner_strategy.committee : null;
+      /* The engine's own block first (it is the board's selector since 2026-08-08), then the
+         owner channel's — rows served through that channel are frozen and keep their tier. */
+      const blk = (k: string) => (pl[k] && typeof pl[k] === "object" ? pl[k].committee : null);
+      const c = blk("engine_strategy") || blk("owner_strategy");
       const s = direct || (c && typeof c === "object" && c.strength
         && typeof c.strength === "object" ? c.strength : null);
       const tier = String((s && s.tier) || (c && c.strength_tier) || "").toLowerCase();
