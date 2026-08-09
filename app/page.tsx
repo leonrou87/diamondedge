@@ -625,10 +625,53 @@ export default function Home() {
        demotes the rest of the session so a broken deploy costs one retry, not one per read.
        An ABORT is never a proxy failure — the deadline below fired, and re-issuing the same
        request against Supabase would spend the bytes twice and hang twice. */
+    /* ═══ THE FALLBACK MUST NOT BE MORE EXPENSIVE THAN THE THING IT REPLACES ═══
+       2026-08-08, both found by forcing real edge misses in production (11 cold samples:
+       1,439-5,233 ms, and 2 of them returned HTTP 502).
+
+       (1) THE DEMOTION WAS PERMANENT. One 502 set snapProxyOk=false for the whole
+           session and every subsequent read went direct to Supabase. A single transient
+           blip therefore cost a reader every byte of the rest of their session, at full
+           price, with the CORS preflights back — measurably WORSE than before the proxy
+           existed. ~18% of forced cold misses triggered it. It is now a COOLDOWN: we
+           stop asking for a while, then try again. A broken deploy still costs one retry
+           per cooldown rather than one per read; a blip costs 60 seconds.
+
+       (2) THE DIRECT PATH IGNORED `opts.lite` AND FETCHED `select=payload` — the whole
+           2.1 MB, to satisfy a caller that asked for the 851 KB projection. So the
+           expensive path was also the un-projected path, and the two defects compounded:
+           one 502 demoted the session AND un-projected every read in it. snapDirect now
+           calls the SAME RPC the proxy calls, straight at Supabase. It loses the shared
+           edge copy — that is the whole cost of the proxy being down — but it does not
+           additionally lose the projection, which is a property of the database and was
+           never the proxy's to give. */
     let snapProxyOk = true;
-    async function snapDirect(k: string, ac: AbortController | null) {
+    let snapProxyRetryAt = 0;
+    const SNAP_PROXY_COOLDOWN_MS = 60_000;
+    function snapProxyUsable() {
+      if (snapProxyOk) return true;
+      if (Date.now() < snapProxyRetryAt) return false;
+      snapProxyOk = true;          // cooldown elapsed — give the edge another chance
+      return true;
+    }
+    function snapProxyFailed() {
+      snapProxyOk = false;
+      snapProxyRetryAt = Date.now() + SNAP_PROXY_COOLDOWN_MS;
+    }
+    async function snapDirect(k: string, ac: AbortController | null, opts: any = {}) {
+      const sig = ac ? { signal: ac.signal } : {};
+      const h = { apikey: KEY, Authorization: `Bearer ${KEY}` };
+      if (opts.lite) {
+        // the projection lives in Postgres; ask for it even when the edge is down
+        const r = await fetch(`${SUPA}/rest/v1/rpc/slate_snapshot_lite`, {
+          method: "POST", headers: { ...h, "Content-Type": "application/json" },
+          body: JSON.stringify({ p_key: k }), ...sig,
+        });
+        if (r.ok) return await r.json();
+        // an RPC that is missing or not granted must not mean "no picks": fall through
+      }
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`,
-        { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, ...(ac ? { signal: ac.signal } : {}) });
+        { headers: h, ...sig });
       const rows = await r.json();
       return rows && rows[0] ? rows[0].payload : null;
     }
@@ -636,18 +679,18 @@ export default function Home() {
       const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
       const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
       try {
-        if (snapProxyOk) {
+        if (snapProxyUsable()) {
           try {
             const r = await fetch(`/api/snap/${encodeURIComponent(k)}${opts.lite ? "?lite=1" : ""}`,
               { ...(ac ? { signal: ac.signal } : {}) });
             if (r.ok) return await r.json();
-            snapProxyOk = false;
+            snapProxyFailed();
           } catch (e) {
             if (ac && ac.signal.aborted) throw e;
-            snapProxyOk = false;
+            snapProxyFailed();
           }
         }
-        return await snapDirect(k, ac);
+        return await snapDirect(k, ac, opts);
       } finally { clearTimeout(t); }
     }
 
@@ -670,14 +713,14 @@ export default function Home() {
       const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
       const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
       try {
-        if (snapProxyOk) {
+        if (snapProxyUsable()) {
           try {
             const r = await fetch(`/api/snap/${encodeURIComponent(k)}?v=1`, { ...(ac ? { signal: ac.signal } : {}) });
             if (r.ok) { const j = await r.json(); return String((j && j.v) || ""); }
-            snapProxyOk = false;
+            snapProxyFailed();
           } catch (e) {
             if (ac && ac.signal.aborted) throw e;
-            snapProxyOk = false;
+            snapProxyFailed();
           }
         }
         const q = `${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}`
@@ -14030,8 +14073,23 @@ export default function Home() {
       // the pick box — so prior-day picks/results update with NO deploy. The bundled static
       // file is only a fallback for the deep archive. (Fixes the recurring "yesterday shows
       // all-PASS" bug: the static file only updated on git push, so recent days went missing.)
+      /* ═══ DO NOT ABANDON A READ YOU HAVE ALREADY PAID FOR ═══
+         This raced the snapshot read against a hard 2,500 ms timer, and losing the race
+         did NOT cancel the request — it just stopped waiting for it. So on a slow-but-
+         working read the reader paid Supabase for the projection AND THEN downloaded the
+         bundled /picks_unified.json as well: 722,807 bytes gzipped, 12 MB on disk, for
+         data that was already in flight. Forced cold misses in production measured
+         1,439-5,233 ms with a median around 3,200 ms and 3 of 6 in one batch over
+         2,500 ms — so this was not a rare tail, it was the common case on a cold edge.
+
+         The budget is now the same deadline every other snapshot read uses. `snap` owns
+         an AbortController set to SNAP_MS, so the request is genuinely CANCELLED when it
+         expires rather than orphaned, and the bundled fallback fires on real failure
+         instead of on ordinary slowness. The 2,500 ms figure was chosen when this read
+         was the full 2.1 MB payload; the lite projection is 198 KB brotli on the wire,
+         and waiting for it is cheaper than replacing it. */
       let fresh: any = null;
-      try { fresh = await Promise.race([snap("picks_unified", SNAP_MS, full ? {} : { lite: true }), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
+      try { fresh = await snap("picks_unified", SNAP_MS, full ? {} : { lite: true }); } catch {}
       if (!fresh || !fresh.games || feedStampMs(fresh) < feedStampMs({ generated_utc: UNIFIED_HISTORY_MIN_UTC })) {
         /* ═══ A DAY-GRANULAR CACHE KEY CANNOT BUST A FILE THAT CHANGES HOURLY ═══
            THIS WAS A REAL STALENESS BUG, and the record-contract guard is what found it.
@@ -14097,11 +14155,22 @@ export default function Home() {
       if (!target) return false;
       const id = String(target.game_id == null ? "" : target.game_id);
       if (!id || betaHydrated[id]) return false;
+      /* THE RULE APPLIES HERE TOO (2026-08-08). This was the one snapshot read in the
+         file with no AbortController and no deadline, contradicting SNAP_MS's own
+         stated rule that every snapshot read carries both. The consequence is not a
+         crash but something quieter: if /api/snap hangs, the `.then()` in the detail
+         open never runs and the strategy panel sits empty forever, with no error and
+         no fallback — the reader just watches nothing happen. A deadline turns that
+         hang into a rejection, and the empty-response path below already knows how to
+         recover from one by pulling the full history. */
       let one: any = null;
+      const hac = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const ht = setTimeout(() => { try { hac && hac.abort(); } catch {} }, SNAP_MS);
       try {
-        const r = await fetch(`/api/snap/picks_unified?game=${encodeURIComponent(id)}`);
+        const r = await fetch(`/api/snap/picks_unified?game=${encodeURIComponent(id)}`,
+          { ...(hac ? { signal: hac.signal } : {}) });
         if (r.ok) one = await r.json();
-      } catch {}
+      } catch {} finally { clearTimeout(ht); }
       if (!one || typeof one !== "object") {
         // the projection is never allowed to cost a reader their analysis
         const before = betaFull;

@@ -76,9 +76,21 @@ const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
    `swr` is stale-while-revalidate: past the TTL the edge still answers
    instantly from its copy and refreshes behind the reader's back, so a cold
    revalidate never becomes a slow first paint. */
-const TTL: Record<string, { s: number; swr: number }> = {
-  live_scores: { s: 20, swr: 120 },
-  live_detail: { s: 20, swr: 120 },
+/* `b` is the BROWSER max-age, when it must be shorter than min(s, 60).
+   WHY IT EXISTS (2026-08-08, measured). live_scores is rewritten every ~20s.
+   With an edge TTL of 20s AND a browser max-age of 20s, a reader could sit
+   behind BOTH: the edge copy up to 20s old, and their own cached copy of that
+   copy up to 20s older again. Sampling the proxy against Supabase every 10s for
+   20 samples showed a MEDIAN LAG OF 20.9 SECONDS — exactly one write generation
+   — with half the samples served STALE at age 20. Before the proxy the browser
+   read Supabase directly and was bounded by its 25s poll alone, so this was a
+   real regression on the one feed where lateness is visible to a reader.
+   The live keys now hold ~10s at the edge and ~5s in the browser, which keeps
+   the layered worst case under one generation. It costs almost nothing: the
+   live_scores payload is 75 bytes since the field projection landed. */
+const TTL: Record<string, { s: number; swr: number; b?: number }> = {
+  live_scores: { s: 10, swr: 60, b: 5 },
+  live_detail: { s: 10, swr: 60, b: 5 },
   pregame_picks: { s: 120, swr: 900 },
   picks_unified_live: { s: 120, swr: 900 },
   picks_unified: { s: 300, swr: 3600 },
@@ -94,17 +106,53 @@ const TTL: Record<string, { s: number; swr: number }> = {
 };
 const DEFAULT_TTL = { s: 300, swr: 3600 };
 
-/* A DATED KEY CAN NEVER CHANGE AGAIN. `pregame_picks:2026-07-21` is a frozen
-   day. Cache it for a day at the edge and an hour in the browser; the archive
-   is the cheapest thing in the app and used to be re-fetched at full price. */
+/* A DATED KEY EVENTUALLY STOPS CHANGING — BUT NOT AT MIDNIGHT UTC.
+   `pregame_picks:2026-07-21` does become a frozen day, and freezing it is the
+   cheapest win in the archive. The question is WHEN.
+
+   THE BUG THIS REPLACES (2026-08-08, observed in production). The test was
+       d < new Date().toISOString().slice(0, 10)
+   — the date in UTC. A US evening slate runs to roughly 07:00 UTC, so from
+   00:00 to ~07:00 UTC every night the UTC date has already rolled over while
+   that day's games are STILL BEING PLAYED. At 03:14 UTC a fetch of
+   `pregame_picks:2026-08-08` returned a board with two games still `live`, a
+   generated_at 11 minutes old and actively being rewritten — and served it with
+   s-maxage=86400, stale-while-revalidate=604800. Anyone opening "yesterday"
+   during those hours pinned a board containing live, ungraded games for a day
+   at the edge and a week in their browser. The overnight grades never arrived.
+   The old comment asserted "A DATED KEY CAN NEVER CHANGE AGAIN", which was
+   false for about a third of every day.
+
+   SO THE CLOCK IS THE SLATE'S CLOCK. Dates on these keys are US/Eastern slate
+   dates, and the only correct comparison is against the Eastern date. Two tiers,
+   because "finished" and "will never be touched again" are different claims:
+
+     older than yesterday   FROZEN. Every wall, every game, every grade is long
+                            settled. A day at the edge, a week of swr.
+     yesterday              SETTLING. Its games are over, but a west-coast game
+                            can end after midnight ET and overnight grading and
+                            article regeneration land on it. Short TTL, so a
+                            correction shows up rather than being pinned.
+     today or later         the live cadence in TTL above. Never frozen. */
 const DATED = /^[a-z_]+:\d{4}-\d{2}-\d{2}$/;
+
+function etDate(offsetDays = 0): string {
+  const d = new Date(Date.now() + offsetDays * 86400000);
+  // en-CA gives YYYY-MM-DD; timeZone does the DST arithmetic for us.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(d);
+}
 
 function ttlFor(key: string, mode: "full" | "lite" | "version" | "game") {
   if (mode === "version") return { s: 15, swr: 60 };
   if (DATED.test(key)) {
     const [, d] = key.split(":");
-    const today = new Date().toISOString().slice(0, 10);
-    if (d < today) return { s: 86400, swr: 604800 };
+    const yesterdayET = etDate(-1);
+    if (d < yesterdayET) return { s: 86400, swr: 604800 };   // frozen
+    if (d === yesterdayET) return { s: 300, swr: 3600 };      // still settling
+    // today or a future date: fall through to the key's live cadence
   }
   return TTL[key] || DEFAULT_TTL;
 }
@@ -114,14 +162,17 @@ function ttlFor(key: string, mode: "full" | "lite" | "version" | "game") {
    validated rather than escaped. Anything else is a 400, not a proxied read. */
 const KEY_OK = /^[a-z0-9_]+(:[0-9-]{4,10})?$/i;
 
-function cacheHeaders(t: { s: number; swr: number }, etag?: string) {
+function cacheHeaders(t: { s: number; swr: number; b?: number }, etag?: string) {
+  // The browser's window must never be able to stack a second full generation on
+  // top of the edge's — see the `b` note above TTL. Default stays min(s, 60).
+  const browser = t.b !== undefined ? t.b : Math.min(t.s, 60);
   const h: Record<string, string> = {
     "Content-Type": "application/json; charset=utf-8",
     // the edge: the copy that makes one Supabase read serve everyone
     "Vercel-CDN-Cache-Control": `public, s-maxage=${t.s}, stale-while-revalidate=${t.swr}`,
     "CDN-Cache-Control": `public, s-maxage=${t.s}, stale-while-revalidate=${t.swr}`,
     // the browser: shorter on purpose (see the header comment)
-    "Cache-Control": `public, max-age=${Math.min(t.s, 60)}, stale-while-revalidate=${t.swr}`,
+    "Cache-Control": `public, max-age=${browser}, stale-while-revalidate=${t.swr}`,
   };
   if (etag) h.ETag = etag;
   return h;

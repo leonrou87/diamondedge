@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-09T02:36:50Z",
+  "generated_utc": "2026-08-09T03:32:00Z",
   "dates": [
     "2026-08-08"
   ],
@@ -3780,13 +3780,13 @@
             "rank": 2
           },
           "lean": {
-            "win": 9,
+            "win": 11,
             "loss": 15,
             "push": 4,
-            "n": 28,
-            "record": "9-15-4",
-            "units_flat_-110": -6.818,
-            "hit_rate": 0.375,
+            "n": 30,
+            "record": "11-15-4",
+            "units_flat_-110": -5.0,
+            "hit_rate": 0.4231,
             "label": "Lean",
             "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
             "rank": 1
@@ -3803,8 +3803,8 @@
           "why": "rows written before the vote counts existed on the board; they count in `record` and are never given a tier they cannot support"
         },
         "sums_to_record": true,
-        "n_graded_total": 43,
-        "n_tiered": 43,
+        "n_graded_total": 45,
+        "n_tiered": 45,
         "n_untiered": 0,
         "thresholds": {
           "policy_version": "pick_strength_v1",
@@ -4392,19 +4392,19 @@
             ],
             "label": "30-39",
             "is_high_band": false,
-            "n": 6,
-            "win": 3,
+            "n": 7,
+            "win": 4,
             "loss": 2,
             "push": 1,
-            "record": "3-2-1",
-            "decided": 5,
-            "hit_rate": 0.6,
+            "record": "4-2-1",
+            "decided": 6,
+            "hit_rate": 0.6667,
             "hit_rate_ci": [
-              0.2307,
-              0.8824
+              0.3,
+              0.9032
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": 0.727
+            "units_flat_-110": 1.636
           },
           {
             "band": [
@@ -4455,19 +4455,19 @@
             ],
             "label": "60-69",
             "is_high_band": false,
-            "n": 5,
-            "win": 2,
+            "n": 6,
+            "win": 3,
             "loss": 3,
             "push": 0,
-            "record": "2-3-0",
-            "decided": 5,
-            "hit_rate": 0.4,
+            "record": "3-3-0",
+            "decided": 6,
+            "hit_rate": 0.5,
             "hit_rate_ci": [
-              0.1176,
-              0.7693
+              0.1876,
+              0.8124
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -1.182
+            "units_flat_-110": -0.273
           },
           {
             "band": [
@@ -4551,41 +4551,41 @@
           "units_flat_-110": 0.636
         },
         "below_high_band": {
-          "n": 36,
-          "win": 14,
+          "n": 38,
+          "win": 16,
           "loss": 18,
           "push": 4,
-          "record": "14-18-4",
-          "decided": 32,
-          "hit_rate": 0.4375,
+          "record": "16-18-4",
+          "decided": 34,
+          "hit_rate": 0.4706,
           "hit_rate_ci": [
-            0.2817,
-            0.6067
+            0.3145,
+            0.6326
           ],
           "hit_rate_ci_level": 0.95,
           "label": "under 90",
-          "units_flat_-110": -5.273
+          "units_flat_-110": -3.454
         },
         "verdict": {
           "high_band_min": 90,
           "n_decided_high": 7,
-          "n_decided_rest": 32,
+          "n_decided_rest": 34,
           "hit_rate_high": 0.5714,
-          "hit_rate_rest": 0.4375,
-          "difference": 0.1339,
+          "hit_rate_rest": 0.4706,
+          "difference": 0.1008,
           "difference_ci": [
-            -0.2289,
-            0.446
+            -0.2587,
+            0.413
           ],
           "difference_ci_level": 0.95,
-          "p_value": 0.68248,
+          "p_value": 0.696516,
           "test": "Fisher's exact test, two-sided, on the decided picks (W/L; pushes decided nothing and are excluded from the test)",
           "alpha": 0.05,
           "distinguishable_from_noise": false,
           "status": "open_question",
           "is_a_finding": false,
-          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 32 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.68248), and the interval on the gap runs from -0.229 to +0.446 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
-          "n_needed_per_arm_for_observed_gap": 218,
+          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 34 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.696516), and the interval on the gap runs from -0.259 to +0.413 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+          "n_needed_per_arm_for_observed_gap": 385,
           "n_needed_per_arm_for_meaningful_gap": 392,
           "meaningful_gap": [
             0.55,
@@ -4670,11 +4670,11 @@
         },
         "basis": "committee_vote",
         "basis_note": "every row here is scored from the committee vote the board froze before first pitch. No engine pick is scored any other way, so the cut is one kind of evidence throughout \u2014 the two bases `pick_confidence` defines are never mixed inside one table.",
-        "n_total": 43,
-        "n_scored": 43,
+        "n_total": 45,
+        "n_scored": 45,
         "n_unscored": 0,
         "sums_to_total": true,
-        "n_graded_total": 43
+        "n_graded_total": 45
       }
     },
     "streaks": {
@@ -4692,38 +4692,38 @@
         "vega": {
           "current": {
             "type": "win",
-            "length": 1
+            "length": 2
           },
           "best_win_streak": 9,
           "best_loss_streak": 13,
-          "n_decided": 436
+          "n_decided": 438
         },
         "atlas": {
           "current": {
             "type": "win",
-            "length": 4
+            "length": 5
           },
           "best_win_streak": 8,
           "best_loss_streak": 11,
-          "n_decided": 436
+          "n_decided": 438
         },
         "nova": {
           "current": {
             "type": "loss",
-            "length": 1
+            "length": 2
           },
           "best_win_streak": 9,
           "best_loss_streak": 10,
-          "n_decided": 436
+          "n_decided": 438
         },
         "scout": {
           "current": {
             "type": "loss",
-            "length": 1
+            "length": 2
           },
           "best_win_streak": 7,
           "best_loss_streak": 10,
-          "n_decided": 436
+          "n_decided": 438
         }
       },
       "analyst_order": [
@@ -4957,33 +4957,33 @@
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
     "overall": {
-      "n": 45,
+      "n": 46,
       "win": 25,
-      "loss": 17,
+      "loss": 18,
       "push": 3,
-      "roi": 0.1711,
-      "hit_rate": 0.5952,
-      "units_flat": 7.187,
+      "roi": 0.1439,
+      "hit_rate": 0.5814,
+      "units_flat": 6.187,
       "units_weighted": {
-        "units": 13.469,
-        "staked": 81.0,
-        "roi": 0.1663,
+        "units": 11.469,
+        "staked": 83.0,
+        "roi": 0.1382,
         "n_offladder_flat_1u": 0
       }
     },
     "by_star_tier": {
       "5": {
-        "n": 34,
+        "n": 35,
         "win": 16,
-        "loss": 15,
+        "loss": 16,
         "push": 3,
-        "roi": 0.0176,
-        "hit_rate": 0.5161,
-        "units_flat": 0.546,
+        "roi": -0.0142,
+        "hit_rate": 0.5,
+        "units_flat": -0.454,
         "units_weighted": {
-          "units": 1.091,
-          "staked": 62.0,
-          "roi": 0.0176,
+          "units": -0.909,
+          "staked": 64.0,
+          "roi": -0.0142,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
@@ -5069,17 +5069,17 @@
         }
       },
       "adaptive_desk": {
-        "n": 42,
+        "n": 43,
         "win": 23,
-        "loss": 16,
+        "loss": 17,
         "push": 3,
-        "roi": 0.1611,
-        "hit_rate": 0.5897,
-        "units_flat": 6.282,
+        "roi": 0.132,
+        "hit_rate": 0.575,
+        "units_flat": 5.282,
         "units_weighted": {
-          "units": 12.564,
-          "staked": 78.0,
-          "roi": 0.1611,
+          "units": 10.564,
+          "staked": 80.0,
+          "roi": 0.132,
           "n_offladder_flat_1u": 0
         }
       },
@@ -5137,7 +5137,7 @@
       "nightly_engine",
       "strategy_forge"
     ],
-    "n_unified_picks": 45,
+    "n_unified_picks": 46,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -5246,16 +5246,16 @@
         },
         {
           "date": "2026-08-08",
-          "units_flat": 7.187,
-          "units_weighted": 13.469,
-          "n": 45
+          "units_flat": 6.187,
+          "units_weighted": 11.469,
+          "n": 46
         }
       ],
       "by_star_perf": {
         "5": {
-          "n": 34,
-          "hit": 0.5161,
-          "roi": 0.0176
+          "n": 35,
+          "hit": 0.5,
+          "roi": -0.0142
         },
         "4": {
           "n": 8,
@@ -5282,9 +5282,9 @@
         },
         {
           "bucket_mid": 0.525,
-          "n": 15,
-          "predicted": 0.509,
-          "realized": 0.7333
+          "n": 16,
+          "predicted": 0.5088,
+          "realized": 0.6875
         },
         {
           "bucket_mid": 0.575,
@@ -5306,19 +5306,19 @@
         },
         {
           "month": "2026-08",
-          "n": 39,
+          "n": 40,
           "win": 19,
-          "loss": 17,
+          "loss": 18,
           "push": 3,
-          "hit": 0.5278,
-          "roi": 0.0378,
-          "units_flat": 1.36
+          "hit": 0.5135,
+          "roi": 0.0097,
+          "units_flat": 0.36
         }
       ],
       "streaks": {
         "current": {
           "type": "loss",
-          "length": 1
+          "length": 2
         },
         "max_win_streak": 7,
         "max_loss_streak": 4,
@@ -5501,34 +5501,34 @@
         "what": "The one pick we actually serve on this game: the champion's play if it has one, otherwise the model's best playable lean, otherwise a PASS.",
         "is_headline": true,
         "activation_date": "2026-07-20",
-        "n": 45,
+        "n": 46,
         "win": 25,
-        "loss": 17,
+        "loss": 18,
         "push": 3,
-        "roi": 0.1711,
-        "hit_rate": 0.5952,
-        "units_flat": 7.187,
+        "roi": 0.1439,
+        "hit_rate": 0.5814,
+        "units_flat": 6.187,
         "units_weighted": {
-          "units": 13.469,
-          "staked": 81.0,
-          "roi": 0.1663,
+          "units": 11.469,
+          "staked": 83.0,
+          "roi": 0.1382,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-30",
         "last_graded_date": "2026-08-08",
         "evidence_split": {
           "unknown": {
-            "n": 45,
+            "n": 46,
             "win": 25,
-            "loss": 17,
+            "loss": 18,
             "push": 3,
-            "roi": 0.1711,
-            "hit_rate": 0.5952,
-            "units_flat": 7.187,
+            "roi": 0.1439,
+            "hit_rate": 0.5814,
+            "units_flat": 6.187,
             "units_weighted": {
-              "units": 13.469,
-              "staked": 81.0,
-              "roi": 0.1663,
+              "units": 11.469,
+              "staked": 83.0,
+              "roi": 0.1382,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-30",
@@ -6016,29 +6016,29 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 449,
-          "win": 214,
+          "n": 451,
+          "win": 216,
           "loss": 222,
           "push": 13,
-          "hit_rate": 0.4908,
-          "decided": 436,
+          "hit_rate": 0.4932,
+          "decided": 438,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4442,
-            0.5376
+            0.4466,
+            0.5398
           ],
-          "last10": "L-P-L-P-W-W-L-L-P-W",
+          "last10": "P-L-P-W-W-L-L-P-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 118,
-          "own_side_over_rate": 0.5122,
-          "mean_abs_edge_vs_market": 0.0143,
+          "n_live": 120,
+          "own_side_over_rate": 0.5144,
+          "mean_abs_edge_vs_market": 0.0144,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 118 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -6053,29 +6053,29 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 449,
-          "win": 200,
+          "n": 451,
+          "win": 202,
           "loss": 236,
           "push": 13,
-          "hit_rate": 0.4587,
-          "decided": 436,
+          "hit_rate": 0.4612,
+          "decided": 438,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4125,
-            0.5056
+            0.415,
+            0.508
           ],
-          "last10": "W-P-W-P-L-W-W-W-P-W",
+          "last10": "P-W-P-L-W-W-W-P-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 118,
-          "own_side_over_rate": 0.5078,
-          "mean_abs_edge_vs_market": 0.0315,
+          "n_live": 120,
+          "own_side_over_rate": 0.51,
+          "mean_abs_edge_vs_market": 0.0316,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 118 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "nova": {
           "key": "nova",
@@ -6090,29 +6090,29 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 449,
-          "win": 211,
-          "loss": 225,
+          "n": 451,
+          "win": 212,
+          "loss": 226,
           "push": 13,
-          "hit_rate": 0.4839,
-          "decided": 436,
+          "hit_rate": 0.484,
+          "decided": 438,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4374,
+            0.4376,
             0.5308
           ],
-          "last10": "W-P-W-P-L-L-L-W-P-L",
+          "last10": "P-W-P-L-L-L-W-P-L-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 118,
-          "own_side_over_rate": 0.5278,
+          "n_live": 120,
+          "own_side_over_rate": 0.5277,
           "mean_abs_edge_vs_market": 0.0222,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 118 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "scout": {
           "key": "scout",
@@ -6127,34 +6127,34 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 449,
-          "win": 208,
-          "loss": 228,
+          "n": 451,
+          "win": 209,
+          "loss": 229,
           "push": 13,
-          "hit_rate": 0.4771,
-          "decided": 436,
+          "hit_rate": 0.4772,
+          "decided": 438,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4306,
+            0.4308,
             0.5239
           ],
-          "last10": "W-P-W-P-W-L-W-W-P-L",
+          "last10": "P-W-P-W-L-W-W-P-L-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 118,
-          "own_side_over_rate": 0.4165,
+          "n_live": 120,
+          "own_side_over_rate": 0.4169,
           "mean_abs_edge_vs_market": 0.0261,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 118 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-09T02:33:31Z",
+      "updated": "2026-08-09T03:11:33Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -6191,18 +6191,18 @@
           "bh_significant": false
         },
         "SPLIT": {
-          "n": 31,
+          "n": 32,
           "win": 16,
-          "loss": 13,
+          "loss": 14,
           "push": 2,
-          "hit_rate": 0.5517,
-          "roi": 0.0859,
-          "n_decided": 29,
+          "hit_rate": 0.5333,
+          "roi": 0.0497,
+          "n_decided": 30,
           "hit_ci95": [
-            0.3569,
-            0.7355
+            0.3433,
+            0.7166
           ],
-          "p_vs_coinflip": 0.711071,
+          "p_vs_coinflip": 0.855536,
           "bh_significant": false
         }
       },
@@ -6298,18 +6298,18 @@
           }
         },
         "SPLIT_2-2|over=vega+atlas": {
-          "n": 7,
+          "n": 8,
           "win": 1,
-          "loss": 5,
+          "loss": 6,
           "push": 1,
-          "hit_rate": 0.1667,
-          "roi": -0.679,
-          "n_decided": 6,
+          "hit_rate": 0.1429,
+          "roi": -0.7249,
+          "n_decided": 7,
           "hit_ci95": [
-            0.0042,
-            0.6412
+            0.0036,
+            0.5787
           ],
-          "p_vs_coinflip": 0.21875,
+          "p_vs_coinflip": 0.125,
           "bh_significant": false,
           "family": "SPLIT_2-2",
           "call": "over",
@@ -6399,8 +6399,8 @@
           }
         }
       },
-      "n_games_with_all_four_graded": 45,
-      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 45 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
+      "n_games_with_all_four_graded": 46,
+      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 46 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
       "n_rows_rendered": 11,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
@@ -8844,7 +8844,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-09T02:37:04Z",
+      "updated": "2026-08-09T03:32:15Z",
       "order": [
         "vega",
         "atlas",
@@ -10094,7 +10094,7 @@
             "atlas": 102
           },
           "pushes": 4,
-          "n_both_graded": 449,
+          "n_both_graded": 451,
           "line": "When VEGA and ATLAS disagree: VEGA 116, ATLAS 102"
         },
         {
@@ -10106,14 +10106,14 @@
             "VEGA \u00b7 The Price",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 221,
+          "n_disagreements": 222,
           "wins": {
-            "vega": 110,
+            "vega": 111,
             "nova": 107
           },
           "pushes": 4,
-          "n_both_graded": 449,
-          "line": "When VEGA and NOVA disagree: VEGA 110, NOVA 107"
+          "n_both_graded": 451,
+          "line": "When VEGA and NOVA disagree: VEGA 111, NOVA 107"
         },
         {
           "pair": [
@@ -10124,14 +10124,14 @@
             "VEGA \u00b7 The Price",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 239,
+          "n_disagreements": 240,
           "wins": {
-            "vega": 120,
+            "vega": 121,
             "scout": 114
           },
           "pushes": 5,
-          "n_both_graded": 449,
-          "line": "When VEGA and SCOUT disagree: VEGA 120, SCOUT 114"
+          "n_both_graded": 451,
+          "line": "When VEGA and SCOUT disagree: VEGA 121, SCOUT 114"
         },
         {
           "pair": [
@@ -10142,14 +10142,14 @@
             "ATLAS \u00b7 The Conditions",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 189,
+          "n_disagreements": 190,
           "wins": {
-            "atlas": 87,
+            "atlas": 88,
             "nova": 98
           },
           "pushes": 4,
-          "n_both_graded": 449,
-          "line": "When ATLAS and NOVA disagree: ATLAS 87, NOVA 98"
+          "n_both_graded": 451,
+          "line": "When ATLAS and NOVA disagree: ATLAS 88, NOVA 98"
         },
         {
           "pair": [
@@ -10160,14 +10160,14 @@
             "ATLAS \u00b7 The Conditions",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 187,
+          "n_disagreements": 188,
           "wins": {
-            "atlas": 86,
+            "atlas": 87,
             "scout": 94
           },
           "pushes": 7,
-          "n_both_graded": 449,
-          "line": "When ATLAS and SCOUT disagree: ATLAS 86, SCOUT 94"
+          "n_both_graded": 451,
+          "line": "When ATLAS and SCOUT disagree: ATLAS 87, SCOUT 94"
         },
         {
           "pair": [
@@ -10184,7 +10184,7 @@
             "scout": 96
           },
           "pushes": 5,
-          "n_both_graded": 449,
+          "n_both_graded": 451,
           "line": "When NOVA and SCOUT disagree: NOVA 99, SCOUT 96"
         }
       ],
@@ -10196,45 +10196,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 74,
-          "win": 30,
+          "n": 76,
+          "win": 32,
           "loss": 39,
           "push": 5,
-          "hit_rate": 0.4348,
-          "line": "30-39-5",
+          "hit_rate": 0.4507,
+          "line": "32-39-5",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 74,
-          "win": 39,
+          "n": 76,
+          "win": 41,
           "loss": 30,
           "push": 5,
-          "hit_rate": 0.5652,
-          "line": "39-30-5",
+          "hit_rate": 0.5775,
+          "line": "41-30-5",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 74,
-          "win": 33,
-          "loss": 36,
+          "n": 76,
+          "win": 34,
+          "loss": 37,
           "push": 5,
-          "hit_rate": 0.4783,
-          "line": "33-36-5",
+          "hit_rate": 0.4789,
+          "line": "34-37-5",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 74,
-          "win": 34,
-          "loss": 35,
+          "n": 76,
+          "win": 35,
+          "loss": 36,
           "push": 5,
-          "hit_rate": 0.4928,
-          "line": "34-35-5",
+          "hit_rate": 0.493,
+          "line": "35-36-5",
           "is_betting_record": false
         }
       },
@@ -10301,17 +10301,17 @@
     "record_start": "2026-07-01",
     "through": "2026-08-08",
     "overall": {
-      "n": 45,
+      "n": 46,
       "win": 23,
-      "loss": 17,
+      "loss": 18,
       "push": 5,
-      "roi": 0.132,
-      "hit_rate": 0.575,
-      "units_flat": 5.282,
+      "roi": 0.1044,
+      "hit_rate": 0.561,
+      "units_flat": 4.282,
       "units_weighted": {
-        "units": 10.564,
-        "staked": 80.0,
-        "roi": 0.132,
+        "units": 8.564,
+        "staked": 82.0,
+        "roi": 0.1044,
         "n_offladder_flat_1u": 0
       }
     },
@@ -10398,11 +10398,11 @@
         "strategy_at": "adaptive_strategy_by_date.2026-08-07"
       },
       "2026-08-08": {
-        "n": 7,
+        "n": 8,
         "win": 1,
-        "loss": 4,
+        "loss": 5,
         "push": 2,
-        "hit_rate": 0.2,
+        "hit_rate": 0.1667,
         "strategy_ref": "vote_count:2:under",
         "strategy_at": "adaptive_strategy_by_date.2026-08-08"
       }
@@ -11236,10 +11236,10 @@
           "name": "The Pitcher's Park, the Rested Arm and the Closer Up",
           "paragraphs": [
             "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
-            "It takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds no sign of ATLAS leaning under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and no sign of ATLAS leaning under is the part that cuts against it.",
+            "It takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds ATLAS is not strongly on the under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and ATLAS is not strongly on the under is the part that cuts against it.",
             "Anything that does not fit one of those shapes it leaves alone, and it leaves alone far more than it plays. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 22 to Aug 7) it went 125-46-3. That is what it did on games already played \u2014 the same games that picked it out \u2014 and it is a count, not a rate to come."
           ],
-          "text": "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.\n\nIt takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds no sign of ATLAS leaning under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and no sign of ATLAS leaning under is the part that cuts against it.\n\nAnything that does not fit one of those shapes it leaves alone, and it leaves alone far more than it plays. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 22 to Aug 7) it went 125-46-3. That is what it did on games already played \u2014 the same games that picked it out \u2014 and it is a count, not a rate to come.",
+          "text": "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.\n\nIt takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds ATLAS is not strongly on the under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and ATLAS is not strongly on the under is the part that cuts against it.\n\nAnything that does not fit one of those shapes it leaves alone, and it leaves alone far more than it plays. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 22 to Aug 7) it went 125-46-3. That is what it did on games already played \u2014 the same games that picked it out \u2014 and it is a count, not a rate to come.",
           "themes": [
             "park",
             "arms",
@@ -12109,10 +12109,10 @@
         "name": "The Pitcher's Park, the Rested Arm and the Closer Up",
         "paragraphs": [
           "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
-          "It takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds no sign of ATLAS leaning under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and no sign of ATLAS leaning under is the part that cuts against it.",
+          "It takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds ATLAS is not strongly on the under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and ATLAS is not strongly on the under is the part that cuts against it.",
           "Anything that does not fit one of those shapes it leaves alone, and it leaves alone far more than it plays. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 22 to Aug 7) it went 125-46-3. That is what it did on games already played \u2014 the same games that picked it out \u2014 and it is a count, not a rate to come."
         ],
-        "text": "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.\n\nIt takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds no sign of ATLAS leaning under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and no sign of ATLAS leaning under is the part that cuts against it.\n\nAnything that does not fit one of those shapes it leaves alone, and it leaves alone far more than it plays. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 22 to Aug 7) it went 125-46-3. That is what it did on games already played \u2014 the same games that picked it out \u2014 and it is a count, not a rate to come.",
+        "text": "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.\n\nIt takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds ATLAS is not strongly on the under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and ATLAS is not strongly on the under is the part that cuts against it.\n\nAnything that does not fit one of those shapes it leaves alone, and it leaves alone far more than it plays. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 22 to Aug 7) it went 125-46-3. That is what it did on games already played \u2014 the same games that picked it out \u2014 and it is a count, not a rate to come.",
         "themes": [
           "park",
           "arms",
@@ -12261,15 +12261,15 @@
       "source": "hybrid"
     },
     "2026-08-08": {
-      "n_picks": 5,
-      "n_graded": 5,
+      "n_picks": 6,
+      "n_graded": 6,
       "wins": 1,
-      "losses": 4,
+      "losses": 5,
       "pushes": 0,
-      "hit_rate": 0.2,
-      "roi": -0.602,
-      "units": -3.01,
-      "units_weighted": -6.02,
+      "hit_rate": 0.1667,
+      "roi": -0.6683,
+      "units": -4.01,
+      "units_weighted": -8.02,
       "source": "adaptive_desk"
     },
     "2026-08-09": {
@@ -13168,7 +13168,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_LEAN",
           "side": "under",
           "conviction": "CLEAR",
@@ -14286,7 +14286,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_LEAN",
           "side": "under",
           "conviction": "CLEAR",
@@ -15308,7 +15308,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -16414,7 +16414,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_LEAN",
           "side": "over",
           "conviction": "SLIGHT",
@@ -17458,7 +17458,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18570,7 +18570,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_LEAN",
           "side": "over",
           "conviction": "SLIGHT",
@@ -19607,7 +19607,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -20644,7 +20644,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "CLEAR",
@@ -21676,7 +21676,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -22758,7 +22758,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -23830,7 +23830,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_LEAN",
           "side": "over",
           "conviction": "CLEAR",
@@ -24862,7 +24862,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -25361,7 +25361,7 @@
         "star_tier": "Committee pick \u2014 the side won a mostly-quiet room",
         "price": -110.0,
         "suggested_units": 0.5,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T20:20:14Z",
         "timestamp": "2026-08-08T20:20:14Z",
@@ -25582,7 +25582,7 @@
           "price": -110.0,
           "stars": 2,
           "score": 2.25,
-          "result": null,
+          "result": "win",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -25955,7 +25955,7 @@
         "score": 2.25,
         "price": -110.0,
         "suggested_units": 0.5,
-        "result": null,
+        "result": "win",
         "locked": true,
         "lead_time": "T-3h",
         "source": "nightly_engine",
@@ -25980,7 +25980,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_LEAN",
           "side": "over",
           "conviction": "SLIGHT",
@@ -26822,8 +26822,8 @@
           "take": "The conditions are loud here \u2014 0.27 runs of deviation from a neutral night, and they point over on 8.5.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 8th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T02:33:13Z",
+          "live_state_note": "Bot 9th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-09T03:11:30Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -26968,7 +26968,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -27444,18 +27444,18 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 8,
-        "half": "top",
-        "outs": 1,
+        "inning": 9,
+        "half": "bottom",
+        "outs": 0,
         "away_score": 1,
-        "home_score": 0,
-        "runs_so_far": 1,
+        "home_score": 1,
+        "runs_so_far": 2,
         "pregame_total": 8.5,
-        "runs_vs_pregame_total": -7.5,
-        "runs_still_needed_for_over": 8,
-        "innings_elapsed": 7.5,
-        "pace_runs_per_inning": 0.13,
-        "projected_final_runs": 1.2,
+        "runs_vs_pregame_total": -6.5,
+        "runs_still_needed_for_over": 7,
+        "innings_elapsed": 9.0,
+        "pace_runs_per_inning": 0.22,
+        "projected_final_runs": 2.0,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -27466,7 +27466,7 @@
         ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-09T02:33:13Z",
+        "as_of": "2026-08-09T03:11:30Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -27882,8 +27882,8 @@
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.51 runs below an average night \u2014 6.5 against 7.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Bot 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T02:33:13Z",
+          "live_state_note": "Bot 4th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-09T03:11:30Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -28028,7 +28028,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T02:33:31Z",
+          "asof_utc": "2026-08-09T03:28:45Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -28509,16 +28509,16 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 2,
+        "inning": 4,
         "half": "bottom",
         "outs": 1,
-        "away_score": 0,
+        "away_score": 1,
         "home_score": 1,
-        "runs_so_far": 1,
+        "runs_so_far": 2,
         "pregame_total": 7.0,
-        "runs_vs_pregame_total": -6.0,
-        "runs_still_needed_for_over": 6,
-        "innings_elapsed": 2.0,
+        "runs_vs_pregame_total": -5.0,
+        "runs_still_needed_for_over": 5,
+        "innings_elapsed": 4.0,
         "pace_runs_per_inning": 0.5,
         "projected_final_runs": 4.5,
         "p_hit_now": null,
@@ -28529,7 +28529,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-09T02:33:13Z",
+        "as_of": "2026-08-09T03:11:30Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
