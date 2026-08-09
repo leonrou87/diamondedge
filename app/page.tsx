@@ -3831,8 +3831,8 @@ export default function Home() {
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
       bindClick("gp-back", () => closeDetail());
       bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
-      bindClick("anl-insights", () => { closeDetail(false, true); switchTab("results"); });
-      bindClick("anl-pat-all", () => { closeDetail(false, true); switchTab("results"); });
+      bindClick("anl-insights", () => { closeDetail(false, true); switchTab("desk"); goDeskResults(); });
+      bindClick("anl-pat-all", () => { closeDetail(false, true); switchTab("desk"); goDeskResults(); });
       bindSwipeBack($("gamepage"));
     }
     // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
@@ -5945,8 +5945,8 @@ export default function Home() {
          settings → Preferences, opened from Account
          upgrade  → Premium, opened from any locked pick or from Account
        "beta" (the old Totals board) has no door left at all and is not rendered. */
-    let tab = "games";              // "today" | "games" | "desk" | "results" | "research" | "settings" | "upgrade" | "account"
-    const TABS = ["today", "games", "desk", "results", "research", "settings", "upgrade", "account"];
+    let tab = "games";              // "today" | "games" | "desk" | "research" | "settings" | "upgrade" | "account"
+    const TABS = ["today", "games", "desk", "research", "settings", "upgrade", "account"];
     let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
@@ -12412,119 +12412,23 @@ export default function Home() {
        "WAY too much information" Leon was reacting to. The screen now answers "how are we
        doing" in four rows; this sheet answers "show me every one", for the reader who asks
        that second question. Same day blocks, same rows, one tap further in. */
-    function openPickHistory() {
-      if (!betaData) { toast("The pick history is still loading"); return; }
-      detail = detailWithGameReturn({ _history: true });
-      let layer = $("sheet-layer");
-      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
-      layer.innerHTML = `
-        <div class="gamepage" id="gamepage" role="dialog" aria-modal="true" aria-label="Every pick, day by day">
-          <div class="gp-head">
-            <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <span class="gp-brand-tx">Every pick</span>
-            <div class="hspacer"></div>
-          </div>
-          <div class="gp-body" id="gp-body">${pastPicksSection(betaData)}</div>
-        </div>`;
-      document.body.classList.add("sheet-open");
-      requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
-      bindClick("gp-back", () => closeDetail());
-      bindSwipeBack($("gamepage"));
-      bindClick("pp-more", () => { ppShown += 14; const b = $("gp-body"); if (b) { b.innerHTML = pastPicksSection(betaData); wireHistoryRows(); } },
-        { optional: "only rendered while there are more days to show" });
-      wireHistoryRows();
+    /* SHARING THE RECORD QUOTES THE RECORD. shareTagline() reads headlineRecordBlock(),
+       the same accessor the hero above it uses, so the clipboard and the screen cannot
+       disagree — they used to, by 84-77-9 (52.2%) against 28-20-3 (58.3%). */
+    async function shareRecord() {
+      const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
+      const txt = shareTagline();
+      if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
+      try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
     }
-    function wireHistoryRows() {
-      const b = $("gp-body"); if (!b) return;
+    function wireHistoryRows(container?: any) {
+      const b = container || $("gp-body"); if (!b) return;
       b.querySelectorAll(".pp-row[data-ppgid]").forEach((r: any) => (r.onclick = () => {
         const gid = r.dataset.ppgid;
         const bg = (betaLiveData && (betaLiveData.games || []).find((g: any) => String(g.game_id) === gid))
           || ((betaData && betaData.games) || []).find((g: any) => String(g.game_id) === gid);
         if (bg) openBetaGame(bg);
       }));
-    }
-    async function renderResults() {
-      await loadIndex();
-      try { await loadBeta(); } catch {}
-      const tr = trackRecord();
-      const ov = tr.overall || {};
-      const roi = ov.roi != null ? ov.roi * 100 : null;
-      const rh = recipeHistory();
-      const mr = monthRecord();
-      const fwd = forwardRecord();
-      const view = root.querySelector("#results-view");
-      // ONE clear headline record: the DiamondEdge Pick signature (positive — hit% AND
-      // return both good). The full all-graded universe (which includes Leans and tracked
-      // experiments, and can run slightly negative) sits below WITH its plain explanation,
-      // so a good win rate is never shown next to a negative return without context.
-      // Two distinct, reconciled numbers — never two bare percents side by side:
-      //   (A) "How often our picks win" = the published DiamondEdge signature record (58%+, profitable)
-      //   (B) "Everything we track"     = the raw all-graded universe (leans + experiments; ~break-even)
-      // Each gets its own labelled card, and (B) explains WHY it differs from (A).
-      // SIMPLE + HONEST: a masthead, the overall record hero, and the by-star-tier table.
-      // No by-market / by-lead / themes / upsell — just the record and what the stars mean.
-      // MARKETING-FORWARD ANALYSIS PAGE (Leon, 2026-07-25): hero record → the graphs
-      // (equity curve, stars-vs-wins, calibration, monthly, streaks) → the why-framing →
-      // the day-by-day past-picks archive → a premium upsell. All inline SVG, defensive.
-      /* ═══════════════ THE RECORD, SIMPLIFIED HARD ═══════════════
-         Leon: "the record/insights tab is very weird with gold picks and green picks all
-         different — simplify hard: picks per day, clear W-L per day, one visual language.
-         Kill the gold/green tier confusion; one clean per-day view consistent with the desk
-         widget."
-
-         WHAT WENT: betaDashboard's star-tier table (five gold bands — the single biggest
-         source of the "gold vs green" confusion, since a 5-star row and a winning row were
-         both gold and meant different things), the by-star-tier framing in the masthead
-         copy, and the "browse every graded pick" jump into the separate Totals surface.
-
-         WHAT STAYED, AND IN WHAT ORDER: the SAME record hero as the Desk, the SAME 14-day
-         skyline as the Desk, then the day-by-day archive — which is now the body of the
-         page rather than its ninth section. Two surfaces, one visual language, no third
-         version of the same number. The charts keep their fold for the reader who wants
-         them; they are diagnostics, and they are labelled as the fold they live in. */
-      view.innerHTML = `
-        <div class="ix-wrap">
-        <header class="ix-masthead">
-          <div class="ix-eyebrow">DiamondEdge · Record</div>
-          <h2 class="ix-mast-h">Every pick, day by day</h2>
-        </header>
-        ${deskRecordHero()}
-        ${deskLast14Widget(betaData)}
-        ${recordScopes()}
-        <!-- HOLD THE LINE. Leon: "exactly day / month / since-July-1 and the 14-day strip.
-             Nothing else." The four charts (equity curve, calibration, month-by-month,
-             streaks) were the last block here and they are diagnostics, not a record — they
-             are preserved in full on Research, where a chart of our own calibration is
-             evidence rather than clutter. The per-pick archive is the drill-in below. -->
-        <button class="ix-btn" id="res-history">Every pick, day by day<em>→</em></button>
-        <button class="ix-btn quiet" id="res-share">Share the record ↗</button>
-        </div>`;
-
-      animateCounters(view);
-      // The per-pick archive is a DRILL-IN now, not the body of the record screen.
-      bindClick("res-history", () => openPickHistory());
-      // Share the headline record — honest text + the branded OG card renders from the URL.
-      const rs = $("res-share");
-      if (rs) rs.onclick = async () => {
-        const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
-        const txt = shareTagline();
-        if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
-        try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
-      };
-      // The two restored ways into the record-breakdown sheet: the Insights masthead action and
-      // the foot of the strategy-by-strategy card. Both had their markup deleted out from under
-      // these bindings — bindClick now makes that failure mode impossible to ship silently.
-      // (#res-breakdown and #ins-allpicks were the two ways into the star-tier surfaces.
-      //  Both are gone with the tiers; the record breakdown sheet is still reachable from
-      //  the board's record chip, which is where a reader who wants the cut-by-cut goes.)
-      // (#ins-upsell's binding lived here until 2026-07-31 — the button was renamed #ins-upsell2
-      //  in the post-unification sweep and rebound above, so this one had been a no-op since.)
-      // Recent-scores rows open the game detail (same path as the board cards).
-      view.querySelectorAll(".gs-row[data-gid]").forEach((bx: any) => {
-        const open = () => { const g = findGame(bx.dataset.gid); if (g) openDetail(g); };
-        bx.onclick = open;
-        bx.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } };
-      });
     }
 
     const findGameLive = (gid: any) => {
@@ -13673,7 +13577,8 @@ export default function Home() {
           if (go === "unlock") { openUnlock(); return; }
           if (go === "pick") { const g = findGameLive(b.dataset.gid) || findGame(b.dataset.gid); if (g) openDetail(g); else jumpToGames([b.dataset.gid]); return; }
           if (go === "news") { openArticleSheet(newsStoryByKey(b.dataset.nf), b.dataset.nf); return; }
-          if (go === "results" || go === "games") switchTab(go);
+          if (go === "results") { switchTab("desk"); goDeskResults(); }
+          else if (go === "games") switchTab("games");
         };
       });
       view.querySelectorAll(".sts-srow[data-gid]").forEach((rw: any) => {
@@ -13931,7 +13836,7 @@ export default function Home() {
         if ($("slate-body")) renderSlate();
       });
       bindClick("set-how", () => openRecipeSheet());
-      bindClick("set-results", () => switchTab("results"));
+      bindClick("set-results", () => { switchTab("desk"); goDeskResults(); });
       bindClick("set-upgrade", () => switchTab("upgrade"));
       const moveLeague = (lg: string, dir: number) => {
         const cur = orderedLeagues(livePayload || payload);
@@ -14186,7 +14091,7 @@ export default function Home() {
       bindClick("acct-upgrade", () => { accountMode = "subscribe"; renderSubscribe(); }, { optional: "premium members see Manage instead" });
       bindClick("acct-manage", () => { accountMode = "manage"; renderManagePlan(); }, { optional: "free members see the upgrade CTA instead" });
       bindClick("acct-prefs", () => switchTab("settings"));
-      bindClick("acct-record", () => switchTab("results"));
+      bindClick("acct-record", () => { switchTab("desk"); goDeskResults(); });
       bindClick("acct-how", () => openRecipeSheet());
       bindClick("acct-billing", () => { location.href = "mailto:support@diamondedge.app?subject=DiamondEdge%20billing"; });
       bindClick("acct-terms", () => openTermsSheet());
@@ -16640,9 +16545,21 @@ export default function Home() {
               ${deskRecordHero()}
               <p class="dp-pitch">Every night our system replays ${paperLink(DESK_PAPERS.SEARCH, "thousands of strategy combinations")} across our four analysts, and plays only the best one the next day.</p>
               ${deskLast14Widget(betaData)}
-              <button class="dp-recbtn" id="dp-torecord">See every graded pick, day by day<em>→</em></button>
+              <!-- THE SCOPES CAME UP FROM THE RECORD SCREEN (2026-08-09). They were the only
+                   thing on that screen the Desk did not already render: its body was
+                   deskRecordHero() + deskLast14Widget() + recordScopes(), and the Desk was
+                   already calling the first two. So the 14-day widget was a button whose only
+                   job was to open a page whose first screen was that same widget again. -->
+              ${recordScopes()}
+              <button class="dp-recbtn quiet" id="dp-share">Share the record ↗</button>
             </div>
           </header>
+
+          <!-- EVERY PICK, DAY BY DAY — a section, not a destination (2026-08-09).
+               This was a full-screen layer three clicks down (Desk → Record → Every pick)
+               whose entire body was this one call. It is the receipts behind the record
+               directly above it, so it reads in place and pages in place. -->
+          <section class="dp-archive" id="desk-archive">${pastPicksSection(betaData)}</section>
 
           <!-- THE STRIP'S OTHER HALF, one scroll under the record it links to: the whole
                generated commentary and the literal rule beneath it. See
@@ -16716,9 +16633,17 @@ export default function Home() {
       v.querySelectorAll(".rostcard").forEach((el: any) => {
         el.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openAnalystSheet(el.dataset.an); } };
       });
-      // The Desk owns the Record surface now that Record is not a tab — two front doors:
-      // this button, and the 14-day widget itself.
-      bindClick("dp-torecord", () => switchTab("results"));
+      /* THE RECORD IS A REGION OF THIS PAGE, NOT A PLACE TO GO. Every door that used to
+         open the Record view — this button, the 14-day widget, Account's "Our full record",
+         Settings' copy of it, and the story CTAs — now calls goDeskResults(), which scrolls
+         to #desk-results and rings it. One component, one place, four links. */
+      bindClick("dp-share", () => shareRecord());
+      bindClick("pp-more", () => {
+        ppShown += 14;
+        const sec = $("desk-archive");
+        if (sec) { sec.innerHTML = pastPicksSection(betaData); wireHistoryRows(sec); }
+      }, { optional: "only rendered while there are more days to show" });
+      wireHistoryRows($("desk-archive"));
       bindClick("dp-toresearch", () => switchTab("research"));
       // THE IN-TEXT RESEARCH LINKS. Deep-linked: each one opens its own paper, not the tab.
       // Anchor + role=button ⇒ the keyboard contract is ours to honour, so Enter and Space
@@ -16733,8 +16658,9 @@ export default function Home() {
       if (w14) {
         w14.setAttribute("role", "button");
         w14.setAttribute("tabindex", "0");
-        w14.onclick = () => switchTab("results");
-        w14.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); switchTab("results"); } };
+        // the widget IS the thing now — pressing it rings the record region it sits in
+        w14.onclick = () => goDeskResults();
+        w14.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goDeskResults(); } };
       }
     }
     function renderShell() {
@@ -16758,7 +16684,6 @@ export default function Home() {
           <div id="today-view" style="display:${tab === "today" ? "block" : "none"}"></div>
           <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
           <div id="desk-view" style="display:none"></div>
-          <div id="results-view" style="display:none"></div>
           <div id="research-view" style="display:none"></div>
           <div id="settings-view" style="display:none"></div>
           <div id="upgrade-view" style="display:none"></div>
@@ -16808,7 +16733,7 @@ export default function Home() {
       el.innerHTML = DOCK_TABS.map((t) => {
         // "Record" is not in the bar, but arriving there must not leave every tab dark —
         // it is the Desk's own surface, so the Desk stays inked while you are on it.
-        const on = tab === t || (t === "desk" && tab === "results")
+        const on = tab === t
           || (t === "account" && (tab === "settings" || tab === "upgrade"));
         // EVERY tab keeps its label. iOS never hides the label of an inactive tab.
         return `<button class="dock-item${on ? " on" : ""}${t === "games" ? " main" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
@@ -16964,7 +16889,7 @@ export default function Home() {
       // Pan direction follows the TAB BAR's order, with each sub-surface sitting immediately
       // after the tab that owns it (Record after Desk; Premium/Settings after Account) so
       // "open the record" pans forward and "back" pans back.
-      const navOrder = ["today", "desk", "results", "games", "research", "account", "upgrade", "settings"];
+      const navOrder = ["today", "desk", "games", "research", "account", "upgrade", "settings"];
       const oldIdx = navOrder.indexOf(oldTab), newIdx = navOrder.indexOf(t);
       const dir = oldIdx >= 0 && newIdx >= 0 && newIdx < oldIdx ? "left" : "right";
       const body = document.body;
@@ -17006,7 +16931,6 @@ export default function Home() {
           // whose only volatile parts are the record and the widget. Cached like the others,
           // and invalidated by the pick-feed poller (see betaLiveData refresh).
           if (t === "desk" && (!$("desk-view").innerHTML.trim() || deskStale)) { renderDesk(); deskStale = false; }
-          if (t === "results" && !$("results-view").innerHTML.trim()) renderResults();
           if (t === "research" && !$("research-view").innerHTML.trim()) renderResearch();
           if (t === "settings") renderSettings();
           if (t === "upgrade") renderUpgrade();

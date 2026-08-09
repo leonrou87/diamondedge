@@ -71,6 +71,9 @@ HTTP=$(curl -s -o /tmp/research_papers_sync_resp.txt -w "%{http_code}" \
   --data-binary @"$TMP")
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   echo "$SHA" > "$STAMP"
+  # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
+  # heartbeat branch above is the "nothing changed" case and must stay free.
+  "$DIR/scripts/revalidate_edge.sh" research_papers || true
   # VERIFY THE ROUND TRIP — read the row back through the REST API so every run
   # leaves proof in the log that the payload landed and the stamp moved.
   BACK=$(curl -s "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?key=eq.research_papers&select=updated_at" \

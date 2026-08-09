@@ -61,6 +61,9 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
     -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
     | python3 -c 'import json,sys; r=json.load(sys.stdin); print(r[0]["updated_at"] if r else "MISSING")' 2>/dev/null || echo "READBACK_FAILED")
   echo "$SHA" > "$STAMP"; echo "$(date '+%F %T') synced history ($HTTP) updated_at=$BACK"
+  # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
+  # heartbeat branch above is the "nothing changed" case and must stay free.
+  "$DIR/scripts/revalidate_edge.sh" picks_v4_beta || true
 else
   echo "$(date '+%F %T') HISTORY SYNC FAILED http=$HTTP $(head -c 300 /tmp/history_sync_resp.txt)" >&2; exit 1
 fi

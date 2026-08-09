@@ -59,6 +59,9 @@ HTTP=$(curl -s -o /tmp/live_picks_sync_resp.txt -w "%{http_code}" \
   --data-binary "@$BODYFILE")
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   echo "$SHA" > "$STAMP"
+  # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
+  # heartbeat branch above is the "nothing changed" case and must stay free.
+  "$DIR/scripts/revalidate_edge.sh" picks_v4_beta_live || true
   # VERIFY updated_at ROUND-TRIP — read the column back through the REST API so
   # every run leaves proof in the log that the freshness stamp actually moved.
   BACK=$(curl -s "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?key=eq.picks_v4_beta_live&select=updated_at" \
