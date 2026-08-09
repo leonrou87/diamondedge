@@ -1074,6 +1074,34 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
   padding:3px 9px;box-shadow:inset 0 0 0 1px var(--line3);text-transform:none;letter-spacing:.02em}
 .statechip.final{color:var(--ink3)}
 .statechip.pre{color:var(--ink2);font-variant-numeric:tabular-nums}
+/* ═══════ THE SITUATION, INSIDE THE LIVE CHIP (outs + the count) ═══════
+   Leon: get the outs and the count onto the board cards, seamlessly. The tile has ONE row
+   for state and it has already been fought onto a single line at 375px twice, so this had to
+   arrive as shapes rather than words: three out pips and two digits, ~34px all in, against
+   the ~40px "2 OUT · 1-2" would have cost in the same type.
+
+   IT IS QUIETER THAN THE INNING ON PURPOSE. The half-inning is the state; this is the state
+   INSIDE the state. Empty pips are a hairline ring, filled pips are solid live-gold, and the
+   count sits at ink2 — so the chip still reads "Bot 8th" first at a glance down a board and
+   only resolves into a situation when a reader stops on the card.
+
+   NOTHING HERE MAY WRAP OR SHRINK. `flex-shrink:0` on both halves; the league tag beside it
+   is the element allowed to give (see .t-league below). */
+.t-sit{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;margin-left:5px}
+.ts-outs{display:inline-flex;align-items:center;gap:2.5px;flex-shrink:0}
+/* SOLID AGAINST SOLID, not ring against solid. At 4px a hairline ring is a smudge — the pips
+   have to be legible at a glance from across a two-column board or they are decoration. An
+   out is live-gold; an out still to come is the same dot at a tenth of the weight. */
+.ts-outs i{width:4px;height:4px;border-radius:50%;background:rgba(var(--rimc),.16);flex-shrink:0}
+.ts-outs i.on{background:var(--livemark)}
+.t-sit b{font-family:var(--disp);font-weight:700;font-size:10.5px;line-height:1;letter-spacing:0;
+  font-variant-numeric:tabular-nums;color:var(--ink3);flex-shrink:0}
+/* THE LEAGUE TAG IS WHAT GIVES. A live tile carrying a situation is 30-odd pixels wider in a
+   row that had none spare, and the tag is the one element in it a reader on a board they
+   picked the sport for already knows. It shrinks and clips before anything else moves, and
+   the row can therefore never wrap — which is the property the last two passes over this
+   tile were spent buying. */
+.tl-top .t-league{flex-shrink:1;text-overflow:clip}
 @keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
 
 /* ---- row 2: the two teams. Crest · abbreviation · score. ---- */
@@ -2750,18 +2778,24 @@ details.more .more-body{padding-top:12px}
 .de-mini-logo{font-style:normal;flex-shrink:0;display:inline-block;width:13px;height:13px;line-height:0;
   position:relative;color:transparent;background:var(--gold);
   -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
-/* THE EDGE LIGHT ON THE BOARD (see --de-orbit up at the mark). Two things change from the
-   masthead, and both exist because a board is FIFTEEN of these at once rather than one.
+/* THE EDGE LIGHT ON THE BOARD (see --de-orbit up at the mark). Three things change from
+   the masthead, and all three exist because a board is TWELVE of these at once rather
+   than one.
 
-   IT IS SLOWER AND DIMMER. 13s a lap against the masthead's 8.5, at roughly half the peak
-   alpha, on an 11px mark: at reading distance it is a shimmer you notice on the tile you
-   are looking at, not a light that waves at you from the tile you are not.
+   IT IS SLOWER. 13s a lap against the masthead's 8.5, on an 11px mark: at reading distance
+   it is a shimmer you notice on the tile you are looking at, not a light that waves at you
+   from the tile you are not.
 
-   THEY ARE OUT OF PHASE. Fifteen marks on one clock is a board that PULSES — the failure
+   THEY ARE OUT OF PHASE. Twelve marks on one clock is a board that PULSES — the failure
    Leon's "subtle" was aimed at, and one that only appears in aggregate, so each mark can
    look perfect on its own while the page reads like a strobe. The tiles carry a five-step
-   negative delay, which in a two-column grid leaves no two neighbours (across or down)
-   anywhere near each other's phase.
+   offset, which in a two-column grid leaves no two neighbours (across or down) anywhere
+   near each other's phase.
+
+   AND THE PHASE IS THE BOARD'S, NOT THE ELEMENT'S. `--de-orbit-t` is a negative delay
+   renderSlate() sets on #slate-body from the wall clock, so a mark rebuilt by a poller
+   picks up exactly where the mark it replaced left off. Without it every light on the
+   board snaps home together every 25 seconds — see the note at that assignment.
 
    THE INCOMING TAG GETS NO LIGHT. That mark stands for "we have not made this call yet";
    lighting it would say the opposite. */
@@ -2771,11 +2805,12 @@ details.more .more-body{padding-top:12px}
    gold mark and disappeared. What lifts gold is the specular colour: near-white, which is
    physically what a highlight on metal looks like and reads as a moving point rather than
    a second coat of paint. */
-.de-mini-logo::before{--de-orbit-dur:13s;--de-orbit-c:255,251,236;--de-orbit-a:.85}
-.slate .tile:nth-child(5n+2) .de-mini-logo::before{animation-delay:-2.6s}
-.slate .tile:nth-child(5n+3) .de-mini-logo::before{animation-delay:-5.2s}
-.slate .tile:nth-child(5n+4) .de-mini-logo::before{animation-delay:-7.8s}
-.slate .tile:nth-child(5n+5) .de-mini-logo::before{animation-delay:-10.4s}
+.de-mini-logo::before{--de-orbit-dur:13s;--de-orbit-c:255,251,236;--de-orbit-a:.85;
+  animation-delay:calc(var(--de-orbit-t,0s) - var(--de-orbit-off,0s))}
+.slate .tile:nth-child(5n+2) .de-mini-logo::before{--de-orbit-off:2.6s}
+.slate .tile:nth-child(5n+3) .de-mini-logo::before{--de-orbit-off:5.2s}
+.slate .tile:nth-child(5n+4) .de-mini-logo::before{--de-orbit-off:7.8s}
+.slate .tile:nth-child(5n+5) .de-mini-logo::before{--de-orbit-off:10.4s}
 .de-mini-call.incoming .de-mini-logo::before{display:none}
 .de-mini-de{font-style:normal;flex-shrink:0;font-family:var(--disp);font-weight:850;font-size:10px;
   letter-spacing:.06em;line-height:1;color:var(--golddeep)}
@@ -8337,20 +8372,15 @@ main.swiping{transition:none !important;will-change:transform}
   text-transform:uppercase;color:var(--ink4)}
 /* who is pitching to whom. The names are the loud part; the roles are the labels. */
 .bd-mu{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;min-width:0}
+/* a man and his role never split across a line break — only the two men can */
+.bd-mu-u{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
 .bd-mu-n{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.01em;color:var(--ink)}
 .bd-mu em{font-style:normal;font-family:var(--disp);font-weight:600;font-size:9.5px;
   letter-spacing:.1em;text-transform:uppercase;color:var(--ink4)}
 .bd-mu-to{font-family:var(--sans);font-size:11px;color:var(--ink4);padding:0 1px}
-/* ── AND WHEN PLAY IS STOPPED ──
-   Deliberately NOT the live palette: a delay is the absence of play, so it takes the
-   neutral recessed treatment and no pulsing dot. Calm, and unmistakably not live. */
-.bx-delay{display:flex;align-items:center;gap:9px;flex-wrap:wrap;align-self:flex-start;
-  padding:7px 13px;border-radius:999px;background:var(--sunken);
-  box-shadow:inset 0 0 0 1px var(--line3)}
-.bxd-k{font-family:var(--disp);font-weight:800;font-size:11.5px;letter-spacing:.11em;
-  text-transform:uppercase;color:var(--ink2)}
-.bxd-r{font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink3)}
-.bxd-d{font-family:var(--sans);font-size:11px;color:var(--ink4)}
+/* AND WHEN PLAY IS STOPPED this slot renders nothing at all — the hero above states the
+   delay and the note under it says what the delay means for the bet, which is two homes for
+   one fact already. See the note over `topHtml` in boxScoreTab. */
 /* ── the line score grid ── */
 .bx-lswrap{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;
   border-radius:var(--r-md);background:var(--paper);box-shadow:var(--e0)}
@@ -9374,7 +9404,7 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .gp-boxtop{margin:10px 0 0}
 .gp-boxtop .boxscore{margin:0}
 .gp-boxtop .bx-lswrap{margin:0}
-.gp-boxtop .bx-live,.gp-boxtop .bx-delay{margin:0 0 8px}
+.gp-boxtop .bx-live{margin:0 0 8px}
 
 /* ── the full argument, folded under the "why" card ── */
 details.fullread{margin:0 0 12px;border-radius:var(--r-md);background:rgba(var(--panec),.4);

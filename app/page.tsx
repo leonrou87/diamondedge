@@ -985,19 +985,82 @@ export default function Home() {
       }
       return out;
     }
+    /* ════════ THE NUMBER A PICK IS GRADED AGAINST ════════
+       `pl.line` when the feed carries it, otherwise the figure written into the side string
+       ("OVER 8.5"). Three surfaces were each re-parsing this inline with the same regex, and
+       the predicate below is the one place that must never guess differently from the mark
+       above it. */
+    function pickLineOf(pl: any) {
+      if (!pl) return null;
+      if (pl.line != null && isFinite(Number(pl.line))) return Number(pl.line);
+      const m = String(pl.side || "").match(/(\d+(\.\d+)?)/);
+      return m ? Number(m[1]) : null;
+    }
+    /* ══════════ A DEAD BET IS A LOSS NOW, NOT AT THE FINAL WHISTLE ══════════
+       Leon, 2026-08-09, looking at the board: "There's a bunch of games that are guaranteed
+       to go over — I think at this point we should consider them losses and update the
+       record, and make sure that this is the case always going forward."
+
+       He was right and it is PROVABLE, which is what makes it safe. A totals bet is settled
+       the instant the runs scored pass its line:
+
+         runs >  line   the OVER has WON and the UNDER has LOST. Neither can change: runs
+                        never come off the board, so every later reading of this game — the
+                        final included — is also above the line.
+         runs <= line   NOTHING is decided. The under is not safe (runs can still score) and
+                        the over is not dead.
+
+       So only the OVER-CLINCH is knowable early, and when it is knowable it is certain, not
+       probable. This function is the ONLY place the app decides that, and both consumers ask
+       it: the mark on the card (playLiveState → the tile's result tint and stamp) and the
+       day's record (dayPickLedger → the strategy strip's "so far today"). They disagreed
+       before precisely because they were two computations — the card showed three dead
+       unders in red while the strip read "3-0 so far today", counting only games that had
+       reached Final. Losses visible and uncounted while wins are counted, on the one number
+       the product sells on.
+
+       TWO RAILS ARE PROPERTIES OF THE CODE, not promises about it:
+         · EXACTLY ON THE LINE IS NOT DECIDED. The comparison is strict, so an integer total
+           sitting on its own number stays live — a push is not a loss.
+         · AN UNDER IS NEVER GRADED A WIN EARLY. There is no branch that can return "win" for
+           an under; the only early verdict an under can receive is a loss.
+       The backend predicate is the same one (v4/serve/live_decide.py), written once into an
+       append-only ledger the record reads, so the served result and this live read are the
+       same answer arriving at different times — never different answers. */
+    function totalDecided(side: any, line: any, runsSoFar: any): "win" | "loss" | null {
+      const ln = Number(line), rs = Number(runsSoFar);
+      if (line == null || runsSoFar == null || !isFinite(ln) || !isFinite(rs)) return null;
+      const s = String(side || "");
+      const over = /(^|\s)over/i.test(s), under = /(^|\s)under/i.test(s);
+      if (!over && !under) return null;
+      if (!(rs > ln)) return null;          // STRICT: level with the line is still live
+      return over ? "win" : "loss";
+    }
+    // The live over-clinch for THIS pick, or null. Totals only, live games only, and only
+    // off `current_actuals` — the one shared live fact every surface on the board reads.
+    function liveDecided(g: any, pl: any) {
+      if (!g || !pl || pl.action !== "TAKE" || pl.market !== "total") return null;
+      if (String(g.status || "").toLowerCase() !== "live") return null;
+      const ca = g.current_actuals || {};
+      if (ca.total_so_far == null) return null;
+      return totalDecided(pl.side, pickLineOf(pl), ca.total_so_far);
+    }
+    /* THE ONE ANSWER TO "HAS THIS PICK SETTLED, AND HOW". Served grade first (the backend's
+       written word, which for a dead bet now arrives within one serve cycle), the final score
+       second, the live clinch third. Everything that counts a result asks THIS. */
+    function settledVerdict(g: any, pl: any): "win" | "loss" | "push" | null {
+      if (!g || !pl) return null;
+      const r = pl.result || provisionalResult(g, pl);
+      if (r) return r.status === "hit" ? "win" : r.status === "miss" ? "loss" : "push";
+      return liveDecided(g, pl);
+    }
     // Live clarity for a TAKE: an OVER that's already passed the line is clinched; an UNDER
     // that's been passed is gone. Everything else in a live game is simply "in play".
+    // The clinch itself is `liveDecided` — this only names it for the display vocabulary.
     function playLiveState(g: any, pl: any) {
       if ((g.status || "").toLowerCase() !== "live" || pl.action !== "TAKE") return null;
-      if (pl.market === "total" && g.current_actuals && g.current_actuals.total_so_far != null) {
-        const line = pl.line != null ? pl.line : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
-        if (line != null) {
-          const t = Number(g.current_actuals.total_so_far);
-          const over = /over/i.test(String(pl.side));
-          if (t > line) return over ? "clinch-won" : "clinch-lost";
-        }
-      }
-      return "inplay";
+      const d = liveDecided(g, pl);
+      return d === "win" ? "clinch-won" : d === "loss" ? "clinch-lost" : "inplay";
     }
     // Final score for grading: graded pick actuals first, live-score overlay second.
     function finalScore(g: any) {
@@ -1147,10 +1210,22 @@ export default function Home() {
     function liveHitOdds(g: any, pl: any, size = "tile") {
       const ls = liveStatusOf(g, pl);
       if (!ls) return "";
-      // A decided live bet reads as clinched/cooked — never a bare "100% to cash" (or 0%),
-      // which looks like a bug even though it's technically correct.
-      const clinched = ls.prob != null && ls.prob >= 0.985;
-      const cooked = ls.prob != null && ls.prob <= 0.015;
+      /* A decided live bet reads as clinched/cooked — never a bare "100% to cash" (or 0%),
+         which looks like a bug even though it's technically correct.
+
+         "DECIDED" IS A FACT, NOT A PROBABILITY (2026-08-09). This used to fire off the
+         model's own number alone: 98.5% was enough to print "Cashing ✓ · as good as in",
+         which on a totals pick whose runs have NOT passed the line is a claim the arithmetic
+         does not support — and the same 1.5% at the other end printed "Not landing" on a bet
+         that could still be won. Where the runs and the line are both known, `totalDecided`
+         is the authority and the estimate cannot overrule it in either direction; the
+         probability keeps the surface only where there is no fact to check it against (a
+         non-total market, or a game with no running total yet). */
+      const hard = liveDecided(g, pl);
+      const decidable = pl && pl.market === "total" && pickLineOf(pl) != null
+        && g && g.current_actuals && g.current_actuals.total_so_far != null;
+      const clinched = hard === "win" || (!decidable && ls.prob != null && ls.prob >= 0.985);
+      const cooked = hard === "loss" || (!decidable && ls.prob != null && ls.prob <= 0.015);
       if (clinched || cooked) {
         const cls = clinched ? "hit" : "miss";
         const cash = clinched ? "Cashing ✓" : "Not landing";
@@ -1740,6 +1815,13 @@ export default function Home() {
         confidence: take && pk.confidence && typeof pk.confidence === "object" ? pk.confidence : null,
         confidence_score: take && pk.confidence_score != null ? pk.confidence_score : null,
         confidence_basis: take && pk.confidence_basis != null ? pk.confidence_basis : null,
+        /* THE STAR RATING — carried, never rebuilt, same trap as the two blocks above.
+           The backend decides how many stars a pick has and what they mean (see
+           v4/serve/rule_fit.py); the app has stopped mapping a score onto stars locally,
+           because the two bases are on different scales and only the producer knows which
+           map belongs to which. Both keys travel together or not at all. */
+        pick_rating: take && pk.pick_rating && typeof pk.pick_rating === "object" ? pk.pick_rating : null,
+        pick_rating_stars: take && pk.pick_rating_stars != null ? pk.pick_rating_stars : null,
       };
     }
     // ═══════════ SPREAD STREAM — run lines RETURN (Leon, 2026-07-26; live 2026-07-27) ═══════════
@@ -3198,42 +3280,64 @@ export default function Home() {
     // for a graded number.
     // A LIVE READ IS THE LIVE ANSWER. This block measures the game so far against the pick's
     // own line and names the side it still needs — so it is gated exactly like the pick is.
-    /* "LIVE VS THE LOCKED LINE" — the runs against the number we are graded at.
-       TWO THINGS IT USED TO GET WRONG:
+    /* ═══════════ OUR BET, LIVE — ONE LINE, AT THE TOP OF THE STATS PANE ═══════════
+       Leon, 2026-08-09: "the NOT LANDING widget on the stats tab isn't really helpful — even
+       if it were going over, just in line with the over and what the pick is, how that pick is
+       trending in the percent, as well as the star rating of that pick."
 
-       1. IT NEVER CHECKED THAT WE HAVE A BET. On a PASS it still opened the
-          default Stats pane with "LIVE VS THE LOCKED LINE — 14 of 8.5 · over has
-          cleared" — a meter tracking a wager we did not make, on precisely the
-          game where the design promises an empty slot is the honest shape of
-          "we are not on this game".
-       2. IT CARRIED A THIRD LIVE PROBABILITY. `pHitNow` ("LIVE 71% it still
-          hits") is a different quantity from the cash meter pinned above the
-          tabs and sat ~130px from it. The meter is the page's single live read;
-          this block's subject is the RUNS, which nothing else states. */
-    function liveVsLineBlock(g: any, locked = false) {
+       WHAT WAS THERE, AND WHY IT DESERVED THE COMPLAINT. Two blocks, ~120px between them:
+         · above the tabs, a two-row slab that on a dead pick read "Not landing" over an empty
+           bar and "OUT OF REACH" beside it — a phrase, a colour, and no number, no side, no
+           line, nothing to act on;
+         · at the top of Stats, "LIVE VS THE LOCKED LINE — 12 of 10.5 · over has cleared", a
+           second meter whose subject was the RUNS. On a card whose line score is pinned four
+           inches above it, that is the same arithmetic a third time.
+
+       WHAT IS HERE NOW is the sentence he asked for, and only it: what we took, how it is
+       going, and how much we liked it — side and number, the live percent, the stars.
+
+       THE PERCENT IS THE APP'S EXISTING ONE. `liveStatusOf` is the same read the board tiles
+       print and the same read the retired slab printed; nothing here computes a probability,
+       and when that read is absent the line simply carries no percent rather than deriving a
+       second one a second way. There is now exactly ONE live cash number on the game page,
+       which is what makes stating it beside the pick safe.
+
+       THE STARS ARE THE SERVED RATING (`servedRating` → v4/serve/rule_fit.py), the same object
+       the pick tag renders — not a second scale invented for this line.
+
+       GATED LIKE THE PICK. Locked (unpaid) renders nothing at all: "0% to cash" next to a
+       redacted call reconstructs the side. A PASS renders nothing either — there is no bet to
+       report on, and an empty slot is the honest shape of that. */
+    function pickLiveLine(g: any, locked = false) {
       if (locked) return "";
-      const _pl = displayPick(g);
-      if (!isPick(_pl)) return "";
-      const lp = liveProgress(g);
-      if (!lp) return "";
-      const pctW = lp.tot != null && lp.scored != null ? Math.max(3, Math.min(100, (lp.scored / Math.max(lp.tot + 2, 1)) * 100)) : 0;
-      // THE HERO OWNS THE HALF-INNING. `liveProgress().when` exists for the board tile, which
-      // has no hero above it to say where the game is; this block renders in exactly one
-      // place — the Live pane, three inches under a hero already reading "BOTTOM 2ND" — so
-      // repeating it here is the same fact twice on one screen. The meter's subject is the
-      // LINE: runs against the number, and the runs still owed.
-      const bits = [
-        lp.tot != null && lp.scored != null ? `${lp.scored} of ${esc(lineStr(lp.tot))}` : "",
-        lp.need != null && !lp.over ? `${lp.need} more to go over` : "",
-        lp.over ? "over has cleared" : "",
-      ].filter(Boolean);
-      return `<div class="lvl${lp.over ? " cleared" : ""}">
-        <div class="lvl-k"><i class="lvl-dot" aria-hidden="true"></i>Live vs the locked line</div>
-        <div class="lvl-bar" aria-hidden="true">
-          <span class="lvl-fill" style="width:${pctW.toFixed(0)}%"></span>
-          ${lp.tot != null ? `<span class="lvl-mark" style="left:${Math.max(2, Math.min(98, (lp.tot / Math.max(lp.tot + 2, 1)) * 100)).toFixed(0)}%"></span>` : ""}
-        </div>
-        <div class="lvl-row">${bits.map((b) => `<span>${b}</span>`).join(`<i class="lvl-sep" aria-hidden="true">·</i>`)}</div>
+      const pl = displayPick(g);
+      if (!isPick(pl)) return "";
+      const side = String(pl.side || "").trim();
+      if (!side) return "";
+      const over = /over/i.test(side);
+      const dirCls = over ? "ou-over" : /under/i.test(side) ? "ou-under" : "";
+      const arrow = over ? "▲" : /under/i.test(side) ? "▼" : "";
+      // ── how it is going: the app's own live cash read, or nothing ──
+      const ls = liveStatusOf(g, pl);
+      const prob = ls && ls.prob != null ? Math.max(0, Math.min(1, Number(ls.prob))) : null;
+      const clinched = prob != null && prob >= 0.985;
+      const cooked = prob != null && prob <= 0.015;
+      const meta = LIVE_DIR[(ls && ls.dir) || "too_close"] || LIVE_DIR.too_close;
+      const word = clinched ? "cashed" : cooked ? "not landing" : meta.short;
+      const cls = clinched ? "hit" : cooked ? "miss" : meta.cls;
+      const pctTxt = prob != null ? `${Math.round(prob * 100)}%` : "";
+      // ── how much we liked it: the served rating, never a local map ──
+      const r = servedRating(pl);
+      const lab = [
+        `Our bet: ${side}`,
+        prob != null ? `${Math.round(prob * 100)}% chance it cashes, live estimate — ${word}` : "",
+        r ? `rated ${r.stars} of ${r.of} stars` : "",
+      ].filter(Boolean).join(" · ");
+      return `<div class="plvl dir-${esc(cls)}" title="${esc(lab)}" aria-label="${esc(lab)}">
+        ${prob != null ? `<i class="plvl-fill" style="width:${Math.round(prob * 100)}%" aria-hidden="true"></i>` : ""}
+        <b class="plvl-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}${esc(side)}</b>
+        ${pctTxt ? `<span class="plvl-pct"><b>${pctTxt}</b><i>${esc(word)}</i></span>` : `<span class="plvl-pct"><i>${esc(word)}</i></span>`}
+        ${r ? `<span class="plvl-stars" role="img" aria-label="rated ${r.stars} of 5" title="${esc(ratingTitle(pl))}">${starPips(r.stars)}</span>` : ""}
       </div>`;
     }
 
@@ -5895,8 +5999,13 @@ export default function Home() {
       const ls = pl && pl.action === "TAKE" ? liveStatusOf(g, pl) : null;
       let trend = "";
       if (ls) {
-        const clinched = ls.prob != null && ls.prob >= 0.985;
-        const cooked = ls.prob != null && ls.prob <= 0.015;
+        // Same rule as liveHitOdds: where the runs and the line are both known, the FACT
+        // decides and the estimate cannot overrule it. See totalDecided.
+        const hard = liveDecided(g, pl);
+        const decidable = pl.market === "total" && pickLineOf(pl) != null
+          && g.current_actuals && g.current_actuals.total_so_far != null;
+        const clinched = hard === "win" || (!decidable && ls.prob != null && ls.prob >= 0.985);
+        const cooked = hard === "loss" || (!decidable && ls.prob != null && ls.prob <= 0.015);
         if (clinched) trend = `<span class="hlb-trend hit">Cashing ✓</span>`;
         else if (cooked) trend = `<span class="hlb-trend miss">Not landing</span>`;
         else {
@@ -6589,6 +6698,29 @@ export default function Home() {
           delete cad.delayed; delete cad.delay_reason; delete cad.detailed_state;
           changed = true;
         }
+        /* ═══════════ THE SITUATION REACHES THE BOARD ═══════════
+           Leon, 2026-08-09: "elevate the number of outs and the count to the main games page
+           as well, if you can fit it on the cards in a seamless way."
+
+           `live_scores` now carries `outs` / `balls` / `strikes` (picks_engine/live_scores.py
+           — the schedule call was already hydrated with the linescore, so all three were
+           sitting in a response the collector was throwing away: no new request, no new
+           source, ~20 bytes a game). They are PRESENT ONLY DURING A LIVE AT-BAT — between
+           innings MLB reports 3 outs and a 0-0 count, which is the absence of a situation
+           rather than one — so this side never has to decide whether a number is real. It
+           either has three of them or it draws nothing.
+
+           Same discipline as the delay above: they ride `current_actuals`, and they are
+           DELETED the moment the snapshot stops carrying them. A card still showing "2 out,
+           1-2" through the seventh-inning stretch is the identical bug in a different suit. */
+        const hasSit = ls.outs != null && ls.balls != null && ls.strikes != null;
+        if (hasSit) {
+          if (cad.outs !== ls.outs || cad.balls !== ls.balls || cad.strikes !== ls.strikes) changed = true;
+          cad.outs = ls.outs; cad.balls = ls.balls; cad.strikes = ls.strikes;
+        } else if (cad.outs != null || cad.balls != null || cad.strikes != null) {
+          delete cad.outs; delete cad.balls; delete cad.strikes;
+          changed = true;
+        }
         if (ls.home_score != null && ls.away_score != null) {
           const ca = g.current_actuals || (g.current_actuals = {});
           const tsf = ls.total_so_far != null ? ls.total_so_far : Number(ls.home_score) + Number(ls.away_score);
@@ -7033,7 +7165,9 @@ export default function Home() {
       const detail = ca.detailed_state ? String(ca.detailed_state).trim() : "";
       return { reason, detail, label: reason ? `Delayed — ${reason}` : "Delayed" };
     }
-    function gameState(g: any) {
+    // `: any` because the branches now return different shapes (only the delayed ones carry
+    // the delay fields) and the inferred union made `gs.delayed` unreadable at every call site.
+    function gameState(g: any): any {
       const st = (g.status || "pre").toLowerCase();
       const si = startInfo(g);
       const t = si.time || si.date || "";
@@ -7486,6 +7620,45 @@ export default function Home() {
       const comp = g.meta && g.meta.competition ? esc(g.meta.competition) : "";
       return `<span class="t-league"><span class="tl-ic" data-ic="${SPORT_ICON[lg] || "◆"}"></span>${esc(SPORT_LABEL[lg] || lg.toUpperCase())}${comp ? `<span class="tl-comp">${comp}</span>` : ""}</span>`;
     }
+    /* ═══════════ OUTS AND THE COUNT, ON THE BOARD CARD ═══════════
+       Leon, 2026-08-09: "find a way to elevate the number of outs and the count to the main
+       games page as well, if you can fit it on the cards in a seamless way." The base diamond
+       and the full situation live on the game page; this is the board, and the board tile has
+       one row for state — the chip — which has been fought onto a single line at 375px twice
+       already. So the question was what actually fits there, not what would be nice.
+
+       WHAT IT DRAWS, AND WHY IT IS THESE TWO SHAPES:
+         · OUTS as three pips, filled left to right. 13px for a fact that a fan reads without
+           reading — the same object every scoreboard in the sport draws — where "2 OUT" is
+           five characters of the same information and twice the width.
+         · THE COUNT as its own two digits, tabular so it cannot reflow as it changes. It is
+           the one number that moves on every pitch, and it is what makes the pips mean
+           something: two out and 0-2 is a different game from two out and 3-1.
+       No separator dot and no words: the pips and a two-digit figure are unambiguous inside a
+       chip that already says which half of which inning it is.
+
+       WHAT IT REFUSES TO DRAW. Anything it is not certain of. The three facts arrive together
+       from `live_scores` or not at all (the collector only publishes them during a live
+       at-bat), so there is no partial state to render and no stale count to inherit between
+       innings. A delayed game drops it with the rest of the live vocabulary — the chip is
+       saying "Delayed · Rain" there, and a count frozen under it would be a live-looking
+       number attached to a game where nothing is happening.
+
+       WHAT IT COST. Nothing else on the tile. The chip stays one line: the pips and the count
+       are `flex-shrink:0` inside it, and the LEAGUE TAG is the element that gives — it is the
+       one thing in that row a reader on a board they chose the sport for already knows. On
+       the narrowest phones the tag's text hides and the row holds; it never wraps, and no
+       other element moved to make room. */
+    function tileSituation(g: any) {
+      const ca = (g && g.current_actuals) || {};
+      if (ca.outs == null || ca.balls == null || ca.strikes == null) return "";
+      const outs = Math.max(0, Math.min(3, Number(ca.outs)));
+      const b = Number(ca.balls), s = Number(ca.strikes);
+      if (!isFinite(outs) || !isFinite(b) || !isFinite(s)) return "";
+      const pips = [0, 1, 2].map((i) => `<i class="${i < outs ? "on" : ""}"></i>`).join("");
+      const word = `${outs} out${outs === 1 ? "" : "s"}, ${b}-${s} count`;
+      return `<span class="t-sit" title="${esc(word)}" aria-label="${esc(word)}"><span class="ts-outs" aria-hidden="true">${pips}</span><b aria-hidden="true">${b}-${s}</b></span>`;
+    }
     function stateChip(g: any, gs: any) {
       /* THE DELAY IS THE CHIP. A card whose only state word is "Top 2nd" tells a reader the
          game is being played, which during a rain delay is the one thing it is not — and the
@@ -7498,7 +7671,7 @@ export default function Home() {
       }
       if (gs.kind === "live") {
         const lab = gs.label && gs.label !== "Live" ? gs.label : "LIVE";
-        return `<span class="statechip live"><span class="livedot"></span>${esc(lab)}</span>`;
+        return `<span class="statechip live"><span class="livedot"></span>${esc(lab)}${tileSituation(g)}</span>`;
       }
       if (gs.kind === "final") return `<span class="statechip final">Final</span>`;
       // pre: prefer the time; when browsing another day, show that day tag too
@@ -7942,21 +8115,72 @@ export default function Home() {
        live in-progress meter (how the game is going). A reader cannot be expected to hold that
        apart, and a number that gets misread is worse than a coarser one that does not. Stars
        and a percent are unmistakably different objects.
-       THE MAP IS LINEAR AND SAYABLE: one star per 20 points, floor 1, ceiling 5. 33 → 2, 50 →
-       3, 75 → 4. Nothing is invented — the served 0–100 score is still the fact, it still rides
-       the title, and every surface where the reader has stopped on one pick still shows it in
-       full with its evidence. The tag gets the shape of the number, not the number. */
-    function confidenceStars(score: number) {
-      return Math.max(1, Math.min(5, Math.ceil(score / 20)));
+
+       ═══ THE MAP IS THE BACKEND'S NOW (Leon, 2026-08-09: "all picks are about three stars…
+       we need more of a distribution or mapping of confidence to stars") ═══
+       WHAT USED TO BE HERE was `Math.ceil(score / 20)` — one star per 20 points, applied to
+       whatever number arrived. It was fine for a committee vote and wrong for what came next:
+       from 2026-08-09 the strategy forge is the selector, a forge pick has NO per-game
+       committee, and its served confidence is the RULE's own lookback record — one number for
+       the entire board (44 on all twelve picks that day). Run through any map at all, that is
+       twelve identical rows of stars, which rates nothing.
+
+       So the star count is SERVED (`pick_rating`, v4/serve/rule_fit.py) and this file reads
+       it. Three things follow, and each is the reason it moved:
+         · the number behind the stars is a genuinely PER-GAME measure on a forge pick — how
+           squarely the game sits inside the clause that fired on it, as a percentile against
+           the games that same clause fired on in the rule's own window;
+         · the band edges come from the MEASURED distribution of that score, not from round
+           numbers picked here, and travel on the block (`cuts`) so a card can be checked;
+         · a pick whose only number is the board-wide rule record is NOT RATED AT ALL and
+           shows no stars — the backend refuses, and refusing is the honest output.
+       Nothing is derived locally, and there is no fallback map: an absent rating renders
+       nothing, exactly like an absent confidence does. */
+    /* THE ONE READER for the served rating. Refuses a broken contract rather than guessing
+       past it, on the same rule as `servedConfidence`: the block's own `stars` and the flat
+       `pick_rating_stars` are one fact published twice, and a payload that ships them
+       disagreeing has no right answer, so this returns null and the surfaces stay quiet. */
+    function servedRating(pl: any) {
+      if (!pl || typeof pl !== "object") return null;
+      const blk = pl.pick_rating && typeof pl.pick_rating === "object" ? pl.pick_rating : null;
+      const inner = blk ? numOr(blk.stars) : null;
+      const flat = numOr(pl.pick_rating_stars);
+      if (inner != null && flat != null && Math.round(inner) !== Math.round(flat)) return null;
+      const raw = inner != null ? inner : flat;
+      if (raw == null || !(raw >= 1 && raw <= 5)) return null;
+      return {
+        stars: Math.round(raw),
+        of: (blk && numOr(blk.of)) || 5,
+        basis: String((blk && blk.basis) || ""),
+        basisLabel: String((blk && blk.basis_label) || ""),
+        score: blk ? numOr(blk.score) : null,
+        what: String((blk && blk.what_it_is) || ""),
+        caveat: String((blk && blk.caveat) || ""),
+        note: String((blk && blk.not_a_forecast) || ""),
+      };
+    }
+    /* THE TITLE ON THE STARS. What the rating measures, in the backend's words, plus the
+       served confidence sentence when the pick also carries one — they answer different
+       questions and the hover is the one surface with room to say both. */
+    function ratingTitle(pl: any) {
+      const r = servedRating(pl);
+      if (!r) return confidenceTitle(pl);
+      return [
+        `${r.stars} of ${r.of} stars${r.basisLabel ? ` · ${r.basisLabel}` : ""}`,
+        r.what, r.note, confidenceTitle(pl),
+      ].filter(Boolean).join(" — ");
+    }
+    function starPips(n: number) {
+      let pips = "";
+      for (let i = 1; i <= 5; i++) pips += `<i${i <= n ? "" : ` class="off"`}>★</i>`;
+      return pips;
     }
     function strengthPct(pl: any, reveal: boolean) {
       if (!reveal) return "";
+      const r = servedRating(pl);
+      if (!r) return "";
       const c = servedConfidence(pl);
-      if (!c) return "";
-      const n = confidenceStars(c.score);
-      let pips = "";
-      for (let i = 1; i <= 5; i++) pips += `<i${i <= n ? "" : ` class="off"`}>★</i>`;
-      return `<span class="de-conf de-stars${c.high ? " is-high" : ""}" title="${esc(confidenceTitle(pl))}" role="img" aria-label="confidence ${n} of 5">${pips}</span>`;
+      return `<span class="de-conf de-stars${c && c.high ? " is-high" : ""}" title="${esc(ratingTitle(pl))}" role="img" aria-label="rated ${r.stars} of 5">${starPips(r.stars)}</span>`;
     }
     /* (the pips helper retired with the pips' last call site on the tag. The dots survive as
        markup in the two places the TIER itself is the subject — the story-deck chip below and
@@ -9208,23 +9432,38 @@ export default function Home() {
        live-score overlay (provisionalResult), which is what makes it move through the evening
        without a reload — renderSlate repaints #meta-area on every poll.
 
-       SETTLED ONLY, AND SETTLED MEANS GRADED. playState's won/lost/pushed are the settled
-       three; "clinched" and "cooked" are live reads on a game still being played and a pick
-       still in flight is not a result. They are counted as OPEN here, which is what lets the
-       strip say "so far" honestly rather than implying the day is finished. */
+       SETTLED MEANS DECIDED, NOT FINISHED (Leon, 2026-08-09: "there's a bunch of games that
+       are guaranteed to go over — at this point we should consider them losses and update the
+       record, and make sure that this is the case always going forward").
+
+       This function used to count `playState`'s won/lost/pushed and file "clinched" and
+       "cooked" under OPEN, on the reasoning that a game still being played has not produced a
+       result. That reasoning is wrong for exactly one case, and it is the case that was on
+       the board: once the runs have passed the line, the over HAS won and the under HAS lost.
+       Runs never come off the board, so the final cannot say anything else. Counting those as
+       open did not make the number cautious — it made it FLATTERING, because the dead bets on
+       that board were all losses and the tiles were already showing them in red. The strip
+       said "3-0 so far today" three centimetres above three ✗s.
+
+       It now counts `settledVerdict`, which is the same function the tiles' marks come from,
+       so the two cannot disagree again by construction. A pick that is genuinely still in
+       flight is still OPEN, and "so far" is still earned — nothing here counts a win that
+       could still be lost, because the predicate cannot produce one. */
     function dayPickLedger(dateISO: string) {
       const src = dateISO === todayISO() ? (livePayload || payload) : payload;
       const games = src ? gamesForLeague(src, league, dateISO) : [];
-      const out = { w: 0, l: 0, p: 0, open: 0, settled: 0, picks: 0 };
+      const out = { w: 0, l: 0, p: 0, open: 0, settled: 0, picks: 0, early: 0 };
       games.forEach((g: any) => {
         const pl = displayPick(g);
         if (!pl || pl.action !== "TAKE") return;
         out.picks++;
-        const st = playState(g, pl);
-        if (st === "won") out.w++;
-        else if (st === "lost") out.l++;
-        else if (st === "pushed") out.p++;
+        const v = settledVerdict(g, pl);
+        if (v === "win") out.w++;
+        else if (v === "loss") out.l++;
+        else if (v === "push") out.p++;
         else { out.open++; return; }
+        // decided while the game is still being played — counted, and countable
+        if (!pl.result && !provisionalResult(g, pl)) out.early++;
         out.settled++;
       });
       return out;
@@ -9394,8 +9633,16 @@ export default function Home() {
          does, because a day in progress claiming to be final is the one thing this number
          must not do. */
       const stillGoing = led.settled ? led.open > 0 : !isPast;
+      /* AND IT SAYS WHEN IT COUNTED SOMETHING EARLY. A bet whose runs have passed its line is
+         settled — the over has won, the under has lost, and the final cannot say otherwise —
+         so it is in this number while its game is still being played. That is the fix; the
+         disclosure is that the number never has to be taken on trust: it names how many, and
+         every one of them is a tile below with the same mark on it. */
+      const earlyTip = led.early
+        ? ` — ${led.early} of them settled the moment the runs passed the line, with the game still being played: once the total is beaten the over has won and the under has lost, and runs never come off the board`
+        : "";
       const statHtml = rec
-        ? `<span class="stgy-stat"><b>${esc(wlTxt(rec))}</b><i>${esc(
+        ? `<span class="stgy-stat" title="${esc(`${wlTxt(rec)} on the picks on this board${earlyTip}`)}"><b>${esc(wlTxt(rec))}</b><i>${esc(
             stillGoing ? (isPast ? "so far" : "so far today") : (isPast ? "final" : "today, final"))}</i></span>`
         : "";
       return `<div class="dstgy${stgyOpen ? " open" : ""}" id="stgy">
@@ -9683,6 +9930,28 @@ export default function Home() {
       if (!body) return;
       if (quiet && scrolling) { pendingSlate = true; return; }
       body.classList.toggle("still", quiet); // live-score refresh: no re-entrance animation
+      /* ═══════════ THE EDGE LIGHT SURVIVES THE REPAINT ═══════════
+         Every path below reassigns `body.innerHTML`, so all twelve pick marks are destroyed
+         and rebuilt — and a CSS animation on a brand-new element starts at zero. Left alone,
+         the gold light on every mark on the board would TELEPORT back to its start position,
+         in the same frame, every time a poller landed (~25s). Twelve marks jumping at once is
+         exactly the aggregate blink the whole treatment is tuned to avoid, and it is invisible
+         in any single-mark screenshot, which is why it has to be reasoned about rather than
+         looked for.
+
+         So the marks' phase is anchored to the WALL CLOCK instead of to their own birth. A
+         negative `animation-delay` of −(now mod period) makes a mark created right now sit
+         exactly where a mark that had been running all along would be, so a rebuilt board is
+         pixel-identical to the one it replaced. `--de-orbit-off` (the per-tile stagger, set in
+         globals.css) adds on top and is unaffected.
+
+         It is set HERE, on #slate-body — the element that survives the repaint — and not on
+         :root: changing an inherited animation-delay shifts every animation currently reading
+         it, so a page-wide variable would yank the masthead's light sideways every time the
+         board refreshed. The board owns the board's clock. Surfaces that carry a single mark
+         (the game page, the featured card) need none of this: one mark restarting is not an
+         event, it is a mark. */
+      body.style.setProperty("--de-orbit-t", `${-(((typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000) % 13).toFixed(3)}s`);
       if (rangeMode) {
         body.innerHTML = renderRangeBody();
       } else {
@@ -10757,8 +11026,15 @@ export default function Home() {
         on2: between ? false : on("second", "on_2b"),
         on3: between ? false : on("third", "on_3b"),
         outs: between || outs == null ? null : Number(outs),
-        balls: between || balls == null ? null : Number(balls),
-        strikes: between || strikes == null ? null : Number(strikes),
+        // A COUNT IS ONLY A COUNT WHILE THE AT-BAT IS STILL ON. Observed live on 825050
+        // (2026-08-09): MLB's linescore momentarily reports balls=4 while ball four is
+        // called and before the walk advances the runner, and the strip printed
+        // "4–2 COUNT" — a count that cannot exist. Four balls or three strikes means the
+        // plate appearance is OVER and the number is its result, not the state of a live
+        // one, so it is dropped exactly as a between-innings count is. Nothing is clamped
+        // or corrected: an impossible number is never rewritten into a plausible one.
+        balls: between || balls == null || Number(balls) > 3 || Number(balls) < 0 ? null : Number(balls),
+        strikes: between || strikes == null || Number(strikes) > 2 || Number(strikes) < 0 ? null : Number(strikes),
         pitcher: between ? "" : String(((def.pitcher && def.pitcher.fullName) || (cur && cur.pitcher) || "")),
         batter: between ? "" : String(((off.batter && off.batter.fullName) || (cur && cur.batter) || "")),
       };
@@ -10771,8 +11047,13 @@ export default function Home() {
         ? `<span class="bd-outs" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < s.outs! ? "on" : ""}"></i>`).join("")}</span><span class="bd-outk">${s.outs} out</span>`
         : "";
       const count = hasCount ? `<span class="bd-count"><b>${s.balls}–${s.strikes}</b><em>count</em></span>` : "";
+      // Each name and its role are ONE unbreakable unit. Two long surnames do wrap at 375px
+      // ("E. Rodriguez pitching to E. Hernández"), and the wrap has to fall between the two
+      // men — not between a man and his role, which is how "BATTING" ended up alone on a line.
+      const who = (n: string, role: string, cls = "") =>
+        `<span class="bd-mu-u${cls}"><span class="bd-mu-n">${esc(shortName(n))}</span><em>${role}</em></span>`;
       const mu = s.pitcher || s.batter
-        ? `<div class="bd-mu">${s.pitcher ? `<span class="bd-mu-n">${esc(shortName(s.pitcher))}</span><em>pitching</em>` : ""}${s.pitcher && s.batter ? `<span class="bd-mu-to" aria-hidden="true">to</span>` : ""}${s.batter ? `<span class="bd-mu-n bat">${esc(shortName(s.batter))}</span><em>batting</em>` : ""}</div>`
+        ? `<div class="bd-mu">${s.pitcher ? who(s.pitcher, "pitching") : ""}${s.pitcher && s.batter ? `<span class="bd-mu-to" aria-hidden="true">to</span>` : ""}${s.batter ? who(s.batter, "batting", " bat") : ""}</div>`
         : "";
       // between innings: the diamond alone, empty, saying exactly that. Nothing else is true yet.
       const meta = s.between
@@ -10881,17 +11162,18 @@ export default function Home() {
        result, and the reminder strip it would sit under already carries that result as its
        stamp (✓ / ✕ / push). A meter reading "Cashing ✓" directly beneath a green tick is the
        same fact twice, 30px apart. */
-    function cashMeterHtml(g: any) {
-      if (!g || gameState(g).kind !== "live") return "";
-      const pl = displayPick(g);
-      if (!isPick(pl)) return "";
-      if (pickLocked(pl, playState(g, pl))) return "";
-      return liveHitOdds(g, pl, "full") || liveTrackCard(g, pl, "hero");
-    }
+    /* THE SLAB IS GONE (Leon, 2026-08-09 — see `pickLiveLine`). What sat here rendered
+       `liveHitOdds(g, pl, "full")`: two rows, a headline word ("Not landing"), a direction
+       phrase ("OUT OF REACH") and a bar — 60-odd pixels above the tabs that never said what
+       the bet was, what the number was, or how much we liked it. Its one fact, the live
+       chance to cash, now rides the single line at the top of the Stats pane beside the pick
+       it belongs to. `liveHitOdds` itself is untouched and still serves the board tiles and
+       the hero; only this page's copy of it is retired, which is what keeps the page at ONE
+       live probability. */
     /* Repaint the box score in place (feed arrival, side switch, live cycle). It lives in TWO
        slots now — the line score above the tabs and the player lines inside Stats — so this
-       refreshes whichever of them is on the page. The live-vs-line meter is rebuilt with the
-       player block so its read tracks the score it sits beside. */
+       refreshes whichever of them is on the page. The live pick line is rebuilt with the
+       player block so its percent tracks the score it sits beside. */
     function repaintBoxPane() {
       if (!detail) return;
       const top = document.getElementById("gp-boxtop");
@@ -10900,25 +11182,19 @@ export default function Home() {
       if (players) {
         const gs = gameState(detail);
         const meter = gs.kind === "live"
-          ? safeHtml("live-vs-line meter", () => {
+          ? safeHtml("live pick line", () => {
               const pl = displayPick(detail);
-              return liveVsLineBlock(detail, pl ? pickLocked(pl, playState(detail, pl)) : false);
+              return pickLiveLine(detail, pl ? pickLocked(pl, playState(detail, pl)) : false);
             }, "")
           : "";
         players.innerHTML = meter + boxScoreTab(detail, "players");
       }
-      // The reminder above the tabs tracks the same live score the box score does — the cash
-      // meter AND the sim's live read, rebuilt together because they share one container.
-      /* ONE LIVE PROBABILITY ON THE PAGE, AND THIS IS IT.
-         This slot used to append `atlasLiveChip(detail,"full")` under the meter,
-         which put TWO percentages 98px apart — "62% to cash" from
-         `live_status.prob_hit` and "ATLAS · LIVE 62% under" from the sim — two
-         quantities, two provenances, stacked, with nothing telling a reader they
-         were different questions. A third (`liveVsLineBlock`'s "LIVE 71% it
-         still hits") headed the tab the page opens on. The meter is the app's
-         designated live read; the other two are gone from this page. */
-      const rem = document.getElementById("gp-cashmeter");
-      if (rem) rem.innerHTML = safeHtml("cash meter", () => cashMeterHtml(detail), "");
+      /* ONE LIVE PROBABILITY ON THE PAGE, AND IT IS THE ONE ON THE PICK LINE ABOVE.
+         This function used to repaint a second copy of it into `#gp-cashmeter` above the
+         tabs, and before that a third (`atlasLiveChip`'s sim read) underneath that one —
+         three percentages, three provenances, ~100px apart, with nothing telling a reader
+         they were different questions. Two of the three are gone; the survivor is rebuilt
+         with the box score, which is the score it is derived from. */
       wireBoxPane();
     }
     function wireBoxPane() {
@@ -11843,7 +12119,7 @@ export default function Home() {
          THE BOX SCORE IS NOT A TAB ANY MORE. "Once the game starts, there should always be
          a box score on the top" — always, meaning on whichever tab you are standing on. The
          line score is pinned above the tab bar (see boxTop) and the player lines head Stats. */
-      const liveVsLineHtml = showLive && !isFinal ? liveVsLineBlock(g, leadLocked) : "";
+      const liveVsLineHtml = showLive && !isFinal ? safeHtml("live pick line", () => pickLiveLine(g, leadLocked), "") : "";
       // Normalise a tab that no longer exists in this game's state: "box"/"live" are retired
       // keys (an old URL, a back-button restore), and Stats does not exist before first pitch.
       if (detailTab === "live" || detailTab === "box") detailTab = showLive ? "stats" : "preview";
