@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-09T01:15:43Z",
+  "generated_utc": "2026-08-09T01:54:14Z",
   "dates": [
     "2026-08-08"
   ],
@@ -1401,7 +1401,10 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-08-08T12:48:08Z"
+        "asof_utc": "2026-08-08T12:48:08Z",
+        "locked": true,
+        "locked_wall": "T-12h",
+        "locked_at_utc": "2026-08-09T01:53:57Z"
       },
       {
         "model": "champion_v2",
@@ -1472,7 +1475,10 @@
           "nearest_line_price": null,
           "stale_hours": 0.04
         },
-        "asof_utc": "2026-08-08T17:08:54Z"
+        "asof_utc": "2026-08-08T17:08:54Z",
+        "locked": true,
+        "locked_wall": "T-6h",
+        "locked_at_utc": "2026-08-09T01:53:57Z"
       },
       {
         "model": "champion_v2",
@@ -1543,7 +1549,10 @@
           "nearest_line_price": null,
           "stale_hours": 0.01
         },
-        "asof_utc": "2026-08-08T22:38:55Z"
+        "asof_utc": "2026-08-08T22:38:55Z",
+        "locked": true,
+        "locked_wall": "T-3h",
+        "locked_at_utc": "2026-08-09T01:53:57Z"
       },
       {
         "model": "champion_v2",
@@ -1614,7 +1623,10 @@
           "nearest_line_price": null,
           "stale_hours": 0.07
         },
-        "asof_utc": "2026-08-08T23:58:20Z"
+        "asof_utc": "2026-08-08T23:58:20Z",
+        "locked": true,
+        "locked_wall": "T-1h",
+        "locked_at_utc": "2026-08-09T01:53:57Z"
       },
       {
         "model": "champion_v2",
@@ -1860,8 +1872,8 @@
     "hard_lock_at_first_pitch": true,
     "wall_rows_first_write_wins": true,
     "locked_this_cycle": {
-      "n_locked_now": 0,
-      "n_locked_total": 162
+      "n_locked_now": 10,
+      "n_locked_total": 172
     },
     "note": "once now >= first_pitch_utc a game's rows are IMMUTABLE: locked:true, no re-evaluation, no side/price/line/star changes \u2014 the payload permanently carries the last PRE-START state (the judged Vegas line) and grading uses exactly that locked state. Each wall row is also first-write-wins: once written at its wall it is never overwritten by a later cycle. Game cards carry locked/locked_at (wall + utc + line) for the UI badge, e.g. 'Locked at T-1h \u00b7 O/U 8.5'."
   },
@@ -2100,7 +2112,7 @@
       },
       "champion_v2": {
         "n_flagged": 0,
-        "n_cleared": 1
+        "n_cleared": 0
       }
     },
     "note": "price_improved={now, was, book, ts} appears on UNLOCKED playable rows whose CURRENT best per-side price at the pick's line beats the entry price ('price improved \u2014 now +112 at X'). Refreshed every intraday cycle; drops when no longer better. The pick/side/line/price/stars stay frozen to their wall and locked rows are never touched \u2014 grading uses the stored entry price."
@@ -3585,8 +3597,8 @@
         "our_prob": 0.3374,
         "ev": 0.017,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-09T01:54:12Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -3827,8 +3839,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-09T01:54:12Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -4533,8 +4545,8 @@
           "wx_temp_f": 76.1
         },
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-09T01:54:12Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
@@ -9430,7 +9442,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 45.7% < break-even 54.5% at -120 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-09T01:54:12Z"
         },
         {
           "lead_time": "T-12h",
@@ -9469,7 +9483,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 49.8% < break-even 51.0% at -104 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-09T01:54:12Z"
         },
         {
           "lead_time": "T-6h",
@@ -9508,7 +9524,9 @@
           "pick_side": null,
           "informational_lean": "over",
           "pass_reason": "model 50.3% < break-even 50.5% at -102 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-09T01:54:12Z"
         },
         {
           "lead_time": "T-3h",
@@ -9547,7 +9565,9 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 49.1% < break-even 51.9% at -108 \u2014 priced out (-EV)",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-09T01:54:12Z"
         },
         {
           "lead_time": "T-1h",
@@ -9586,10 +9606,19 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 51.3% >= break-even 48.8% at 105 \u2014 edge below +EV min",
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-09T01:54:12Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-09T01:54:12Z",
+        "line": 7.0,
+        "label": "Locked at T-1h \u00b7 O/U 7.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     }
   ]
 }
