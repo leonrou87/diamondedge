@@ -11302,20 +11302,22 @@ export default function Home() {
          cold open, a slow connection) still rebuilds, which is the case the rebuild exists
          for. */
       if (g.game_id != null && !g._recipe) {
-        /* betaFull RIDES IN THE SIGNATURE, and it has to (2026-08-08). loadBeta() serves the
-           LITE history — no diamondedge / strategies / analysts_v2 / scout — and opening a
-           game is exactly the moment those blobs are wanted, so this is the one caller that
-           asks for the full payload. But lite and full carry the SAME generated_utc, so a
-           signature built only from stamps would read "nothing arrived" the instant the
-           detail blobs landed and skip the rebuild that renders them. */
+        /* HYDRATION RIDES IN THE SIGNATURE, and it has to (2026-08-08). loadBeta() serves
+           the LITE history — no diamondedge / strategies / analysts_v2 / scout — and
+           opening a game is exactly the moment those blobs are wanted. They arrive here,
+           for THIS game only (2.9 KB, not the 2.1 MB a full re-download costs). But the
+           hydrated game carries the SAME generated_utc as the projection it was merged
+           into, so a signature built only from feed stamps would read "nothing arrived"
+           at the precise moment the analysis landed, and skip the rebuild that renders it. */
         const feedSig = () => [
           betaLiveData && betaLiveData.generated_utc, betaData && betaData.generated_utc,
-          betaFull ? 1 : 0, pitchersData ? 1 : 0, teamsData ? 1 : 0,
+          betaFull ? 1 : 0, betaHydrateSeq,
+          pitchersData ? 1 : 0, teamsData ? 1 : 0,
         ].join("|");
         const before = feedSig();
         Promise.all([
           loadBetaLive().catch(() => null),
-          loadBeta(true).catch(() => null),
+          loadBeta().then(() => hydrateBetaGame(g)).catch(() => null),
           loadPitchers().catch(() => null),
           loadTeams().catch(() => null),
         ]).then(() => {
@@ -14057,6 +14059,63 @@ export default function Home() {
       checkRecordContract(betaData, "picks_unified (history)");
       return betaData;
     }
+    /* ONE GAME'S BLOBS, NOT THE WHOLE ARCHIVE (2026-08-08).
+       loadBeta(true) is the blunt way to un-project the history and it costs 2,145,888
+       bytes of Supabase egress — measured — to read the ~15 KB belonging to the single
+       game a reader just tapped. Once the 4-minute poller stopped buying answers it
+       already had, this was the largest line left in a session.
+
+       So a detail open asks for its own game and nothing else: 2,908 bytes on the wire,
+       merged onto the game object already sitting in betaData, which is the same object
+       every `v4GameFor(g)` scan resolves to. Nothing downstream can tell the difference
+       between a game hydrated this way and one that arrived inside a full payload.
+
+       Returns true when it actually added something, so callers know whether a repaint is
+       warranted. Falls back to loadBeta(true) — expensive but complete — when the
+       per-game read comes back empty, because a reader must never be shown a detail page
+       with its analysis silently missing. */
+    const betaHydrated: Record<string, 1> = {};
+    let betaHydrateSeq = 0;   // bumped on every successful merge; rides in feed signatures
+    /* THE HISTORY ROW FOR A BOARD GAME, MATCHED THE WAY EVERYTHING ELSE MATCHES IT.
+       A board game's `game_id` and a unified history game's `game_id` are not the same
+       id space — history uses a slug (`2026-04-01-LosAngelesAngels-ChicagoCubs`) while a
+       day payload uses the bare pk or a composite ending in it. v4GameFor has always
+       reconciled the two; this reuses exactly that rule, because a hydrate that matched
+       more strictly would silently do nothing on precisely the games it exists for. */
+    function betaHistRow(g: any) {
+      const gid = String((g && g.game_id != null ? g.game_id : g) || "");
+      if (!gid) return null;
+      const m = gid.match(/(\d+)$/);
+      const pk = m ? m[1] : gid;
+      return ((betaData && betaData.games) || []).find((x: any) =>
+        String(x.game_pk) === gid || String(x.game_pk) === pk
+        || String(x.game_id) === gid) || null;
+    }
+    async function hydrateBetaGame(g: any): Promise<boolean> {
+      if (betaFull) return false;
+      const target = betaHistRow(g);
+      if (!target) return false;
+      const id = String(target.game_id == null ? "" : target.game_id);
+      if (!id || betaHydrated[id]) return false;
+      let one: any = null;
+      try {
+        const r = await fetch(`/api/snap/picks_unified?game=${encodeURIComponent(id)}`);
+        if (r.ok) one = await r.json();
+      } catch {}
+      if (!one || typeof one !== "object") {
+        // the projection is never allowed to cost a reader their analysis
+        const before = betaFull;
+        try { await loadBeta(true); } catch {}
+        return betaFull !== before;
+      }
+      betaHydrated[id] = 1;
+      let added = false;
+      Object.keys(one).forEach((k) => {
+        if (target[k] === undefined && one[k] !== undefined) { target[k] = one[k]; added = true; }
+      });
+      if (added) betaHydrateSeq++;
+      return added;
+    }
     // LIVE picks (today + tomorrow) — the freshest copy lives in Supabase (slate_snapshots
     // key 'picks_unified_live', synced from the pick box every few minutes), so PRODUCTION
     // updates intraday with no deploy. The bundled static file is the fallback. 5-min cache.
@@ -14412,15 +14471,16 @@ export default function Home() {
       bindSwipeBack($("gamepage"));
       /* PAINT FROM LITE, THEN FILL IN (2026-08-08). loadBeta() serves the projected history,
          which deliberately does not carry games[].strategies — so strategiesPanel() above
-         renders empty on a sheet opened straight off the Desk until the full payload lands.
+         renders empty on a sheet opened straight off the Desk until the blobs land.
          Painting first is the right order and not a compromise: the header, the score and
          the pick all live in the projection and appear instantly, and the stream panel fills
-         in a beat later instead of the entire sheet waiting on 2 MB of blobs.
+         in a beat later. What arrives is THIS GAME's 2.9 KB, not a 2.1 MB re-download of the
+         whole archive to read one row of it.
          `betaSheetSeq` is the guard — a reader who taps through to another game before the
          hydrate returns must not have this one redrawn over the top of it. */
       if (!betaFull) {
-        loadBeta(true).then(() => {
-          if (mySeq !== betaSheetSeq || !$("gamepage")) return;
+        hydrateBetaGame(g).then((added) => {
+          if (!added || mySeq !== betaSheetSeq || !$("gamepage")) return;
           const fresh = ((betaData && betaData.games) || [])
             .find((x: any) => String(x.game_id) === String(g.game_id));
           if (fresh) openBetaGame(fresh);

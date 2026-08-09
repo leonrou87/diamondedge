@@ -39,7 +39,13 @@ import { NextResponse } from "next/server";
               93% of it is games[]; 5.74 MB of that is five per-game blobs
               (diamondedge / analysts / analysts_v2 / strategies / scout) that
               are not read until someone OPENS a game. Measured 2026-08-08:
-              2.15 MB -> 515 KB on the wire.
+              2.15 MB -> 850 KB on the wire.
+     ?game=id ONE GAME, WHOLE. The other half of ?lite=1, and the reason the
+              projection is safe: when a reader does open a game, we fetch that
+              game's blobs back — 2.9 KB — instead of re-downloading the entire
+              history to read 15 KB of it. Measured 2026-08-08: 2,145,888 bytes
+              -> 2,908. It was the largest line left in a session once the
+              4-minute poller stopped buying answers it already had.
      (none)   the full payload, for the paths that genuinely need it.
 
    CACHE HEADERS, ALL THREE, ON PURPOSE.
@@ -93,7 +99,7 @@ const DEFAULT_TTL = { s: 300, swr: 3600 };
    is the cheapest thing in the app and used to be re-fetched at full price. */
 const DATED = /^[a-z_]+:\d{4}-\d{2}-\d{2}$/;
 
-function ttlFor(key: string, mode: "full" | "lite" | "version") {
+function ttlFor(key: string, mode: "full" | "lite" | "version" | "game") {
   if (mode === "version") return { s: 15, swr: 60 };
   if (DATED.test(key)) {
     const [, d] = key.split(":");
@@ -150,10 +156,12 @@ export async function GET(
     return NextResponse.json({ error: "unconfigured" }, { status: 503 });
   }
   const url = new URL(req.url);
-  const mode: "full" | "lite" | "version" =
+  const gameId = (url.searchParams.get("game") || "").slice(0, 96);
+  const mode: "full" | "lite" | "version" | "game" =
     url.searchParams.get("v") ? "version"
-      : url.searchParams.get("lite") ? "lite"
-        : "full";
+      : gameId ? "game"
+        : url.searchParams.get("lite") ? "lite"
+          : "full";
   const t = ttlFor(key, mode);
 
   try {
@@ -175,6 +183,23 @@ export async function GET(
         JSON.stringify({ key, v, updated_at: row?.updated_at || null }),
         { status: 200, headers: cacheHeaders(t, `W/"v-${key}-${v}"`) },
       );
+    }
+
+    if (mode === "game") {
+      /* Also projected in Postgres, for the same reason as ?lite=1: pulling the
+         history to Vercel and picking one game out of it here would leave the
+         egress meter reading exactly what it read before the fix. */
+      const r = await supa(`/rest/v1/rpc/slate_snapshot_game`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ p_key: key, p_game_id: gameId }),
+      });
+      if (!r.ok) throw new Error(`game ${r.status}`);
+      const body = await r.text();
+      return new NextResponse(body === "" ? "null" : body, {
+        status: 200,
+        headers: cacheHeaders(t),
+      });
     }
 
     if (mode === "lite") {

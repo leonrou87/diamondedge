@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-09T01:58:22Z",
+ "generated_utc": "2026-08-09T02:37:12Z",
  "by_game": {
   "822699": {
    "away": {
@@ -3502,7 +3502,8 @@
       "res": "ND"
      }
     ],
-    "team": "TB"
+    "team": "TB",
+    "actual_starter": true
    },
    "home": {
     "id": 669923,
@@ -3619,7 +3620,8 @@
       "res": "L"
      }
     ],
-    "team": "SEA"
+    "team": "SEA",
+    "actual_starter": true
    }
   },
   "823188": {
