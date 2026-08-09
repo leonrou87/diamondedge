@@ -76,7 +76,19 @@ const KEYS = [
 const SAFETY_NET_S = 30;
 
 async function readManifest() {
-  const sel = "key,updated_at,ga:payload->>generated_at,gu:payload->>generated_utc";
+  /* `pu` — the payload's OWN updated_at, which is not the same thing as the
+     column of the same name and is the difference between the live feeds being
+     pinnable or not.
+
+     live_scores carries `updated_at: "2026-08-09T23:32:44Z"` inside the payload,
+     while the column reads "2026-08-09T23:32:44.473069+00:00". Same instant,
+     different precision — so a manifest built on the column can never
+     string-match a stamp read out of the body, and those keys were the only two
+     that failed to pin. Selecting the payload's field lets the two agree, which
+     turns the app's most-polled surface from time-driven into publish-driven
+     without touching how fresh it is. The column stays as the last fallback for
+     any key that carries no internal stamp at all. */
+  const sel = "key,updated_at,ga:payload->>generated_at,gu:payload->>generated_utc,pu:payload->>updated_at";
   const r = await fetch(
     `${SUPA}/rest/v1/slate_snapshots` +
     `?key=in.(${KEYS.map(encodeURIComponent).join(",")})&select=${encodeURIComponent(sel)}`,
@@ -100,7 +112,15 @@ async function readManifest() {
        manifest built on it would report a change every five minutes and send
        every reader back for a payload that had not moved. That is the original
        bug, rebuilt one layer up. updated_at is the last resort only. */
-    const stamp = String(row.gu || row.ga || row.updated_at || "");
+    /* THIS ORDER IS A CONTRACT WITH stamp.ts AND MUST NOT DRIFT FROM IT.
+       The route decides whether a pinned URL may be called `immutable` by
+       reading the same three fields, in this same order, out of the payload it
+       is about to serve. If the two ever disagree about which field is "the
+       version", every pin silently stops verifying: nothing throws, nothing goes
+       red, the app just quietly reverts to TTL-driven reads and the bill creeps
+       back. The column is last because it is the only one of the four that
+       cannot be read out of the body. */
+    const stamp = String(row.gu || row.ga || row.pu || row.updated_at || "");
     if (!stamp) continue;
     v[row.key] = stamp;
     if (stamp > newest) newest = stamp;

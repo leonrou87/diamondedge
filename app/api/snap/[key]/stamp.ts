@@ -45,6 +45,7 @@ export function topLevelStamp(body: string): string {
   const n = body.length;
   let utc = "";
   let at = "";
+  let upd = "";
 
   // Reads a JSON string starting at the opening quote; returns [value, nextIndex].
   const readStr = (p: number): [string, number] => {
@@ -73,12 +74,15 @@ export function topLevelStamp(body: string): string {
       // A string at depth 1 is a KEY only if the next non-space char is ':'.
       let j = next;
       while (j < n && (body[j] === " " || body[j] === "\n" || body[j] === "\t" || body[j] === "\r")) j++;
-      if (depth === 1 && body[j] === ":" && (tok === "generated_utc" || tok === "generated_at")) {
+      if (depth === 1 && body[j] === ":" &&
+        (tok === "generated_utc" || tok === "generated_at" || tok === "updated_at")) {
         let k = j + 1;
         while (k < n && (body[k] === " " || body[k] === "\n" || body[k] === "\t" || body[k] === "\r")) k++;
         if (body[k] === '"') {
           const [val, after] = readStr(k);
-          if (tok === "generated_utc") utc = val; else at = val;
+          if (tok === "generated_utc") utc = val;
+          else if (tok === "generated_at") at = val;
+          else upd = val;
           i = after;
           continue;
         }
@@ -90,5 +94,8 @@ export function topLevelStamp(body: string): string {
     else if (c === "}" || c === "]") depth--;
     i++;
   }
-  return utc || at;
+  /* THE ORDER IS A CONTRACT WITH /api/manifest — see the note beside its own
+     `gu || ga || pu || updated_at`. These two must read the same field as "the
+     version" or every pin stops verifying, silently. */
+  return utc || at || upd;
 }

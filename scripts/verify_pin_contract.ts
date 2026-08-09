@@ -46,17 +46,25 @@ check("absent means unknown",
   topLevelStamp(JSON.stringify({ a: 1 })), "");
 check("deeply nested only",
   topLevelStamp(JSON.stringify({ g: [[{ generated_utc: "DEEP" }]] })), "");
+/* The live feeds carry no generated_* at all — only their own `updated_at`.
+   That field is what makes them pinnable, so the precedence has to be pinned
+   down here too: it must be USED when it is the only stamp, and must LOSE to a
+   generated_* when both exist, because that is the order /api/manifest reads. */
+check("payload updated_at used",
+  topLevelStamp(JSON.stringify({ kind: "live_scores", updated_at: "U" })), "U");
+check("generated beats updated",
+  topLevelStamp(JSON.stringify({ updated_at: "U", generated_utc: "G" })), "G");
 
 /* The live half. These are the payloads that falsified the first attempt, so
    they are the ones worth checking against reality rather than a fixture. */
-const LIVE = ["pregame_picks", "picks_unified_live"];
+const LIVE = ["pregame_picks", "picks_unified_live", "live_scores"];
 for (const key of LIVE) {
   try {
     const r = await fetch(`${BASE}/api/snap/${key}`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const text = await r.text();
     const truth = JSON.parse(text);
-    const expect = truth.generated_utc || truth.generated_at || "";
+    const expect = truth.generated_utc || truth.generated_at || truth.updated_at || "";
     check(`live: ${key}`, topLevelStamp(text), expect,
       `(${(text.length / 1048576).toFixed(2)} MB)`);
   } catch (e) {
