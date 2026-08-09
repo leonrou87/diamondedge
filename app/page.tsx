@@ -8448,7 +8448,7 @@ export default function Home() {
           <span class="ppd-mid">PPD</span>
           <span class="ppd-team"><b>${esc(hAb)}</b><span class="t-crest">${gCrest(g, "home")}</span></span>
         </div>
-        ${hasPick ? `<div class="ppd-pickrow">${bStars(p.stars)}<span class="ppd-side">${esc(side)}${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span><span class="void-chip">VOID — no action</span></div>` : ""}
+        ${hasPick ? `<div class="ppd-pickrow">${bStars(p.stars)}<span class="ppd-side">${unifiedPickLocked(p) ? lockedSideChip(true) : `${esc(side)}${p.price != null ? ` ${fmtOdds(p.price)}` : ""}`}</span><span class="void-chip">VOID — no action</span></div>` : ""}
         <div class="ppd-note">${esc((bg.postponed && bg.postponed.note) || "Postponed — pick void, no action")}</div>
         ${spBit}
       </article>`;
@@ -9703,6 +9703,31 @@ export default function Home() {
       // Fall back to the slate we actually rendered — this is the ONLY place synthesized future
       // tiles (v4-feed-only, absent from payload) live, so without this a tomorrow tile can't open.
       return hit || (slateGames || []).find((x: any) => String(x.game_id) === String(gid));
+    }
+    /* ONE EXHAUSTIVE GAME RESOLVER. There were three, with three different pools:
+         findGame      payload -> slateGames        (board taps: the day being viewed)
+         findGameLive  (livePayload || payload)     (the freshest copy of a live game)
+         gameById      (livePayload || payload)     (deep links)
+       That `||` in gameById is the bug: it picks ONE source, and after boot livePayload always
+       exists — so a `?g=<id>` link to a PAST-DATE game resolved against today's board, missed,
+       and opened NOTHING, while the same game opened fine from a board tile through findGame.
+       A shared link to yesterday's pick is exactly the link most worth working.
+       This searches every pool the app has, freshest first, and is what the deep-link and
+       cross-surface lookups use. The two narrow readers stay as they are: each is asking a
+       narrower question (the viewed day; the freshest copy) and answering it correctly. */
+    function gameAnywhere(gid: any) {
+      if (gid == null) return null;
+      const id = String(gid);
+      const pools = [
+        livePayload && livePayload.games,
+        payload && payload.games,
+        slateGames,
+      ];
+      for (const pool of pools) {
+        const hit = (pool || []).find((x: any) => String(x.game_id) === id);
+        if (hit) return hit;
+      }
+      return null;
     }
 
     function shiftDate(iso: string, days: number) {
@@ -12009,11 +12034,9 @@ export default function Home() {
 
        Everything cut is still computed and still reachable: tierRecordFor / strategyRecords
        feed the Desk's research folds, which is where a breakdown by strategy belongs. */
+    // Deep links (?g=<id>, /g/<id>) resolve against EVERY pool — see gameAnywhere.
     function gameById(gid: any) {
-      const src = livePayload || payload;
-      let g = ((src && src.games) || []).find((x: any) => String(x.game_id) === String(gid));
-      if (g) return g;
-      return g || null;
+      return gameAnywhere(gid);
     }
     function syncFromUrl(fromHistory: boolean) {
       let gid: string | null = null;
