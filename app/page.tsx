@@ -11075,6 +11075,13 @@ export default function Home() {
       return null;
     }
     function oddsPane(g: any, lead: any, leadLocked: boolean) {
+      // (1) THE NUMBER THE GAME STARTED AT — the one every read on this game is graded
+      //     against. It shares the grid's re-render slot (see `repaintOddsMove`) because
+      //     what it prints depends on whether the wall grid arrived.
+      return `<div class="oddspane"><div id="odds-linecard">${oddsLineCard(g)}</div>${
+        `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`}${leadLocked ? "" : unobtainableRow(g)}</div>`;
+    }
+    function oddsLineCard(g: any) {
       const raw = pregameLineRaw(g);
       const pg = pregameLine(g);
       const tot = pg && pg.total && pg.total.line != null ? Number(pg.total.line) : null;
@@ -11084,8 +11091,7 @@ export default function Home() {
       const nBooks = raw ? _fin(raw.n_books) : null;
       const book = pg && pg.book ? bookName(pg.book) : "";
       const hasWalls = totalWalls(g).length >= 2;
-      // (1) THE NUMBER THE GAME STARTED AT — the one every read on this game is graded against.
-      const lineCard = tot == null ? "" : `<div class="oline">
+      return tot == null ? "" : `<div class="oline">
         <div class="oline-k">The line we're graded at</div>
         <div class="oline-main">
           <span class="oline-tot"><b>${esc(lineStr(tot))}</b><i>total</i></span>
@@ -11112,10 +11118,6 @@ export default function Home() {
           book ? `prices from ${book}${raw && raw.wall ? ` at the ${String(raw.wall)} check` : ""}` : "",
         ].filter(Boolean).map((s) => esc(s)).join(" · ")}</div>
       </div>`;
-      // (2) HOW IT TRADED IN — the chart and the wall table share one slot, so the on-demand
-      //     feed can land after the tab is opened and fill it without a full rebuild.
-      const grid = `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`;
-      return `<div class="oddspane">${lineCard}${grid}${leadLocked ? "" : unobtainableRow(g)}</div>`;
     }
     /* A TAB IS NOT ALLOWED TO BE EMPTY — the rule the retired Live tab was killed for.
        Odds is promised on every pregame game, but a game far enough out has no captured
@@ -11162,6 +11164,13 @@ export default function Home() {
       const pl = displayPick(detail);
       const locked = pl ? pickLocked(pl, playState(detail, pl)) : false;
       slot.innerHTML = safeHtml("odds move", () => oddsMoveBody(detail, pl, locked), "");
+      // THE LINE CARD REPAINTS WITH IT, because what it prints depends on whether the
+      // grid arrived: with a chart on the page the open belongs to the chart's caption,
+      // and without one the card is the only place it can be said. The grid loads on
+      // demand AFTER the pane is built, so a card rendered once kept printing "opened
+      // 8.5" a hundred pixels above the caption that says it again with its check.
+      const card = document.getElementById("odds-linecard");
+      if (card) card.innerHTML = safeHtml("odds line card", () => oddsLineCard(detail), "");
     }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
@@ -14216,7 +14225,18 @@ export default function Home() {
             <div class="sub-k">DiamondEdge Premium</div>
             <h2 class="sub-h">Every pick. Every why. Nothing hidden.</h2>
             <div class="sub-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
-            <p class="sub-sell">Every Strong ◆◆◆ and Good ◆◆ pick, unlocked — the exact calls behind a <b>${(rh.hit * 100).toFixed(1)}%</b> record across <b>${rh.n.toLocaleString()}</b> graded picks since 2022${fwd ? `, and <b>${fwd.wins || 0}-${fwd.losses || 0}</b> since going live` : ""}. Cancel anytime.</p>
+            <!-- THE PRICE QUOTES THE RECORD, NOT A BACKTEST (2026-08-09). This sold the pick
+                 on "58.1% across 886 graded picks since 2022" — recipeHistory(), the IN-SAMPLE
+                 backtest, and the very figure just deleted from the share card for being a
+                 number no record surface could produce. The one place a reader is about to
+                 pay is the last place to quote a different record from the one on the Desk,
+                 so it reads headlineRecordBlock() like every other statement of it. -->
+            <p class="sub-sell">Every Strong ◆◆◆ and Good ◆◆ pick, unlocked — the exact calls behind ${(() => {
+              const r = headlineRecordBlock();
+              if (!r || !r.wl) return "every pick we publish, graded in the open";
+              const since = r.since ? stratDateTxt(r.since).replace(/,\s*\d{4}$/, "") : "";
+              return `<b>${esc(r.wl)}</b>${r.hit != null ? ` (<b>${stratPct(r.hit)}</b>)` : ""}${since ? ` since ${esc(since)}` : ""}, graded in the open`;
+            })()}. Cancel anytime.</p>
           </div>
           <!-- THE SELL, LIFTED OFF THE DELETED UPGRADE VIEW (2026-08-09). There were two
                paywalls selling the same $9.99 with the same four stats, and which one a
