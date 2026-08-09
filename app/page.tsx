@@ -1027,14 +1027,30 @@ export default function Home() {
        The backend predicate is the same one (v4/serve/live_decide.py), written once into an
        append-only ledger the record reads, so the served result and this live read are the
        same answer arriving at different times — never different answers. */
+    /* ONE READING OF "WHICH SIDE IS THIS", and it is the backend's reading.
+       There are two implementations of the predicate in this system — Python in
+       v4/serve/live_decide.py and TypeScript here — and "one predicate" was only ever true
+       of the ARITHMETIC. The side parsing had quietly forked: the backend tests exact
+       lowercase membership in ("over","under"); this used to test /(^|\s)over/i, so they
+       disagreed on 8 of 12 realistic side strings. "Over", "OVER" and "Over 8.5" graded
+       here and stayed ungraded there — which is EXACTLY the original bug, a card marked
+       and a record that never counts it — and "Over/Under" matched BOTH regexes, took the
+       `over` branch and returned an outright mis-grade of "win".
+       It does not bite today only because the forge happens to emit lowercase. That is a
+       coincidence, not a contract, so this is now the same test the backend makes:
+       trim, lowercase, and accept NOTHING but the two exact words. Anything else is not a
+       side we recognise, and an unrecognised side grades nothing. */
+    function normalizeSide(side: any): "over" | "under" | null {
+      const s = String(side ?? "").trim().toLowerCase();
+      return s === "over" || s === "under" ? s : null;
+    }
     function totalDecided(side: any, line: any, runsSoFar: any): "win" | "loss" | null {
       const ln = Number(line), rs = Number(runsSoFar);
       if (line == null || runsSoFar == null || !isFinite(ln) || !isFinite(rs)) return null;
-      const s = String(side || "");
-      const over = /(^|\s)over/i.test(s), under = /(^|\s)under/i.test(s);
-      if (!over && !under) return null;
+      const s = normalizeSide(side);
+      if (!s) return null;
       if (!(rs > ln)) return null;          // STRICT: level with the line is still live
-      return over ? "win" : "loss";
+      return s === "over" ? "win" : "loss";
     }
     // The live over-clinch for THIS pick, or null. Totals only, live games only, and only
     // off `current_actuals` — the one shared live fact every surface on the board reads.
@@ -1077,7 +1093,7 @@ export default function Home() {
     // A finished game whose pick isn't graded yet (the big payload lags the live
     // scores) still resolves visually — grade it provisionally off the final score.
     function provisionalResult(g: any, pl: any) {
-      // A PASS GAME HAS NO PICK. boxScorePanel falls back to displayPick(g), which is null on
+      // A PASS GAME HAS NO PICK. Callers fall back to displayPick(g), which is null on
       // a game we passed, and this then threw on `pl.action` — a hard crash that took the
       // whole game page down for any FINAL game with no ticket. Guard both arguments.
       if (!g || !pl) return null;
@@ -1175,6 +1191,23 @@ export default function Home() {
       const half = m[1].toLowerCase();
       return half === "top" ? inn - 0.75 : half === "mid" ? inn - 0.5 : half === "bot" ? inn - 0.25 : inn;
     }
+    /* THE HALF-INNING AS PROSE — "bottom of the 5th", from a label with two spellings.
+       `gs.label` is `current_actuals.period_label`, and it has TWO WRITERS with different
+       vocabularies: `overlayInto` copies it verbatim out of the live_scores snapshot, whose
+       half-map is {top:"Top", bottom:"Bot", middle:"Mid", end:"End"} — so "Bot 5th"; and
+       `adoptMlbLive` writes `${inningState} ${currentInningOrdinal}` — so "Bottom 5th". Both
+       shapes were on the board in one session. A sentence that lower-cases the label and
+       drops it into English therefore reads "Play is stopped in the bot 5th", which is
+       shorthand rendered as speech, and it depends on which feed happened to tick last.
+       The label itself is deliberately left alone — the line score, the chip and the ticker
+       all want the short form. This is only for the places that speak it. */
+    function halfInningPhrase(label: any): string {
+      const m = String(label || "").trim().match(/^(top|bot|bottom|mid|middle|end)\w*\s+(\d+\w*)$/i);
+      if (!m) return "";
+      const half = m[1].toLowerCase();
+      const word = half.startsWith("bot") ? "bottom" : half.startsWith("mid") ? "middle" : half;
+      return half === "end" ? `end of the ${m[2]}` : `${word} of the ${m[2]}`;
+    }
     function heuristicCashProb(g: any, pl: any) {
       if (!pl || pl.market !== "total") return null;
       const ca = g.current_actuals || {};
@@ -1207,48 +1240,6 @@ export default function Home() {
     };
     // The prominent live hit-odds indicator: "68% to cash · trending your way" + a meter
     // toward the line. size: "tile" (compact, on game boxes) | "full" (detail sheet).
-    function liveHitOdds(g: any, pl: any, size = "tile") {
-      const ls = liveStatusOf(g, pl);
-      if (!ls) return "";
-      /* A decided live bet reads as clinched/cooked — never a bare "100% to cash" (or 0%),
-         which looks like a bug even though it's technically correct.
-
-         "DECIDED" IS A FACT, NOT A PROBABILITY (2026-08-09). This used to fire off the
-         model's own number alone: 98.5% was enough to print "Cashing ✓ · as good as in",
-         which on a totals pick whose runs have NOT passed the line is a claim the arithmetic
-         does not support — and the same 1.5% at the other end printed "Not landing" on a bet
-         that could still be won. Where the runs and the line are both known, `totalDecided`
-         is the authority and the estimate cannot overrule it in either direction; the
-         probability keeps the surface only where there is no fact to check it against (a
-         non-total market, or a game with no running total yet). */
-      const hard = liveDecided(g, pl);
-      const decidable = pl && pl.market === "total" && pickLineOf(pl) != null
-        && g && g.current_actuals && g.current_actuals.total_so_far != null;
-      const clinched = hard === "win" || (!decidable && ls.prob != null && ls.prob >= 0.985);
-      const cooked = hard === "loss" || (!decidable && ls.prob != null && ls.prob <= 0.015);
-      if (clinched || cooked) {
-        const cls = clinched ? "hit" : "miss";
-        const cash = clinched ? "Cashing ✓" : "Not landing";
-        const dir = clinched ? "as good as in" : "out of reach";
-        return `<div class="lho lho-${size} dir-${cls} lho-done" title="${clinched ? "This pick has clinched." : "This pick can no longer cash."}">
-          <div class="lho-top"><span class="lho-cash">${cash}</span><span class="lho-dir"><span class="lho-dot"></span>${esc(dir)}</span></div>
-          <span class="lho-track"><span class="lho-fill" style="width:${clinched ? 100 : 3}%"></span><span class="lho-goal"></span></span>
-        </div>`;
-      }
-      const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-      // Meter tracks the SAME number as the label — probability to cash — so a fuller bar
-      // always means "more likely to win", for OVER and UNDER alike (pct_to_goal would fill
-      // toward the line, which reads backwards on an under).
-      const pctW = ls.prob != null ? Math.max(3, Math.min(100, ls.prob * 100)) : (ls.pct != null ? Math.max(3, Math.min(100, ls.pct * 100)) : 0);
-      const cashTxt = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}% to cash` : (size === "full" ? "Live read" : "Live");
-      const deltaTxt = ls.delta != null && Math.abs(ls.delta) >= 0.005
-        ? `<span class="lho-delta ${ls.delta >= 0 ? "up" : "down"}">${ls.delta >= 0 ? "▲" : "▼"} ${Math.abs(ls.delta * 100).toFixed(0)}% vs pregame</span>` : "";
-      return `<div class="lho lho-${size} dir-${meta.cls}" title="Live hit odds — ${(ls.prob != null ? (ls.prob * 100).toFixed(0) + "% to cash · " : "")}${meta.word}">
-        <div class="lho-top"><span class="lho-cash">${esc(cashTxt)}</span><span class="lho-dir"><span class="lho-dot"></span>${esc(size === "full" ? meta.word : meta.short)}</span></div>
-        <span class="lho-track"><span class="lho-fill" style="width:${pctW.toFixed(0)}%"></span><span class="lho-goal"></span></span>
-        ${deltaTxt ? `<div class="lho-foot">${deltaTxt}</div>` : ""}
-      </div>`;
-    }
     function liveCashChip(g: any, pl: any) {
       const ls = liveStatusOf(g, pl);
       if (!ls) return "";
@@ -1402,9 +1393,6 @@ export default function Home() {
     };
     // A small, always-legible tier legend — states what each word means so "Good vs Lean"
     // is never ambiguous. Rendered on the board and inside the detail sheet.
-    function tierLegend(compact = false) {
-      return "";
-    }
     // Gold = the headline plays: any winning-recipe (VALUE) play + the surest accuracy tier.
     const isGold = (pl: any) => !!pl && pl.action === "TAKE" && (pl.value_tier || pl.tier === "featured");
     // The ONE bet we surface for a game: gold first, then quality, then confidence.
@@ -1838,14 +1826,6 @@ export default function Home() {
       return vg && vg.spread && typeof vg.spread === "object" ? vg.spread : null;
     }
     // "PIT -1.5" — the chosen side's own point, named by team abbr (never bare home/away).
-    function spreadCallTxt(g: any, sp: any) {
-      if (!sp || !sp.side) return "";
-      const ab = sp.side === "home"
-        ? (g && g.home_abbr) || mlbAbbr(sp.side_team)
-        : sp.side === "away" ? (g && g.away_abbr) || mlbAbbr(sp.side_team) : "";
-      const ln = sp.line != null && isFinite(Number(sp.line)) ? sgn(Number(sp.line)) : "";
-      return [ab || String(sp.side).toUpperCase(), ln].filter(Boolean).join(" ");
-    }
     // "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)" — the Vegas number we judged, clearly
     // stated, plus a small timestamp of when the pick was FIRST made (that wall's clock).
     const LEAD_MS: any = { "T-24h": 864e5, "T-12h": 432e5, "T-6h": 216e5, "T-3h": 108e5, "T-1h": 36e5 };
@@ -2232,211 +2212,6 @@ export default function Home() {
         if (s2 && typeof s2 === "object") return s2;
       }
       return null;
-    }
-    function adaptiveOverall(src: any) {
-      const r = adaptiveStrategyRoot(src);
-      const o = r && r.overall;
-      return o && typeof o === "object" ? stratBlock(o) : null;
-    }
-    function adaptiveDayStrategyHtml(dateISO: string) {
-      if (!(league === "all" || league === "mlb")) return "";
-      if (isFutureDate(dateISO)) return "";
-      const s = adaptiveDayStrategy(dateISO);
-      if (!s || s.status === "ERROR") return "";
-      /* THE FIRST THING ON THE BOARD SHOULD NOT BE A MODEL NAME.
-         This summary read: "Shallow neural desk ensemble (0.54 margin) — Lookback evidence
-         119-55-5 · last 35d · rule confidence strong". Every one of those is a real fact and
-         not one of them is written for the person buying picks: the label is the internal
-         rule id, "lookback evidence" is a training term, and "0.54 margin" is a threshold.
-         It now leads with what the reader can act on — the RECORD the chosen rule is on —
-         and keeps the label in the fold, where a curious reader will find it. */
-      const label = strategyLabelPublic(s) || "Today's strategy";
-      const rec = humanNote(s.record);
-      const line = strategySentence(s) || humanNote(s.summary_line || s.reason || s.plain_english_rule);
-      const win = s.window_days ? `${s.window_days} days` : "four weeks";
-      return `<details class="daystrat" title="${esc(line)}">
-        <summary>
-          <span class="ds-k">Today's record</span>
-          <span class="ds-copy"><b>${rec ? `${esc(rec)} over the last ${esc(win)}` : `Locked before the first pitch`}</b><i>Chosen overnight from thousands of combinations, then played today.</i></span>
-          <span class="ds-caret" aria-hidden="true">⌄</span>
-        </summary>
-        <div class="ds-more">
-          <p><b>${esc(label)}</b></p>
-          <p>${esc(line || `Before the first game, DiamondEdge replayed every finished game, took the strategy that has been working, and locked it for today's board.`)}</p>
-          <button class="ds-learn" id="daystrat-eye" type="button">Learn on The Desk →</button>
-        </div>
-      </details>`;
-    }
-    function adaptiveStrategySheetCopy(s: any, dateISO: string) {
-      const label = strategyLabelPublic(s) || humanNote(s && s.label) || "Adaptive strategy";
-      const rule = (strategySentence(s) || humanNote((s && (s.plain_english_rule || s.reason)) || label)).replace(/\.$/, "");
-      const days = s && s.window_days ? Number(s.window_days) : 28;
-      const start = stratDateTxt(shiftDate(dateISO, -days)) || `${days} days back`;
-      const end = stratDateTxt(shiftDate(dateISO, -1)) || "yesterday";
-      const decided = s && s.decided != null ? Number(s.decided) : null;
-      const training = s && s.training_games != null ? Number(s.training_games) : null;
-      const pickedPct = s && s.pick_rate != null ? stratPct(Number(s.pick_rate)) : "";
-      const passedPct = s && s.pick_rate != null ? stratPct(1 - Number(s.pick_rate)) : "";
-      const hit = s && s.hit_rate != null ? stratPct(Number(s.hit_rate)) : "";
-      const tier = adaptiveTier(s) || (s && s.status === "PASS_ALL" ? "PASS" : "");
-      const ci = adaptiveCiText(s);
-      const vci = adaptiveCiText(s, "validation_hit_rate_ci");
-      const units = s && s.units != null ? `${Number(s.units) >= 0 ? "+" : ""}${num(Number(s.units), 0)} net wins` : "";
-      const summary = humanNote(s && s.summary_line);
-      return { label, rule, days, start, end, decided, training, pickedPct, passedPct, hit, tier, ci, vci, units, summary };
-    }
-    function adaptiveStrategyFamilyRows(s: any) {
-      const fam = String((s && s.rule_family) || "").toLowerCase();
-      const key = String((s && s.rule_key) || "").toLowerCase();
-      const research = s && s.strategy_research;
-      const win = research && research.windows && research.windows[String(s.window_days || "")];
-      const counts = (win && win.families) || {};
-      const countFor = (keys: string[]) => keys.reduce((sum, k) => sum + Number(counts[k] || 0), 0);
-      const countTag = (keys: string[]) => {
-        const n = countFor(keys);
-        return n ? `<em>${n}</em>` : "";
-      };
-      const rows = [
-        { keys: ["single"], lab: "Single analyst", txt: "Follow or fade one analyst when that voice has been the clearest recent signal." },
-        { keys: ["pair", "split_pair"], lab: "Analyst pairs", txt: "Watch two analysts together when that pair has recently spotted the right games." },
-        { keys: ["group_agree"], lab: "Analyst blocks", txt: "Compare small groups of analysts instead of trusting one fixed favorite." },
-        { keys: ["vote_count"], lab: "Vote counts", txt: "Treat 4-0, 3-1 and 2-2 boards as different betting situations." },
-        { keys: ["signature"], lab: "Desk shapes", txt: "Remember exact four-analyst patterns, so four OVER reads can still become an UNDER when that pattern has been bad." },
-        { keys: ["desk_prob", "majority_prob_disagree"], lab: "How sure they were", txt: "Separate a loud lean from a barely-there lean, even when the vote count looks the same." },
-        { keys: ["weighted_form"], lab: "Recent form", txt: "Give more trust to analysts that have been useful lately, then pass when the blend is thin." },
-        { keys: ["prob_weighted"], lab: "Confidence habits", txt: "Check whether an analyst's high-confidence reads have actually been worth trusting lately." },
-        { keys: ["stacked_rules"], lab: "Combo recipes", txt: "Combine several helpful clues, then hold them back until they prove they work outside the first batch." },
-      ];
-      return rows.map((r) => {
-        const on = r.keys.includes(fam) || r.keys.some((k) => key.indexOf(k) >= 0);
-        return `<div class="ads-fam${on ? " on" : ""}"><span>${on ? "◆" : "◇"}</span><b>${esc(r.lab)}${countTag(r.keys)}</b><i>${esc(r.txt)}</i></div>`;
-      }).join("");
-    }
-    function adaptiveStrategyLeaderboard(s: any) {
-      const top = s && s.strategy_research && Array.isArray(s.strategy_research.top_candidates)
-        ? s.strategy_research.top_candidates.slice(0, 6) : [];
-      if (!top.length) return `<div class="dsec-b rcp"><p>No ranked candidates were served for this day.</p></div>`;
-      return `<div class="ads-board">${top.map((r: any, i: number) => {
-        const hit = r.hit_rate != null ? stratPct(Number(r.hit_rate)) : "—";
-        const vhit = r.validation_hit_rate != null ? stratPct(Number(r.validation_hit_rate)) : "";
-        const tier = adaptiveTier(r);
-        return `<div class="ads-cand${i === 0 ? " winner" : ""}">
-          <span class="ads-rank">${i === 0 ? "Selected #1" : `#${i + 1}`}</span>
-          <span class="ads-cmain"><b>${esc(humanNote(r.label) || "Candidate")}</b><i>${tier ? `<em class="ads-tier is-${tier.toLowerCase()}">${esc(tier)}</em>` : ""}<em>${esc(r.record || "—")} recent</em><em>${esc(hit)} hit rate</em>${r.validation_record ? `<em>${esc(r.validation_record)} second check${vhit ? ` · ${esc(vhit)}` : ""}</em>` : ""}</i></span>
-          <span class="ads-famtag">${esc(String(r.rule_family || "").replace(/_/g, " "))}</span>
-        </div>`;
-      }).join("")}</div>`;
-    }
-    function adaptiveStrategySelectionLine(s: any, c: any) {
-      const top = s && s.strategy_research && Array.isArray(s.strategy_research.top_candidates)
-        ? s.strategy_research.top_candidates : [];
-      const selected = top.find((r: any) => r && r.rule_key === s.rule_key) || top[0] || null;
-      const full = selected && selected.record ? selected.record : humanNote(s.record);
-      const hit = selected && selected.hit_rate != null ? stratPct(Number(selected.hit_rate)) : c.hit;
-      const tier = adaptiveTier(selected || s);
-      const val = selected && selected.validation_record ? selected.validation_record : s.validation_record;
-      const vhit = selected && selected.validation_hit_rate != null ? stratPct(Number(selected.validation_hit_rate)) : (s.validation_hit_rate != null ? stratPct(Number(s.validation_hit_rate)) : "");
-      const fired = c.decided != null ? `${c.decided} fires` : "enough fires";
-      const proof = [tier ? `${tier} signal` : "", full ? `${full} recent record` : "", hit ? `${hit} hit rate` : "", val ? `${val} second check${vhit ? ` (${vhit})` : ""}` : "", fired].filter(Boolean).join(" · ");
-      return `Chosen before today's slate because it had enough past examples, beat the other useful rules, and stayed selective when the edge looked thin. ${proof || ""}`;
-    }
-    function adaptiveStrategyExamples(s: any) {
-      const ex = s && Array.isArray(s.examples) ? s.examples.slice(0, 4) : [];
-      if (!ex.length) return "";
-      return `<div class="ads-ex">${ex.map((e: any) => {
-        const d = stratDateTxt(e.date) || String(e.date || "").slice(5) || "Prior";
-        const res = String(e.result || "").toLowerCase();
-        return `<span class="${res === "win" ? "won" : res === "loss" ? "lost" : "push"}"><b>${esc(d)}</b><i>${esc(String(e.side || "").toUpperCase())}</i><em>${esc(res || "graded")}</em></span>`;
-      }).join("")}</div>`;
-    }
-    function openAdaptiveStrategySheet(dateISO = curDate) {
-      const s = adaptiveDayStrategy(dateISO);
-      if (!s || s.status === "ERROR") { toast("No day strategy served for this slate yet"); return; }
-      detail = detailWithGameReturn({ _adaptive: true });
-      const c = adaptiveStrategySheetCopy(s, dateISO);
-      const dateTxt = stratDateTxt(dateISO) || "this slate";
-      const byline = `${c.start} to ${c.end}`;
-      const volume = [c.training != null ? `${c.training} games checked` : "", c.decided != null ? `${c.decided} times the rule fired` : "", c.pickedPct ? `${c.pickedPct} pick rate` : ""].filter(Boolean).join(" · ");
-      const html = `
-        <div class="sheet-bg" id="sheet-bg"></div>
-        <div class="sheet strategy-sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="ads-title">
-          <div class="sh-grab" id="sh-grab"><span></span></div>
-          <div class="sh-head gold">
-            <button class="close" id="sheet-close" aria-label="Close">✕</button>
-            <div class="sh-sport">Today's strategy · ${esc(dateTxt)}</div>
-            <div class="rcp-title" id="ads-title"><span class="pl-vdia">◆</span>${esc(c.label)}</div>
-            <div class="sh-meta">picked from finished games · ${esc(byline)}</div>
-          </div>
-          <div class="sh-body">
-            <div class="dsec ads-hero">
-              ${c.tier ? `<div class="ads-tierline"><span class="ads-tier is-${String(c.tier).toLowerCase()}">${esc(c.tier)}</span></div>` : ""}
-              <div class="ads-rule"><span>Use today</span><b>${esc(c.rule)}</b></div>
-              <div class="ads-rec">
-                <span><b>${esc(c.tier || "—")}</b><i>rule confidence</i></span>
-                <span><b>${esc(humanNote(s.record) || "—")}</b><i>lookback evidence</i></span>
-                <span><b>${esc(c.hit || "—")}</b><i>hit rate</i></span>
-                <span><b class="${Number(s.units || 0) >= 0 ? "pos" : "neg"}">${esc(c.units || "—")}</b><i>edge</i></span>
-              </div>
-              ${volume ? `<div class="ads-volume">${esc(volume)}${c.passedPct ? ` · passed ${esc(c.passedPct)}` : ""}</div>` : ""}
-            </div>
-            <div class="dsec">
-              <div class="dsec-h">Why this rule today</div>
-              <div class="dsec-b rcp">
-                <p>${esc(adaptiveStrategySelectionLine(s, c))}</p>
-                <p>${esc(c.summary || `Over the last ${c.days} days, this was the best trailing rule for the slate.`)}</p>
-                ${s.selected_reason ? `<p>${esc(humanNote(s.selected_reason))}</p>` : ""}
-                <p>In plain English: DiamondEdge is not asking which analyst sounds smartest on one game. It asks which kinds of analyst patterns have actually helped lately. Sometimes that means following the room, sometimes fading a pattern that has been wrong, and sometimes passing because the books already priced it correctly.</p>
-                <p>A game becomes an official DiamondEdge Pick when that rule fires and the real price clears our bar.</p>
-              </div>
-            </div>
-            <div class="dsec">
-              <div class="dsec-h">What gets compared</div>
-              <div class="ads-note">The highlighted row is the family today's rule came from.</div>
-              <div class="ads-fams">${adaptiveStrategyFamilyRows(s)}</div>
-            </div>
-            <div class="dsec">
-              <div class="dsec-h">Top candidates</div>
-              <div class="ads-note">Ranked by what looked strongest before today's games.</div>
-              ${adaptiveStrategyLeaderboard(s)}
-            </div>
-            <div class="dsec">
-              <div class="dsec-h">Recent evidence</div>
-              <div class="dsec-b rcp">
-                <p>These are recent examples from the same window used before today's slate. They are not today's plays; they show the kind of past games behind the rule.</p>
-                ${adaptiveStrategyExamples(s)}
-              </div>
-            </div>
-          </div>
-        </div>`;
-      let layer = $("sheet-layer");
-      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
-      layer.innerHTML = html;
-      document.body.classList.add("sheet-open");
-      bindClick("sheet-close", () => closeDetail());
-      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
-      bindSheetDrag($("sheet"), $("sh-grab"));
-      bindSwipeBack($("sheet"));
-    }
-    function adaptiveStrategyInsight(d: any) {
-      const root = adaptiveStrategyRoot(d);
-      const overall = adaptiveOverall(d);
-      if (!root || !overall) return "";
-      const by = root.strategy_by_date || {};
-      const days = Object.keys(by).filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
-      const latestKey = days.filter((k) => k <= todayISO()).pop() || days[days.length - 1];
-      const latest = latestKey ? by[latestKey] : null;
-      const ruleCount = new Set(days.map((k) => by[k] && by[k].rule_key).filter(Boolean)).size;
-      const since = stratDateTxt(root.record_start) || "July 2026";
-      const thru = stratDateTxt(root.through) || "today";
-      const label = latest ? (strategyLabelPublic(latest) || humanNote(latest.label)) : "Daily adaptive strategy";
-      const line = latest ? (strategySentence(latest) || humanNote(latest.summary_line || latest.plain_english_rule)) : humanNote(root.note);
-      return `<div class="ixc adapt-insight">
-        <div class="ixc-h">Daily strategy record</div>
-        <div class="ixc-sub">One rule is picked before each slate, then the official DiamondEdge Picks from that slate build the record.</div>
-        <div class="adap-big"><b>${esc(stratWL(overall))}</b><span>${overall.hit != null ? `${esc(stratPct(overall.hit))} hit` : ""}${overall.roi != null ? ` · <i class="${overall.roi >= 0 ? "pos" : "neg"}">${esc(stratRoi(overall.roi))} ROI</i>` : ""}</span></div>
-        <div class="adap-now"><span class="ds-info" aria-hidden="true">(i)</span><p><b>${esc(latestKey ? `Latest: ${label}` : label)}</b>${line ? ` ${esc(line)}` : ""}</p></div>
-        <div class="adap-foot">${esc(since)} to ${esc(thru)} · ${overall.n} official picks · rules selected pre-slate.</div>
-      </div>`;
     }
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
     // ═══════════════════ THE ANALYST DESK — four named models on every game ═══════════════════
@@ -2969,16 +2744,6 @@ export default function Home() {
     }
     // The verdict strip: ◆ PLAY (bold) / ◆ LEAN / ◆ WE PASS (the pass styled proudly —
     // passing on a split desk IS the discipline being sold).
-    function chiefStrip(g: any, chief: any) {
-      if (!chief || !chief.action) return "";
-      const cls = chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid";
-      const word = chief.action === "AVOID" ? "WE PASS" : chief.action;
-      // NO INVENTED PASS REASON. This used to fall back to "The desk is split — we pass.",
-      // which asserts a cause (the analysts disagreed) that AVOID does not mean: AVOID means
-      // no bet was served, full stop. With no served rationale we say nothing.
-      const rat = chief.rationale || "";
-      return `<div class="chief ${cls}"><span class="ch-act"><i class="ch-dia" aria-hidden="true">◆</i>${word}</span>${rat ? `<span class="ch-rat">${esc(rat)}</span>` : ""}</div>`;
-    }
     // The four calls as one compact row (glyph · name · side · conviction). Tap a cell →
     // that analyst's card. Locked picks redact the sides (crisp dots), never the cast.
     function deskChipRow(g: any, locked = false, interactive = true) {
@@ -3160,37 +2925,6 @@ export default function Home() {
        (it is the market the desk actually bets), the run line rides beside it, and the
        provenance strip says which book and when it was locked. A market move renders as a
        clearly-labelled secondary delta — the locked number is never overwritten. */
-    function pregameLineBlock(g: any, size = "tile") {
-      const pg = pregameLine(g);
-      if (!pg) return "";
-      const tl = pg.total && pg.total.line != null ? pg.total.line : null;
-      // the locked total is passed in so lineNow can refuse a comparison against a different number
-      const now = lineNow(g, tl);
-      const nl = now && now.total && now.total.line != null ? now.total.line : null;
-      const moved = tl != null && nl != null && Math.abs(nl - tl) > 0.001;
-      const rlNowTxt = (() => {
-        if (!now || !now.rl || now.rl.line == null || !pg.rl || pg.rl.line == null) return "";
-        return Math.abs(Number(now.rl.line) - Number(pg.rl.line)) > 0.001 ? rlTxt(g, now.rl) : "";
-      })();
-      const prov = [
-        pg.book ? bookTxt(pg.book) : "",
-        lockTimeTxt(pg.lockedAt) ? `locked ${lockTimeTxt(pg.lockedAt)}` : "",
-      ].filter(Boolean).join(" · ");
-      const rlStr = rlTxt(g, pg.rl);
-      const moveChip = moved
-        ? `<span class="pgl-move ${nl > tl ? "up" : "dn"}" title="the market has moved since the desk was priced — the locked line above is what everything below is graded at">
-             <i aria-hidden="true">${nl > tl ? "▲" : "▼"}</i>now ${esc(lineStr(nl))}<em>market moved</em></span>`
-        : rlNowTxt ? `<span class="pgl-move" title="the run line has moved since lock">now ${esc(rlNowTxt)}<em>market moved</em></span>` : "";
-      return `<div class="pgline${size === "big" ? " pgl-big" : ""}">
-        <div class="pgl-k">${lockSvg}<span>Pregame line</span>${prov ? `<i class="pgl-prov">${esc(prov)}</i>` : ""}</div>
-        <div class="pgl-nums">
-          ${tl != null ? `<span class="pgl-tot"><b>${esc(lineStr(tl))}</b><i>total</i></span>` : ""}
-          ${rlStr ? `<span class="pgl-rl"><b>${esc(rlStr)}</b><i>run line</i></span>` : ""}
-          ${moveChip}
-        </div>
-        <div class="pgl-foot">Every read below was priced against this number.</div>
-      </div>`;
-    }
 
     /* ═════════════ IN-PROGRESS: the game measured against the locked line ═════════════
        Served as games[].live_progress. FOUR FACTS AND NO FIFTH: where the game is (top of
@@ -3208,39 +2942,6 @@ export default function Home() {
 
        The "probability it still hits" (p_hit_now) renders ONLY where the live simulator
        marks it CERTIFIED, is badged LIVE · DISPLAY ONLY, and never touches a record. */
-    function liveProgress(g: any) {
-      if (!g) return null;
-      const vg = v4GameFor(g);
-      let raw: any = null;
-      for (const s of [g, vg].filter(Boolean)) {
-        const p = (s as any).live_progress;
-        if (p && typeof p === "object") { raw = p; break; }
-      }
-      const pg = pregameLine(g);
-      const gs = gameState(g);
-      if (gs.kind !== "live") return null;
-      // the locked pregame total: our own pregame slab first, the block's own copy of it second
-      const tot = pg && pg.total && pg.total.line != null ? Number(pg.total.line)
-        : _fin(raw && raw.pregame_total);
-      /* THE LIVE FEED LEADS. live_progress is stamped `as_of` and is rebuilt on the payload's
-         cycle; the score poller runs every few seconds. Reading runs and inning off the
-         served block therefore lets this strip say "1 of 9 · Top 4th" directly underneath a
-         card header reading 2–0, TOP 6TH — the same card contradicting itself. So the live
-         score and its period label lead, and the served block is the fallback for a game the
-         poller has no score for yet. */
-      const liveRuns = gs.score && gs.score.total != null ? Number(gs.score.total) : null;
-      const liveWhenTx = String(gs.label || "").trim();
-      const scored = liveRuns != null ? liveRuns
-        : _fin(raw && (raw.runs_so_far != null ? raw.runs_so_far : (raw.runs != null ? raw.runs : raw.total)));
-      if (scored == null && !raw) return null;
-      const when = (liveRuns != null && liveWhenTx && !/^live$/i.test(liveWhenTx) ? liveWhenTx : "") || liveWhen(raw) || liveWhenTx;
-      // How many more runs the over still needs. Recomputed from whatever `scored` we are
-      // actually printing — the served count belongs to the served runs, and pairing one
-      // with the other is how a card starts publishing arithmetic that does not add up.
-      const need = tot != null && scored != null ? Math.max(0, Math.ceil((tot + 0.5) - scored - 0.5))
-        : (liveRuns == null ? _fin(raw && raw.runs_still_needed_for_over) : null);
-      return { scored, tot, when, need, over: tot != null && scored != null && scored > tot };
-    }
     // "top" + 4 → "Top 4th". A bare inning number is not a reading of where the game is.
     const ORD = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"}`;
     function liveWhen(raw: any) {
@@ -3252,28 +2953,6 @@ export default function Home() {
         return `${h}${ORD(Math.round(inn))}`;
       }
       return humanNote(raw.inning != null ? raw.inning : (raw.half != null ? raw.half : raw.period));
-    }
-    function pHitNow(g: any) {
-      if (!g) return null;
-      const vg = v4GameFor(g);
-      for (const s of [g, vg].filter(Boolean)) {
-        // served either on the game or inside its live_progress block
-        const lp = (s as any).live_progress;
-        const raw = (s as any).p_hit_now != null ? (s as any).p_hit_now
-          : (lp && typeof lp === "object" && lp.p_hit_now != null
-            ? { p: lp.p_hit_now, side: lp.p_hit_side, certified: lp.p_hit_certified === true }
-            : null);
-        if (raw == null) continue;
-        if (typeof raw === "number") return null; // a bare number carries no certification — never shown
-        if (typeof raw !== "object") continue;
-        const certified = raw.certified === true || raw.is_certified === true;
-        let p = _fin(raw.p != null ? raw.p : (raw.prob != null ? raw.prob : raw.value));
-        if (p == null) continue;
-        if (p > 1) p = p / 100;
-        if (!certified) return null;   // uncertified ⇒ silent, never a soft claim
-        return { p, side: String(raw.side || "").trim() };
-      }
-      return null;
     }
     // The live strip on a card: the score measured against the LOCKED total, plus — only when
     // certified — the display-only "still hits" read, loudly badged so it can never be mistaken
@@ -3320,8 +2999,8 @@ export default function Home() {
       /* ── HOW IT IS GOING ──
          `liveStatusOf` is the number; `liveDecided` is the FACT and outranks it. Where the
          runs and the line are both known the bet's fate is arithmetic, and a live estimate
-         must not overrule it in either direction — the same authority `liveHitOdds` was
-         given on 2026-08-09 and for the same reason.
+         must not overrule it in either direction — the same authority the board's meter
+         was given on 2026-08-09 and for the same reason.
 
          A DECIDED PICK SHOWS THE WORD AND NO PERCENT. "3% · not landing" on a bet the runs
          have already killed prints an estimate next to a fact and invites a reader to trust
@@ -3456,7 +3135,7 @@ export default function Home() {
          it covers nothing. Premium gating is unchanged (the row redacts the WORD, keeps the
          market number) and the whole strip stays the unlock affordance when locked. */
       if (compact) {
-        const stamp = st === "won" || st === "lost" || st === "pushed" ? resultStamp(st, "mini") : "";
+        const stamp = st === "won" || st === "lost" || st === "pushed" ? resultStamp(st, "mini", correctionOf(pl)) : "";
         const priceTxt = !locked && !avoid && pl && pl.price != null ? `<span class="destrip-price">${fmtOdds(pl.price)}</span>` : "";
         return `<section class="decall ${cls} is-strip${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
           <div class="destrip">
@@ -3525,20 +3204,6 @@ export default function Home() {
     // (featured / lead cards). The highest-conviction analyst with a served take speaks in
     // display type; the other three ride as glyph chips. Locked picks render nothing (a
     // quote argues the side). "" when no takes are served — every surface degrades.
-    function deskStarTake(g: any, locked = false) {
-      if (locked) return "";
-      const voiced = deskAnalysts(g).filter((a: any) => a.take && !a.noRead);
-      if (!voiced.length) return "";
-      const star = voiced.slice().sort((x: any, y: any) => ((y.conv != null ? y.conv : 0) - (x.conv != null ? x.conv : 0)))[0];
-      const dirCls = star.dir === "over" ? "ou-over" : star.dir === "under" ? "ou-under" : "";
-      return `<blockquote class="startake an-${esc(star.key)}" data-an="${esc(star.key)}" role="button" tabindex="0" aria-label="${esc(star.name)} — hear the desk">
-        <p class="stk-quote">“${esc(star.take)}”</p>
-        <footer class="stk-by">
-          <span class="stk-id">${deskGlyph(star.key, 14)}<b>${esc(star.name)}</b><i>${esc(star.title || "")}</i></span>
-          ${star.dir ? `<span class="stk-dir ${dirCls}">${star.dir === "over" ? "▲ OVER" : "▼ UNDER"}${star.conv != null ? ` · ${Math.round(star.conv * 100)}%` : ""}</span>` : ""}
-        </footer>
-      </blockquote>`;
-    }
     // The whole desk block for a game tile: consensus headline · sim score · the four calls ·
     // the chief's verdict (+ run-line read) · the four voices behind one tap. "" when the
     // desk isn't served for this game.
@@ -3686,7 +3351,24 @@ export default function Home() {
       const d = new Date(iso + "T12:00:00");
       return isNaN(d.getTime()) ? "July 2026" : d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
     }
-    const recordEraTxt = () => `since ${recordEraMonth()}`;
+    /* THE ANALYSTS' RECORD OPENS ON THE SAME DAY THE DIAMONDEDGE RECORD DOES, AND NOW SAYS SO.
+       Leon: "since all of the records are from July 1, can we also include the analyst record
+       from only July 1 as well."
+       The DATA was already right — `record.analysts.record_start` is 2026-07-01, the same day
+       the headline record opens — but the analyst counts rendered it at MONTH granularity
+       ("454 graded since July 2026") while the record masthead above them read "SINCE JUL 1".
+       Two different-looking windows on one screen invite exactly the question he asked, and
+       the vaguer one is the one that looks like it might be counting something else. So the
+       count states the day, from the same served `record_start`, never a literal. The prose
+       elsewhere ("records open in July 2026") keeps the month, where a month reads better. */
+    function recordEraDay() {
+      const iso = recordStartISO();
+      if (!iso) return recordEraMonth();
+      const d = new Date(iso + "T12:00:00");
+      return isNaN(d.getTime()) ? recordEraMonth()
+        : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    const recordEraTxt = () => `since ${recordEraDay()}`;
     /* WHAT THE DESK RECORD ACTUALLY IS — one sentence, computed, never asserted.
        The line under every desk record used to read "Nothing is backfilled, and nothing from
        before the desk was rebuilt is counted." The second half is still true. The first half
@@ -3831,12 +3513,6 @@ export default function Home() {
     }
     const ordinal = (i: number) => `${i + 1}${["st", "nd", "rd", "th"][Math.min(i, 3)]}`;
     // any live game already carries analyst calls (the cast exists even before records do)
-    function deskAnyAnalysts() {
-      for (const d of [betaLiveData, betaData]) {
-        if (d && Array.isArray((d as any).games) && (d as any).games.some((g: any) => Array.isArray(g.analysts) && g.analysts.length)) return true;
-      }
-      return false;
-    }
     const deskL10Dots = (arr: any[]) => (arr && arr.length
       ? `<span class="dsk-l10" aria-label="last ${arr.length} calls">${arr.map((r) => `<i class="d-${r === "W" ? "w" : r === "L" ? "l" : "p"}"></i>`).join("")}</span>`
       : "");
@@ -4127,75 +3803,7 @@ export default function Home() {
       // a betting record is the same lie in miniature.
       return `<span class="dbt-rec ${ledgerCls(r)}"><b>${wlTxt(r)}</b><i>${ledgerMark(r)} ${r.n} graded ${esc(ledgerShort(r))}</i></span>`;
     }
-    function deskDebatePanel(g: any, locked = false) {
-      const ans = deskAnalysts(g);
-      if (!ans.length) return "";
-      const chief = deskChief(g);
-      const rows = ans.map((a: any) => {
-        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
-        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
-        const missingLabel = a.key === "atlas" && a.umpireAssigned === false
-          ? "Plate pending"
-          : a.key === "nova" && (a.noRead || a.lineupPosted === false)
-            ? "Lineup pending"
-            : "No call yet";
-        const note = !hide && (a.key === "atlas" && a.umpireAssigned === false)
-          ? ""   /* "holding the umpire lever neutral until the plate assignment posts" —
-                     a completeness note about our own inputs, which is internal by
-                     definition. The read is filed either way; how complete it was is not
-                     the reader's problem. */
-          : !hide && a.key === "nova" && (a.noRead || a.lineupPosted === false)
-            ? "NOVA is waiting on the lineup card; projected bats make this a thinner read."
-            : !hide && a.noRead
-              ? "This analyst did not have enough served information to make a clean call."
-              : "";
-        const call = hide
-          ? `<span class="dsk-dots" aria-hidden="true">●●●</span>`
-          : a.side
-            ? `<b class="dbt-side ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</b>`
-            : `<b class="dbt-side none">${esc(missingLabel)}</b>`;
-        const conv = !hide && a.conv != null && a.dir ? `<span class="dbt-conv">${Math.round(a.conv * 100)}% lean</span>` : "";
-        const res = gradeOf(a) === "win" ? `<span class="sgr-res won">RIGHT</span>` : gradeOf(a) === "loss" ? `<span class="sgr-res lost">WRONG</span>` : gradeOf(a) === "push" ? `<span class="sgr-res pushed">PUSH</span>` : "";
-        // THE VOICE: the analyst's per-game take is the speech bubble — their persona line
-        // only stands in while the backend take hasn't landed yet.
-        const say = !hide ? (a.take || a.persona) : "";
-        return `<div class="dbt an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
-          <div class="dbt-id">${deskGlyph(a.key, 15)}<span class="dbt-nm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${deskRecChip(a.key)}</div>
-          <div class="dbt-call">${call}${conv}${a.wall ? `<span class="dbt-wall">${esc(a.wall)}</span>` : ""}${res}</div>
-          ${note ? `<p class="dbt-src">${esc(note)}</p>` : ""}
-          ${say ? `<p class="dbt-say${a.take ? " is-take" : ""}">“${esc(say)}”</p>` : ""}
-        </div>`;
-      }).join("");
-      const chiefRow = chief && chief.action ? `<div class="dbt chiefrow ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}">
-          <div class="dbt-id"><span class="dbt-dia" aria-hidden="true">◆</span><span class="dbt-nm"><b>DIAMONDEDGE</b><i>Desk chief</i></span></div>
-          <div class="dbt-call"><b class="dbt-verdict">${chief.action === "AVOID" ? "WE PASS" : chief.action}</b></div>
-          ${!locked && chief.rationale ? `<p class="dbt-say chief">${esc(chief.rationale)}</p>` : ""}
-          ${chiefSpreadLine(g, chief, locked)}
-        </div>` : "";
-      return `<div class="stgy dskdb" id="stgy-panel">
-        <div class="stgy-h"><span class="stgy-k">◆ The desk on this game</span>${consensusBanner(g, locked, "wide")}</div>
-        <!-- The second sentence used to read "Agreement is a green light; a split desk is a
-             pass." That was the four-way vote, and the vote was removed: it let three
-             near-coin-flip voices outvote the engine that served the bet, so a card could
-             serve a bet and say "we're passing" in the same breath. PLAY vs LEAN is the star
-             tier now, and where the desk lands is context, never a veto. Nothing on this page
-             may re-describe agreement as a gate. -->
-        <p class="stgy-lede">Four analysts file <b>independent</b> calls on every game, each over its own slice of it. </p>
-        <div class="dskdb-rows">${rows}${chiefRow}</div>
-        <div class="stgy-note">Only the DiamondEdge call grades into the headline record. Each analyst's own scoreboard lives on the Record.</div>
-      </div>`;
-    }
     // compact desk line for the flagship/lead story card (consensus chip + the four glyphs)
-    function deskMiniRow(g: any, locked = false) {
-      const ans = deskAnalysts(g);
-      if (!ans.length) return "";
-      const chips = ans.map((a: any) => {
-        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
-        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
-        return `<span class="dskm an-${esc(a.key)}" title="${esc(a.name)} — ${esc(a.title)}">${deskGlyph(a.key, 11)}${!hide && a.dir ? `<i class="${dirCls}">${a.dir === "over" ? "▲" : "▼"}</i>` : ""}</span>`;
-      }).join("");
-      return `<div class="ls-desk">${consensusBanner(g, locked, "mini")}<span class="dskm-row">${chips}</span></div>`;
-    }
     // ---- record.consensus_history → "when the desk agrees" (Insights) ----
     function consensusHistoryRows() {
       for (const d of [betaLiveData, betaData, livePayload, payload]) {
@@ -4649,63 +4257,6 @@ export default function Home() {
     // Insights: the desk board — per-analyst records + the consensus-state record.
     // Grouped, not ranked flat: see deskGroups(). A row's position only carries meaning
     // inside a group whose heading says the comparison is defensible.
-    function analystRecordSection() {
-      const rows = deskRecordRows();
-      if (!rows.length) return "";
-      /* The lede used to assert "most of them are nowhere near a readable sample" as a
-         standing fact about the desk. It was true of the ledgers it was written for and is
-         not true of these — all four restarted together and all four are the same size — so
-         the sentence is now COUNTED off the same grouping the board below is built from,
-         and disappears entirely when nothing is too young to rank. */
-      const early = rows.filter((r: any) => !isRankable(r)).length;
-      const groupNote = !early
-        ? "They are all the same size, so the board can be read straight down."
-        : early >= rows.length
-          ? "None of them is near a readable sample yet, so the board ranks nothing."
-          : `${early} of the ${rows.length} ${early === 1 ? "is" : "are"} nowhere near a readable sample, so the board is grouped by what is actually comparable and a position only means something inside a group that says so.`;
-      const groups = deskGroups(rows).map((grp: any) => {
-        const cards = grp.rows.map((r: any, i: number) => {
-          // the measured-profile verdict rides the row it belongs to — the ledger above it is
-          // the LIVE staked record, this is what the analyst's whole graded history says.
-          const ph = profHeadFor(r.key);
-          // ONLY A FINDING EARNS A ROW. The measured-profile verdict used to print on every
-          // row whether or not there was anything to report, so all four carried an
-          // identical "NO MEASURED SPECIALISM — nothing yet distinguishes…" chip. The null
-          // is stated ONCE, in the profile block below the board; a row speaks only when
-          // that analyst actually has a surviving characteristic.
-          const profTx = ph && ph.line && ph.any
-            ? `<span class="dskrec-prof on"><i>measured specialism</i>${esc(ph.line)}</span>` : "";
-          return `
-          <button class="dskrec-card an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked ? "" : " early"}${profTx ? " hasprof" : ""}" data-an="${esc(r.key)}"
-            aria-label="${esc(`${r.name} — ${wlTxt(r)} over ${r.n} graded calls ${recordEraTxt()}${grp.ranked && grp.ordinals ? `, ranked ${ordinal(i)}` : ""}${ph && ph.line ? `. ${ph.line}` : ""}`)}">
-            <span class="dskrec-rank">${grp.ranked && grp.ordinals ? ordinal(i) : `<i class="dskrec-norank">${grp.ranked ? "◆" : "—"}</i>`}</span>
-            <span class="dskst-id">${deskGlyph(r.key, 16)}<span class="dskst-nm"><b>${esc(r.name)}</b><i>${esc(r.title)}</i></span></span>
-            <span class="dskrec-stats"><b>${wlTxt(r)}</b>${r.hit != null ? `<i${grp.ranked ? "" : ` class="soft"`}>${(r.hit * 100).toFixed(1)}% hit</i>` : ""}${r.roi != null ? ledgerRoi(r, grp.ranked ? "" : "soft") : ""}<i class="dim">${r.n || 0} graded ${recordEraTxt()}</i></span>
-            ${deskL10Dots(r.last10)}
-            ${profTx}
-          </button>`;
-        }).join("");
-        return `<div class="dskrec-grp ${esc(grp.id)}">
-          <div class="dskrec-gh"><span class="dskrec-gk">${esc(grp.head)}</span><span class="dskrec-gs">${esc(grp.sub)}</span></div>
-          <div class="dskrec-list">${cards}</div>
-        </div>`;
-      }).join("");
-      const ch = consensusHistoryRows();
-      const chRows = ch.map((r: any) => {
-        const lab = r.state === "UNANIMOUS" ? "All four agree" : r.state === "MAJORITY" ? "3–1 majority" : "Desk split";
-        return `<div class="chh-row ${r.state.toLowerCase()}"><span class="chh-lab">${lab}</span><b>${wlTxt(r)}</b>${r.hit != null ? `<i>${(r.hit * 100).toFixed(0)}%</i>` : ""}${r.roi != null ? `<i class="${r.roi >= 0 ? "pos" : "neg"}">${bRoi(r.roi)}</i>` : ""}<span class="chh-n">${r.n} games</span></div>`;
-      }).join("");
-      return `<div class="ixc dskrec" id="analyst-record">
-        <div class="ixc-h">The desk board</div>
-        <div class="ixc-sub">Four analysts call every game independently, each over its own slice of it, and every call is graded against the real final at the line it was priced against. Every record here starts in ${recordEraMonth()}. ${groupNote}</div>
-        ${groups}
-        ${deskProfileBlock()}
-        <div class="dskrec-key">
-          <span class="dskrec-keytx">One record per analyst, all of it graded ${recordEraTxt()}. ${esc(recordBasisLine())}</span>
-        </div>
-        ${chRows ? `<div class="chh"><div class="chh-h">When the desk agrees</div>${chRows}<div class="chh-note">The same games seen four ways, graded on the desk's own calls.</div></div>` : ""}
-      </div>`;
-    }
     // ═══════════ THE PATTERNS — record.patterns → what the desk's history actually says ═══════════
     // The backend serves record.patterns { live_era, reconstructed_era, highlights[] } —
     // plain-English pattern lines ("When all four agree, the game has gone the other way
@@ -5773,17 +5324,8 @@ export default function Home() {
       return `<span class="str-pill q-${q}${compact ? " compact" : ""}" title="${esc(txt)}">${esc(txt)}</span>`;
     }
     // A pass's sub-2.00 score, muted — passes carry a score too (the model rates every row).
-    function passGrade(scoreVal: any) {
-      if (scoreVal == null || isNaN(Number(scoreVal)) || !(Number(scoreVal) > 0)) return "";
-      return "";
-    }
     // The score for a game whether or not it's a playable pick — the model rates every game, so
     // passes can show their muted score on tiles too.
-    function gameScore(g: any) {
-      const vg = v4GameFor(g);
-      if (!vg || !vg.pick) return null;
-      return vg.pick.score != null ? Number(vg.pick.score) : null;
-    }
     // LOW CONFIDENCE = a Lean-tier pick, OR a spread/ML lean whose price doesn't clear break-even.
     // We still SHOW these (Leon: include the slightest picks) but flag them clearly.
     function isLowConf(pl: any) {
@@ -5846,28 +5388,6 @@ export default function Home() {
       pick:   ["rgba(47,111,224,.24)", "rgba(11,158,109,.14)"],
     };
     // size: "lead" (tall front-page hero) | "card" (compact 16:9 thumbnail) | "rail" (small)
-    function heroImage(g: any, tint = "pick", size = "card", big = false) {
-      const [c1, c2] = HERO_TINT[tint] || HERO_TINT.pick;
-      const ic = tint === "gold" || tint === "green" || tint === "pick" ? "trend" : tint;
-      const cls = `heroimg hi-${size}${big ? " big" : ""}`;
-      const crestCls = size === "lead" ? "hi-crest lg" : "hi-crest";
-      // Weave the score BETWEEN the logos for live/final; a quiet "@" pre-game.
-      const gs = gameState(g);
-      const sc = gs.score;
-      const hasScore = (gs.kind === "live" || gs.kind === "final") && sc && sc.split && sc.home != null;
-      const aw = gs.kind === "final" && sc && sc.away > sc.home, hm = gs.kind === "final" && sc && sc.home > sc.away;
-      const mid = hasScore
-        ? `<span class="hi-score${gs.kind === "final" ? " final" : ""}"><b class="${aw ? "win" : ""}">${num(sc.away, 0)}</b><span class="hi-dash">–</span><b class="${hm ? "win" : ""}">${num(sc.home, 0)}</b></span>`
-        : `<span class="hi-at">@</span>`;
-      return `<div class="${cls}${hasScore ? " scored" : ""}" style="--t1:${c1};--t2:${c2}" aria-hidden="true">
-        <span class="hi-wm">${IC[ic] ? `<svg viewBox="0 0 24 24">${IC[ic].replace(/^<svg[^>]*>|<\/svg>$/g, "")}</svg>` : ""}</span>
-        <div class="hi-mu">
-          <span class="${crestCls}">${gCrest(g, "away")}</span>
-          ${mid}
-          <span class="${crestCls}">${gCrest(g, "home")}</span>
-        </div>
-      </div>`;
-    }
     // Compose the DiamondEdge Pick directly ONTO a hero image, magazine-cover-line style:
     // a bottom gradient scrim for legibility + the frozen pick as an overlaid cover line.
     // Uses the served article.pick_headline (via pickHeadline) so the image carries the
@@ -5875,54 +5395,6 @@ export default function Home() {
     // teaseOnly (used by the News hero): highlight that we HAVE a confident pick — show the
     // confidence (stars, or blurred dots when unpaid) — but NOT the side/line. The call itself
     // lives on the game page. Keeps the hero about the MATCHUP, not the bet.
-    function heroPickCover(g: any, size = "lead", teaseOnly = false) {
-      const pl = displayPick(g);
-      const locked = pl ? pickLocked(pl, playState(g, pl)) : false;
-      const ph = pickHeadline(g);
-      // The DISPLAY PICK (v4-first) is the truth; ph is only the served-headline fallback.
-      const q = (pl ? qualityOf(pl) : null) || ph.q || "lean";
-      const st = pl ? playState(g, pl) : "open";
-      const state = pl && pl.action === "TAKE" ? pickStateTxt(g, pl, st) : null;
-      const kick = isStarted(g) ? "Pre-Game Pick" : "DiamondEdge Pick";
-      if (locked) {
-        // Unpaid: confidence is BLURRED and the pick is hidden — the whole draw is unlocking it.
-        return `<div class="hpc hpc-${size} locked" data-up="1"><div class="hpc-scrim"></div>
-          <div class="hpc-line"><span class="hpc-k">◆ ${esc(kick)}</span><span class="hpc-conf blur" aria-hidden="true">●●●●●</span><span class="hpc-lock">${lockSvg} ${esc(unlockCtaTxt())}</span></div></div>`;
-      }
-      // No pick: when v4 covers the game its verdict is final (never fall back to a stale
-      // stale served headline); otherwise the served headline may still carry the call.
-      if (!isPick(pl) && (v4GameFor(g) || !ph.has)) {
-        const pln = passLineTxt(g);
-        return `<div class="hpc hpc-${size} pass"><div class="hpc-scrim"></div>
-          <div class="hpc-line"><span class="hpc-k">◆ Line</span><b class="hpc-txt">${pln ? esc(pln) : "O/U"}</b></div></div>`;
-      }
-      if (teaseOnly) {
-        // News-feed cover: STARS + GRADE + THE SELECTION — no "Lean"/"Low confidence" words,
-        // the star count IS the confidence.
-        const selTxt = pl && pl.side ? `${esc(String(pl.side))}${pl.price != null ? ` <em>${fmtOdds(pl.price)}</em>` : ""}` : "";
-        return `<div class="hpc hpc-${size} q-${q} tease"><div class="hpc-scrim"></div>
-          <div class="hpc-line">
-            <span class="hpc-k">◆ ${esc(kick)}</span>
-            <div class="hpc-pickrow">${pickStrengthPill(pl)}${selTxt ? `<b class="hpc-txt">${selTxt}</b>` : ""}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
-          </div></div>`;
-      }
-      // Prefer the FROZEN display pick's full side+line+price — the served pick_headline
-      // often omits the line (e.g. "OVER"), and a cover line must name the whole call.
-      let bare = ph.txt.replace(/^\s*(◆\s*)?(DiamondEdge|Pre-?Game)\s*Pick\s*:?\s*/i, "");
-      if (pl && pl.action === "TAKE" && pl.side) {
-        const priced = pl.price != null ? ` <em>${fmtOdds(pl.price)}</em>` : "";
-        bare = `${esc(pl.side)}${priced}`;
-      } else {
-        bare = esc(bare);
-      }
-      // Stars ride INLINE on the pick line (confidence), so there's no separate meta line —
-      // just kicker → "OVER 8 −115 ★★★" → optional result badge.
-      return `<div class="hpc hpc-${size} q-${q}"><div class="hpc-scrim"></div>
-        <div class="hpc-line">
-          <span class="hpc-k">◆ ${esc(kick)}</span>
-          <div class="hpc-pickrow"><b class="hpc-txt">${bare}</b>${pickStrengthPill(pl, true)}${state ? `<span class="hpc-res ${state.cls}">${state.txt}</span>` : ""}</div>
-        </div></div>`;
-    }
     // A hero/matchup headline that HYPES the game WITHOUT revealing the pick. Prefers the
     // served article headline but strips any leading pick-lean clause ("Give us the OVER —
     // Angels chase a skid" → "Angels chase a skid"); falls back to a plain matchup framing.
@@ -5997,53 +5469,9 @@ export default function Home() {
     // A short, GAME-focused hero lede (pitching matchup / storyline) — never the pick or the
     // model's number. Prefers a clean served dek, then the article's first non-pick sentence,
     // then a streak. Returns "" if we can only find pick-flavored copy.
-    function gameLede(g: any) {
-      if (!g) return "";
-      const art = gameArticle(g);
-      const dek = cleanBlurb((art && art.dek) || "");
-      if (dek && !leaksPick(dek)) return dek;
-      const paras = (art && art.paras) || [];
-      for (const para of paras) {
-        const first = String(para).split(/(?<=[.!?])\s+/)[0] || "";
-        if (first && !leaksPick(first)) return cleanBlurb(first);
-      }
-      const stk = gameStreaks(g)[0];
-      if (stk && stk.text && !leaksPick(String(stk.text))) return cleanBlurb(String(stk.text));
-      return "";
-    }
     // LIVE composite for a hero image: a pulsing LIVE badge + the live score + how the
     // pick is trending, woven onto the cover art (top band, over its own scrim). Shown only
     // for live games; degrades to "" otherwise. Uses live_scores + display_pick.live_status.
-    function heroLiveBadge(g: any, size = "lead") {
-      const gs = gameState(g);
-      if (gs.kind !== "live") return "";
-      // The score is woven between the crests now; this top band carries just LIVE + inning + trend.
-      const per = gs.label && gs.label !== "Live" ? esc(gs.label) : "";
-      const pl = displayPick(g);
-      const ls = pl && pl.action === "TAKE" ? liveStatusOf(g, pl) : null;
-      let trend = "";
-      if (ls) {
-        // Same rule as liveHitOdds: where the runs and the line are both known, the FACT
-        // decides and the estimate cannot overrule it. See totalDecided.
-        const hard = liveDecided(g, pl);
-        const decidable = pl.market === "total" && pickLineOf(pl) != null
-          && g.current_actuals && g.current_actuals.total_so_far != null;
-        const clinched = hard === "win" || (!decidable && ls.prob != null && ls.prob >= 0.985);
-        const cooked = hard === "loss" || (!decidable && ls.prob != null && ls.prob <= 0.015);
-        if (clinched) trend = `<span class="hlb-trend hit">Cashing ✓</span>`;
-        else if (cooked) trend = `<span class="hlb-trend miss">Not landing</span>`;
-        else {
-          const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-          const cash = ls.prob != null ? `${(ls.prob * 100).toFixed(0)}%` : "";
-          trend = `<span class="hlb-trend ${meta.cls}">${cash ? `${cash} ` : ""}${esc(meta.short)}</span>`;
-        }
-      }
-      return `<div class="hlb hlb-${size}">
-        <span class="hlb-badge"><span class="livedot"></span>LIVE</span>
-        ${per ? `<span class="hlb-score"><i>${per}</i></span>` : ""}
-        ${trend}
-      </div>`;
-    }
     // Choose the tint that fits a story: pick quality first, then theme keywords.
     function heroTintFor(g: any, pl: any) {
       if (pl && pl.action === "TAKE") {
@@ -6465,10 +5893,6 @@ export default function Home() {
     let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
-    let histOpen = false;           // history range panel open
-    let rangeFrom = "", rangeTo = "";
-    let rangeMode = false;          // showing range results
-    let rangeGames: any[] = [];     // {date,games}
     // The games the slate ACTUALLY rendered this pass — including synthesized future tiles that
     // exist only in the v4 live feed (not in `payload`). findGame() falls back to this so a tap on
     // a synthesized tomorrow tile can open its detail (previously findGame only searched payload,
@@ -6818,13 +6242,12 @@ export default function Home() {
     // flip — so switching tabs is instant instead of re-parsing a huge HTML string each time.
     let todayFresh = false;
     function refreshLiveViews() {
-      renderTicker();
       // THE 30-SECOND OFFENDER. This runs on every live-scores poll — on a live afternoon
       // that was a full deck rebuild under the reader twice a minute, and on a phone each
       // rebuild is a white flash and a GPU-memory spike. repaintToday() defers while a
       // real deck is being read (see its note); the ticker and the board still tick live.
       if (tab === "today") repaintToday();
-      else { todayFresh = false; if (tab === "games" && !rangeMode) renderSlate(true); }
+      else { todayFresh = false; if (tab === "games") renderSlate(true); }
       if (detail && detail.game_id != null) refreshSheetScore(detail);
       // after the fresh scores have painted: celebrate any runs that just landed
       requestAnimationFrame(() => { try { flashRunScored(); } catch {} });
@@ -6847,7 +6270,7 @@ export default function Home() {
        is not an "unchanged", and being right costs less than being cheap here. */
     async function pollPregame() {
       if (document.hidden) return;
-      if (curDate !== todayISO() || rangeMode) return; // only the live "today" board auto-refreshes
+      if (curDate !== todayISO()) return; // only the live "today" board auto-refreshes
       const oldStamp = (livePayload && (livePayload.generated_at || livePayload.date)) || "";
       if (oldStamp) {
         let v = "";
@@ -6948,14 +6371,6 @@ export default function Home() {
       const k = gameState(g).kind;
       return k === "live" ? 0 : k === "final" ? 1 : k === "pre" ? 2 : 3;
     };
-    function byStartTime(a: any, b: any) {
-      const d = startMsOf(a) - startMsOf(b);
-      if (d) return d;
-      const s = statusOrder(a) - statusOrder(b);
-      if (s) return s;
-      const ta = String(a.start_ts || a.start_time || ""), tb = String(b.start_ts || b.start_time || "");
-      return ta < tb ? -1 : ta > tb ? 1 : 0;
-    }
     function byBoardOrder(a: any, b: any) {
       const p = boardPhaseRank(a) - boardPhaseRank(b);
       if (p) return p;
@@ -7029,7 +6444,7 @@ export default function Home() {
       // carries a long finals tail from OTHER days (even other years). A selected date must
       // show EXACTLY that date's games — trust the payload's own `date` field (the backend
       // writes it in the slate's home timezone), never re-derive via the viewer's timezone.
-      if (rangeMode || forDate !== todayISO()) {
+      if (forDate !== todayISO()) {
         const payloadDate = String((p && p.date) || "").slice(0, 10);
         inLg = inLg.filter((g: any) => {
           const gd = String(g.date || "").slice(0, 10);
@@ -7041,7 +6456,7 @@ export default function Home() {
       // tomorrow's fixtures), live games only if plausibly still live (no timestamp, or started
       // within the last 12h — the payload carries stale "live" zombies from prior days), and
       // finals only when they finaled today (local day == viewer's today).
-      if (!rangeMode && curDate === todayISO()) {
+      if (curDate === todayISO()) {
         const t = todayISO();
         inLg = inLg.filter((g: any) => {
           const st = (g.status || "pre").toLowerCase();
@@ -7453,29 +6868,13 @@ export default function Home() {
     }
 
     // Live progress for a frozen total pick: the current total filling toward the line.
-    function pickProgress(g: any, pl: any, st: string) {
-      if (!pl || pl.market !== "total") return "";
-      if (st !== "inplay" && st !== "clinched" && st !== "cooked") return "";
-      const ca = g.current_actuals || {};
-      if (ca.total_so_far == null) return "";
-      const line = pl.line != null ? pl.line : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
-      if (line == null || !(line > 0)) return "";
-      const cur = Number(ca.total_so_far);
-      const pct = Math.max(0, Math.min(100, (cur / line) * 100));
-      const over = /over/i.test(String(pl.side));
-      const cls = st === "clinched" ? "won" : st === "cooked" ? "lost" : over ? "chasing" : "holding";
-      return `<div class="t-prog ${cls}" title="${num(cur, 0)} of ${num(line, 1)} ${SPORT_UNIT[g.sport] || ""} so far">
-        <span class="pg-track"><span class="pg-fill" style="width:${pct.toFixed(0)}%"></span></span>
-        <span class="pg-txt">${num(cur, 0)} of ${lineStr(line)}</span>
-      </div>`;
-    }
 
     // The pick's state, phrased for the banner: clear result after final, compact direction live.
     function pickStateTxt(g: any, pl: any, st: string, stampSize = "") {
       // SETTLED ⇒ THE STAMP. One vocabulary for every graded outcome, everywhere on the
       // site, and one that shares nothing visually with the pick's direction language.
       // `size` lets a cramped surface (the board tile) take the glyph-only stamp.
-      if (st === "won" || st === "lost" || st === "pushed") return { txt: resultStamp(st, stampSize), cls: `stamped ${st}` };
+      if (st === "won" || st === "lost" || st === "pushed") return { txt: resultStamp(st, stampSize, correctionOf(pl)), cls: `stamped ${st}` };
       /* `glyph` / `word` are the SAME phrase, split (2026-08-07). Every surface with room
          still prints `txt` exactly as before; a board tile — 139px for the number, the pick
          tag and this chip — prints the glyph and keeps the word in the chip's title and
@@ -7492,7 +6891,8 @@ export default function Home() {
           const line = pl.line != null ? pl.line : (() => { const m = String(pl.side || "").match(/(\d+(\.\d+)?)/); return m ? Number(m[1]) : null; })();
           if (line != null) {
             const total = Number(ca.total_so_far);
-            const over = /over/i.test(String(pl.side || ""));
+            const sideN = normalizeSide(pl.side);
+            const over = sideN === "over";
             const cushion = Number(line) - total;
             /* THE CUSHION CHIP CARRIES ITS OWN STATE. All four words used to ship the single
                class `inplay`, which every surface then tinted GREEN — so "CHASING" (we are
@@ -7500,8 +6900,9 @@ export default function Home() {
                green as "OUR WAY". One class for four opposite meanings is not a badge, it is
                a label with the meaning left out, which is why it read as unformatted text.
                Each state now names itself and the shared recipe (globals.css, "the in-play
-               cushion chip") tints it: good ▸ green, hold ▸ quiet green, chase ▸ amber,
-               tight ▸ slate. */
+               cushion chip") tints it on the IN-FLIGHT scale, which borrows no verdict ink:
+               good ▸ blue, hold ▸ quiet blue, tight ▸ slate, chase ▸ amber. It used to run
+               good ▸ green and hold ▸ green — the WIN colour, on a bet nobody had graded. */
             /* THE CLINCH METER (Leon: "a percent chance… a very small progress meter like
                in a superhero game leading up to when it's clinched — but don't take up
                more room"). The chance to cash — served live model first, runs-pace
@@ -7509,15 +6910,32 @@ export default function Home() {
                behind the word at prob% and the number after it. The bar always fills
                toward a WIN, over and under alike, and it reaches full exactly when the
                pick clinches (where the state flips to the CLINCHED stamp). */
+            /* ONE CHIP, ONE SIGNAL. The word and the percentage used to come from two
+               different places — the word from runs-to-go (`need` / `cushion`), the number
+               from the model's live probability — so on a real board an 88% chip rendered
+               as CHASING while a 44% chip rendered as OUR WAY. Each value was individually
+               correct and together they read as a contradiction, which is worse than either
+               being wrong: a reader cannot tell which one to believe.
+               When there is a probability it now decides BOTH, so the bar, the word and the
+               number are three renderings of one number and can never disagree. When there
+               is no probability the runs cushion decides the word — and then no percentage
+               is shown at all, because a number from a different signal is what caused
+               this. `over`/`under` differ only in how the cushion reads without a model. */
             const lp = (liveStatusOf(g, pl) || {}).prob;
             const pcv = lp != null ? Math.max(0.01, Math.min(0.99, Number(lp))) : null;
+            if (pcv != null) {
+              return pcv >= .75 ? { txt: "OUR WAY", cls: "inplay ip-good", pct: pcv }
+                : pcv >= .55 ? { txt: "HOLDING", cls: "inplay ip-hold", pct: pcv }
+                : pcv >= .35 ? { txt: "TIGHT", cls: "inplay ip-tight", pct: pcv }
+                : { txt: "CHASING", cls: "inplay ip-chase", pct: pcv };
+            }
             if (over) {
               const need = Math.floor(Number(line)) + 1 - total;
-              return need <= 2 ? { txt: "OUR WAY", cls: "inplay ip-good", pct: pcv } : { txt: "CHASING", cls: "inplay ip-chase", pct: pcv };
+              return need <= 2 ? { txt: "OUR WAY", cls: "inplay ip-good" } : { txt: "CHASING", cls: "inplay ip-chase" };
             }
-            return cushion >= 3 ? { txt: "OUR WAY", cls: "inplay ip-good", pct: pcv }
-              : cushion >= 1 ? { txt: "HOLDING", cls: "inplay ip-hold", pct: pcv }
-              : { txt: "TIGHT", cls: "inplay ip-tight", pct: pcv };
+            return cushion >= 3 ? { txt: "OUR WAY", cls: "inplay ip-good" }
+              : cushion >= 1 ? { txt: "HOLDING", cls: "inplay ip-hold" }
+              : { txt: "TIGHT", cls: "inplay ip-tight" };
           }
         }
         return { txt: "IN PLAY", cls: "inplay ip-plain" };
@@ -7557,21 +6975,6 @@ export default function Home() {
     // The branded, frozen pick — pinned to every tile that has one, in every game state.
     // Once a game starts, this stays the loudest element on the tile: the side never
     // moves, the outcome lands directly on it.
-    function pickBanner(g: any, pl: any, st: string, locked: boolean) {
-      const q = qualityOf(pl);
-      if (locked) {
-        return `<div class="pickban locked" data-up="1" role="button" aria-label="DiamondEdge Pick — locked">
-          <div class="pb-top"><span class="pb-brand">${pickLabel(g)}</span><span class="pb-lk">${lockSvg}</span></div>
-          <div class="pb-main"><span class="pb-dots" aria-hidden="true">●●●● ●</span>${qDiamonds(q)}<span class="pb-unlock">${esc(unlockCtaTxt())}</span></div>
-        </div>`;
-      }
-      const state = pickStateTxt(g, pl, st);
-      return `<div class="pickban q-${q} ${st}">
-        <div class="pb-top"><span class="pb-brand">${pickLabel(g)}</span>${qDiamonds(q)}</div>
-        <div class="pb-main"><span class="pb-side">${pickArrow(pl)} ${esc(pl.side || "—")}</span>${pl.price != null ? `<i class="pb-px">${fmtOdds(pl.price)}</i>` : ""}${state ? `<span class="pb-res ${state.cls}">${state.txt}</span>` : ""}</div>
-        ${pickMadeMeta(pl)}
-      </div>`;
-    }
 
     // ── PICK COUNTDOWN: when does this game's next pick check arrive? ──
     // Picks first appear when the book posts (~T-24h); they firm up at the five walls
@@ -8541,15 +7944,39 @@ export default function Home() {
        than the direction — a filled disc is a shape the pick language never uses. The word
        returns at `sm` and full size, where there is room for it. The accessible name is the
        same sentence at every size, so nothing is lost by dropping the visible word. */
-    function resultStamp(st: string, size = "") {
+    /* A CORRECTION A READER CANNOT SEE IS WORSE THAN THE ERROR.
+       The backend can grade a totals bet the instant the runs pass its line, before the
+       final — and if the settled final ever contradicts that live verdict (a bad feed read,
+       or a game that voids after we called it), the record now publishes the FINAL and marks
+       the row `corrected`. That mark used to exist only on disk, two levels down inside
+       `decided_live.DISAGREEMENT`, and nothing on this page read it: a reader saw a verdict
+       silently different from the one they had been shown, with nothing to tell them so.
+       It is read HERE, at the one element that states an outcome, so it cannot be forgotten
+       at a call site. Rare by construction — dormant on a clean day. */
+    function correctionOf(pl: any) {
+      if (!pl) return null;
+      const c = pl.corrected || (pl.decided_live || {}).DISAGREEMENT;
+      if (!c) return null;
+      const from = c.from || c.early_result, to = c.to || c.final_result;
+      return from && to && from !== to ? { from, to } : null;
+    }
+    function resultStamp(st: string, size = "", corrected: any = null) {
       const r = RESULT_STAMP[String(st || "")];
       if (!r) return "";
-      const aria = `This pick ${r.k === "won" ? "cashed" : r.k === "lost" ? "missed" : "pushed"}`;
+      const verb = r.k === "won" ? "cashed" : r.k === "lost" ? "missed" : "pushed";
+      const cx = corrected
+        ? `. Corrected: this was shown live as a ${String(corrected.from).toUpperCase()} `
+          + `and the settled final made it a ${String(corrected.to).toUpperCase()}`
+        : "";
+      const aria = `This pick ${verb}${cx}`;
       // mini drops the word — EXCEPT for a push: ✓ and ✗ are self-evident, "=" is not,
       // and PUSH is short enough to keep at any size.
       const word = size === "mini" && r.k !== "pushed" ? "" : `<b>${r.w}</b>`;
-      return `<span class="restamp ${r.k}${size ? ` rs-${size}` : ""}" role="img" aria-label="${esc(aria)}" title="${esc(r.w)}">`
-        + `<i class="rs-g" aria-hidden="true">${STAMP_GLYPH[r.g]}</i>${word}</span>`;
+      const mark = corrected
+        ? `<i class="rs-corr" aria-hidden="true" title="${esc(`Corrected from ${String(corrected.from).toUpperCase()} by the settled final`)}">↻</i>`
+        : "";
+      return `<span class="restamp ${r.k}${size ? ` rs-${size}` : ""}${corrected ? " rs-corrected" : ""}" role="img" aria-label="${esc(aria)}" title="${esc(r.w + (corrected ? " (corrected)" : ""))}">`
+        + `<i class="rs-g" aria-hidden="true">${STAMP_GLYPH[r.g]}</i>${word}${mark}</span>`;
     }
     function deskTicketWhy(g: any) {
       const a = deskAgreement(g);
@@ -8944,24 +8371,6 @@ export default function Home() {
       }
       return vegasLine(g, "total") || vegasLine(g, "spread") || "";
     }
-    function pitchLine(g: any, gs: any) {
-      if (g.sport !== "mlb" || gs.kind !== "pre") return "";
-      const p = (g.pregame_intel || {}).pitchers || {};
-      // Prefer the served pregame_intel name; fall back to the pitchers_v4 feed name so
-      // synthesized future/tomorrow tiles (no pregame_intel) still show the probables + ERA.
-      const fdA = pitcherFeedFor(g, "away"), fdH = pitcherFeedFor(g, "home");
-      const a = (p.away || {}).name || (fdA && fdA.name), h = (p.home || {}).name || (fdH && fdH.name);
-      if (!a && !h) return "";
-      const last = (n: any) => esc(String(n || "").trim().split(/\s+/).pop() || "TBD");
-      // ERA from the pitchers feed when loaded; each name taps through to the game log.
-      const bit = (nm: any, side: "away" | "home") => {
-        if (!nm) return "TBD";
-        const fd = pitcherFeedFor(g, side);
-        const era = fd && fd.era != null ? ` <i class="tp-era">${num(fd.era, 2)}</i>` : "";
-        return `<span class="tp-p">${last(nm)}${era}</span>`;
-      };
-      return `<div class="t-pitch">${bit(a, "away")} vs ${bit(h, "home")}</div>`;
-    }
 
     // ===================== FEATURED GAME (highest exact conviction) =====================
     // Conviction = the quality ladder (Strong > Good > Lean, per the house vocabulary)
@@ -8975,20 +8384,6 @@ export default function Home() {
     }
     // DAY-LOCKED flagship: once chosen for a calendar day, the featured game STAYS (no
     // intraday shuffling as walls/feeds refresh). slot 1 = flagship, slot 2 = runner-up.
-    function dayLockedPick(pool: any[], slot = 1, excludeGid?: string | null) {
-      const k = `de_flag${slot}_${todayISO()}`;
-      let gid: string | null = null;
-      try { gid = localStorage.getItem(k); } catch {}
-      if (gid && gid !== excludeGid) {
-        const g = pool.find((x: any) => String(x.game_id) === gid);
-        // Keep the day-lock ONLY while the featured game hasn't started — once it's live/final
-        // we don't headline a pick you can no longer make. Re-pick if a pre-game pick exists.
-        if (g && gameState(g).kind === "pre") { const pl = displayPick(g); if (isPick(pl)) return { g, pl }; }
-      }
-      const cand = featuredPick(excludeGid ? pool.filter((x: any) => String(x.game_id) !== excludeGid) : pool);
-      if (cand && gameState(cand.g).kind === "pre") { try { localStorage.setItem(k, String(cand.g.game_id)); } catch {} }
-      return cand;
-    }
     // The day's featured game per the feed = `featured_game_id` (its highest-score pick). Resolve
     // it against the games we're rendering, keyed on game_pk (the trailing id).
     function feedFeaturedGame(games: any[]) {
@@ -9254,9 +8649,12 @@ export default function Home() {
        record. The picks are the product; how they were chosen is the Desk's one sentence and
        Research's whole page.
 
-       adaptiveDayStrategyHtml() and the whole adaptive-strategy family are untouched and
-       still feed the Desk and Research. This row simply renders nothing now, and metaRow()
-       stays as a documented no-op because renderSlate() and the boot warm-up both call it. */
+       The strategy the reader CAN still see is unchanged: the Desk's one sentence and
+       Research's whole page, both off dayStrategyBlock(). What went with the simplification
+       pass was the unreachable half of that family — adaptiveDayStrategyHtml(),
+       adaptiveStrategyInsight() and openAdaptiveStrategySheet() had no call sites at all.
+       This row simply renders nothing now, and metaRow() stays as a documented no-op
+       because renderSlate() and the boot warm-up both call it. */
     /* ═════════════════ TODAY'S STRATEGY — THE ONE LINE ABOVE THE BOARD ═════════════════
        Leon: "a bar somewhere at the top with an animated icon of DiamondEdge that kind of
        shows the strategy, and maybe if you click on it you can expand it to read more, or it
@@ -9525,7 +8923,6 @@ export default function Home() {
     let stgyOpen = false;
     function strategyBarHtml(dateISO = curDate) {
       if (!(league === "all" || league === "mlb")) return "";
-      if (rangeMode) return "";
       /* TODAY AND BACKWARD. Every board that HAS a strategy shows it — Leon: "strategy is
          missing on past days." A past board's strip reads in the past tense and never shows
          the anticipation state (nothing is coming for a finished day). A FORWARD board
@@ -9788,7 +9185,8 @@ export default function Home() {
     // ONE continuous frosted capsule; days are quiet typographic cells inside it and a
     // fluid lens slides under the active day. No per-pill borders.
     function dateStripHtml() {
-      // (the sliding lens pane lived here — see positionLens for why it is gone)
+      // (the sliding lens pane lived here; it was cut, and its empty positionLens() stub
+      //  went with it in the production simplification pass)
       const cells: string[] = [];
       const today = todayISO();
       let d = shiftDate(today, -13);
@@ -9800,7 +9198,7 @@ export default function Home() {
         const dt = new Date(cur + "T12:00:00");
         const isToday = cur === today;
         const isFuture = cur > today;
-        const on = cur === curDate && !rangeMode;
+        const on = cur === curDate;
         cells.push(`<button class="dcell ${on ? "on" : ""} ${isToday ? "today" : ""} ${isFuture ? "future" : ""}" data-date="${cur}" aria-label="${dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}">
           <span class="dc-wd">${isToday ? "Today" : dt.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 2)}</span>
           <span class="dc-d">${dt.getDate()}</span>
@@ -9817,7 +9215,6 @@ export default function Home() {
        cell paints its own capsule in CSS now (.dcell.on), which cannot get out of step with
        the markup. Kept as a no-op: six call sites, and a silently-missing target is precisely
        what the dead-click-target guard exists to stop us reintroducing. */
-    function positionLens() {}
 
     // Leagues sort by number of games (busiest first) by default; a saved user order (Settings)
     // pins preferred leagues to the front, remaining ones still fall in by game count.
@@ -9864,24 +9261,11 @@ export default function Home() {
         </div>
         </div>
         <div id="meta-area" class="meta-area">${metaRow()}</div>
-        <div id="hist-area">${histOpen ? histPanel() : ""}</div>
         <div id="slate-body">${skeletonSlate()}</div>`;
       bindScoresChrome();
-      requestAnimationFrame(() => { positionInk(); positionLens(); });
+      requestAnimationFrame(() => { positionInk(); });
     }
 
-    function histPanel() {
-      return `
-        <div class="histpanel">
-          <span class="rlab">History</span>
-          <input type="date" id="range-from" value="${rangeFrom || curDate}" min="${minDate}" max="${maxDate}">
-          <span class="rlab lite">to</span>
-          <input type="date" id="range-to" value="${rangeTo || curDate}" min="${minDate}" max="${maxDate}">
-          <button class="go" id="range-go">Scan</button>
-          ${rangeMode ? `<button class="clr" id="range-clear">Clear</button>` : ""}
-          <span class="rnote">Shows each day's ${SPORT_LABEL[league]} games and bets across ${minDate.slice(0, 4)}–${maxDate.slice(0, 4)}.</span>
-        </div>`;
-    }
 
     function positionInk() {
       const tabs = $("sporttabs"), ink = $("tab-ink");
@@ -9993,9 +9377,7 @@ export default function Home() {
          (the game page, the featured card) need none of this: one mark restarting is not an
          event, it is a mark. */
       body.style.setProperty("--de-orbit-t", `${-(((typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000) % 13).toFixed(3)}s`);
-      if (rangeMode) {
-        body.innerHTML = renderRangeBody();
-      } else {
+      {
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         const isFuture = curDate > todayISO();
         // Games for this date. Future dates often have no snapshot yet — fall back to the live
@@ -10021,7 +9403,7 @@ export default function Home() {
         if (curDate < todayISO() && !betaData) {
           // unified feed not in yet (deep-link straight to a past date) — pull it,
           // then repaint quietly so any postponed card lands. Cached after first load.
-          loadBeta().then(() => { try { if (!rangeMode && tab === "games") renderSlate(true); } catch {} }).catch(() => {});
+          loadBeta().then(() => { try { if (tab === "games") renderSlate(true); } catch {} }).catch(() => {});
         }
         const ppdGames = ppdGamesFor(curDate, games);
         // REPAINT ⇒ REBIND (see the boot warm-up): every path out of renderSlate below must
@@ -10097,42 +9479,16 @@ export default function Home() {
       animateCounters(body);
     }
 
-    function renderRangeBody() {
-      if (!rangeGames.length) return `<div class="state"><div class="st-ico">◆</div><div class="big">No ${SPORT_LABEL[league]} games in range</div><div class="sm">These dates aren't in the archive yet. Try a wider range, another league, or head back to the live board.</div><button class="ld-retry" id="rng-back">← Today's board</button></div>`;
-      let html = "";
-      let N = 0, W = 0, L = 0;
-      rangeGames.forEach((day: any) => {
-        const games = gamesForLeague({ games: day.games, date: day.date }, league, day.date);
-        if (!games.length) return;
-        let w = 0, l = 0;
-        games.forEach((g: any) => {
-          const P = gamePlays(g);
-          MARKETS.forEach((mk) => { const pl = P[mk]; if (pl.action === "TAKE" && pl.result) { if (pl.result.status === "hit") w++; else if (pl.result.status === "miss") l++; } });
-        });
-        N += games.length; W += w; L += l;
-        const dd = new Date(day.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-        html += `<div class="dayhdr"><span class="dh-date">${esc(dd)}</span><span class="dh-rr">${games.length} game${games.length > 1 ? "s" : ""}${w + l ? ` · picks ${w}-${l}` : ""}</span></div>`;
-        html += `<div class="slate">${games.map((g: any, i: number) => gameCard(g, i)).join("")}</div>`;
-      });
-      html += `<div class="refnote">${N} ${SPORT_LABEL[league]} games across ${rangeGames.length} day${rangeGames.length > 1 ? "s" : ""}${W + L ? ` · picks ${W}-${L}` : ""}</div>`;
-      return html;
-    }
 
     function bindMeta() {
-      /* (#recchip's binding lived here until the record chip was cut from the board this
-         round. The dead-click-target guard caught it on the first load after the cut, which
-         is exactly the job it exists to do — the binding is removed rather than silenced.
-         The record sheet openRecordBreakdown() still opens from the Desk and the Record
-         screen, which are its two real front doors now.) */
-      bindClick("daystrat-eye", (e: any) => { if (e) e.stopPropagation(); switchTab("desk"); },
-        { optional: "only rendered for MLB/all dates with an adaptive day strategy" });
+      /* (#recchip's binding lived here until the record chip was cut from the board. The
+         dead-click-target guard caught it on the first load after the cut, which is exactly
+         the job it exists to do — the binding was removed rather than silenced. #daystrat-eye
+         went the same way in the simplification pass: the only markup that emitted it was
+         adaptiveDayStrategyHtml(), which had no call sites and is now deleted.) */
       // REPAINT ⇒ REBIND: metaRow() is the strategy bar now, and every renderSlate() path
       // repaints #meta-area — so its two handlers are re-attached from exactly here.
       bindStrategyBar();
-      // Empty range-scan state's "back to today" (lives in the slate body, so it's bound here where
-      // renderSlate rebinds — not in bindHist, which only runs when the history panel opens).
-      bindClick("rng-back", () => { rangeMode = false; curDate = todayISO(); refreshStrip(); selectDate(); },
-        { optional: "only rendered by renderRangeBody() when a range scan comes back empty" });
     }
 
     let scoresChromeResizeBound = false;
@@ -10146,7 +9502,7 @@ export default function Home() {
       }));
       bindStrip();
       const di = $("date-input");
-      if (di) di.onchange = () => { if (!di.value) return; curDate = di.value; rangeMode = false; selectDate(); };
+      if (di) di.onchange = () => { if (!di.value) return; curDate = di.value; selectDate(); };
       // The real <input type=date> sits ON TOP of the calendar button (opacity 0), so a tap
       // opens the native picker everywhere; showPicker() is the enhancement, not the only path.
       const cal = $("cal-btn");
@@ -10154,32 +9510,17 @@ export default function Home() {
         di.onclick = (e: any) => { e.stopPropagation(); try { di.showPicker(); } catch {} };
         cal.onclick = () => { try { di.showPicker(); } catch { try { di.focus(); di.click(); } catch {} } };
       }
-      /* KNOWN DEAD ENTRY POINT — #hist-btn (reported, deliberately not revived here).
-         The button that toggled the history / date-range panel was dropped from the date-tools
-         markup in the "Frontend mega-round" redesign; only the calendar button survived. Nothing
-         can set histOpen = true any more, so histPanel() and every binding in bindHist() are
-         unreachable. The machinery is left intact — reviving the range scan is a product call,
-         not a bug fix — but it is flagged here rather than left looking wired up. */
-      bindClick("hist-btn", () => {
-        histOpen = !histOpen;
-        const ha = $("hist-area");
-        if (ha) { ha.innerHTML = histOpen ? histPanel() : ""; bindHist(); }
-        const hb = $("hist-btn"); if (hb) hb.classList.toggle("on", histOpen || rangeMode);
-      }, { optional: "the history/range toggle button is not currently rendered — see the note above" });
-      bindHist();
+      /* The history / date-range scan was DELETED in the production simplification pass.
+         Its entry point (#hist-btn) had been dropped from the date-tools markup in the
+         "Frontend mega-round" redesign, so nothing could set histOpen = true and the whole
+         cluster — histPanel/bindHist/runRange/renderRangeBody — had been unreachable since.
+         "Look at another day" is the date strip and the calendar picker; "look at a range of
+         days" is the Desk's record section. Neither needed a fifth W–L grader. */
       bindMeta();
       if (!scoresChromeResizeBound) {
         scoresChromeResizeBound = true;
-        window.addEventListener("resize", () => { positionInk(); positionLens(); recenterStrip(false); }, { passive: true });
+        window.addEventListener("resize", () => { positionInk(); recenterStrip(false); }, { passive: true });
       }
-    }
-    function bindHist() {
-      // The range panel only exists while it's open, so every target here is genuinely optional.
-      const OPT = { optional: "only in the DOM while the history/range panel is open" };
-      bindOn("range-from", "change", (e: any) => (rangeFrom = e.target.value), OPT);
-      bindOn("range-to", "change", (e: any) => (rangeTo = e.target.value), OPT);
-      bindClick("range-go", () => runRange(), OPT);
-      bindClick("range-clear", () => { rangeMode = false; refreshStrip(); renderSlate(); }, OPT);
     }
     function recenterStrip(smooth = true) {
       const strip = $("datestrip");
@@ -10191,14 +9532,13 @@ export default function Home() {
     function bindStrip() {
       const strip = $("datestrip");
       if (!strip) return;
-      strip.querySelectorAll(".dcell").forEach((c: any) => (c.onclick = () => { curDate = c.dataset.date; rangeMode = false; selectDate(); }));
-      requestAnimationFrame(() => { positionLens(); recenterStrip(); });
+      strip.querySelectorAll(".dcell").forEach((c: any) => (c.onclick = () => { curDate = c.dataset.date; selectDate(); }));
+      requestAnimationFrame(() => { recenterStrip(); });
     }
     function refreshStrip() {
       const strip = $("datestrip");
       if (strip) { strip.innerHTML = dateStripHtml(); bindStrip(); }
       const di = $("date-input"); if (di) di.value = curDate;
-      const hb = $("hist-btn"); if (hb) hb.classList.toggle("on", histOpen || rangeMode);
     }
     async function selectDate() {
       refreshStrip();
@@ -10230,7 +9570,7 @@ export default function Home() {
       });
     }
     function findGame(gid: any) {
-      const pool = rangeMode ? rangeGames.flatMap((d: any) => d.games) : (payload ? payload.games : []);
+      const pool = payload ? payload.games : [];
       const hit = (pool || []).find((x: any) => String(x.game_id) === String(gid));
       // Fall back to the slate we actually rendered — this is the ONLY place synthesized future
       // tiles (v4-feed-only, absent from payload) live, so without this a tomorrow tile can't open.
@@ -10242,24 +9582,6 @@ export default function Home() {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
 
-    async function runRange() {
-      const from = ($("range-from") && $("range-from").value) || rangeFrom || curDate;
-      const to = ($("range-to") && $("range-to").value) || rangeTo || curDate;
-      rangeFrom = from; rangeTo = to;
-      if (!from || !to) return;
-      let a = from, b = to; if (a > b) { const t = a; a = b; b = t; }
-      await loadIndex();
-      const allDates: string[] = (indexData && (indexData.dates || indexData.keyed_dates)) || [];
-      const inRange = allDates.filter((d) => d >= a && d <= b);
-      const dates = inRange.slice(-30);
-      rangeMode = true;
-      const body = $("slate-body");
-      if (body) body.innerHTML = `<div class="state"><div class="spinner"></div><div class="big">Scanning ${dates.length} day${dates.length === 1 ? "" : "s"}</div><div class="sm">${esc(a)} → ${esc(b)}</div></div>`;
-      const results = await Promise.all(dates.map(async (d) => ({ date: d, games: ((await snap("pregame_picks:" + d)) || {}).games || [] })));
-      rangeGames = results.filter((r) => r.games.length).sort((x, y) => (x.date < y.date ? 1 : -1));
-      refreshStrip();
-      renderSlate();
-    }
 
     // ===================== DETAIL SHEET: THE CALL → WHY → MORE DETAIL =====================
     // Plain-English WHY: 2-4 short sentences a first-time reader can follow, built from the
@@ -10362,107 +9684,6 @@ export default function Home() {
     }
 
     // One market's play inside "More detail": action, bullets, model-vs-market, line move.
-    function sheetPlay(g: any, pl: any) {
-      const mk = pl.market;
-      const pk = mk === "spread" ? g.spread_pick : mk === "total" ? g.total_pick : g.ml_pick;
-      const live = playLiveState(g, pl);
-      const r = pl.result;
-      const rCls = r ? (r.status === "hit" ? "won" : r.status === "miss" ? "lost" : "pushed") : (live === "clinch-won" ? "clinched" : live === "clinch-lost" ? "cooked" : "");
-      let head;
-      if (pl.action === "TAKE") {
-        const resTxt = r
-          ? (r.status === "hit" ? `✓ WON${r.pnl != null ? ` ${r.pnl >= 0 ? "+" : ""}${Number(r.pnl).toFixed(2)}u` : ""}` : r.status === "miss" ? `✗ LOST${r.pnl != null ? ` ${Number(r.pnl).toFixed(2)}u` : ""}` : "PUSH")
-          : live === "clinch-won" ? "✓ CLINCHED" : live === "clinch-lost" ? "✗ NOT LANDING" : live === "inplay" ? "IN PLAY" : "";
-        head = `<div class="shp-head take ${rCls}">
-          <span class="shp-mk">${MK_FULL[mk]}</span>
-          <span class="shp-act">BET</span>
-          <span class="shp-side">${esc(pl.side || "—")}</span>
-          ${pl.price != null ? `<span class="shp-px">${fmtOdds(pl.price)}</span>` : ""}
-          <span class="shp-q">${pl.stars != null ? pickStars(pl) : Q_LABEL[qualityOf(pl)]}</span>
-          ${resTxt ? `<span class="shp-res ${rCls || "inplay ip-plain"}">${resTxt}</span>` : ""}
-        </div>`;
-      } else {
-        // a pass names the number it judged — the line + the plain-English why
-        const passNote = pl.v4pass ? plainPassReason(pl.v4pass) : "no edge in this market";
-        const lineTxt = pl.market === "total" && pl.line != null ? `O/U ${lineStr(pl.line)}` : (pl.line != null ? lineStr(pl.line) : "Line");
-        head = `<div class="shp-head pass">
-          <span class="shp-mk">${MK_FULL[mk]}</span>
-          <span class="shp-act pass">${esc(lineTxt)}</span>
-          <span class="shp-passnote">${esc(passNote)}</span>
-        </div>`;
-      }
-      let recipeBlk = "";
-      if (pl.action === "TAKE" && pl.value_tier) {
-        const c = valueConds(pl);
-        recipeBlk = `<div class="shp-recipe">
-          <div class="sr-h"><span class="pl-vdia">◆</span> Why this game qualified</div>
-          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.gap)}</b>${c.gapSub ? ` <span class="sr-sub">${esc(c.gapSub)}</span>` : ""}</div>
-          <div class="sr-row"><span class="sr-ck">✓</span><b>${esc(c.split)}</b> <span class="sr-sub">the market can't agree — someone's number is soft</span></div>
-          <div class="sr-chips">
-            ${pl.price != null ? `<span class="mvm-chip">morning line ${fmtOdds(pl.price)}</span>` : ""}
-            ${pl.shop && pl.shop.price_american != null ? `<span class="mvm-chip be">best price ${esc(String(pl.shop.book || ""))} ${pl.shop.price_american > 0 ? "+" : ""}${pl.shop.price_american}${pl.shop.line != null ? ` @ ${num(pl.shop.line, 1)}` : ""}</span>` : ""}
-          </div>
-        </div>`;
-      }
-      // served why-bullets get scrubbed: drop internal EV/edge claims and paper hedging.
-      const whyBullets = (pl.why && pl.why.length ? pl.why : [])
-        .filter((w: any) => !/\b(claimed )?ev\b|\bedge\b\s*[+\-]?\d|\bmeta[- ]?p\b/i.test(String(w)))
-        .map((w: any) => cleanCopy(w)).filter(Boolean);
-      const why = whyBullets.length
-        ? `<ul class="shp-why">${whyBullets.map((w: any) => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
-      let mvm = "";
-      if (pl.src === "v4") {
-        // model-covered: the chips come from THE PICK's own numbers (win prob vs the price's
-        // break-even + the EV) — never a legacy projection that could disagree with it.
-        if (pl.action === "TAKE" && pl.p != null && pl.price != null) {
-          const be = breakevenProb(pl.price);
-          mvm = `<div class="shp-mvm">
-            <span class="mvm-chip">our win chance ${saPct(pl.p, 0)}</span>
-            ${be != null ? `<span class="mvm-chip">needs ${saPct(be, 0)} at ${fmtOdds(pl.price)}</span>` : ""}
-            ${pl.ev != null ? `<span class="mvm-chip ${pl.ev >= 0 ? "pos" : "neg"}">${pl.ev >= 0 ? "+" : ""}${(pl.ev * 100).toFixed(1)}% per dollar</span>` : ""}
-          </div>`;
-        }
-      } else if (pl.action === "TAKE" && pl.src === "sa" && pl.sa) {
-        const sa = pl.sa;
-        mvm = `<div class="shp-mvm">
-          ${sa.model_p_cover != null ? `<span class="mvm-chip">our model ${saPct(sa.model_p_cover, 0)}</span>` : ""}
-          ${sa.market_p_cover != null ? `<span class="mvm-chip">the market ${saPct(sa.market_p_cover, 0)}</span>` : ""}
-        </div>`;
-      } else if (pk && (mk === "total" ? (v3PredTotal(g) != null || pk.our_proj != null) : pk.our_proj != null) && pk.line != null) {
-        // For a TOTAL, prefer v3's reconciled number and recompute the gap so model/line/gap all
-        // agree with the pick side. Spread keeps its legacy our_proj (v3 doesn't reconcile spread).
-        const _v3tot = mk === "total" ? v3PredTotal(g) : null;
-        const modelV = _v3tot != null ? _v3tot : Number(pk.our_proj);
-        const gapV = _v3tot != null ? modelV - Number(pk.line) : Number(pk.gap);
-        // Correct push accounting: when v3 gives a meaningful push chance (integer lines), show it
-        // as its OWN chip so it's never silently folded into UNDER. Dormant until the backend serves
-        // distribution/p_push (currently null everywhere) — additive and defensive.
-        const _pu = mk === "total" ? v3Push(g) : null;
-        const pushChip = (_pu && _pu.p_push != null && _pu.p_push >= 0.005)
-          ? `<span class="mvm-chip">push ${saPct(_pu.p_push, 1)}</span>` : "";
-        mvm = `<div class="shp-mvm">
-          <span class="mvm-chip">model ${num(modelV, 1)}</span>
-          <span class="mvm-chip">line ${num(pk.line, 1)}</span>
-          <span class="mvm-chip ${gapV >= 0 ? "pos" : "neg"}">gap ${sgn(gapV, 1)} ${SPORT_UNIT[g.sport] || ""}</span>
-          ${pushChip}
-        </div>`;
-      } else if (pk && (v3WinProb(g, pk.side === g.away_abbr ? "away" : "home") != null || pk.our_winprob != null)) {
-        // Prefer v3's reconciled win prob for the picked side; else the pick's own our_winprob.
-        const _wp = v3WinProb(g, pk.side === g.away_abbr ? "away" : "home");
-        const ourWp = _wp != null ? _wp : Number(pk.our_winprob);
-        mvm = `<div class="shp-mvm"><span class="mvm-chip">model win prob ${saPct(ourWp, 1)}</span>${pk.market_winprob != null ? `<span class="mvm-chip">market ${saPct(pk.market_winprob, 1)}</span>` : ""}</div>`;
-      }
-      // legacy lean meters / line-move only for games the model doesn't cover — their numbers
-      // come from a different seam and must never sit beside a model pick.
-      const move = pl.src !== "v4" && pk ? lineMove(pk) : "";
-      const lean = pl.src !== "v4" && pk ? (mk === "moneyline" ? wpLean(pk, g) : leanMeter(pk, mk, g)) : "";
-      const viz = (move || lean) ? `<div class="shp-viz">${lean ? `<span class="shp-lean">${lean}</span>` : ""}${move}</div>` : "";
-      const lread = pl.action === "TAKE" ? latestReadPill(g, pl) : "";
-      const lreadBlk = lread ? `<div class="shp-lread">${lread}<span class="lr-note">the model's latest look</span></div>` : "";
-      return `<div class="shp ${pl.action === "TAKE" ? "is-take" : "is-pass"}">
-        ${head}${lreadBlk}${recipeBlk}${why}${mvm}${viz}
-      </div>`;
-    }
 
 
     // ===================== SHAREABLE GAME URLS + SOCIAL =====================
@@ -11046,26 +10267,53 @@ export default function Home() {
     }
     /* One normalised live situation from whichever tier answered. `betweenInnings` is decided
        here, once, and everything downstream obeys it. */
+    /* ONE DOCUMENT DESCRIBES ONE MOMENT — and it used to be two.
+       The first version read the BASES from MLB's linescore whenever a linescore existed
+       (`ls ? !!off[k] : …`) but read the outs, the count and the two names field by field
+       with a fallback to the served snapshot (`pick(ls && ls.outs, cur && cur.outs)`). Those
+       two documents are fetched on different clocks. So the moment MLB's linescore arrives
+       carrying `offense` but not `outs` — a shape nothing prevents — the strip draws runners
+       from the live document and the out count from an older one, and presents the pair as a
+       single situation. Bases loaded with two out, when it was bases loaded with one.
+       Nothing in the rendering would look wrong; it would just be a different game.
+
+       So a SOURCE is chosen once, whole, and the strip is built from that source alone. A
+       document qualifies only if it can answer the core of the situation — where the runners
+       are and how many are out — because those are the two facts the diamond is. A linescore
+       that cannot is not "partly usable": it is not the source, and the served snapshot is
+       read instead, entire. Nothing is ever blended. */
     function liveSituation(g: any, ls: any) {
       const d = liveDetailFor(g);
       const cur = d && d.current ? d.current : null;
       if (!ls && !cur) return null;
-      const half = String((ls && ls.inningState) || (cur && cur.half) || "");
-      const between = /^(middle|end)/i.test(half);
-      const off = (ls && ls.offense) || {};
+      const off = (ls && ls.offense) || null;
       const def = (ls && ls.defense) || {};
-      const pick = (a: any, b: any) => (a != null ? a : (b != null ? b : null));
-      const on = (k: "first" | "second" | "third", f: "on_1b" | "on_2b" | "on_3b") =>
-        (ls ? !!off[k] : !!(cur && cur[f]));
-      const outs = pick(ls && ls.outs, cur && cur.outs);
-      const balls = pick(ls && ls.balls, cur && cur.balls);
-      const strikes = pick(ls && ls.strikes, cur && cur.strikes);
+      const src =
+        ls && off && ls.outs != null
+          ? {
+            half: String(ls.inningState || ""),
+            on1: !!off.first, on2: !!off.second, on3: !!off.third,
+            outs: ls.outs, balls: ls.balls, strikes: ls.strikes,
+            pitcher: String((def.pitcher && def.pitcher.fullName) || ""),
+            batter: String((off.batter && off.batter.fullName) || ""),
+          }
+          : cur && cur.outs != null
+            ? {
+              half: String(cur.half || ""),
+              on1: !!cur.on_1b, on2: !!cur.on_2b, on3: !!cur.on_3b,
+              outs: cur.outs, balls: cur.balls, strikes: cur.strikes,
+              pitcher: String(cur.pitcher || ""), batter: String(cur.batter || ""),
+            }
+            : null;
+      if (!src) return null;
+      const between = /^(middle|end)/i.test(src.half);
+      const outs = src.outs, balls = src.balls, strikes = src.strikes;
       return {
         between,
         // a runner between innings is a leftover, never a fact — forced empty, not trusted
-        on1: between ? false : on("first", "on_1b"),
-        on2: between ? false : on("second", "on_2b"),
-        on3: between ? false : on("third", "on_3b"),
+        on1: between ? false : src.on1,
+        on2: between ? false : src.on2,
+        on3: between ? false : src.on3,
         outs: between || outs == null ? null : Number(outs),
         // A COUNT IS ONLY A COUNT WHILE THE AT-BAT IS STILL ON. Observed live on 825050
         // (2026-08-09): MLB's linescore momentarily reports balls=4 while ball four is
@@ -11076,8 +10324,8 @@ export default function Home() {
         // or corrected: an impossible number is never rewritten into a plausible one.
         balls: between || balls == null || Number(balls) > 3 || Number(balls) < 0 ? null : Number(balls),
         strikes: between || strikes == null || Number(strikes) > 2 || Number(strikes) < 0 ? null : Number(strikes),
-        pitcher: between ? "" : String(((def.pitcher && def.pitcher.fullName) || (cur && cur.pitcher) || "")),
-        batter: between ? "" : String(((off.batter && off.batter.fullName) || (cur && cur.batter) || "")),
+        pitcher: between ? "" : src.pitcher,
+        batter: between ? "" : src.batter,
       };
     }
     function bxStateStrip(g: any, ls: any) {
@@ -11190,7 +10438,7 @@ export default function Home() {
     }
     /* ══════ THE LIKELIHOOD TO CASH — ONE NUMBER, THE ONE THAT ALREADY EXISTS ══════
        Leon: "a reminder of whatever the bet is that we have and likelihood to cash". The app
-       has had a live cash-probability meter since the board redesign (`liveHitOdds`, fed by
+       has had a live cash-probability meter since the board redesign (fed by
        liveStatusOf) and it is the number every other surface prints — so the reminder above
        the tabs RENDERS THAT ONE. Nothing here computes a probability; when the live status
        feed has no read, the honest scoreboard tracking card stands in rather than a second,
@@ -11208,10 +10456,10 @@ export default function Home() {
        phrase ("OUT OF REACH") and a bar — 60-odd pixels above the tabs that never said what
        the bet was, what the number was, or how much we liked it. Its one fact, the live
        chance to cash, now rides the single line at the top of the Stats pane beside the pick
-       it belongs to. `liveHitOdds` itself is left exactly as it is — its clinch/cooked
-       authority was corrected earlier the same day and that correction is reproduced in
-       `pickLiveLine` rather than forked — but this was its last call site, so it is now
-       UNCALLED and is a deletion waiting to happen, not a live component. Nothing renders
+       it belongs to. `liveHitOdds` was left in place at the time as an uncalled component;
+       the production simplification pass DELETED it, since an uncalled renderer of the
+       cash probability is a second answer waiting to be re-wired. Its clinch/cooked
+       authority survives where it is actually read, in `pickLiveLine`. Nothing renders
        `.lho`, `.gp-trend` or `#gp-cashmeter` any more. */
     /* Repaint the box score in place (feed arrival, side switch, live cycle). It lives in TWO
        slots now — the line score above the tabs and the player lines inside Stats — so this
@@ -11253,121 +10501,9 @@ export default function Home() {
        ticket line, and — on a live game — liveTrackCard's read, which is literally
        "needs 3 more to cash OVER 8.5". Settled picks are the record and stay visible; a live
        one is redacted like every other unsettled pick on the site. */
-    function boxScorePanel(g: any, locked = false) {
-      const gs = gameState(g);
-      const started = startedKind(gs.kind);
-      if (!started) {
-        return `<div class="livepanel"><div class="state mini"><div class="big">Game hasn't started</div><div class="sm">The box score and live stats appear here once ${esc(g.away_abbr)} @ ${esc(g.home_abbr)} is underway.</div></div></div>`;
-      }
-      const d = liveDetailFor(g);
-      const rows: string[] = [];
-      // (a0) FINAL games — lead with the graded outcome: did our pick hit? This is the whole
-      // "graded in the open" promise, and it's the first thing a user wants on "How it went".
-      if (gs.kind === "final") {
-        const P = gamePlays(g);
-        const pl = P.total && P.total.action === "TAKE" ? P.total : displayPick(g);   // prefer the totals Pick (the edge)
-        const r = pickResult(g, pl);
-        if (pl && pl.action === "TAKE" && r) {
-          const finalTotal = (gs.score && gs.score.away != null && gs.score.home != null) ? Number(gs.score.away) + Number(gs.score.home) : null;
-          // ONE result vocabulary site-wide — this row had its own third one ("Hit ✓").
-          const rlab = resultStamp(r === "hit" ? "won" : r === "miss" ? "lost" : "pushed");
-          const showTot = pl.market === "total" && finalTotal != null;
-          const why = deskTicketWhy(g);
-          rows.push(`<div class="lp-graded ${r}"><div class="lpg-top"><span class="lpg-lab">The DiamondEdge Pick — graded</span><span class="lpg-res ${r}">${rlab}</span></div><div class="lpg-detail"><b>${esc(ticketLabel(pl) || pl.side || "")}</b>${showTot ? ` · final total <b>${finalTotal}</b>` : ""}</div>${why ? `<div class="lpg-why"><b>Why that was the pick:</b> ${esc(why)}</div>` : ""}</div>`);
-        }
-      }
-      // (a) current game state banner (live only)
-      if (gs.kind === "live") {
-        const cur = d && d.current;
-        // ONE inning source of truth: gs.label comes from the live_scores overlay that every
-        // other surface (ticker, tiles, hero) reads, so the box score can't disagree with them.
-        // live_detail's own inning_label is only a fallback when the overlay is still generic.
-        const bits = [gs.label && gs.label !== "Live" ? esc(gs.label) : (cur && cur.inning_label ? esc(cur.inning_label) : "Live"),
-          cur && cur.outs != null ? `${esc(cur.outs)} out` : "",
-          cur && cur.count ? `${esc(cur.count)}` : ""].filter(Boolean);
-        rows.push(`<div class="lp-now"><span class="lp-live"><span class="livedot"></span>Live</span><span class="lp-state">${bits.join(" · ")}</span></div>`);
-        // (a1) TRACKING READ — is our surfaced pick on course to cash? Computed from the live
-        // score/inning fields above (no projection). The totals edge gets the rich runs-vs-line
-        // read; a spread/ML lean gets a lighter scoreboard status. Context, not a new pick.
-        // MLB: the LOCKED unified pick is the only pick we track live — no legacy fallback.
-        const plLive = g.sport === "mlb" ? displayPick(g)
-          : (() => { const Plive = gamePlays(g); return (Plive.total && Plive.total.action === "TAKE") ? Plive.total : (displayPick(g) || bestPlay(g)); })();
-        const trackCard = plLive && !locked ? liveTrackCard(g, plLive) : "";
-        if (trackCard) rows.push(trackCard);
-      }
-      // (b) line score grid (innings R/H/E) — the core box score
-      if (d && Array.isArray(d.line_score) && d.line_score.length) {
-        const inns = d.line_score;
-        const th = inns.map((c: any) => `<th>${esc(c.inning)}</th>`).join("");
-        const tot = d.totals || {};
-        const rhe = (side: "away" | "home") => {
-          const t = tot[side] || {};
-          return `<td class="rhe r">${t.R != null ? esc(t.R) : "—"}</td><td class="rhe">${t.H != null ? esc(t.H) : "—"}</td><td class="rhe">${t.E != null ? esc(t.E) : "—"}</td>`;
-        };
-        const rowFor = (side: "away" | "home", ab: any) =>
-          `<tr><td class="ls-ab">${gCrest(g, side, "ls-crest")}${esc(ab)}</td>${inns.map((c: any) => `<td>${c[side] != null ? esc(c[side]) : ""}</td>`).join("")}${rhe(side)}</tr>`;
-        rows.push(`<div class="lp-box"><div class="lp-scroll"><table class="linescore">
-          <thead><tr><th class="ls-ab"></th>${th}<th class="rhe r">R</th><th class="rhe">H</th><th class="rhe">E</th></tr></thead>
-          <tbody>${rowFor("away", g.away_abbr)}${rowFor("home", g.home_abbr)}</tbody>
-        </table></div></div>`);
-      } else if (gs.score && gs.score.split && gs.score.home != null) {
-        // fallback: the simple score we already have
-        rows.push(`<div class="lp-simplescore"><span class="lps-side"><span class="shs-ab">${esc(g.away_abbr)}</span><b>${num(gs.score.away, 0)}</b></span><span class="lps-mid">${gs.kind === "final" ? "Final" : esc(gs.label || "Live")}</span><span class="lps-side"><b>${num(gs.score.home, 0)}</b><span class="shs-ab">${esc(g.home_abbr)}</span></span></div>`);
-      }
-      // (c) pitching + batting leaders (when served)
-      if (d && d.pitching && (d.pitching.away || d.pitching.home)) {
-        const pit = (side: "away" | "home", ab: any) => {
-          const p = d.pitching[side]; if (!p) return "";
-          return `<div class="lp-pit-row"><span class="lp-pit-ab">${esc(ab)}</span><span class="lp-pit-nm">${esc(p.name || "—")}</span><span class="lp-pit-ln">${esc(p.line || "")}</span></div>`;
-        };
-        rows.push(`<div class="lp-sec"><div class="lp-sec-h">On the mound</div>${pit("away", g.away_abbr)}${pit("home", g.home_abbr)}</div>`);
-      }
-      if (d && Array.isArray(d.batting_leaders) && d.batting_leaders.length) {
-        const bl = d.batting_leaders.slice(0, 5).map((b: any) => `<div class="lp-bat-row"><span class="lp-bat-nm">${esc(b.name || "")}</span><span class="lp-bat-ln">${esc(b.line || "")}</span></div>`).join("");
-        rows.push(`<div class="lp-sec"><div class="lp-sec-h">At the plate</div>${bl}</div>`);
-      }
-      // During the FIRST live_detail fetch we only have the bare score — tell the user the full
-      // box score is on its way (self-limiting: once the fetch lands it renders, or clears if none).
-      if (gs.kind === "live" && !d && !liveDetailTried && rows.length) rows.push(`<div class="lp-loading"><span class="lp-spin" aria-hidden="true"></span>Loading the full box score…</div>`);
-      if (!rows.length) rows.push(`<div class="state mini"><div class="sm">Live box score updating…</div></div>`);
-      return `<div class="livepanel">${rows.join("")}</div>`;
-    }
 
     // A compact TABLE of the model's lean on every market — side + line + confidence (or Pass) —
     // shown at the top of the game detail; the narrative below explains WHY.
-    function marketsTable(g: any) {
-      const P = gamePlays(g);
-      const row = (mk: string, label: string) => {
-        const pl = P[mk];
-        const line = vegasLine(g, mk);
-        if (isPick(pl)) {
-          const q = qualityOf(pl);
-          const low = isLowConf(pl);
-          const st = playState(g, pl);
-          const locked = pickLocked(pl, st);
-          const sideTxt = String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : "");
-          const call = locked
-            ? `<span class="mt-lock" data-up="1">${lockSvg} ${esc(unlockCtaTxt())}</span>`
-            : `<span class="mt-side">${pickArrow(pl)} ${esc(sideTxt)}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}</span>`;
-          const conf = locked
-            ? `<span class="mt-conf blur" aria-hidden="true">•••</span>`
-            : `<span class="mt-conf">${pickStars(pl)}${pl.grade != null && pl.grade > 0 ? pickGrade(pl) : `<i>${esc(confWord(pl))}</i>`}</span>`;
-          return `<tr class="mt-take q-${q} ${st}${low ? " low" : ""}"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call">${call}</td><td class="mt-c">${conf}</td></tr>`;
-        }
-        // A TRUE pass — explained like a human would say it.
-        const pr = pl && pl.v4pass ? plainPassReason(pl.v4pass) : "";
-        return `<tr class="mt-pass"><td class="mt-mk">${label}</td><td class="mt-line">${line || "—"}</td><td class="mt-call"><span class="mt-passlab">Pass</span>${pr ? `<span class="mt-passwhy">${esc(pr)}</span>` : ""}</td><td class="mt-c">—</td></tr>`;
-      };
-      // TOTALS-ONLY product: only the over/under is our call — no spread/ML rows.
-      return `<div class="mkt-table"><div class="mt-h">The DiamondEdge call</div>
-        <!-- THE COLUMN IS "RATING", NOT "CONFIDENCE" — it holds the star tier and the model's
-             0–5 score, and since 2026-08-08 this same pane also carries the served 0–100 PICK
-             CONFIDENCE a few hundred pixels below. Two different measurements under one word,
-             on one screen, is the exact confusion the confidence number was added to avoid.
-             The cell's contents are unchanged; only the word above them is. -->
-        <table class="mt-tbl"><thead><tr><th>Market</th><th>Line</th><th>Our call</th><th>Rating</th></tr></thead>
-        <tbody>${row("total", "Total (O/U)")}</tbody></table></div>`;
-    }
     // The core thesis, made visible: OUR number vs the MARKET's, and the gap that makes the bet.
     function deDivergence(g: any, lead: any) {
       if (!lead || lead.action !== "TAKE") return "";
@@ -11479,16 +10615,6 @@ export default function Home() {
       </div>`;
     }
     // A one-line entry point on the Preview pane — the counts, then straight to the panel.
-    function strategiesTeaser(g: any) {
-      const list = gameStrategies(g);
-      if (!list.length) return "";
-      const nPick = list.filter((s: any) => s.status === "PICK").length;
-      return `<button class="stgy-teaser" data-gostrat="1" aria-label="See every strategy's take on this game">
-        <span class="sgt-k">How the room saw this game</span>
-        <span class="sgt-sum">${list.length} streams · ${nPick} would bet it</span>
-        <span class="sgt-go" aria-hidden="true">›</span>
-      </button>`;
-    }
     // The DiamondEdge reasoning tab: a plain-English narrative FIRST, then the divergence, the
     // data visuals (graphs), the model-vs-market read, and the driving factors. Easy to follow, deep.
     function diamondEdgeReasoning(g: any, lead: any, leadLocked: boolean) {
@@ -11726,9 +10852,25 @@ export default function Home() {
       const cap = moved
         ? `Opened at ${lineStr(first.line)} at the ${first.wall} check and started at ${lineStr(last.line)}.`
         : `Held at ${lineStr(first.line)} from the ${first.wall} check through first pitch.`;
-      // The bet in prose too, with the terms the pill has no room for: the price we took it
-      // at and the check it was priced at. Both are the served pick's own fields.
-      const bet = !marked ? "" : ` We took ${label.toLowerCase()}${lead.price != null ? ` at ${fmtOdds(lead.price)}` : ""}${pi >= 0 ? `, priced at the ${w[pi].wall} check` : ""} — the shaded half is our side of the number.`;
+      /* THE BET IN PROSE, AND WHOSE PRICE EACH NUMBER IS.
+         This pane prints THREE prices and used to distinguish none of them. On a real game
+         it read: a line card saying "over −110", this caption saying "we took over 8 at
+         −109, priced at the T-3h check", and the T-3h row of the table directly beneath
+         saying "8 / −104 / under". Three numbers, one bet, and a reader auditing the caption
+         against the row it named could not reproduce −109 — because they are not the same
+         quantity. Ours is the price ON OUR BET. The table's is the best price ON THE BOARD
+         at that check, for whichever side that row's lean names, which is frequently the
+         other side. The line card's is the locked pregame price at its own book.
+
+         So each says what it is, and where the caption points at a row it does not match,
+         it says so rather than leaving the reader to find the contradiction. */
+      const rowPx = pi >= 0 ? w[pi].price : null;
+      const rowSide = pi >= 0 ? String(w[pi].side || "").toLowerCase() : "";
+      const ourSide = isOver ? "over" : "under";
+      const clash = marked && pi >= 0 && rowPx != null && lead.price != null
+        && (Math.round(Number(rowPx)) !== Math.round(Number(lead.price))
+          || (!!rowSide && rowSide !== ourSide));
+      const bet = !marked ? "" : ` We took ${label.toLowerCase()}${lead.price != null ? ` at ${fmtOdds(lead.price)}` : ""}${pi >= 0 ? `, our price at the ${w[pi].wall} check` : ""} — the shaded half is our side of the number.${clash ? ` The ${w[pi].wall} row below reads ${fmtOdds(Number(rowPx))}${rowSide ? ` on the ${rowSide}` : ""}: that is the best price on the board at that check, not the price on our bet.` : ""}`;
       // The axis is hours before first pitch, said in the caption rather than as a label at
       // the right edge — at 375px that label lands on top of the last tick.
       return `<div class="omv">
@@ -11778,6 +10920,7 @@ export default function Home() {
       const under = raw ? _fin(raw.total_price_under) : null;
       const nBooks = raw ? _fin(raw.n_books) : null;
       const book = pg && pg.book ? bookName(pg.book) : "";
+      const hasWalls = totalWalls(g).length >= 2;
       // (1) THE NUMBER THE GAME STARTED AT — the one every read on this game is graded against.
       const lineCard = tot == null ? "" : `<div class="oline">
         <div class="oline-k">The line we're graded at</div>
@@ -11789,11 +10932,21 @@ export default function Home() {
           </span>` : ""}
         </div>
         <div class="oline-foot">${[
-          open != null && Math.abs(open - tot) > 0.001 ? `opened ${lineStr(open)}` : open != null ? "never moved off the open" : "",
+          // THE OPEN HAS ONE HOME. It was printed here AND again ~120px below as
+          // "Opened at 8.5 at the T-12h check", where it belongs — the chart is the
+          // movement surface and this card is the graded-line surface. So it stays here
+          // only when there is no chart to own it (a past game, or a board with no wall
+          // grid), and the "never moved" note stays either way because the chart states
+          // that case differently.
+          hasWalls ? "" :
+            open != null && Math.abs(open - tot) > 0.001 ? `opened ${lineStr(open)}` : open != null ? "never moved off the open" : "",
           nBooks != null ? `${Math.round(nBooks)} books read` : "",
           // "best price at X" sat above a table whose every row named a
           // different book; naming what this one is about tells them apart.
-          book ? `best at the close: ${book}` : "",
+          // The CHECK goes with it, because the chart's caption prints a
+          // different price for the same bet and the two are told apart by
+          // which book and which moment each was quoted at.
+          book ? `prices from ${book}${raw && raw.wall ? ` at the ${String(raw.wall)} check` : ""}` : "",
         ].filter(Boolean).map((s) => esc(s)).join(" · ")}</div>
       </div>`;
       // (2) HOW IT TRADED IN — the chart and the wall table share one slot, so the on-demand
@@ -12030,10 +11183,17 @@ export default function Home() {
          NO RULE-NAME CHIP EITHER, and that one predates today: the card used to print
          `forge_strategy.rule_name` — "ATLAS's Call" — one line above prose whose own
          voice check REFUSES that exact string inside it. */
+      /* AND THE TEASER IS SPOKEN IN BASEBALL TOO (2026-08-09). This read "the full read
+         behind this pick — the model number, the line it beats, and the history of calls
+         made exactly this way". That is machinery vocabulary, on the very surface whose
+         generated prose `rule_voice._check_voice` REFUSES for containing those words. It
+         was exempt from the rule only because it is hand-written marketing copy rather
+         than generated text — a distinction nobody reading the card can see. It now names
+         what is actually behind the lock, in the words the write-up itself uses. */
       const previewBlock = leadLocked
         ? `<div class="whycard">
             <div class="wc-k">Game preview</div>
-            <p>The full read behind this pick — the model number, the line it beats, and the history of calls made exactly this way — is part of DiamondEdge Premium. The quality rating above is the real one.</p>
+            <p>The write-up on this game — the two starters, where the total opened and where it is now, and the measured facts behind the call — is part of DiamondEdge Premium. The quality rating above is the real one.</p>
           </div>`
         /* AN EMPTY CARD IS WORSE THAN NO CARD. On a game the backend has not written a
            preview for yet — every game on the board before the morning serve — bodyParas,
@@ -12139,7 +11299,7 @@ export default function Home() {
       const delayNote = (gs.kind === "delayed" || gs.delayed)
         ? `<div class="gp-delaynote"><b>${esc(gs.delayReason ? `Delayed — ${gs.delayReason}` : "Delayed")}.</b> ${gs.kind === "delayed"
             ? "First pitch has not happened and the scheduled time has passed."
-            : `Play is stopped${gs.label && gs.label !== "Live" ? ` in the ${esc(String(gs.label).toLowerCase())}` : ""}; the score and the line score are where it paused.`} The game and the call on it both stand.</div>`
+            : `Play is stopped${halfInningPhrase(gs.label) ? ` in the ${esc(halfInningPhrase(gs.label))}` : ""}; the score and the line score are where it paused.`} The game and the call on it both stand.</div>`
         : "";
       const showLive = startedKind(gs.kind);
       const isFinal = gs.kind === "final";
@@ -12697,31 +11857,6 @@ export default function Home() {
     // each split by market. Same sheet chrome as everything else, so overlays stay consistent.
     // Every graded/pending TAKE for a game+tier, as compact "matchup · pick · Won/Lost" rows —
     // so a cold tier number is never a mystery. Uses the SAME pickResult grading path.
-    function tierPicksList(filterFn: (g: any) => boolean, q: string) {
-      const src = livePayload || payload;
-      if (!src) return "";
-      const rows: string[] = [];
-      ((src.games || []) as any[]).forEach((g: any) => {
-        if (!filterFn(g)) return;
-        const P = gamePlays(g);
-        MARKETS.forEach((mk) => {
-          const pl = P[mk];
-          if (!pl || pl.action !== "TAKE" || qualityOf(pl) !== q) return;
-          const r = pickResult(g, pl);
-          const gs = gameState(g);
-          const st = r === "hit" ? { c: "won", t: resultStamp("won", "sm") } : r === "miss" ? { c: "lost", t: resultStamp("lost", "sm") }
-            : r === "push" ? { c: "pushed", t: resultStamp("pushed", "sm") }
-            : gs.kind === "live" ? { c: "live", t: "Live" } : { c: "up", t: "To come" };
-          // GRADED ROWS ARE THE RECORD; UNGRADED ONES ARE THE PRODUCT. This list covers
-          // today and games still to come, so it redacts exactly like the board does.
-          const side = pickLocked(pl, playState(g, pl))
-            ? `<span class="rbp-lock">${lockSvg} locked</span>`
-            : `${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? ` ${fmtOdds(pl.price)}` : ""}`;
-          rows.push(`<div class="rbp-row"><span class="rbp-mu">${esc(g.away_abbr || "")} @ ${esc(g.home_abbr || "")}</span><span class="rbp-pk">${side}</span><span class="rbp-res ${st.c}">${st.t}</span></div>`);
-        });
-      });
-      return rows.length ? `<div class="rbp-list">${rows.join("")}</div>` : `<div class="rbp-empty">No picks in this tier for this window.</div>`;
-    }
     /* ═══════════════ THE RECORD SHEET — the same four rows ═══════════════
        Leon: "that page should just be a very simple screen of the DAY, the month, longer."
 
@@ -12738,31 +11873,10 @@ export default function Home() {
 
        Everything cut is still computed and still reachable: tierRecordFor / strategyRecords
        feed the Desk's research folds, which is where a breakdown by strategy belongs. */
-    function openRecordBreakdown() {
-      let layer = $("sheet-layer");
-      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
-      layer.innerHTML = `
-        <div class="sheet-bg" id="sheet-bg"></div>
-        <div class="sheet rec-sheet" id="sheet" role="dialog" aria-modal="true" aria-label="The record">
-          <div class="sh-grab" id="sh-grab"></div>
-          <div class="sh-body">
-            <div class="rb-head"><span class="rb-k">DiamondEdge</span><h3>The record</h3></div>
-            ${recordScopes()}
-            ${deskLast14Widget(betaData)}
-            <button class="ix-btn" id="rb-full">Open the full record<em>→</em></button>
-          </div>
-        </div>`;
-      document.body.classList.add("sheet-open");
-      requestAnimationFrame(() => { const sh = $("sheet"), bg = $("sheet-bg"); if (sh) sh.classList.add("in"); if (bg) bg.classList.add("in"); });
-      bindClick("sheet-bg", () => closeDetail(false, true), { keyboard: false });
-      bindSheetDrag($("sheet"), $("sh-grab"));
-      bindClick("rb-full", () => { closeDetail(false, true); switchTab("results"); });
-    }
     function gameById(gid: any) {
       const src = livePayload || payload;
       let g = ((src && src.games) || []).find((x: any) => String(x.game_id) === String(gid));
       if (g) return g;
-      if (rangeMode) g = rangeGames.flatMap((d: any) => d.games).find((x: any) => String(x.game_id) === String(gid));
       return g || null;
     }
     function syncFromUrl(fromHistory: boolean) {
@@ -12842,45 +11956,6 @@ export default function Home() {
       </svg>`;
     }
     // hit-rate by star tier — the "do more stars win more" validation bars
-    function starPerfRows(d: any) {
-      const rec = (d && d.record) || {};
-      const raw = rec.by_star_perf || rec.by_star_tier || {};
-      const rows: { s: number; n: number; hit: number | null; roi: number | null }[] = [];
-      const push = (sVal: any, r: any) => {
-        const s = Math.round(Number(sVal));
-        if (!r || !isFinite(s) || s < 1 || s > 5) return;
-        const n = Number(r.n || 0);
-        if (!n) return;
-        rows.push({ s, n, hit: _fin(r.hit_rate != null ? r.hit_rate : r.hit), roi: _fin(r.roi) });
-      };
-      if (Array.isArray(raw)) raw.forEach((r: any) => push(r && (r.stars != null ? r.stars : r.star), r));
-      else Object.keys(raw).forEach((k) => { if (/^\d+$/.test(String(k))) push(k, raw[k]); });
-      rows.sort((a, b) => a.s - b.s);
-      return rows;
-    }
-    function starPerfSvg(d: any) {
-      const rows = starPerfRows(d).filter((r) => r.hit != null);
-      if (rows.length < 2) return "";
-      const w = CH_W, h = CH_H, padL = 8, padR = 8, padT = 18, padB = 28;
-      const step = (w - padL - padR) / rows.length;
-      const bw = Math.min(46, step - 14);
-      const maxHit = Math.max(0.72, ...rows.map((r) => r.hit as number)) * 1.06;
-      const be = 0.524; // break-even at -110
-      const Y = (v: number) => padT + (1 - v / maxHit) * (h - padT - padB);
-      const bars = rows.map((r, i) => {
-        const x = padL + step * i + (step - bw) / 2;
-        const y = Y(r.hit as number);
-        return `<g><title>${r.s} star — ${((r.hit as number) * 100).toFixed(1)}% hit over ${r.n} picks${r.roi != null ? ` · ${(r.roi >= 0 ? "+" : "")}${(r.roi * 100).toFixed(1)}% ROI` : ""}</title>
-          <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2, h - padB - y).toFixed(1)}" rx="4" fill="rgba(238,194,88,${(0.3 + r.s * 0.13).toFixed(2)})"/>
-          <text x="${(x + bw / 2).toFixed(1)}" y="${(y - 5).toFixed(1)}" text-anchor="middle" class="ix-lab">${((r.hit as number) * 100).toFixed(0)}%</text>
-          <text x="${(x + bw / 2).toFixed(1)}" y="${h - 14}" text-anchor="middle" class="ix-ax">${r.s}★</text>
-          <text x="${(x + bw / 2).toFixed(1)}" y="${h - 3}" text-anchor="middle" class="ix-axn">${r.n}</text></g>`;
-      }).join("");
-      return `<svg class="ixsvg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Hit rate by star tier">
-        <line x1="${padL}" y1="${Y(be).toFixed(1)}" x2="${w - padR}" y2="${Y(be).toFixed(1)}" stroke="rgba(224,235,255,.22)" stroke-dasharray="3 4" stroke-width="1"/>
-        ${bars}
-      </svg>`;
-    }
     // calibration — predicted vs realized win rate (renders only when served)
     function calibrationSvg(d: any) {
       const rec = (d && d.record) || {};
@@ -13155,8 +12230,8 @@ export default function Home() {
           const side = p.side ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
           // the SAME result stamp the board and the game page use — one outcome language site-wide
           const res = isV ? `<span class="ppres voidppd" title="Postponed — pick void, no action">VOID</span>`
-            : gradeOf(p) === "win" ? resultStamp("won", "sm") : gradeOf(p) === "loss" ? resultStamp("lost", "sm")
-            : gradeOf(p) === "push" ? resultStamp("pushed", "sm") : `<span class="ppres open">Open</span>`;
+            : gradeOf(p) === "win" ? resultStamp("won", "sm", correctionOf(p)) : gradeOf(p) === "loss" ? resultStamp("lost", "sm", correctionOf(p))
+            : gradeOf(p) === "push" ? resultStamp("pushed", "sm", correctionOf(p)) : `<span class="ppres open">Open</span>`;
           /* NO STARS ON THIS ROW. Leon: "very weird with gold picks and green picks all
              different — simplify hard: picks per day, clear W-L per day, one visual
              language. Kill the gold/green tier confusion."  A row used to carry FOUR
@@ -13305,14 +12380,6 @@ export default function Home() {
     // the LIVE-SERVED record, never record.overall. record.overall is the combined block —
     // most of it is reconstruction and walk-forward backtest, and quoting it as "graded in
     // the open so far" reads as a track record it isn't.
-    function recordStrip() {
-      const hr = headlineStrategyRecord(betaData);
-      if (hr && hr.live) {
-        const since = stratDateTxt(hr.activation);
-        return `Every pick graded in the open — ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${since ? ` since ${since}` : ""}.`;
-      }
-      return `Every pick graded in the open, win or lose.`;
-    }
     // ── News-forward front: real top sports stories (news_feed) with a DiamondEdge betting angle,
     //    leading the Today page (ESPN/CBS-style), with the DiamondEdge Picks below.
     /* THE NEWS CHIP HAD TWO HOLES. It gated on isPremium() rather than entitled(), so a
@@ -14629,8 +13696,8 @@ export default function Home() {
       const src = livePayload || payload;
       const g0 = (gids || []).map((id) => ((src && src.games) || []).find((g: any) => String(g.game_id) === String(id))).find(Boolean);
       if (g0 && String(g0.sport || "").toLowerCase() !== league) league = String(g0.sport || "mlb").toLowerCase();
-      const needLoad = curDate !== todayISO() || rangeMode;
-      curDate = todayISO(); rangeMode = false;
+      const needLoad = curDate !== todayISO();
+      curDate = todayISO();
       switchTab("games");
       if (needLoad) await selectDate();
       else {
@@ -15162,10 +14229,6 @@ export default function Home() {
     // every PASS's priced-out reason. Graded in the open; the record accrues in public. History
     // key 'picks_unified' (all days) + live key 'picks_unified_live' (today + tomorrow).
     let betaData: any = null;
-    let betaBuiltAt = 0; // last DOM build — skip rebuilds within 60s (tab switches stay instant)
-    let betaTab: "today" | "record" | "games" = "today";
-    let betaShown = 24;        // games list pagination
-    let betaOnlyTakes = true;  // default: games where the model actually made a pick
     const UNIFIED_HISTORY_MIN_UTC = "2026-08-02T18:43:22Z";
     function feedStampMs(src: any) {
       const t = Date.parse(String((src && (src.generated_utc || src.generated_at || src.as_of)) || ""));
@@ -15373,248 +14436,8 @@ export default function Home() {
     function bStars(n: any) {
       return "";
     }
-    const bPct = (v: any, d = 1) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) * 100).toFixed(d) + "%");
     const bRoi = (v: any) => (v == null || isNaN(Number(v)) ? "—" : (Number(v) >= 0 ? "+" : "") + (Number(v) * 100).toFixed(1) + "%");
     const bWL = (r: any) => (r && r.n ? wlTxt(r) : "0–0");
-    // The game's single pick when it's an actionable PICK — used to headline it in the list.
-    function bestBetaCell(g: any) {
-      if (isFutureDate(g && g.date)) return null;
-      const p = g && g.pick;
-      return p && String(p.status || "").toUpperCase() === "PICK" ? p : null;
-    }
-    const betaTakeCount = (g: any) => (!isFutureDate(g && g.date) && g && g.pick && String(g.pick.status || "").toUpperCase() === "PICK" ? 1 : 0);
-
-    // ---- honest framing (no hype): the record accrues in public ----
-    function betaFrame(d: any) {
-      const dates = Array.isArray(d && d.dates) ? d.dates : [];
-      const n = d && d.record && d.record.overall ? d.record.overall.n : 0;
-      // The date range covers the whole ledger, most of which was never served — so the
-      // count is labelled "graded rows", and the live-served count is stated next to it.
-      const hr = headlineStrategyRecord(d);
-      const lv = hr && hr.live;
-      const range = dates.length ? `Graded ${esc(dates[0])} → ${esc(dates[dates.length - 1])}${n ? ` · ${n} graded rows` : ""}${lv ? ` · ${lv.n} of them served live` : ""}` : "";
-      return `<div class="beta-frame">
-        <p class="bf-lede">Pregame totals, graded in the open — win or lose.</p>
-        <div class="bf-note">${range}</div>
-      </div>`;
-    }
-
-    // ---- the record dashboard — two honest things: (a) the overall picks record as a big hero,
-    // (b) the record BY STAR TIER. One record, one scale. Source = record.overall + by_star_tier.
-    function betaDashboard(d: any) {
-      const rec = d.record || {};
-      const ov = rec.overall || {};
-      const byStar = rec.by_star_tier || {};
-      // Star-tier rows 5→1 — the validation: does a higher star win more? Only render tiers with picks.
-      const tierRow = (s: number) => {
-        const r = byStar[s] || byStar[String(s)] || {};
-        if (!r.n) return "";
-        return `<div class="strec-row">
-          <span class="strec-star">${bStars(s)}</span>
-          <span class="strec-n">${r.n || 0} pick${r.n === 1 ? "" : "s"}</span>
-          <span class="strec-wl">${bWL(r)}</span>
-          <span class="strec-hit">${r.hit_rate != null ? bPct(r.hit_rate, 1) + " hit" : "—"}</span>
-          <span class="strec-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)} ROI</span>
-        </div>`;
-      };
-      // The EXPANDED 2★ band (activated 7/24) grades separately so the core record stays
-      // pure — shown as its own labeled row once it has graded picks.
-      const exRow = (() => {
-        const r = byStar["2_expanded"] || {};
-        if (!r.n) return "";
-        return `<div class="strec-row expanded">
-          <span class="strec-star">${bStars(2)}<i class="strec-newtag">new band</i></span>
-          <span class="strec-n">${r.n} pick${r.n === 1 ? "" : "s"}</span>
-          <span class="strec-wl">${bWL(r)}</span>
-          <span class="strec-hit">${r.hit_rate != null ? bPct(r.hit_rate, 1) + " hit" : "—"}</span>
-          <span class="strec-roi ${r.roi != null && r.roi < 0 ? "neg" : r.roi != null ? "pos" : ""}">${bRoi(r.roi)} ROI</span>
-        </div>`;
-      })();
-      const rows = ([5, 4, 3, 2].map(tierRow).join("") + exRow + tierRow(1)) || `<div class="strec-row empty"><span class="strec-n">Grading as games finish.</span></div>`;
-      // LAST 7 DAYS — a compact day-by-day strip under the hero (most recent first), from the
-      // same by_date_record that powers the per-day chips. Only days with graded picks count;
-      // each day is W-L(-P) tinted by that day's ROI, with the ROI itself as a small trailer.
-      const _l7map = dayRecordMap();
-      const l7dates = Object.keys(_l7map)
-        .filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && _l7map[k].n)
-        .sort().reverse().slice(0, 7);
-      const l7 = l7dates.map((k) => {
-        const r = _l7map[k];
-        const day = new Date(k + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
-        // wlTxt, not a sixth inline build — this one was the only surface in the app printing
-        // the record with HYPHENS while every other one used the en dash
-        const wl = wlTxt(r);
-        const dir = r.roi != null ? (r.roi > 0 ? "up" : r.roi < 0 ? "down" : "flat") : "flat";
-        const rv = r.roi != null ? Math.round(r.roi * 100) : null;
-        const roiTxt = rv != null ? (rv > 0 ? `+${rv}%` : rv < 0 ? `${rv}%` : "0%") : "";
-        return `<span class="l7d ${dir}" title="${esc(k)} · ${r.n} graded${roiTxt ? ` · ${roiTxt} ROI` : ""}"><i>${esc(day)}</i><b>${wl}</b>${roiTxt ? `<em>${roiTxt}</em>` : ""}</span>`;
-      }).join("");
-      const last7Strip = l7dates.length
-        ? `<div class="strec-l7"><span class="l7k">Daily results</span><div class="l7row">${l7}</div><p class="l7note">Each chip is that day's official picks.</p></div>`
-        : "";
-      const gatedNote = "";
-      // ═══ THE HERO LEADS WITH THE LIVE-SERVED RECORD ═══
-      // record.overall is a COMBINED block: live-served picks plus pre-activation
-      // reconstruction plus the champion's rolling-origin walk-forward backtest. Most of it
-      // was never served to anyone. Leading with it — under the words "graded in public…
-      // nothing hidden" — reads as a live track record that does not exist. So the live
-      // number leads at full size with its start date, and the combined total is demoted to
-      // a labelled secondary block that states exactly how much of it was never live.
-      const hr = headlineStrategyRecord(d);
-      const lv = hr && hr.live;
-      if (lv) {
-        const lvPos = (lv.roi || 0) >= 0;
-        const since = stratDateTxt(hr.activation);
-        // the combined figure the older blocks publish (record.overall) + how much of it
-        // was never a served pick — stated as a number, not a hedge.
-        return `
-        <div class="strec-hero ${lvPos ? "pos" : "neg"}">
-          <div class="strec-k">Official DiamondEdge Pick record</div>
-          <div class="strec-big"><b>${esc(stratWL(lv))}</b></div>
-          <div class="strec-stats">
-            <span class="strec-stat"><i>${stratPct(lv.hit)}</i><em>hit rate</em></span>
-            <span class="strec-stat"><i class="${lvPos ? "pos" : "neg"}">${stratRoi(lv.roi)}</i><em>ROI</em></span>
-            <span class="strec-stat"><i>${lv.n}</i><em>served &amp; graded</em></span>
-          </div>
-          <div class="strec-sub">${since ? `Since ${esc(since)}` : "Official record"} · one daily strategy, official picks only.</div>
-        </div>
-        ${last7Strip}`;
-      }
-      const roiPos = (ov.roi || 0) >= 0;
-      return `
-        <div class="strec-hero ${roiPos ? "pos" : "neg"}">
-          <div class="strec-k">The picks record</div>
-          <div class="strec-big"><b>${bWL(ov)}</b></div>
-          <div class="strec-stats">
-            <span class="strec-stat"><i>${bPct(ov.hit_rate, 1)}</i><em>hit rate</em></span>
-            <span class="strec-stat"><i class="${roiPos ? "pos" : "neg"}">${bRoi(ov.roi)}</i><em>ROI</em></span>
-            <span class="strec-stat"><i>${ov.n || 0}</i><em>graded</em></span>
-          </div>
-          <div class="strec-sub">Official picks only · updated as games finish.</div>
-        </div>
-        ${last7Strip}`;
-    }
-
-    // ---- a compact list card for one game (historical OR live/upcoming) ----
-    function betaGameListCard(g: any) {
-      const best = bestBetaCell(g);
-      const fin = g.final || {};
-      const hasFinal = fin.home_runs != null && fin.away_runs != null;
-      const fp = firstPitchTs({ start_ts: g.first_pitch_utc });
-      // VISIBLE-VOID: a postponed game keeps its row — frozen pick + neutral VOID
-      // chip, "Postponed" where the final score would be. Counted in no record.
-      const isPpd = String(g.status || "") === "postponed";
-      const when = isPpd
-        ? "Postponed — pick void, no action"
-        : hasFinal
-        ? `Final ${teamShort(g.away)} ${fin.away_runs} – ${fin.home_runs} ${teamShort(g.home)}`
-        : fp ? new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "upcoming";
-      const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-      const vp = isPpd && g.pick && g.pick.side ? g.pick : null;
-      const sideTxt = best ? `${/over/i.test(String(best.side)) ? "OVER" : "UNDER"} ${best.line != null ? lineStr(best.line) : ""}`.trim()
-        : vp ? `${/over/i.test(String(vp.side)) ? "OVER" : "UNDER"} ${vp.line != null ? lineStr(vp.line) : ""}`.trim() : "";
-      const badge = isPpd
-        ? (vp
-          ? `<span class="bg-pick voidppd">${pickStrengthPill(vp, true)}<span class="bg-side">${unifiedPickLocked(vp) ? lockedSideChip(true) : `${esc(sideTxt)}${vp.price != null ? ` ${fmtOdds(vp.price)}` : ""}`}</span><span class="bg-res void">PPD</span></span>`
-          : `<span class="bg-nopick">postponed</span>`)
-        : best
-        ? `<span class="bg-pick ${best.result || "open"}">${pickStrengthPill(best, true)}<span class="bg-side">${unifiedPickLocked(best) ? lockedSideChip(true) : `${esc(sideTxt)}${best.price != null ? ` ${fmtOdds(best.price)}` : ""}`}</span>${best.result && best.result !== "pass" ? `<span class="bg-res ${best.result}">${gradeOf(best) === "win" ? "✓" : gradeOf(best) === "loss" ? "✕" : "P"}</span>` : ""}</span>`
-        : `<span class="bg-nopick">${hasFinal ? "pass" : "no pick"}</span>`;
-      return `<button class="beta-gcard" data-bgid="${esc(g.game_id)}">
-        <span class="bg-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></span>
-        <span class="bg-meta">${esc(dd)} · ${esc(when)}</span>
-        ${badge}
-      </button>`;
-    }
-    // ---- the LIVE "Today" board: today's + tomorrow's games, each with its single pick ----
-    function betaTodayBoard(lv: any) {
-      if (!lv) return `<div class="bc-empty">The live board didn't load — it refreshes through the day; try again shortly.</div>`;
-      const games = (lv.games || []) as any[];
-      const bc = lv.board_census || {};
-      const ov = (lv.record || {}).overall || {};
-      // Quote the LIVE-SERVED record here too — "season record" off record.overall would be
-      // mostly reconstruction and backtest.
-      const lvHr = headlineStrategyRecord(lv) || headlineStrategyRecord(betaData);
-      const lvB = lvHr && lvHr.live;
-      const recBit = lvB
-        ? `<div class="beta-liverec">Live-served record${lvHr.activation ? ` since ${esc(stratDateTxt(lvHr.activation) || lvHr.activation)}` : ""}: <b>${esc(stratWL(lvB))}</b>${lvB.hit != null ? ` · ${stratPct(lvB.hit)}` : ""}${lvB.roi != null ? ` · ${stratRoi(lvB.roi)} ROI` : ""}</div>`
-        : ov.n
-        ? `<div class="beta-liverec">Season record: <b>${bWL(ov)}</b>${ov.hit_rate != null ? ` · ${bPct(ov.hit_rate, 1)}` : ""}${ov.roi != null ? ` · ${bRoi(ov.roi)} ROI` : ""}</div>`
-        : `<div class="beta-liverec dim">Picks grade as games finish — results land here the same night.</div>`;
-      // Today's picks (the actionable ones), or an honest no-play note.
-      const todayPicks = games.filter((g: any) => bestBetaCell(g)).sort((a: any, b: any) => ((bestBetaCell(b) || {}).score || 0) - ((bestBetaCell(a) || {}).score || 0));
-      const visiblePickCount = todayPicks.length;
-      const cvSlate = todayPicks.length
-        ? `<div class="beta-cvslate">${todayPicks.slice(0, 12).map((g: any) => { const p = bestBetaCell(g); const side = `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim(); return `
-            <div class="cvp"><span class="cvp-mu">${esc(teamShort(g.away || ""))} @ ${esc(teamShort(g.home || ""))}</span>
-              ${pickStrengthPill(p, true)}<span class="cvp-side">${unifiedPickLocked(p) ? lockedSideChip(true) : `${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}`}</span></div>`; }).join("")}</div>`
-        : `<div class="beta-cvslate none">No pick today.</div>`;
-      const upd = lv.generated_utc ? new Date(lv.generated_utc).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
-      const byDate: any = {};
-      games.forEach((g) => { (byDate[g.date] = byDate[g.date] || []).push(g); });
-      const dates = Object.keys(byDate).sort();
-      const sections = dates.map((d0) => {
-        const dd = new Date(d0 + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-        // game-time order (Leon): every day view lists games by first pitch ascending
-        const list = byDate[d0].slice().sort((a: any, b: any) => String(a.first_pitch_utc || "").localeCompare(String(b.first_pitch_utc || "")));
-        return `<div class="beta-listhead"><span>${esc(dd)}</span></div><div class="beta-glist">${list.map(betaGameListCard).join("")}</div>`;
-      }).join("") || `<div class="bc-empty">No games on the live board yet — tomorrow fills in when books post their lines.</div>`;
-      return `
-        <div class="beta-card livehead">
-          <div class="bcard-h">Today's totals — live</div>
-          <div class="bcard-sub">Picks firm up as game time nears.${upd ? ` Updated ${esc(upd)}.` : ""}</div>
-          ${cvSlate}
-          ${recBit}
-          <div class="bcard-foot">${visiblePickCount} pick${visiblePickCount === 1 ? "" : "s"} across ${bc.n_games || games.length} games so far.</div>
-        </div>
-        ${sections}`;
-    }
-
-    async function renderBeta() {
-      const view = $("beta-view");
-      if (!view) return;
-      if (!betaData) view.innerHTML = `<div class="beta-wrap"><div class="beta-skel">Loading the picks…</div></div>`;
-      let d: any, lv: any = null;
-      try { d = await loadBeta(); } catch { view.innerHTML = `<div class="beta-wrap"><div class="state"><div class="big">Pick data unavailable</div><div class="sm">Couldn't load the model feed — it refreshes through the day; try again shortly.</div></div></div>`; return; }
-      try { lv = await loadBetaLive(); } catch { lv = null; }
-      const games = (d.games || []) as any[];
-      const list = (betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0) : games)
-        .slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
-      const shown = list.slice(0, betaShown);
-      const liveTakes = lv ? ((lv.games || []).filter((g: any) => bestBetaCell(g)).length) : 0;
-      view.innerHTML = `
-        <div class="beta-wrap">
-          <div class="beta-masthead">
-            <div class="bm-kick">DiamondEdge <span class="bm-badge">Pregame Totals</span></div>
-            <h2 class="bm-h">Totals picks, graded in the open</h2>
-            <p class="bm-sub">One market, done right: pregame over/unders — price-aware and +EV-gated. One DiamondEdge Pick per game, graded at the real price, with the record accruing in public.</p>
-          </div>
-          ${betaFrame(d)}
-          <div class="beta-tabs" role="tablist">
-            <button class="beta-tab ${betaTab === "today" ? "on" : ""}" data-btab="today">Today${liveTakes ? ` <span class="bt-count">${liveTakes}</span>` : ""}</button>
-            <button class="beta-tab ${betaTab === "record" ? "on" : ""}" data-btab="record">Record</button>
-            <button class="beta-tab ${betaTab === "games" ? "on" : ""}" data-btab="games">Games <span class="bt-count">${(betaOnlyTakes ? games.filter((g) => betaTakeCount(g) > 0).length : games.length).toLocaleString()}</span></button>
-          </div>
-          <div class="beta-pane" style="display:${betaTab === "today" ? "block" : "none"}">${betaTodayBoard(lv)}</div>
-          <div class="beta-pane" style="display:${betaTab === "record" ? "block" : "none"}">${betaDashboard(d)}</div>
-          <div class="beta-pane" style="display:${betaTab === "games" ? "block" : "none"}">
-            <div class="beta-listhead"><span>${betaOnlyTakes ? "Games with a DiamondEdge Pick" : "Every graded game"}</span><button class="beta-togg" id="beta-togg">${betaOnlyTakes ? "Show all games" : "Only games with picks"}</button></div>
-            <div class="beta-glist">${shown.map(betaGameListCard).join("")}</div>
-            ${list.length > betaShown ? `<button class="beta-more" id="beta-more">Show more (${(list.length - betaShown).toLocaleString()} left)</button>` : ""}
-          </div>
-        </div>`;
-      view.querySelectorAll(".beta-tab").forEach((b: any) => (b.onclick = () => { betaTab = b.dataset.btab; renderBeta(); }));
-      bindClick("beta-togg", () => { betaOnlyTakes = !betaOnlyTakes; betaShown = 24; renderBeta(); });
-      bindClick("beta-more", () => { betaShown += 36; renderBeta(); requestAnimationFrame(() => { const el = $("beta-more"); if (el) el.scrollIntoView({ block: "center" }); }); });
-      // card clicks resolve against BOTH feeds (live board first, then the historical walk)
-      betaBuiltAt = Date.now();
-      view.querySelectorAll(".beta-gcard[data-bgid]").forEach((b: any) => (b.onclick = () => {
-        const gid = b.dataset.bgid;
-        const bg = (lv && (lv.games || []).find((g: any) => String(g.game_id) === gid)) || (betaData.games || []).find((g: any) => String(g.game_id) === gid);
-        openBetaGame(bg);
-      }));
-      animateCounters(view);
-    }
 
     // ---- the per-game pick card: the one DiamondEdge Pick (or the honest pass + its reason) ----
     let betaSheetSeq = 0;   // which beta sheet is on screen — see the hydrate at the end
@@ -17053,7 +15876,7 @@ export default function Home() {
       if (!labFreshTimer) labFreshTimer = setInterval(() => { try { tickLabFresh(); } catch {} }, 60000);
     }
 
-    const NAV_LABEL: any = { today: "News", games: "Games", desk: "Desk", results: "Record", research: "Research", beta: "Totals", settings: "Settings", account: "Account", upgrade: "Premium" };
+    const NAV_LABEL: any = { today: "News", games: "Games", desk: "Desk", results: "Record", research: "Research", settings: "Settings", account: "Account", upgrade: "Premium" };
     /* ══════════════════════ THE ANALYST ROSTER — a destination ══════════════════════
        Four boxes, four drawn identities, four records. The whole point of the page is that
        you leave it knowing who VEGA is and why SCOUT would never agree with ATLAS. Every
@@ -17147,27 +15970,6 @@ export default function Home() {
        roster card as well; on a 2×2 of small cards a confidence-interval drawing beside a
        W–L is two samples of different sizes on one surface, which is exactly how a reader
        comes to believe they are the same number. It now lives only on the character page. */
-    function rosterProfBlock(k: string) {
-      const p = profileFor(k);
-      if (!p) {
-        const ph = profHeadFor(k);
-        return ph && ph.line ? `<div class="rost-prof"><div class="rost-prof-k">What the numbers say</div>
-          <p class="rost-prof-line">${esc(ph.line)}</p></div>` : "";
-      }
-      const c = p.chars[0] || null;
-      const sc = profScale(p);
-      return `<div class="rost-prof${c ? " on" : ""}">
-        <div class="rost-prof-k">What the numbers say</div>
-        ${c ? `<div class="rost-prof-char">
-            <div class="profchar-top"><span class="profchar-ax">${esc(profAxis(c.axis))}</span>${c.cell ? `<span class="profchar-cell">${esc(c.cell)}</span>` : ""}${c.sig ? `<span class="patv sig">survives the desk-wide correction</span>` : ""}</div>
-            <p class="rost-prof-line lead">${esc(c.line)}</p>
-            <div class="profci" aria-hidden="true"><i class="profci-rule" style="left:${sc.at(sc.base)}"></i>${c.lo != null && c.hi != null ? `<i class="profci-band" style="left:${sc.at(c.lo)};right:calc(100% - ${sc.at(c.hi)})"></i>` : ""}${c.hit != null ? `<i class="profci-dot" style="left:${sc.at(c.hit)}"></i>` : ""}</div>
-          </div>`
-        : `<p class="rost-prof-line">${esc(p.headline)}</p>`}
-        ${profBaseFigs(p)}
-        ${p.baseline.n ? `<p class="rost-prof-n">Its own baseline across every call it has filed${p.baseline.from ? ` since ${esc(p.baseline.from.slice(0, 4))}` : ""} — a longer, separate ledger from the graded record, and the yardstick everything here is measured against.</p>` : ""}
-      </div>`;
-    }
     /* ═══════════════ THE HEADLINE RECORD — the whole sales case, in one number ═══════════════
        Leon: "the headline record is the adaptive strategy record from 2026-07-01 to today
        (`record.headline` when the backend lands it; fall back to the best available served
@@ -17787,7 +16589,6 @@ export default function Home() {
       // (dock item clicks are wired inside renderDock)
       const hdr0 = $("app-header"); if (hdr0) document.documentElement.style.setProperty("--hdr-h", hdr0.offsetHeight + "px");
       bindHeaderScroll();
-      renderTicker();
     }
     // ---- FLOATING GLASS DOCK (iOS-style, the golf-app pattern) ----
     // Dark glass pill fixed above the safe area; icons per tab; the ACTIVE tab expands to
@@ -17842,7 +16643,6 @@ export default function Home() {
        stays as a documented no-op because five code paths (tab switches, the live-score
        poller, the boot warm-up) call it, and a silent-if-missing render is precisely the
        pattern the dead-click-target guard exists to stop us shipping. */
-    function renderTicker() { const el = $("ticker"); if (el) el.remove(); }
     // ---- unified sticky header + collapsing behavior on the Games tab (scroll-driven) ----
     // Driven by BOTH a scroll listener (fast) AND IntersectionObserver sentinels (robust —
     // fires even where programmatic scrolls don't dispatch scroll events). Idempotent.
@@ -18008,7 +16808,6 @@ export default function Home() {
           if (rendered) return;
           rendered = true;
           window.scrollTo(0, 0);
-          renderTicker(); // hides on Games, shows (live-only) elsewhere; republishes header height
           if (t === "today") {
             // `todayFresh` alone was not enough: a briefing that rendered its LOADING state
             // is "fresh" and has no deck in it, so coming back to the tab resumed nothing,
@@ -18028,7 +16827,7 @@ export default function Home() {
           if (t === "settings") renderSettings();
           if (t === "upgrade") renderUpgrade();
           if (t === "account") renderAccount();
-          if (t === "games") setTimeout(() => { positionInk(); positionLens(); recenterStrip(false); }, 30);
+          if (t === "games") setTimeout(() => { positionInk(); recenterStrip(false); }, 30);
         };
         requestAnimationFrame(renderDeferred);
         setTimeout(renderDeferred, 120);
@@ -18095,8 +16894,7 @@ export default function Home() {
         positionInk();
         renderSlate();
         renderToday();
-        renderTicker();
-        requestAnimationFrame(() => { positionInk(); positionLens(); recenterStrip(false); });
+          requestAnimationFrame(() => { positionInk(); recenterStrip(false); });
         // deep-link restore: a fresh ?g=<id> load opens that game's sheet (replace, not push).
         syncFromUrl(false);
       } catch {
