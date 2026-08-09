@@ -3728,9 +3728,9 @@ export default function Home() {
       const line = pts.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
       const up = pts[pts.length - 1] >= 0;
       return `<svg class="anlp-arc" viewBox="0 0 ${w} ${h}" role="img" aria-label="Last ${last10.length} calls — running win-loss arc, currently ${pts[pts.length - 1] >= 0 ? "up" : "down"} ${Math.abs(pts[pts.length - 1])}">
-        <line x1="${pad}" y1="${Y(0).toFixed(1)}" x2="${w - pad}" y2="${Y(0).toFixed(1)}" stroke="rgba(224,235,255,.14)" stroke-dasharray="3 4" stroke-width="1"/>
-        <polyline points="${line}" fill="none" stroke="var(--anc,#eec258)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${X(pts.length - 1).toFixed(1)}" cy="${Y(pts[pts.length - 1]).toFixed(1)}" r="3.4" fill="var(--anc,#eec258)"/>
+        <line x1="${pad}" y1="${Y(0).toFixed(1)}" x2="${w - pad}" y2="${Y(0).toFixed(1)}" stroke="rgba(var(--rimc),.18)" stroke-dasharray="3 4" stroke-width="1"/>
+        <polyline points="${line}" fill="none" stroke="var(--anc,var(--a2))" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${X(pts.length - 1).toFixed(1)}" cy="${Y(pts[pts.length - 1]).toFixed(1)}" r="3.4" fill="var(--anc,var(--a2))"/>
         <text x="${(X(pts.length - 1) - 7).toFixed(1)}" y="${Math.max(11, Math.min(h - 5, Y(pts[pts.length - 1]) - 7)).toFixed(1)}" text-anchor="end" class="anlp-arc-lab ${up ? "pos" : "neg"}">${pts[pts.length - 1] >= 0 ? "+" : ""}${pts[pts.length - 1]}</text>
       </svg>`;
     }
@@ -11375,7 +11375,39 @@ export default function Home() {
 
       // (2) GAME PREVIEW — the article STARTS as a pure game preview (no pick spoiler):
       // served game.article first, composed from the same real fields otherwise.
-      const bodyParas = leadLocked ? [] : (art && art.paras.length ? art.paras : (lead ? whySentences(g, lead) : composedPreview(g).paras));
+      /* WHERE THE CASE LIVES NOW: `pick.game_case`, at the pick level.
+         It used to be read only from `pick.forge_strategy.game_case`, and the
+         backend only built it inside the forge's own block and only when a
+         frozen forge row existed — so on the 2026-08-08 board, whose picks were
+         chosen by a strategy_forge rule but served through the OWNER channel
+         (and so carry `owner_strategy`), the card rendered on 0 of 15 games.
+         The generator never read the rule anyway, so the case is not a claim
+         about which channel chose the side and now travels on the pick itself.
+         The old path is still read, so a payload built before this still shows. */
+      const forgeCase = (() => {
+        const vg = v4GameFor(g) || g;
+        const pk0 = vg && vg.pick;
+        const blk = pk0 && pk0.forge_strategy;
+        const gc = (pk0 && typeof pk0.game_case === "object" && pk0.game_case)
+          || (blk && typeof blk === "object" ? blk.game_case : null);
+        if (!gc || typeof gc !== "object" || gc.status !== "ACTIVE") return null;
+        const paras = (Array.isArray(gc.paragraphs) ? gc.paragraphs : [])
+          .map((p: any) => String(p || "").trim()).filter(Boolean);
+        if (!paras.length) return null;
+        return { paras };
+      })();
+      /* THE NARRATIVE IS THE PREVIEW (Leon, 2026-08-09). `pick.game_case.paragraphs` is
+         the whole four-paragraph piece — the game, the pick, the support, the round-out —
+         written backend-side against this game's own served feature row and audited there
+         numeral by numeral. It outranks every other source of preview prose because it is
+         the only one whose figures are provable, and because it already contains what the
+         other sources were separately supplying. The old ladder (served article, then
+         `whySentences`, then `composedPreview`) survives untouched BENEATH it, for a game
+         the backend has not written yet — every game on the board before the morning
+         serve. Declared here rather than inline so `previewBlock` can tell a written game
+         from a composed one and drop its section heading accordingly. */
+      const narrativeParas: string[] = (!leadLocked && forgeCase) ? forgeCase.paras : [];
+      const bodyParas = leadLocked ? [] : (narrativeParas.length ? narrativeParas : (art && art.paras.length ? art.paras : (lead ? whySentences(g, lead) : composedPreview(g).paras)));
       const facts = leadLocked ? [] : factRows(g, art);
       const stks = leadLocked ? "" : gameStreaks(g).slice(0, 4).map((s: any) =>
         `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
@@ -11412,48 +11444,28 @@ export default function Home() {
          SO THIS FUNCTION ADDS NOTHING. No joining, no rounding, no "and" between clauses,
          no fallback prose when the block is missing — a missing block renders no card. The
          one thing it does is refuse a shape it does not recognise. */
-      /* WHERE THE CASE LIVES NOW: `pick.game_case`, at the pick level.
-         It used to be read only from `pick.forge_strategy.game_case`, and the
-         backend only built it inside the forge's own block and only when a
-         frozen forge row existed — so on the 2026-08-08 board, whose picks were
-         chosen by a strategy_forge rule but served through the OWNER channel
-         (and so carry `owner_strategy`), the card rendered on 0 of 15 games.
-         The generator never read the rule anyway, so the case is not a claim
-         about which channel chose the side and now travels on the pick itself.
-         The old path is still read, so a payload built before this still shows. */
-      const forgeCase = (() => {
-        const vg = v4GameFor(g) || g;
-        const pk0 = vg && vg.pick;
-        const blk = pk0 && pk0.forge_strategy;
-        const gc = (pk0 && typeof pk0.game_case === "object" && pk0.game_case)
-          || (blk && typeof blk === "object" ? blk.game_case : null);
-        if (!gc || typeof gc !== "object" || gc.status !== "ACTIVE") return null;
-        const paras = (Array.isArray(gc.paragraphs) ? gc.paragraphs : [])
-          .map((p: any) => String(p || "").trim()).filter(Boolean);
-        if (!paras.length) return null;
-        return { paras, how: String(gc.how_to_read || "").trim() };
-      })();
-      /* Gated with the rest of the read: the case names the side in its own last
-         clause, and the side is the product.
+      /* ════════ ONE PIECE OF WRITING, NOT TWO STACKED BLOCKS ════════
+         Leon, 2026-08-09: "Today there are two separate things: a long game preview,
+         and a betting rationale. Weave them into one four-paragraph narrative."
 
-         NO RULE-NAME CHIP. This card used to print `forge_strategy.rule_name` —
-         "ATLAS's Call", "The Priced Apart and VEGA's Call" — one line above
-         prose whose own voice check REFUSES those exact strings inside it. A
-         reader does not read a card in sections, so the machinery the prose was
-         rewritten to keep out was sitting in the same box, in bolder type.
+         THE SEPARATE RATIONALE CARD IS GONE. `forgeCaseBlock` used to render the case
+         in its own titled box ("The game, and what points this way") ABOVE the preview
+         masthead, and the preview then opened underneath with its own prose written by a
+         different producer. Two blocks, two voices, one game. The backend now writes the
+         whole thing as one four-paragraph piece — the game, the pick, the support, the
+         round-out — so the case IS the preview and renders in the preview slot. Nothing
+         is rendered twice because there is only one thing now.
 
-         AND THE QUALIFIER IS RENDERED. `how_to_read` was written by the backend
-         and mapped by nothing: the caveat never reached a viewer while the
-         prose's closing sentence did. It is the one line that says what the
-         paragraphs are — the game and the facts that agree with the side, not a
-         re-derivation of the pick — so it ships with them or they overclaim. */
-      const forgeCaseBlock = (!leadLocked && forgeCase)
-        ? `<div class="whycard rulecase">
-            <div class="wc-k">The game, and what points this way</div>
-            ${forgeCase.paras.map((p: string) => `<p>${esc(p)}</p>`).join("")}
-            ${forgeCase.how ? `<p class="rc-how">${esc(forgeCase.how)}</p>` : ""}
-          </div>`
-        : "";
+         AND THE QUALIFIER IS DELETED WITH IT. `how_to_read` — "The side came first. What
+         you have just read is this game, and the measured facts on it that point the same
+         way — not a re-derivation of the pick." — was rendered under every card. Leon:
+         "Please remove disclaimers like this from everywhere." The backend no longer emits
+         the field and nothing here reads it; the sourcing guarantee it described is
+         unaffected and lives in the generator's own audit.
+
+         NO RULE-NAME CHIP EITHER, and that one predates today: the card used to print
+         `forge_strategy.rule_name` — "ATLAS's Call" — one line above prose whose own
+         voice check REFUSES that exact string inside it. */
       const previewBlock = leadLocked
         ? `<div class="whycard">
             <div class="wc-k">Game preview</div>
@@ -11466,7 +11478,14 @@ export default function Home() {
            card; the rest of the pane is unaffected. */
         : (bodyParas.length || stks || facts.length)
           ? `<div class="whycard preview">
-              <div class="wc-k">The setup</div>
+              ${/* NO SECTION HEADING OVER THE NARRATIVE. "The setup" made sense over three
+                   composed sentences sitting under a separate rationale card; over the
+                   whole four-paragraph piece, directly beneath a masthead that already
+                   reads "DiamondEdge Preview", it is a label on an article's own body. It
+                   still titles the FALLBACK — the browser-composed setup lines a game gets
+                   when the backend has not written it — because those really are a
+                   fragment rather than a piece. */ ""}
+              ${narrativeParas.length ? "" : `<div class="wc-k">The setup</div>`}
               ${bodyParas.map((w) => `<p>${mdBold(w)}</p>`).join("")}
               ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
               ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
@@ -11630,13 +11649,13 @@ export default function Home() {
          open, and the pending block above it says what is actually true. */
       const fullRead = (leadLocked || (!lead && picksPending(g)))
         ? "" : safeHtml("the full read", () => diamondEdgeReasoning(g, lead, leadLocked), "");
-      /* THE SECTION NEEDS A NAME WHEN THE CASE IS NOT THERE TO GIVE IT ONE. The rule's case
-         arrives inside its own titled card ("Why we lean this way"), which IS the heading —
-         but the generator only writes one for a game whose rule fired, and on the rest the
-         section would open on a bare confidence dial with nothing saying what it answers.
-         The kicker fills exactly that gap, and never doubles the card's own title. On a game
-         that has started the pane already opens with a kicker, so this one stands down. */
-      const whyHead = (!forgeCaseBlock && !showLive && !!(lead || passBlock))
+      /* THE SECTION ALWAYS NEEDS A NAME NOW. This kicker used to stand down whenever the
+         rationale card was present, because that card's own title said what the section
+         answered. The card is gone — the narrative moved into the preview, where it belongs
+         — so what is left here is the confidence dial and the fold, and they open on nothing
+         unless the kicker names them. On a game that has started the pane already opens with
+         a kicker of its own, so this one still stands down there. */
+      const whyHead = (!showLive && !!(lead || passBlock))
         ? `<div class="gp-prekick">Why we're on this</div>` : "";
       /* LOCKED (signed-out / free) RENDERS NO WHY SECTION AT ALL, and that is not an
          oversight — every part of it argues the side. The case names it, the confidence
@@ -11647,7 +11666,6 @@ export default function Home() {
       const whySection = leadLocked
         ? ""
         : `${whyHead}
-           ${forgeCaseBlock}
            ${lead && !leadLocked ? confidenceBlock(lead) : ""}
            ${/* the no-bet statement comes BEFORE the fold that elaborates on it — a "full
                 read" disclosure above the sentence explaining there is no bet reads as an
@@ -12242,11 +12260,11 @@ export default function Home() {
       const last = pts[pts.length - 1];
       const lastY = Y(last.v);
       return `<svg class="ixsvg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Cumulative units over the season — currently ${last.v >= 0 ? "plus" : "minus"} ${Math.abs(last.v).toFixed(1)} units">
-        <defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(224,172,32,.28)"/><stop offset="1" stop-color="rgba(224,172,32,0)"/></linearGradient></defs>
-        <line x1="${padL}" y1="${Y(0).toFixed(1)}" x2="${(w - padR + 16).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="rgba(224,235,255,.15)" stroke-dasharray="3 4" stroke-width="1"/>
+        <defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(var(--goldc),.22)"/><stop offset="1" stop-color="rgba(var(--goldc),0)"/></linearGradient></defs>
+        <line x1="${padL}" y1="${Y(0).toFixed(1)}" x2="${(w - padR + 16).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="rgba(var(--rimc),.18)" stroke-dasharray="3 4" stroke-width="1"/>
         <polygon points="${area}" fill="url(#eqfill)"/>
-        <polyline points="${line}" fill="none" stroke="#eec258" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${X(pts.length - 1).toFixed(1)}" cy="${lastY.toFixed(1)}" r="3.2" fill="#eec258"/>
+        <polyline points="${line}" fill="none" stroke="var(--a2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${X(pts.length - 1).toFixed(1)}" cy="${lastY.toFixed(1)}" r="3.2" fill="var(--a2)"/>
         <text x="${(X(pts.length - 1) + 7).toFixed(1)}" y="${Math.max(11, Math.min(h - 5, lastY + 3.5)).toFixed(1)}" class="ix-lab ${last.v >= 0 ? "pos" : "neg"}">${last.v >= 0 ? "+" : ""}${last.v.toFixed(1)}u</text>
       </svg>`;
     }

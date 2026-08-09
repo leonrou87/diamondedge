@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-09T20:14:23Z",
+  "generated_utc": "2026-08-09T20:52:48Z",
   "dates": [
     "2026-08-09"
   ],
@@ -2224,24 +2224,24 @@
       "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "n": 163,
-      "win": 81,
-      "loss": 73,
+      "n": 167,
+      "win": 84,
+      "loss": 74,
       "push": 9,
-      "record": "81-73-9",
-      "decided": 154,
-      "hit_rate": 0.526,
-      "units": 6.661,
+      "record": "84-74-9",
+      "decided": 158,
+      "hit_rate": 0.5316,
+      "units": 8.474,
       "units_weighted": {
-        "units": 15.729,
-        "staked": 291.0,
-        "roi": 0.0541,
+        "units": 17.542,
+        "staked": 295.0,
+        "roi": 0.0595,
         "n_offladder_flat_1u": 0
       },
-      "roi": 0.0433,
+      "roi": 0.0536,
       "hit_rate_ci": [
-        0.4744,
-        0.577
+        0.4807,
+        0.5819
       ],
       "hit_rate_ci_level": 0.8,
       "n_days": 28,
@@ -2262,14 +2262,14 @@
         },
         {
           "month": "2026-08",
-          "n": 49,
-          "win": 22,
-          "loss": 21,
+          "n": 53,
+          "win": 25,
+          "loss": 22,
           "push": 6,
-          "record": "22-21-6",
-          "hit_rate": 0.5116,
-          "units": 0.131,
-          "roi": 0.003
+          "record": "25-22-6",
+          "hit_rate": 0.5319,
+          "units": 1.944,
+          "roi": 0.0414
         }
       ],
       "by_engine": {
@@ -2349,24 +2349,24 @@
           "through": "2026-08-08"
         },
         "nightly_engine": {
-          "n": 8,
-          "win": 4,
-          "loss": 3,
+          "n": 12,
+          "win": 7,
+          "loss": 4,
           "push": 1,
-          "record": "4-3-1",
-          "decided": 7,
-          "hit_rate": 0.5714,
-          "units": 0.762,
+          "record": "7-4-1",
+          "decided": 11,
+          "hit_rate": 0.6364,
+          "units": 2.575,
           "units_weighted": {
-            "units": 0.835,
-            "staked": 4.0,
-            "roi": 0.2088,
+            "units": 2.649,
+            "staked": 8.0,
+            "roi": 0.3311,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.1088,
+          "roi": 0.2341,
           "hit_rate_ci": [
-            0.3417,
-            0.774
+            0.4444,
+            0.7929
           ],
           "hit_rate_ci_level": 0.8,
           "n_days": 2,
@@ -3617,14 +3617,14 @@
       },
       {
         "date": "2026-08-09",
-        "n": 1,
-        "win": 1,
-        "loss": 0,
+        "n": 5,
+        "win": 4,
+        "loss": 1,
         "push": 0,
-        "record": "1-0-0",
-        "hit_rate": 1.0,
-        "units": 0.909,
-        "roi": 0.9091,
+        "record": "4-1-0",
+        "hit_rate": 0.8,
+        "units": 2.722,
+        "roi": 0.5445,
         "strategy": {
           "rule_key": "forge:w17:46ca506354",
           "label": "The rule that won the search",
@@ -3761,24 +3761,24 @@
         }
       },
       "untiered": {
-        "n": 160,
-        "win": 79,
-        "loss": 72,
+        "n": 164,
+        "win": 82,
+        "loss": 73,
         "push": 9,
-        "record": "79-72-9",
-        "decided": 151,
-        "hit_rate": 0.5232,
-        "units": 5.756,
+        "record": "82-73-9",
+        "decided": 155,
+        "hit_rate": 0.529,
+        "units": 7.569,
         "units_weighted": {
-          "units": 14.824,
-          "staked": 288.0,
-          "roi": 0.0515,
+          "units": 16.637,
+          "staked": 292.0,
+          "roi": 0.057,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0381,
+        "roi": 0.0488,
         "hit_rate_ci": [
-          0.4711,
-          0.5747
+          0.4776,
+          0.5798
         ],
         "hit_rate_ci_level": 0.8,
         "n_days": 28,
@@ -3787,9 +3787,9 @@
         "label": "No committee vote on record",
         "why": "desk-sourced and legacy picks carry no vote split, so they carry no tier. They count in record.headline exactly like every other pick."
       },
-      "n_headline": 163,
+      "n_headline": 167,
       "n_tiered": 3,
-      "n_untiered": 160,
+      "n_untiered": 164,
       "sums_to_headline": true,
       "rail": "strong + standard + lean + untiered == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "engine_shadow_ledger": {
@@ -3813,24 +3813,24 @@
           },
           "standard": {
             "win": 3,
-            "loss": 2,
+            "loss": 3,
             "push": 0,
-            "n": 5,
-            "record": "3-2-0",
-            "units_flat_-110": 0.727,
-            "hit_rate": 0.6,
+            "n": 6,
+            "record": "3-3-0",
+            "units_flat_-110": -0.273,
+            "hit_rate": 0.5,
             "label": "Standard",
             "blurb": "At least a quarter of the committee backed this side.",
             "rank": 2
           },
           "lean": {
-            "win": 12,
-            "loss": 16,
+            "win": 14,
+            "loss": 17,
             "push": 4,
-            "n": 32,
-            "record": "12-16-4",
-            "units_flat_-110": -5.091,
-            "hit_rate": 0.4286,
+            "n": 35,
+            "record": "14-17-4",
+            "units_flat_-110": -4.273,
+            "hit_rate": 0.4516,
             "label": "Lean",
             "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
             "rank": 1
@@ -3847,8 +3847,8 @@
           "why": "rows written before the vote counts existed on the board; they count in `record` and are never given a tier they cannot support"
         },
         "sums_to_record": true,
-        "n_graded_total": 47,
-        "n_tiered": 47,
+        "n_graded_total": 51,
+        "n_tiered": 51,
         "n_untiered": 0,
         "thresholds": {
           "policy_version": "pick_strength_v1",
@@ -4057,26 +4057,26 @@
           ],
           "label": "40-49",
           "is_high_band": false,
-          "n": 1,
-          "win": 1,
-          "loss": 0,
+          "n": 5,
+          "win": 4,
+          "loss": 1,
           "push": 0,
-          "record": "1-0-0",
-          "decided": 1,
-          "hit_rate": 1.0,
+          "record": "4-1-0",
+          "decided": 5,
+          "hit_rate": 0.8,
           "hit_rate_ci": [
-            0.2065,
-            1.0
+            0.3755,
+            0.9638
           ],
           "hit_rate_ci_level": 0.95,
-          "units": 0.909,
+          "units": 2.722,
           "units_weighted": {
-            "units": 0.909,
-            "staked": 1.0,
-            "roi": 0.9091,
+            "units": 2.722,
+            "staked": 5.0,
+            "roi": 0.5445,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.9091,
+          "roi": 0.5445,
           "n_days": 1,
           "first": "2026-08-09",
           "through": "2026-08-09"
@@ -4265,27 +4265,27 @@
         "through": "2026-08-07"
       },
       "below_high_band": {
-        "n": 10,
-        "win": 5,
-        "loss": 4,
+        "n": 14,
+        "win": 8,
+        "loss": 5,
         "push": 1,
-        "record": "5-4-1",
-        "decided": 9,
-        "hit_rate": 0.5556,
+        "record": "8-5-1",
+        "decided": 13,
+        "hit_rate": 0.6154,
         "hit_rate_ci": [
-          0.2667,
-          0.8112
+          0.3552,
+          0.8229
         ],
         "hit_rate_ci_level": 0.95,
         "label": "under 90",
-        "units": 0.714,
+        "units": 2.527,
         "units_weighted": {
-          "units": 0.788,
-          "staked": 6.0,
-          "roi": 0.1313,
+          "units": 2.601,
+          "staked": 10.0,
+          "roi": 0.2601,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0793,
+        "roi": 0.1944,
         "n_days": 3,
         "first": "2026-08-07",
         "through": "2026-08-09"
@@ -4293,13 +4293,13 @@
       "verdict": {
         "high_band_min": 90,
         "n_decided_high": 1,
-        "n_decided_rest": 9,
+        "n_decided_rest": 13,
         "hit_rate_high": 1.0,
-        "hit_rate_rest": 0.5556,
-        "difference": 0.4444,
+        "hit_rate_rest": 0.6154,
+        "difference": 0.3846,
         "difference_ci": [
-          -0.3892,
-          0.7333
+          -0.4356,
+          0.6448
         ],
         "difference_ci_level": 0.95,
         "p_value": 1.0,
@@ -4308,7 +4308,7 @@
         "distinguishable_from_noise": false,
         "status": "open_question",
         "is_a_finding": false,
-        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 9 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.389 to +0.733 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 13 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.436 to +0.645 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
         "n_needed_per_arm_for_observed_gap": null,
         "n_needed_per_arm_for_meaningful_gap": 392,
         "meaningful_gap": [
@@ -4345,13 +4345,13 @@
         "first": "2026-07-02",
         "through": "2026-08-08"
       },
-      "n_total": 163,
-      "n_scored": 11,
+      "n_total": 167,
+      "n_scored": 15,
       "n_unscored": 152,
       "sums_to_total": true,
       "rail": "every decile + unscored == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "headline_is_the_record": true,
-      "n_headline": 163,
+      "n_headline": 167,
       "sums_to_headline": true,
       "history_limit": {
         "reconstructible_from": "2026-08-03",
@@ -4478,19 +4478,19 @@
             ],
             "label": "50-59",
             "is_high_band": false,
-            "n": 12,
-            "win": 3,
-            "loss": 7,
+            "n": 15,
+            "win": 5,
+            "loss": 8,
             "push": 2,
-            "record": "3-7-2",
-            "decided": 10,
-            "hit_rate": 0.3,
+            "record": "5-8-2",
+            "decided": 13,
+            "hit_rate": 0.3846,
             "hit_rate_ci": [
-              0.1078,
-              0.6032
+              0.1771,
+              0.6448
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -4.273
+            "units_flat_-110": -3.454
           },
           {
             "band": [
@@ -4541,19 +4541,19 @@
             ],
             "label": "80-89",
             "is_high_band": false,
-            "n": 8,
+            "n": 9,
             "win": 5,
-            "loss": 3,
+            "loss": 4,
             "push": 0,
-            "record": "5-3-0",
-            "decided": 8,
-            "hit_rate": 0.625,
+            "record": "5-4-0",
+            "decided": 9,
+            "hit_rate": 0.5556,
             "hit_rate_ci": [
-              0.3057,
-              0.8632
+              0.2667,
+              0.8112
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": 1.546
+            "units_flat_-110": 0.546
           },
           {
             "band": [
@@ -4595,41 +4595,41 @@
           "units_flat_-110": 0.636
         },
         "below_high_band": {
-          "n": 40,
-          "win": 17,
-          "loss": 19,
+          "n": 44,
+          "win": 19,
+          "loss": 21,
           "push": 4,
-          "record": "17-19-4",
-          "decided": 36,
-          "hit_rate": 0.4722,
+          "record": "19-21-4",
+          "decided": 40,
+          "hit_rate": 0.475,
           "hit_rate_ci": [
-            0.3199,
-            0.6299
+            0.3294,
+            0.625
           ],
           "hit_rate_ci_level": 0.95,
           "label": "under 90",
-          "units_flat_-110": -3.545
+          "units_flat_-110": -3.727
         },
         "verdict": {
           "high_band_min": 90,
           "n_decided_high": 7,
-          "n_decided_rest": 36,
+          "n_decided_rest": 40,
           "hit_rate_high": 0.5714,
-          "hit_rate_rest": 0.4722,
-          "difference": 0.0992,
+          "hit_rate_rest": 0.475,
+          "difference": 0.0964,
           "difference_ci": [
-            -0.2584,
-            0.4095
+            -0.2578,
+            0.4035
           ],
           "difference_ci_level": 0.95,
-          "p_value": 0.698085,
+          "p_value": 0.700776,
           "test": "Fisher's exact test, two-sided, on the decided picks (W/L; pushes decided nothing and are excluded from the test)",
           "alpha": 0.05,
           "distinguishable_from_noise": false,
           "status": "open_question",
           "is_a_finding": false,
-          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 36 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.698085), and the interval on the gap runs from -0.258 to +0.409 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
-          "n_needed_per_arm_for_observed_gap": 397,
+          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 40 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.700776), and the interval on the gap runs from -0.258 to +0.404 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+          "n_needed_per_arm_for_observed_gap": 420,
           "n_needed_per_arm_for_meaningful_gap": 392,
           "meaningful_gap": [
             0.55,
@@ -4714,11 +4714,11 @@
         },
         "basis": "committee_vote",
         "basis_note": "every row here is scored from the committee vote the board froze before first pitch. No engine pick is scored any other way, so the cut is one kind of evidence throughout \u2014 the two bases `pick_confidence` defines are never mixed inside one table.",
-        "n_total": 47,
-        "n_scored": 47,
+        "n_total": 51,
+        "n_scored": 51,
         "n_unscored": 0,
         "sums_to_total": true,
-        "n_graded_total": 47
+        "n_graded_total": 51
       }
     },
     "streaks": {
@@ -4726,48 +4726,48 @@
       "site": {
         "current": {
           "type": "win",
-          "length": 2
+          "length": 1
         },
         "best_win_streak": 8,
         "best_loss_streak": 8,
-        "n_decided": 154
+        "n_decided": 158
       },
       "by_analyst": {
         "vega": {
           "current": {
             "type": "loss",
-            "length": 2
+            "length": 1
           },
           "best_win_streak": 9,
           "best_loss_streak": 13,
-          "n_decided": 441
+          "n_decided": 445
         },
         "atlas": {
           "current": {
-            "type": "loss",
-            "length": 2
+            "type": "win",
+            "length": 1
           },
           "best_win_streak": 8,
           "best_loss_streak": 11,
-          "n_decided": 441
+          "n_decided": 445
         },
         "nova": {
           "current": {
             "type": "win",
-            "length": 2
+            "length": 6
           },
           "best_win_streak": 9,
           "best_loss_streak": 10,
-          "n_decided": 441
+          "n_decided": 445
         },
         "scout": {
           "current": {
             "type": "win",
-            "length": 2
+            "length": 6
           },
           "best_win_streak": 7,
           "best_loss_streak": 10,
-          "n_decided": 441
+          "n_decided": 445
         }
       },
       "analyst_order": [
@@ -5002,17 +5002,17 @@
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
     "overall": {
-      "n": 48,
-      "win": 27,
+      "n": 49,
+      "win": 28,
       "loss": 18,
       "push": 3,
-      "roi": 0.1815,
-      "hit_rate": 0.6,
-      "units_flat": 8.167,
+      "roi": 0.1993,
+      "hit_rate": 0.6087,
+      "units_flat": 9.167,
       "units_weighted": {
-        "units": 15.429,
-        "staked": 87.0,
-        "roi": 0.1774,
+        "units": 17.429,
+        "staked": 89.0,
+        "roi": 0.1958,
         "n_offladder_flat_1u": 0
       }
     },
@@ -5034,17 +5034,17 @@
         "includes_expanded_n": 0
       },
       "4": {
-        "n": 9,
-        "win": 8,
+        "n": 10,
+        "win": 9,
         "loss": 1,
         "push": 0,
-        "roi": 0.7485,
-        "hit_rate": 0.8889,
-        "units_flat": 6.736,
+        "roi": 0.7736,
+        "hit_rate": 0.9,
+        "units_flat": 7.736,
         "units_weighted": {
-          "units": 13.472,
-          "staked": 18.0,
-          "roi": 0.7485,
+          "units": 15.472,
+          "staked": 20.0,
+          "roi": 0.7736,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
@@ -5114,17 +5114,17 @@
         }
       },
       "adaptive_desk": {
-        "n": 45,
-        "win": 25,
+        "n": 46,
+        "win": 26,
         "loss": 17,
         "push": 3,
-        "roi": 0.1729,
-        "hit_rate": 0.5952,
-        "units_flat": 7.262,
+        "roi": 0.1921,
+        "hit_rate": 0.6047,
+        "units_flat": 8.262,
         "units_weighted": {
-          "units": 14.525,
-          "staked": 84.0,
-          "roi": 0.1729,
+          "units": 16.525,
+          "staked": 86.0,
+          "roi": 0.1921,
           "n_offladder_flat_1u": 0
         }
       },
@@ -5182,7 +5182,7 @@
       "nightly_engine",
       "strategy_forge"
     ],
-    "n_unified_picks": 48,
+    "n_unified_picks": 49,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -5297,9 +5297,9 @@
         },
         {
           "date": "2026-08-09",
-          "units_flat": 8.167,
-          "units_weighted": 15.429,
-          "n": 48
+          "units_flat": 9.167,
+          "units_weighted": 17.429,
+          "n": 49
         }
       ],
       "by_star_perf": {
@@ -5309,9 +5309,9 @@
           "roi": 0.0159
         },
         "4": {
-          "n": 9,
-          "hit": 0.8889,
-          "roi": 0.7485
+          "n": 10,
+          "hit": 0.9,
+          "roi": 0.7736
         },
         "3": {
           "n": 3,
@@ -5327,9 +5327,9 @@
       "calibration_buckets": [
         {
           "bucket_mid": 0.475,
-          "n": 24,
-          "predicted": 0.491,
-          "realized": 0.5
+          "n": 25,
+          "predicted": 0.4911,
+          "realized": 0.52
         },
         {
           "bucket_mid": 0.525,
@@ -5357,19 +5357,19 @@
         },
         {
           "month": "2026-08",
-          "n": 42,
-          "win": 21,
+          "n": 43,
+          "win": 22,
           "loss": 18,
           "push": 3,
-          "hit": 0.5385,
-          "roi": 0.06,
-          "units_flat": 2.34
+          "hit": 0.55,
+          "roi": 0.0835,
+          "units_flat": 3.34
         }
       ],
       "streaks": {
         "current": {
           "type": "win",
-          "length": 2
+          "length": 3
         },
         "max_win_streak": 7,
         "max_loss_streak": 4,
@@ -5552,34 +5552,34 @@
         "what": "The one pick we actually serve on this game: the champion's play if it has one, otherwise the model's best playable lean, otherwise a PASS.",
         "is_headline": true,
         "activation_date": "2026-07-20",
-        "n": 48,
-        "win": 27,
+        "n": 49,
+        "win": 28,
         "loss": 18,
         "push": 3,
-        "roi": 0.1815,
-        "hit_rate": 0.6,
-        "units_flat": 8.167,
+        "roi": 0.1993,
+        "hit_rate": 0.6087,
+        "units_flat": 9.167,
         "units_weighted": {
-          "units": 15.429,
-          "staked": 87.0,
-          "roi": 0.1774,
+          "units": 17.429,
+          "staked": 89.0,
+          "roi": 0.1958,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-30",
         "last_graded_date": "2026-08-09",
         "evidence_split": {
           "unknown": {
-            "n": 48,
-            "win": 27,
+            "n": 49,
+            "win": 28,
             "loss": 18,
             "push": 3,
-            "roi": 0.1815,
-            "hit_rate": 0.6,
-            "units_flat": 8.167,
+            "roi": 0.1993,
+            "hit_rate": 0.6087,
+            "units_flat": 9.167,
             "units_weighted": {
-              "units": 15.429,
-              "staked": 87.0,
-              "roi": 0.1774,
+              "units": 17.429,
+              "staked": 89.0,
+              "roi": 0.1958,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-30",
@@ -5600,38 +5600,38 @@
         "what": "The champion engine's own totals play \u2014 its frozen pipeline plus the +EV gate at the real per-side price. It only speaks on games where its trigger fires; on every other game it has no view at all.",
         "is_headline": false,
         "activation_date": "2026-07-02",
-        "n": 26,
+        "n": 27,
         "win": 9,
-        "loss": 15,
+        "loss": 16,
         "push": 2,
-        "roi": -0.2545,
-        "hit_rate": 0.375,
-        "units_flat": -6.107,
+        "roi": -0.2843,
+        "hit_rate": 0.36,
+        "units_flat": -7.107,
         "units_weighted": {
-          "units": -10.784,
-          "staked": 42.5,
-          "roi": -0.2537,
+          "units": -12.784,
+          "staked": 44.5,
+          "roi": -0.2873,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-02",
-        "last_graded_date": "2026-08-08",
+        "last_graded_date": "2026-08-09",
         "evidence_split": {
           "forward_paper_live": {
-            "n": 4,
+            "n": 5,
             "win": 3,
-            "loss": 1,
+            "loss": 2,
             "push": 0,
-            "roi": 0.4749,
-            "hit_rate": 0.75,
-            "units_flat": 1.9,
+            "roi": 0.1799,
+            "hit_rate": 0.6,
+            "units_flat": 0.9,
             "units_weighted": {
-              "units": 3.799,
-              "staked": 6.0,
-              "roi": 0.6332,
+              "units": 1.799,
+              "staked": 8.0,
+              "roi": 0.2249,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-12",
-            "last_graded_date": "2026-08-07",
+            "last_graded_date": "2026-08-09",
             "kind": "live",
             "what": "logged forward in the champion's paper ledger before first pitch"
           },
@@ -5736,21 +5736,21 @@
           }
         ],
         "combined_view": {
-          "n": 101,
+          "n": 102,
           "win": 50,
-          "loss": 48,
+          "loss": 49,
           "push": 3,
-          "roi": -0.017,
-          "hit_rate": 0.5102,
-          "units_flat": -1.663,
+          "roi": -0.0269,
+          "hit_rate": 0.5051,
+          "units_flat": -2.663,
           "units_weighted": {
-            "units": -4.117,
-            "staked": 181.5,
-            "roi": -0.0227,
+            "units": -6.117,
+            "staked": 183.5,
+            "roi": -0.0333,
             "n_offladder_flat_1u": 0
           },
           "first_graded_date": "2026-03-30",
-          "last_graded_date": "2026-08-08",
+          "last_graded_date": "2026-08-09",
           "label": "PUBLISHED COMBINED (live + reconstructed/backtest) \u2014 shown only because the older blocks report it. This is NOT a live record; do not quote it as one.",
           "published_as": "record.by_source.champion (and the champion's own headline)"
         },
@@ -6067,29 +6067,29 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 454,
-          "win": 216,
-          "loss": 225,
+          "n": 458,
+          "win": 218,
+          "loss": 227,
           "push": 13,
-          "hit_rate": 0.4898,
-          "decided": 441,
+          "hit_rate": 0.4899,
+          "decided": 445,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4434,
-            0.5363
+            0.4437,
+            0.5362
           ],
-          "last10": "P-W-W-L-L-P-W-W-L-L",
+          "last10": "L-P-W-W-L-L-W-L-W-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 123,
-          "own_side_over_rate": 0.5176,
+          "n_live": 127,
+          "own_side_over_rate": 0.5218,
           "mean_abs_edge_vs_market": 0.0144,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 123 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 127 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -6104,29 +6104,29 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 454,
-          "win": 203,
-          "loss": 238,
+          "n": 458,
+          "win": 204,
+          "loss": 241,
           "push": 13,
-          "hit_rate": 0.4603,
-          "decided": 441,
+          "hit_rate": 0.4584,
+          "decided": 445,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4143,
-            0.507
+            0.4127,
+            0.5049
           ],
-          "last10": "P-L-W-W-W-P-W-W-L-L",
+          "last10": "W-P-W-W-L-L-L-L-L-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 123,
-          "own_side_over_rate": 0.511,
-          "mean_abs_edge_vs_market": 0.0315,
+          "n_live": 127,
+          "own_side_over_rate": 0.5087,
+          "mean_abs_edge_vs_market": 0.0314,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 123 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 127 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "nova": {
           "key": "nova",
@@ -6141,29 +6141,29 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 454,
-          "win": 215,
+          "n": 458,
+          "win": 219,
           "loss": 226,
           "push": 13,
-          "hit_rate": 0.4875,
-          "decided": 441,
+          "hit_rate": 0.4921,
+          "decided": 445,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4412,
-            0.5341
+            0.446,
+            0.5385
           ],
-          "last10": "P-L-L-L-W-P-L-L-W-W",
+          "last10": "W-P-L-L-W-W-W-W-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 123,
-          "own_side_over_rate": 0.5242,
-          "mean_abs_edge_vs_market": 0.0221,
+          "n_live": 127,
+          "own_side_over_rate": 0.524,
+          "mean_abs_edge_vs_market": 0.0219,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 123 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 127 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "scout": {
           "key": "scout",
@@ -6178,34 +6178,34 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 454,
-          "win": 212,
+          "n": 458,
+          "win": 216,
           "loss": 229,
           "push": 13,
-          "hit_rate": 0.4807,
-          "decided": 441,
+          "hit_rate": 0.4854,
+          "decided": 445,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4345,
-            0.5273
+            0.4393,
+            0.5318
           ],
-          "last10": "P-W-L-W-W-P-L-L-W-W",
+          "last10": "W-P-L-L-W-W-W-W-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 123,
-          "own_side_over_rate": 0.4141,
-          "mean_abs_edge_vs_market": 0.026,
+          "n_live": 127,
+          "own_side_over_rate": 0.4148,
+          "mean_abs_edge_vs_market": 0.0261,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 123 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 127 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-09T19:32:12Z",
+      "updated": "2026-08-09T20:49:16Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -6242,18 +6242,18 @@
           "bh_significant": false
         },
         "SPLIT": {
-          "n": 34,
-          "win": 18,
+          "n": 35,
+          "win": 19,
           "loss": 14,
           "push": 2,
-          "hit_rate": 0.5625,
-          "roi": 0.1085,
-          "n_decided": 32,
+          "hit_rate": 0.5758,
+          "roi": 0.1355,
+          "n_decided": 33,
           "hit_ci95": [
-            0.3766,
-            0.7364
+            0.3922,
+            0.7452
           ],
-          "p_vs_coinflip": 0.596615,
+          "p_vs_coinflip": 0.48685,
           "bh_significant": false
         }
       },
@@ -6349,18 +6349,18 @@
           }
         },
         "SPLIT_2-2|over=vega+atlas": {
-          "n": 10,
-          "win": 3,
+          "n": 11,
+          "win": 4,
           "loss": 6,
           "push": 1,
-          "hit_rate": 0.3333,
-          "roi": -0.3437,
-          "n_decided": 9,
+          "hit_rate": 0.4,
+          "roi": -0.2094,
+          "n_decided": 10,
           "hit_ci95": [
-            0.0749,
-            0.7007
+            0.1216,
+            0.7376
           ],
-          "p_vs_coinflip": 0.507812,
+          "p_vs_coinflip": 0.753906,
           "bh_significant": false,
           "family": "SPLIT_2-2",
           "call": "over",
@@ -6450,8 +6450,8 @@
           }
         }
       },
-      "n_games_with_all_four_graded": 48,
-      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 48 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
+      "n_games_with_all_four_graded": 49,
+      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 49 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
       "n_rows_rendered": 11,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
@@ -8895,7 +8895,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-09T20:14:38Z",
+      "updated": "2026-08-09T20:53:03Z",
       "order": [
         "vega",
         "atlas",
@@ -10223,14 +10223,14 @@
             "VEGA \u00b7 The Price",
             "ATLAS \u00b7 The Conditions"
           ],
-          "n_disagreements": 223,
+          "n_disagreements": 226,
           "wins": {
-            "vega": 116,
-            "atlas": 103
+            "vega": 118,
+            "atlas": 104
           },
           "pushes": 4,
-          "n_both_graded": 454,
-          "line": "When VEGA and ATLAS disagree: VEGA 116, ATLAS 103"
+          "n_both_graded": 458,
+          "line": "When VEGA and ATLAS disagree: VEGA 118, ATLAS 104"
         },
         {
           "pair": [
@@ -10241,14 +10241,14 @@
             "VEGA \u00b7 The Price",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 225,
+          "n_disagreements": 227,
           "wins": {
             "vega": 111,
-            "nova": 110
+            "nova": 112
           },
           "pushes": 4,
-          "n_both_graded": 454,
-          "line": "When VEGA and NOVA disagree: VEGA 111, NOVA 110"
+          "n_both_graded": 458,
+          "line": "When VEGA and NOVA disagree: VEGA 111, NOVA 112"
         },
         {
           "pair": [
@@ -10259,14 +10259,14 @@
             "VEGA \u00b7 The Price",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 243,
+          "n_disagreements": 245,
           "wins": {
             "vega": 121,
-            "scout": 117
+            "scout": 119
           },
           "pushes": 5,
-          "n_both_graded": 454,
-          "line": "When VEGA and SCOUT disagree: VEGA 121, SCOUT 117"
+          "n_both_graded": 458,
+          "line": "When VEGA and SCOUT disagree: VEGA 121, SCOUT 119"
         },
         {
           "pair": [
@@ -10277,14 +10277,14 @@
             "ATLAS \u00b7 The Conditions",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 192,
+          "n_disagreements": 195,
           "wins": {
             "atlas": 88,
-            "nova": 100
+            "nova": 103
           },
           "pushes": 4,
-          "n_both_graded": 454,
-          "line": "When ATLAS and NOVA disagree: ATLAS 88, NOVA 100"
+          "n_both_graded": 458,
+          "line": "When ATLAS and NOVA disagree: ATLAS 88, NOVA 103"
         },
         {
           "pair": [
@@ -10295,14 +10295,14 @@
             "ATLAS \u00b7 The Conditions",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 190,
+          "n_disagreements": 193,
           "wins": {
             "atlas": 87,
-            "scout": 96
+            "scout": 99
           },
           "pushes": 7,
-          "n_both_graded": 454,
-          "line": "When ATLAS and SCOUT disagree: ATLAS 87, SCOUT 96"
+          "n_both_graded": 458,
+          "line": "When ATLAS and SCOUT disagree: ATLAS 87, SCOUT 99"
         },
         {
           "pair": [
@@ -10319,7 +10319,7 @@
             "scout": 96
           },
           "pushes": 5,
-          "n_both_graded": 454,
+          "n_both_graded": 458,
           "line": "When NOVA and SCOUT disagree: NOVA 99, SCOUT 96"
         }
       ],
@@ -10331,45 +10331,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 79,
-          "win": 32,
-          "loss": 42,
+          "n": 83,
+          "win": 34,
+          "loss": 44,
           "push": 5,
-          "hit_rate": 0.4324,
-          "line": "32-42-5",
+          "hit_rate": 0.4359,
+          "line": "34-44-5",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 79,
-          "win": 42,
-          "loss": 32,
+          "n": 83,
+          "win": 43,
+          "loss": 35,
           "push": 5,
-          "hit_rate": 0.5676,
-          "line": "42-32-5",
+          "hit_rate": 0.5513,
+          "line": "43-35-5",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 79,
-          "win": 37,
+          "n": 83,
+          "win": 41,
           "loss": 37,
           "push": 5,
-          "hit_rate": 0.5,
-          "line": "37-37-5",
+          "hit_rate": 0.5256,
+          "line": "41-37-5",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 79,
-          "win": 38,
+          "n": 83,
+          "win": 42,
           "loss": 36,
           "push": 5,
-          "hit_rate": 0.5135,
-          "line": "38-36-5",
+          "hit_rate": 0.5385,
+          "line": "42-36-5",
           "is_betting_record": false
         }
       },
@@ -10436,17 +10436,17 @@
     "record_start": "2026-07-01",
     "through": "2026-08-09",
     "overall": {
-      "n": 48,
-      "win": 25,
+      "n": 49,
+      "win": 26,
       "loss": 18,
       "push": 5,
-      "roi": 0.1456,
-      "hit_rate": 0.5814,
-      "units_flat": 6.262,
+      "roi": 0.1651,
+      "hit_rate": 0.5909,
+      "units_flat": 7.262,
       "units_weighted": {
-        "units": 12.525,
-        "staked": 86.0,
-        "roi": 0.1456,
+        "units": 14.525,
+        "staked": 88.0,
+        "roi": 0.1651,
         "n_offladder_flat_1u": 0
       }
     },
@@ -10542,8 +10542,8 @@
         "strategy_at": "adaptive_strategy_by_date.2026-08-08"
       },
       "2026-08-09": {
-        "n": 1,
-        "win": 1,
+        "n": 2,
+        "win": 2,
         "loss": 0,
         "push": 0,
         "hit_rate": 1.0,
@@ -12651,15 +12651,15 @@
       "source": "adaptive_desk"
     },
     "2026-08-09": {
-      "n_picks": 1,
-      "n_graded": 1,
-      "wins": 1,
+      "n_picks": 2,
+      "n_graded": 2,
+      "wins": 2,
       "losses": 0,
       "pushes": 0,
       "hit_rate": 1.0,
       "roi": 1.0,
-      "units": 1.0,
-      "units_weighted": 2.0,
+      "units": 2.0,
+      "units_weighted": 4.0,
       "source": "adaptive_desk"
     },
     "2026-08-10": {
@@ -13039,7 +13039,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Cincinnati Reds at Washington Nationals, and it is Brady Singer for the visitors against Brad Lord. Over his last 7 starts Singer has worked to a 4.43 ERA, with 38 strikeouts in 40 2/3 innings and he has gone 2-4 in them. Lord has 2 1/3 innings over 1 start of his own through Jul 1, giving up 0 earned runs with 1 strikeout and no decision went his way or against him in it. They are playing at Nationals Park, a ballpark that has been playing about 5% above league-average scoring over the last three years. The Nationals have scored 4.9 runs a game over their last fifteen, the Reds 3.9.",
               "The Reds went to 2 relievers yesterday and Singer has walked 7% of the hitters he has faced across his last five starts. Their recent scoring has been running 0.8 runs a game short of tonight's total and the posted total is 0.6 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
@@ -13063,6 +13063,24 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the home side leads it 2-0",
+                "source": "consecutive-day meetings at 'Nationals Park' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "5 meetings in 2026 before 2026-08-09, visitors 1-4",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
+                "fact": "home standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away R, frame hand_combo RR"
               },
@@ -13071,8 +13089,18 @@
                 "checked": "club agrees: feed home WSH / away CIN, frame team ids home WSH / away CIN"
               },
               {
+                "fact": "away starter last start score",
+                "value": "5-4",
+                "source": "the final of Athletics at Cincinnati Reds on 2026-08-04, joined from the results spine"
+              },
+              {
                 "fact": "away starter season line",
                 "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "10-2",
+                "source": "the final of Washington Nationals at Boston Red Sox on 2026-07-01, joined from the results spine"
               },
               {
                 "fact": "home starter season line",
@@ -13104,6 +13132,11 @@
                 "value": "2-4, 20 earned in 122 outs, 38 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Brady Singer's served game log, dated 2026-08-04, strictly before this game",
+                "value": "6 innings, 5 hits, 3 earned, 3 walks, 6 strikeouts vs ATH"
+              },
+              {
                 "fact": "home starter",
                 "value": "Brad Lord",
                 "source": "pitchers_v4.json"
@@ -13112,6 +13145,11 @@
                 "fact": "home starter form",
                 "source": "derived from Brad Lord's served game log, 1 starts 2026-07-01 to 2026-07-01, all strictly before this game",
                 "value": "0-0, 0 earned in 7 outs, 1 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Brad Lord's served game log, dated 2026-07-01, strictly before this game",
+                "value": "2 1/3 innings, 2 hits, 0 earned, 2 walks, 1 strikeouts vs BOS"
               }
             ],
             "sources": [
@@ -13229,7 +13267,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Cincinnati Reds at Washington Nationals, and it is Brady Singer for the visitors against Brad Lord. Over his last 7 starts Singer has worked to a 4.43 ERA, with 38 strikeouts in 40 2/3 innings and he has gone 2-4 in them. Lord has 2 1/3 innings over 1 start of his own through Jul 1, giving up 0 earned runs with 1 strikeout and no decision went his way or against him in it. They are playing at Nationals Park, a ballpark that has been playing about 5% above league-average scoring over the last three years. The Nationals have scored 4.9 runs a game over their last fifteen, the Reds 3.9.",
             "The Reds went to 2 relievers yesterday and Singer has walked 7% of the hitters he has faced across his last five starts. Their recent scoring has been running 0.8 runs a game short of tonight's total and the posted total is 0.6 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
@@ -13756,7 +13794,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -14523,7 +14561,7 @@
         "star_tier": "Rule pick \u2014 the day's rule called this side",
         "price": -109.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-09T15:04:49Z",
         "timestamp": "2026-08-09T15:04:49Z",
@@ -14703,7 +14741,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "New York Mets at Pittsburgh Pirates, and it is Sean Manaea for the visitors against Jared Jones. Over his last 7 starts Manaea has worked to a 3.57 ERA, with 35 strikeouts in 40 1/3 innings and he has gone 2-3 in them. Jones answers with a 3.03 ERA over his own last 7 starts, 41 strikeouts in 35 2/3 innings and he has gone 1-2 in them. They are playing at PNC Park, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Pirates have scored 5.7 runs a game over their last fifteen, the Mets 3.5.",
               "The two bullpens have thrown 25 innings between them over three days and first pitch is at 83 degrees. Jones has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.1 runs a game clear of tonight's total. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
@@ -14727,6 +14765,24 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the series is level at 1-1",
+                "source": "consecutive-day meetings at 'PNC Park' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "5 meetings in 2026 before 2026-08-09, visitors 3-2",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
+                "fact": "home standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away L, frame hand_combo RL"
               },
@@ -14735,8 +14791,18 @@
                 "checked": "club agrees: feed home PIT / away NYM, frame team ids home PIT / away NYM"
               },
               {
+                "fact": "away starter last start score",
+                "value": "6-2",
+                "source": "the final of New York Mets at Cleveland Guardians on 2026-08-04, joined from the results spine"
+              },
+              {
                 "fact": "away starter season line",
                 "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "2-4",
+                "source": "the final of Pittsburgh Pirates at Milwaukee Brewers on 2026-08-04, joined from the results spine"
               },
               {
                 "fact": "home starter season line",
@@ -14768,6 +14834,11 @@
                 "value": "2-3, 16 earned in 121 outs, 35 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Sean Manaea's served game log, dated 2026-08-04, strictly before this game",
+                "value": "6 innings, 7 hits, 2 earned, 5 walks, 7 strikeouts vs CLE"
+              },
+              {
                 "fact": "home starter",
                 "value": "Jared Jones",
                 "source": "pitchers_v4.json"
@@ -14776,6 +14847,11 @@
                 "fact": "home starter form",
                 "source": "derived from Jared Jones's served game log, 7 starts 2026-06-27 to 2026-08-04, all strictly before this game",
                 "value": "1-2, 12 earned in 107 outs, 41 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Jared Jones's served game log, dated 2026-08-04, strictly before this game",
+                "value": "4 innings, 8 hits, 3 earned, 1 walks, 4 strikeouts vs MIL"
               }
             ],
             "sources": [
@@ -14892,7 +14968,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "New York Mets at Pittsburgh Pirates, and it is Sean Manaea for the visitors against Jared Jones. Over his last 7 starts Manaea has worked to a 3.57 ERA, with 35 strikeouts in 40 1/3 innings and he has gone 2-3 in them. Jones answers with a 3.03 ERA over his own last 7 starts, 41 strikeouts in 35 2/3 innings and he has gone 1-2 in them. They are playing at PNC Park, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Pirates have scored 5.7 runs a game over their last fifteen, the Mets 3.5.",
             "The two bullpens have thrown 25 innings between them over three days and first pitch is at 83 degrees. Jones has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.1 runs a game clear of tonight's total. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
@@ -14989,7 +15065,7 @@
           "price": -109.0,
           "stars": 3,
           "score": 3.0,
-          "result": null,
+          "result": "win",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -15261,13 +15337,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Bats and arms both travel; the ballpark does not. 0.07 runs of environment says under at 8, and I'll stand there alone.",
-          "take_kind": "dissent",
-          "live_p_over": 1.0,
-          "live_state_note": "Bot 8th, 12 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-09T20:10:44Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "dissent"
         },
         {
           "key": "nova",
@@ -15405,7 +15475,7 @@
         "score": 3.0,
         "price": -109.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "lead_time": "T-3h",
         "source": "strategy_forge",
@@ -15430,7 +15500,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16217,35 +16287,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 8,
-        "half": "bottom",
-        "outs": 3,
-        "away_score": 11,
-        "home_score": 1,
-        "runs_so_far": 12,
-        "pregame_total": 8.0,
-        "runs_vs_pregame_total": 4.0,
-        "runs_still_needed_for_over": 0,
-        "innings_elapsed": 8.0,
-        "pace_runs_per_inning": 1.5,
-        "projected_final_runs": 13.5,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": "final-total already past the pregame line",
-        "p_hit_buckets": [
-          "LATE",
-          "HOT"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": 1.0,
-        "as_of": "2026-08-09T20:10:44Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-09-Toronto Blue Jays-Philadelphia Phillies-823425",
@@ -16445,7 +16487,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Toronto Blue Jays at Philadelphia Phillies, and it is Shane Bieber for the visitors against Jes\u00fas Luzardo. Over his last 7 starts Bieber has worked to a 4.59 ERA, with 26 strikeouts in 33 1/3 innings and he has gone 3-2 in them. Luzardo answers with a 2.03 ERA over his own last 7 starts, 54 strikeouts in 44 1/3 innings and he has gone 4-1 in them. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Phillies have scored 6.4 runs a game over their last fifteen, the Blue Jays 3.6.",
               "Bieber takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 8 and has gone up to 8.5. We lean the under here, and those are the things on this game that point that way."
@@ -16467,6 +16509,44 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the visitors lead it 2-0",
+                "source": "consecutive-day meetings at 'Citizens Bank Park' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "5 meetings in 2026 before 2026-08-09, visitors 3-2",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "value": {
+                  "record": "56-62",
+                  "streak": "W2",
+                  "last10": "7-3",
+                  "gb": 15.0,
+                  "rs_pg": 3.92,
+                  "ra_pg": 4.42,
+                  "pct": 0.475,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
+                "fact": "home standings",
+                "value": {
+                  "record": "62-56",
+                  "streak": "L2",
+                  "last10": "5-5",
+                  "gb": 8.5,
+                  "rs_pg": 4.42,
+                  "ra_pg": 4.42,
+                  "pct": 0.525,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home L / away R, frame hand_combo LR"
               },
@@ -16475,8 +16555,18 @@
                 "checked": "club agrees: feed home PHI / away TOR, frame team ids home PHI / away TOR"
               },
               {
+                "fact": "away starter last start score",
+                "value": "3-1",
+                "source": "the final of Toronto Blue Jays at Houston Astros on 2026-08-03, joined from the results spine"
+              },
+              {
                 "fact": "away starter season line",
                 "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "5-0",
+                "source": "the final of Washington Nationals at Philadelphia Phillies on 2026-08-04, joined from the results spine"
               },
               {
                 "fact": "home starter season line",
@@ -16508,6 +16598,11 @@
                 "value": "3-2, 17 earned in 100 outs, 26 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Shane Bieber's served game log, dated 2026-08-03, strictly before this game",
+                "value": "5 2/3 innings, 9 hits, 1 earned, 2 walks, 6 strikeouts vs HOU"
+              },
+              {
                 "fact": "home starter",
                 "value": "Jes\u00fas Luzardo",
                 "source": "pitchers_v4.json"
@@ -16516,6 +16611,11 @@
                 "fact": "home starter form",
                 "source": "derived from Jes\u00fas Luzardo's served game log, 7 starts 2026-06-28 to 2026-08-04, all strictly before this game",
                 "value": "4-1, 10 earned in 133 outs, 54 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Jes\u00fas Luzardo's served game log, dated 2026-08-04, strictly before this game",
+                "value": "8 innings, 4 hits, 0 earned, 2 walks, 7 strikeouts vs WSH"
               }
             ],
             "sources": [
@@ -16628,7 +16728,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Toronto Blue Jays at Philadelphia Phillies, and it is Shane Bieber for the visitors against Jes\u00fas Luzardo. Over his last 7 starts Bieber has worked to a 4.59 ERA, with 26 strikeouts in 33 1/3 innings and he has gone 3-2 in them. Luzardo answers with a 2.03 ERA over his own last 7 starts, 54 strikeouts in 44 1/3 innings and he has gone 4-1 in them. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Phillies have scored 6.4 runs a game over their last fifteen, the Blue Jays 3.6.",
             "Bieber takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 8 and has gone up to 8.5. We lean the under here, and those are the things on this game that point that way."
@@ -16994,8 +17094,8 @@
           "take": "On the conditions I read, it is over 8.5 at 51%.",
           "take_kind": "standard",
           "live_p_over": 1.0,
-          "live_state_note": "Top 9th, 10 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_state_note": "Top 12th, 10 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -17161,7 +17261,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -17950,29 +18050,27 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 9,
+        "inning": 12,
         "half": "top",
-        "outs": 3,
+        "outs": 0,
         "away_score": 5,
         "home_score": 5,
         "runs_so_far": 10,
         "pregame_total": 8.5,
         "runs_vs_pregame_total": 1.5,
         "runs_still_needed_for_over": 0,
-        "innings_elapsed": 8.5,
-        "pace_runs_per_inning": 1.18,
-        "projected_final_runs": 10.6,
+        "innings_elapsed": 11.5,
+        "pace_runs_per_inning": 0.87,
+        "projected_final_runs": 7.8,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
         "p_hit_certified": false,
         "p_hit_basis": "final-total already past the pregame line",
-        "p_hit_buckets": [
-          "LATE"
-        ],
+        "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": 1.0,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -17995,7 +18093,7 @@
         "star_tier": "Rule pick \u2014 the day's rule called this side",
         "price": -105.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-09T15:04:49Z",
         "timestamp": "2026-08-09T15:04:49Z",
@@ -18175,7 +18273,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Atlanta Braves at New York Yankees, and it is Grant Holmes for the visitors against Cam Schlittler. Over his last 7 starts Holmes has worked to a 2.80 ERA, with 27 strikeouts in 35 1/3 innings and he has gone 3-1 in them. Schlittler answers with a 3.86 ERA over his own last 7 starts, 53 strikeouts in 39 2/3 innings and he has gone 2-2 in them. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The Yankees have scored 3.0 runs a game over their last fifteen, the Braves 4.1.",
               "The Braves went to 2 relievers yesterday and Schlittler takes the ball on 6 days' rest. Their recent scoring has been running 1.4 runs a game short of tonight's total. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
@@ -18198,6 +18296,24 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the home side leads it 2-0",
+                "source": "consecutive-day meetings at 'Yankee Stadium' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "2 meetings in 2026 before 2026-08-09, visitors 0-2",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
+                "fact": "home standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away R, frame hand_combo RR"
               },
@@ -18206,8 +18322,18 @@
                 "checked": "club agrees: feed home NYY / away ATL, frame team ids home NYY / away ATL"
               },
               {
+                "fact": "away starter last start score",
+                "value": "4-2",
+                "source": "the final of Miami Marlins at Atlanta Braves on 2026-08-04, joined from the results spine"
+              },
+              {
                 "fact": "away starter season line",
                 "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "7-13",
+                "source": "the final of St. Louis Cardinals at New York Yankees on 2026-08-03, joined from the results spine"
               },
               {
                 "fact": "home starter season line",
@@ -18239,6 +18365,11 @@
                 "value": "3-1, 11 earned in 106 outs, 27 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Grant Holmes's served game log, dated 2026-08-04, strictly before this game",
+                "value": "6 innings, 5 hits, 0 earned, 1 walks, 5 strikeouts vs MIA"
+              },
+              {
                 "fact": "home starter",
                 "value": "Cam Schlittler",
                 "source": "pitchers_v4.json"
@@ -18247,6 +18378,11 @@
                 "fact": "home starter form",
                 "source": "derived from Cam Schlittler's served game log, 7 starts 2026-06-30 to 2026-08-03, all strictly before this game",
                 "value": "2-2, 17 earned in 119 outs, 53 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Cam Schlittler's served game log, dated 2026-08-03, strictly before this game",
+                "value": "3 innings, 4 hits, 4 earned, 5 walks, 6 strikeouts vs STL"
               }
             ],
             "sources": [
@@ -18365,7 +18501,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Atlanta Braves at New York Yankees, and it is Grant Holmes for the visitors against Cam Schlittler. Over his last 7 starts Holmes has worked to a 2.80 ERA, with 27 strikeouts in 35 1/3 innings and he has gone 3-1 in them. Schlittler answers with a 3.86 ERA over his own last 7 starts, 53 strikeouts in 39 2/3 innings and he has gone 2-2 in them. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The Yankees have scored 3.0 runs a game over their last fifteen, the Braves 4.1.",
             "The Braves went to 2 relievers yesterday and Schlittler takes the ball on 6 days' rest. Their recent scoring has been running 1.4 runs a game short of tonight's total. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
@@ -18457,7 +18593,7 @@
           "price": -105.0,
           "stars": 3,
           "score": 3.0,
-          "result": null,
+          "result": "win",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -18867,7 +19003,7 @@
         "score": 3.0,
         "price": -105.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "lead_time": "T-3h",
         "source": "strategy_forge",
@@ -18892,7 +19028,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -19699,7 +19835,7 @@
         "star_tier": "Rule pick \u2014 the day's rule called this side",
         "price": -106.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-09T15:04:49Z",
         "timestamp": "2026-08-09T15:04:49Z",
@@ -19879,7 +20015,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Athletics at Boston Red Sox, and it is J.T. Ginn for the visitors against Erik Miller. Over his last 7 starts Ginn has worked to a 4.74 ERA, with 37 strikeouts in 38 innings and he has gone 3-3 in them. They are playing at Fenway Park, a ballpark that has been playing about 6% above league-average scoring over the last three years. The Red Sox have scored 4.5 runs a game over their last fifteen, the Athletics 4.5.",
               "The Athletics went to 3 relievers yesterday and games worked by tonight's plate umpire have averaged 0.8 runs fewer than the league. Ginn takes the ball on 5 days' rest and their recent scoring has been running 0.4 runs a game short of tonight's total. The total opened at 10.5 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way."
@@ -19903,12 +20039,35 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the series is level at 1-1",
+                "source": "consecutive-day meetings at 'Fenway Park' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "6 meetings in 2026 before 2026-08-09, visitors 2-4",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
+                "fact": "home standings",
+                "dropped": "the served dimension says this game has already finished, so the standings feed may already count it"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home L / away R, frame hand_combo LR"
               },
               {
                 "fact": "starters",
                 "checked": "club agrees: feed home BOS / away ATH, frame team ids home BOS / away ATH"
+              },
+              {
+                "fact": "away starter last start score",
+                "value": "4-5",
+                "source": "the final of Athletics at Cincinnati Reds on 2026-08-04, joined from the results spine"
               },
               {
                 "fact": "away starter season line",
@@ -19942,6 +20101,11 @@
                 "fact": "away starter form",
                 "source": "derived from J.T. Ginn's served game log, 7 starts 2026-06-20 to 2026-08-04, all strictly before this game",
                 "value": "3-3, 20 earned in 114 outs, 37 strikeouts"
+              },
+              {
+                "fact": "away starter last start",
+                "source": "the newest row of J.T. Ginn's served game log, dated 2026-08-04, strictly before this game",
+                "value": "6 innings, 5 hits, 3 earned, 2 walks, 5 strikeouts vs CIN"
               },
               {
                 "fact": "home starter",
@@ -20033,7 +20197,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Athletics at Boston Red Sox, and it is J.T. Ginn for the visitors against Erik Miller. Over his last 7 starts Ginn has worked to a 4.74 ERA, with 37 strikeouts in 38 innings and he has gone 3-3 in them. They are playing at Fenway Park, a ballpark that has been playing about 6% above league-average scoring over the last three years. The Red Sox have scored 4.5 runs a game over their last fifteen, the Athletics 4.5.",
             "The Athletics went to 3 relievers yesterday and games worked by tonight's plate umpire have averaged 0.8 runs fewer than the league. Ginn takes the ball on 5 days' rest and their recent scoring has been running 0.4 runs a game short of tonight's total. The total opened at 10.5 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way."
@@ -20125,7 +20289,7 @@
           "price": -106.0,
           "stars": 3,
           "score": 3.0,
-          "result": null,
+          "result": "win",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -20392,13 +20556,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "I grade the place and the umpire and nothing else. On those alone: under 9.5, 50%.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 9th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T20:10:44Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -20536,7 +20694,7 @@
         "score": 3.0,
         "price": -106.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "lead_time": "T-3h",
         "source": "strategy_forge",
@@ -20561,7 +20719,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -21348,34 +21506,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 9,
-        "half": "bottom",
-        "outs": 1,
-        "away_score": 4,
-        "home_score": 3,
-        "runs_so_far": 7,
-        "pregame_total": 9.5,
-        "runs_vs_pregame_total": -2.5,
-        "runs_still_needed_for_over": 3,
-        "innings_elapsed": 9.0,
-        "pace_runs_per_inning": 0.78,
-        "projected_final_runs": 7.0,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-09T20:10:44Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-09-Los Angeles Angels-Miami Marlins-823835",
@@ -21395,7 +21526,7 @@
         "star_tier": "Rule pick \u2014 the day's rule called this side",
         "price": -106.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-09T15:04:49Z",
         "timestamp": "2026-08-09T15:04:49Z",
@@ -21659,7 +21790,7 @@
           "price": -106.0,
           "stars": 3,
           "score": 3.0,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -21931,13 +22062,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Bats and arms both travel; the ballpark does not. 0.34 runs of environment says under at 8.5, and I'll stand there alone.",
-          "take_kind": "dissent",
-          "live_p_over": 1.0,
-          "live_state_note": "Bot 7th, 13 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-09T20:10:44Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "dissent"
         },
         {
           "key": "nova",
@@ -22075,7 +22200,7 @@
         "score": 3.0,
         "price": -106.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "lead_time": "T-3h",
         "source": "strategy_forge",
@@ -22100,7 +22225,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -22887,35 +23012,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 7,
-        "half": "bottom",
-        "outs": 1,
-        "away_score": 2,
-        "home_score": 11,
-        "runs_so_far": 13,
-        "pregame_total": 8.5,
-        "runs_vs_pregame_total": 4.5,
-        "runs_still_needed_for_over": 0,
-        "innings_elapsed": 7.0,
-        "pace_runs_per_inning": 1.86,
-        "projected_final_runs": 16.7,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": "final-total already past the pregame line",
-        "p_hit_buckets": [
-          "LATE",
-          "HOT"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": 1.0,
-        "as_of": "2026-08-09T20:10:44Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-09-Minnesota Twins-Milwaukee Brewers-823751",
@@ -23115,7 +23212,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Minnesota Twins at Milwaukee Brewers, and it is Connor Prielipp for the visitors against Jacob Misiorowski. Over his last 7 starts Prielipp has worked to a 4.23 ERA, with 39 strikeouts in 38 1/3 innings and he has gone 1-2 in them. Misiorowski answers with a 2.25 ERA over his own last 7 starts, 64 strikeouts in 40 innings and he has gone 3-3 in them. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Brewers have scored 4.2 runs a game over their last fifteen, the Twins 5.9.",
               "The two bullpens have thrown 21.3 innings between them over three days and Prielipp has walked 8% of the hitters he has faced across his last five starts. Their recent scoring has been running 3.1 runs a game clear of tonight's total and the posted total is 1.1 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way."
@@ -23139,6 +23236,43 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the series is level at 1-1",
+                "source": "consecutive-day meetings at 'American Family Field' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "5 meetings in 2026 before 2026-08-09, visitors 2-3",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "value": {
+                  "record": "58-60",
+                  "streak": "L1",
+                  "last10": "4-6",
+                  "gb": 3.0,
+                  "rs_pg": 4.66,
+                  "ra_pg": 4.95,
+                  "pct": 0.492,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
+                "fact": "home standings",
+                "value": {
+                  "record": "73-44",
+                  "streak": "W1",
+                  "last10": "6-4",
+                  "rs_pg": 4.97,
+                  "ra_pg": 3.77,
+                  "pct": 0.624,
+                  "leads_division": true
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away L, frame hand_combo RL"
               },
@@ -23147,8 +23281,18 @@
                 "checked": "club agrees: feed home MIL / away MIN, frame team ids home MIL / away MIN"
               },
               {
+                "fact": "away starter last start score",
+                "value": "3-4",
+                "source": "the final of Minnesota Twins at Seattle Mariners on 2026-08-01, joined from the results spine"
+              },
+              {
                 "fact": "away starter season line",
                 "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "0-3",
+                "source": "the final of Milwaukee Brewers at Los Angeles Angels on 2026-08-02, joined from the results spine"
               },
               {
                 "fact": "home starter season line",
@@ -23180,6 +23324,11 @@
                 "value": "1-2, 18 earned in 115 outs, 39 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Connor Prielipp's served game log, dated 2026-08-01, strictly before this game",
+                "value": "5 1/3 innings, 4 hits, 3 earned, 4 walks, 5 strikeouts vs SEA"
+              },
+              {
                 "fact": "home starter",
                 "value": "Jacob Misiorowski",
                 "source": "pitchers_v4.json"
@@ -23188,6 +23337,11 @@
                 "fact": "home starter form",
                 "source": "derived from Jacob Misiorowski's served game log, 7 starts 2026-06-19 to 2026-08-02, all strictly before this game",
                 "value": "3-3, 10 earned in 120 outs, 64 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Jacob Misiorowski's served game log, dated 2026-08-02, strictly before this game",
+                "value": "7 innings, 2 hits, 2 earned, 1 walks, 10 strikeouts vs LAA"
               }
             ],
             "sources": [
@@ -23304,7 +23458,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Minnesota Twins at Milwaukee Brewers, and it is Connor Prielipp for the visitors against Jacob Misiorowski. Over his last 7 starts Prielipp has worked to a 4.23 ERA, with 39 strikeouts in 38 1/3 innings and he has gone 1-2 in them. Misiorowski answers with a 2.25 ERA over his own last 7 starts, 64 strikeouts in 40 innings and he has gone 3-3 in them. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Brewers have scored 4.2 runs a game over their last fifteen, the Twins 5.9.",
             "The two bullpens have thrown 21.3 innings between them over three days and Prielipp has walked 8% of the hitters he has faced across his last five starts. Their recent scoring has been running 3.1 runs a game clear of tonight's total and the posted total is 1.1 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way."
@@ -23667,8 +23821,8 @@
           "take": "The conditions are loud here \u2014 0.50 runs of deviation from a neutral night, and they point under on 7.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 7th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_state_note": "Bot 8th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -23834,7 +23988,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -24668,8 +24822,8 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 7,
-        "half": "top",
+        "inning": 8,
+        "half": "bottom",
         "outs": 2,
         "away_score": 3,
         "home_score": 3,
@@ -24677,9 +24831,9 @@
         "pregame_total": 7.0,
         "runs_vs_pregame_total": -1.0,
         "runs_still_needed_for_over": 1,
-        "innings_elapsed": 6.5,
-        "pace_runs_per_inning": 0.92,
-        "projected_final_runs": 8.3,
+        "innings_elapsed": 8.0,
+        "pace_runs_per_inning": 0.75,
+        "projected_final_runs": 6.8,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -24690,7 +24844,7 @@
         ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -24893,7 +25047,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Chicago Cubs at Kansas City Royals, and it is Matthew Boyd for the visitors against Randy Dobnak. Over his last 7 starts Boyd has worked to a 2.66 ERA, with 28 strikeouts in 44 innings and he has gone 5-0 in them. Dobnak answers with a 0.84 ERA over his own last 4 starts, 11 strikeouts in 21 1/3 innings and he has gone 2-0 in them. They are playing at Kauffman Stadium, a ballpark that has played right at league-average scoring over the last three years. The Royals have scored 4.6 runs a game over their last fifteen, the Cubs 7.5.",
               "The Cubs went to 1 reliever yesterday and games worked by tonight's plate umpire have averaged 0.8 runs fewer than the league. Boyd has walked 6% of the hitters he has faced across his last five starts and the Royals have been reaching base at a .284 clip. The total opened at 10 and has gone up to 10.5. We lean the under here, and those are the things on this game that point that way."
@@ -24917,6 +25071,44 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the series is level at 1-1",
+                "source": "consecutive-day meetings at 'Kauffman Stadium' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "2 meetings in 2026 before 2026-08-09, visitors 1-1",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "value": {
+                  "record": "68-50",
+                  "streak": "L1",
+                  "last10": "7-3",
+                  "gb": 5.5,
+                  "rs_pg": 5.12,
+                  "ra_pg": 4.28,
+                  "pct": 0.576,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
+                "fact": "home standings",
+                "value": {
+                  "record": "49-69",
+                  "streak": "W1",
+                  "last10": "4-6",
+                  "gb": 12.0,
+                  "rs_pg": 4.15,
+                  "ra_pg": 5.02,
+                  "pct": 0.415,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away L, frame hand_combo RL"
               },
@@ -24925,8 +25117,18 @@
                 "checked": "club agrees: feed home KC / away CHC, frame team ids home KC / away CHC"
               },
               {
+                "fact": "away starter last start score",
+                "value": "10-5",
+                "source": "the final of Los Angeles Dodgers at Chicago Cubs on 2026-08-03, joined from the results spine"
+              },
+              {
                 "fact": "away starter season line",
                 "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "8-2",
+                "source": "the final of Minnesota Twins at Kansas City Royals on 2026-08-04, joined from the results spine"
               },
               {
                 "fact": "home starter season line",
@@ -24958,6 +25160,11 @@
                 "value": "5-0, 13 earned in 132 outs, 28 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Matthew Boyd's served game log, dated 2026-08-03, strictly before this game",
+                "value": "6 2/3 innings, 9 hits, 4 earned, 1 walks, 3 strikeouts vs LAD"
+              },
+              {
                 "fact": "home starter",
                 "value": "Randy Dobnak",
                 "source": "pitchers_v4.json"
@@ -24966,6 +25173,11 @@
                 "fact": "home starter form",
                 "source": "derived from Randy Dobnak's served game log, 4 starts 2026-07-18 to 2026-08-04, all strictly before this game",
                 "value": "2-0, 2 earned in 64 outs, 11 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Randy Dobnak's served game log, dated 2026-08-04, strictly before this game",
+                "value": "5 innings, 3 hits, 1 earned, 3 walks, 1 strikeouts vs MIN"
               }
             ],
             "sources": [
@@ -25083,7 +25295,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Chicago Cubs at Kansas City Royals, and it is Matthew Boyd for the visitors against Randy Dobnak. Over his last 7 starts Boyd has worked to a 2.66 ERA, with 28 strikeouts in 44 innings and he has gone 5-0 in them. Dobnak answers with a 0.84 ERA over his own last 4 starts, 11 strikeouts in 21 1/3 innings and he has gone 2-0 in them. They are playing at Kauffman Stadium, a ballpark that has played right at league-average scoring over the last three years. The Royals have scored 4.6 runs a game over their last fifteen, the Cubs 7.5.",
             "The Cubs went to 1 reliever yesterday and games worked by tonight's plate umpire have averaged 0.8 runs fewer than the league. Boyd has walked 6% of the hitters he has faced across his last five starts and the Royals have been reaching base at a .284 clip. The total opened at 10 and has gone up to 10.5. We lean the under here, and those are the things on this game that point that way."
@@ -25451,8 +25663,8 @@
           "take": "The conditions are loud here \u2014 0.30 runs of deviation from a neutral night, and they point under on 10.5.",
           "take_kind": "standard",
           "live_p_over": 1.0,
-          "live_state_note": "Top 7th, 12 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_state_note": "Top 9th, 12 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -25618,7 +25830,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -26452,18 +26664,18 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 7,
+        "inning": 9,
         "half": "top",
-        "outs": 3,
+        "outs": 2,
         "away_score": 10,
         "home_score": 2,
         "runs_so_far": 12,
         "pregame_total": 10.5,
         "runs_vs_pregame_total": 1.5,
         "runs_still_needed_for_over": 0,
-        "innings_elapsed": 6.5,
-        "pace_runs_per_inning": 1.85,
-        "projected_final_runs": 16.7,
+        "innings_elapsed": 8.5,
+        "pace_runs_per_inning": 1.41,
+        "projected_final_runs": 12.7,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -26476,7 +26688,7 @@
         ],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": 1.0,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -26679,7 +26891,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Cleveland Guardians at Chicago White Sox, and it is Joey Cantillo for the visitors against Davis Martin. Over his last 7 starts Cantillo has worked to a 3.86 ERA, with 44 strikeouts in 32 2/3 innings, he has gone 2-4 in them, and on the year he is 8-7 with a 3.91 ERA. Martin answers with a 6.55 ERA over his own last 7 starts, 20 strikeouts in 34 1/3 innings, he has gone 0-3 in them, and on the year he is 9-6 with a 4.17 ERA. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9.",
               "The two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts. The total opened at 8.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
@@ -26703,12 +26915,59 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the series is level at 1-1",
+                "source": "consecutive-day meetings at 'Rate Field' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "8 meetings in 2026 before 2026-08-09, visitors 4-4",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "value": {
+                  "record": "58-60",
+                  "streak": "L1",
+                  "last10": "3-7",
+                  "gb": 3.0,
+                  "rs_pg": 3.98,
+                  "ra_pg": 4.19,
+                  "pct": 0.492,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
+                "fact": "home standings",
+                "value": {
+                  "record": "60-56",
+                  "streak": "W1",
+                  "last10": "5-5",
+                  "rs_pg": 4.76,
+                  "ra_pg": 4.46,
+                  "pct": 0.517,
+                  "leads_division": true
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away L, frame hand_combo RL"
               },
               {
                 "fact": "starters",
                 "checked": "club agrees: feed home CHW / away CLE, frame team ids home CHW / away CLE"
+              },
+              {
+                "fact": "away starter last start score",
+                "value": "2-6",
+                "source": "the final of New York Mets at Cleveland Guardians on 2026-08-04, joined from the results spine"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "2-14",
+                "source": "the final of Chicago White Sox at Boston Red Sox on 2026-08-04, joined from the results spine"
               },
               {
                 "fact": "away_team",
@@ -26736,6 +26995,11 @@
                 "value": "2-4, 14 earned in 98 outs, 44 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Joey Cantillo's served game log, dated 2026-08-04, strictly before this game",
+                "value": "5 innings, 7 hits, 2 earned, 2 walks, 5 strikeouts vs NYM"
+              },
+              {
                 "fact": "away starter season line",
                 "value": {
                   "era": 3.91,
@@ -26755,6 +27019,11 @@
                 "fact": "home starter form",
                 "source": "derived from Davis Martin's served game log, 7 starts 2026-06-27 to 2026-08-04, all strictly before this game",
                 "value": "0-3, 25 earned in 103 outs, 20 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Davis Martin's served game log, dated 2026-08-04, strictly before this game",
+                "value": "5 innings, 10 hits, 9 earned, 2 walks, 1 strikeouts vs BOS"
               },
               {
                 "fact": "home starter season line",
@@ -26902,7 +27171,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Cleveland Guardians at Chicago White Sox, and it is Joey Cantillo for the visitors against Davis Martin. Over his last 7 starts Cantillo has worked to a 3.86 ERA, with 44 strikeouts in 32 2/3 innings, he has gone 2-4 in them, and on the year he is 8-7 with a 3.91 ERA. Martin answers with a 6.55 ERA over his own last 7 starts, 20 strikeouts in 34 1/3 innings, he has gone 0-3 in them, and on the year he is 9-6 with a 4.17 ERA. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9.",
             "The two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts. The total opened at 8.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
@@ -27271,7 +27540,7 @@
           "take_kind": "standard",
           "live_p_over": null,
           "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -27437,7 +27706,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -28291,7 +28560,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -28790,9 +29059,9 @@
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The conditions are loud here \u2014 0.28 runs of deviation from a neutral night, and they point over on 9.",
           "take_kind": "standard",
-          "live_p_over": 0.4174,
-          "live_state_note": "Top 6th, 5 runs in \u2014 my number's moved to 42% over.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_p_over": null,
+          "live_state_note": "Top 8th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -28957,7 +29226,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -29746,29 +30015,29 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 6,
+        "inning": 8,
         "half": "top",
         "outs": 2,
-        "away_score": 1,
+        "away_score": 4,
         "home_score": 4,
-        "runs_so_far": 5,
+        "runs_so_far": 8,
         "pregame_total": 9.0,
-        "runs_vs_pregame_total": -4.0,
-        "runs_still_needed_for_over": 4,
-        "innings_elapsed": 5.5,
-        "pace_runs_per_inning": 0.91,
-        "projected_final_runs": 8.2,
-        "p_hit_now": 0.4174,
-        "p_hit_side": "over",
-        "p_hit_side_basis": "desk_majority",
-        "p_hit_certified": true,
-        "p_hit_basis": "certified conditional rest-of-game engine (buckets: LATE)",
+        "runs_vs_pregame_total": -1.0,
+        "runs_still_needed_for_over": 1,
+        "innings_elapsed": 7.5,
+        "pace_runs_per_inning": 1.07,
+        "projected_final_runs": 9.6,
+        "p_hit_now": null,
+        "p_hit_side": null,
+        "p_hit_side_basis": null,
+        "p_hit_certified": false,
+        "p_hit_basis": null,
         "p_hit_buckets": [
           "LATE"
         ],
-        "p_hit_note": "Top 6th, 5 runs in \u2014 my number's moved to 42% over.",
-        "live_p_over": 0.4174,
-        "as_of": "2026-08-09T20:10:44Z",
+        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
+        "live_p_over": null,
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -29971,7 +30240,7 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
               "Baltimore Orioles at Texas Rangers, and it is Cade Povich for the visitors against Kumar Rocker. Over his last 4 starts Povich has worked to a 4.12 ERA, with 17 strikeouts in 19 2/3 innings and he has gone 2-1 in them. Rocker answers with a 5.06 ERA over his own last 7 starts, 37 strikeouts in 37 1/3 innings and he has gone 2-3 in them. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Rangers have scored 4.8 runs a game over their last fifteen, the Orioles 4.3.",
               "Orioles relievers have thrown 38 pitches over the last two days and Rocker takes the ball on 7 days' rest. Orioles hitters have struck out in 27% of their trips to the plate. The total opened at 8.5 and has come down to 8. We lean the under here, and those are the things on this game that point that way."
@@ -29994,6 +30263,44 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the home side leads it 2-0",
+                "source": "consecutive-day meetings at 'Globe Life Field' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "5 meetings in 2026 before 2026-08-09, visitors 1-4",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "value": {
+                  "record": "56-61",
+                  "streak": "L3",
+                  "last10": "4-6",
+                  "gb": 14.5,
+                  "rs_pg": 4.43,
+                  "ra_pg": 4.75,
+                  "pct": 0.479,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
+                "fact": "home standings",
+                "value": {
+                  "record": "59-58",
+                  "streak": "W4",
+                  "last10": "4-6",
+                  "gb": 0.5,
+                  "rs_pg": 4.14,
+                  "ra_pg": 4.38,
+                  "pct": 0.504,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away L, frame hand_combo RL"
               },
@@ -30002,8 +30309,18 @@
                 "checked": "club agrees: feed home TEX / away BAL, frame team ids home TEX / away BAL"
               },
               {
+                "fact": "away starter last start score",
+                "value": "3-1",
+                "source": "the final of Los Angeles Angels at Baltimore Orioles on 2026-08-04, joined from the results spine"
+              },
+              {
                 "fact": "away starter season line",
                 "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "3-7",
+                "source": "the final of Texas Rangers at Houston Astros on 2026-08-02, joined from the results spine"
               },
               {
                 "fact": "home starter season line",
@@ -30035,6 +30352,11 @@
                 "value": "2-1, 9 earned in 59 outs, 17 strikeouts"
               },
               {
+                "fact": "away starter last start",
+                "source": "the newest row of Cade Povich's served game log, dated 2026-08-04, strictly before this game",
+                "value": "6 innings, 7 hits, 0 earned, 1 walks, 7 strikeouts vs LAA"
+              },
+              {
                 "fact": "home starter",
                 "value": "Kumar Rocker",
                 "source": "pitchers_v4.json"
@@ -30043,6 +30365,11 @@
                 "fact": "home starter form",
                 "source": "derived from Kumar Rocker's served game log, 7 starts 2026-06-16 to 2026-08-02, all strictly before this game",
                 "value": "2-3, 21 earned in 112 outs, 37 strikeouts"
+              },
+              {
+                "fact": "home starter last start",
+                "source": "the newest row of Kumar Rocker's served game log, dated 2026-08-02, strictly before this game",
+                "value": "5 1/3 innings, 10 hits, 3 earned, 2 walks, 5 strikeouts vs HOU"
               }
             ],
             "sources": [
@@ -30154,7 +30481,7 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
             "Baltimore Orioles at Texas Rangers, and it is Cade Povich for the visitors against Kumar Rocker. Over his last 4 starts Povich has worked to a 4.12 ERA, with 17 strikeouts in 19 2/3 innings and he has gone 2-1 in them. Rocker answers with a 5.06 ERA over his own last 7 starts, 37 strikeouts in 37 1/3 innings and he has gone 2-3 in them. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Rangers have scored 4.8 runs a game over their last fifteen, the Orioles 4.3.",
             "Orioles relievers have thrown 38 pitches over the last two days and Rocker takes the ball on 7 days' rest. Orioles hitters have struck out in 27% of their trips to the plate. The total opened at 8.5 and has come down to 8. We lean the under here, and those are the things on this game that point that way."
@@ -30522,8 +30849,8 @@
           "take": "The ballpark is doing the work in this one: 0.19 runs below a neutral night, 7.8 against 8.",
           "take_kind": "standard",
           "live_p_over": 1.0,
-          "live_state_note": "Top 5th, 10 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_state_note": "Top 7th, 12 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -30689,7 +31016,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -31483,29 +31810,30 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 5,
+        "inning": 7,
         "half": "top",
         "outs": 0,
-        "away_score": 7,
+        "away_score": 9,
         "home_score": 3,
-        "runs_so_far": 10,
+        "runs_so_far": 12,
         "pregame_total": 8.5,
-        "runs_vs_pregame_total": 1.5,
+        "runs_vs_pregame_total": 3.5,
         "runs_still_needed_for_over": 0,
-        "innings_elapsed": 4.5,
-        "pace_runs_per_inning": 2.22,
-        "projected_final_runs": 20.0,
-        "p_hit_now": 0.0,
-        "p_hit_side": "under",
-        "p_hit_side_basis": "engine_pick",
-        "p_hit_certified": true,
+        "innings_elapsed": 6.5,
+        "pace_runs_per_inning": 1.85,
+        "projected_final_runs": 16.7,
+        "p_hit_now": null,
+        "p_hit_side": null,
+        "p_hit_side_basis": null,
+        "p_hit_certified": false,
         "p_hit_basis": "final-total already past the pregame line",
         "p_hit_buckets": [
+          "LATE",
           "HOT"
         ],
-        "p_hit_note": "Top 5th, 10 runs in \u2014 the over's already home; nothing left to price.",
+        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": 1.0,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -32005,8 +32333,8 @@
           "take": "I grade the place and the umpire and nothing else. On those alone: under 7.5, 52%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_state_note": "Top 4th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -32172,7 +32500,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -33001,16 +33329,16 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 1,
+        "inning": 4,
         "half": "top",
-        "outs": 3,
+        "outs": 2,
         "away_score": 0,
         "home_score": 0,
         "runs_so_far": 0,
         "pregame_total": 7.5,
         "runs_vs_pregame_total": -7.5,
         "runs_still_needed_for_over": 8,
-        "innings_elapsed": 0.5,
+        "innings_elapsed": 3.5,
         "pace_runs_per_inning": 0.0,
         "projected_final_runs": 0.0,
         "p_hit_now": null,
@@ -33021,7 +33349,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -33224,12 +33552,12 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
-              "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings, he has gone 3-2 in them, and on the year he is 8-3 with a 4.27 ERA. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings, he has gone 1-4 in them, and on the year he is 6-6 with a 3.33 ERA. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.",
+              "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings and he has gone 3-2 in them. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings and he has gone 1-4 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.",
               "Mariners relievers have thrown 96 pitches over the last two days and Hancock has walked 7% of the hitters he has faced across his last five starts. Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
             ],
-            "text": "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings, he has gone 3-2 in them, and on the year he is 8-3 with a 4.27 ERA. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings, he has gone 1-4 in them, and on the year he is 6-6 with a 3.33 ERA. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.\n\nMariners relievers have thrown 96 pitches over the last two days and Hancock has walked 7% of the hitters he has faced across his last five starts. Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+            "text": "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings and he has gone 3-2 in them. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings and he has gone 1-4 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.\n\nMariners relievers have thrown 96 pitches over the last two days and Hancock has walked 7% of the hitters he has faced across his last five starts. Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
             "side": "under",
             "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
             "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -33248,12 +33576,67 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the visitors lead it 2-0",
+                "source": "consecutive-day meetings at 'T-Mobile Park' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "5 meetings in 2026 before 2026-08-09, visitors 4-1",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "value": {
+                  "record": "70-46",
+                  "streak": "W5",
+                  "last10": "8-2",
+                  "rs_pg": 4.44,
+                  "ra_pg": 4.07,
+                  "pct": 0.603,
+                  "leads_division": true
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
+                "fact": "home standings",
+                "value": {
+                  "record": "56-62",
+                  "streak": "L3",
+                  "last10": "3-7",
+                  "gb": 4.0,
+                  "rs_pg": 3.91,
+                  "ra_pg": 4.04,
+                  "pct": 0.475,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home R / away L, frame hand_combo RL"
               },
               {
                 "fact": "starters",
                 "checked": "club agrees: feed home SEA / away TB, frame team ids home SEA / away TB"
+              },
+              {
+                "fact": "away starter last start score",
+                "value": "13-9",
+                "source": "the final of Tampa Bay Rays at Colorado Rockies on 2026-08-03, joined from the results spine"
+              },
+              {
+                "fact": "away starter season line",
+                "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "0-8",
+                "source": "the final of Detroit Tigers at Seattle Mariners on 2026-08-04, joined from the results spine"
+              },
+              {
+                "fact": "home starter season line",
+                "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
               },
               {
                 "fact": "away_team",
@@ -33281,15 +33664,9 @@
                 "value": "3-2, 19 earned in 104 outs, 47 strikeouts"
               },
               {
-                "fact": "away starter season line",
-                "value": {
-                  "era": 4.27,
-                  "wl": "8-3",
-                  "ip": 84.1,
-                  "k9": 10.57,
-                  "whip": 1.13
-                },
-                "source": "pitchers_v4.json (probable, so the line is as of before this start)"
+                "fact": "away starter last start",
+                "source": "the newest row of Ian Seymour's served game log, dated 2026-08-03, strictly before this game",
+                "value": "6 innings, 7 hits, 2 earned, 0 walks, 9 strikeouts vs COL"
               },
               {
                 "fact": "home starter",
@@ -33302,15 +33679,9 @@
                 "value": "1-4, 20 earned in 122 outs, 35 strikeouts"
               },
               {
-                "fact": "home starter season line",
-                "value": {
-                  "era": 3.33,
-                  "wl": "6-6",
-                  "ip": 116.1,
-                  "k9": 8.36,
-                  "whip": 1.07
-                },
-                "source": "pitchers_v4.json (probable, so the line is as of before this start)"
+                "fact": "home starter last start",
+                "source": "the newest row of Emerson Hancock's served game log, dated 2026-08-04, strictly before this game",
+                "value": "6 innings, 8 hits, 3 earned, 2 walks, 6 strikeouts vs DET"
               }
             ],
             "sources": [
@@ -33345,16 +33716,6 @@
                 "rendered": "2"
               },
               {
-                "feature": "away starter: season won-lost, served while he was still a probable",
-                "raw": "8-3",
-                "rendered": "8-3"
-              },
-              {
-                "feature": "away starter: season earned run average, served while he was still a probable",
-                "raw": "4.27",
-                "rendered": "4.27"
-              },
-              {
                 "feature": "home starter: starts in the served game log, all before this game",
                 "raw": "8",
                 "rendered": "8"
@@ -33383,16 +33744,6 @@
                 "feature": "home starter: losses in those starts",
                 "raw": "4",
                 "rendered": "4"
-              },
-              {
-                "feature": "home starter: season won-lost, served while he was still a probable",
-                "raw": "6-6",
-                "rendered": "6-6"
-              },
-              {
-                "feature": "home starter: season earned run average, served while he was still a probable",
-                "raw": "3.33",
-                "rendered": "3.33"
               },
               {
                 "feature": "park_run_factor",
@@ -33447,12 +33798,12 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
-            "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings, he has gone 3-2 in them, and on the year he is 8-3 with a 4.27 ERA. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings, he has gone 1-4 in them, and on the year he is 6-6 with a 3.33 ERA. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.",
+            "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings and he has gone 3-2 in them. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings and he has gone 1-4 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.",
             "Mariners relievers have thrown 96 pitches over the last two days and Hancock has walked 7% of the hitters he has faced across his last five starts. Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
           ],
-          "text": "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings, he has gone 3-2 in them, and on the year he is 8-3 with a 4.27 ERA. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings, he has gone 1-4 in them, and on the year he is 6-6 with a 3.33 ERA. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.\n\nMariners relievers have thrown 96 pitches over the last two days and Hancock has walked 7% of the hitters he has faced across his last five starts. Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "text": "Tampa Bay Rays at Seattle Mariners, and it is Ian Seymour for the visitors against Emerson Hancock. Over his last 8 starts Seymour has worked to a 4.93 ERA, with 47 strikeouts in 34 2/3 innings and he has gone 3-2 in them. Hancock answers with a 4.43 ERA over his own last 8 starts, 35 strikeouts in 40 2/3 innings and he has gone 1-4 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.\n\nMariners relievers have thrown 96 pitches over the last two days and Hancock has walked 7% of the hitters he has faced across his last five starts. Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
           "side": "under",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -33816,8 +34167,8 @@
           "take": "On the conditions I read, it is under 7.5 at 56%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_state_note": "Bot 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -33983,7 +34334,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:00Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "STRONG",
@@ -34719,18 +35070,18 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 1,
-        "half": "top",
-        "outs": 0,
+        "inning": 2,
+        "half": "bottom",
+        "outs": 1,
         "away_score": 0,
-        "home_score": 0,
-        "runs_so_far": 0,
+        "home_score": 1,
+        "runs_so_far": 1,
         "pregame_total": 7.5,
-        "runs_vs_pregame_total": -7.5,
-        "runs_still_needed_for_over": 8,
-        "innings_elapsed": 0.5,
-        "pace_runs_per_inning": 0.0,
-        "projected_final_runs": 0.0,
+        "runs_vs_pregame_total": -6.5,
+        "runs_still_needed_for_over": 7,
+        "innings_elapsed": 2.0,
+        "pace_runs_per_inning": 0.5,
+        "projected_final_runs": 4.5,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -34739,7 +35090,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -34942,12 +35293,12 @@
           "game_case": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "identity": "matchup_facts/1.1",
+            "identity": "matchup_facts/1.2",
             "paragraphs": [
-              "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings, he has gone 4-1 in them, and on the year he is 11-3 with a 3.31 ERA. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings, he has gone 4-2 in them, and on the year he is 10-4 with a 2.71 ERA. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.",
+              "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings and he has gone 4-1 in them. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings and he has gone 4-2 in them. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.",
               "The Diamondbacks went to 3 relievers yesterday and Wrobleski has walked 5% of the hitters he has faced across his last five starts. Across thirty games the Diamondbacks have averaged 3.7 runs. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way."
             ],
-            "text": "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings, he has gone 4-1 in them, and on the year he is 11-3 with a 3.31 ERA. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings, he has gone 4-2 in them, and on the year he is 10-4 with a 2.71 ERA. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.\n\nThe Diamondbacks went to 3 relievers yesterday and Wrobleski has walked 5% of the hitters he has faced across his last five starts. Across thirty games the Diamondbacks have averaged 3.7 runs. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way.",
+            "text": "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings and he has gone 4-1 in them. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings and he has gone 4-2 in them. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.\n\nThe Diamondbacks went to 3 relievers yesterday and Wrobleski has walked 5% of the hitters he has faced across his last five starts. Across thirty games the Diamondbacks have averaged 3.7 runs. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way.",
             "side": "under",
             "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
             "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -34965,12 +35316,67 @@
             ],
             "matchup_sources": [
               {
+                "fact": "series",
+                "value": "game 3; the series is level at 1-1",
+                "source": "consecutive-day meetings at 'Chase Field' on file before 2026-08-09"
+              },
+              {
+                "fact": "head to head",
+                "value": "12 meetings in 2026 before 2026-08-09, visitors 6-6",
+                "source": "results on file for this season"
+              },
+              {
+                "fact": "away standings",
+                "value": {
+                  "record": "70-47",
+                  "streak": "W1",
+                  "last10": "3-7",
+                  "rs_pg": 5.03,
+                  "ra_pg": 3.84,
+                  "pct": 0.598,
+                  "leads_division": true
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
+                "fact": "home standings",
+                "value": {
+                  "record": "62-56",
+                  "streak": "L1",
+                  "last10": "6-4",
+                  "gb": 8.5,
+                  "rs_pg": 4.52,
+                  "ra_pg": 4.49,
+                  "pct": 0.525,
+                  "leads_division": false
+                },
+                "source": "teams_v4.json generated 2026-08-09T20:14:38Z"
+              },
+              {
                 "fact": "starters",
                 "checked": "handedness agrees: feed home L / away L, frame hand_combo LL"
               },
               {
                 "fact": "starters",
                 "checked": "club agrees: feed home ARI / away LAD, frame team ids home ARI / away LAD"
+              },
+              {
+                "fact": "away starter last start score",
+                "value": "5-10",
+                "source": "the final of Los Angeles Dodgers at Chicago Cubs on 2026-08-03, joined from the results spine"
+              },
+              {
+                "fact": "away starter season line",
+                "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
+              },
+              {
+                "fact": "home starter last start score",
+                "value": "4-9",
+                "source": "the final of San Diego Padres at Arizona Diamondbacks on 2026-08-04, joined from the results spine"
+              },
+              {
+                "fact": "home starter season line",
+                "dropped": "the served block is the boxscore's actual starter, so the season line it carries includes this start"
               },
               {
                 "fact": "away_team",
@@ -34998,15 +35404,9 @@
                 "value": "4-1, 23 earned in 145 outs, 47 strikeouts"
               },
               {
-                "fact": "away starter season line",
-                "value": {
-                  "era": 3.31,
-                  "wl": "11-3",
-                  "ip": 117.0,
-                  "k9": 7.0,
-                  "whip": 1.07
-                },
-                "source": "pitchers_v4.json (probable, so the line is as of before this start)"
+                "fact": "away starter last start",
+                "source": "the newest row of Justin Wrobleski's served game log, dated 2026-08-03, strictly before this game",
+                "value": "4 1/3 innings, 7 hits, 7 earned, 3 walks, 4 strikeouts vs CHC"
               },
               {
                 "fact": "home starter",
@@ -35019,15 +35419,9 @@
                 "value": "4-2, 17 earned in 144 outs, 27 strikeouts"
               },
               {
-                "fact": "home starter season line",
-                "value": {
-                  "era": 2.71,
-                  "wl": "10-4",
-                  "ip": 136.1,
-                  "k9": 6.07,
-                  "whip": 1.24
-                },
-                "source": "pitchers_v4.json (probable, so the line is as of before this start)"
+                "fact": "home starter last start",
+                "source": "the newest row of Eduardo Rodriguez's served game log, dated 2026-08-04, strictly before this game",
+                "value": "5 2/3 innings, 11 hits, 5 earned, 0 walks, 4 strikeouts vs SD"
               }
             ],
             "sources": [
@@ -35062,16 +35456,6 @@
                 "rendered": "1"
               },
               {
-                "feature": "away starter: season won-lost, served while he was still a probable",
-                "raw": "11-3",
-                "rendered": "11-3"
-              },
-              {
-                "feature": "away starter: season earned run average, served while he was still a probable",
-                "raw": "3.31",
-                "rendered": "3.31"
-              },
-              {
                 "feature": "home starter: starts in the served game log, all before this game",
                 "raw": "8",
                 "rendered": "8"
@@ -35100,16 +35484,6 @@
                 "feature": "home starter: losses in those starts",
                 "raw": "2",
                 "rendered": "2"
-              },
-              {
-                "feature": "home starter: season won-lost, served while he was still a probable",
-                "raw": "10-4",
-                "rendered": "10-4"
-              },
-              {
-                "feature": "home starter: season earned run average, served while he was still a probable",
-                "raw": "2.71",
-                "rendered": "2.71"
               },
               {
                 "feature": "park_run_factor",
@@ -35159,12 +35533,12 @@
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.1",
+          "identity": "matchup_facts/1.2",
           "paragraphs": [
-            "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings, he has gone 4-1 in them, and on the year he is 11-3 with a 3.31 ERA. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings, he has gone 4-2 in them, and on the year he is 10-4 with a 2.71 ERA. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.",
+            "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings and he has gone 4-1 in them. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings and he has gone 4-2 in them. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.",
             "The Diamondbacks went to 3 relievers yesterday and Wrobleski has walked 5% of the hitters he has faced across his last five starts. Across thirty games the Diamondbacks have averaged 3.7 runs. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way."
           ],
-          "text": "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings, he has gone 4-1 in them, and on the year he is 11-3 with a 3.31 ERA. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings, he has gone 4-2 in them, and on the year he is 10-4 with a 2.71 ERA. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.\n\nThe Diamondbacks went to 3 relievers yesterday and Wrobleski has walked 5% of the hitters he has faced across his last five starts. Across thirty games the Diamondbacks have averaged 3.7 runs. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way.",
+          "text": "Los Angeles Dodgers at Arizona Diamondbacks, and it is Justin Wrobleski for the visitors against Eduardo Rodriguez. Over his last 8 starts Wrobleski has worked to a 4.28 ERA, with 47 strikeouts in 48 1/3 innings and he has gone 4-1 in them. Rodriguez answers with a 3.19 ERA over his own last 8 starts, 27 strikeouts in 48 innings and he has gone 4-2 in them. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Diamondbacks have scored 4.7 runs a game over their last fifteen, the Dodgers 5.7.\n\nThe Diamondbacks went to 3 relievers yesterday and Wrobleski has walked 5% of the hitters he has faced across his last five starts. Across thirty games the Diamondbacks have averaged 3.7 runs. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way.",
           "side": "under",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -35527,8 +35901,8 @@
           "take": "On the ballpark itself this is over 9 at 52%. Air, dimensions and how the yard has actually been playing.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T20:10:44Z",
+          "live_state_note": "Top 3rd \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-09T20:49:01Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -35694,7 +36068,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -36528,18 +36902,18 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 1,
+        "inning": 3,
         "half": "top",
         "outs": 0,
         "away_score": 0,
-        "home_score": 0,
-        "runs_so_far": 0,
+        "home_score": 4,
+        "runs_so_far": 4,
         "pregame_total": 9.0,
-        "runs_vs_pregame_total": -9.0,
-        "runs_still_needed_for_over": 9,
-        "innings_elapsed": 0.5,
-        "pace_runs_per_inning": 0.0,
-        "projected_final_runs": 0.0,
+        "runs_vs_pregame_total": -5.0,
+        "runs_still_needed_for_over": 5,
+        "innings_elapsed": 2.5,
+        "pace_runs_per_inning": 1.6,
+        "projected_final_runs": 14.4,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -36548,7 +36922,7 @@
         "p_hit_buckets": [],
         "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-09T20:10:44Z",
+        "as_of": "2026-08-09T20:49:01Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }
@@ -36939,7 +37313,7 @@
         "run_line_price_home": 172.0,
         "run_line_price_away": -182.0,
         "book": "betrivers",
-        "captured_at": "2026-08-09T20:10:42Z",
+        "captured_at": "2026-08-09T20:48:58Z",
         "wall": "T-6h",
         "locked_at": null,
         "game_pk": 823268,
@@ -36958,8 +37332,8 @@
       "line_now": {
         "total": 9.0,
         "pregame_total_compared": 9.0,
-        "total_price_over": 100.0,
-        "total_price_under": -118.0,
+        "total_price_over": -103.0,
+        "total_price_under": -117.0,
         "book": null,
         "comparison_basis": "book_consensus_median",
         "same_basis": true,
@@ -36968,11 +37342,11 @@
           "pregame_total": 8.5,
           "total": 9.0,
           "move": 0.5,
-          "total_price_over": 100.0,
-          "total_price_under": -118.0
+          "total_price_over": -103.0,
+          "total_price_under": -117.0
         },
         "n_books": 22,
-        "as_of": "2026-08-09T20:07:22Z",
+        "as_of": "2026-08-09T20:45:22Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -37237,7 +37611,7 @@
           "wall": "T-6h",
           "all_voices_at_final_wall": false,
           "provisional": true,
-          "asof_utc": "2026-08-09T20:11:01Z",
+          "asof_utc": "2026-08-09T20:49:20Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "CLEAR",

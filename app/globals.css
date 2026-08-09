@@ -11,11 +11,45 @@
        (--paper) that separate by HAIRLINE + a whisper of shadow, never by glow.
      AIR.  Generous padding, big touch targets, one idea per surface. Density
        comes from a grid of small tiles, not from stacking strips inside a card.
-     COLOUR MEANS SOMETHING.  Ink carries almost all the information. Green =
-       won / over / positive, red = lost / under / live-alert, amber = the
-       DiamondEdge brand mark and the "played" state. Nothing else is coloured.
      TYPE IS CALM.  Display face for headlines and figures, a humanist sans for
        prose, mono ONLY on numerals. No shouting caps outside small labels.
+
+   ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  THE COLOUR SYSTEM — three roles, and a semantic set kept apart from all  ║
+   ║  three. Place a new element by finding its ROLE below; if nothing fits,   ║
+   ║  it is ink. Do not invent a colour. (Leon, 2026-08-09.)                   ║
+   ╚══════════════════════════════════════════════════════════════════════════╝
+
+   PRIMARY — INK ON PAPER.  --ink…--ink4 on --bg / --paper.
+     WHAT IT IS FOR: every word, number, rule and hairline in the app. This is the
+     app's actual colour; the other two are accents on top of it. If an element is
+     not calling out a role or an outcome, it is drawn here. 90% of the sheet.
+
+   SECONDARY — GOLD.  --gold (read) · --goldbright (the mark) · --goldc (α fills)
+     WHAT IT IS FOR: DiamondEdge speaking about itself, and nothing else — the
+     diamond mark, section kickers, marker rails down the left of a slab, the
+     LIVE state, and the premium / locked / unlock furniture. Never an outcome.
+
+   TERTIARY — BLUE.  --blue / --pick / --pickbg / --pickline
+     WHAT IT IS FOR: interaction and identity — focus rings, links, the selected
+     control, and "this is OUR pick" before it has been graded. It is the colour
+     of a thing you can act on, not of a thing that has happened.
+
+   ── THE SEMANTIC SET — quarantined from all three above ────────────────────
+     WIN     --hit / --green / --over    a graded win, or the OVER side.
+     LOSS    --miss / --red / --under    a graded loss, or the UNDER side.
+     PUSH    --push (slate)              a graded push — no action, no money.
+     LIVE    --live (gold)               a game is being played. NOT an outcome.
+     LOCKED  --gold + --goldbg           behind the paywall; the unlock affordance.
+     ANALYST --anc                       the four desks' identity, set by the
+             .an-vega / .an-atlas / .an-nova / .an-scout scopes. Categorical:
+             teal-blue, olive-gold, violet, deep teal. Never a verdict.
+
+   THE ONE RULE THAT MATTERS.  Red and green are spent ONLY on a graded result or
+   an over/under side. The moment either is used for "something is happening", it
+   stops being able to say "you lost" — which is exactly the bug this system was
+   written to fix: every live card used to carry a red edge, including the ones we
+   were winning and the ones we had no pick on. See --live.
 
    HOW THEMING WORKS (and why the whole sheet is tokenised).
    Every colour in this file is either a semantic token or `rgba(var(--xc),α)`
@@ -24,9 +58,14 @@
      · --panec            the surface fill channel
      · --sh1…--sh6        the shadow ladder, alpha already tuned per theme
      · --g0…--g4 etc.     hue ramps: green (g), amber (a), red (r), blue (b)
-   Light is authored first; the prefers-color-scheme block at the bottom of this
-   section restores a dark ramp for the same tokens, so dark mode is a variant
-   of one system rather than a second design.
+   THE APP IS LIGHT-ONLY BY DECISION — the `prefers-color-scheme` block far below
+   re-pins every token to its light value on purpose. Dark is a SURFACE here, not
+   a theme: `.stories` (the full-bleed news reader) scopes the whole dark ramp to
+   itself, which is why the channel tokens exist at all.
+
+   CONTRAST IS A GATE, NOT A TASTE.  scripts/contrast_check.py holds every pair
+   this system depends on; text clears 4.5:1, marks and rules clear 3:1. Run it
+   before changing any token value.
 
    TYPE
      --disp   Outfit         → headlines, team abbreviations, scores, chips
@@ -48,7 +87,7 @@
   --paper:#ffffff;
   --paper2:#ffffff;
   --sunken:#f0f2f5;
-  --wash:#f7f8fa;
+  --wash:#f8fbff;
 
   /* ── INK ──────────────────────────────────────────────────────────────────
      A four-step ladder, and EVERY step passes AA on the paper — measured with a
@@ -61,7 +100,7 @@
      they failed on exactly the copy this product cannot afford to whisper: sample
      sizes, "n = 459", the pattern tables' confidence intervals and the honesty notes
      under every record. Nothing that qualifies a number is allowed to be decorative. */
-  --ink:#0d1420; --ink2:#3c4759; --ink3:#5c6879; --ink4:#67717f;
+  --ink:#0d1420; --ink2:#3c4759; --ink3:#5c6879; --ink4:#6a7583;
 
   /* ── LINES ── hairlines, never borders you can see the weight of ── */
   --line:rgba(13,20,32,.11); --line2:rgba(13,20,32,.075); --line3:rgba(13,20,32,.045);
@@ -98,13 +137,16 @@
 
   /* ── SEMANTIC ── one meaning per colour, used sparingly ── */
   --green:#07734f; --greenbg:rgba(6,124,84,.10); --greenline:rgba(6,124,84,.26);
-  --red:#c02038;   --redsoft:rgba(196,32,58,.09);
+  --red:#c02038;   --redsoft:rgba(192,32,56,.09);
   --blue:#1a5bc4;  --bluebg:rgba(20,86,214,.09);
   --amber:#8a5f06; --amberbg:rgba(166,114,8,.11);
   --slate:#5c6879; --slatebg:rgba(105,117,136,.10);
+  /* the fourth categorical hue — analyst identity and the news 3-cycle. Carries
+     no outcome meaning anywhere, which is exactly why those surfaces use it. */
+  --cyan:#08749e;
   --over:#07734f;  --under:#c02038;
   --hit:#07734f;   --hitbg:rgba(6,124,84,.10);  --hitline:rgba(6,124,84,.28);
-  --miss:#c02038;  --missbg:rgba(196,32,58,.09); --missline:rgba(196,32,58,.24);
+  --miss:#c02038;  --missbg:rgba(192,32,56,.09); --missline:rgba(192,32,56,.24);
   --push:#697588;  --pushbg:rgba(105,117,136,.10); --pushline:rgba(105,117,136,.24);
   --pick:#1a5bc4;  --pickbg:rgba(20,86,214,.08); --pickline:rgba(20,86,214,.24);
   --navy:#3c4759; --navy2:#697588;
@@ -115,6 +157,30 @@
   --gold:#8a5f06; --golddeep:#6d4c06;
   --goldbg:rgba(166,114,8,.10); --goldline:rgba(166,114,8,.26);
   --brandgrad:linear-gradient(140deg,#f6c745,#d99a12 52%,#b0730a);
+  /* THE BRAND'S BRIGHT GOLD. --gold is the deep bronze the brand is READ in on
+     paper; this is the same identity at full brightness, for the mark itself and
+     for the dark surfaces (.stories, the unlock plates) where it can shine. It is
+     settled and does not move. It was spelled #f5be42 nine times and
+     rgba(245,190,66,α) twenty-three times before it had a name. */
+  --goldbright:#f5be42; --goldbrightc:245,190,66;
+
+  /* ── LIVE ── A GAME IS BEING PLAYED. NOT AN OUTCOME. ──────────────────────
+     This token exists because red used to do this job, and red doing this job
+     is what broke the board. Every live card carried a red edge — the ones we
+     were winning, the undecided ones, and the ones we had no pick on — so red
+     meant "a game is happening", which is the one meaning that destroys it:
+     with red also meaning "this bet lost", a reader could not tell a loss from
+     a game in the second inning. The strongest signal on the board was spent
+     on the least informative fact. (Leon, 2026-08-09: "there's a red border
+     around all games no matter what… which kind of takes away from when it
+     goes red for losses and green for wins. So maybe move to a gold colour.")
+     Live is now SECONDARY — the app's own gold — and red and green mean only
+     what a bettor thinks they mean.
+     `--live` is text-safe on paper (5.64:1). `--livemark` is the brighter
+     channel gold for dots, rules and rings, where the 3:1 non-text floor
+     applies (4.17:1). Never use --live for a graded result. */
+  --live:#8a5f06;  --livebg:rgba(166,114,8,.11); --liveline:rgba(166,114,8,.30);
+  --livemark:#a67208;
 
   /* ── SHADOW LADDER ── neutral, low-alpha, never coloured ── */
   --sh1:rgba(13,20,32,.025); --sh2:rgba(13,20,32,.04); --sh3:rgba(13,20,32,.06);
@@ -238,62 +304,20 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   DARK MODE — a VARIANT, not a second design. Light is what this app is
-   designed against; this block restores the dark ramp for the same tokens so
-   a reader with a dark OS still gets a coherent surface.
+   THERE IS NO prefers-color-scheme BLOCK HERE ANY MORE, AND THAT IS DELIBERATE.
+   A full dark ramp used to live at this spot. It never rendered: the LIGHT GLASS
+   CORRECTION layer far below carries its own `@media (prefers-color-scheme:dark)`
+   that re-pins all 112 tokens back to the light values, because DiamondEdge is
+   light-only by decision (paper, not glass — see the header). So this block was
+   ~50 lines of unreachable palette, and it shipped one real bug: `--inkc` was the
+   single token the correction layer did NOT re-pin, so on a dark-OS phone the ink
+   channel flipped to near-white while every surface stayed white, and the eight
+   `rgba(var(--inkc),α)` labels on the top-picks card rendered white-on-white.
+   Removing the block deletes the dead palette and the bug in one move.
+   THE DARK RAMP STILL EXISTS WHERE IT IS ACTUALLY USED — scoped to `.stories`,
+   the full-bleed news reader, which is a genuinely art-directed dark surface and
+   declares the whole ramp itself. Dark is a SURFACE in this app, not a theme.
    ══════════════════════════════════════════════════════════════════════════ */
-@media (prefers-color-scheme:dark){
-:root{
-  --bg:#0e131b;
-  --paper:#171d27; --paper2:#1c232f; --sunken:#12171f; --wash:#151b24;
-  --ink:#eef2f8; --ink2:#b9c3d2; --ink3:#8d98a9; --ink4:#69737f;
-  --line:rgba(226,235,245,.14); --line2:rgba(226,235,245,.09); --line3:rgba(226,235,245,.06);
-  --rimc:226,235,245; --tintc:210,224,247; --panec:23,29,39; --inkc:238,242,248;
-  --slatec:147,161,184;
-  --goldc:224,172,32; --goldlic:255,225,140; --greenc:25,197,138; --redc:255,77,104;
-  --bluec:110,161,255; --violetc:167,139,250; --cyanc:63,208,240; --mintc:47,214,160;
-  --g0:#0a7d40; --g1:#14cd8e; --g2:#2bd695; --g3:#45d6a2; --g4:#6fe0b4;
-  --a0:#3a2c05; --a1:#cf9a12; --a2:#e0a81e; --a3:#e7b62e; --a4:#f4d476;
-  --r0:#5b1a3d; --r1:#c22440; --r2:#e0455f; --r3:#ff7d93; --r4:#ff9aac;
-  --b0:#12203a; --b1:#3d6bd6; --b2:#6ea1ff; --b3:#8cadff; --b4:#9dbcff;
-  --n1:#0b111e; --n2:#2a3346; --n3:#8b98af;
-  --green:#2bd695; --greenbg:rgba(25,197,138,.14); --greenline:rgba(25,197,138,.32);
-  --red:#ff6b83; --redsoft:rgba(255,77,104,.13);
-  --blue:#8cadff; --bluebg:rgba(110,161,255,.13);
-  --amber:#e7b62e; --amberbg:rgba(224,172,32,.14);
-  --slate:#93a1b8; --slatebg:rgba(147,161,184,.13);
-  --over:#2bd695; --under:#ff6b83;
-  --hit:#2bd695; --hitbg:rgba(25,197,138,.14); --hitline:rgba(25,197,138,.34);
-  --miss:#ff6b83; --missbg:rgba(255,77,104,.12); --missline:rgba(255,77,104,.28);
-  --push:#93a1b8; --pushbg:rgba(147,161,184,.13); --pushline:rgba(147,161,184,.28);
-  --pick:#6ea1ff; --pickbg:rgba(110,161,255,.12); --pickline:rgba(110,161,255,.3);
-  --navy:#a3b6d9; --navy2:#8ba0c8;
-  --acc:#2bd695; --acc2:#45d6a2;
-  --gold:#e7b62e; --golddeep:#f4d476;
-  --goldbg:rgba(224,172,32,.14); --goldline:rgba(224,172,32,.36);
-  --brandgrad:linear-gradient(140deg,#ffe08a,#e0ac20 52%,#b0730a);
-  --sh1:rgba(2,6,16,.18); --sh2:rgba(2,6,16,.26); --sh3:rgba(2,6,16,.34);
-  --sh4:rgba(2,6,16,.42); --sh5:rgba(2,6,16,.5); --sh6:rgba(2,6,16,.6);
-  --glass:#171d27; --glass-hi:#1c232f;
-  --chrome-bg:rgba(14,19,27,.86); --chrome-line:var(--line2);
-  /* THE MATERIAL, DARK RAMP. Same five parts, same tokens — only the tint and the
-     specular flip, because on a dark page the highlight is a low-alpha WHITE rim rather
-     than a near-white edge, and the drop has to be darker than the surface to read at all.
-     (This app ships light-only; the block below restores the light ramp. These values
-     exist so the material is a real two-theme system the day that override comes out.) */
-  --mat-tint:linear-gradient(180deg,rgba(46,56,72,.62),rgba(30,38,50,.50));
-  --mat-tint-thin:linear-gradient(180deg,rgba(46,56,72,.44),rgba(30,38,50,.32));
-  --mat-tint-smoke:linear-gradient(180deg,rgba(12,17,25,.60),rgba(8,12,19,.48));
-  --mat-hair:inset 0 0 0 .5px rgba(var(--rimc),.16);
-  --mat-hair-soft:inset 0 0 0 .5px rgba(var(--rimc),.10);
-  --mat-spec:inset 0 1px 0 rgba(255,255,255,.14);
-  --mat-spec-lo:inset 0 -1px 0 rgba(255,255,255,.06);
-  --mat-drop:0 1px 0 var(--line2),0 10px 20px -14px rgba(2,6,16,.7);
-  --mat-drop-float:0 2px 8px -2px rgba(2,6,16,.5),0 18px 44px -12px rgba(2,6,16,.62);
-  --mat-scrim:rgba(2,6,16,.52);
-  color-scheme:dark;
-}
-}
 
 *{box-sizing:border-box;margin:0;padding:0}
 /* CRISPNESS BASE.
@@ -352,7 +376,7 @@ button{font-family:inherit}
    and the glass capsule) bracket the content as chrome, and the gold mark finally has
    something to sit against. The wordmark inverts with it; nothing else on the page changes. */
 header#app-header{position:sticky;top:0;z-index:65;padding-top:var(--sat);
-  background:linear-gradient(180deg,#131a28,#0d1420);
+  background:linear-gradient(180deg,#141b27,#0d1420);
   -webkit-backdrop-filter:none;backdrop-filter:none;
   box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 22px -18px rgba(13,20,32,.6);
   transition:box-shadow .3s ease}
@@ -423,7 +447,7 @@ header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px 
    one ink, tracked open. That is the fintech move, and it is the classier version of exactly
    the contrast Leon asked to keep. */
 .brand h1{font-family:var(--disp);font-weight:300;font-size:19px;letter-spacing:.13em;
-  text-transform:uppercase;line-height:1;color:#f2f6fc;white-space:nowrap}
+  text-transform:uppercase;line-height:1;color:#eef3fa;white-space:nowrap}
 .brand h1 b{font-weight:800;letter-spacing:.075em;color:#f8fbff}
 .brand:active{transform:scale(.96)}
 .brand{transition:transform .16s var(--ease-out)}
@@ -453,7 +477,7 @@ body.native .brand .tag{display:none}
 .tk-item:hover{background:rgba(var(--rimc),.09);color:var(--ink)}
 .tk-item .tk-mu b{font-family:var(--mono);font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .tk-live{display:inline-flex;align-items:center}
-.tk-live .livedot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.tk-live .livedot{width:5px;height:5px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite}
 .tk-fin{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--ink3)}
 .tk-time{font-family:var(--mono);font-weight:600;font-size:11px;color:var(--ink3)}
 .tk-pick{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.02em;color:var(--golddeep);padding-left:2px}
@@ -534,7 +558,7 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .sport-ic{width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;flex:0 0 auto;font-size:10px;line-height:1;
   background:rgba(var(--tintc),.075);color:var(--ink3);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.08)}
 .sporttab.on .sport-ic{background:var(--ink);color:var(--paper);box-shadow:none}
-.sporttab .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite;margin-left:1px}
+.sporttab .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.4s infinite;margin-left:1px}
 .sporttab.on .cnt{color:var(--ink3)}
 .tab-ink{position:absolute;z-index:0;left:0;bottom:0;top:auto;height:2.5px;width:0;border-radius:2px;background:var(--ink);box-shadow:none;transition:transform .3s var(--ease),width .3s var(--ease),opacity .2s ease}
 
@@ -881,7 +905,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .ft-tm.win b,.ft-tm.win i{color:var(--ink)}
 .ft-tm:not(.win) b{color:var(--ink2)}
 .ft-mid{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);text-align:center;white-space:nowrap}
-.ft-mid.live{display:inline-flex;align-items:center;gap:6px;color:var(--red);font-weight:700}
+.ft-mid.live{display:inline-flex;align-items:center;gap:6px;color:var(--live);font-weight:700}
 .ft-take{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.01em;color:var(--ink);border-radius:15px;padding:9px 14px;background:rgba(var(--rimc),.09);box-shadow:inset 0 1px 0 rgba(var(--rimc),.13),0 3px 10px var(--sh2)}
 .ft-take i{font-style:normal;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;color:var(--ink2)}
 .ft-take b{font-weight:700}
@@ -907,7 +931,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .slate-sec .sec-hd{display:flex;align-items:baseline;gap:7px;margin:0 2px 10px;padding-top:2px}
 .slate-sec .sec-lab{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:-.015em;text-transform:none;color:var(--ink)}
 .slate-sec.live .sec-lab{color:var(--ink)}
-.slate-sec.live .sec-lab::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-right:7px;vertical-align:1px;animation:pulse 1.4s infinite}
+.slate-sec.live .sec-lab::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--livemark);margin-right:7px;vertical-align:1px;animation:pulse 1.4s infinite}
 .slate-sec .sec-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px;color:var(--ink3);background:transparent;padding:0}
 .slate-sec.live .sec-n{color:var(--ink3);background:transparent}
 .slate-sec .sec-hd::after{display:none}
@@ -945,7 +969,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tile:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 /* LIVE is the only state that changes the card's own surface, and it does it with a
    1px top rule in the live red — the scoreboard convention, not a bloom. */
-.tile.live::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--red)}
+.tile.live::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--livemark)}
 .tile.hl{outline:2px solid var(--blue);outline-offset:2px}
 /* RESULT, once a game is graded: a hairline tint down the leading edge. Deliberately
    quiet — a board of finals should read as a board, not as a scorecard of our day. */
@@ -959,8 +983,8 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .t-league .tl-ic{display:none}
 .t-league .tl-comp{display:none}
 .statechip{display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.03em;white-space:nowrap;flex-shrink:0;line-height:1.4}
-.statechip.live{color:var(--red)}
-.statechip.live .livedot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite;flex-shrink:0}
+.statechip.live{color:var(--live)}
+.statechip.live .livedot{width:5px;height:5px;border-radius:50%;background:var(--livemark);animation:pulse 1.4s infinite;flex-shrink:0}
 .statechip.final{color:var(--ink3)}
 .statechip.pre{color:var(--ink2);font-variant-numeric:tabular-nums}
 @keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
@@ -1047,7 +1071,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .tv-res.won .chk{stroke:#fff}
 .tv-res.lost{color:#fff;background:var(--red)}
 .tv-res.pushed{color:var(--push);background:var(--pushbg)}
-.tv-res.inplay{color:var(--green);background:var(--greenbg);font-family:var(--mono)}
+.tv-res.inplay{color:var(--live);background:var(--livebg);font-family:var(--mono)}
 /* THE NUMBER IS NEVER THE THING THAT WRAPS OR CLIPS. The call keeps its full width and the
    result chip drops to the next line when the column is too tight for both. */
 .tl-verdict .tv-callrow{display:flex;align-items:center;gap:6px;row-gap:5px;min-width:0;flex-wrap:wrap}
@@ -1288,8 +1312,8 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .sh-score .shs-side b{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
 .sh-score .shs-ab{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink2)}
 .sh-score .shs-mid{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
-.sh-score.live .shs-mid{color:var(--red)}
-.sh-score .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.sh-score.live .shs-mid{color:var(--live)}
+.sh-score .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite}
 .sh-score .shs-tot{font-family:var(--disp);font-weight:700;font-size:23px;color:var(--ink)}
 
 /* ---- (1) THE CALL ---- */
@@ -1582,7 +1606,7 @@ details.more .more-body{padding-top:12px}
 /* ---- HERO LIVE BADGE: LIVE + score + trend composited onto the top of the cover art ---- */
 .hlb{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:11px 13px;pointer-events:none}
 .hlb::before{content:"";position:absolute;left:0;right:0;top:0;height:220%;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(var(--panec),.6),transparent)}
-.hlb-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,var(--r2),var(--r1));border-radius:999px;padding:3.5px 9px;box-shadow:0 3px 10px rgba(var(--redc),.4)}
+.hlb-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,var(--live),var(--golddeep));border-radius:999px;padding:3.5px 9px;box-shadow:0 3px 10px rgba(var(--goldc),.4)}
 .hlb-badge .livedot{width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.3s infinite}
 .hlb-score{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.02em;color:#fff;text-shadow:0 1px 6px var(--sh5)}
 .hlb-score b{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums}
@@ -1612,7 +1636,7 @@ details.more .more-body{padding-top:12px}
 .ls-fig-kick{position:absolute;left:12px;top:12px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--a0);background:linear-gradient(135deg,var(--a4),var(--a3));border-radius:999px;padding:4px 11px;box-shadow:0 3px 10px rgba(var(--goldc),.32)}
 .ls-body{padding:15px 18px 15px}
 .ls-kick{display:flex;align-items:center;gap:8px}
-.ls-lab{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--red)}
+.ls-lab{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .ls-match{font-size:clamp(27px,4vw,42px);line-height:1.08;letter-spacing:-.015em;color:var(--ink);margin:4px 0 8px;text-wrap:pretty}
 @media(min-width:900px){.ls-match{font-size:clamp(34px,3.4vw,44px)}}
 .leadstory.pass .ls-match{font-size:23px;margin-top:2px}
@@ -1712,7 +1736,10 @@ details.more .more-body{padding-top:12px}
 .st-ic{flex-shrink:0;display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:linear-gradient(140deg,rgba(var(--bluec),.14),rgba(var(--rimc),.09));color:var(--pick);box-shadow:inset 0 1px 0 rgba(var(--rimc),.11)}
 .st-ic .eic{width:18px;height:18px}
 .st-ic .eic svg{width:17px;height:17px}
-.story:nth-child(3n+1) .st-ic{background:linear-gradient(140deg,rgba(var(--redc),.13),rgba(var(--rimc),.09));color:var(--red)}
+/* The 3-cycle used to run blue → RED → gold, i.e. a story was tinted the loss
+   colour for being 1st, 4th or 7th in a list. The rhythm is worth keeping; the
+   bet meaning is not. Cyan carries no outcome anywhere in the app. */
+.story:nth-child(3n+1) .st-ic{background:linear-gradient(140deg,rgba(var(--cyanc),.14),rgba(var(--rimc),.09));color:var(--cyan)}
 .story:nth-child(3n) .st-ic{background:linear-gradient(140deg,rgba(var(--goldc),.18),rgba(var(--rimc),.09));color:var(--golddeep)}
 .st-b{flex:1;min-width:0}
 .st-h{font-family:var(--disp);font-weight:700;font-size:16px;line-height:1.25;letter-spacing:.01em;color:var(--ink);margin:1px 0 4px}
@@ -1945,7 +1972,7 @@ details.more .more-body{padding-top:12px}
 .pb-res.won .chk{stroke-dasharray:20;stroke-dashoffset:20;animation:chkdraw .45s .15s ease forwards}
 .pb-res.lost{color:#fff;background:var(--red)}
 .pb-res.pushed{color:var(--push);background:var(--pushbg)}
-.pb-res.inplay{color:var(--g3);background:rgba(var(--greenc),.13);font-family:var(--mono);font-weight:700;font-size:11px}
+.pb-res.inplay{color:var(--live);background:var(--livebg);font-family:var(--mono);font-weight:700;font-size:11px}
 .pb-res.big{font-size:14px;padding:5px 12px}
 /* featured hero: brand kicker inside the take chip */
 .ft-de{display:block;width:100%;text-align:center;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--golddeep);margin-bottom:1px}
@@ -1966,15 +1993,18 @@ details.more .more-body{padding-top:12px}
 .whycard .ls-facts{margin-top:11px}
 .whycard .pv-stks{margin-top:10px}
 .whycard.lines p{font-size:15px}
-/* ── THE PER-GAME CASE ──
-   Two paragraphs, and the SECOND ONE IS NOT MARKED. Leon was explicit that the supporting
-   reasons must not be labelled, hedged or fenced off from the strategy paragraph — so there
-   is no divider, no second heading and no muted tone here. Both paragraphs read as one piece
-   of prose, which is what an analyst making a case sounds like. The only differentiated
-   element is the rule's NAME, which is a byline, not a caveat. */
-.whycard.rulecase .rc-rule{font-family:var(--disp);font-weight:700;font-size:12.5px;
-  letter-spacing:.005em;color:var(--golddeep);margin:-2px 0 9px}
-.whycard.rulecase p{font-size:15px;line-height:1.62}
+/* ── THE PER-GAME NARRATIVE ──
+   FOUR paragraphs now, and NONE of them is marked. Leon was explicit that the supporting
+   reasons must not be labelled, hedged or fenced off from the rest — so there is no divider,
+   no sub-heading and no muted tone anywhere in here. The game, the pick, the support and the
+   round-out read as one piece of prose, which is what a preview sounds like.
+
+   IT MOVED CARDS ON 2026-08-09. This used to be `.whycard.rulecase`, a separate box above
+   the preview masthead carrying the betting rationale while the preview carried its own
+   prose underneath — two blocks, two voices, one game. The narrative IS the preview now, so
+   the type scale lives on `.whycard.preview` and the old selector is gone with the card. */
+.whycard.preview p{font-size:15px;line-height:1.62}
+.whycard.preview p + p{margin-top:11px}
 @media(max-width:640px){
   .hbar{padding:8px max(14px,var(--sal));gap:8px}
   .brand h1{font-size:18px}
@@ -2068,7 +2098,7 @@ details.more .more-body{padding-top:12px}
 
 /* ---- SHEET PREVIEW MASTHEAD (preview-first — Task 9) ---- */
 .sh-mast{margin:0 0 12px;padding:2px 2px 0}
-.sh-mast-kick{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+.sh-mast-kick{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
 .sh-mast-h{font-size:25px;line-height:1.16;color:var(--ink);margin:5px 0 6px;text-wrap:balance}
 .sh-mast-dek{font-size:15px;line-height:1.55;color:var(--ink2);margin:0 0 8px}
 .sh-mast-dek b{color:var(--ink)}
@@ -2209,8 +2239,8 @@ details.more .more-body{padding-top:12px}
 .gp-score{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:32px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
 .gp-score.live b{color:var(--acc2)}
 .gp-scmid{display:inline-flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
-.gp-score.live .gp-scmid{color:var(--red)}
-.gp-scmid .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.gp-score.live .gp-scmid{color:var(--live)}
+.gp-scmid .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite}
 .gp-when{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.03em;color:var(--navy);white-space:nowrap;text-align:center}
 .gp-trend{margin-top:11px}
 .gp-trend .lho-full{box-shadow:var(--glass-shadow)}
@@ -2305,8 +2335,8 @@ details.more .more-body{padding-top:12px}
 .livepanel .state.mini{padding:40px 18px}
 .livepanel .state.mini .big{font-size:16px}
 .lp-now{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r-md);background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);box-shadow:var(--glass-shadow)}
-.lp-live{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
-.lp-live .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.lp-live{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--live)}
+.lp-live .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite}
 .lp-state{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.03em;color:var(--ink2)}
 .lp-box{border-radius:var(--r-md);background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);box-shadow:var(--glass-shadow);overflow:hidden}
 .lp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
@@ -2348,7 +2378,7 @@ details.more .more-body{padding-top:12px}
 .newsfront{margin:0 0 20px}
 .nf-head{display:flex;align-items:center;gap:9px;margin:0 2px 10px}
 .nf-lab{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink)}
-.nf-live{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;text-transform:uppercase;color:var(--red)}
+.nf-live{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;text-transform:uppercase;color:var(--live)}
 .nf-story{display:block;text-decoration:none;color:inherit}
 .nf-topline{display:grid;grid-template-columns:1fr;gap:10px}
 .nf-hero{border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--glass-shadow);border:1px solid var(--glass-brd);background:var(--glass-hi);margin-bottom:0}
@@ -2499,28 +2529,28 @@ details.more .more-body{padding-top:12px}
    It stops 64px short of the top so the deck is visibly still behind it — the single cue
    that says overlay rather than page — carries a real card rim, and wears a 40px X that
    never scrolls away (the head is fixed; only .sh-body scrolls). */
-.article-bg{background:rgba(3,6,14,.68);-webkit-backdrop-filter:var(--mat-filter);backdrop-filter:var(--mat-filter)}
+.article-bg{background:rgba(6,9,18,.68);-webkit-backdrop-filter:var(--mat-filter);backdrop-filter:var(--mat-filter)}
 .sheet.article-story{width:min(720px,calc(100vw - 18px));max-height:calc(100dvh - 64px - var(--sat));bottom:8px;
-  border-radius:28px;background:linear-gradient(180deg,rgba(10,15,28,.96),rgba(5,8,17,.98));
+  border-radius:28px;background:linear-gradient(180deg,rgba(13,20,32,.96),rgba(6,9,18,.98));
   color:#f8fbff;border:1px solid rgba(255,255,255,.13);box-shadow:0 28px 80px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.16)}
 .article-story .sh-head{position:relative}
 .article-story .sh-head .close{width:40px;height:40px;font-size:17px;
-  background:rgba(6,10,20,.72);border:1px solid rgba(255,255,255,.22);color:#fff;
+  background:rgba(6,9,18,.72);border:1px solid rgba(255,255,255,.22);color:#fff;
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
-.article-story .sh-head .close:hover{background:rgba(20,28,44,.9)}
+.article-story .sh-head .close:hover{background:rgba(20,31,46,.9)}
 .article-story .sh-grab span{background:rgba(255,255,255,.34)}
 .article-story .sh-head{margin:8px 8px 0;padding:12px 12px 16px;border-radius:22px;
   background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.045));
   color:#f8fbff;border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
-.article-story .sh-head .close{top:20px;right:20px;z-index:4;border-radius:50%;background:rgba(2,6,14,.6);color:#fff;
+.article-story .sh-head .close{top:20px;right:20px;z-index:4;border-radius:50%;background:rgba(6,9,18,.6);color:#fff;
   border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .article-story .sh-head .close:hover{background:rgba(255,255,255,.16)}
 .article-story .art-visual{position:relative;display:grid;place-items:center;height:190px;margin:0 0 14px;overflow:hidden;border-radius:18px;
-  background:linear-gradient(135deg,rgba(81,190,255,.18),rgba(245,190,66,.13),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12)}
-.article-story .art-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(5,8,17,.72));pointer-events:none}
+  background:linear-gradient(135deg,rgba(81,190,255,.18),rgba(var(--goldbrightc),.13),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12)}
+.article-story .art-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(6,9,18,.72));pointer-events:none}
 .article-story .art-visual img{width:100%;height:100%;object-fit:cover;filter:saturate(1.05) contrast(1.03)}
 .article-story .art-visual.is-fallback img{opacity:0}
-.article-story .art-visual.is-fallback span{font-size:54px;color:#f5be42;text-shadow:0 0 22px rgba(245,190,66,.4);animation:briefingPulse 2.8s ease-in-out infinite}
+.article-story .art-visual.is-fallback span{font-size:54px;color:var(--goldbright);text-shadow:0 0 22px rgba(var(--goldbrightc),.4);animation:briefingPulse 2.8s ease-in-out infinite}
 .article-story .art-vs{grid-template-columns:1fr auto 1fr;gap:18px;padding:0 34px}
 .article-story .art-vs span{position:relative;z-index:2;font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:rgba(235,244,255,.66)}
 .article-story .art-hero-crest{position:relative;z-index:2;justify-self:center}
@@ -2538,12 +2568,12 @@ details.more .more-body{padding-top:12px}
 .article-story .art-mu .crest{background:rgba(255,255,255,.12);color:#fff}
 .article-story .art-mu-t,.article-story .art-body p b{color:#fff}
 .article-story .art-take-lab{color:rgba(235,244,255,.58)}
-.article-story .nf-angle.edge{background:rgba(245,190,66,.16);border-color:rgba(245,190,66,.32);color:#ffd36f}
+.article-story .nf-angle.edge{background:rgba(var(--goldbrightc),.16);border-color:rgba(var(--goldbrightc),.32);color:#ffd36f}
 .article-story .nf-angle.lean{background:rgba(125,220,255,.13);border-color:rgba(125,220,255,.28);color:#9fe6ff}
-.article-story .art-go{background:rgba(245,190,66,.14);border-color:rgba(245,190,66,.3);color:#ffd36f}
+.article-story .art-go{background:rgba(var(--goldbrightc),.14);border-color:rgba(var(--goldbrightc),.3);color:#ffd36f}
 .article-story .art-body p{font-size:17px;line-height:1.66;color:rgba(235,244,255,.8)}
 .article-story .art-nav{border-top-color:rgba(255,255,255,.12)}
-.article-story .art-navbtn.next{background:linear-gradient(135deg,#f8fbff,#bfe8ff);border-color:transparent;color:#07101d}
+.article-story .art-navbtn.next{background:linear-gradient(135deg,#f8fbff,#bfe8ff);border-color:transparent;color:#0d1420}
 @media(max-width:520px){.sheet.article-story{width:100vw;bottom:0;border-radius:24px 24px 0 0}.article-story .art-visual{height:168px}.article-story .art-byline{flex-direction:column}.article-story .art-share{align-self:flex-start}}
 @media(prefers-reduced-motion:reduce){.article-story .art-visual.is-fallback span{animation:none!important}}
 
@@ -3037,10 +3067,10 @@ details.more .more-body{padding-top:12px}
 .de-toast{z-index:900}
 /* the dock is always on screen now, so every scrolling modal body must clear it */
 #sheet-layer .sh-body,#sheet-layer .gp-body{padding-bottom:calc(var(--sab) + 34px)}  /* the bar is hidden under a sheet, so only the safe area needs clearing */
-.sheet.article-story{background:#070a13;color:#f8fbff;box-shadow:0 -18px 70px rgba(0,0,0,.55)}
+.sheet.article-story{background:#060912;color:#f8fbff;box-shadow:0 -18px 70px rgba(0,0,0,.55)}
 .sheet.article-story .sh-body{max-height:calc(100dvh - 250px);overflow:auto}
-.article-story .art-body p{color:rgba(246,250,255,.88)}
-.article-story .sh-meta,.article-story .art-byline{color:rgba(238,246,255,.78)}
+.article-story .art-body p{color:rgba(248,251,255,.88)}
+.article-story .sh-meta,.article-story .art-byline{color:rgba(235,244,255,.78)}
 .article-story .art-mu img,.article-story .art-hero-crest img{background:rgba(255,255,255,.9);border-radius:16px;padding:5px}
 
 /* ══════════════════════ THE END CARD — a completion, then a door ══════════════════════
@@ -3055,13 +3085,13 @@ details.more .more-body{padding-top:12px}
 .stories .caughtup .st-cta.big{font-size:16.5px;padding:16px 34px;letter-spacing:.005em}
 .cu-mark{position:relative;display:grid;place-items:center;width:clamp(96px,26vw,124px);aspect-ratio:1;flex-shrink:0}
 .cu-svg{position:relative;z-index:2;width:100%;height:100%;overflow:visible}
-.cu-svg path{fill:none;stroke:url(#cuGold);stroke:#f5be42;stroke-linejoin:round;
-  filter:drop-shadow(0 0 14px rgba(245,190,66,.55))}
+.cu-svg path{fill:none;stroke:url(#cuGold);stroke:var(--goldbright);stroke-linejoin:round;
+  filter:drop-shadow(0 0 14px rgba(var(--goldbrightc),.55))}
 .cu-p1{stroke-width:2.2;stroke-dasharray:312;stroke-dashoffset:312;animation:cuDraw .9s var(--ease-out) .06s forwards}
 .cu-p2{stroke-width:1.6;opacity:0;stroke:#ffe08a;animation:cuFade .5s ease .62s forwards}
-.cu-p3{stroke:none;fill:#f5be42;opacity:0;transform-origin:60px 60px;animation:cuPop .5s var(--spring) .8s forwards}
+.cu-p3{stroke:none;fill:var(--goldbright);opacity:0;transform-origin:60px 60px;animation:cuPop .5s var(--spring) .8s forwards}
 .cu-halo{position:absolute;inset:-28%;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,rgba(245,190,66,.30),transparent 66%);filter:blur(12px);
+  background:radial-gradient(circle,rgba(var(--goldbrightc),.30),transparent 66%);filter:blur(12px);
   opacity:0;animation:cuHalo 1.4s ease-out .5s forwards}
 @keyframes cuDraw{to{stroke-dashoffset:0}}
 @keyframes cuFade{to{opacity:.82}}
@@ -3070,9 +3100,9 @@ details.more .more-body{padding-top:12px}
 .cu-head{font-family:var(--disp);font-weight:800;font-size:clamp(38px,12.4vw,62px);line-height:.96;
   letter-spacing:-.035em;color:#f8fbff;text-wrap:balance;text-shadow:0 18px 46px rgba(0,0,0,.5)}
 .cu-rule{width:clamp(60px,22vw,110px);height:2px;border-radius:2px;
-  background:linear-gradient(90deg,transparent,rgba(245,190,66,.95),transparent)}
+  background:linear-gradient(90deg,transparent,rgba(var(--goldbrightc),.95),transparent)}
 .cu-sub{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase;
-  color:rgba(245,190,66,.94);text-wrap:balance;line-height:1.5}
+  color:rgba(var(--goldbrightc),.94);text-wrap:balance;line-height:1.5}
 .cu-foot{font-family:var(--sans);font-size:12px;letter-spacing:.02em;color:rgba(235,244,255,.48)}
 .stories .caughtup .sts-srows{max-width:360px}
 .stories .caughtup .sts-foot{gap:12px}
@@ -3090,13 +3120,13 @@ details.more .more-body{padding-top:12px}
 .cash-seal{position:relative;display:grid;place-items:center;padding:6px 0 2px;flex-shrink:0}
 .cash-plate{position:relative;z-index:2;display:inline-flex;align-items:center;gap:11px;overflow:hidden;
   transform:rotate(-5.5deg);padding:11px 26px 11px 20px;border-radius:8px;
-  background:linear-gradient(146deg,#3b2c06,#171106 62%,#241a04);
-  box-shadow:0 0 0 2px rgba(245,190,66,.95),0 0 0 5px rgba(5,7,16,.9),0 0 0 6.5px rgba(245,190,66,.42),
-    0 22px 52px rgba(0,0,0,.55),0 0 46px rgba(245,190,66,.28),inset 0 1px 0 rgba(255,224,138,.32);
+  background:linear-gradient(146deg,#3a2c05,#171106 62%,#241a04);
+  box-shadow:0 0 0 2px rgba(var(--goldbrightc),.95),0 0 0 5px rgba(6,9,18,.9),0 0 0 6.5px rgba(var(--goldbrightc),.42),
+    0 22px 52px rgba(0,0,0,.55),0 0 46px rgba(var(--goldbrightc),.28),inset 0 1px 0 rgba(255,224,138,.32);
   animation:cashLand .62s cubic-bezier(.2,1.36,.36,1) both}
 .cash-plate b{font-family:var(--disp);font-weight:800;font-size:clamp(24px,7.2vw,34px);letter-spacing:.24em;
   line-height:1;padding-left:.06em;
-  background:linear-gradient(168deg,#fff3cf,#f5be42 46%,#c98a12);-webkit-background-clip:text;background-clip:text;color:transparent}
+  background:linear-gradient(168deg,#fff3cf,var(--goldbright) 46%,#c98a12);-webkit-background-clip:text;background-clip:text;color:transparent}
 .cash-tick{font-style:normal;display:grid;place-items:center;width:26px;height:26px;flex-shrink:0;border-radius:50%;
   font-size:14px;font-weight:800;color:#04301f;background:linear-gradient(150deg,#6ef0b8,#1fc086);
   box-shadow:0 5px 14px rgba(25,197,138,.5)}
@@ -3104,7 +3134,7 @@ details.more .more-body{padding-top:12px}
   background:linear-gradient(104deg,transparent 34%,rgba(255,255,255,.4) 48%,transparent 62%);
   transform:translateX(-130%);animation:cashFoil 4.6s ease-in-out .85s infinite}
 .cash-ring{position:absolute;width:150px;height:150px;border-radius:50%;pointer-events:none;
-  border:1.5px solid rgba(245,190,66,.55);opacity:0;animation:cashRing 1.5s var(--ease-out) .2s 1}
+  border:1.5px solid rgba(var(--goldbrightc),.55);opacity:0;animation:cashRing 1.5s var(--ease-out) .2s 1}
 .cash-ring.r2{animation-delay:.46s;border-color:rgba(50,223,151,.45)}
 @keyframes cashLand{
   0%{opacity:0;transform:scale(1.9) rotate(-17deg);filter:blur(7px)}
@@ -3128,7 +3158,7 @@ details.more .more-body{padding-top:12px}
 .sts-winmath i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4)}
 .sts-winmath b{font-family:var(--mono);font-weight:700;font-size:23px;font-variant-numeric:tabular-nums;color:var(--ink)}
 .sts-winmath .sep{align-self:center;font-size:18px;color:var(--ink4);margin-top:12px}
-.sts-winmath .by b{color:#f5be42;text-shadow:0 0 18px rgba(245,190,66,.4)}
+.sts-winmath .by b{color:var(--goldbright);text-shadow:0 0 18px rgba(var(--goldbrightc),.4)}
 
 /* ═══════════════ THE GAME WE ARE CIRCLED ON ═══════════════ */
 .sts-hypeline{display:inline-flex;align-items:baseline;justify-content:center;gap:9px;align-self:center;
@@ -3171,7 +3201,7 @@ details.more .more-body{padding-top:12px}
 .anl-card>*:not(.anl-ghost):not(.anl-foil){position:relative;z-index:2}
 .anl-head{display:flex;align-items:center;gap:13px;min-width:0}
 .anl-sig{display:grid;place-items:center;width:54px;height:54px;flex-shrink:0;border-radius:17px;
-  color:var(--anc);background:rgba(5,7,16,.55);
+  color:var(--anc);background:rgba(6,9,18,.55);
   box-shadow:inset 0 0 0 1.5px rgba(var(--anrgb),.55),0 8px 22px rgba(0,0,0,.4)}
 .anl-id{display:flex;flex-direction:column;gap:3px;min-width:0}
 .anl-id b{font-family:var(--disp);font-weight:800;font-size:clamp(30px,9vw,44px);letter-spacing:.05em;
@@ -3179,18 +3209,18 @@ details.more .more-body{padding-top:12px}
 .anl-id i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.2em;
   text-transform:uppercase;color:var(--anc)}
 .anl-quote{position:relative;font-family:var(--disp);font-weight:600;font-size:clamp(18px,5.1vw,25px);
-  line-height:1.26;letter-spacing:-.015em;color:#eef4fc;text-wrap:balance;padding-left:15px;
+  line-height:1.26;letter-spacing:-.015em;color:#ebf4ff;text-wrap:balance;padding-left:15px;
   display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .anl-quote::before{content:"";position:absolute;left:0;top:.2em;bottom:.16em;width:3px;border-radius:3px;
   background:linear-gradient(180deg,rgba(var(--anrgb),1),rgba(var(--anrgb),.15))}
 .anl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:7px}
 .anl-stats>span{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:13px;padding:9px 4px;
-  min-width:0;background:rgba(5,7,16,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+  min-width:0;background:rgba(6,9,18,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
 .anl-stats i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.13em;
   text-transform:uppercase;color:rgba(235,244,255,.56)}
 /* a full ledger reads "178–189–8": it must never wrap inside its tile */
 .anl-stats b{font-family:var(--mono);font-weight:700;font-size:clamp(12.5px,3.8vw,16px);letter-spacing:-.04em;
-  font-variant-numeric:tabular-nums;color:#f6faff;white-space:nowrap;max-width:100%;overflow:hidden}
+  font-variant-numeric:tabular-nums;color:#f8fbff;white-space:nowrap;max-width:100%;overflow:hidden}
 .anl-stats .up b{color:var(--green)}
 .anl-stats .down b{color:var(--red)}
 .anl-form{display:flex;align-items:center;gap:9px;justify-content:center}
@@ -3338,7 +3368,7 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 /* ---- LIVE TRACKING READ ("is our pick on course to cash?") ---- */
 .ltrack{padding:12px 15px 13px;border-radius:14px;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--glass-shadow)}
 .ltr-k{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
-.ltr-k .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.ltr-k .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite}
 .ltr-head{margin-top:6px;font-family:var(--disp);font-weight:800;font-size:17px;line-height:1.3;letter-spacing:.005em;color:var(--ink);font-variant-numeric:tabular-nums}
 .ltr-sub{margin-top:5px;font-family:var(--sans);font-size:14px;line-height:1.45;color:var(--ink2)}
 .ltr-note{margin-top:8px;font-family:var(--sans);font-size:13px;line-height:1.4;color:var(--ink3)}
@@ -3505,7 +3535,7 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 .bpass-why{font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--ink2)}
 
 /* ── BETA live "Today" board ── */
-.beta-card.livehead{background:linear-gradient(180deg,var(--greenbg),rgba(var(--rimc),.09));border-color:var(--greenline)}
+.beta-card.livehead{background:linear-gradient(180deg,var(--livebg),rgba(var(--rimc),.09));border-color:var(--liveline)}
 .beta-liverec{font-family:var(--sans);font-size:14px;color:var(--ink);margin:10px 0 2px}
 .beta-liverec b{font-family:var(--mono);font-weight:700}
 .beta-liverec.dim{color:var(--ink3)}
@@ -3903,7 +3933,7 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
    raised circle reads as a physical object sitting on the capsule rather than a tinted area
    of it. Selected, it takes the brand gold and a warm glow. */
 .dock-item.main .dock-ic::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:50%;
-  background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(240,245,251,.72));
+  background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(238,243,250,.72));
   -webkit-backdrop-filter:saturate(190%) blur(20px);backdrop-filter:saturate(190%) blur(20px);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,1),
@@ -4073,8 +4103,8 @@ body.sheet-open .dock{pointer-events:none}
 .tpk-rank{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:700;font-size:11px;color:rgba(var(--inkc),.55);background:rgba(var(--rimc),.08);border-radius:6px;padding:1.5px 6px;flex-shrink:0}
 .tpk-mu{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.04em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .tpk-when{margin-left:auto;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:11px;color:rgba(var(--inkc),.55);white-space:nowrap;flex-shrink:0}
-.tpk-live{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--r3);white-space:nowrap;flex-shrink:0}
-.tpk-live .livedot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite}
+.tpk-live{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--live);white-space:nowrap;flex-shrink:0}
+.tpk-live .livedot{width:5px;height:5px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite}
 .tpk-side{font-family:var(--disp);font-weight:800;font-size:22px;line-height:1.05;letter-spacing:.005em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .tpk-side i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:13px;color:rgba(var(--inkc),.62);margin-left:6px}
 .tpk-side.ou-over{color:var(--g3)}
@@ -4089,7 +4119,7 @@ body.sheet-open .dock{pointer-events:none}
 .tpk-res.won .chk{stroke:#fff}
 .tpk-res.lost{color:#fff;background:var(--red)}
 .tpk-res.pushed{color:var(--n3);background:rgba(var(--rimc),.14)}
-.tpk-res.inplay{color:var(--g3);background:rgba(var(--greenc),.2);font-family:var(--mono);font-weight:700;font-size:11px}
+.tpk-res.inplay{color:var(--live);background:var(--livebg);font-family:var(--mono);font-weight:700;font-size:11px}
 /* the countdown chip flips to the dark palette inside a rail card */
 .tpk .pk-count{margin:0 0 0 auto;background:rgba(var(--rimc),.07);color:rgba(var(--inkc),.6);font-size:11px;padding:2.5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
 
@@ -4109,7 +4139,7 @@ body.sheet-open .dock{pointer-events:none}
 /* number-heavy UI stays strictly tabular in the new mono */
 .recchip,.pf-v,.t-score,.gp-score,.strec-big,.mt-line{font-variant-numeric:tabular-nums}
 /* crisper live/win/loss glow chips on dark */
-.statechip.live{box-shadow:0 0 14px -4px rgba(var(--redc),.5)}
+.statechip.live{box-shadow:0 0 14px -4px rgba(var(--goldc),.5)}
 .ps-res.won,.pb-res.won,.ft-res.won{box-shadow:0 2px 10px rgba(var(--greenc),.45)}
 .ps-res.lost,.pb-res.lost,.ft-res.lost{box-shadow:0 2px 10px rgba(var(--redc),.35)}
 /* inputs read as dark glass fields */
@@ -4258,8 +4288,8 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .kick-dia{width:10px;height:10px;line-height:0}
 .kick-lab{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sts-when{margin-left:auto;flex-shrink:0;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--ink3)}
-.sts-when.live{display:inline-flex;align-items:center;gap:5px;color:var(--red);font-family:var(--disp);font-weight:700}
-.sts-when.live .livedot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite}
+.sts-when.live{display:inline-flex;align-items:center;gap:5px;color:var(--live);font-family:var(--disp);font-weight:700}
+.sts-when.live .livedot{width:5px;height:5px;border-radius:50%;background:var(--livemark);animation:pulse 1.4s infinite}
 .sts-mu{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
 /* THE MATCHUP AS A RAIL. On a pick or a winner the CALL is the dominant element and the
    matchup is the caption under it — at the old 64px crest it competed, and the slide had
@@ -4294,7 +4324,7 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .sts-res.won{color:#fff;background:var(--green)}
 .sts-res.lost{color:#fff;background:var(--red)}
 .sts-res.pushed{color:var(--push);background:var(--pushbg)}
-.sts-res.inplay{color:var(--green);background:var(--greenbg)}
+.sts-res.inplay{color:var(--live);background:var(--livebg)}
 .sts .pk-count{background:var(--sunken);color:var(--ink3)}
 .sts .ps-signals{justify-content:center;border-top:0;color:var(--ink3);font-size:13px}
 .sts .pk-made{text-align:center;color:var(--ink4);font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:11px}
@@ -4351,21 +4381,22 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
    a dark palette automatically. Anything added to a slide from here on is correct by
    default, and the per-element overrides below are reduced to the ones that are genuine
    ART DIRECTION (broadcast glows, gradient CTAs, oversized heads).                        */
-body.stories-on{background:#050710}
-.stories{background:#050710;color:#f7fbff;
-  --bg:#050710;
-  --paper:#171d27; --paper2:#1c232f; --sunken:#12171f; --wash:#151b24;
-  --ink:#f6faff; --ink2:#c6d1e0; --ink3:#9aa6b7; --ink4:#8791a0;
+body.stories-on{background:#060912}
+.stories{background:#060912;color:#f8fbff;
+  --bg:#060912;
+  --paper:#141b27; --paper2:#1c232f; --sunken:#12171f; --wash:#151b24;
+  --ink:#f8fbff; --ink2:#c6d1e0; --ink3:#9aa6b7; --ink4:#8791a0;
   --line:rgba(226,235,245,.16); --line2:rgba(226,235,245,.11); --line3:rgba(226,235,245,.08);
   --rimc:226,235,245; --tintc:210,224,247; --panec:23,29,39; --inkc:238,242,248;
   --slatec:147,161,184;
   --goldc:224,172,32; --goldlic:255,225,140; --greenc:25,197,138; --redc:255,77,104;
   --bluec:110,161,255; --violetc:167,139,250; --cyanc:63,208,240; --mintc:47,214,160;
+  --cyan:#3fd0f0;
   --g0:#0a7d40; --g1:#14cd8e; --g2:#2bd695; --g3:#45d6a2; --g4:#6fe0b4;
   --a0:#3a2c05; --a1:#cf9a12; --a2:#e0a81e; --a3:#e7b62e; --a4:#f4d476;
   --r0:#5b1a3d; --r1:#c22440; --r2:#e0455f; --r3:#ff7d93; --r4:#ff9aac;
   --b0:#12203a; --b1:#3d6bd6; --b2:#6ea1ff; --b3:#8cadff; --b4:#9dbcff;
-  --n1:#f6faff; --n2:#c6d1e0; --n3:#9aa6b7;
+  --n1:#f8fbff; --n2:#c6d1e0; --n3:#9aa6b7;
   --green:#2bd695; --greenbg:rgba(25,197,138,.16); --greenline:rgba(25,197,138,.34);
   --red:#ff6b83; --redsoft:rgba(255,77,104,.15);
   --blue:#8cadff; --bluebg:rgba(110,161,255,.15);
@@ -4379,12 +4410,15 @@ body.stories-on{background:#050710}
   --navy:#a3b6d9; --navy2:#8ba0c8;
   --acc:#2bd695; --acc2:#45d6a2;
   --gold:#f5be42; --golddeep:#ffe08a;
+  /* the SAME gold, as a channel, so the glows on this surface stop being a
+     second hand-picked value: `rgba(var(--goldbrightc),α)` appeared 9 times raw. */
+  --goldbrightc:245,190,66;
   --goldbg:rgba(224,172,32,.16); --goldline:rgba(224,172,32,.38);
   --brandgrad:linear-gradient(140deg,#ffe08a,#e0ac20 52%,#b0730a);
   --sh1:rgba(0,0,0,.2); --sh2:rgba(0,0,0,.28); --sh3:rgba(0,0,0,.36);
   --sh4:rgba(0,0,0,.44); --sh5:rgba(0,0,0,.52); --sh6:rgba(0,0,0,.62);
-  --glass:#171d27; --glass-hi:#1c232f; --glass-brd:rgba(226,235,245,.13); --glass-brd2:rgba(226,235,245,.08);
-  --chrome-bg:rgba(5,7,16,.9); --chrome-line:rgba(226,235,245,.1);
+  --glass:#141b27; --glass-hi:#1c232f; --glass-brd:rgba(226,235,245,.13); --glass-brd2:rgba(226,235,245,.08);
+  --chrome-bg:rgba(6,9,18,.9); --chrome-line:rgba(226,235,245,.1);
   color-scheme:dark}
 /* THE CREST PLATE IS A LIGHT PLATE, ALWAYS. Team marks are authored for white: navy,
    black and forest crests are illegible on any dark tile, and no token flip can fix that
@@ -4394,18 +4428,18 @@ body.stories-on{background:#050710}
 .stories .t-crest,.stories .nf-crest{background:linear-gradient(180deg,#fff,#eef3fa) !important;
   border:1px solid rgba(255,255,255,.6) !important;
   box-shadow:0 10px 26px rgba(0,0,0,.34),inset 0 1px 0 #fff !important}
-.stories .sts-crest .crest{color:#1b2432}
+.stories .sts-crest .crest{color:#1c232f}
 /* THE HOUSE ATMOSPHERE, now that every slide brings its own field: a single slow sweep and
    a vignette, and nothing else. Round 2 painted a second grid and a second wash here, which
    doubled up with the per-slide field and turned every card the same muddy grey. */
 .stories::before{content:"";position:absolute;inset:-18%;z-index:0;pointer-events:none;
-  background:linear-gradient(115deg,rgba(61,179,255,.10),transparent 38%,rgba(245,190,66,.07) 66%,transparent 84%);
+  background:linear-gradient(115deg,rgba(61,179,255,.10),transparent 38%,rgba(var(--goldbrightc),.07) 66%,transparent 84%);
   opacity:.7;animation:briefingSweep 15s ease-in-out infinite alternate}
 .stories::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(140% 92% at 50% 42%,transparent 46%,rgba(0,0,0,.5))}
 @keyframes briefingSweep{from{transform:translate3d(-4%,-2%,0) rotate(-2deg)}to{transform:translate3d(4%,2%,0) rotate(2deg)}}
 .stories .st-top{padding:calc(var(--sat) + 9px) max(12px,var(--sar)) 11px max(12px,var(--sal));
-  background:linear-gradient(180deg,rgba(5,7,16,.98) 0%,rgba(5,7,16,.76) 64%,transparent 100%)}
+  background:linear-gradient(180deg,rgba(6,9,18,.98) 0%,rgba(6,9,18,.76) 64%,transparent 100%)}
 /* PROGRESS THAT READS AS PROGRESS, NOT AS A DASHED BORDER. Twenty-four segments across a
    375px phone is 11px each: at 3px tall, flush to the top edge, they read as a hairline
    rule. They now sit 9px down, are 2.5px of soft rail, and only THREE states are visible —
@@ -4413,11 +4447,11 @@ body.stories-on{background:#050710}
    That is what makes it feel native rather than decorative. */
 .stories .st-progress{gap:3px;margin-bottom:10px}
 .stories .st-seg{height:2.5px;border-radius:2px;background:rgba(255,255,255,.16)}
-.stories .st-fill{border-radius:2px;background:linear-gradient(90deg,#cfe9ff,#f5be42);
-  box-shadow:0 0 10px rgba(245,190,66,.5)}
+.stories .st-fill{border-radius:2px;background:linear-gradient(90deg,#cde9ff,var(--gold));
+  box-shadow:0 0 10px rgba(var(--goldbrightc),.5)}
 .stories .st-bar{gap:8px}
 .stories .st-brand{color:#fff;text-shadow:0 0 18px rgba(125,220,255,.42)}
-.stories .st-brand .st-dia{background:#f5be42;filter:drop-shadow(0 0 9px rgba(245,190,66,.55))}
+.stories .st-brand .st-dia{background:var(--gold);filter:drop-shadow(0 0 9px rgba(var(--goldbrightc),.55))}
 .stories .st-date{color:rgba(235,244,255,.66)}
 /* THE DECK'S IDENTITY-ROW CONTROLS take the material too — the ON-DARK density of it. The
    recipe is identical (filter, low-alpha tint, specular top edge, hairline, float drop);
@@ -4437,7 +4471,7 @@ body.stories-on{background:#050710}
 .stories .st-slide.on .sts>*:nth-child(4){animation-delay:.08s}
 .stories .st-slide.on .sts>*:nth-child(5){animation-delay:.12s}
 @keyframes briefingRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-@keyframes briefingPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 7px rgba(245,190,66,.45))}50%{transform:scale(1.12);filter:drop-shadow(0 0 16px rgba(245,190,66,.78))}}
+@keyframes briefingPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 7px rgba(var(--goldbrightc),.45))}50%{transform:scale(1.12);filter:drop-shadow(0 0 16px rgba(var(--goldbrightc),.78))}}
 /* ══ TWO GESTURES, TWO SURFACES ══
    The content column opens the story in a popover; the transparent edge rails move the
    deck. Before this they were the same pixels, so "tap to open" and "tap to advance" were
@@ -4590,7 +4624,7 @@ body.stories-on{background:#050710}
 .nws-card.nofoto{background:
   radial-gradient(90% 52% at 8% 4%,rgba(var(--fldc,125,220,255),.30),transparent 66%),
   radial-gradient(80% 50% at 98% 96%,rgba(var(--fld2,167,139,250),.24),transparent 70%),
-  linear-gradient(168deg,#141b27,#080c15)}
+  linear-gradient(168deg,#141b27,#060912)}
 .nws-league{position:absolute;left:0;right:0;top:16%;z-index:0;display:none;
   font-family:var(--disp);font-weight:800;font-size:clamp(56px,19vw,132px);line-height:.78;
   letter-spacing:-.055em;text-align:center;white-space:nowrap;pointer-events:none;
@@ -4601,14 +4635,14 @@ body.stories-on{background:#050710}
   padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px) * 0)}
 /* quiet small caps, then the one dominant element, then a whisper */
 .nws-kick{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:700;
-  font-size:10.5px;letter-spacing:.19em;text-transform:uppercase;color:rgba(236,244,255,.72)}
-.nws-kick b{font-weight:800;color:rgba(245,190,66,.96)}
+  font-size:10.5px;letter-spacing:.19em;text-transform:uppercase;color:rgba(235,244,255,.72)}
+.nws-kick b{font-weight:800;color:rgba(var(--goldbrightc),.96)}
 .nws-kick em{font-style:normal;font-family:var(--sans);font-weight:600;font-size:11.5px;letter-spacing:.02em;
-  text-transform:none;font-variant-numeric:tabular-nums;color:rgba(236,244,255,.56)}
-.nws-kick em::before{content:"·";margin-right:8px;color:rgba(236,244,255,.34)}
+  text-transform:none;font-variant-numeric:tabular-nums;color:rgba(235,244,255,.56)}
+.nws-kick em::before{content:"·";margin-right:8px;color:rgba(235,244,255,.34)}
 .stories .nws-card .sts-head{font-size:clamp(30px,8.6vw,50px);line-height:1.015;letter-spacing:-.028em;
   font-weight:700;text-wrap:balance;text-shadow:0 14px 40px rgba(0,0,0,.6)}
-.stories .nws-card .sts-dek{font-size:15.5px;line-height:1.5;color:rgba(236,244,255,.78);
+.stories .nws-card .sts-dek{font-size:15.5px;line-height:1.5;color:rgba(235,244,255,.78);
   -webkit-line-clamp:3;text-shadow:0 8px 22px rgba(0,0,0,.5)}
 /* THE AFFORDANCE IS A TEXT LINK, NOT A BUTTON */
 .nws-read{display:inline-flex;align-items:center;gap:3px;margin-top:2px;
@@ -4619,7 +4653,7 @@ body.stories-on{background:#050710}
 
 .stories .sts-pick .sts-bg::before{height:4px;box-shadow:0 0 18px currentColor}
 .stories .sts-kick,.stories .sts-when,.stories .sts-substat,.stories .sts .ps-signals,.stories .sts .pk-made{color:rgba(235,244,255,.68)}
-.stories .kick-dia{background:#f5be42;filter:drop-shadow(0 0 7px rgba(245,190,66,.55))}
+.stories .kick-dia{background:var(--gold);filter:drop-shadow(0 0 7px rgba(var(--goldbrightc),.55))}
 .stories .sts-head,.stories .sts-team b,.stories .sts-score,.stories .sts-bigwl,.stories .sts-rmu,.stories .sts-smu,.stories .sts-strec b,.stories .sts-stnm{color:#f8fbff}
 .stories .sts-head{font-size:clamp(31px,8.4vw,54px);line-height:1.02;letter-spacing:-.018em;text-wrap:balance;text-shadow:0 12px 34px rgba(0,0,0,.5)}
 .stories .sts-head.sm{font-size:clamp(24px,6vw,38px)}
@@ -4628,9 +4662,9 @@ body.stories-on{background:#050710}
 .stories .sts-team i,.stories .sts-rside,.stories .sts-sside,.stories .sts-strank,.stories .sts-strow2 i{color:rgba(235,244,255,.62)}
 .stories .sts-call{font-size:clamp(40px,13vw,72px);color:#f8fbff;text-shadow:0 0 26px rgba(125,220,255,.24)}
 .stories .sts-call.ou-over{color:#32df97}.stories .sts-call.ou-under{color:#ff4277}
-.stories .sts-meta .pgrade,.stories .sts .pk-count,.stories .sts-srank{background:rgba(255,255,255,.1);color:rgba(245,251,255,.82)}
-.stories .st-cta{background:linear-gradient(135deg,#f8fbff,#cde9ff);color:#07101d;box-shadow:0 14px 34px rgba(125,220,255,.22),inset 0 1px 0 rgba(255,255,255,.8)}
-.stories .st-cta.lock{background:linear-gradient(135deg,#f5be42,#ffe08a);color:#090b14}
+.stories .sts-meta .pgrade,.stories .sts .pk-count,.stories .sts-srank{background:rgba(255,255,255,.1);color:rgba(248,251,255,.82)}
+.stories .st-cta{background:linear-gradient(135deg,#f8fbff,#cde9ff);color:#0d1420;box-shadow:0 14px 34px rgba(125,220,255,.22),inset 0 1px 0 rgba(255,255,255,.8)}
+.stories .st-cta.lock{background:linear-gradient(135deg,var(--gold),#ffe08a);color:#060912}
 @keyframes briefingGlow{from{transform:translate3d(-2%,-1%,0);opacity:.55}to{transform:translate3d(2%,2%,0);opacity:.88}}
 .stories .sts-voice,.stories .sts-chief{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.13);box-shadow:0 14px 32px rgba(0,0,0,.24)}
 @media(prefers-reduced-motion:reduce){
@@ -5008,7 +5042,7 @@ body.stories-on{background:#050710}
 .sgc-lab{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:-.01em;color:var(--ink);min-width:0}
 .sgc-tag{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
   border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
-.sgc-tag.live{color:var(--g3);background:rgba(var(--greenc),.15)}
+.sgc-tag.live{color:var(--live);background:var(--livebg)}
 .sgc-tag.bt{color:var(--amber);background:rgba(var(--goldc),.16)}
 .sgc-nums{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px}
 .sgc-n{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -5047,7 +5081,7 @@ body.stories-on{background:#050710}
 .sgc-hl{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--a0);background:linear-gradient(135deg,var(--a4),var(--a3));border-radius:999px;padding:2.5px 8px;white-space:nowrap;flex-shrink:0}
 .sgc-what{font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--ink2);margin-top:7px}
-.sgc-live{margin-top:11px;padding:11px 12px;border-radius:12px;border:1px solid rgba(var(--greenc),.22);background:rgba(var(--greenc),.05)}
+.sgc-live{margin-top:11px;padding:11px 12px;border-radius:12px;border:1px solid var(--liveline);background:rgba(var(--goldc),.05)}
 .sgc-live.none{border-color:var(--line3);background:rgba(var(--tintc),.03)}
 .sgc-livek{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .sgc-liven{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:500;font-size:12px;color:var(--ink3)}
@@ -5555,8 +5589,8 @@ body.stories-on{background:#050710}
 .atlive .atl-g{display:inline-flex;color:var(--a4);flex-shrink:0}
 .atlive .atl-k{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:800;font-size:11px;
   letter-spacing:.13em;text-transform:uppercase;color:var(--a4);white-space:nowrap}
-.atlive .atl-livew{display:inline-flex;align-items:center;gap:3.5px;font-style:normal;color:var(--red);font-size:11px;letter-spacing:.16em}
-.atlive .atl-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.3s infinite;display:block}
+.atlive .atl-livew{display:inline-flex;align-items:center;gap:3.5px;font-style:normal;color:var(--live);font-size:11px;letter-spacing:.16em}
+.atlive .atl-dot{width:5px;height:5px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite;display:block}
 .atlive .atl-p{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;color:var(--ink2);white-space:nowrap}
 .atlive .atl-p b{font-weight:700;font-size:14px;color:var(--ink)}
 .atlive.ou-o .atl-p b{color:var(--over)}
@@ -5993,7 +6027,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .de-res.won{color:#fff;background:var(--green)}
 .de-res.lost{color:#fff;background:var(--red)}
 .de-res.pushed{color:var(--push);background:var(--pushbg)}
-.de-res.inplay{color:var(--g3);background:rgba(var(--greenc),.14)}
+.de-res.inplay{color:var(--live);background:var(--livebg)}
 
 /* ══════════════ THE IN-PLAY CUSHION CHIP — ONE BADGE, FOUR STATES ══════════════
    OUR WAY · HOLDING · CHASING · TIGHT · IN PLAY: the live read on a frozen total, and the
@@ -6198,7 +6232,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   border-top:1px solid rgba(var(--goldc),.22)}
 .dpr-live b{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:-.005em;color:var(--ink)}
 .dpr-live i{font-style:normal;flex-basis:100%;font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3)}
-.dpr-livedot{width:7px;height:7px;border-radius:50%;background:var(--g3);flex-shrink:0;align-self:center;
+.dpr-livedot{width:7px;height:7px;border-radius:50%;background:var(--livemark);flex-shrink:0;align-self:center;
   box-shadow:0 0 0 3px rgba(var(--greenc),.16)}
 @media(prefers-reduced-motion:no-preference){.dpr-livedot{animation:pulseDot 2.4s ease-in-out infinite}}
 @keyframes pulseDot{0%,100%{box-shadow:0 0 0 3px rgba(var(--greenc),.16)}50%{box-shadow:0 0 0 6px rgba(var(--greenc),.06)}}
@@ -6482,7 +6516,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   font-family:var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.02em;text-transform:none;font-size:12px}
 .pat-wl{font-family:var(--mono);letter-spacing:.02em;text-transform:none;font-size:12px;
   color:var(--ink2);background:rgba(var(--tintc),.07)}
-.pat-era.live{color:#fff;background:var(--green)}
+.pat-era.live{color:#fff;background:var(--live)}
 .pat-era.recon{color:var(--ink3);background:rgba(var(--tintc),.09);border:1px solid rgba(var(--tintc),.12)}
 .pat-smalln{color:var(--a4);background:rgba(var(--goldc),.12);border:1px solid rgba(var(--goldc),.26);
   letter-spacing:.04em;text-transform:none;font-family:var(--sans);font-weight:600;font-size:12px}
@@ -7341,13 +7375,19 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
   --bg:#f8fbff;
   --paper:rgba(255,255,255,.86);
   --paper2:rgba(255,255,255,.76);
-  --sunken:rgba(236,244,252,.76);
-  --wash:rgba(247,251,255,.82);
+  --sunken:rgba(235,244,255,.76);
+  --wash:rgba(248,251,255,.82);
   --panec:255,255,255;
   --paperc:255,255,255;
   --rimc:20,31,46;
   --tintc:20,31,46;
-  --ink:#0b1220; --ink2:#334155; --ink3:#667085; --ink4:#7a8797;
+  /* THE INK RAMP HAS A LEGIBILITY FLOOR. --ink4 was #7a8797, which is 3.66:1 on a
+     white card and 3.53:1 on the page — under AA for the 10px mono it is used on
+     (the team record, "58-62 W4", the smallest type on the board). It is the
+     quietest ink in the app and it is still text, so it is darkened to the
+     lightest value that clears 4.5:1 against BOTH surfaces (4.68 / 4.51).
+     Nothing else in the ramp moves. */
+  --ink:#0b1220; --ink2:#334155; --ink3:#667085; --ink4:#6a7583;
   --line:rgba(20,31,46,.10); --line2:rgba(20,31,46,.07); --line3:rgba(20,31,46,.045);
   --glass:rgba(255,255,255,.62);
   --glass-hi:rgba(255,255,255,.76);
@@ -7372,13 +7412,13 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
     --bg:#f8fbff;
     --paper:rgba(255,255,255,.86);
     --paper2:rgba(255,255,255,.76);
-    --sunken:rgba(236,244,252,.76);
-    --wash:rgba(247,251,255,.82);
+    --sunken:rgba(235,244,255,.76);
+    --wash:rgba(248,251,255,.82);
     --panec:255,255,255;
     --paperc:255,255,255;
     --rimc:20,31,46;
     --tintc:20,31,46;
-    --ink:#0b1220; --ink2:#334155; --ink3:#667085; --ink4:#7a8797;
+    --ink:#0b1220; --ink2:#334155; --ink3:#667085; --ink4:#6a7583;
     --line:rgba(20,31,46,.10); --line2:rgba(20,31,46,.07); --line3:rgba(20,31,46,.045);
     --slatec:112,126,148;
     --goldc:166,114,8; --goldlic:166,114,8; --greenc:6,124,84; --redc:196,32,58;
@@ -7389,13 +7429,13 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
     --b0:#0c2f6e; --b1:#154a9e; --b2:#1a5bc4; --b3:#1c5fd0; --b4:#1a56bd;
     --n1:#0d1420; --n2:#3c4759; --n3:#697588;
     --green:#07734f; --greenbg:rgba(6,124,84,.10); --greenline:rgba(6,124,84,.26);
-    --red:#c02038; --redsoft:rgba(196,32,58,.09);
+    --red:#c02038; --redsoft:rgba(192,32,56,.09);
     --blue:#1a5bc4; --bluebg:rgba(20,86,214,.09);
     --amber:#8a5f06; --amberbg:rgba(166,114,8,.11);
     --slate:#5c6879; --slatebg:rgba(105,117,136,.10);
     --over:#07734f; --under:#c02038;
     --hit:#07734f; --hitbg:rgba(6,124,84,.10); --hitline:rgba(6,124,84,.28);
-    --miss:#c02038; --missbg:rgba(196,32,58,.09); --missline:rgba(196,32,58,.24);
+    --miss:#c02038; --missbg:rgba(192,32,56,.09); --missline:rgba(192,32,56,.24);
     --push:#697588; --pushbg:rgba(105,117,136,.10); --pushline:rgba(105,117,136,.24);
     --pick:#1a5bc4; --pickbg:rgba(20,86,214,.08); --pickline:rgba(20,86,214,.24);
     --navy:#3c4759; --navy2:#697588; --acc:#07734f; --acc2:#066a4a;
@@ -7434,7 +7474,7 @@ i.whatif .wi-n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-st
     color-scheme:light;
   }
 }
-body{background:linear-gradient(180deg,#fcfdff 0%,#f7fbff 44%,#eef5fb 100%) fixed;color:var(--ink)}
+body{background:linear-gradient(180deg,#f8fbff 0%,#f8fbff 44%,#eef3fa 100%) fixed;color:var(--ink)}
 input[type=text],input[type=email],input[type=date],input[type=tel],
 .datebar.lead .datetools .calwrap input{color-scheme:light!important}
 
@@ -8137,7 +8177,7 @@ main.swiping{transition:none !important;will-change:transform}
   padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.14);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.20);
   font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
-  color:#f4f8ff}
+  color:#f8fbff}
 .stories .sts-openchip i{font-style:normal}
 @media(prefers-reduced-motion:reduce){.sts-open.is-card{transition:none}}
 
@@ -8153,8 +8193,8 @@ main.swiping{transition:none !important;will-change:transform}
 .boxscore{display:flex;flex-direction:column;gap:16px;padding:2px 0 6px}
 .bx-state{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;
   font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--red);border-radius:999px;padding:5px 12px;background:var(--redsoft)}
-.bx-state .livedot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.4s infinite}
+  color:var(--live);border-radius:999px;padding:5px 12px;background:var(--livebg)}
+.bx-state .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.4s infinite}
 /* ── the line score grid ── */
 .bx-lswrap{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;
   border-radius:var(--r-md);background:var(--paper);box-shadow:var(--e0)}
@@ -8466,7 +8506,7 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .art-hero.is-fallback,.art-hero.art-vs{background:
   radial-gradient(90% 52% at 8% 4%,rgba(125,220,255,.30),transparent 66%),
   radial-gradient(80% 50% at 98% 96%,rgba(167,139,250,.24),transparent 70%),
-  linear-gradient(168deg,#141b27,#080c15)}
+  linear-gradient(168deg,#141b27,#060912)}
 .art-hero-shotwrap{position:absolute;inset:0;z-index:0;display:block;overflow:hidden}
 .art-hero-shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;
   animation:artHeroSettle .62s var(--ease-out) both}
@@ -8492,14 +8532,14 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .art-hero-body{position:relative;z-index:2;display:flex;flex-direction:column;gap:9px;
   padding:20px 20px 20px}
 .article-story .art-hero-body .sh-sport{display:block;font-family:var(--disp);font-weight:700;
-  font-size:10.5px;letter-spacing:.19em;text-transform:uppercase;color:rgba(236,244,255,.74);
+  font-size:10.5px;letter-spacing:.19em;text-transform:uppercase;color:rgba(235,244,255,.74);
   animation:artTypeSettle .46s var(--ease-out) .06s both}
 .article-story .art-hero-body .art-title{display:block;margin:0;font-family:var(--disp);font-weight:700;
   font-size:clamp(27px,7.4vw,42px);line-height:1.03;letter-spacing:-.028em;color:#fff;
   text-wrap:balance;text-shadow:0 14px 40px rgba(0,0,0,.6);
   animation:artTypeSettle .5s var(--ease-out) .11s both}
 .article-story .art-hero-body .sh-meta{display:block;margin:0;font-family:var(--sans);font-size:15px;
-  line-height:1.5;color:rgba(236,244,255,.78);text-shadow:0 8px 22px rgba(0,0,0,.5);
+  line-height:1.5;color:rgba(235,244,255,.78);text-shadow:0 8px 22px rgba(0,0,0,.5);
   animation:artTypeSettle .5s var(--ease-out) .16s both}
 @keyframes artTypeSettle{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 /* the X rides the picture, so it takes the on-image treatment, not the on-card one */
@@ -9245,15 +9285,14 @@ table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
 .oempty b{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink)}
 .oempty span{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink3)}
 
-/* ═══════════ THE QUALIFIER UNDER THE PER-GAME CASE ═══════════
-   `how_to_read` — the line that says what the two paragraphs above it ARE (the
-   game, and the facts on it that agree with the side) rather than letting the
-   closing sentence imply the prose derived the pick. Set smaller and quieter
-   than the prose because it is a note ABOUT the prose, and separated by a rule
-   so it cannot be mistaken for a third paragraph of it. */
-.whycard.rulecase .rc-how{margin:11px 0 0;padding-top:10px;
-  border-top:1px solid var(--glass-brd);
-  font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4)}
+/* ═══════════ THE QUALIFIER UNDER THE PER-GAME CASE — DELETED 2026-08-09 ═══════════
+   `.whycard.rulecase .rc-how` styled `how_to_read`: "The side came first. What
+   you have just read is this game, and the measured facts on it that point the
+   same way — not a re-derivation of the pick." Leon: "Please remove disclaimers
+   like this from everywhere." The backend stopped emitting the field, the
+   frontend stopped reading it, and the rule that separated it from the prose
+   went with it. `.whycard.rulecase` itself is gone too: the narrative is the
+   preview now and renders as `.whycard.preview`. */
 
 /* Which side a wall's best price was for. Inline with the price so the two can
    never be read apart — the column is not all one bet. */
