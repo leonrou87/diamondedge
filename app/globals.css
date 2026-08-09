@@ -2808,6 +2808,34 @@ details.more .more-body{padding-top:12px}
 /* the game page's full call block is INK ON PAPER, not white on black — same figure, page palette */
 .de-side .de-conf{margin-left:6px;color:var(--ink3)}
 .de-side .de-conf.is-high{color:var(--golddeep)}
+
+/* ════════ CONFIDENCE AS STARS, UNDER THE WORD ════════
+   Leon: "map the confidence to a star rating on bets — very small stars on the pick above or
+   below the word over/under, and then keep on game."
+   WHY THE COLUMN AND NOT A SECOND ROW ITEM. The stars sit UNDER the call, so `.de-callcol`
+   stacks the word and the stars into one flex ITEM. The pick row itself stays exactly as wide
+   as it was — the row was fought back onto a single line once already (flex-wrap:nowrap on the
+   tile) and this must not spend any of that budget. The tag grows a few px taller instead,
+   which no layout here depends on.
+   SIZE. 7px on a tile: the stars are a shape to be read at a glance, not glyphs to be counted
+   one by one, and the exact 0–100 score is still on the title and still shown in full on every
+   surface where the reader has stopped on a single pick. */
+.de-callcol{display:inline-flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:1px;min-width:0}
+.de-stars{display:inline-flex;align-items:center;gap:.5px;line-height:1;font-family:var(--disp)}
+.de-stars i{font-style:normal;font-size:7px;line-height:1;color:rgba(255,255,255,.72)}
+.de-stars i.off{color:rgba(255,255,255,.22)}
+.de-mini-pick.dmp-tile .de-stars i{font-size:6.5px}
+.de-mini-pick.dmp-detail .de-stars i{font-size:9px}
+/* the high band warms the EARNED stars only — an unlit star is the absence of confidence and
+   must never read as gold */
+.de-mini-call .de-stars.is-high i{color:rgba(246,199,69,.95)}
+.de-mini-call .de-stars.is-high i.off{color:rgba(246,199,69,.24)}
+/* game page: ink on paper, same shape */
+.de-side .de-stars{margin-left:0}
+.de-side .de-stars i{color:var(--ink3);font-size:8px}
+.de-side .de-stars i.off{color:var(--line)}
+.de-side .de-stars.is-high i{color:var(--golddeep)}
 .strchip .de-conf{color:var(--ink2);display:inline-flex;align-items:baseline;gap:2px}
 /* the chip is the one place the number says its own name, so the caption rides with it */
 .strchip .de-conf i{font-family:var(--disp);font-style:normal;font-weight:700;font-size:8.5px;

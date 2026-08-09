@@ -3264,7 +3264,7 @@ export default function Home() {
         : avoid
           ? `<span class="de-side de-pass"><b>${esc(marketTxt)}</b><em class="de-leanonly">No DiamondEdge Pick here.</em></span>`
           : side
-            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<b>${esc(side)}</b>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}${strengthPct(pl, !locked && !avoid)}</span>`
+            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<span class="de-callcol"><b>${esc(side)}</b>${strengthPct(pl, !locked && !avoid)}</span>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}</span>`
             : "";
       // only state the priced line when the call itself doesn't already contain that number
       const inSide = priced != null && side ? side.indexOf(lineStr(priced)) >= 0 : false;
@@ -7762,11 +7762,29 @@ export default function Home() {
        number, no vote count and no tier anywhere in its DOM.
        NOTE it no longer needs a committee: a pick scored on the forge's rule-lookback basis
        has no per-game vote and still carries a served score, and this prints it. */
+    /* CONFIDENCE READS AS STARS ON A PICK SURFACE (Leon, 2026-08-08: "map the confidence to a
+       star rating on bets — very small stars on the pick above or below the word over/under,
+       and then keep on game").
+       WHY STARS AND NOT THE PERCENT. Two percentages were about to sit inches apart on the
+       same card meaning entirely different things: this one (how much we like the bet) and the
+       live in-progress meter (how the game is going). A reader cannot be expected to hold that
+       apart, and a number that gets misread is worse than a coarser one that does not. Stars
+       and a percent are unmistakably different objects.
+       THE MAP IS LINEAR AND SAYABLE: one star per 20 points, floor 1, ceiling 5. 33 → 2, 50 →
+       3, 75 → 4. Nothing is invented — the served 0–100 score is still the fact, it still rides
+       the title, and every surface where the reader has stopped on one pick still shows it in
+       full with its evidence. The tag gets the shape of the number, not the number. */
+    function confidenceStars(score: number) {
+      return Math.max(1, Math.min(5, Math.ceil(score / 20)));
+    }
     function strengthPct(pl: any, reveal: boolean) {
       if (!reveal) return "";
       const c = servedConfidence(pl);
       if (!c) return "";
-      return `<span class="de-conf${c.high ? " is-high" : ""}" title="${esc(confidenceTitle(pl))}">${c.score}%</span>`;
+      const n = confidenceStars(c.score);
+      let pips = "";
+      for (let i = 1; i <= 5; i++) pips += `<i${i <= n ? "" : ` class="off"`}>★</i>`;
+      return `<span class="de-conf de-stars${c.high ? " is-high" : ""}" title="${esc(confidenceTitle(pl))}" role="img" aria-label="confidence ${n} of 5">${pips}</span>`;
     }
     /* (the pips helper retired with the pips' last call site on the tag. The dots survive as
        markup in the two places the TIER itself is the subject — the story-deck chip below and
@@ -7950,7 +7968,7 @@ export default function Home() {
         : noPick ? ""
         : `<span class="de-mini-call">${mark}${locked
             ? `<i class="de-mini-redact" aria-hidden="true"></i>`
-            : `<b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPct(pl, reveal && !liveChip)}`}</span>`;
+            : `<span class="de-callcol"><b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPct(pl, reveal && !liveChip)}</span>`}</span>`;
       return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${upcoming ? " upcoming" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(upcoming ? picksEtaLong(g) : title)}" role="img" aria-label="${esc(upcoming ? picksEtaLong(g) : aria)}">
         ${ouCell}${callCell || stamp ? `<span class="dmp-right">${callCell}${stamp}</span>` : ""}
       </span>`;
