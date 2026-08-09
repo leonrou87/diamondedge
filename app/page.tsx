@@ -3184,7 +3184,7 @@ export default function Home() {
         ${fill != null ? `<i class="plvl-fill" style="width:${fill}%" aria-hidden="true"></i>` : ""}
         <b class="plvl-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}${esc(side)}</b>
         <span class="plvl-pct">${pct != null ? `<b>${Math.round(pct * 100)}%</b>` : ""}<i>${esc(word)}</i></span>
-        ${r ? `<span class="plvl-stars" role="img" aria-label="rated ${r.stars} of 5" title="${esc(ratingTitle(pl))}">${starPips(r.stars)}</span>` : ""}
+        ${r ? `<span class="plvl-stars" role="img" aria-label="rated ${r.stars} of ${r.of}" title="${esc(ratingTitle(pl))}">${starPips(r.stars, r.of)}</span>` : ""}
       </div>`;
     }
 
@@ -7727,10 +7727,20 @@ export default function Home() {
       const flat = numOr(pl.pick_rating_stars);
       if (inner != null && flat != null && Math.round(inner) !== Math.round(flat)) return null;
       const raw = inner != null ? inner : flat;
-      if (raw == null || !(raw >= 1 && raw <= 5)) return null;
+      /* THE LADDER IS SERVED, AND SO IS ITS LENGTH (Leon, 2026-08-09: "for star rating let's
+         just do one star two star three stars to have a little more separation").
+         `of` moved from 5 to 3 in v4/serve/rule_fit.py (`pick_stars_v2`, cuts = the tertiles
+         of the reference rather than its quintiles). Nothing here knows that number: a pick
+         is valid on ITS OWN published ladder, and a hardcoded 5 would have rejected every
+         3-of-3 pick as out of range on the day the backend changed. The upper bound is
+         `of`, the lower is 1, and a rating outside its own ladder is refused exactly as a
+         disagreeing pair of keys is. */
+      const of = Math.round(numOr((blk && blk.of)) ?? 5);
+      if (!(of >= 1 && of <= 10)) return null;
+      if (raw == null || !(raw >= 1 && raw <= of)) return null;
       return {
         stars: Math.round(raw),
-        of: (blk && numOr(blk.of)) || 5,
+        of,
         basis: String((blk && blk.basis) || ""),
         basisLabel: String((blk && blk.basis_label) || ""),
         score: blk ? numOr(blk.score) : null,
@@ -7752,9 +7762,13 @@ export default function Home() {
         r.what, r.note, confidenceTitle(pl),
       ].filter(Boolean).join(" — ");
     }
-    function starPips(n: number) {
+    /* The row is as long as the ladder the backend drew it on — never longer. Drawing five
+       pips for a three-star ladder would put two permanently-dark stars on every pick in the
+       app and read as "we never like anything much". */
+    function starPips(n: number, of: number = 5) {
+      const N = Math.max(1, Math.min(10, Math.round(of) || 5));
       let pips = "";
-      for (let i = 1; i <= 5; i++) pips += `<i${i <= n ? "" : ` class="off"`}>★</i>`;
+      for (let i = 1; i <= N; i++) pips += `<i${i <= n ? "" : ` class="off"`}>★</i>`;
       return pips;
     }
     function strengthPct(pl: any, reveal: boolean) {
@@ -7762,7 +7776,7 @@ export default function Home() {
       const r = servedRating(pl);
       if (!r) return "";
       const c = servedConfidence(pl);
-      return `<span class="de-conf de-stars${c && c.high ? " is-high" : ""}" title="${esc(ratingTitle(pl))}" role="img" aria-label="rated ${r.stars} of 5">${starPips(r.stars)}</span>`;
+      return `<span class="de-conf de-stars${c && c.high ? " is-high" : ""}" title="${esc(ratingTitle(pl))}" role="img" aria-label="rated ${r.stars} of ${r.of}">${starPips(r.stars, r.of)}</span>`;
     }
     /* (the pips helper retired with the pips' last call site on the tag. The dots survive as
        markup in the two places the TIER itself is the subject — the story-deck chip below and
@@ -7831,7 +7845,7 @@ export default function Home() {
       const rateRow = r && r.basis && r.basis !== c.basis && r.brief
         ? `<div class="cfb-rate" title="${esc(ratingTitle(pl))}">
              <span class="cfb-rk">${esc(r.basisLabel || "The stars on this pick")}</span>
-             <span class="de-stars" role="img" aria-label="rated ${r.stars} of 5">${starPips(r.stars)}</span>
+             <span class="de-stars" role="img" aria-label="rated ${r.stars} of ${r.of}">${starPips(r.stars, r.of)}</span>
              <p class="cfb-rs">${esc(r.brief)}</p>
            </div>`
         : "";
