@@ -4,7 +4,7 @@
   "status": "production",
   "board": "history",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-09T03:36:30Z",
+  "generated_utc": "2026-08-09T07:24:19Z",
   "dates": [
     "2026-03-27",
     "2026-03-28",
@@ -1631,7 +1631,8 @@
         "ev",
         "expanded_band",
         "certified",
-        "signals"
+        "signals",
+        "game_case"
       ],
       "redacted_text_fields": [
         "rationale_line",
@@ -1714,7 +1715,8 @@
       "ev",
       "expanded_band",
       "certified",
-      "signals"
+      "signals",
+      "game_case"
     ],
     "redacted_text_fields": [
       "rationale_line",
@@ -2426,24 +2428,24 @@
       "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "n": 161,
+      "n": 162,
       "win": 80,
-      "loss": 72,
+      "loss": 73,
       "push": 9,
-      "record": "80-72-9",
-      "decided": 152,
-      "hit_rate": 0.5263,
-      "units": 6.752,
+      "record": "80-73-9",
+      "decided": 153,
+      "hit_rate": 0.5229,
+      "units": 5.752,
       "units_weighted": {
-        "units": 15.82,
-        "staked": 289.0,
-        "roi": 0.0547,
+        "units": 14.82,
+        "staked": 290.0,
+        "roi": 0.0511,
         "n_offladder_flat_1u": 0
       },
-      "roi": 0.0444,
+      "roi": 0.0376,
       "hit_rate_ci": [
-        0.4744,
-        0.5777
+        0.4712,
+        0.5741
       ],
       "hit_rate_ci_level": 0.8,
       "n_days": 27,
@@ -2464,14 +2466,14 @@
         },
         {
           "month": "2026-08",
-          "n": 47,
+          "n": 48,
           "win": 21,
-          "loss": 20,
+          "loss": 21,
           "push": 6,
-          "record": "21-20-6",
-          "hit_rate": 0.5122,
-          "units": 0.222,
-          "roi": 0.0054
+          "record": "21-21-6",
+          "hit_rate": 0.5,
+          "units": -0.778,
+          "roi": -0.0185
         }
       ],
       "by_engine": {
@@ -2526,24 +2528,24 @@
           "through": "2026-08-07"
         },
         "engine_v2_owner": {
-          "n": 8,
+          "n": 9,
           "win": 2,
-          "loss": 4,
+          "loss": 5,
           "push": 2,
-          "record": "2-4-2",
-          "decided": 6,
-          "hit_rate": 0.3333,
-          "units": -2.095,
+          "record": "2-5-2",
+          "decided": 7,
+          "hit_rate": 0.2857,
+          "units": -3.095,
           "units_weighted": {
-            "units": -2.095,
-            "staked": 6.0,
-            "roi": -0.3492,
+            "units": -3.095,
+            "staked": 7.0,
+            "roi": -0.4422,
             "n_offladder_flat_1u": 0
           },
-          "roi": -0.3492,
+          "roi": -0.4422,
           "hit_rate_ci": [
-            0.1477,
-            0.5906
+            0.1253,
+            0.5275
           ],
           "hit_rate_ci_level": 0.8,
           "n_days": 2,
@@ -3777,14 +3779,14 @@
       },
       {
         "date": "2026-08-08",
-        "n": 12,
+        "n": 13,
         "win": 3,
-        "loss": 6,
+        "loss": 7,
         "push": 3,
-        "record": "3-6-3",
-        "hit_rate": 0.3333,
-        "units": -3.148,
-        "roi": -0.3497,
+        "record": "3-7-3",
+        "hit_rate": 0.3,
+        "units": -4.148,
+        "roi": -0.4148,
         "strategy": {
           "rule_key": "forge:w17:a893a4e08c",
           "label": "The rule that won the search",
@@ -3806,8 +3808,42 @@
         "model_generation": "v2",
         "is_model_seam": false,
         "window_spans_model_seam": true,
-        "is_today": true,
+        "is_today": false,
         "no_action": false
+      },
+      {
+        "date": "2026-08-09",
+        "n": 0,
+        "win": 0,
+        "loss": 0,
+        "push": 0,
+        "record": "0-0-0",
+        "hit_rate": null,
+        "units": 0.0,
+        "roi": null,
+        "strategy": {
+          "rule_key": "vote_count:2:under",
+          "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
+          "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
+          "confidence_tier": "STRONG",
+          "window_days": 35,
+          "status": "ACTIVE",
+          "selector": "adaptive_desk",
+          "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 80-53-5 (60% hit, +27 net wins).",
+          "full_block_at": "adaptive_strategy_by_date.2026-08-09"
+        },
+        "selector_version": "adaptive_desk_v20",
+        "engine": "adaptive_desk",
+        "is_engine_changeover": false,
+        "basis": "process_replay",
+        "no_action_reason": "strategy_passed",
+        "walk_forward": false,
+        "counts_in_record": false,
+        "model_generation": "v2",
+        "is_model_seam": false,
+        "window_spans_model_seam": true,
+        "is_today": true,
+        "no_action": true
       }
     ],
     "by_strength": {
@@ -3921,24 +3957,24 @@
         }
       },
       "untiered": {
-        "n": 158,
+        "n": 159,
         "win": 78,
-        "loss": 71,
+        "loss": 72,
         "push": 9,
-        "record": "78-71-9",
-        "decided": 149,
-        "hit_rate": 0.5235,
-        "units": 5.847,
+        "record": "78-72-9",
+        "decided": 150,
+        "hit_rate": 0.52,
+        "units": 4.847,
         "units_weighted": {
-          "units": 14.915,
-          "staked": 286.0,
-          "roi": 0.0522,
+          "units": 13.915,
+          "staked": 287.0,
+          "roi": 0.0485,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0392,
+        "roi": 0.0323,
         "hit_rate_ci": [
-          0.4711,
-          0.5754
+          0.4678,
+          0.5718
         ],
         "hit_rate_ci_level": 0.8,
         "n_days": 27,
@@ -3947,9 +3983,9 @@
         "label": "No committee vote on record",
         "why": "desk-sourced and legacy picks carry no vote split, so they carry no tier. They count in record.headline exactly like every other pick."
       },
-      "n_headline": 161,
+      "n_headline": 162,
       "n_tiered": 3,
-      "n_untiered": 158,
+      "n_untiered": 159,
       "sums_to_headline": true,
       "rail": "strong + standard + lean + untiered == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "engine_shadow_ledger": {
@@ -3984,13 +4020,13 @@
             "rank": 2
           },
           "lean": {
-            "win": 11,
+            "win": 12,
             "loss": 15,
             "push": 4,
-            "n": 30,
-            "record": "11-15-4",
-            "units_flat_-110": -5.0,
-            "hit_rate": 0.4231,
+            "n": 31,
+            "record": "12-15-4",
+            "units_flat_-110": -4.091,
+            "hit_rate": 0.4444,
             "label": "Lean",
             "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
             "rank": 1
@@ -4007,8 +4043,8 @@
           "why": "rows written before the vote counts existed on the board; they count in `record` and are never given a tier they cannot support"
         },
         "sums_to_record": true,
-        "n_graded_total": 45,
-        "n_tiered": 45,
+        "n_graded_total": 46,
+        "n_tiered": 46,
         "n_untiered": 0,
         "thresholds": {
           "policy_version": "pick_strength_v1",
@@ -4479,39 +4515,39 @@
         "power": 0.8
       },
       "unscored": {
-        "n": 151,
+        "n": 152,
         "win": 75,
-        "loss": 68,
+        "loss": 69,
         "push": 8,
-        "record": "75-68-8",
-        "decided": 143,
-        "hit_rate": 0.5245,
+        "record": "75-69-8",
+        "decided": 144,
+        "hit_rate": 0.5208,
         "hit_rate_ci": [
-          0.4431,
-          0.6046
+          0.4398,
+          0.6008
         ],
         "hit_rate_ci_level": 0.95,
         "label": "No confidence on record",
         "why": "desk-sourced and legacy picks carry neither a committee vote split nor a rule lookback record, so the measure returns nothing for them and nothing is invented. They count in the record exactly like every other pick.",
-        "units": 5.994,
+        "units": 4.994,
         "units_weighted": {
-          "units": 14.989,
-          "staked": 283.0,
-          "roi": 0.053,
+          "units": 13.989,
+          "staked": 284.0,
+          "roi": 0.0493,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0419,
+        "roi": 0.0347,
         "n_days": 27,
         "first": "2026-07-02",
         "through": "2026-08-08"
       },
-      "n_total": 161,
+      "n_total": 162,
       "n_scored": 10,
-      "n_unscored": 151,
+      "n_unscored": 152,
       "sums_to_total": true,
       "rail": "every decile + unscored == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "headline_is_the_record": true,
-      "n_headline": 161,
+      "n_headline": 162,
       "sums_to_headline": true,
       "history_limit": {
         "reconstructible_from": "2026-08-03",
@@ -4659,19 +4695,19 @@
             ],
             "label": "60-69",
             "is_high_band": false,
-            "n": 6,
-            "win": 3,
+            "n": 7,
+            "win": 4,
             "loss": 3,
             "push": 0,
-            "record": "3-3-0",
-            "decided": 6,
-            "hit_rate": 0.5,
+            "record": "4-3-0",
+            "decided": 7,
+            "hit_rate": 0.5714,
             "hit_rate_ci": [
-              0.1876,
-              0.8124
+              0.2505,
+              0.8418
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -0.273
+            "units_flat_-110": 0.636
           },
           {
             "band": [
@@ -4755,41 +4791,41 @@
           "units_flat_-110": 0.636
         },
         "below_high_band": {
-          "n": 38,
-          "win": 16,
+          "n": 39,
+          "win": 17,
           "loss": 18,
           "push": 4,
-          "record": "16-18-4",
-          "decided": 34,
-          "hit_rate": 0.4706,
+          "record": "17-18-4",
+          "decided": 35,
+          "hit_rate": 0.4857,
           "hit_rate_ci": [
-            0.3145,
-            0.6326
+            0.3299,
+            0.6443
           ],
           "hit_rate_ci_level": 0.95,
           "label": "under 90",
-          "units_flat_-110": -3.454
+          "units_flat_-110": -2.545
         },
         "verdict": {
           "high_band_min": 90,
           "n_decided_high": 7,
-          "n_decided_rest": 34,
+          "n_decided_rest": 35,
           "hit_rate_high": 0.5714,
-          "hit_rate_rest": 0.4706,
-          "difference": 0.1008,
+          "hit_rate_rest": 0.4857,
+          "difference": 0.0857,
           "difference_ci": [
-            -0.2587,
-            0.413
+            -0.2723,
+            0.3978
           ],
           "difference_ci_level": 0.95,
-          "p_value": 0.696516,
+          "p_value": 1.0,
           "test": "Fisher's exact test, two-sided, on the decided picks (W/L; pushes decided nothing and are excluded from the test)",
           "alpha": 0.05,
           "distinguishable_from_noise": false,
           "status": "open_question",
           "is_a_finding": false,
-          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 34 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.696516), and the interval on the gap runs from -0.259 to +0.413 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
-          "n_needed_per_arm_for_observed_gap": 385,
+          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 35 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.272 to +0.398 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+          "n_needed_per_arm_for_observed_gap": 532,
           "n_needed_per_arm_for_meaningful_gap": 392,
           "meaningful_gap": [
             0.55,
@@ -4874,11 +4910,11 @@
         },
         "basis": "committee_vote",
         "basis_note": "every row here is scored from the committee vote the board froze before first pitch. No engine pick is scored any other way, so the cut is one kind of evidence throughout \u2014 the two bases `pick_confidence` defines are never mixed inside one table.",
-        "n_total": 45,
-        "n_scored": 45,
+        "n_total": 46,
+        "n_scored": 46,
         "n_unscored": 0,
         "sums_to_total": true,
-        "n_graded_total": 45
+        "n_graded_total": 46
       }
     },
     "streaks": {
@@ -4890,44 +4926,44 @@
         },
         "best_win_streak": 8,
         "best_loss_streak": 8,
-        "n_decided": 152
+        "n_decided": 153
       },
       "by_analyst": {
         "vega": {
           "current": {
-            "type": "win",
-            "length": 2
+            "type": "loss",
+            "length": 1
           },
           "best_win_streak": 9,
           "best_loss_streak": 13,
-          "n_decided": 438
+          "n_decided": 440
         },
         "atlas": {
           "current": {
-            "type": "win",
-            "length": 5
+            "type": "loss",
+            "length": 1
           },
           "best_win_streak": 8,
           "best_loss_streak": 11,
-          "n_decided": 438
+          "n_decided": 440
         },
         "nova": {
           "current": {
-            "type": "loss",
-            "length": 2
+            "type": "win",
+            "length": 1
           },
           "best_win_streak": 9,
           "best_loss_streak": 10,
-          "n_decided": 438
+          "n_decided": 440
         },
         "scout": {
           "current": {
-            "type": "loss",
-            "length": 2
+            "type": "win",
+            "length": 1
           },
           "best_win_streak": 7,
           "best_loss_streak": 10,
-          "n_decided": 438
+          "n_decided": 440
         }
       },
       "analyst_order": [
@@ -5095,7 +5131,8 @@
           "ev",
           "expanded_band",
           "certified",
-          "signals"
+          "signals",
+          "game_case"
         ],
         "redacted_text_fields": [
           "rationale_line",
@@ -5161,33 +5198,33 @@
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
     "overall": {
-      "n": 46,
-      "win": 25,
+      "n": 47,
+      "win": 26,
       "loss": 18,
       "push": 3,
-      "roi": 0.1439,
-      "hit_rate": 0.5814,
-      "units_flat": 6.187,
+      "roi": 0.1629,
+      "hit_rate": 0.5909,
+      "units_flat": 7.167,
       "units_weighted": {
-        "units": 11.469,
-        "staked": 83.0,
-        "roi": 0.1382,
+        "units": 13.429,
+        "staked": 85.0,
+        "roi": 0.158,
         "n_offladder_flat_1u": 0
       }
     },
     "by_star_tier": {
       "5": {
-        "n": 35,
-        "win": 16,
+        "n": 36,
+        "win": 17,
         "loss": 16,
         "push": 3,
-        "roi": -0.0142,
-        "hit_rate": 0.5,
-        "units_flat": -0.454,
+        "roi": 0.0159,
+        "hit_rate": 0.5152,
+        "units_flat": 0.526,
         "units_weighted": {
-          "units": -0.909,
-          "staked": 64.0,
-          "roi": -0.0142,
+          "units": 1.052,
+          "staked": 66.0,
+          "roi": 0.0159,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
@@ -5273,17 +5310,17 @@
         }
       },
       "adaptive_desk": {
-        "n": 43,
-        "win": 23,
+        "n": 44,
+        "win": 24,
         "loss": 17,
         "push": 3,
-        "roi": 0.132,
-        "hit_rate": 0.575,
-        "units_flat": 5.282,
+        "roi": 0.1527,
+        "hit_rate": 0.5854,
+        "units_flat": 6.262,
         "units_weighted": {
-          "units": 10.564,
-          "staked": 80.0,
-          "roi": 0.132,
+          "units": 12.525,
+          "staked": 82.0,
+          "roi": 0.1527,
           "n_offladder_flat_1u": 0
         }
       },
@@ -5341,7 +5378,7 @@
       "nightly_engine",
       "strategy_forge"
     ],
-    "n_unified_picks": 46,
+    "n_unified_picks": 47,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -5450,16 +5487,16 @@
         },
         {
           "date": "2026-08-08",
-          "units_flat": 6.187,
-          "units_weighted": 11.469,
-          "n": 46
+          "units_flat": 7.167,
+          "units_weighted": 13.429,
+          "n": 47
         }
       ],
       "by_star_perf": {
         "5": {
-          "n": 35,
-          "hit": 0.5,
-          "roi": -0.0142
+          "n": 36,
+          "hit": 0.5152,
+          "roi": 0.0159
         },
         "4": {
           "n": 8,
@@ -5480,9 +5517,9 @@
       "calibration_buckets": [
         {
           "bucket_mid": 0.475,
-          "n": 23,
-          "predicted": 0.4907,
-          "realized": 0.4783
+          "n": 24,
+          "predicted": 0.491,
+          "realized": 0.5
         },
         {
           "bucket_mid": 0.525,
@@ -5510,19 +5547,19 @@
         },
         {
           "month": "2026-08",
-          "n": 40,
-          "win": 19,
+          "n": 41,
+          "win": 20,
           "loss": 18,
           "push": 3,
-          "hit": 0.5135,
-          "roi": 0.0097,
-          "units_flat": 0.36
+          "hit": 0.5263,
+          "roi": 0.0353,
+          "units_flat": 1.34
         }
       ],
       "streaks": {
         "current": {
-          "type": "loss",
-          "length": 2
+          "type": "win",
+          "length": 1
         },
         "max_win_streak": 7,
         "max_loss_streak": 4,
@@ -5705,34 +5742,34 @@
         "what": "The one pick we actually serve on this game: the champion's play if it has one, otherwise the model's best playable lean, otherwise a PASS.",
         "is_headline": true,
         "activation_date": "2026-07-20",
-        "n": 46,
-        "win": 25,
+        "n": 47,
+        "win": 26,
         "loss": 18,
         "push": 3,
-        "roi": 0.1439,
-        "hit_rate": 0.5814,
-        "units_flat": 6.187,
+        "roi": 0.1629,
+        "hit_rate": 0.5909,
+        "units_flat": 7.167,
         "units_weighted": {
-          "units": 11.469,
-          "staked": 83.0,
-          "roi": 0.1382,
+          "units": 13.429,
+          "staked": 85.0,
+          "roi": 0.158,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-30",
         "last_graded_date": "2026-08-08",
         "evidence_split": {
           "unknown": {
-            "n": 46,
-            "win": 25,
+            "n": 47,
+            "win": 26,
             "loss": 18,
             "push": 3,
-            "roi": 0.1439,
-            "hit_rate": 0.5814,
-            "units_flat": 6.187,
+            "roi": 0.1629,
+            "hit_rate": 0.5909,
+            "units_flat": 7.167,
             "units_weighted": {
-              "units": 11.469,
-              "staked": 83.0,
-              "roi": 0.1382,
+              "units": 13.429,
+              "staked": 85.0,
+              "roi": 0.158,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-30",
@@ -6220,29 +6257,29 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 451,
+          "n": 453,
           "win": 216,
-          "loss": 222,
+          "loss": 224,
           "push": 13,
-          "hit_rate": 0.4932,
-          "decided": 438,
+          "hit_rate": 0.4909,
+          "decided": 440,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4466,
-            0.5398
+            0.4445,
+            0.5375
           ],
-          "last10": "P-L-P-W-W-L-L-P-W-W",
+          "last10": "L-P-W-W-L-L-P-W-W-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 120,
-          "own_side_over_rate": 0.5144,
-          "mean_abs_edge_vs_market": 0.0144,
+          "n_live": 122,
+          "own_side_over_rate": 0.5166,
+          "mean_abs_edge_vs_market": 0.0143,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 122 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -6257,29 +6294,29 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 451,
-          "win": 202,
-          "loss": 236,
+          "n": 453,
+          "win": 203,
+          "loss": 237,
           "push": 13,
-          "hit_rate": 0.4612,
-          "decided": 438,
+          "hit_rate": 0.4614,
+          "decided": 440,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.415,
-            0.508
+            0.4153,
+            0.5081
           ],
-          "last10": "P-W-P-L-W-W-W-P-W-W",
+          "last10": "W-P-L-W-W-W-P-W-W-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 120,
-          "own_side_over_rate": 0.51,
+          "n_live": 122,
+          "own_side_over_rate": 0.5099,
           "mean_abs_edge_vs_market": 0.0316,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 122 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "nova": {
           "key": "nova",
@@ -6294,29 +6331,29 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 451,
-          "win": 212,
+          "n": 453,
+          "win": 214,
           "loss": 226,
           "push": 13,
-          "hit_rate": 0.484,
-          "decided": 438,
+          "hit_rate": 0.4864,
+          "decided": 440,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4376,
-            0.5308
+            0.44,
+            0.533
           ],
-          "last10": "P-W-P-L-L-L-W-P-L-L",
+          "last10": "W-P-L-L-L-W-P-L-L-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 120,
-          "own_side_over_rate": 0.5277,
-          "mean_abs_edge_vs_market": 0.0222,
+          "n_live": 122,
+          "own_side_over_rate": 0.5254,
+          "mean_abs_edge_vs_market": 0.0221,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 122 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "scout": {
           "key": "scout",
@@ -6331,34 +6368,34 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 451,
-          "win": 209,
+          "n": 453,
+          "win": 211,
           "loss": 229,
           "push": 13,
-          "hit_rate": 0.4772,
-          "decided": 438,
+          "hit_rate": 0.4795,
+          "decided": 440,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4308,
-            0.5239
+            0.4332,
+            0.5262
           ],
-          "last10": "P-W-P-W-L-W-W-P-L-L",
+          "last10": "W-P-W-L-W-W-P-L-L-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-08",
           "n_reconstructed_oos": 331,
-          "n_live": 120,
-          "own_side_over_rate": 0.4169,
+          "n_live": 122,
+          "own_side_over_rate": 0.415,
           "mean_abs_edge_vs_market": 0.0261,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 120 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 122 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-09T03:11:33Z",
+      "updated": "2026-08-09T05:07:45Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -6395,18 +6432,18 @@
           "bh_significant": false
         },
         "SPLIT": {
-          "n": 32,
-          "win": 16,
+          "n": 33,
+          "win": 17,
           "loss": 14,
           "push": 2,
-          "hit_rate": 0.5333,
-          "roi": 0.0497,
-          "n_decided": 30,
+          "hit_rate": 0.5484,
+          "roi": 0.0797,
+          "n_decided": 31,
           "hit_ci95": [
-            0.3433,
-            0.7166
+            0.3603,
+            0.7268
           ],
-          "p_vs_coinflip": 0.855536,
+          "p_vs_coinflip": 0.7201,
           "bh_significant": false
         }
       },
@@ -6502,18 +6539,18 @@
           }
         },
         "SPLIT_2-2|over=vega+atlas": {
-          "n": 8,
-          "win": 1,
+          "n": 9,
+          "win": 2,
           "loss": 6,
           "push": 1,
-          "hit_rate": 0.1429,
-          "roi": -0.7249,
-          "n_decided": 7,
+          "hit_rate": 0.25,
+          "roi": -0.5117,
+          "n_decided": 8,
           "hit_ci95": [
-            0.0036,
-            0.5787
+            0.0319,
+            0.6509
           ],
-          "p_vs_coinflip": 0.125,
+          "p_vs_coinflip": 0.289063,
           "bh_significant": false,
           "family": "SPLIT_2-2",
           "call": "over",
@@ -6603,8 +6640,8 @@
           }
         }
       },
-      "n_games_with_all_four_graded": 46,
-      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 46 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
+      "n_games_with_all_four_graded": 47,
+      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 47 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 and every row's own 95% interval spans 50%.",
       "n_rows_rendered": 11,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
@@ -9048,7 +9085,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-09T03:36:44Z",
+      "updated": "2026-08-09T07:24:43Z",
       "order": [
         "vega",
         "atlas",
@@ -10292,14 +10329,14 @@
             "VEGA \u00b7 The Price",
             "ATLAS \u00b7 The Conditions"
           ],
-          "n_disagreements": 222,
+          "n_disagreements": 223,
           "wins": {
             "vega": 116,
-            "atlas": 102
+            "atlas": 103
           },
           "pushes": 4,
-          "n_both_graded": 451,
-          "line": "When VEGA and ATLAS disagree: VEGA 116, ATLAS 102"
+          "n_both_graded": 453,
+          "line": "When VEGA and ATLAS disagree: VEGA 116, ATLAS 103"
         },
         {
           "pair": [
@@ -10310,14 +10347,14 @@
             "VEGA \u00b7 The Price",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 222,
+          "n_disagreements": 224,
           "wins": {
             "vega": 111,
-            "nova": 107
+            "nova": 109
           },
           "pushes": 4,
-          "n_both_graded": 451,
-          "line": "When VEGA and NOVA disagree: VEGA 111, NOVA 107"
+          "n_both_graded": 453,
+          "line": "When VEGA and NOVA disagree: VEGA 111, NOVA 109"
         },
         {
           "pair": [
@@ -10328,14 +10365,14 @@
             "VEGA \u00b7 The Price",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 240,
+          "n_disagreements": 242,
           "wins": {
             "vega": 121,
-            "scout": 114
+            "scout": 116
           },
           "pushes": 5,
-          "n_both_graded": 451,
-          "line": "When VEGA and SCOUT disagree: VEGA 121, SCOUT 114"
+          "n_both_graded": 453,
+          "line": "When VEGA and SCOUT disagree: VEGA 121, SCOUT 116"
         },
         {
           "pair": [
@@ -10346,14 +10383,14 @@
             "ATLAS \u00b7 The Conditions",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 190,
+          "n_disagreements": 191,
           "wins": {
             "atlas": 88,
-            "nova": 98
+            "nova": 99
           },
           "pushes": 4,
-          "n_both_graded": 451,
-          "line": "When ATLAS and NOVA disagree: ATLAS 88, NOVA 98"
+          "n_both_graded": 453,
+          "line": "When ATLAS and NOVA disagree: ATLAS 88, NOVA 99"
         },
         {
           "pair": [
@@ -10364,14 +10401,14 @@
             "ATLAS \u00b7 The Conditions",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 188,
+          "n_disagreements": 189,
           "wins": {
             "atlas": 87,
-            "scout": 94
+            "scout": 95
           },
           "pushes": 7,
-          "n_both_graded": 451,
-          "line": "When ATLAS and SCOUT disagree: ATLAS 87, SCOUT 94"
+          "n_both_graded": 453,
+          "line": "When ATLAS and SCOUT disagree: ATLAS 87, SCOUT 95"
         },
         {
           "pair": [
@@ -10388,7 +10425,7 @@
             "scout": 96
           },
           "pushes": 5,
-          "n_both_graded": 451,
+          "n_both_graded": 453,
           "line": "When NOVA and SCOUT disagree: NOVA 99, SCOUT 96"
         }
       ],
@@ -10400,45 +10437,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 76,
+          "n": 78,
           "win": 32,
-          "loss": 39,
+          "loss": 41,
           "push": 5,
-          "hit_rate": 0.4507,
-          "line": "32-39-5",
+          "hit_rate": 0.4384,
+          "line": "32-41-5",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 76,
-          "win": 41,
-          "loss": 30,
+          "n": 78,
+          "win": 42,
+          "loss": 31,
           "push": 5,
-          "hit_rate": 0.5775,
-          "line": "41-30-5",
+          "hit_rate": 0.5753,
+          "line": "42-31-5",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 76,
-          "win": 34,
+          "n": 78,
+          "win": 36,
           "loss": 37,
           "push": 5,
-          "hit_rate": 0.4789,
-          "line": "34-37-5",
+          "hit_rate": 0.4932,
+          "line": "36-37-5",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 76,
-          "win": 35,
+          "n": 78,
+          "win": 37,
           "loss": 36,
           "push": 5,
-          "hit_rate": 0.493,
-          "line": "35-36-5",
+          "hit_rate": 0.5068,
+          "line": "37-36-5",
           "is_betting_record": false
         }
       },
@@ -10505,17 +10542,17 @@
     "record_start": "2026-07-01",
     "through": "2026-08-08",
     "overall": {
-      "n": 46,
-      "win": 23,
+      "n": 47,
+      "win": 24,
       "loss": 18,
       "push": 5,
-      "roi": 0.1044,
-      "hit_rate": 0.561,
-      "units_flat": 4.282,
+      "roi": 0.1253,
+      "hit_rate": 0.5714,
+      "units_flat": 5.262,
       "units_weighted": {
-        "units": 8.564,
-        "staked": 82.0,
-        "roi": 0.1044,
+        "units": 10.525,
+        "staked": 84.0,
+        "roi": 0.1253,
         "n_offladder_flat_1u": 0
       }
     },
@@ -10602,11 +10639,11 @@
         "strategy_at": "adaptive_strategy_by_date.2026-08-07"
       },
       "2026-08-08": {
-        "n": 8,
-        "win": 1,
+        "n": 9,
+        "win": 2,
         "loss": 5,
         "push": 2,
-        "hit_rate": 0.1667,
+        "hit_rate": 0.2857,
         "strategy_ref": "vote_count:2:under",
         "strategy_at": "adaptive_strategy_by_date.2026-08-08"
       }
@@ -16597,15 +16634,15 @@
       "source": "hybrid"
     },
     "2026-08-08": {
-      "n_picks": 6,
-      "n_graded": 6,
-      "wins": 1,
+      "n_picks": 7,
+      "n_graded": 7,
+      "wins": 2,
       "losses": 5,
       "pushes": 0,
-      "hit_rate": 0.1667,
-      "roi": -0.6683,
-      "units": -4.01,
-      "units_weighted": -8.02,
+      "hit_rate": 0.2857,
+      "roi": -0.4328,
+      "units": -3.03,
+      "units_weighted": -6.059,
       "source": "adaptive_desk"
     },
     "2026-03-27": {
@@ -228395,6 +228432,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-30"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "New York Yankees at Chicago White Sox. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago White Sox have scored 5.1 runs a game over their last fifteen, the New York Yankees 3.0.",
+            "1 reliever across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire carry 1.1 more strikeouts than the league average. The wind is blowing in from centre, 5 miles an hour of it straight in. The visiting starter takes the ball on 5 days' rest. The total opened at 8.5 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "New York Yankees at Chicago White Sox. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago White Sox have scored 5.1 runs a game over their last fifteen, the New York Yankees 3.0.\n\n1 reliever across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire carry 1.1 more strikeouts than the league average. The wind is blowing in from centre, 5 miles an hour of it straight in. The visiting starter takes the ball on 5 days' rest. The total opened at 8.5 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park in day games (0.84x runs)",
@@ -229831,6 +229884,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-30"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Miami Marlins at New York Mets. They are playing at Citi Field, a ballpark that has played right at league-average scoring over the last three years. The New York Mets have scored 3.5 runs a game over their last fifteen, the Miami Marlins 5.7.",
+            "The Miami Marlins went to 3 relievers yesterday and games worked by tonight's plate umpire carry 0.1 fewer walks than the league average. First pitch is at 73 degrees and the visiting starter takes the ball on 5 days' rest. The total opened at 7 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Miami Marlins at New York Mets. They are playing at Citi Field, a ballpark that has played right at league-average scoring over the last three years. The New York Mets have scored 3.5 runs a game over their last fifteen, the Miami Marlins 5.7.\n\nThe Miami Marlins went to 3 relievers yesterday and games worked by tonight's plate umpire carry 0.1 fewer walks than the league average. First pitch is at 73 degrees and the visiting starter takes the ball on 5 days' rest. The total opened at 7 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both starters missing bats (29%/28% K)",
@@ -232939,6 +233008,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-30"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "San Francisco Giants at San Diego Padres. They are playing at Petco Park, a ballpark that has been playing about 8% below league-average scoring over the last three years. The San Diego Padres have scored 4.2 runs a game over their last fifteen, the San Francisco Giants 3.7.",
+            "The San Francisco Giants went to 3 relievers yesterday and games worked by tonight's plate umpire carry 0.2 more strikeouts than the league average. First pitch is at 73 degrees and the home starter takes the ball on 5 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "San Francisco Giants at San Diego Padres. They are playing at Petco Park, a ballpark that has been playing about 8% below league-average scoring over the last three years. The San Diego Padres have scored 4.2 runs a game over their last fifteen, the San Francisco Giants 3.7.\n\nThe San Francisco Giants went to 3 relievers yesterday and games worked by tonight's plate umpire carry 0.2 more strikeouts than the league average. First pitch is at 73 degrees and the home starter takes the ball on 5 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park at night (0.90x runs)",
@@ -234510,6 +234595,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-31"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "New York Yankees at Chicago Cubs. They are playing at Wrigley Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago Cubs have scored 7.5 runs a game over their last fifteen, the New York Yankees 3.0.",
+            "The New York Yankees went to 3 relievers yesterday and the home starter takes the ball on 6 days' rest. New York Yankees hitters have struck out in 27% of their trips to the plate and the posted total is 1.4 runs higher than what this ballpark has typically supported. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "New York Yankees at Chicago Cubs. They are playing at Wrigley Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago Cubs have scored 7.5 runs a game over their last fifteen, the New York Yankees 3.0.\n\nThe New York Yankees went to 3 relievers yesterday and the home starter takes the ball on 6 days' rest. New York Yankees hitters have struck out in 27% of their trips to the plate and the posted total is 1.4 runs higher than what this ballpark has typically supported. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park in day games (0.89x runs)",
@@ -237704,6 +237805,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-31"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Arizona Diamondbacks at Cleveland Guardians. They are playing at Progressive Field, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Cleveland Guardians have scored 3.9 runs a game over their last fifteen, the Arizona Diamondbacks 4.7.",
+            "The Arizona Diamondbacks went to 0 relievers yesterday and games worked by tonight's plate umpire carry 0.3 more strikeouts than the league average. The wind is blowing in from centre, 7 miles an hour of it straight in. The visiting starter takes the ball on 6 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Arizona Diamondbacks at Cleveland Guardians. They are playing at Progressive Field, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Cleveland Guardians have scored 3.9 runs a game over their last fifteen, the Arizona Diamondbacks 4.7.\n\nThe Arizona Diamondbacks went to 0 relievers yesterday and games worked by tonight's plate umpire carry 0.3 more strikeouts than the league average. The wind is blowing in from centre, 7 miles an hour of it straight in. The visiting starter takes the ball on 6 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park at night (0.91x runs)",
@@ -242531,6 +242648,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-07-31"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Milwaukee Brewers at Los Angeles Angels. They are playing at Angel Stadium, a ballpark that has been playing about 4% above league-average scoring over the last three years. The Los Angeles Angels have scored 4.0 runs a game over their last fifteen, the Milwaukee Brewers 4.2.",
+            "The Milwaukee Brewers went to 0 relievers yesterday and games worked by tonight's plate umpire have averaged 0.1 runs fewer than the league. The visiting starter takes the ball on 7 days' rest and their recent scoring has been running 0.8 runs a game short of tonight's total. The total opened at 9.5 and has come down to 9. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Milwaukee Brewers at Los Angeles Angels. They are playing at Angel Stadium, a ballpark that has been playing about 4% above league-average scoring over the last three years. The Los Angeles Angels have scored 4.0 runs a game over their last fifteen, the Milwaukee Brewers 4.2.\n\nThe Milwaukee Brewers went to 0 relievers yesterday and games worked by tonight's plate umpire have averaged 0.1 runs fewer than the league. The visiting starter takes the ball on 7 days' rest and their recent scoring has been running 0.8 runs a game short of tonight's total. The total opened at 9.5 and has come down to 9. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Plate ump Torres trends under (41% overs L2)",
@@ -247252,6 +247385,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-01"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Chicago White Sox at Tampa Bay Rays. They are playing at Tropicana Field, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Tampa Bay Rays have scored 5.4 runs a game over their last fifteen, the Chicago White Sox 5.1.",
+            "The Chicago White Sox went to 2 relievers yesterday and the home starter takes the ball on 6 days' rest. The Chicago White Sox have been reaching base at a .313 clip. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Chicago White Sox at Tampa Bay Rays. They are playing at Tropicana Field, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Tampa Bay Rays have scored 5.4 runs a game over their last fifteen, the Chicago White Sox 5.1.\n\nThe Chicago White Sox went to 2 relievers yesterday and the home starter takes the ball on 6 days' rest. The Chicago White Sox have been reaching base at a .313 clip. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -248862,6 +249011,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-01"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Minnesota Twins at Seattle Mariners. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Seattle Mariners have scored 3.4 runs a game over their last fifteen, the Minnesota Twins 5.9.",
+            "The Seattle Mariners went to 3 relievers yesterday and the visiting starter takes the ball on 6 days' rest. Seattle Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 8 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Minnesota Twins at Seattle Mariners. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Seattle Mariners have scored 3.4 runs a game over their last fifteen, the Minnesota Twins 5.9.\n\nThe Seattle Mariners went to 3 relievers yesterday and the visiting starter takes the ball on 6 days' rest. Seattle Mariners hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 8 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park in day games (0.87x runs)",
@@ -252068,6 +252233,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-01"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Arizona Diamondbacks at Cleveland Guardians. They are playing at Progressive Field, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Cleveland Guardians have scored 3.9 runs a game over their last fifteen, the Arizona Diamondbacks 4.7.",
+            "Arizona Diamondbacks relievers have thrown 45 pitches over the last two days and games worked by tonight's plate umpire carry 0.2 more strikeouts than the league average. The wind is blowing in from centre, 8 miles an hour of it straight in. The visiting starter takes the ball on 6 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Arizona Diamondbacks at Cleveland Guardians. They are playing at Progressive Field, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Cleveland Guardians have scored 3.9 runs a game over their last fifteen, the Arizona Diamondbacks 4.7.\n\nArizona Diamondbacks relievers have thrown 45 pitches over the last two days and games worked by tonight's plate umpire carry 0.2 more strikeouts than the league average. The wind is blowing in from centre, 8 miles an hour of it straight in. The visiting starter takes the ball on 6 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park at night (0.91x runs)",
@@ -259926,6 +260107,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "St. Louis Cardinals at Toronto Blue Jays. They are playing at Rogers Centre, a ballpark that has played right at league-average scoring over the last three years. The Toronto Blue Jays have scored 3.6 runs a game over their last fifteen, the St. Louis Cardinals 4.9.",
+            "The St. Louis Cardinals went to 2 relievers yesterday and the visiting starter takes the ball on 6 days' rest. The Toronto Blue Jays have been reaching base at a .274 clip and the posted total is 0.2 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has come down to 9. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "St. Louis Cardinals at Toronto Blue Jays. They are playing at Rogers Centre, a ballpark that has played right at league-average scoring over the last three years. The Toronto Blue Jays have scored 3.6 runs a game over their last fifteen, the St. Louis Cardinals 4.9.\n\nThe St. Louis Cardinals went to 2 relievers yesterday and the visiting starter takes the ball on 6 days' rest. The Toronto Blue Jays have been reaching base at a .274 clip and the posted total is 0.2 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has come down to 9. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -260689,6 +260886,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Arizona Diamondbacks at Cleveland Guardians. They are playing at Progressive Field, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Cleveland Guardians have scored 3.9 runs a game over their last fifteen, the Arizona Diamondbacks 4.7.",
+            "The Arizona Diamondbacks went to 5 relievers yesterday and games worked by tonight's plate umpire carry 1.3 more walks than the league average. The wind is blowing out toward centre, 8 miles an hour of it straight out. Their recent scoring has been running 0.6 runs a game clear of tonight's total. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Arizona Diamondbacks at Cleveland Guardians. They are playing at Progressive Field, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Cleveland Guardians have scored 3.9 runs a game over their last fifteen, the Arizona Diamondbacks 4.7.\n\nThe Arizona Diamondbacks went to 5 relievers yesterday and games worked by tonight's plate umpire carry 1.3 more walks than the league average. The wind is blowing out toward centre, 8 miles an hour of it straight out. Their recent scoring has been running 0.6 runs a game clear of tonight's total. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -261491,6 +261704,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Chicago White Sox at Tampa Bay Rays. They are playing at Tropicana Field, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Tampa Bay Rays have scored 5.4 runs a game over their last fifteen, the Chicago White Sox 5.1.",
+            "The two bullpens have thrown 28 innings between them over three days and games worked by tonight's plate umpire have finished above the total 52% of the time. Their recent scoring has been running 3 runs a game clear of tonight's total and the posted total is 0.9 runs lower than what this ballpark has typically supported. The total opened at 7.75 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Chicago White Sox at Tampa Bay Rays. They are playing at Tropicana Field, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Tampa Bay Rays have scored 5.4 runs a game over their last fifteen, the Chicago White Sox 5.1.\n\nThe two bullpens have thrown 28 innings between them over three days and games worked by tonight's plate umpire have finished above the total 52% of the time. Their recent scoring has been running 3 runs a game clear of tonight's total and the posted total is 0.9 runs lower than what this ballpark has typically supported. The total opened at 7.75 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Plate ump Estabrook trends over (57% L2 szn)",
@@ -262302,6 +262531,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Miami Marlins at New York Mets. They are playing at Citi Field, a ballpark that has played right at league-average scoring over the last three years. The New York Mets have scored 3.5 runs a game over their last fifteen, the Miami Marlins 5.7.",
+            "The two bullpens have thrown 22 innings between them over three days and first pitch is at 84 degrees. Their recent scoring has been running 0.6 runs a game clear of tonight's total and the posted total is 0.2 runs lower than what this ballpark has typically supported. The total opened at 9 and has come down to 8.5. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Miami Marlins at New York Mets. They are playing at Citi Field, a ballpark that has played right at league-average scoring over the last three years. The New York Mets have scored 3.5 runs a game over their last fifteen, the Miami Marlins 5.7.\n\nThe two bullpens have thrown 22 innings between them over three days and first pitch is at 84 degrees. Their recent scoring has been running 0.6 runs a game clear of tonight's total and the posted total is 0.2 runs lower than what this ballpark has typically supported. The total opened at 9 and has come down to 8.5. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Home starter getting shelled (.424 xwOBA L5)",
@@ -263911,6 +264156,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Texas Rangers at Houston Astros. They are playing at Daikin Park, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Houston Astros have scored 4.5 runs a game over their last fifteen, the Texas Rangers 4.8.",
+            "The Houston Astros went to 5 relievers yesterday and their recent scoring has been running 0.8 runs a game clear of tonight's total. The total opened at 8.75 and has come down to 8.5. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Texas Rangers at Houston Astros. They are playing at Daikin Park, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Houston Astros have scored 4.5 runs a game over their last fifteen, the Texas Rangers 4.8.\n\nThe Houston Astros went to 5 relievers yesterday and their recent scoring has been running 0.8 runs a game clear of tonight's total. The total opened at 8.75 and has come down to 8.5. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 2,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -266312,6 +266573,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Milwaukee Brewers at Los Angeles Angels. They are playing at Angel Stadium, a ballpark that has been playing about 4% above league-average scoring over the last three years. The Los Angeles Angels have scored 4.0 runs a game over their last fifteen, the Milwaukee Brewers 4.2.",
+            "The two bullpens have thrown 18.7 innings between them over three days and first pitch is at 88 degrees. Their recent scoring has been running 0.7 runs a game clear of tonight's total and the posted total is 1.5 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Milwaukee Brewers at Los Angeles Angels. They are playing at Angel Stadium, a ballpark that has been playing about 4% above league-average scoring over the last three years. The Los Angeles Angels have scored 4.0 runs a game over their last fifteen, the Milwaukee Brewers 4.2.\n\nThe two bullpens have thrown 18.7 innings between them over three days and first pitch is at 88 degrees. Their recent scoring has been running 0.7 runs a game clear of tonight's total and the posted total is 1.5 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Hitter-friendly park in day games (1.06x runs)",
@@ -267127,6 +267404,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Detroit Tigers at Athletics. They are playing at Sutter Health Park, a ballpark that has been playing about 12% above league-average scoring over the last three years. The Athletics have scored 4.5 runs a game over their last fifteen, the Detroit Tigers 4.8.",
+            "The two bullpens have thrown 21.7 innings between them over three days. The wind is blowing out toward centre, 7 miles an hour of it straight out. Across thirty games the Detroit Tigers have averaged 5.0 runs. The total opened at 11.25 and has come down to 11. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Detroit Tigers at Athletics. They are playing at Sutter Health Park, a ballpark that has been playing about 12% above league-average scoring over the last three years. The Athletics have scored 4.5 runs a game over their last fifteen, the Detroit Tigers 4.8.\n\nThe two bullpens have thrown 21.7 innings between them over three days. The wind is blowing out toward centre, 7 miles an hour of it straight out. Across thirty games the Detroit Tigers have averaged 5.0 runs. The total opened at 11.25 and has come down to 11. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Hitter-friendly park in day games (1.23x runs)",
@@ -269520,6 +269813,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-02"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Boston Red Sox at Los Angeles Dodgers. They are playing at UNIQLO Field at Dodger Stadium. The Los Angeles Dodgers have scored 5.7 runs a game over their last fifteen, the Boston Red Sox 4.5.",
+            "The two bullpens have thrown 22 innings between them over three days and games worked by tonight's plate umpire have averaged 0.6 runs more than the league. First pitch is at 86 degrees and their recent scoring has been running 1.7 runs a game clear of tonight's total. The total opened at 9 and has come down to 8.5. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Boston Red Sox at Los Angeles Dodgers. They are playing at UNIQLO Field at Dodger Stadium. The Los Angeles Dodgers have scored 5.7 runs a game over their last fifteen, the Boston Red Sox 4.5.\n\nThe two bullpens have thrown 22 innings between them over three days and games worked by tonight's plate umpire have averaged 0.6 runs more than the league. First pitch is at 86 degrees and their recent scoring has been running 1.7 runs a game clear of tonight's total. The total opened at 9 and has come down to 8.5. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Ump's games run high (+0.6 R/G vs league)",
@@ -270333,6 +270642,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-03"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Washington Nationals at Philadelphia Phillies. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Philadelphia Phillies have scored 6.4 runs a game over their last fifteen, the Washington Nationals 4.9.",
+            "The Washington Nationals went to 2 relievers yesterday and games worked by tonight's plate umpire have finished above the total 47% of the time. The visiting starter takes the ball on 7 days' rest and Washington Nationals hitters have struck out in 25% of their trips to the plate. The total opened at 9.25 and has come down to 9. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Washington Nationals at Philadelphia Phillies. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Philadelphia Phillies have scored 6.4 runs a game over their last fifteen, the Washington Nationals 4.9.\n\nThe Washington Nationals went to 2 relievers yesterday and games worked by tonight's plate umpire have finished above the total 47% of the time. The visiting starter takes the ball on 7 days' rest and Washington Nationals hitters have struck out in 25% of their trips to the plate. The total opened at 9.25 and has come down to 9. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -271139,6 +271464,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-03"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "St. Louis Cardinals at New York Yankees. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The New York Yankees have scored 3.0 runs a game over their last fifteen, the St. Louis Cardinals 4.9.",
+            "The two bullpens have thrown 16.3 innings between them over three days and games worked by tonight's plate umpire carry 0.3 more walks than the league average. First pitch is at 76 degrees and St. Louis Cardinals hitters have struck out in 17% of their trips to the plate. The total opened at 8 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "St. Louis Cardinals at New York Yankees. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The New York Yankees have scored 3.0 runs a game over their last fifteen, the St. Louis Cardinals 4.9.\n\nThe two bullpens have thrown 16.3 innings between them over three days and games worked by tonight's plate umpire carry 0.3 more walks than the league average. First pitch is at 76 degrees and St. Louis Cardinals hitters have struck out in 17% of their trips to the plate. The total opened at 8 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Plate ump Fletcher trends over (60% L2 szn)",
@@ -271950,6 +272291,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-03"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.",
+            "The Milwaukee Brewers went to 1 reliever yesterday and the visiting starter takes the ball on 6 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate and the posted total is 0.4 runs higher than what this ballpark has typically supported. The total opened at 8.75 and has come down to 8.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.\n\nThe Milwaukee Brewers went to 1 reliever yesterday and the visiting starter takes the ball on 6 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate and the posted total is 0.4 runs higher than what this ballpark has typically supported. The total opened at 8.75 and has come down to 8.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Plate ump Libka trends under (30% overs L2)",
@@ -272766,6 +273123,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-03"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Los Angeles Dodgers at Chicago Cubs. They are playing at Wrigley Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago Cubs have scored 7.5 runs a game over their last fifteen, the Los Angeles Dodgers 5.7.",
+            "The two bullpens have thrown 23.3 innings between them over three days and first pitch is at 72 degrees. Their recent scoring has been running 5.2 runs a game clear of tonight's total and the posted total is 1.1 runs lower than what this ballpark has typically supported. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Los Angeles Dodgers at Chicago Cubs. They are playing at Wrigley Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago Cubs have scored 7.5 runs a game over their last fifteen, the Los Angeles Dodgers 5.7.\n\nThe two bullpens have thrown 23.3 innings between them over three days and first pitch is at 72 degrees. Their recent scoring has been running 5.2 runs a game clear of tonight's total and the posted total is 1.1 runs lower than what this ballpark has typically supported. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Hitter-friendly park at night (1.07x runs)",
@@ -273579,6 +273952,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-03"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "San Francisco Giants at Texas Rangers. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Texas Rangers have scored 4.8 runs a game over their last fifteen, the San Francisco Giants 3.7.",
+            "3 relievers across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire have averaged 0.6 runs more than the league. The Texas Rangers have hit for a .773 OPS over that stretch. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "San Francisco Giants at Texas Rangers. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Texas Rangers have scored 4.8 runs a game over their last fifteen, the San Francisco Giants 3.7.\n\n3 relievers across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire have averaged 0.6 runs more than the league. The Texas Rangers have hit for a .773 OPS over that stretch. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Ump's games run high (+0.6 R/G vs league)",
@@ -275192,6 +275581,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-03"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Tampa Bay Rays at Colorado Rockies. They are playing at Coors Field, a ballpark that has been playing about 27% above league-average scoring over the last three years. The Colorado Rockies have scored 6.1 runs a game over their last fifteen, the Tampa Bay Rays 5.4.",
+            "The Tampa Bay Rays bullpen has thrown 10 innings in the last three days and first pitch is at 94 degrees. Tampa Bay Rays hitters have struck out in 17% of their trips to the plate. The total opened at 11.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Tampa Bay Rays at Colorado Rockies. They are playing at Coors Field, a ballpark that has been playing about 27% above league-average scoring over the last three years. The Colorado Rockies have scored 6.1 runs a game over their last fifteen, the Tampa Bay Rays 5.4.\n\nThe Tampa Bay Rays bullpen has thrown 10 innings in the last three days and first pitch is at 94 degrees. Tampa Bay Rays hitters have struck out in 17% of their trips to the plate. The total opened at 11.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "High-altitude park at night (1.29x runs)",
@@ -275988,6 +276393,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-03"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "San Diego Padres at Arizona Diamondbacks. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Arizona Diamondbacks have scored 4.7 runs a game over their last fifteen, the San Diego Padres 4.2.",
+            "The San Diego Padres went to 5 relievers yesterday and games worked by tonight's plate umpire carry 0.5 more walks than the league average. The San Diego Padres have been reaching base at a .341 clip and the posted total is 0.3 runs lower than what this ballpark has typically supported. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "San Diego Padres at Arizona Diamondbacks. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Arizona Diamondbacks have scored 4.7 runs a game over their last fifteen, the San Diego Padres 4.2.\n\nThe San Diego Padres went to 5 relievers yesterday and games worked by tonight's plate umpire carry 0.5 more walks than the league average. The San Diego Padres have been reaching base at a .341 clip and the posted total is 0.3 runs lower than what this ballpark has typically supported. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Hitter-friendly park at night (1.09x runs)",
@@ -276797,6 +277218,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-04"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Los Angeles Angels at Baltimore Orioles. They are playing at Oriole Park at Camden Yards, a ballpark that has played right at league-average scoring over the last three years. The Baltimore Orioles have scored 4.3 runs a game over their last fifteen, the Los Angeles Angels 4.0.",
+            "The Los Angeles Angels went to 0 relievers yesterday and games worked by tonight's plate umpire carry 0.7 fewer walks than the league average. The visiting starter takes the ball on 6 days' rest and their recent scoring has been running 0.7 runs a game short of tonight's total. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Los Angeles Angels at Baltimore Orioles. They are playing at Oriole Park at Camden Yards, a ballpark that has played right at league-average scoring over the last three years. The Baltimore Orioles have scored 4.3 runs a game over their last fifteen, the Los Angeles Angels 4.0.\n\nThe Los Angeles Angels went to 0 relievers yesterday and games worked by tonight's plate umpire carry 0.7 fewer walks than the league average. The visiting starter takes the ball on 6 days' rest and their recent scoring has been running 0.7 runs a game short of tonight's total. The total opened at 8.5 and has gone up to 9. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Plate ump Merzel trends under (42% overs L2)",
@@ -277602,6 +278039,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-04"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Athletics at Cincinnati Reds. They are playing at Great American Ball Park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Cincinnati Reds have scored 3.9 runs a game over their last fifteen, the Athletics 4.5.",
+            "The Athletics went to 0 relievers yesterday and games worked by tonight's plate umpire have finished above the total 46% of the time. The home starter takes the ball on 6 days' rest and their recent scoring has been running 0.6 runs a game short of tonight's total. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Athletics at Cincinnati Reds. They are playing at Great American Ball Park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Cincinnati Reds have scored 3.9 runs a game over their last fifteen, the Athletics 4.5.\n\nThe Athletics went to 0 relievers yesterday and games worked by tonight's plate umpire have finished above the total 46% of the time. The home starter takes the ball on 6 days' rest and their recent scoring has been running 0.6 runs a game short of tonight's total. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -279997,6 +280450,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-04"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "St. Louis Cardinals at New York Yankees. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The New York Yankees have scored 3.0 runs a game over their last fifteen, the St. Louis Cardinals 4.9.",
+            "Games worked by tonight's plate umpire have finished above the total 45% of the time and the visiting starter takes the ball on 8 days' rest. Their recent scoring has been running 0.6 runs a game short of tonight's total and the posted total is 0.4 runs higher than what this ballpark has typically supported. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "St. Louis Cardinals at New York Yankees. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The New York Yankees have scored 3.0 runs a game over their last fifteen, the St. Louis Cardinals 4.9.\n\nGames worked by tonight's plate umpire have finished above the total 45% of the time and the visiting starter takes the ball on 8 days' rest. Their recent scoring has been running 0.6 runs a game short of tonight's total and the posted total is 0.4 runs higher than what this ballpark has typically supported. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -283185,6 +283654,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-04"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.",
+            "The Pittsburgh Pirates went to 3 relievers yesterday and the visiting starter takes the ball on 6 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate. The total opened at 7.75 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.\n\nThe Pittsburgh Pirates went to 3 relievers yesterday and the visiting starter takes the ball on 6 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate. The total opened at 7.75 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both starters dealing lately (.209/.171 xwOBA)",
@@ -285619,6 +286104,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-04"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Toronto Blue Jays at Houston Astros. They are playing at Daikin Park, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Houston Astros have scored 4.5 runs a game over their last fifteen, the Toronto Blue Jays 3.6.",
+            "The Houston Astros went to 1 reliever yesterday and games worked by tonight's plate umpire carry 0.4 fewer walks than the league average. The visiting starter takes the ball on 6 days' rest and the Toronto Blue Jays have been reaching base at a .274 clip. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Toronto Blue Jays at Houston Astros. They are playing at Daikin Park, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Houston Astros have scored 4.5 runs a game over their last fifteen, the Toronto Blue Jays 3.6.\n\nThe Houston Astros went to 1 reliever yesterday and games worked by tonight's plate umpire carry 0.4 fewer walks than the league average. The visiting starter takes the ball on 6 days' rest and the Toronto Blue Jays have been reaching base at a .274 clip. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Plate ump Morales trends under (42% overs L2)",
@@ -288831,6 +289332,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-05"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Toronto Blue Jays at Houston Astros. They are playing at Daikin Park, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Houston Astros have scored 4.5 runs a game over their last fifteen, the Toronto Blue Jays 3.6.",
+            "The Houston Astros went to 2 relievers yesterday and the visiting starter takes the ball on 10 days' rest. The Toronto Blue Jays have been reaching base at a .274 clip and the posted total is 1 run higher than what this ballpark has typically supported. The total opened at 7.5 and has gone up to 8. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Toronto Blue Jays at Houston Astros. They are playing at Daikin Park, a ballpark that has been playing about 6% below league-average scoring over the last three years. The Houston Astros have scored 4.5 runs a game over their last fifteen, the Toronto Blue Jays 3.6.\n\nThe Houston Astros went to 2 relievers yesterday and the visiting starter takes the ball on 10 days' rest. The Toronto Blue Jays have been reaching base at a .274 clip and the posted total is 1 run higher than what this ballpark has typically supported. The total opened at 7.5 and has gone up to 8. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park in day games (0.82x runs)",
@@ -289643,6 +290160,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-05"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Los Angeles Dodgers at Chicago Cubs. They are playing at Wrigley Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago Cubs have scored 7.5 runs a game over their last fifteen, the Los Angeles Dodgers 5.7.",
+            "Chicago Cubs relievers have thrown 73 pitches over the last two days and the visiting starter takes the ball on 7 days' rest. The posted total is 1.9 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Los Angeles Dodgers at Chicago Cubs. They are playing at Wrigley Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Chicago Cubs have scored 7.5 runs a game over their last fifteen, the Los Angeles Dodgers 5.7.\n\nChicago Cubs relievers have thrown 73 pitches over the last two days and the visiting starter takes the ball on 7 days' rest. The posted total is 1.9 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park in day games (0.89x runs)",
@@ -298339,6 +298872,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-05"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.",
+            "The Pittsburgh Pirates went to 3 relievers yesterday and the visiting starter takes the ball on 5 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate. The total opened at 7.5 and has come down to 7. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.\n\nThe Pittsburgh Pirates went to 3 relievers yesterday and the visiting starter takes the ball on 5 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate. The total opened at 7.5 and has come down to 7. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both starters dealing lately (.197/.253 xwOBA)",
@@ -299966,6 +300515,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-05"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "San Diego Padres at Arizona Diamondbacks. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Arizona Diamondbacks have scored 4.7 runs a game over their last fifteen, the San Diego Padres 4.2.",
+            "The San Diego Padres went to 3 relievers yesterday and the visiting starter takes the ball on 11 days' rest. Across thirty games the Arizona Diamondbacks have averaged 3.7 runs. The total opened at 9.5 and has come down to 8.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "San Diego Padres at Arizona Diamondbacks. They are playing at Chase Field, a ballpark that has been playing about 8% above league-average scoring over the last three years. The Arizona Diamondbacks have scored 4.7 runs a game over their last fifteen, the San Diego Padres 4.2.\n\nThe San Diego Padres went to 3 relievers yesterday and the visiting starter takes the ball on 11 days' rest. Across thirty games the Arizona Diamondbacks have averaged 3.7 runs. The total opened at 9.5 and has come down to 8.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -303168,6 +303733,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-06"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.",
+            "The Pittsburgh Pirates went to 2 relievers yesterday and the home starter takes the ball on 8 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Pittsburgh Pirates at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Pittsburgh Pirates 5.7.\n\nThe Pittsburgh Pirates went to 2 relievers yesterday and the home starter takes the ball on 8 days' rest. Pittsburgh Pirates hitters have struck out in 26% of their trips to the plate. The total opened at 7.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park in day games (0.95x runs)",
@@ -304749,6 +305330,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-06"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Washington Nationals at Philadelphia Phillies. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Philadelphia Phillies have scored 6.4 runs a game over their last fifteen, the Washington Nationals 4.9.",
+            "1 reliever across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire have finished above the total 44% of the time. The visiting starter takes the ball on 5 days' rest and Washington Nationals hitters have struck out in 25% of their trips to the plate. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Washington Nationals at Philadelphia Phillies. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Philadelphia Phillies have scored 6.4 runs a game over their last fifteen, the Washington Nationals 4.9.\n\n1 reliever across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire have finished above the total 44% of the time. The visiting starter takes the ball on 5 days' rest and Washington Nationals hitters have struck out in 25% of their trips to the plate. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Plate ump Barry trends under (39% overs L2)",
@@ -309571,6 +310168,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Toronto Blue Jays at Philadelphia Phillies. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Philadelphia Phillies have scored 6.4 runs a game over their last fifteen, the Toronto Blue Jays 3.6.",
+            "Games worked by tonight's plate umpire carry 0.2 fewer walks than the league average and the visiting starter takes the ball on 12 days' rest. The Toronto Blue Jays have been reaching base at a .274 clip. The total opened at 8.5 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Toronto Blue Jays at Philadelphia Phillies. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Philadelphia Phillies have scored 6.4 runs a game over their last fifteen, the Toronto Blue Jays 3.6.\n\nGames worked by tonight's plate umpire carry 0.2 fewer walks than the league average and the visiting starter takes the ball on 12 days' rest. The Toronto Blue Jays have been reaching base at a .274 clip. The total opened at 8.5 and has come down to 7.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Home starter dominant lately (.146 xwOBA L5)",
@@ -310395,6 +311008,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Cincinnati Reds at Washington Nationals. They are playing at Nationals Park, a ballpark that has been playing about 5% above league-average scoring over the last three years. The Washington Nationals have scored 4.9 runs a game over their last fifteen, the Cincinnati Reds 3.9.",
+            "The Cincinnati Reds went to 3 relievers yesterday and the visiting starter takes the ball on 9 days' rest. Cincinnati Reds hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Cincinnati Reds at Washington Nationals. They are playing at Nationals Park, a ballpark that has been playing about 5% above league-average scoring over the last three years. The Washington Nationals have scored 4.9 runs a game over their last fifteen, the Cincinnati Reds 3.9.\n\nThe Cincinnati Reds went to 3 relievers yesterday and the visiting starter takes the ball on 9 days' rest. Cincinnati Reds hitters have struck out in 27% of their trips to the plate and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 9 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both lineups weak vs these arms lately",
@@ -312846,6 +313475,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Los Angeles Angels at Miami Marlins. They are playing at loanDepot park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Miami Marlins have scored 5.7 runs a game over their last fifteen, the Los Angeles Angels 4.0.",
+            "1 reliever across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire carry 0.2 more strikeouts than the league average. The home starter takes the ball on 6 days' rest and the Los Angeles Angels have been reaching base at a .291 clip. The total opened at 9.25 and has come down to 8.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Los Angeles Angels at Miami Marlins. They are playing at loanDepot park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Miami Marlins have scored 5.7 runs a game over their last fifteen, the Los Angeles Angels 4.0.\n\n1 reliever across the two bullpens would be pitching a second day in a row and games worked by tonight's plate umpire carry 0.2 more strikeouts than the league average. The home starter takes the ball on 6 days' rest and the Los Angeles Angels have been reaching base at a .291 clip. The total opened at 9.25 and has come down to 8.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -314420,6 +315065,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-07"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Minnesota Twins at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Minnesota Twins 5.9.",
+            "The Minnesota Twins went to 3 relievers yesterday and the visiting starter takes the ball on 7 days' rest. The total opened at 7.5 and has gone up to 8. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Minnesota Twins at Milwaukee Brewers. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Milwaukee Brewers have scored 4.2 runs a game over their last fifteen, the Minnesota Twins 5.9.\n\nThe Minnesota Twins went to 3 relievers yesterday and the visiting starter takes the ball on 7 days' rest. The total opened at 7.5 and has gone up to 8. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 2,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -320045,6 +320706,22 @@
           "full_block_at": "adaptive_strategy_by_date.2026-08-07"
         },
         "is_bet": true,
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Detroit Tigers at San Francisco Giants. They are playing at Oracle Park, a ballpark that has been playing about 9% below league-average scoring over the last three years. The San Francisco Giants have scored 3.7 runs a game over their last fifteen, the Detroit Tigers 4.8.",
+            "The San Francisco Giants went to 0 relievers yesterday and games worked by tonight's plate umpire have finished above the total 45% of the time. First pitch is at 60 degrees and the visiting starter takes the ball on 5 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Detroit Tigers at San Francisco Giants. They are playing at Oracle Park, a ballpark that has been playing about 9% below league-average scoring over the last three years. The San Francisco Giants have scored 3.7 runs a game over their last fifteen, the Detroit Tigers 4.8.\n\nThe San Francisco Giants went to 0 relievers yesterday and games worked by tonight's plate umpire have finished above the total 45% of the time. First pitch is at 60 degrees and the visiting starter takes the ball on 5 days' rest. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Pitcher-friendly park at night (0.86x runs)",
@@ -320936,6 +321613,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Atlanta Braves at New York Yankees, and it is Chris Sale for the visitors against Gerrit Cole. Over his last 7 starts Sale has worked to a 1.63 ERA, with 51 strikeouts in 38 2/3 innings and he has gone 4-1 in them. Cole answers with a 3.27 ERA over his own last 7 starts, 49 strikeouts in 41 1/3 innings and he has gone 3-3 in them. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The Yankees have scored 3.0 runs a game over their last fifteen, the Braves 4.1.",
+            "The Braves went to 5 relievers yesterday and first pitch is at 90 degrees. Cole has kept 33% of the balls hit off him on the ground over his last five starts and Braves hitters have struck out in 22% of their trips to the plate. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Atlanta Braves at New York Yankees, and it is Chris Sale for the visitors against Gerrit Cole. Over his last 7 starts Sale has worked to a 1.63 ERA, with 51 strikeouts in 38 2/3 innings and he has gone 4-1 in them. Cole answers with a 3.27 ERA over his own last 7 starts, 49 strikeouts in 41 1/3 innings and he has gone 3-3 in them. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The Yankees have scored 3.0 runs a game over their last fifteen, the Braves 4.1.\n\nThe Braves went to 5 relievers yesterday and first pitch is at 90 degrees. Cole has kept 33% of the balls hit off him on the ground over his last five starts and Braves hitters have struck out in 22% of their trips to the plate. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Hitter-friendly park in day games (1.06x runs)",
@@ -322526,6 +323219,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Los Angeles Angels at Miami Marlins, and it is Walbert Ure\u00f1a for the visitors against Sandy Alcantara. Over his last 7 starts Ure\u00f1a has worked to a 2.43 ERA, with 37 strikeouts in 37 innings and he has gone 3-2 in them. Alcantara answers with a 2.89 ERA over his own last 7 starts, 39 strikeouts in 46 2/3 innings and he has gone 4-2 in them. They are playing at loanDepot park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Marlins have scored 5.7 runs a game over their last fifteen, the Angels 4.0.",
+            "The Angels went to 5 relievers yesterday and Ure\u00f1a has walked 14% of the hitters he has faced across his last five starts. Their recent scoring has been running 2.2 runs a game clear of tonight's total and the posted total is 1.2 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Los Angeles Angels at Miami Marlins, and it is Walbert Ure\u00f1a for the visitors against Sandy Alcantara. Over his last 7 starts Ure\u00f1a has worked to a 2.43 ERA, with 37 strikeouts in 37 innings and he has gone 3-2 in them. Alcantara answers with a 2.89 ERA over his own last 7 starts, 39 strikeouts in 46 2/3 innings and he has gone 4-2 in them. They are playing at loanDepot park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Marlins have scored 5.7 runs a game over their last fifteen, the Angels 4.0.\n\nThe Angels went to 5 relievers yesterday and Ure\u00f1a has walked 14% of the hitters he has faced across his last five starts. Their recent scoring has been running 2.2 runs a game clear of tonight's total and the posted total is 1.2 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both bullpens heavily worked last 3 days",
@@ -323374,6 +324083,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Toronto Blue Jays at Philadelphia Phillies, and it is Max Scherzer for the visitors against Aaron Nola. Over his last 7 starts Scherzer has worked to a 9.49 ERA, with 19 strikeouts in 24 2/3 innings and he has gone 0-4 in them. Nola answers with a 5.49 ERA over his own last 7 starts, 39 strikeouts in 39 1/3 innings and he has gone 0-5 in them. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Phillies have scored 6.4 runs a game over their last fifteen, the Blue Jays 3.6.",
+            "The Phillies went to 3 relievers yesterday and games worked by tonight's plate umpire have averaged 0.1 runs fewer than the league. Scherzer takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 10 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Toronto Blue Jays at Philadelphia Phillies, and it is Max Scherzer for the visitors against Aaron Nola. Over his last 7 starts Scherzer has worked to a 9.49 ERA, with 19 strikeouts in 24 2/3 innings and he has gone 0-4 in them. Nola answers with a 5.49 ERA over his own last 7 starts, 39 strikeouts in 39 1/3 innings and he has gone 0-5 in them. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Phillies have scored 6.4 runs a game over their last fifteen, the Blue Jays 3.6.\n\nThe Phillies went to 3 relievers yesterday and games worked by tonight's plate umpire have averaged 0.1 runs fewer than the league. Scherzer takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 10 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -324132,6 +324857,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "New York Mets at Pittsburgh Pirates, and it is Robert Stock for the visitors against Bubba Chandler. In his one start Stock has covered 5 innings, giving up 1 earned run with 4 strikeouts and he has gone 0-1 in it. Chandler answers with a 4.21 ERA over his own last 7 starts, 29 strikeouts in 36 1/3 innings and he has gone 2-1 in them. They are playing at PNC Park, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Pirates have scored 5.7 runs a game over their last fifteen, the Mets 3.5.",
+            "The two bullpens have thrown 25 innings between them over three days and first pitch is at 81 degrees. Chandler has walked 12% of the hitters he has faced across his last five starts and the Pirates have been reaching base at a .351 clip. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "New York Mets at Pittsburgh Pirates, and it is Robert Stock for the visitors against Bubba Chandler. In his one start Stock has covered 5 innings, giving up 1 earned run with 4 strikeouts and he has gone 0-1 in it. Chandler answers with a 4.21 ERA over his own last 7 starts, 29 strikeouts in 36 1/3 innings and he has gone 2-1 in them. They are playing at PNC Park, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Pirates have scored 5.7 runs a game over their last fifteen, the Mets 3.5.\n\nThe two bullpens have thrown 25 innings between them over three days and first pitch is at 81 degrees. Chandler has walked 12% of the hitters he has faced across his last five starts and the Pirates have been reaching base at a .351 clip. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both starters walk-prone lately (12%/12% BB)",
@@ -324987,6 +325728,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Cincinnati Reds at Washington Nationals, and it is Chase Burns for the visitors against Andrew Alvarez. Over his last 7 starts Burns has worked to a 3.08 ERA, with 42 strikeouts in 38 innings and he has gone 5-0 in them. Alvarez answers with a 4.41 ERA over his own last 7 starts, 30 strikeouts in 32 2/3 innings and he has gone 0-2 in them. They are playing at Nationals Park, a ballpark that has been playing about 5% above league-average scoring over the last three years. The Nationals have scored 4.9 runs a game over their last fifteen, the Reds 3.9.",
+            "The Reds went to 3 relievers yesterday and Burns takes the ball on 6 days' rest. Reds hitters have struck out in 27% of their trips to the plate. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Cincinnati Reds at Washington Nationals, and it is Chase Burns for the visitors against Andrew Alvarez. Over his last 7 starts Burns has worked to a 3.08 ERA, with 42 strikeouts in 38 innings and he has gone 5-0 in them. Alvarez answers with a 4.41 ERA over his own last 7 starts, 30 strikeouts in 32 2/3 innings and he has gone 0-2 in them. They are playing at Nationals Park, a ballpark that has been playing about 5% above league-average scoring over the last three years. The Nationals have scored 4.9 runs a game over their last fifteen, the Reds 3.9.\n\nThe Reds went to 3 relievers yesterday and Burns takes the ball on 6 days' rest. Reds hitters have struck out in 27% of their trips to the plate. The total opened at 8.5 and has not moved off it. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 3,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -325746,6 +326503,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Chicago Cubs at Kansas City Royals, and it is Clay Holmes for the visitors against Seth Lugo. Over 7 starts through May 15, Holmes has worked to a 2.70 ERA, with 36 strikeouts in 40 innings and he has gone 2-4 in them. Lugo answers with a 4.93 ERA over his own last 7 starts, 30 strikeouts in 38 1/3 innings and he has gone 1-2 in them. They are playing at Kauffman Stadium, a ballpark that has played right at league-average scoring over the last three years. The Royals have scored 4.6 runs a game over their last fifteen, the Cubs 7.5.",
+            "The Cubs went to 3 relievers yesterday and Lugo takes the ball on 6 days' rest. The Royals have been reaching base at a .284 clip and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has come down to 9. We lean the under here, and those are the things on this game that point that way."
+          ],
+          "text": "Chicago Cubs at Kansas City Royals, and it is Clay Holmes for the visitors against Seth Lugo. Over 7 starts through May 15, Holmes has worked to a 2.70 ERA, with 36 strikeouts in 40 innings and he has gone 2-4 in them. Lugo answers with a 4.93 ERA over his own last 7 starts, 30 strikeouts in 38 1/3 innings and he has gone 1-2 in them. They are playing at Kauffman Stadium, a ballpark that has played right at league-average scoring over the last three years. The Royals have scored 4.6 runs a game over their last fifteen, the Cubs 7.5.\n\nThe Cubs went to 3 relievers yesterday and Lugo takes the ball on 6 days' rest. The Royals have been reaching base at a .284 clip and the posted total is 0.1 runs higher than what this ballpark has typically supported. The total opened at 9.5 and has come down to 9. We lean the under here, and those are the things on this game that point that way.",
+          "side": "under",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -326511,6 +327284,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Minnesota Twins at Milwaukee Brewers, and it is Taj Bradley for the visitors against Robert Gasser. Over his last 7 starts Bradley has worked to a 3.14 ERA, with 50 strikeouts in 43 innings and he has gone 3-1 in them. Gasser answers with a 4.23 ERA over his own last 7 starts, 34 strikeouts in 38 1/3 innings and he has gone 3-1 in them. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Brewers have scored 4.2 runs a game over their last fifteen, the Twins 5.9.",
+            "The Twins went to 5 relievers yesterday and Bradley has walked 12% of the hitters he has faced across his last five starts. Their recent scoring has been running 2.1 runs a game clear of tonight's total and the posted total is 0.1 runs lower than what this ballpark has typically supported. The total opened at 8 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Minnesota Twins at Milwaukee Brewers, and it is Taj Bradley for the visitors against Robert Gasser. Over his last 7 starts Bradley has worked to a 3.14 ERA, with 50 strikeouts in 43 innings and he has gone 3-1 in them. Gasser answers with a 4.23 ERA over his own last 7 starts, 34 strikeouts in 38 1/3 innings and he has gone 3-1 in them. They are playing at American Family Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The Brewers have scored 4.2 runs a game over their last fifteen, the Twins 5.9.\n\nThe Twins went to 5 relievers yesterday and Bradley has walked 12% of the hitters he has faced across his last five starts. Their recent scoring has been running 2.1 runs a game clear of tonight's total and the posted total is 0.1 runs lower than what this ballpark has typically supported. The total opened at 8 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -327276,6 +328065,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Baltimore Orioles at Texas Rangers, and it is Kyle Bradish for the visitors against Jacob deGrom. Over his last 7 starts Bradish has worked to a 3.38 ERA, with 32 strikeouts in 40 innings and he has gone 3-3 in them. DeGrom answers with a 5.59 ERA over his own last 7 starts, 46 strikeouts in 37 innings and he has gone 2-3 in them. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Rangers have scored 4.8 runs a game over their last fifteen, the Orioles 4.3.",
+            "The Rangers bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. DeGrom has kept 44% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.6 runs a game clear of tonight's total. The total opened at 7 and has gone up to 7.5. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Baltimore Orioles at Texas Rangers, and it is Kyle Bradish for the visitors against Jacob deGrom. Over his last 7 starts Bradish has worked to a 3.38 ERA, with 32 strikeouts in 40 innings and he has gone 3-3 in them. DeGrom answers with a 5.59 ERA over his own last 7 starts, 46 strikeouts in 37 innings and he has gone 2-3 in them. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Rangers have scored 4.8 runs a game over their last fifteen, the Orioles 4.3.\n\nThe Rangers bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. DeGrom has kept 44% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.6 runs a game clear of tonight's total. The total opened at 7 and has gone up to 7.5. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -328119,6 +328924,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Cleveland Guardians at Chicago White Sox, and it is Gavin Williams for the visitors against Anthony Kay. Over his last 7 starts Williams has worked to a 2.98 ERA, with 67 strikeouts in 42 1/3 innings and he has gone 2-2 in them. Kay answers with a 3.48 ERA over his own last 7 starts, 27 strikeouts in 33 2/3 innings and he has gone 2-3 in them. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9.",
+            "The two bullpens have thrown 32 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. First pitch is at 75 degrees and Williams has kept 38% of the balls hit off him on the ground over his last five starts. The total opened at 8 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Cleveland Guardians at Chicago White Sox, and it is Gavin Williams for the visitors against Anthony Kay. Over his last 7 starts Williams has worked to a 2.98 ERA, with 67 strikeouts in 42 1/3 innings and he has gone 2-2 in them. Kay answers with a 3.48 ERA over his own last 7 starts, 27 strikeouts in 33 2/3 innings and he has gone 2-3 in them. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9.\n\nThe two bullpens have thrown 32 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. First pitch is at 75 degrees and Williams has kept 38% of the balls hit off him on the ground over his last five starts. The total opened at 8 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both bullpens heavily worked last 3 days",
@@ -329712,6 +330533,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Detroit Tigers at San Francisco Giants, and it is Jackson Jobe for the visitors against Landen Roupp. Over his last 7 starts Roupp has worked to a 4.74 ERA, with 31 strikeouts in 38 innings and he has gone 2-3 in them. They are playing at Oracle Park, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Giants have scored 3.7 runs a game over their last fifteen, the Tigers 4.8.",
+            "The two bullpens have thrown 21 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. The wind is blowing out toward centre, 15 miles an hour of it straight out. Roupp has walked 10% of the hitters he has faced across his last five starts. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Detroit Tigers at San Francisco Giants, and it is Jackson Jobe for the visitors against Landen Roupp. Over his last 7 starts Roupp has worked to a 4.74 ERA, with 31 strikeouts in 38 innings and he has gone 2-3 in them. They are playing at Oracle Park, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Giants have scored 3.7 runs a game over their last fifteen, the Tigers 4.8.\n\nThe two bullpens have thrown 21 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. The wind is blowing out toward centre, 15 miles an hour of it straight out. Roupp has walked 10% of the hitters he has faced across his last five starts. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": [
           {
             "text": "Both starters walk-prone lately (10%/11% BB)",
@@ -330476,6 +331313,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Houston Astros at San Diego Padres, and it is Peter Lambert for the visitors against Michael King. Over his last 7 starts Lambert has worked to a 2.70 ERA, with 44 strikeouts in 40 innings and he has gone 2-1 in them. King answers with a 3.76 ERA over his own last 7 starts, 36 strikeouts in 38 1/3 innings and he has gone 1-2 in them. They are playing at Petco Park, a ballpark that has been playing about 8% below league-average scoring over the last three years. The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5.",
+            "The Astros went to 5 relievers yesterday and first pitch is at 83 degrees. King has walked 11% of the hitters he has faced across his last five starts and their recent scoring has been running 0.7 runs a game clear of tonight's total. The total opened at 7.5 and has gone up to 8. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Houston Astros at San Diego Padres, and it is Peter Lambert for the visitors against Michael King. Over his last 7 starts Lambert has worked to a 2.70 ERA, with 44 strikeouts in 40 innings and he has gone 2-1 in them. King answers with a 3.76 ERA over his own last 7 starts, 36 strikeouts in 38 1/3 innings and he has gone 1-2 in them. They are playing at Petco Park, a ballpark that has been playing about 8% below league-average scoring over the last three years. The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5.\n\nThe Astros went to 5 relievers yesterday and first pitch is at 83 degrees. King has walked 11% of the hitters he has faced across his last five starts and their recent scoring has been running 0.7 runs a game clear of tonight's total. The total opened at 7.5 and has gone up to 8. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -331894,7 +332747,16 @@
           "is_final_wall": true
         }
       ],
-      "live_progress": null
+      "live_progress": null,
+      "final": {
+        "home_runs": 1,
+        "away_runs": 2,
+        "total_runs": 3,
+        "home_margin": -1,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      }
     },
     {
       "game_id": "2026-08-08-Tampa Bay Rays-Seattle Mariners-823102",
@@ -331914,7 +332776,7 @@
         "star_tier": "Owner-directed engine pick",
         "price": -102.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-09T00:21:03Z",
         "timestamp": "2026-08-09T00:21:03Z",
@@ -331969,6 +332831,22 @@
         },
         "is_bet": true,
         "price_source": "locked_pregame_line",
+        "game_case": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "identity": "matchup_facts/1.1",
+          "paragraphs": [
+            "Tampa Bay Rays at Seattle Mariners, and it is Casey Legumina for the visitors against George Kirby. Over his last 4 starts Legumina has covered 6 2/3 innings, giving up 2 earned runs with 3 strikeouts and no decision has gone his way or against him in any of them. Kirby answers with a 3.14 ERA over his own last 7 starts, 36 strikeouts in 43 innings and he has gone 3-3 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.",
+            "The Mariners bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 1.9 runs more than the league. Kirby has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.8 runs a game clear of tonight's total. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way."
+          ],
+          "text": "Tampa Bay Rays at Seattle Mariners, and it is Casey Legumina for the visitors against George Kirby. Over his last 4 starts Legumina has covered 6 2/3 innings, giving up 2 earned runs with 3 strikeouts and no decision has gone his way or against him in any of them. Kirby answers with a 3.14 ERA over his own last 7 starts, 36 strikeouts in 43 innings and he has gone 3-3 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.\n\nThe Mariners bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 1.9 runs more than the league. Kirby has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.8 runs a game clear of tonight's total. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way.",
+          "side": "over",
+          "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
+          "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
+          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "n_support_facts": 4,
+          "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
+        },
         "signals": []
       },
       "spread": {
@@ -332047,7 +332925,7 @@
           "price": -102.0,
           "stars": 3,
           "score": 3.1,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -332390,7 +333268,7 @@
         "score": 3.1,
         "price": -102.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "lead_time": "T-1h",
         "source": "engine_v2_owner",
@@ -332645,7 +333523,16 @@
           "is_final_wall": true
         }
       ],
-      "live_progress": null
+      "live_progress": null,
+      "final": {
+        "home_runs": 2,
+        "away_runs": 3,
+        "total_runs": 5,
+        "home_margin": -1,
+        "status": "Final",
+        "f5_home_runs": null,
+        "f5_away_runs": null
+      }
     }
   ]
 }
