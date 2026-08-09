@@ -11486,7 +11486,7 @@ export default function Home() {
                    when the backend has not written it — because those really are a
                    fragment rather than a piece. */ ""}
               ${narrativeParas.length ? "" : `<div class="wc-k">The setup</div>`}
-              ${bodyParas.map((w) => `<p>${mdBold(w)}</p>`).join("")}
+              ${bodyParas.map((w: string) => `<p>${mdBold(w)}</p>`).join("")}
               ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
               ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
             </div>`
