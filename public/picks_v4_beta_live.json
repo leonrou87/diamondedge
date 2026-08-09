@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-09T03:50:58Z",
+  "generated_utc": "2026-08-09T05:07:46Z",
   "dates": [
     "2026-08-08"
   ],
@@ -1007,13 +1007,13 @@
       "coverage_gap": "2026-06-11 .. 2026-07-01 NOT reconstructable (game DB frozen 2026-06-13; forward track began 2026-07-02) \u2014 absent, not interpolated"
     },
     "slate_status": {
-      "date": "2026-08-08",
-      "available": true,
-      "frozen_at": "2026-08-08T12:18:58.329681+00:00",
-      "n_slate": 15,
-      "n_tier_a": 1,
-      "n_tier_b": 2,
-      "n_plays_today": 3,
+      "date": "2026-08-09",
+      "available": false,
+      "frozen_at": null,
+      "n_slate": null,
+      "n_tier_a": null,
+      "n_tier_b": null,
+      "n_plays_today": 0,
       "n_suppressed_by_champion_gates": 0,
       "note": "0 plays = the champion's own frozen policy found no qualifying totals divergence today (or its internal gates suppressed the candidates) \u2014 an empty board is honest, not broken"
     },

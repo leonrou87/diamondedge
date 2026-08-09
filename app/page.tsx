@@ -9072,10 +9072,34 @@ export default function Home() {
          objection was to the serialisation being the ONLY thing on the surface, not to it
          existing — and a reader who wants to check a call against the literal conditions
          must still be able to, or the commentary becomes unfalsifiable marketing. */
+      /* ════════ THE STRIP SAYS THE LEAST THAT IS TRUE; THE DESK SAYS THE REST ════════
+         Round one put the full three-paragraph commentary here, and Leon read it and said the
+         general paragraph is "way too long — it should just say that this is a strategy we're
+         using in laymans terms, and then this strategy had been done for the last however many
+         days would've produced this record, hence why we're going with it. From there I would
+         go to the Desk page and tell you more."
+
+         So the strip is now exactly three beats: WHAT it is, WHAT it did, WHERE to read more.
+         The board is a place a reader is scanning fifteen games — it is not where anyone reads
+         four hundred words about a rule.
+
+         THE SHORT LINE IS NOT WRITTEN HERE. It is the FIRST SENTENCE of the served commentary's
+         opening paragraph, taken whole. That paragraph is generated backend-side from the rule's
+         own conditions and is the one sentence in it that names the rule's subject in plain
+         terms ("This one lives on the ballpark, the starting pitching, and the bullpens."). It
+         is a truncation of served prose, never a composition — this function still adds no
+         words of its own, which is the rule that keeps an unsourceable claim one template away
+         from shipping. If the first sentence cannot be isolated, the whole paragraph stands. */
       const fv = forgeVoice(s);
-      const voiceHtml = fv
-        ? `<div class="stgy-voice"><span class="stgy-vk">How it reads a game</span>${
-            fv.paras.map((p: string) => `<p>${esc(p)}</p>`).join("")}</div>`
+      const leadLine = (() => {
+        const p0 = fv && fv.paras.length ? String(fv.paras[0] || "").trim() : "";
+        if (!p0) return "";
+        const m = p0.match(/^[^.!?]+[.!?]/);
+        const one = m ? m[0].trim() : p0;
+        return one.length >= 24 ? one : p0;
+      })();
+      const voiceHtml = leadLine
+        ? `<div class="stgy-voice"><p class="stgy-lead">${esc(leadLine)}</p></div>`
         : "";
       const exactRuleHtml = (fv && humanNote(s.plain_english_rule))
         ? `<details class="stgy-exact"><summary>The exact rule, as the search wrote it</summary><p>${esc(humanNote(s.plain_english_rule))}</p></details>`
@@ -9102,11 +9126,26 @@ export default function Home() {
         ? Number(selEv.n_selector_picks_served) : null;
       const nBoard = dayStrategyPickCount(dateISO);
       const ruleOwnsBoard = nSelector === null || nSelector >= nBoard;
+      /* THE SECOND BEAT: WHAT IT DID, AND THEREFORE WHY IT IS TODAY'S. Leon: "this strategy
+         had been done for the last however many days would've produced this record hence why
+         we're going with it."
+         Both halves are served facts, not editorial. The record and the window are fields on
+         the block; "the best record of any strategy we tested" is what the selector IS — it
+         takes the argmax by wins-minus-losses over everything the search can express, which
+         the block states in its own `objective` and `summary_line`. The clause is gated on
+         that objective actually being present, so a day served by some other selector cannot
+         inherit the claim. Past tense throughout: this is what it DID, never what it will do. */
+      const isWL = /w\s*-\s*l/i.test(String((s as any).objective || ""));
+      const recTxt = humanNote(s.record);
+      const whyTxt = recTxt && days
+        ? `Over the ${days} nights before today it went ${recTxt}${
+            isWL ? " — the best record of any strategy we tested, which is why it is today's" : ""}.`
+        : "";
       const windowTxt = !ruleOwnsBoard
-        ? `Chosen from the last ${windowSpan} of finished games — the window ends the night before, so no game on this board helped choose it.`
+        ? `The window ends the night before, so no game on this board helped choose it.`
         : isPast
-          ? `Chosen from the ${windowSpan} of finished games before it — locked before a single first pitch that day.`
-          : `Chosen from the last ${windowSpan} of finished games — before a single first pitch today.`;
+          ? `Locked before a single first pitch that day.`
+          : `Locked before a single first pitch today.`;
       /* THE SMALL "HOW IT'S DOING" STAT (Leon: "add some kind of percent that's small on
          how well it's doing"). Served numbers only, never computed fresh here: today shows
          the headline record's hit rate (every pick since July 1); a past day shows its own
@@ -9166,8 +9205,8 @@ export default function Home() {
         <div class="stgy-more" id="stgy-more">
           <div class="stgy-more-in">
             ${voiceHtml || (rule ? `<p class="stgy-rule"><span>How it reads a game</span>${esc(rule)}</p>` : "")}
-            <p class="stgy-win">${esc(windowTxt)}</p>
-            <p class="stgy-n">${countTxt}</p>
+            ${whyTxt ? `<p class="stgy-why">${esc(whyTxt)}</p>` : ""}
+            <p class="stgy-win">${esc(windowTxt)} ${countTxt}</p>
             ${exactRuleHtml}
             <!-- THE LABEL KEEPS ITS NAME AND GAINS ITS DESTINATION. It is the phrase Leon
                  refers to this link by, so it stays; what follows the dash is where it now
@@ -10447,9 +10486,25 @@ export default function Home() {
       if (!bits.length) return "";
       return `<div class="bx-state"><span class="livedot"></span>${bits.map((b) => esc(b)).join(" · ")}</div>`;
     }
-    function boxScoreTab(g: any) {
+    /* ══════ THE BOX SCORE SPLITS IN TWO (Leon, 2026-08-08) ══════
+       "Once the game starts, there should always be a box score on the top."  ALWAYS means
+       it cannot be a tab — a tab is a place you go, and this is a thing that is simply
+       there. So the box score is cut along its own natural seam:
+
+         "top"      the state strip + the LINE SCORE — the game in ~90px. This rides ABOVE
+                    the tab bar for every live/final game, so it is on screen whichever tab
+                    the reader is on, and it is small enough that the tabs stay in view.
+         "players"  the segmented control + the hitters and pitchers tables. Depth, and
+                    depth belongs on a tab — it heads the Stats pane, which is now the
+                    default tab the moment a game starts.
+
+       Neither half is rendered twice: the line score exists only above the tabs, the
+       player lines only inside Stats. "all" is kept so the two can be re-fused by a caller
+       that wants the whole thing in one place. */
+    function boxScoreTab(g: any, part: "all" | "top" | "players" = "all") {
       const gs = gameState(g);
       if (gs.kind === "pre") {
+        if (part === "top") return "";
         return `<div class="bx-empty"><b>First pitch hasn't happened</b><span>The line score, hitters and pitchers appear here once ${esc(g.away_abbr)} @ ${esc(g.home_abbr)} is underway.</span></div>`;
       }
       const m = mlbBoxFor(g);
@@ -10473,15 +10528,16 @@ export default function Home() {
       const away = esc(g.away_abbr), home = esc(g.home_abbr);
       const tables = bs ? boxTables(bs, boxSide) : "";
       const loading = !m || m.loading;
-      return `<div class="boxscore">
-        ${gs.kind === "live" ? bxStateStrip(ls) : ""}
-        ${grid || ""}
-        ${bs ? `<div class="bx-seg" role="tablist" aria-label="Box score team">
+      const topHtml = `${gs.kind === "live" ? bxStateStrip(ls) : ""}${grid || ""}`;
+      const playersHtml = bs
+        ? `<div class="bx-seg" role="tablist" aria-label="Box score team">
             <button class="bx-segb ${boxSide === "away" ? "on" : ""}" data-bxside="away" role="tab">${away}</button>
             <button class="bx-segb ${boxSide === "home" ? "on" : ""}" data-bxside="home" role="tab">${home}</button>
           </div>${tables}`
-          : `<div class="bx-empty small">${loading ? "<b>Loading the box score…</b>" : "<b>Player lines aren't posted for this game yet</b>"}<span>The line score above updates as the game does.</span></div>`}
-      </div>`;
+        : `<div class="bx-empty small">${loading ? "<b>Loading the box score…</b>" : "<b>Player lines aren't posted for this game yet</b>"}<span>The line score at the top of the page updates as the game does.</span></div>`;
+      if (part === "top") return topHtml ? `<div class="boxscore bx-top">${topHtml}</div>` : "";
+      if (part === "players") return `<div class="boxscore bx-players">${playersHtml}</div>`;
+      return `<div class="boxscore">${topHtml}${playersHtml}</div>`;
     }
     // the served live_detail grid, kept as the second tier when MLB's own feed is unreachable
     function legacyLineScore(g: any, d: any) {
@@ -10497,20 +10553,45 @@ export default function Home() {
         <thead><tr><th class="bx-team"><span class="bx-vis">Team</span></th>${innings.map((r: any) => `<th>${esc(String(r.inning))}</th>`).join("")}<th class="bx-rhe bx-r">R</th><th class="bx-rhe">H</th><th class="bx-rhe">E</th></tr></thead>
         <tbody>${row("away")}${row("home")}</tbody></table></div>`;
     }
-    // repaint just the box-score pane in place (feed arrival, side switch, live cycle)
+    /* ══════ THE LIKELIHOOD TO CASH — ONE NUMBER, THE ONE THAT ALREADY EXISTS ══════
+       Leon: "a reminder of whatever the bet is that we have and likelihood to cash". The app
+       has had a live cash-probability meter since the board redesign (`liveHitOdds`, fed by
+       liveStatusOf) and it is the number every other surface prints — so the reminder above
+       the tabs RENDERS THAT ONE. Nothing here computes a probability; when the live status
+       feed has no read, the honest scoreboard tracking card stands in rather than a second,
+       differently-derived percentage.
+
+       GATED LIKE THE PICK IT DESCRIBES: a locked (unpaid) pick has no meter, because "83% to
+       cash" on OVER 8.5 reconstructs the side the lock is redacting. */
+    function cashMeterHtml(g: any) {
+      if (!g || gameState(g).kind === "pre") return "";
+      const pl = displayPick(g);
+      if (!isPick(pl)) return "";
+      if (pickLocked(pl, playState(g, pl))) return "";
+      return liveHitOdds(g, pl, "full") || liveTrackCard(g, pl, "hero");
+    }
+    /* Repaint the box score in place (feed arrival, side switch, live cycle). It lives in TWO
+       slots now — the line score above the tabs and the player lines inside Stats — so this
+       refreshes whichever of them is on the page. The live-vs-line meter is rebuilt with the
+       player block so its read tracks the score it sits beside. */
     function repaintBoxPane() {
-      const pane = document.querySelector('.gp-pane[data-pane="box"]') as any;
-      if (!pane || !detail) return;
-      // The live-vs-line meter heads this pane on an entitled live game (the Live tab is
-      // retired). Rebuilt fresh each repaint so its read tracks the score it sits beside.
-      const gs = gameState(detail);
-      const meter = gs.kind === "live"
-        ? safeHtml("live-vs-line meter", () => {
-            const pl = displayPick(detail);
-            return liveVsLineBlock(detail, pl ? pickLocked(pl, playState(detail, pl)) : false);
-          }, "")
-        : "";
-      pane.innerHTML = meter + boxScoreTab(detail);
+      if (!detail) return;
+      const top = document.getElementById("gp-boxtop");
+      if (top) top.innerHTML = boxScoreTab(detail, "top");
+      const players = document.getElementById("gp-boxplayers");
+      if (players) {
+        const gs = gameState(detail);
+        const meter = gs.kind === "live"
+          ? safeHtml("live-vs-line meter", () => {
+              const pl = displayPick(detail);
+              return liveVsLineBlock(detail, pl ? pickLocked(pl, playState(detail, pl)) : false);
+            }, "")
+          : "";
+        players.innerHTML = meter + boxScoreTab(detail, "players");
+      }
+      // the cash reminder above the tabs tracks the same live score the box score does
+      const rem = document.getElementById("gp-cashmeter");
+      if (rem) rem.innerHTML = safeHtml("cash meter", () => cashMeterHtml(detail), "");
       wireBoxPane();
     }
     function wireBoxPane() {
