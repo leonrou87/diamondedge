@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
+import { snapTag } from "../../cache-tags";
 
 /* ════════════════════════════════════════════════════════════════════════════
    /api/snap/<key> — ONE Supabase read serves EVERY viewer.
@@ -183,6 +185,105 @@ function cacheHeaders(t: { s: number; swr: number; b?: number }, etag?: string) 
   return h;
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   ORIGIN READS MUST BE PROPORTIONAL TO PUBLISHES — NOT TO TIME, NOT TO USERS,
+   AND NOT TO GEOGRAPHY.
+
+   2026-08-09. The edge cache above solved the wrong variable. It made N readers
+   cost 1 Supabase read, which is real — measured, 1,000 concurrent viewers cost
+   0 origin reads on a warm key. But it left the read count owned by the CLOCK:
+   a 120 s TTL is 720 reads a day whether one person is watching or ten thousand
+   are, and `pregame_picks` is only actually rewritten ~45 times a day. Measured
+   waste on `picks_unified`: 564 origin reads a day against 4 real publishes —
+   141x. Projected 27.4 GB/month against a 5 GB plan, at ANY user count.
+
+   And it is worse than "flat", because Vercel's CDN is PER-POP. Each POP fills
+   its own copy, so the TTL bill multiplies by the number of POPs an audience
+   actually touches — ~1.5 today, ~20 at 10,000 users spread over a continent.
+   TTL-driven reads scale with GEOGRAPHY, which is the one axis nobody was
+   watching.
+
+   TWO LAYERS FIX IT, AND THEY FIX DIFFERENT HALVES:
+
+   (1) THE URL CARRIES THE CONTENT VERSION (`?cv=`), SO THE CDN NEVER HAS TO
+       ASK AGAIN. A pinned URL names one immutable generation of the payload, so
+       it is served `immutable` for a year. A POP fetches a given version ONCE,
+       EVER. There is no TTL to expire and therefore no timer buying re-reads.
+
+       This is deliberately NOT purge-on-publish. A purge that goes missing
+       leaves correct-LOOKING bytes under a correct-LOOKING name indefinitely,
+       and nothing anywhere reports it. Content-addressing has no signal to lose:
+       a new version is a new URL, and an old URL is still honestly the old
+       version. It fails toward correctness rather than toward silent staleness.
+
+   (2) THE UPSTREAM READ IS CACHED IN THE FUNCTION REGION, SO THE POPs COLLAPSE
+       INTO ONE. This is the half that kills the geography term, and it works
+       because of a measured asymmetry: `x-vercel-id` reads `pdx1::iad1` — the
+       request entered at the pdx1 POP but the function ran in iad1. The CDN is
+       per-POP; the function region is ONE. `unstable_cache` persists its entry
+       in that region, shared by every instance and therefore by every POP. So
+       20 POPs missing on the same version cost 20 function invocations and
+       exactly ONE Supabase read.
+
+       `unstable_cache` and not `use cache`: the latter needs `cacheComponents`
+       enabled app-wide, which changes the rendering model for a 17k-line client
+       page and is far too much blast radius for a caching fix. It is also not
+       `fetch(next:{revalidate})`, because two of the three read modes are POST
+       RPCs and the fetch Data Cache does not promise to cache POST. Caching the
+       FUNCTION RESULT is method-agnostic, which is the property we need.
+
+   WHAT INVALIDATES IT: the publisher, at the moment it writes. Every sync
+   script POSTs /api/revalidate, which drops tag `snap:<key>`. Reads then equal
+   publishes, by construction.
+
+   AND WHAT HAPPENS WHEN THAT HOOK IS LOST — because it is a network call from a
+   cron job on a laptop, and it WILL be lost sometimes. `revalidate:
+   SAFETY_NET_S` is the belt to the hook's braces. A lost hook does not strand a
+   reader on old bytes forever; it costs at most SAFETY_NET_S of staleness and
+   degrades the bill to roughly what it is today (288 reads/key/day) rather than
+   to a wrong board. Bounded on both axes, which is the whole point.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* The hook is the fast path; this is the floor under it. 300 s is chosen to be
+   longer than every real publish gap that matters (the board moves ~45x/day,
+   i.e. one publish per ~32 min) and short enough that a WHOLE DAY of failed
+   hooks still cannot show anyone a board more than five minutes stale. */
+const SAFETY_NET_S = 300;
+/* The version probe is the freshness clock, so its floor is tighter — and it
+   costs ~1 KB, so a tight floor is affordable in a way the payload's is not. */
+const VERSION_SAFETY_NET_S = 30;
+
+/* A YEAR, AND `immutable`. Only ever sent on a pinned URL whose version we have
+   VERIFIED against the bytes we are about to serve (see `pinnedOk`). Promising
+   immutability for content we did not check would be the purge failure mode
+   wearing a different hat: a permanent, unrevokable lie in every POP and every
+   browser that saw it. */
+const IMMUTABLE_S = 31536000;
+
+/* THE UPSTREAM READ, CACHED IN THE FUNCTION REGION AND TAGGED FOR THE PUBLISHER.
+
+   `cv` is deliberately NOT part of the cache key. It is tempting — it would make
+   the entry content-addressed too — but it would also mean a reader arriving
+   with a stale pin manufactures a SECOND origin read for a version that is no
+   longer current. Keying on (key, mode, game) instead means every reader, on
+   every pin, shares one upstream read per publish. The pin's job is to decide
+   how long the ANSWER may be cached, not to fetch a different answer. */
+function cachedBody(key: string, mode: string, gameId: string) {
+  return unstable_cache(
+    async () => rawBody(key, mode, gameId),
+    ["snap-body", key, mode, gameId],
+    { tags: [snapTag(key)], revalidate: SAFETY_NET_S },
+  );
+}
+
+function cachedVersion(key: string) {
+  return unstable_cache(
+    async () => rawVersion(key),
+    ["snap-version", key],
+    { tags: [snapTag(key)], revalidate: VERSION_SAFETY_NET_S },
+  );
+}
+
 async function supa(path: string, init?: RequestInit) {
   return fetch(`${SUPA}${path}`, {
     ...init,
@@ -198,6 +299,80 @@ async function supa(path: string, init?: RequestInit) {
     },
     cache: "no-store", // the EDGE caches this response; the fetch itself must not
   });
+}
+
+/* THE CONTENT STAMP, NOT updated_at. The sync scripts deliberately heartbeat
+   updated_at every cycle even when the payload is byte-identical
+   (sync_unified_live.sh, "HEARTBEAT 2026-07-31"), because the watchdog needs a
+   liveness signal. So updated_at answers "is the sync alive", never "did the
+   content change" — polling on it would pull the payload every cycle and put
+   the leak straight back. */
+async function rawVersion(key: string): Promise<{ v: string; updated_at: string | null }> {
+  const r = await supa(
+    `/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(key)}` +
+    `&select=updated_at,ga:payload->>generated_at,gu:payload->>generated_utc`,
+  );
+  if (!r.ok) throw new Error(`version ${r.status}`);
+  const rows = await r.json();
+  const row = (rows && rows[0]) || null;
+  return { v: row ? (row.gu || row.ga || row.updated_at || "") : "", updated_at: row?.updated_at || null };
+}
+
+async function rawBody(key: string, mode: string, gameId: string): Promise<string> {
+  if (mode === "game") {
+    /* Projected in Postgres, for the same reason as ?lite=1: pulling the
+       history to Vercel and picking one game out of it here would leave the
+       egress meter reading exactly what it read before the fix. */
+    const r = await supa(`/rest/v1/rpc/slate_snapshot_game`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ p_key: key, p_game_id: gameId }),
+    });
+    if (!r.ok) throw new Error(`game ${r.status}`);
+    const body = await r.text();
+    return body === "" ? "null" : body;
+  }
+  if (mode === "lite") {
+    /* Projected in POSTGRES, not here. Stripping the blobs in this handler
+       would still make Supabase ship all 8.27 MB to Vercel on every cache
+       miss — the egress meter would not notice the fix at all. The RPC means
+       the bytes are never read off disk in the first place. */
+    const r = await supa(`/rest/v1/rpc/slate_snapshot_lite`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ p_key: key }),
+    });
+    if (!r.ok) throw new Error(`lite ${r.status}`);
+    const body = await r.text();
+    return body === "null" ? "null" : body;
+  }
+  const r = await supa(
+    `/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(key)}&select=payload`,
+  );
+  if (!r.ok) throw new Error(`snap ${r.status}`);
+  const rows = await r.json();
+  const payload = rows && rows[0] ? rows[0].payload : null;
+  return JSON.stringify(payload ?? null);
+}
+
+/* WHAT VERSION ARE THESE ACTUAL BYTES? — read off the body we are about to
+   send, not off a second request that could have raced it.
+
+   This is what makes the `immutable` promise safe. Comparing the caller's pin
+   against a SEPARATELY fetched version would leave a window in which the
+   publisher writes between the two reads, and we would then stamp a year of
+   immutability onto a generation that is not the one the URL names — wrong
+   bytes, in every POP and every browser, unrevokable. Reading the stamp out of
+   the payload itself closes that window by construction: the thing we compare
+   IS the thing we serve.
+
+   A regex, not JSON.parse, because this runs on every request and the payloads
+   run to megabytes; parsing one to read a 20-byte field would be the most
+   expensive line in the route. */
+const STAMP_RE = /"generated_utc"\s*:\s*"([^"]{4,64})"/;
+function bodyVersion(body: string): string {
+  const m = STAMP_RE.exec(body);
+  return m ? m[1] : "";
 }
 
 export async function GET(
@@ -218,74 +393,59 @@ export async function GET(
       : gameId ? "game"
         : url.searchParams.get("lite") ? "lite"
           : "full";
+  /* THE PIN. A caller that already knows which generation it wants says so, and
+     in exchange gets a URL that never has to be revalidated. Bounded in length
+     because it reaches a cache key and a comparison, nothing else — it is never
+     interpolated into a Supabase URL. */
+  const cv = (url.searchParams.get("cv") || "").slice(0, 64);
   const t = ttlFor(key, mode);
 
   try {
     if (mode === "version") {
-      /* THE CONTENT STAMP, NOT updated_at. The sync scripts deliberately
-         heartbeat updated_at every cycle even when the payload is
-         byte-identical (sync_unified_live.sh, "HEARTBEAT 2026-07-31"), because
-         the watchdog needs a liveness signal. So updated_at answers "is the
-         sync alive", never "did the content change" — polling on it would pull
-         the payload every cycle and put the leak straight back. */
-      const r = await supa(
-        `/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(key)}` +
-        `&select=updated_at,ga:payload->>generated_at,gu:payload->>generated_utc`,
-      );
-      const rows = await r.json();
-      const row = (rows && rows[0]) || null;
-      const v = row ? (row.gu || row.ga || row.updated_at || "") : "";
+      const { v, updated_at } = await cachedVersion(key)();
       return new NextResponse(
-        JSON.stringify({ key, v, updated_at: row?.updated_at || null }),
+        JSON.stringify({ key, v, updated_at }),
         { status: 200, headers: cacheHeaders(t, `W/"v-${key}-${v}"`) },
       );
     }
 
-    if (mode === "game") {
-      /* Also projected in Postgres, for the same reason as ?lite=1: pulling the
-         history to Vercel and picking one game out of it here would leave the
-         egress meter reading exactly what it read before the fix. */
-      const r = await supa(`/rest/v1/rpc/slate_snapshot_game`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ p_key: key, p_game_id: gameId }),
-      });
-      if (!r.ok) throw new Error(`game ${r.status}`);
-      const body = await r.text();
-      return new NextResponse(body === "" ? "null" : body, {
+    const body = await cachedBody(key, mode, gameId)();
+
+    /* THE PINNED PATH. Only a VERIFIED match earns a year of immutability.
+       A mismatch is not an error and must not be treated as one — it is simply
+       a reader holding a pin from one generation ago, which happens naturally
+       for a few seconds after every publish. It gets the correct current bytes
+       under the ordinary short TTL, and its next manifest poll moves it onto
+       the new pin. Never `immutable`, because the URL would then be lying about
+       which generation it holds. */
+    if (cv) {
+      let actual = bodyVersion(body);
+      /* `?game=` returns one game object, which carries no feed-level stamp of
+         its own. Fall back to the key's version — same tag, so it was
+         invalidated by the same publish that produced these bytes. */
+      if (!actual && mode === "game") {
+        try { actual = (await cachedVersion(key)()).v; } catch { actual = ""; }
+      }
+      if (actual && actual === cv) {
+        return new NextResponse(body, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Vercel-CDN-Cache-Control": `public, s-maxage=${IMMUTABLE_S}, immutable`,
+            "CDN-Cache-Control": `public, s-maxage=${IMMUTABLE_S}, immutable`,
+            "Cache-Control": `public, max-age=${IMMUTABLE_S}, immutable`,
+            ETag: `W/"${key}-${cv}"`,
+            "x-snap-pin": "hit",
+          },
+        });
+      }
+      return new NextResponse(body, {
         status: 200,
-        headers: cacheHeaders(t),
+        headers: { ...cacheHeaders(t), "x-snap-pin": actual ? "stale" : "unverified" },
       });
     }
 
-    if (mode === "lite") {
-      /* Projected in POSTGRES, not here. Stripping the blobs in this handler
-         would still make Supabase ship all 8.27 MB to Vercel on every cache
-         miss — the egress meter would not notice the fix at all. The RPC means
-         the bytes are never read off disk in the first place. */
-      const r = await supa(`/rest/v1/rpc/slate_snapshot_lite`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ p_key: key }),
-      });
-      if (!r.ok) throw new Error(`lite ${r.status}`);
-      const body = await r.text();
-      return new NextResponse(body === "null" ? "null" : body, {
-        status: 200,
-        headers: cacheHeaders(t),
-      });
-    }
-
-    const r = await supa(
-      `/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(key)}&select=payload`,
-    );
-    if (!r.ok) throw new Error(`snap ${r.status}`);
-    const rows = await r.json();
-    const payload = rows && rows[0] ? rows[0].payload : null;
-    return new NextResponse(JSON.stringify(payload ?? null), {
-      status: 200,
-      headers: cacheHeaders(t),
-    });
+    return new NextResponse(body, { status: 200, headers: cacheHeaders(t) });
   } catch {
     /* A PROXY FAILURE MUST NOT LOOK LIKE AN EMPTY BOARD. 502 (not 200-with-
        null) is what tells page.tsx's snap() to fall through to the direct

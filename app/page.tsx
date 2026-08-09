@@ -1182,14 +1182,56 @@ export default function Home() {
       for (let i = 1; i <= k; i++) { term *= lam / i; sum += term; }
       return Math.min(1, sum);
     }
-    // Fractional innings completed, parsed from the same label every board chip shows.
-    function inningsDone(gs: any) {
-      const m = String((gs && gs.label) || "").match(/(top|mid|bot|end)\w*\s+(\d+)/i);
+    /* ═══════════ ONE READING OF THE CLOCK. EVERY SURFACE PARSES IT HERE ═══════════
+       Where the game is was being re-derived from the RENDERED LABEL in four places, with
+       four regexes and four vocabularies, and three of them were measurably wrong:
+
+         · `inningsDone`      /(top|mid|bot|end)\w*\s+(\d+)/  — needs the number to follow the
+                              half word immediately, so "End of 6th" DID NOT MATCH AT ALL. It
+                              returned null, heuristicCashProb returned null, and the "% chance
+                              to cash" meter, the tile's live chip and the hero bar all silently
+                              VANISHED on that game — no error, no placeholder — while the
+                              tracking read one line away still said "through 6".
+         · `liveWhenPhrase`   /(\d+)(?:st|nd|rd|th)/ — a different regex on the same string, so
+                              "Top 6" (no ordinal suffix) degraded to "— Top 6", and "End 6th"
+                              was reported as "(home batting)" when the inning is in fact over
+                              and nobody is batting.
+         · `halfInningPhrase` a third regex, anchored and full-string, for the spoken form.
+         · `liveProgressKey`  /^\s*(top|middle|bottom|end)/ against a HALF_RANK keyed on FULL
+                              words — but the snapshot overlay writes the ABBREVIATED
+                              vocabulary {Top, Bot, Mid, End}. "Bot 6th" and "Mid 6th" matched
+                              nothing and both ranked 0, the same as "Top 6th", so the
+                              anti-rewind guard could not order two observations inside one
+                              inning and a stale read could overwrite a fresher one.
+
+       The label has two writers with different spellings — `overlayInto` copies live_scores
+       verbatim ({top:"Top", bottom:"Bot", middle:"Mid", end:"End"}) and `adoptMlbLive` writes
+       `${inningState} ${currentInningOrdinal}` ("Bottom 5th") — and MLB itself also emits
+       "End of 6th". So there is ONE parser, it accepts every spelling all three writers have
+       produced, and it returns STRUCTURE ({inning, half, rank}) rather than another string.
+       Nothing below re-reads a rendered string; a rendering is not a data source.
+       ═══════════════════════════════════════════════════════════════════════════════ */
+    const HALF_RANK: Record<string, number> = { top: 0, mid: 1, bot: 2, end: 3 };
+    function parseClock(label: any) {
+      const s = String(label == null ? "" : label).trim();
+      if (!s) return null;
+      // "Top 6th" · "Bot 6" · "Mid 6th" · "End 6th" · "End of 6th" · "Bottom of the 6th"
+      const m = s.match(/^(top|bot|bottom|mid|middle|end)\w*(?:\s+of)?(?:\s+the)?\s+(\d+)/i);
       if (!m) return null;
       const inn = Number(m[2]);
       if (!inn) return null;
-      const half = m[1].toLowerCase();
-      return half === "top" ? inn - 0.75 : half === "mid" ? inn - 0.5 : half === "bot" ? inn - 0.25 : inn;
+      const w = m[1].toLowerCase();
+      const half = w.startsWith("top") ? "top" : w.startsWith("mid") ? "mid" : w.startsWith("bot") ? "bot" : "end";
+      return { inning: inn, half, rank: HALF_RANK[half] };
+    }
+    // Fractional innings completed — derived from the one clock reading, never re-parsed.
+    function inningsDone(gs: any) {
+      const c = parseClock(gs && gs.label);
+      if (!c) return null;
+      return c.half === "top" ? c.inning - 0.75
+        : c.half === "mid" ? c.inning - 0.5
+        : c.half === "bot" ? c.inning - 0.25
+        : c.inning;
     }
     /* THE HALF-INNING AS PROSE — "bottom of the 5th", from a label with two spellings.
        `gs.label` is `current_actuals.period_label`, and it has TWO WRITERS with different
@@ -1202,11 +1244,12 @@ export default function Home() {
        The label itself is deliberately left alone — the line score, the chip and the ticker
        all want the short form. This is only for the places that speak it. */
     function halfInningPhrase(label: any): string {
-      const m = String(label || "").trim().match(/^(top|bot|bottom|mid|middle|end)\w*\s+(\d+\w*)$/i);
-      if (!m) return "";
-      const half = m[1].toLowerCase();
-      const word = half.startsWith("bot") ? "bottom" : half.startsWith("mid") ? "middle" : half;
-      return half === "end" ? `end of the ${m[2]}` : `${word} of the ${m[2]}`;
+      const c = parseClock(label);
+      if (!c) return "";
+      const ord = ORD(c.inning);
+      if (c.half === "end") return `end of the ${ord}`;
+      const word = c.half === "bot" ? "bottom" : c.half === "mid" ? "middle" : "top";
+      return `${word} of the ${ord}`;
     }
     function heuristicCashProb(g: any, pl: any) {
       if (!pl || pl.market !== "total") return null;
@@ -1260,15 +1303,14 @@ export default function Home() {
     function liveWhenPhrase(g: any, gs: any) {
       const lab = String((gs && gs.label) || "").trim();
       if (g.sport === "mlb") {
-        // period_label is "Top/Bot/Mid/End 6th" — turn into "through 5" (completed innings).
-        const m = lab.match(/(\d+)(?:st|nd|rd|th)/);
-        if (m) {
-          const inn = Number(m[1]);
-          const half = /^(bot|end)/i.test(lab) ? "bot" : /^mid/i.test(lab) ? "mid" : "top";
-          // Runs "through" the last COMPLETED inning; mid-inning we say "in the Nth".
-          if (half === "top") return inn > 1 ? `through ${inn - 1}` : "early";
-          if (half === "mid" || half === "bot" || half === "end") return `through ${inn}${half === "bot" ? " (home batting)" : ""}`;
-          return `in the ${inn}${["th","st","nd","rd"][inn % 10 > 3 || (inn >= 11 && inn <= 13) ? 0 : inn % 10]}`;
+        // Runs "through" the last COMPLETED inning, off the one clock reading.
+        const c = parseClock(lab);
+        if (c) {
+          if (c.half === "top") return c.inning > 1 ? `through ${c.inning - 1}` : "early";
+          // BOT is the only half where someone is still batting. "End 6th" used to be reported
+          // as "(home batting)" — the inning is over and nobody is at the plate.
+          if (c.half === "bot") return `through ${c.inning} (home batting)`;
+          return `through ${c.inning}`;
         }
       }
       return lab && lab.toLowerCase() !== "live" ? `— ${lab}` : "in progress";
@@ -1514,10 +1556,17 @@ export default function Home() {
        graded picks too, and every surface follows automatically, because nothing else in
        this file decides who may see a side. */
     const GATE_SETTLED_PICKS = false;
-    const SETTLED_STATES: any = { won: 1, lost: 1, pushed: 1, void: 1 };
+    /* ONE SETTLED VOCABULARY. There were two, because the two feeds speak differently:
+       `playState()` returns {won, lost, pushed} for a graded board pick, while the unified
+       feed's `pick.result` says {win, loss, push}. Each gate knew only its own dialect, so
+       "is this pick settled" — the single question the paywall turns on — had two answers
+       depending on which surface asked. VOID (a postponed game) is settled in both: it will
+       never grade, so nothing is being sold. Note `playState` never returns "void", so the
+       old SETTLED_STATES.void entry was unreachable; the unified feed is where void arrives. */
+    const SETTLED_STATES: any = { won: 1, lost: 1, pushed: 1, win: 1, loss: 1, push: 1, void: 1, voided: 1 };
     // A pick is settled when the game is done and the ticket graded — NOT when it is merely
     // "clinched" or "cooked" live, which are in-flight reads on a game still being played.
-    const pickSettled = (st: any) => !!SETTLED_STATES[String(st || "")];
+    const pickSettled = (st: any) => !!SETTLED_STATES[String(st || "").toLowerCase()];
     /* ═══ THE SERVED CONTRACT WINS ═══
        `payload.premium_spec` describes a field-level, single-payload scheme: a non-premium
        client is served the PUBLIC variant, in which every premium field is ABSENT (not null,
@@ -1564,12 +1613,34 @@ export default function Home() {
       const el = e.target && e.target.closest && e.target.closest(".ad-house");
       if (el) { e.stopPropagation(); openUnlock(); }
     }, true);
+    /* ═══ THE ONE GATE. NOTHING ELSE IN THIS FILE DECIDES WHO MAY SEE A SIDE ═══
+       That sentence was in this file already, as a claim about GATE_SETTLED_PICKS — and it
+       was FALSE as written. There were FOUR independent implementations:
+
+         · pickLocked()        the board / game pages — the full rule.
+         · unifiedPickLocked() the Record surfaces — the same rule, re-expressed against the
+                               unified feed's pick shape, in a second settled vocabulary.
+         · newsAngle()         a bare `entitled()`. It never consulted servedRedacted(), so a
+                               SERVER-REDACTED payload still published the side on the News
+                               front; and it never treated a settled pick as public, so the
+                               record's own receipts were hidden there but shown everywhere
+                               else. Wrong in both directions at once.
+         · ppdCard()           no gate function at all. Consistent with intent today (a void
+                               pick IS public), but the switch could not reach it.
+
+       Now every one of them ends up in `sideLocked`. Flipping GATE_SETTLED_PICKS moves all
+       four, which is the only thing that makes the claim above true. */
+    function sideLocked(pick: any, settled: boolean) {
+      if (!pick) return false;
+      if (servedRedacted(pick)) return true;        // the server's word beats any local flag
+      if (entitled()) return false;
+      return GATE_SETTLED_PICKS ? true : !settled;
+    }
     function pickLocked(pl: any, st: string) {
       if (!pl) return false;
-      if (servedRedacted(pl)) return true;          // the server's word beats any local flag
-      if (entitled()) return false;
-      if (String(pl.action || "").toUpperCase() !== "TAKE") return false;
-      return GATE_SETTLED_PICKS ? true : !pickSettled(st);
+      // A PASS has no side to hide — there is no ticket, so there is nothing to sell.
+      if (String(pl.action || "").toUpperCase() !== "TAKE" && !servedRedacted(pl)) return false;
+      return sideLocked(pl, pickSettled(st));
     }
     // The same rule for surfaces that hold a GAME rather than a play (stories, cards, sheets).
     function gameLocked(g: any, pl?: any) {
@@ -1578,17 +1649,13 @@ export default function Home() {
     }
     /* The unified feed's pick shape is different — { status, side, line, price, result } — so
        the Record surfaces (which read it directly) need the same rule expressed against it.
-       A pick with a graded `result` is settled and public; anything else is the live product.
-       VOID (a postponed game) is settled too: it will never grade, so nothing is being sold. */
+       Same gate, same vocabulary; only the settled test differs, because settlement arrives
+       here as `result` (or a VOID status) rather than as a playState. */
     function unifiedPickLocked(p: any) {
       if (!p) return false;
-      if (servedRedacted(p)) return true;           // the served public variant, as contracted
-      if (entitled()) return false;
-      if (!p.side) return false;
-      if (GATE_SETTLED_PICKS) return true;
-      const r = String(p.result || "").toLowerCase();
-      const st = String(p.status || "").toUpperCase();
-      return !(r === "win" || r === "loss" || r === "push" || r === "void" || st === "VOID");
+      if (!p.side && !servedRedacted(p)) return false;
+      const settled = pickSettled(p.result) || String(p.status || "").toUpperCase() === "VOID";
+      return sideLocked(p, settled);
     }
     // The redacted stand-in every Record surface uses in place of a side. Crisp, never a blur,
     // and it carries no direction in text, class, title or aria.
@@ -2944,16 +3011,6 @@ export default function Home() {
        marks it CERTIFIED, is badged LIVE · DISPLAY ONLY, and never touches a record. */
     // "top" + 4 → "Top 4th". A bare inning number is not a reading of where the game is.
     const ORD = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"}`;
-    function liveWhen(raw: any) {
-      if (!raw) return "";
-      const inn = _fin(raw.inning != null ? raw.inning : raw.period);
-      const half = String(raw.half == null ? "" : raw.half).trim().toLowerCase();
-      if (inn != null && inn > 0) {
-        const h = /^t/.test(half) ? "Top " : /^(b|m)/.test(half) ? "Bottom " : /^(e|mid)/.test(half) ? "Middle " : "";
-        return `${h}${ORD(Math.round(inn))}`;
-      }
-      return humanNote(raw.inning != null ? raw.inning : (raw.half != null ? raw.half : raw.period));
-    }
     // The live strip on a card: the score measured against the LOCKED total, plus — only when
     // certified — the display-only "still hits" read, loudly badged so it can never be mistaken
     // for a graded number.
@@ -6042,13 +6099,24 @@ export default function Home() {
        overlay below and the MLB adoption in `loadMlbBox` — refuses to move it backwards.
        So `current_actuals` stays the single home for the live score, both clocks are allowed
        to advance it, and neither can undo the other. */
-    const HALF_RANK: Record<string, number> = { top: 0, middle: 1, bottom: 2, end: 3 };
+    /* THROUGH THE ONE CLOCK READER (2026-08-09). This had its own regex and its own HALF_RANK
+       keyed on FULL words — {top, middle, bottom, end} — while the overlay that feeds it writes
+       the ABBREVIATED vocabulary {Top, Bot, Mid, End}. So "Bot 6th" and "Mid 6th" matched
+       nothing and ranked 0, identically to "Top 6th": inside a single inning this guard could
+       not tell which of two observations was further along, and a stale read was free to
+       overwrite a fresher one — the exact rewind it exists to prevent.
+       The inning falls back to the first number in the string so an unparseable-but-numbered
+       label still orders by inning rather than losing the guard entirely. */
     function liveProgressKey(label: any, runs: any) {
       const s = String(label == null ? "" : label);
+      const c = parseClock(s);
       const mi = s.match(/(\d+)/);
-      const mh = s.match(/^\s*(top|middle|bottom|end)/i);
       const r = Number(runs);
-      return { inn: mi ? Number(mi[1]) : null, rank: mh ? HALF_RANK[mh[1].toLowerCase()] : 0, runs: isFinite(r) && runs != null ? r : null };
+      return {
+        inn: c ? c.inning : mi ? Number(mi[1]) : null,
+        rank: c ? c.rank : 0,
+        runs: isFinite(r) && runs != null ? r : null,
+      };
     }
     // is observation `a` at-or-ahead of `b`? Unparseable/absent on either side ⇒ treat as
     // current and let the write through (this is what makes the FIRST write land).
@@ -8070,7 +8138,38 @@ export default function Home() {
        arrive we fall back to `by_date_record` (already served) and to a streak derived
        from the graded games in order. Anything missing simply doesn't render — no chip,
        no placeholder, no error. */
-    function recordRoot() { return (betaData && betaData.record) || (betaLiveData && betaLiveData.record) || {}; }
+    /* ONE RECORD ROOT, MERGED — NOT AN OUTRIGHT STORE WIN (2026-08-09).
+       This used to read `betaData.record || betaLiveData.record`. That `||` is a whole-store
+       win, not a merge: the moment the slow history feed (picks_unified, regenerated a few
+       times a day) had loaded, the ENTIRE record family went blind to the live feed's record
+       block — including today's row, which is the only row the live feed exists to keep
+       fresh. Measured on 2026-08-09: history said the headline was 84-77-9 across 170 graded
+       and today was 4-4-0 / -0.278u, while the live feed carried 85-77-10 across 172 and
+       today 5-4-1 / +0.631u. The reader got the stale one on every record surface, up to
+       ~50 minutes behind the board they were looking at.
+
+       Now the two blocks are merged with the NEWER FEED WINNING PER KEY, by generated_utc —
+       the same discipline dayRecordMap() already applied between `by_date_record` and
+       `record.daily`. `daily` is deliberately NOT resolved here: a shallow win on that key
+       would swap the full history map for the live feed's short recent window and silently
+       drop older dates. dayRecordMap() merges it per-date instead, reading both feeds. */
+    function recordRoot() {
+      const a = (betaData && betaData.record) || null;
+      const b = (betaLiveData && betaLiveData.record) || null;
+      if (!a) return b || {};
+      if (!b) return a;
+      const older = feedStampMs(betaData) >= feedStampMs(betaLiveData) ? b : a;
+      const newer = older === a ? b : a;
+      return { ...older, ...newer };
+    }
+    /* Both feeds' record blocks, oldest first — so a per-key merge downstream ends with the
+       newest answer. Either may be absent; order is by the feed's own generated_utc. */
+    function recordSourcesOldestFirst() {
+      return [
+        { rec: (betaData && betaData.record) || null, t: feedStampMs(betaData) },
+        { rec: (betaLiveData && betaLiveData.record) || null, t: feedStampMs(betaLiveData) },
+      ].filter((x) => x.rec).sort((x, y) => x.t - y.t);
+    }
 
     /* ════════════════════════════════════════════════════════════════════════════════
        ONE DAY LEDGER. EVERY SURFACE READS IT.
@@ -8121,23 +8220,52 @@ export default function Home() {
     }
     function dayRecordMap() {
       const out: any = {};
+      const take = (k: string, block: any) => { const d = normDayBlock(block); if (k && d) out[k] = d; };
       // legacy FIRST so the current contract overwrites it per-day rather than the reverse
       const legacy = (betaData && betaData.by_date_record) || {};
-      Object.keys(legacy).forEach((k) => { const d = normDayBlock(legacy[k]); if (d) out[k] = d; });
-      const daily = recordRoot().daily;
-      if (Array.isArray(daily)) {
-        daily.forEach((x: any) => {
-          const k = String((x && x.date) || "").slice(0, 10);
-          const d = normDayBlock(x); if (k && d) out[k] = d;
-        });
-      } else if (daily && typeof daily === "object") {
-        Object.keys(daily).forEach((k) => { const d = normDayBlock(daily[k]); if (d) out[k] = d; });
-      }
+      Object.keys(legacy).forEach((k) => take(k, legacy[k]));
+      /* BOTH FEEDS, OLDEST FIRST, MERGED PER DATE. This read `recordRoot().daily`, which —
+         back when recordRoot() was an outright store win — meant the history feed's map and
+         nothing else, so today's row was as stale as the slowest feed. Reading the newest
+         feed's map wholesale is not the fix either: the live feed only carries a short recent
+         window, so it would drop every older date. Each feed's days are laid down in
+         generated_utc order and the newest answer for a given DATE wins. */
+      recordSourcesOldestFirst().forEach(({ rec }) => {
+        const daily = rec.daily;
+        if (Array.isArray(daily)) {
+          daily.forEach((x: any) => take(String((x && x.date) || "").slice(0, 10), x));
+        } else if (daily && typeof daily === "object") {
+          Object.keys(daily).forEach((k) => take(k, daily[k]));
+        }
+      });
       return out;
     }
     function dailyRecordFor(dateISO: string) {
       return dayRecordMap()[dateISO] || null;
     }
+    /* ONE VERDICT ON A DAY. "How did this day go" was decided in three places, three ways,
+       and one of them could not work at all:
+
+         · the Desk's 14-day calendar toned by UNITS (up / down / flat);
+         · the briefing's recap slide toned by (r.w >= r.l);
+         · the past-picks archive tested `(r.wins || 0) >= (r.losses || 0)` — but `r` is a
+           normDayBlock, whose keys are w / l / p. There is no `wins` and no `losses`, so the
+           expression was permanently `0 >= 0` and EVERY DAY RENDERED GREEN, including an 0–5.
+           Two taps away the same day showed red on the calendar, off the same block.
+
+       Units is the rule, because units is what the record is graded in and what the ROI curve
+       draws; a 5–4 day that lost money is not a green day. Where a day block carries no units
+       at all the decided record stands in, so an older payload still tones correctly rather
+       than going flat. Returns "up" | "down" | "flat" | "none". */
+    function dayTone(r: any) {
+      if (!r || !r.n) return "none";
+      const u = _fin(r.units);
+      if (u != null) return u > 0 ? "up" : u < 0 ? "down" : "flat";
+      const w = Number(r.w) || 0, l = Number(r.l) || 0;
+      return w > l ? "up" : w < l ? "down" : "flat";
+    }
+    // The same verdict as a pos/neg/dim class, for the surfaces that speak in those.
+    const dayToneCls = (r: any) => { const t = dayTone(r); return t === "up" ? "pos" : t === "down" ? "neg" : "dim"; };
     /* THE ONE W–L STRING. Six surfaces were building it inline and they did not agree about
        whether a zero-push day prints "5–3" or "5–3–0", nor about the dash character (an en
        dash is the score dash; a hyphen is a range). One helper, one answer. */
@@ -9756,12 +9884,20 @@ export default function Home() {
     // Share tagline — lead with the HONEST forward expectation (not the in-sample backtest %),
     // then the clean out-of-sample evidence. Social proof that doesn't overstate the edge.
     function shareTagline() {
-      // Shared text is the easiest place to accidentally publish a backtest as a record —
-      // so it quotes the LIVE-SERVED number, with its start date, or nothing at all.
-      const hr = headlineStrategyRecord(betaData);
-      if (hr && hr.live) {
-        const since = stratDateTxt(hr.activation);
-        return `DiamondEdge — every official pick graded in the open. Live-served${since ? ` since ${since}` : ""}: ${stratWL(hr.live)}${hr.live.hit != null ? ` (${stratPct(hr.live.hit)})` : ""}${hr.live.roi != null ? ` at ${stratRoi(hr.live.roi)} return` : ""}.`;
+      /* THE SHARE STRING QUOTES THE HEADLINE — IT DOES NOT COMPUTE ONE (2026-08-09).
+         This read `record.by_strategy.unified.live` while the hero six inches above the
+         Share button read `record.headline`. Two different blocks, one claim, one screen:
+         on 2026-08-09 the hero printed 84-77-9 (52.2%) and the button copied
+         "28-20-3 (58.3%) at +14.9% return" — a DIFFERENT, flattering number, into the
+         reader's clipboard, to be pasted somewhere nobody could check it against the page.
+
+         The record is the product, so there is exactly one reader of it: whatever
+         headlineRecordBlock() returns is what the hero shows and what the clipboard says.
+         They cannot disagree, because there is no second computation to disagree with. */
+      const r = headlineRecordBlock();
+      if (r && r.wl) {
+        const since = r.since ? stratDateTxt(r.since) : "";
+        return `DiamondEdge — every official pick graded in the open.${since ? ` Since ${since}:` : ":"} ${r.wl}${r.hit != null ? ` (${stratPct(r.hit)})` : ""}${r.units != null ? ` at ${r.units >= 0 ? "+" : ""}${r.units.toFixed(1)}u` : ""}.`;
       }
       return "DiamondEdge — every official sports pick graded in the open.";
     }
@@ -11910,28 +12046,26 @@ export default function Home() {
       return `<div class="ixc"><div class="ixc-h">${esc(title)}</div>${sub ? `<div class="ixc-sub">${esc(sub)}</div>` : ""}${body}${foot ? `<div class="ixc-foot">${foot}</div>` : ""}</div>`;
     }
     // cumulative net units per day — served equity curve first, else derived
-    function equitySeries(d: any): { x: string; v: number }[] {
-      const rec = (d && d.record) || {};
-      const ec = rec.equity_curve;
-      if (Array.isArray(ec) && ec.length) {
-        const out: any[] = [];
-        ec.forEach((p: any) => {
-          if (!p) return;
-          const x = String(p.date || p.d || "");
-          const v = _fin(p.units != null ? p.units : (p.cum_units != null ? p.cum_units : p.u));
-          if (x && v != null) out.push({ x, v });
-        });
-        if (out.length >= 2) return out;
-      }
-      const map = dayRecordMap();
-      const dates = Object.keys(map).filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && map[k].n).sort();
-      let cum = 0;
-      return dates.map((k) => {
-        const r = map[k];
-        const day = r.units != null ? Number(r.units) : (r.roi != null && r.n ? Number(r.roi) * Number(r.n) : 0);
-        cum += isFinite(day) ? day : 0;
-        return { x: k, v: cum };
-      });
+    /* ONE UNITS CURVE, DRAWN TWICE. Research's "cumulative return" and the Desk/Record ROI
+       curve were two independent builders over the same ledger, and they disagreed about the
+       one case that matters — a day that serves `roi` but no `units`:
+
+         · cumulativeSeries()  treated a missing `units` as 0 (the day staked nothing).
+         · equitySeries()      IMPUTED it as roi x n.
+
+       On a three-day ledger with one such day that is +1.8u on the Desk and -1.2u on
+       Research: same ledger, same question, opposite signs. Today's payload happens to carry
+       `units` on every row, so the two agreed by luck of the feed rather than by construction
+       — which is precisely the condition this file's own gradeOf note warns about.
+
+       It also preferred a served `record.equity_curve` when present — a THIRD source for a
+       number the day ledger already answers, and one nothing currently ships. That is dropped
+       rather than left as a future disagreement.
+
+       So there is one builder. `units`, never imputed: a day with no units moved the bankroll
+       by nothing, which is the same policy the share card and the ledger rows use. */
+    function equitySeries(_d?: any): { x: string; v: number }[] {
+      return cumulativeSeries("0000-01-01").map((p: any) => ({ x: p.k, v: p.u }));
     }
     function equityCurveSvg(d: any) {
       const pts = equitySeries(d);
@@ -12242,7 +12376,7 @@ export default function Home() {
         }).join("");
         const nV = list.filter((g: any) => String((g.pick || {}).status || "").toUpperCase() === "VOID").length;
         const nP = list.length - nV;
-        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${(r.wins || 0) >= (r.losses || 0) ? "pos" : "neg"}">${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}">${roi}</span>` : ""}<span class="pp-n">${nP} pick${nP === 1 ? "" : "s"}${nV ? ` · ${nV} void` : ""}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}</div></details>`;
+        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${dayToneCls(r)}">${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}">${roi}</span>` : ""}<span class="pp-n">${nP} pick${nP === 1 ? "" : "s"}${nV ? ` · ${nV} void` : ""}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}</div></details>`;
       };
       return `<div class="ixc pastpicks"><div class="ixc-h">Every pick, day by day</div><div class="ixc-sub">The call we published, and how it finished. Most recent first.</div>
         ${shown.map((k, i) => dayBlock(k, i === 0)).join("")}
@@ -12386,12 +12520,30 @@ export default function Home() {
        stale de_premium flag with no session revealed the call; and it exempted every
        lean-tier and every non-totals angle outright, while pickLocked() gates EVERY take
        regardless of tier or market. One rule now, and it is the site's rule. */
+    /* THE NEWS FEED CARRIES ITS OWN COPY OF THE PICK, AND IT WAS NEVER RECONCILED.
+       `a.side` / `a.line` come off the story object in the news feed, which refreshes on its
+       own ~20-minute cycle while the pick feeds refresh on theirs. Nothing compared the two,
+       so a line move between cycles put "◆ OVER 8.5" on the News front and "▼ UNDER 9" on the
+       board tile — for the same game, at the same moment, from two stores.
+
+       So the GAME is the source now: where the story names a game we can resolve, the chip
+       renders that game's actual display pick and is gated by the same pickLocked() the tile
+       uses, and the two cannot disagree. The story's own copy is a fallback for a game that
+       is no longer on any loaded board — and even then it goes through the one gate rather
+       than the bare entitled() this used, which ignored servedRedacted() entirely. */
     function newsAngle(a: any) {
       if (!a || typeof a !== "object" || !a.side) return "";           // headline angles can be stale strings — skip
-      const reveal = entitled();
+      const g = a.game_id != null ? gameAnywhere(a.game_id) : null;
+      const pl = g ? displayPick(g) : null;
+      const locked = pl ? pickLocked(pl, playState(g, pl)) : sideLocked(a, false);
+      let side = String(a.side), line = a.line;
+      if (pl && isBet(pl)) {                                           // the board's answer wins
+        side = String(pl.side || side);
+        line = pl.line != null ? pl.line : line;
+      }
       // Keep the chip SHORT (side + line only) — matchup lives in the headline, so no wrap/cut-off.
-      const lineTxt = a.line != null && a.line !== "" ? " " + esc(String(a.line)) : "";
-      const pick = reveal ? `${esc(a.side)}${lineTxt}` : `<span class="nf-lock">${lockSvg} pick inside</span>`;
+      const lineTxt = line != null && line !== "" ? " " + esc(String(line)) : "";
+      const pick = locked ? `<span class="nf-lock">${lockSvg} pick inside</span>` : `${esc(side)}${lineTxt}`;
       return `<span class="nf-angle ${a.quality === "lean" ? "lean" : "edge"}">◆ ${pick}</span>`;
     }
     // Humanize a story timestamp — raw ISO / "SAT, 04 JUL 2026 16:40:00 GMT" → "2h ago" / "Jul 4".
@@ -13084,7 +13236,8 @@ export default function Home() {
       const r = sl.rec || {};
       const wl = wlTxt(r);
       const roi = r.roi != null ? `${r.roi >= 0 ? "+" : ""}${(r.roi * 100).toFixed(0)}% ROI` : "";
-      const pos = (r.w || 0) >= (r.l || 0);
+      // through the one day verdict, so the slide, the calendar and the archive agree
+      const pos = dayTone(r) !== "down";
       const rows = (sl.games || []).map((g: any) => {
         const p = g.pick;
         const side = unifiedPickLocked(p) ? "" : `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim();
@@ -15516,8 +15669,16 @@ export default function Home() {
       if (!blk) return "";
       const rank: any = { strong: 3, standard: 2, lean: 1 };
       const rows = blk.rows.map(({ t, r }: any) => {
+        /* THROUGH THE SAME TWO HELPERS AS EVERY OTHER RECORD ON THIS PAGE (2026-08-09).
+           This block renders on TWO surfaces (the Desk's "Strong picks vs thin ones" fold and
+           Research), and it broke both single-source rules at once:
+             · it printed the SERVED W-L string, with HYPHENS, while wlTxt() — "one helper,
+               one answer" — is what every other record on both pages uses, with en dashes;
+             · it preferred the SERVED `hit_rate`, in direct contradiction of normDayBlock's
+               stated rule that hit rate is DERIVED, ALWAYS. On any tier containing a push
+               those are different numbers, printed inches from records that derive it. */
         const dec = Number(r.win || 0) + Number(r.loss || 0);
-        const hit = r.hit_rate != null ? Number(r.hit_rate) : (dec ? Number(r.win) / dec : null);
+        const hit = dec ? Number(r.win || 0) / dec : null;
         const u = r["units_flat_-110"] != null ? Number(r["units_flat_-110"])
           : (r.units != null ? Number(r.units) : null);
         return `<div class="rstr-row">
@@ -15526,7 +15687,7 @@ export default function Home() {
             <b>${esc(String(r.label || t))}</b>
           </div>
           <div class="rstr-figs">
-            <span class="rstr-f"><b>${esc(String(r.record || `${r.win}-${r.loss}-${r.push}`))}</b><i>record</i></span>
+            <span class="rstr-f"><b>${esc(wlTxt(r))}</b><i>record</i></span>
             ${hit != null ? `<span class="rstr-f"><b>${(hit * 100).toFixed(1)}%</b><i>hit</i></span>` : ""}
             ${u != null ? `<span class="rstr-f ${u >= 0 ? "pos" : "neg"}"><b>${u >= 0 ? "+" : ""}${u.toFixed(1)}u</b><i>net</i></span>` : ""}
           </div>
@@ -16277,7 +16438,7 @@ export default function Home() {
         const dd = new Date(r.k + "T12:00:00");
         const dnum = isNaN(dd.getTime()) ? "" : String(dd.getDate());
         const u = Number(r.units || 0);
-        const tone = !r.n ? "none" : u > 0 ? "up" : u < 0 ? "down" : "flat";
+        const tone = dayTone(r);
         const wl = r.n ? wlTxt(r) : "";
         return `<span class="cal-cell ${tone}${isToday ? " is-today" : ""}" title="${esc(r.k)}${r.n ? ` · ${wl} · ${u >= 0 ? "+" : ""}${u.toFixed(2)}u` : " · no picks"}">
           <b class="cal-d">${esc(dnum)}</b>${wl ? `<i class="cal-wl">${esc(wl)}</i>` : `<i class="cal-wl dim">·</i>`}

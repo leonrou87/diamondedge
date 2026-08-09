@@ -1,97 +1,161 @@
 import { ImageResponse } from "next/og";
 
-// Node runtime — fetches the multi-MB pregame_picks payload for the live record.
+// Node runtime — reads the record block behind every record surface in the app.
 export const runtime = "nodejs";
 
-// Branded 1200×630 share card — rendered for any DiamondEdge link shared to social/messages.
-// HERO: the rising cumulative-units EQUITY CURVE (the validated record as visual proof).
-// Built from value_record.validated_history.by_year — the SAME honest per-YEAR ledger behind
-// the on-site curve (app/page.tsx validatedEquitySeries) and the 886 / 58.1% / +11% headline.
-// If the curve can't be built (no/short by_year), FALL BACK to the text-only card. Never breaks.
+/* ═══ THE SHARE CARD SAYS WHAT THE SITE SAYS ═══════════════════════════════════
+   Branded 1200×630 card, rendered for any DiamondEdge link shared to social or
+   messages. It is the FIRST number most people ever see from this product, and
+   until 2026-08-09 it was the only surface that made its numbers up.
+
+   WHAT IT USED TO DO. It read `value_record.validated_history` — a store no other
+   surface in the app touches — and then printed three figures that were not read
+   from anywhere at all, hardcoded as JSX literals: "≈55%", "56.9% on 239 picks we
+   never trained on", "+3–4%", plus an in-sample backtest line ("58.1% · 886
+   graded · +11%"). On 2026-08-09 the Record screen's hero said 84-77-9 / 52.2%
+   on 170 graded, and a link pasted from that same screen unfurled a card claiming
+   56.9% on 239 and 58.1% on 886. Four numbers for one claim, and the biggest of
+   them lived nowhere but in this file.
+
+   Re-pointing it at a different store would not have been enough — the literals
+   had no store. So it is RE-SOURCED: it now reads `record.headline`, the same
+   block `recordRoot()` → `headlineRecordBlock()` serves to the Desk hero, the
+   scope rows and the share string, merged across the two feeds by the same rule
+   (newest `generated_utc` wins per key). If the record cannot be read, the card
+   says nothing numeric rather than inventing a figure.
+
+   THE CURVE IS THE SAME LEDGER AS THE NUMBER ABOVE IT. It is cumulative units
+   through `record.daily` — the days that make up the headline — not a separate
+   per-year backtest. Card and site cannot disagree, because there is one source.
+   ══════════════════════════════════════════════════════════════════════════════ */
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "DiamondEdge — every sports pick graded in the open";
 
 // ---- Data --------------------------------------------------------------------
 
-async function getRecord() {
+const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+/* A NARROW READ, ON PURPOSE. picks_unified is ~13 MB and 93% of it is games[];
+   this card needs two JSON paths out of it. Selecting them server-side keeps the
+   read at ~42 KB — the same discipline as /api/snap's ?lite= projection, which
+   exists because direct full-payload reads are what ran the project to 208% of
+   its egress allowance. */
+const SELECT =
+  "headline:payload->record->headline,daily:payload->record->daily,gen:payload->generated_utc";
+
+async function readSnapshot(key: string) {
   try {
-    const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!SUPA || !KEY) return null;
-    const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.pregame_picks&select=payload`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-      next: { revalidate: 300 },
-    });
+    const r = await fetch(
+      `${SUPA}/rest/v1/slate_snapshots?key=eq.${key}&select=${SELECT}`,
+      { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, next: { revalidate: 300 } }
+    );
+    if (!r.ok) return null;
     const rows = await r.json();
-    const vh =
-      rows && rows[0] && rows[0].payload && rows[0].payload.value_record &&
-      rows[0].payload.value_record.validated_history;
-    if (!vh) return null;
-    const mp = vh.median_price || {};
-    const rec =
-      mp.hit != null
-        ? {
-            hit: Number(mp.hit),
-            roi: mp.roi != null ? Number(mp.roi) : null,
-            n: vh.bets_graded ? Number(vh.bets_graded) : null,
-          }
-        : null;
-    return { rec, series: validatedEquitySeries(vh) };
+    return (rows && rows[0]) || null;
   } catch {
     return null;
   }
 }
 
-// Cumulative units through each real per-YEAR anchor. Mirrors page.tsx exactly:
-//   profit(year) = n * roi (return per unit at median price); cumulative = running sum.
-// Returns null (→ text fallback) unless there are ≥2 real year anchors.
-function validatedEquitySeries(vh: any) {
+const stampMs = (row: any) => {
+  const t = Date.parse(String((row && row.gen) || ""));
+  return Number.isFinite(t) ? t : 0;
+};
+const fin = (v: any) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+/* The two feeds carrying a record block, merged exactly as recordRoot() merges
+   them in the app: newest generated_utc wins per key, and `daily` is merged
+   PER DATE rather than wholesale — the live feed only carries a short recent
+   window, so taking its map whole would drop every older day from the curve. */
+async function getRecord() {
+  const [hist, live] = await Promise.all([
+    readSnapshot("picks_unified"),
+    readSnapshot("picks_unified_live"),
+  ]);
+  const rows = [hist, live].filter(Boolean).sort((a, b) => stampMs(a) - stampMs(b));
+  if (!rows.length) return null;
+
+  const headline = rows.reduce<any>((acc, r) => (r.headline && typeof r.headline === "object" ? r.headline : acc), null);
+  if (!headline) return null;
+
+  const byDate: Record<string, any> = {};
+  rows.forEach((r) => {
+    const d = r.daily;
+    const put = (k: string, block: any) => {
+      const key = String(k || "").slice(0, 10);
+      if (key && block && typeof block === "object") byDate[key] = block;
+    };
+    if (Array.isArray(d)) d.forEach((x: any) => put(x && x.date, x));
+    else if (d && typeof d === "object") Object.keys(d).forEach((k) => put(k, d[k]));
+  });
+
+  const w = fin(headline.win) || 0;
+  const l = fin(headline.loss) || 0;
+  const p = fin(headline.push) || 0;
+  if (w + l <= 0) return null;
+
+  const rec = {
+    // The en dash is the score dash everywhere else in the product; the served
+    // string uses hyphens, so it is normalised rather than reprinted.
+    wl: headline.record ? String(headline.record).replace(/-/g, "–") : `${w}–${l}${p ? `–${p}` : ""}`,
+    // HIT RATE IS DERIVED, ALWAYS — never the served number. A push is not a
+    // loss and not a win; w/(w+l) is the only definition this app uses, and the
+    // card taking a served hit_rate while the site derives it is precisely how
+    // one record ends up showing two percentages.
+    hit: w + l > 0 ? w / (w + l) : null,
+    units: fin(headline.units),
+    n: fin(headline.n) != null ? fin(headline.n) : w + l + p,
+    start: String(headline.start || "").slice(0, 10),
+    days: fin(headline.n_days),
+  };
+  return { rec, series: equitySeries(byDate) };
+}
+
+/* Cumulative units through each served day, oldest first. Same arithmetic as the
+   app's own units curve: sum record.daily[d].units. A day with no `units` is a
+   day that staked nothing, so it carries the running total forward unchanged —
+   it is never imputed from roi, because two builders with two missing-units
+   policies is how the Desk and Research ended up drawing opposite signs. */
+function equitySeries(byDate: Record<string, any>) {
   try {
-    const by = vh && vh.by_year;
-    if (!by || typeof by !== "object") return null;
-    const years = Object.keys(by)
-      .filter((y) => /^\d{4}$/.test(y) && by[y] && by[y].n != null)
-      .sort();
-    if (years.length < 2) return null;
-    let cumN = 0,
-      cumU = 0;
-    // Origin anchor: start of the record, zero units / zero profit.
-    const pts: any[] = [{ year: years[0], cumN: 0, units: 0, origin: true }];
-    years.forEach((y) => {
-      const r = by[y] || {};
-      const n = Number(r.n) || 0;
-      const roi = Number(r.roi) || 0;
-      cumN += n;
-      cumU += n * roi;
-      pts.push({ year: y, cumN, units: cumU });
+    const dates = Object.keys(byDate).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    if (dates.length < 2) return null;
+    let cum = 0;
+    const pts: any[] = [{ date: dates[0], units: 0, origin: true }];
+    dates.forEach((d) => {
+      cum += Number(byDate[d] && byDate[d].units) || 0;
+      pts.push({ date: d, units: cum });
     });
     if (pts.length < 3) return null;
     const last = pts[pts.length - 1];
     if (!isFinite(last.units)) return null;
-    return { pts, totalN: cumN, totalUnits: cumU, blendedRoi: cumN ? cumU / cumN : 0, last };
+    return { pts, totalUnits: cum, last, first: dates[0], through: dates[dates.length - 1] };
   } catch {
     return null;
   }
 }
 
+const dayLabel = (iso: string) => {
+  const d = new Date(iso + "T12:00:00");
+  return isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
 // ---- SVG curve builder -------------------------------------------------------
-// Monotone-cubic path THROUGH the real year anchors (no fabricated intermediate points),
-// with a filled area to the zero baseline. Coordinates computed in JS, mapped to the viewBox.
+// Monotone-cubic path THROUGH the real day anchors (no fabricated intermediate
+// points), with a filled area to the zero baseline.
 function buildCurveSvg(s: any) {
-  const W = 1040,
-    H = 300,
-    PL = 8,
-    PR = 70,
-    PT = 26,
-    PB = 46;
-  const iw = W - PL - PR,
-    ih = H - PT - PB;
+  const W = 1040, H = 292, PL = 8, PR = 70, PT = 26, PB = 46;
+  const iw = W - PL - PR, ih = H - PT - PB;
   const pts = s.pts;
   const n = pts.length;
   const us = pts.map((p: any) => p.units);
-  let yMin = Math.min(0, ...us),
-    yMax = Math.max(0, ...us);
+  let yMin = Math.min(0, ...us), yMax = Math.max(0, ...us);
   const ypad = (yMax - yMin) * 0.12 || 1;
   yMax += ypad;
   if (yMin < 0) yMin -= ypad;
@@ -101,8 +165,7 @@ function buildCurveSvg(s: any) {
   const X = pts.map((_: any, i: number) => sx(i));
   const Y = pts.map((p: any) => sy(p.units));
   // Monotone-cubic tangents (never overshoot the data).
-  const dxs: number[] = [],
-    slopes: number[] = [];
+  const dxs: number[] = [], slopes: number[] = [];
   for (let i = 0; i < n - 1; i++) {
     const dx = X[i + 1] - X[i];
     dxs.push(dx);
@@ -121,31 +184,23 @@ function buildCurveSvg(s: any) {
     line += ` C${(X[i] + dx / 3).toFixed(1)} ${(Y[i] + (m[i] * dx) / 3).toFixed(1)} ${(X[i + 1] - dx / 3).toFixed(1)} ${(Y[i + 1] - (m[i + 1] * dx) / 3).toFixed(1)} ${X[i + 1].toFixed(1)} ${Y[i + 1].toFixed(1)}`;
   }
   const area = `${line} L${X[n - 1].toFixed(1)} ${y0.toFixed(1)} L${X[0].toFixed(1)} ${y0.toFixed(1)} Z`;
-  const dotX = X[n - 1],
-    dotY = Y[n - 1];
-  const endLab = `+${Math.round(s.totalUnits)}u`;
-  const nodes = pts.map((p: any, i: number) =>
-    p.origin ? null : (
-      <circle key={`n${i}`} cx={sx(i).toFixed(1)} cy={sy(p.units).toFixed(1)} r="4.5" fill="#2fbf71" />
-    )
-  );
+  const dotX = X[n - 1], dotY = Y[n - 1];
+  const up = s.totalUnits >= 0;
+  const stroke = up ? "#2fbf71" : "#e0574f";
+  const endLab = `${up ? "+" : ""}${s.totalUnits.toFixed(1)}u`;
 
-  // Satori in this next/og build does NOT support <text> inside <svg> ("<text> nodes are not
-  // currently supported"). So the SVG draws ONLY paths/lines/circles; every text label (year
-  // ticks, the "0" baseline label, the endpoint "+96u") is rendered as an absolutely-positioned
-  // flex <div> overlaid on the SVG. The SVG viewBox is W×H; the overlay box is the same size, so
-  // pixel coords map 1:1.
-  const yearLabels = pts.map((p: any, i: number) => {
-    if (p.origin) return null;
-    const anchor = i === n - 1 ? "flex-end" : i === 1 ? "flex-start" : "center";
-    // Center a 120px-wide label box on the x-tick; clamp within the frame.
+  /* Satori in this next/og build does NOT support <text> inside <svg> ("<text>
+     nodes are not currently supported"). So the SVG draws ONLY paths/lines/
+     circles; every text label is an absolutely-positioned flex <div> overlaid on
+     it. The viewBox is W×H and the overlay box is the same size, so pixel
+     coordinates map 1:1. */
+  const edgeLabel = (i: number, text: string) => {
+    const anchor = i === n - 1 ? "flex-end" : "flex-start";
     const cx = sx(i);
-    let left = cx - 60;
-    if (anchor === "flex-start") left = cx - 6;
-    if (anchor === "flex-end") left = cx - 114;
+    const left = anchor === "flex-start" ? cx - 6 : cx - 114;
     return (
       <div
-        key={`yl${i}`}
+        key={`dl${i}`}
         style={{
           position: "absolute",
           left: `${left.toFixed(1)}px`,
@@ -158,27 +213,26 @@ function buildCurveSvg(s: any) {
           fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
-        {p.year}
+        {text}
       </div>
     );
-  });
+  };
 
   return (
     <div style={{ position: "relative", display: "flex", width: `${W}px`, height: `${H}px` }}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="eqvfill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#2fbf71" stopOpacity="0.30" />
-            <stop offset="1" stopColor="#2fbf71" stopOpacity="0" />
+            <stop offset="0" stopColor={stroke} stopOpacity="0.30" />
+            <stop offset="1" stopColor={stroke} stopOpacity="0" />
           </linearGradient>
         </defs>
         {/* zero baseline */}
         <line x1={PL} y1={y0.toFixed(1)} x2={W - PR} y2={y0.toFixed(1)} stroke="#2c3648" strokeWidth="2" />
         <path d={area} fill="url(#eqvfill)" />
-        <path d={line} fill="none" stroke="#2fbf71" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        {nodes}
-        <circle cx={dotX.toFixed(1)} cy={dotY.toFixed(1)} r="9" fill="#2fbf71" />
-        <circle cx={dotX.toFixed(1)} cy={dotY.toFixed(1)} r="16" fill="none" stroke="#2fbf71" strokeOpacity="0.35" strokeWidth="3" />
+        <path d={line} fill="none" stroke={stroke} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={dotX.toFixed(1)} cy={dotY.toFixed(1)} r="9" fill={stroke} />
+        <circle cx={dotX.toFixed(1)} cy={dotY.toFixed(1)} r="16" fill="none" stroke={stroke} strokeOpacity="0.35" strokeWidth="3" />
       </svg>
       {/* "0" baseline label */}
       <div
@@ -205,33 +259,29 @@ function buildCurveSvg(s: any) {
           justifyContent: "flex-end",
           fontSize: 36,
           fontWeight: 800,
-          color: "#4fe08a",
+          color: up ? "#4fe08a" : "#ff7a70",
           fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
         {endLab}
       </div>
-      {yearLabels}
+      {edgeLabel(1, dayLabel(pts[1].date))}
+      {edgeLabel(n - 1, dayLabel(s.through))}
     </div>
   );
 }
 
-// ---- Card variants -----------------------------------------------------------
+// ---- Card pieces -------------------------------------------------------------
 
-/* The share card carries the same lockup as the masthead and the app icon: the drawn house
-   mark (rhombus outline + solid core, flat gold, no bevel) and the wordmark whose contrast is
-   WEIGHT rather than a second use of the accent. See the mark note in globals.css. */
+/* The share card carries the same lockup as the masthead and the app icon: the
+   drawn house mark (rhombus outline + solid core, flat gold, no bevel) and the
+   wordmark whose contrast is WEIGHT rather than a second use of the accent.
+   See the mark note in globals.css. */
 function Brand() {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
       <svg width="58" height="58" viewBox="0 0 32 32">
-        <path
-          d="M16 3.4 28.6 16 16 28.6 3.4 16Z"
-          fill="none"
-          stroke="#f5be42"
-          strokeWidth="2.4"
-          strokeLinejoin="round"
-        />
+        <path d="M16 3.4 28.6 16 16 28.6 3.4 16Z" fill="none" stroke="#f5be42" strokeWidth="2.4" strokeLinejoin="round" />
         <path d="M16 10.6 21.4 16 16 21.4 10.6 16Z" fill="#f5be42" />
       </svg>
       <div style={{ display: "flex", fontSize: 44, letterSpacing: "5px", color: "#f2f6fc" }}>
@@ -263,61 +313,74 @@ function Frame({ children }: { children: any }) {
   );
 }
 
-// TEXT fallback — used whenever the curve can't be built safely. Leads with the HONEST forward
-// expectation; the 58.1%/886 backtest is shown only as a clearly-labelled in-sample sub-line.
+const Domain = () => (
+  <div
+    style={{
+      display: "flex",
+      fontSize: 24,
+      color: "#e0ac20",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontWeight: 700,
+      letterSpacing: "3px",
+    }}
+  >
+    DIAMONDEDGE.KYTEPUSH.COM
+  </div>
+);
+
+/* The record, in the site's own words, from the site's own block. `sinceTxt` is
+   the headline's own start date — never a date this file chose. */
+function RecordLine(rec: any) {
+  const since = rec.start ? dayLabel(rec.start) : "";
+  const bits = [
+    rec.hit != null ? `${(rec.hit * 100).toFixed(1)}% hit rate` : "",
+    rec.units != null ? `${rec.units >= 0 ? "+" : ""}${rec.units.toFixed(1)}u` : "",
+    rec.n ? `${rec.n.toLocaleString()} picks graded` : "",
+  ].filter(Boolean).join(" · ");
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "20px" }}>
+        <div style={{ display: "flex", fontSize: 92, fontWeight: 800, color: "#f0f4fa", fontFamily: "Helvetica, Arial, sans-serif", lineHeight: 1 }}>
+          {rec.wl}
+        </div>
+        <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif" }}>
+          every pick we published{since ? `, since ${since}` : ""}
+        </div>
+      </div>
+      <div style={{ display: "flex", fontSize: 28, color: "#cbd6e6", fontFamily: "Helvetica, Arial, sans-serif" }}>
+        {bits}
+      </div>
+    </div>
+  );
+}
+
+// TEXT card — used whenever the curve can't be built (fewer than two served
+// days). Still quotes the real record; never a figure from anywhere else.
 function TextCard(rec: any) {
-  const backtest = rec
-    ? `Backtest (in-sample): ${(rec.hit * 100).toFixed(1)}%${rec.n ? ` · ${rec.n.toLocaleString()} graded` : ""}${
-        rec.roi != null ? ` · ${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(0)}%` : ""
-      }`
-    : "";
   return (
     <Frame>
       <Brand />
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div style={{ display: "flex", fontSize: 66, fontWeight: 800, lineHeight: 1.06, maxWidth: 1000 }}>
-          A real totals edge — honestly sized.
+      {rec ? (
+        RecordLine(rec)
+      ) : (
+        <div style={{ display: "flex", fontSize: 62, fontWeight: 800, lineHeight: 1.06, maxWidth: 1000 }}>
+          Every pick, graded against the final score.
         </div>
-        <div style={{ display: "flex", fontSize: 40, color: "#4fe08a", fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 700 }}>
-          ≈55% expected at morning prices · +3–4%
+      )}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", fontSize: 26, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif" }}>
+          Graded in the open — win or lose.
         </div>
-        <div style={{ display: "flex", fontSize: 30, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif", maxWidth: 1000 }}>
-          56.9% on 239 picks we never trained on. {backtest ? backtest + "." : "Every call graded against the final score."}
-        </div>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          fontSize: 26,
-          color: "#e0ac20",
-          fontFamily: "Helvetica, Arial, sans-serif",
-          fontWeight: 700,
-          letterSpacing: "3px",
-        }}
-      >
-        DIAMONDEDGE.KYTEPUSH.COM
+        <Domain />
       </div>
     </Frame>
   );
 }
 
-// HERO card — the equity curve is honest visual proof of the historical edge, but the numbers
-// LEAD with the honest forward expectation (~55% at morning prices) and the clean out-of-sample
-// slice (56.9% / +8% on 239 picks the model never trained on). The 58.1%/886/+11% backtest is
-// shown too, but clearly labelled "backtest (in-sample)" — never sold as the forward number.
+// HERO card — the record, then the same ledger drawn as cumulative units.
 function CurveCard(rec: any, series: any) {
-  const btHit = rec && rec.hit != null ? `${(rec.hit * 100).toFixed(1)}%` : null;
-  const btN = rec && rec.n ? rec.n.toLocaleString() : series.totalN.toLocaleString();
-  const btRoi =
-    rec && rec.roi != null
-      ? `${rec.roi >= 0 ? "+" : ""}${(rec.roi * 100).toFixed(0)}%`
-      : `+${(series.blendedRoi * 100).toFixed(0)}%`;
-  const yr0 = series.pts[1] ? series.pts[1].year : "";
-  const yr1 = series.last.year;
   return (
     <Frame>
-      {/* Top row: brand + section label */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Brand />
         <div
@@ -330,59 +393,20 @@ function CurveCard(rec: any, series: any) {
             letterSpacing: "3px",
           }}
         >
-          A REAL EDGE, HONESTLY SIZED
+          GRADED IN THE OPEN
         </div>
       </div>
 
-      {/* Hero: the honest expectation, then the curve as historical proof */}
       <div style={{ display: "flex", flexDirection: "column", marginTop: "2px" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "18px" }}>
-          <div style={{ display: "flex", fontSize: 88, fontWeight: 800, color: "#4fe08a", fontFamily: "Helvetica, Arial, sans-serif", lineHeight: 1 }}>
-            ≈55%
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#f0f4fa", fontFamily: "Helvetica, Arial, sans-serif" }}>
-              expected on totals at morning prices
-            </div>
-            <div style={{ display: "flex", fontSize: 24, color: "#8fa0b8", fontFamily: "Helvetica, Arial, sans-serif" }}>
-              +3–4% expected · 56.9% on 239 picks we never trained on
-            </div>
-          </div>
-        </div>
-        <div style={{ display: "flex", marginTop: "10px" }}>{buildCurveSvg(series)}</div>
+        {RecordLine(rec)}
+        <div style={{ display: "flex", marginTop: "6px" }}>{buildCurveSvg(series)}</div>
       </div>
 
-      {/* Backtest numbers (labelled in-sample) + domain */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "32px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 20,
-              color: "#7d8ba3",
-              fontFamily: "Helvetica, Arial, sans-serif",
-              fontWeight: 700,
-              letterSpacing: "2px",
-            }}
-          >
-            BACKTEST (IN-SAMPLE):
-          </div>
-          <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#cbd6e6", fontFamily: "Helvetica, Arial, sans-serif" }}>
-            {btHit ? `${btHit} · ` : ""}{btN} picks · {btRoi}
-          </div>
+        <div style={{ display: "flex", fontSize: 24, color: "#7d8ba3", fontFamily: "Helvetica, Arial, sans-serif" }}>
+          Net units, every day we served a pick.
         </div>
-        <div
-          style={{
-            display: "flex",
-            fontSize: 24,
-            color: "#e0ac20",
-            fontFamily: "Helvetica, Arial, sans-serif",
-            fontWeight: 700,
-            letterSpacing: "3px",
-          }}
-        >
-          DIAMONDEDGE.KYTEPUSH.COM
-        </div>
+        <Domain />
       </div>
     </Frame>
   );
@@ -394,7 +418,6 @@ export default async function OpengraphImage() {
   const data = await getRecord();
   const rec = data && data.rec;
   const series = data && data.series;
-  // HERO when we have a real, plottable curve; else honest text fallback (never breaks).
-  const el = series && series.pts && series.pts.length >= 3 ? CurveCard(rec, series) : TextCard(rec);
+  const el = rec && series && series.pts && series.pts.length >= 3 ? CurveCard(rec, series) : TextCard(rec);
   return new ImageResponse(el, { ...size });
 }
