@@ -1623,7 +1623,10 @@ export default function Home() {
       };
     }
     // A book slug ("lowvig", "onexbet") → the name a human would recognise.
-    const BOOK_NAME: any = { lowvig: "LowVig", pinnacle: "Pinnacle", onexbet: "1xBet", betonlineag: "BetOnline", bovada: "Bovada", betus: "BetUS", mybookieag: "MyBookie", williamhill_us: "Caesars", draftkings: "DraftKings", fanduel: "FanDuel", betmgm: "BetMGM", betrivers: "BetRivers", pointsbetus: "PointsBet", superbook: "SuperBook", unibet_us: "Unibet", wynnbet: "WynnBET", espnbet: "ESPN BET", fanatics: "Fanatics", hardrockbet: "Hard Rock" };
+    const BOOK_NAME: any = { lowvig: "LowVig", pinnacle: "Pinnacle", onexbet: "1xBet", betonlineag: "BetOnline", bovada: "Bovada", betus: "BetUS", mybookieag: "MyBookie", williamhill_us: "Caesars", draftkings: "DraftKings", fanduel: "FanDuel", betmgm: "BetMGM", betrivers: "BetRivers", pointsbetus: "PointsBet", superbook: "SuperBook", unibet_us: "Unibet", wynnbet: "WynnBET", espnbet: "ESPN BET", fanatics: "Fanatics", hardrockbet: "Hard Rock",
+      // the wall record names books the pick feed never did — capitalised as the book does
+      nordicbet: "NordicBet", matchbook: "Matchbook", betfair_ex_uk: "Betfair", betanysports: "BetAnySports",
+      everygame: "Everygame", ballybet: "Bally Bet", windcreek: "Wind Creek", fliff: "Fliff" };
     const bookName = (s: any) => {
       const k = String(s || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
       if (!k) return "";
@@ -9014,11 +9017,42 @@ export default function Home() {
       }
       return null;
     }
-    // How many DiamondEdge Picks the strategy has actually produced on the board being viewed.
-    function dayStrategyPickCount(dateISO: string) {
+    /* ═══════ THE DAY'S RECORD, COUNTED OFF THE BOARD THE READER IS LOOKING AT ═══════
+       Leon: "the record of DiamondEdge picks should always be shown in real time on a given
+       day." The strip used to answer a different question — the SINCE-JULY-1 headline rate,
+       parked on today's board — so the number never moved between breakfast and midnight
+       however the night went. That figure is the sales case and it keeps its home (the Desk
+       masthead, which the strip's own link lands on). It is simply not the number for a day.
+
+       WHERE THIS ONE COMES FROM, AND WHY NOT THE DAY LEDGER. `record.daily` carries a row
+       per date and every record SCREEN reads it. But the ledger is rebuilt by the backend on
+       its own cadence, and the strip sits three centimetres above fifteen tiles that each
+       show their own ✓ / ✗ — so the one thing this number must never do is disagree with the
+       tiles under it. It is therefore counted from exactly what those tiles render:
+       displayPick() for the ticket, playState() for the verdict. Both already fold in the
+       live-score overlay (provisionalResult), which is what makes it move through the evening
+       without a reload — renderSlate repaints #meta-area on every poll.
+
+       SETTLED ONLY, AND SETTLED MEANS GRADED. playState's won/lost/pushed are the settled
+       three; "clinched" and "cooked" are live reads on a game still being played and a pick
+       still in flight is not a result. They are counted as OPEN here, which is what lets the
+       strip say "so far" honestly rather than implying the day is finished. */
+    function dayPickLedger(dateISO: string) {
       const src = dateISO === todayISO() ? (livePayload || payload) : payload;
       const games = src ? gamesForLeague(src, league, dateISO) : [];
-      return games.filter((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; }).length;
+      const out = { w: 0, l: 0, p: 0, open: 0, settled: 0, picks: 0 };
+      games.forEach((g: any) => {
+        const pl = displayPick(g);
+        if (!pl || pl.action !== "TAKE") return;
+        out.picks++;
+        const st = playState(g, pl);
+        if (st === "won") out.w++;
+        else if (st === "lost") out.l++;
+        else if (st === "pushed") out.p++;
+        else { out.open++; return; }
+        out.settled++;
+      });
+      return out;
     }
     /* THE BAR ITSELF. Three states, and the third one is "render nothing":
          SERVED       the label, and the disclosure that opens onto the served sentence
@@ -9029,6 +9063,11 @@ export default function Home() {
                       that reason.
        MLB/All only, like every other adaptive-strategy surface, and today/forward only —
        a past board's strategy is a record question and the record screens own those. */
+    /* THE FOLD SURVIVES A REPAINT. renderSlate() reassigns #meta-area's innerHTML on every
+       poll, which is what makes the record above live — and which also threw away the `open`
+       class, so a reader with the strip open watched it snap shut every time a score landed.
+       The disclosure state is held here instead of in the DOM the repaint owns. */
+    let stgyOpen = false;
     function strategyBarHtml(dateISO = curDate) {
       if (!(league === "all" || league === "mlb")) return "";
       if (rangeMode) return "";
@@ -9101,31 +9140,33 @@ export default function Home() {
       const voiceHtml = leadLine
         ? `<div class="stgy-voice"><p class="stgy-lead">${esc(leadLine)}</p></div>`
         : "";
-      const exactRuleHtml = (fv && humanNote(s.plain_english_rule))
-        ? `<details class="stgy-exact"><summary>The exact rule, as the search wrote it</summary><p>${esc(humanNote(s.plain_english_rule))}</p></details>`
-        : "";
       const days = s.window_days ? Number(s.window_days) : 0;
-      const windowSpan = days
-        ? ({ 14: "two weeks", 21: "three weeks", 28: "four weeks", 35: "five weeks" } as any)[days] || `${days} days`
-        : "three weeks";
-      /* THE WINDOW LINE, AND THE ONE CLAIM IT IS NOT ALLOWED TO MAKE BY DEFAULT.
-         "Locked before a single first pitch" is a factual assertion about WHEN the rule was
-         chosen, and on 2026-08-08 — the first board the strategy forge ever served — it was
-         false: the rule was applied mid-afternoon, after three games had started, which is
-         exactly why those three kept the picks they already had. The served block says so
-         itself (`selector_evidence.n_selector_picks_served` is short of the board's own pick
-         count, and `board_is_mixed_note` explains it), and the strip was reading straight
-         past that and printing the strong claim anyway.
-         So the strong claim is now EARNED, not assumed: it renders only when the rule owns
-         every pick on the board. On a mixed board the app says the thing that is true and
-         is the point anyway — the window ends the night before, so nothing on this board
-         helped choose the rule. Once the nightly job locks the rule at 02:00 the board is
-         whole and the original line comes back on its own. */
-      const selEv: any = (s as any).selector_evidence || null;
-      const nSelector = selEv && Number.isFinite(Number(selEv.n_selector_picks_served))
-        ? Number(selEv.n_selector_picks_served) : null;
-      const nBoard = dayStrategyPickCount(dateISO);
-      const ruleOwnsBoard = nSelector === null || nSelector >= nBoard;
+      /* WHAT LEFT THE FOLD IN ROUND THREE, AND WHERE EACH PIECE WENT. Leon, having already
+         had this shortened once: "The today's strategy bit is still way too long — gotta be
+         simpler." The fold was four blocks — lead, record, a window-and-count sentence, and a
+         closed exact-rule disclosure — on a surface a reader is scanning fifteen games past.
+
+           · THE WINDOW SENTENCE ("Locked before a single first pitch today" / on a mixed
+             board, "the window ends the night before…") — GONE. It qualified the count, and
+             with the count gone it qualifies nothing. The claim itself survives on the Desk,
+             where "Why it holds up" already states it as a property of the machine: each
+             day's strategy is chosen before the games it is graded on.
+           · THE PICK COUNT — GONE, and it is the one piece the fold could most afford to
+             lose: the reader is looking AT the picks. The tiles below this strip are the
+             count, and they cannot fall out of step with themselves.
+             THE MIXED-BOARD FIX DOES NOT REGRESS BY DELETION. A prior pass caught this line
+             crediting the rule with picks it did not make (12 claimed, 5 made, the other 7
+             already on the board when it was applied) and fixed it by reading
+             `selector_evidence.n_selector_picks_served`. Nothing that survives the cut makes
+             ANY claim about which picks on this board the rule made — that whole class of
+             statement is off the strip now, which is the strongest form of not regressing.
+             The one number the strip still shows is a count of settled picks on the board,
+             which is true of the board whoever chose them, and it is labelled as the day's
+             record rather than as the rule's.
+           · THE EXACT RULE — MOVED, not dropped. It is the falsifiability anchor: without it
+             the commentary is unfalsifiable marketing. It now sits on the Desk, under the
+             full generated commentary, in deskTodayStrategyHtml() — which is exactly where
+             the strip's own link lands. */
       /* THE SECOND BEAT: WHAT IT DID, AND THEREFORE WHY IT IS TODAY'S. Leon: "this strategy
          had been done for the last however many days would've produced this record hence why
          we're going with it."
@@ -9137,66 +9178,53 @@ export default function Home() {
          inherit the claim. Past tense throughout: this is what it DID, never what it will do. */
       const isWL = /w\s*-\s*l/i.test(String((s as any).objective || ""));
       const recTxt = humanNote(s.record);
+      /* AND IT KNOWS WHICH DAY IT IS TALKING ABOUT. The strip renders on past boards too, and
+         "the 35 nights before today … which is why it is today's" is false on Thursday's
+         board read on Saturday: the window ran to the night before THAT day, and it was that
+         day's strategy, not this one's. */
       const whyTxt = recTxt && days
-        ? `Over the ${days} nights before today it went ${recTxt}${
-            isWL ? " — the best record of any strategy we tested, which is why it is today's" : ""}.`
+        ? `Over the ${days} nights before ${isPast ? "that day" : "today"} it went ${recTxt}${
+            isWL ? ` — the best record of any strategy we tested, which is why it ${isPast ? "was that day's" : "is today's"}` : ""}.`
         : "";
-      const windowTxt = !ruleOwnsBoard
-        ? `The window ends the night before, so no game on this board helped choose it.`
-        : isPast
-          ? `Locked before a single first pitch that day.`
-          : `Locked before a single first pitch today.`;
-      /* THE SMALL "HOW IT'S DOING" STAT (Leon: "add some kind of percent that's small on
-         how well it's doing"). Served numbers only, never computed fresh here: today shows
-         the headline record's hit rate (every pick since July 1); a past day shows its own
-         day row's record and rate. No served row ⇒ no stat — the bar renders without it. */
-      let statPct = "", statSub = "";
-      const statSrcs = [livePayload, betaLiveData, betaData, payload].filter(Boolean);
-      if (isPast) {
-        for (const src of statSrcs) {
-          const rows = src && src.record && Array.isArray(src.record.daily) ? src.record.daily : [];
-          const row = rows.find((r: any) => r && String(r.date || "") === dateISO);
-          const dec = row ? (row.win || 0) + (row.loss || 0) : 0;
-          if (row && dec) { statPct = `${Math.round(((row.win || 0) / dec) * 100)}%`; statSub = String(row.record || "").replace(/-0$/, ""); break; }
-        }
-      } else {
-        for (const src of statSrcs) {
-          const h = src && src.record && src.record.headline;
-          const dec = h ? (h.win || 0) + (h.loss || 0) : 0;
-          if (h && dec) {
-            statPct = `${Math.round(((h.win || 0) / dec) * 100)}%`;
-            const st = String(h.start || "");
-            statSub = /^\d{4}-\d{2}-\d{2}$/.test(st)
-              ? `since ${new Date(st + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
-              : "all picks";
-            break;
-          }
-        }
-      }
-      const statHtml = statPct ? `<span class="stgy-stat"><b>${esc(statPct)}</b><i>${esc(statSub)}</i></span>` : "";
-      /* THE COUNT, WHICH MUST NEVER CREDIT THE RULE WITH PICKS IT DID NOT MAKE. This counted
-         every TAKE on the board and attributed all of them to the day's strategy. On a mixed
-         board that is simply wrong — on 2026-08-08 it read "It has produced 12 DiamondEdge
-         Picks" when the rule had made 5 and the other 7 were already on the board when it
-         was applied. The served block carries the real number; use it, and say plainly where
-         the rest came from. */
-      const n = ruleOwnsBoard ? nBoard : (nSelector as number);
-      const pending = !isPast && datePicksPending(dateISO);
-      const rest = nBoard - n;
-      const restTxt = rest > 0
-        ? ` The other ${rest} ${rest === 1 ? "was" : "were"} already on the board when it was applied.`
+      /* ═══ THE NUMBER ON THE CLOSED BAR IS THE DAY'S RECORD, LIVE ═══
+         Leon: "the record of DiamondEdge picks should always be shown in real time on a
+         given day." It used to be the since-July-1 hit rate — a season figure that cannot
+         move while you watch it, sitting on a surface about tonight. It is now the record of
+         the board being viewed, counted off that board's own settled picks (dayPickLedger),
+         so on today it climbs through the evening as games go final.
+
+         WHAT IT REFUSES TO DO. A pick in flight is not a result: clinched, cooked, in play
+         and open are all uncounted, and the sub-label says "so far" for exactly as long as
+         any of them exist. Nothing settled yet ⇒ NO stat at all rather than "0–0", which
+         reads as a bad night rather than as an early one — the bar has always been built to
+         render without it.
+
+         THE SERVED DAY LEDGER IS THE FALLBACK, not the source: a date whose board is not
+         loaded (an archive day older than the window) still shows its row from
+         `record.daily`. Board first, because the board is what the reader can check.
+
+         THE SINCE-JULY-1 NUMBER DID NOT DISAPPEAR. It is the sales case and it keeps the
+         biggest type in the app — the Desk masthead (deskRecordHero) — which is where this
+         strip's own link lands. It is just not the answer to "how is today going". */
+      const led = dayPickLedger(dateISO);
+      const ledgerRow = led.picks ? null : dailyRecordFor(dateISO);
+      const rec = led.settled
+        ? { w: led.w, l: led.l, p: led.p }
+        : ledgerRow && (ledgerRow.w + ledgerRow.l + ledgerRow.p)
+          ? { w: ledgerRow.w, l: ledgerRow.l, p: ledgerRow.p }
+          : null;
+      /* "SO FAR" IS THE DEFAULT, AND "FINAL" HAS TO BE EARNED. Off the board we know exactly
+         when it is earned: every pick on it has settled. Off the fallback row we know
+         nothing about what is still in flight — so a past day reads final and today never
+         does, because a day in progress claiming to be final is the one thing this number
+         must not do. */
+      const stillGoing = led.settled ? led.open > 0 : !isPast;
+      const statHtml = rec
+        ? `<span class="stgy-stat"><b>${esc(wlTxt(rec))}</b><i>${esc(
+            stillGoing ? (isPast ? "so far" : "so far today") : (isPast ? "final" : "today, final"))}</i></span>`
         : "";
-      const countTxt = pending && !n
-        ? `Today's picks land by ${picksEtaTime()}.`
-        : n === 0
-          ? isPast
-            ? `It passed on every game on this board — passing is the strategy working, not the strategy missing.`
-            : `It has passed on every game on today's board so far — passing is the strategy working, not the strategy missing.`
-          : isPast
-            ? `It produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on this board.${restTxt}`
-            : `It has produced <b>${n} DiamondEdge Pick${n === 1 ? "" : "s"}</b> on today's board.${restTxt}`;
-      return `<div class="dstgy" id="stgy">
-        <button class="stgy-bar" id="stgy-btn" type="button" aria-expanded="false" aria-controls="stgy-more">
+      return `<div class="dstgy${stgyOpen ? " open" : ""}" id="stgy">
+        <button class="stgy-bar" id="stgy-btn" type="button" aria-expanded="${stgyOpen ? "true" : "false"}" aria-controls="stgy-more">
           <span class="stgy-mark">${strategyMark()}</span>
           <span class="stgy-tx"><i>${esc(eyebrow)}</i><b>${esc(label)}</b></span>
           ${statHtml}
@@ -9206,8 +9234,6 @@ export default function Home() {
           <div class="stgy-more-in">
             ${voiceHtml || (rule ? `<p class="stgy-rule"><span>How it reads a game</span>${esc(rule)}</p>` : "")}
             ${whyTxt ? `<p class="stgy-why">${esc(whyTxt)}</p>` : ""}
-            <p class="stgy-win">${esc(windowTxt)} ${countTxt}</p>
-            ${exactRuleHtml}
             <!-- THE LABEL KEEPS ITS NAME AND GAINS ITS DESTINATION. It is the phrase Leon
                  refers to this link by, so it stays; what follows the dash is where it now
                  goes — the Desk, and specifically the record on it. -->
@@ -9260,6 +9286,7 @@ export default function Home() {
         const wrap = $("stgy"), btn = $("stgy-btn");
         if (!wrap || !btn) return;
         const open = wrap.classList.toggle("open");
+        stgyOpen = open;
         btn.setAttribute("aria-expanded", open ? "true" : "false");
       }, { optional: "the strategy bar only renders for MLB/All on today or a forward board" });
       bindClick("stgy-paper", (e: any) => {
@@ -10392,6 +10419,14 @@ export default function Home() {
        column with no half played prints an en dash, and the bottom of the ninth prints one
        too when the home side never batted. Nothing is invented. */
     function lineScoreGrid(g: any, ls: any) {
+      // TEMP-QA-REWIND — REMOVE BEFORE LANDING
+      try {
+        if (new URL(location.href).searchParams.get("qa") === "live" && ls && Array.isArray(ls.innings)) {
+          const cut = ls.innings.slice(0, 5);
+          const sum = (side: string) => cut.reduce((a: number, r: any) => a + Number((r[side] && r[side].runs) || 0), 0);
+          ls = { ...ls, innings: cut, teams: { away: { runs: sum("away") }, home: { runs: sum("home") } } };
+        }
+      } catch {}
       const inn = (ls && Array.isArray(ls.innings) ? ls.innings : []) as any[];
       if (!inn.length) return "";
       const sched = Math.max(Number(ls.scheduledInnings) || 9, inn.length);
@@ -10562,9 +10597,14 @@ export default function Home() {
        differently-derived percentage.
 
        GATED LIKE THE PICK IT DESCRIBES: a locked (unpaid) pick has no meter, because "83% to
-       cash" on OVER 8.5 reconstructs the side the lock is redacting. */
+       cash" on OVER 8.5 reconstructs the side the lock is redacting.
+
+       LIVE ONLY, AND THAT IS NOT A GAP. A finished pick has no likelihood left — it has a
+       result, and the reminder strip it would sit under already carries that result as its
+       stamp (✓ / ✕ / push). A meter reading "Cashing ✓" directly beneath a green tick is the
+       same fact twice, 30px apart. */
     function cashMeterHtml(g: any) {
-      if (!g || gameState(g).kind === "pre") return "";
+      if (!g || gameState(g).kind !== "live") return "";
       const pl = displayPick(g);
       if (!isPick(pl)) return "";
       if (pickLocked(pl, playState(g, pl))) return "";
@@ -10589,9 +10629,14 @@ export default function Home() {
           : "";
         players.innerHTML = meter + boxScoreTab(detail, "players");
       }
-      // the cash reminder above the tabs tracks the same live score the box score does
+      // The reminder above the tabs tracks the same live score the box score does — the cash
+      // meter AND the sim's live read, rebuilt together because they share one container.
       const rem = document.getElementById("gp-cashmeter");
-      if (rem) rem.innerHTML = safeHtml("cash meter", () => cashMeterHtml(detail), "");
+      if (rem) rem.innerHTML = safeHtml("cash meter", () => {
+        const pl = displayPick(detail);
+        const locked = pl ? pickLocked(pl, playState(detail, pl)) : false;
+        return cashMeterHtml(detail) + (locked ? "" : atlasLiveChip(detail, "full"));
+      }, "");
       wireBoxPane();
     }
     function wireBoxPane() {
@@ -10915,14 +10960,204 @@ export default function Home() {
         ${recapParas.length ? `<div class="de-sec"><div class="de-h">The story</div>${recapParas.map((p: any) => `<p>${mdBold(cleanBlurb(String(p)))}</p>`).join("")}</div>` : ""}
       </div>`;
     }
+    /* ══════════════ ODDS, CUT DOWN TO THE TWO THINGS WORTH KEEPING ══════════════
+       Leon: "The odds page is fine, we can leave that as the third tab, but it's truly a
+       bunch of interesting data on odds I don't think are that important, so really make it
+       a lot more concise and simple around different lines that we found and maybe a graph
+       of how the odds traded going into the game."
+
+       WHAT LEFT, and where it went — nothing was orphaned:
+         · `marketsTable`          — a four-column table with ONE row (totals-only product),
+                                     whose Line / Our call cells restate the pick strip that
+                                     is pinned above the tabs. Deleted as a duplicate.
+         · `diamondEdgeReasoning`  — the desk debate, the strategy streams, the narrative and
+                                     the divergence: that is the ARGUMENT, and the argument
+                                     now opens the Preview under "Why we're on this".
+         · `more` (every market's number) — spread and moneyline sheet rows for markets this
+                                     product does not bet. Cut.
+
+       WHAT STAYS is what a reader cannot get anywhere else: the numbers the market actually
+       showed, and when. Both come from the stored wall record — no odds API is called here.
+
+       THE WALL RECORD is the five point-in-time checks the pick engine prices against
+       (T-24h → T-1h). Each carries the market's total at that moment, the best per-side
+       price found, and which book was quoting it — so ONE table answers both halves of the
+       ask: the different lines we found, and how the number traded into first pitch. It is
+       fetched on demand (the feed is ~350 KB and only this tab reads it), and the pane
+       renders without it — the locked line and the open→close move need no extra feed. */
+    let wallGridData: any = null, wallGridAt = 0, wallGridPending = false;
+    async function loadWallGrid() {
+      if (wallGridData && Date.now() - wallGridAt < 5 * 60 * 1000) return wallGridData;
+      if (wallGridPending) return wallGridData;
+      wallGridPending = true;
+      let fresh: any = null;
+      try { fresh = await Promise.race([snap("picks_v4_beta_live"), new Promise((r) => setTimeout(() => r(null), 4000))]); } catch {}
+      if (!fresh || !fresh.games) { try { fresh = await fetchJson("/picks_v4_beta_live.json", { cache: "no-store" }); } catch {} }
+      wallGridPending = false;
+      if (fresh && fresh.games) { wallGridData = fresh; wallGridAt = Date.now(); }
+      return wallGridData;
+    }
+    // The wall rows for THIS game, in wall order. Only full-game totals — the market this
+    // product bets — and only walls that actually carry a line (a wall that never arrived is
+    // absent from the chart rather than interpolated).
+    function totalWalls(g: any) {
+      const d = wallGridData;
+      if (!d || !Array.isArray(d.games) || !g) return [];
+      const pk = mlbPk(g), gid = String((g && g.game_id) || "");
+      const row = d.games.find((x: any) =>
+        (pk && mlbPk(x) === pk) || (gid && String(x.game_id) === gid));
+      if (!row || !Array.isArray(row.grid)) return [];
+      const out: any[] = [];
+      for (const [lab] of WALL_ORDER) {
+        const r = row.grid.find((x: any) =>
+          String(x.lead_time) === lab && String(x.bet_type || "total") === "total"
+          && String(x.scope || "full_game") === "full_game");
+        const ln = r ? _fin(r.market_line) : null;
+        if (ln == null) continue;
+        out.push({ wall: lab, line: ln, price: _fin(r.per_side_price), book: String(r.best_book || "").trim() });
+      }
+      return out;
+    }
+    /* THE GRAPH. A step line, because that is what a posted number does — it holds at 8.5
+       until somebody moves it, and drawing a smooth slope between two checks would claim
+       intermediate values nobody ever quoted. Every plotted point is a served row. The pick's
+       own entry wall gets a diamond, so "where we got in" is legible against the move — and
+       that marker is gated with the pick, since it names the number we took. */
+    function oddsMoveChart(g: any, lead: any, leadLocked: boolean) {
+      const w = totalWalls(g);
+      if (w.length < 2) return "";
+      const lines = w.map((x: any) => x.line);
+      const lo = Math.min(...lines), hi = Math.max(...lines);
+      const pad = Math.max(0.5, (hi - lo) * 0.6);
+      const yMin = lo - pad, yMax = hi + pad;
+      const W = 320, H = 132, L = 34, R = 12, T = 14, B = 26;
+      const px = (i: number) => L + (i * (W - L - R)) / Math.max(1, w.length - 1);
+      const py = (v: number) => T + (H - T - B) * (1 - (v - yMin) / Math.max(0.001, yMax - yMin));
+      // step path: hold the level, then jump at the next check
+      let d = "";
+      w.forEach((x: any, i: number) => {
+        const X = px(i), Y = py(x.line);
+        if (!i) d += `M${X.toFixed(1)} ${Y.toFixed(1)}`;
+        else d += ` L${px(i).toFixed(1)} ${py(w[i - 1].line).toFixed(1)} L${X.toFixed(1)} ${Y.toFixed(1)}`;
+      });
+      const levels = Array.from(new Set(lines)).sort((a: any, b: any) => b - a);
+      const gridY = levels.map((v: any) =>
+        `<line class="omv-grid" x1="${L}" x2="${W - R}" y1="${py(v).toFixed(1)}" y2="${py(v).toFixed(1)}"/>
+         <text class="omv-yl" x="${L - 6}" y="${(py(v) + 3.5).toFixed(1)}" text-anchor="end">${esc(lineStr(v))}</text>`).join("");
+      const dots = w.map((x: any, i: number) =>
+        `<circle class="omv-dot" cx="${px(i).toFixed(1)}" cy="${py(x.line).toFixed(1)}" r="3.4"/>`).join("");
+      const xlab = w.map((x: any, i: number) =>
+        `<text class="omv-xl" x="${px(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${esc(String(x.wall).replace(/^T-/, ""))}</text>`).join("");
+      // our entry: the wall the served pick was priced at, at the line it was priced against
+      const pickWall = !leadLocked && lead && lead.action === "TAKE" ? String(lead.lead_time || "") : "";
+      const pi = pickWall ? w.findIndex((x: any) => x.wall === pickWall) : -1;
+      const mark = pi >= 0
+        ? `<g class="omv-take"><path d="M${px(pi).toFixed(1)} ${(py(w[pi].line) - 11).toFixed(1)} l4.6 4.6 -4.6 4.6 -4.6 -4.6 z"/></g>`
+        : "";
+      const first = w[0], last = w[w.length - 1];
+      const moved = Math.abs(last.line - first.line) > 0.001;
+      const cap = moved
+        ? `Opened at ${lineStr(first.line)} at the ${first.wall} check and started at ${lineStr(last.line)}.`
+        : `Held at ${lineStr(first.line)} from the ${first.wall} check through first pitch.`;
+      // The axis is hours before first pitch, said in the caption rather than as a label at
+      // the right edge — at 375px that label lands on top of the last tick.
+      return `<div class="omv">
+        <svg viewBox="0 0 ${W} ${H}" class="omv-svg" role="img" aria-label="How the total moved into first pitch">
+          ${gridY}
+          <path class="omv-step" d="${d}"/>
+          ${dots}${mark}${xlab}
+        </svg>
+        <p class="omv-cap">${esc(cap)}${pi >= 0 ? ` The diamond is the check our pick was priced at.` : ""} Each mark is a check, that many hours before first pitch.</p>
+      </div>`;
+    }
+    // The same rows as a table — the number, the best price we found and the book quoting it.
+    function oddsWallTable(g: any) {
+      const w = totalWalls(g);
+      if (!w.length) return "";
+      const rows = w.map((x: any) => `<tr>
+        <td class="owt-w">${esc(x.wall)}</td>
+        <td class="owt-l">${esc(lineStr(x.line))}</td>
+        <td class="owt-p">${x.price != null ? esc(fmtOdds(x.price)) : "—"}</td>
+        <td class="owt-b">${x.book ? esc(bookName(x.book)) : "—"}</td>
+      </tr>`).join("");
+      return `<div class="owt-wrap"><table class="owt">
+        <thead><tr><th>Check</th><th>Total</th><th>Best price</th><th>Book</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+        <p class="owt-foot">The best per-side price we could find at each check, and the book showing it.</p>
+      </div>`;
+    }
+    // The raw served pregame_line block (n_books / open / move live here, not on pregameLine()).
+    function pregameLineRaw(g: any) {
+      const vg = v4GameFor(g);
+      for (const s of [g, vg].filter(Boolean)) {
+        const p = (s as any).pregame_line;
+        if (p && typeof p === "object") return p;
+      }
+      return null;
+    }
+    function oddsPane(g: any, lead: any, leadLocked: boolean) {
+      const raw = pregameLineRaw(g);
+      const pg = pregameLine(g);
+      const tot = pg && pg.total && pg.total.line != null ? Number(pg.total.line) : null;
+      const open = raw ? _fin(raw.total_open) : null;
+      const over = raw ? _fin(raw.total_price_over) : null;
+      const under = raw ? _fin(raw.total_price_under) : null;
+      const nBooks = raw ? _fin(raw.n_books) : null;
+      const book = pg && pg.book ? bookName(pg.book) : "";
+      // (1) THE NUMBER THE GAME STARTED AT — the one every read on this game is graded against.
+      const lineCard = tot == null ? "" : `<div class="oline">
+        <div class="oline-k">The line we're graded at</div>
+        <div class="oline-main">
+          <span class="oline-tot"><b>${esc(lineStr(tot))}</b><i>total</i></span>
+          ${over != null || under != null ? `<span class="oline-px">
+            <span><em>over</em>${over != null ? esc(fmtOdds(over)) : "—"}</span>
+            <span><em>under</em>${under != null ? esc(fmtOdds(under)) : "—"}</span>
+          </span>` : ""}
+        </div>
+        <div class="oline-foot">${[
+          open != null && Math.abs(open - tot) > 0.001 ? `opened ${lineStr(open)}` : open != null ? "never moved off the open" : "",
+          nBooks != null ? `${Math.round(nBooks)} books read` : "",
+          book ? `best price at ${book}` : "",
+        ].filter(Boolean).map((s) => esc(s)).join(" · ")}</div>
+      </div>`;
+      // (2) HOW IT TRADED IN — the chart and the wall table share one slot, so the on-demand
+      //     feed can land after the tab is opened and fill it without a full rebuild.
+      const grid = `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`;
+      return `<div class="oddspane">${lineCard}${grid}${leadLocked ? "" : unobtainableRow(g)}</div>`;
+    }
+    function oddsMoveBody(g: any, lead: any, leadLocked: boolean) {
+      const chart = oddsMoveChart(g, lead, leadLocked);
+      const table = oddsWallTable(g);
+      if (!chart && !table) {
+        return wallGridPending ? `<div class="omv-wait">Loading the market's record…</div>` : "";
+      }
+      return `<section class="osec"><h3 class="osec-h">How the total moved into first pitch</h3>${chart}${table}</section>`;
+    }
+    function repaintOddsMove() {
+      const slot = document.getElementById("odds-move");
+      if (!slot || !detail) return;
+      const pl = displayPick(detail);
+      const locked = pl ? pickLocked(pl, playState(detail, pl)) : false;
+      slot.innerHTML = safeHtml("odds move", () => oddsMoveBody(detail, pl, locked), "");
+    }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
-      // Live & finished games open straight to "How it's going" (box score); only pre-game
-      // games default to the Preview narrative.
+      // TEMP-QA-REWIND — REMOVE BEFORE LANDING
+      try {
+        const qa = new URL(location.href).searchParams.get("qa");
+        if (qa === "pre") { g.status = "upcoming"; g.current_actuals = null; }
+        if (qa === "live") { g.status = "live"; g.current_actuals = { home_score: 3, away_score: 2, total_so_far: 5, period_label: "Top 6th" }; }
+      } catch {}
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
-      // A game that has started opens on the BOX SCORE — Leon has asked twice for the box
-      // score to be the thing a finished game shows first. Pre-game opens on the Preview.
-      detailTab = restoreTab === "de" ? "odds" : (restoreTab || (_gsk === "final" || _gsk === "live" ? "box" : "preview"));
+      /* THE DEFAULT TAB FOLLOWS THE GAME (Leon, 2026-08-08): "when you click on a game, let's
+         have Preview be the default thing that's shown… once the game starts… instead of
+         going to the Preview, which should default to the stats page."  Pre-game opens on
+         the Preview; the moment there is a game to look at, it opens on Stats — where the
+         player lines are — with the line score and the bet reminder pinned above the tabs.
+         "box" is the retired tab's key: an old URL or a back-button restore lands on Stats,
+         which is where the box score went. */
+      const _restore = restoreTab === "de" ? "odds" : restoreTab === "box" || restoreTab === "live" ? "stats" : restoreTab;
+      detailTab = _restore || (_gsk === "final" || _gsk === "live" ? "stats" : "preview");
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       // Everything the detail body renders is derived FROM g (+ the live feeds by key), so it's
@@ -11077,46 +11312,15 @@ export default function Home() {
             </div>`
           : "";
 
-      // (3) THE LINES — one plain sentence on where the board sits (numbers sourced from the
-      // SAME seam as the pick itself, so nothing here can disagree with the markets table above).
-      const linesBlock = leadLocked ? "" : (() => {
-        const bits: string[] = [];
-        const spTxt = vegasLine(g, "spread");
-        if (spTxt) {
-          const m = spTxt.match(/^(\S+)\s+([+-][\d.]+)/);
-          if (m) {
-            const n = Number(m[2]);
-            bits.push(n < 0 ? `${esc(m[1])} favored by ${num(Math.abs(n), 1)}` : n > 0 ? `${esc(m[1])} getting ${num(n, 1)}` : `a pick'em`);
-          } else bits.push(spTxt);
-        }
-        const toTxt = vegasLine(g, "total");
-        if (toTxt) bits.push(`the total at ${toTxt.replace(/^O\/U\s*/, "")}`);
-        const mlTxt = vegasLine(g, "moneyline");
-        if (mlTxt && g.sport !== "soccer") bits.push(`${mlTxt} on the moneyline`);
-        let move = "";
-        const pk0 = lead ? (lead.market === "spread" ? g.spread_pick : lead.market === "total" ? g.total_pick : g.ml_pick) : null;
-        const lm = pk0 && pk0.line_move;
-        if (lm && lm.open_line != null && lm.current_line != null && Number(lm.open_line) !== Number(lm.current_line)) {
-          const isAm = lm.unit === "american_ml";
-          const fmtL = (v: any) => (isAm ? fmtOdds(v) : num(v, 1));
-          move = ` The ${lead.market === "moneyline" ? "price" : lead.market} opened at ${fmtL(lm.open_line)} and sits at ${fmtL(lm.current_line)}${lm.moved_toward_pick === true ? " — the market has been coming to our side" : lm.moved_toward_pick === false ? " — the market has drifted the other way, and we still like our number" : ""}.`;
-        }
-        if (!bits.length) return "";
-        return `<div class="whycard lines">
-          <div class="wc-k">The lines</div>
-          <p>The books have ${bits.join(", ")}.${move}</p>
-        </div>`;
-      })();
-      // (3) Power-user detail — the PICK is already surfaced above (narrative + callout),
-      // so this is odds, the signature-play record, matchup intel and model notes only.
-      const reasoning = g.why && g.why.reasoning ? `<div class="dsec"><div class="dsec-h">Model Notes</div><div class="dsec-b reasoning">${esc(g.why.reasoning)}${g.why.chosen_rationale ? `<div class="rr2">${esc(g.why.chosen_rationale)}</div>` : ""}</div></div>` : "";
-      const more = `<details class="more"><summary>Odds &amp; model detail<span class="more-sub">every market's number, the record, matchup intel</span></summary>
-        <div class="more-body">
-          <div class="dsec"><div class="dsec-h">Every market's number</div><div class="dsec-b shp-wrap">
-            ${MARKETS.map((mk) => sheetPlay(g, P[mk])).join("")}
-          </div></div>
-        </div>
-      </details>`;
+      /* THE LINES SENTENCE IS GONE FROM THE PREVIEW, and so are the two power-user folds that
+         used to close the Odds pane (`reasoning` — model notes — and `more` — every market's
+         number, spread and moneyline included, on a totals-only product).
+
+         `linesBlock` wrote a prose paragraph — "The books have the total at 8.5… the total
+         opened at 8 and sits at 8.5" — which is now precisely, and better, the subject of the
+         Odds tab: the number, the prices, the open, and the whole path in between. Two homes
+         for one fact is what the single-home rule forbids, and the Odds tab is the right one.
+         All three are deleted rather than hidden; git holds them if the call is ever wrong. */
 
       // FUSED HERO HEADER — the matchup (crests + records) and the live trend woven into
       // ONE header over a subtle team-tinted wash. Sits above the tabs.
@@ -11124,14 +11328,11 @@ export default function Home() {
         ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
         : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
       const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.recIsL15 ? ` <span class="gp-rec-tag">L15</span>` : ""}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
-      // Live trend: the served hit-odds meter when the backend ships one; otherwise our own
-      // honest tracking read (runs-vs-line / scoreboard status), so a live game's hero is never
-      // a bare score. The SAME read headlines the "How it's going" pane below in full.
-      const heroTrend = (gs.kind === "live" && lead && !leadLocked)
-        ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero"))
-        : "";
-      // ATLAS LIVE rides the hero on a live game — the sim's in-game read, under the pick's
-      // own cash meter. Locked (unpaid) views skip it: its number argues a side.
+      /* THE LIVE TREND LEFT THE HERO. It used to sit inside the crest header; it is now part
+         of the BET REMINDER below the line score, because the meter and the ticket it
+         measures are one thought ("our bet, and how likely it is to cash") and splitting
+         them across two blocks made the percentage look like a property of the scoreboard.
+         ATLAS's live read rides with it, as it always has. */
       const atlHero = !leadLocked ? atlasLiveChip(g, "full") : "";
       const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
@@ -11140,7 +11341,6 @@ export default function Home() {
           <div class="gp-center">${heroScore}</div>
           <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
         </div>
-        ${(heroTrend || atlHero) ? `<div class="gp-trend">${heroTrend}${atlHero}</div>` : ""}
       </div>`;
       /* ═══════════ ONE BANNER ABOVE THE TABS, AND ONLY ONE ═══════════
          Leon: "a compact header, then tabs. Banner above the tabs: the recommended pick if
@@ -11160,111 +11360,123 @@ export default function Home() {
          renders NOTHING: an empty slot above the tabs is the honest shape of "we are not on
          this game", and it costs zero pixels. */
       const gpDesk = deskBlockTile(g, leadLocked);
-      const gpUnob = leadLocked ? "" : unobtainableRow(g);
       const gpBanner = (lead || leadLocked) ? deCallBlock(g, leadLocked, true) : "";
-      // Tabs — Box score only for live/final games; pre-game defaults to Preview.
       const showLive = gs.kind === "live" || gs.kind === "final";
       const isFinal = gs.kind === "final";
-      // Exactly THREE tabs: Preview (matchup, pitchers, records, our pick + why) ·
-      // Odds (the pick + the wall-by-wall grid + prices) · Box score (line score + scoring).
-      // STILL EXACTLY THREE TABS. The middle one keeps its job (our call + the numbers) and
-      // simply says what it now leads with when the strategy streams are in the payload.
-      const hasStrats = gameStrategies(g).length > 0 && !leadLocked;
-      /* THE TAB BAR — iOS segmented rhythm: equal-width targets, the ink rail under the
-         active one, and a Box score tab that exists only once there is a box score. */
-      /* ════════ THE TAB SET, AND WHY RECAP IS GONE ════════
-         Leon: "the recap tab seems a little useless — I think we can get rid of that", and
-         separately: "the Preview tab stays on a game even after it's completed."
+      /* ════════ THE TAB SET FOLLOWS THE GAME (Leon, 2026-08-08) ════════
+           pre    Preview* · Odds                 — "pregame there just should be Preview and Odds"
+           live   Preview  · Stats* · Odds        — "should default to the stats page"
+           final  Preview  · Stats* · Odds
+         (* = the tab it opens on.)
 
-         RECAP said one thing the hero does not already say, and it said it worse: the final
-         score is in the hero, the pick's outcome is in the banner above these tabs, and the
-         narrative was a third rendering of both — precisely the duplicate-information class
-         the single-home rule exists to kill. It is removed, not relocated.
+         A STATS TAB DOES NOT EXIST BEFORE FIRST PITCH, because before first pitch there is
+         no box score, no game leaders and no player lines — the tab's whole spine. What it
+         DID hold pregame (the two probables, team form, the projection, head-to-head, the
+         matchup intel) is not stats-tab material at all pregame: it is the preview OF THE
+         GAME, which is exactly what Leon asked Preview to carry — "and then preview more
+         about the game itself". So those sections MOVE INTO Preview while the game is
+         scheduled, and move back out to Stats the moment there is a game to measure. One
+         builder emits them either way, so the two panes can never drift apart, and no
+         section is ever in both at once.
 
-         PREVIEW is the opposite call. The pregame read is part of the game's story and stays
-         readable after the fact — what we saw before first pitch, still there when you know
-         how it turned out, which is the most testable thing this product publishes. It is
-         framed as the pregame view with a kicker, never apologised for with a caveat.
-
-         SO:  pre     Preview · Stats · Odds                    (3)
-              live    Live · Box Score · Preview · Stats · Odds (5)
-              final   Box Score · Preview · Stats · Odds        (4)
-         Preview owns the pregame narrative, Box Score owns what happened, and no block
-         appears in two of them. */
-      /* THE LIVE TAB IS NOT ALLOWED TO BE EMPTY. Its entire content is the live-vs-line
-         meter, and that meter is the tracking read on an UNSETTLED pick — so `liveVsLineBlock`
-         returns "" the moment the pick is locked. Signed-out is the default state of every
-         visitor, which meant the most common way to see a live game was a fifth tab that
-         opened onto nothing: a dead click on the one surface where the reader is most
-         actively tapping. The pane is built FIRST and the tab is conditioned on it having
-         something to show, so the tab set is a function of what exists rather than a
-         promise the pane may not keep. Signed-out live therefore reads Box Score · Preview ·
-         Stats · Odds, exactly like a final; entitled live gets the fifth tab. */
-      /* THE LIVE TAB IS RETIRED (Leon: "Live tab isn't needed for games; make Preview
-         left-most always"). Its one block — the live-vs-line meter, the tracking read on an
-         unsettled entitled pick — moves to the TOP of the Box Score pane, which is where a
-         reader watching a live game already is. The meter keeps its own gating (it returns
-         "" when the pick is locked), so signed-out live is unchanged. Tab order is fixed
-         for every game state: Preview · Box Score · Stats · Odds — the DEFAULT tab still
-         follows the game (Preview pre-game, Box Score once it starts), but the ORDER never
-         reshuffles under the reader. */
+         THE BOX SCORE IS NOT A TAB ANY MORE. "Once the game starts, there should always be
+         a box score on the top" — always, meaning on whichever tab you are standing on. The
+         line score is pinned above the tab bar (see boxTop) and the player lines head Stats. */
       const liveVsLineHtml = showLive && !isFinal ? liveVsLineBlock(g, leadLocked) : "";
-      if (detailTab === "live") detailTab = showLive ? "box" : "preview";
+      // Normalise a tab that no longer exists in this game's state: "box"/"live" are retired
+      // keys (an old URL, a back-button restore), and Stats does not exist before first pitch.
+      if (detailTab === "live" || detailTab === "box") detailTab = showLive ? "stats" : "preview";
+      if (detailTab === "stats" && !showLive) detailTab = "preview";
       const tabsBar = `<div class="gp-tabs underline" role="tablist">
         <button class="gp-tab ${detailTab === "preview" ? "on" : ""}" data-dtab="preview" role="tab">Preview</button>
-        ${showLive ? `<button class="gp-tab ${detailTab === "box" ? "on" : ""}" data-dtab="box" role="tab">Box Score</button>` : ""}
-        <button class="gp-tab ${detailTab === "stats" ? "on" : ""}" data-dtab="stats" role="tab">Stats</button>
+        ${showLive ? `<button class="gp-tab ${detailTab === "stats" ? "on" : ""}" data-dtab="stats" role="tab">Stats</button>` : ""}
         <button class="gp-tab ${detailTab === "odds" ? "on" : ""}" data-dtab="odds" role="tab">Odds</button>
         <span class="gp-tab-ink" id="gp-tab-ink"></span>
       </div>`;
-      const boxPane = showLive
-        ? `<div class="gp-pane" data-pane="box" style="display:${detailTab === "box" ? "block" : "none"}">${liveVsLineHtml}${boxScoreTab(g)}</div>`
-        : "";
-      /* PREVIEW IS THE STORY. The pick's own banner sits ABOVE the tabs now (see gpBanner),
-         so this pane no longer repeats it — it is the masthead, the setup prose, the lines
-         sentence and the strategy teaser, in reading order. */
+      /* THE REFERENCE SECTIONS — one builder, two possible homes (see the tab-set note).
+         Every block is already defensive; an absent feed drops its own section. Nothing here
+         is gated: context is free, the CALL is the product. */
+      const referenceSections = `
+        ${vizPitchers(g) ? `<section class="st-sec"><h3 class="st-h">Starting pitchers</h3>${vizPitchers(g)}</section>` : ""}
+        ${vizTeamRecords(g) || vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Team performance</h3>${vizTeamRecords(g)}${vizFormStrip(g)}</section>` : ""}
+        ${vizPredScore(g) || vizWinProb(g) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
+        ${vizH2H(g) ? `<section class="st-sec"><h3 class="st-h">Head to head</h3>${vizH2H(g)}</section>` : ""}
+        ${intelSection(g)}
+        ${(facts.length || stks) ? `<section class="st-sec"><h3 class="st-h">Game notes</h3>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</section>` : ""}`;
+      /* ═══════════ WHY WE'RE ON THIS — the section that opens the Preview ═══════════
+         Leon: "let's have Preview be the default thing that's shown, with a little section
+         on why and what we selected as the pick if there is one, and then preview more about
+         the game itself."
+
+         WHAT IT IS: the rule's case for THIS game, in the generator's own words. Every
+         sentence of that prose is built backend-side against this game's served feature row
+         and re-audited before it ships (see the forgeCase note above) — this surface adds no
+         words to it. Under it, the served pick confidence; behind one tap, the full argument
+         that used to be the top half of the Odds tab (the desk's debate, the streams, our
+         number against the market's). LITTLE means little on arrival, deep on demand.
+
+         WHAT IT DOES NOT DO IS REPRINT THE PICK. The ticket — side, line, price, result — is
+         pinned in the reminder strip directly above the tab bar, a few pixels above this
+         card. Saying it twice inside one screen is the duplication the single-home rule
+         exists to prevent; the case names the side in its own closing clause anyway.
+
+         A PASS still gets a section: the explicit no-bet block, which names the lines we
+         judged. "We are not on this one" is an answer to "why", not the absence of one. */
+      /* NO FOLD ON A GAME NOTHING HAS BEEN JUDGED ON. `diamondEdgeReasoning` heads itself
+         "◆ Why DiamondEdge passed" whenever there is no pick — which is true of a pass and
+         FALSE of a game whose picks have not published yet (every game on the board before
+         the morning serve). It said so quietly on the old Odds tab; this section is the
+         first thing a reader meets, so the fold stands down until there is a judgement to
+         open, and the pending block above it says what is actually true. */
+      const fullRead = (leadLocked || (!lead && picksPending(g)))
+        ? "" : safeHtml("the full read", () => diamondEdgeReasoning(g, lead, leadLocked), "");
+      /* THE SECTION NEEDS A NAME WHEN THE CASE IS NOT THERE TO GIVE IT ONE. The rule's case
+         arrives inside its own titled card ("Why we lean this way"), which IS the heading —
+         but the generator only writes one for a game whose rule fired, and on the rest the
+         section would open on a bare confidence dial with nothing saying what it answers.
+         The kicker fills exactly that gap, and never doubles the card's own title. On a game
+         that has started the pane already opens with a kicker, so this one stands down. */
+      const whyHead = (!forgeCaseBlock && !showLive && !!(lead || passBlock))
+        ? `<div class="gp-prekick">Why we're on this</div>` : "";
+      const whySection = leadLocked
+        ? deCallBlock(g, true, false)
+        : `${whyHead}
+           ${forgeCaseBlock}
+           ${lead && !leadLocked ? confidenceBlock(lead) : ""}
+           ${/* the no-bet statement comes BEFORE the fold that elaborates on it — a "full
+                read" disclosure above the sentence explaining there is no bet reads as an
+                answer offered before the question. */ ""}
+           ${passBlock}
+           ${fullRead ? `<details class="fullread"><summary><span>The full DiamondEdge read</span><span class="sgc-caret" aria-hidden="true">›</span></summary>${fullRead}</details>` : ""}`;
+      /* PREVIEW. Pregame it is the whole read: why we are on it, then the game. Once the
+         game has started it reverts to being the PREGAME read, kept for the record and
+         labelled as such — the reference sections have moved to Stats by then, so what is
+         left is exactly "how we saw it before first pitch". */
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
         ${showLive ? `<div class="gp-prekick">How we saw it before first pitch</div>` : ""}
+        ${whySection}
         ${leadLocked ? "" : previewMasthead}
-        ${forgeCaseBlock}
         ${previewBlock}
-        ${linesBlock}
-        <!-- (strategiesTeaser lived here — a fold listing the OTHER reads on this game.
-             Strategies are no longer a consumer concept: one product, one call.) -->
+        ${!showLive ? referenceSections : ""}
+        ${!showLive && gpDesk ? `<section class="st-sec"><h3 class="st-h">What the four measured</h3>${gpDesk}</section>` : ""}
         ${lead && !leadLocked ? signalBlock(lead) : ""}
-        ${passBlock}
       </div>`;
-      /* ═══════════ STATS: THE SPORTS-REFERENCE TAB ═══════════
-         Leon: "go super in-depth — lineups, pitchers, team performance, head-to-head data.
-         Use everything the payload serves; make it feel like premium sports-reference
-         material." So this pane spends everything on the table, in a fixed order that reads
-         like a reference page rather than a pile of widgets:
-           1. STARTING PITCHERS   — the two probables, each a full card (the pitcher sheet
-              that used to hang off a tap target on the board tile now lives HERE, which is
-              the whole justification for making the card one target)
-           2. TEAM PERFORMANCE    — records, form, runs for/against, rest
-           3. THE PROJECTION      — our predicted score, win probability, form bars
-           4. HEAD TO HEAD        — the season series
-           5. THE FOUR READS      — what each analyst measured on this game
-           6. GAME NOTES          — streaks and fact rows
-         Every block is already defensive; an absent feed simply drops its section. Nothing
-         here is gated: context is free, the CALL is the product. */
-      const statsPane = `<div class="gp-pane" data-pane="stats" style="display:${detailTab === "stats" ? "block" : "none"}">
+      /* ═══════════ STATS — THE SPORTS-REFERENCE TAB, AND THE BOX SCORE'S DEPTH ═══════════
+         Only exists once the game does. It opens with what a reader watching a game wants
+         first — the player lines under the line score that is pinned above the tabs — then
+         the game leaders, then the same reference sections the Preview carried pregame. */
+      const statsPane = showLive ? `<div class="gp-pane" data-pane="stats" style="display:${detailTab === "stats" ? "block" : "none"}">
         <div class="de-pane statspane">
+          <div id="gp-boxplayers">${liveVsLineHtml}${boxScoreTab(g, "players")}</div>
           ${/* A STABLE SLOT, so the Statcast feed can land after first paint and fill it
                 without the pane being rebuilt underneath the reader's scroll position. Empty
                 until there is something true to put in it — a game with no pitch data renders
                 no slot content and therefore no heading, which is the app's standing rule. */""}
           <div id="gl-slot">${glSection(g)}</div>
-          ${vizPitchers(g) ? `<section class="st-sec"><h3 class="st-h">Starting pitchers</h3>${vizPitchers(g)}</section>` : ""}
-          ${vizTeamRecords(g) || vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Team performance</h3>${vizTeamRecords(g)}${vizFormStrip(g)}</section>` : ""}
-          ${vizPredScore(g) || vizWinProb(g) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
-          ${vizH2H(g) ? `<section class="st-sec"><h3 class="st-h">Head to head</h3>${vizH2H(g)}</section>` : ""}
-          ${intelSection(g)}
+          ${referenceSections}
           ${gpDesk ? `<section class="st-sec"><h3 class="st-h">What the four measured</h3>${gpDesk}</section>` : ""}
-          ${(facts.length || stks) ? `<section class="st-sec"><h3 class="st-h">Game notes</h3>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</section>` : ""}
         </div>
-      </div>`;
+      </div>` : "";
       // Box score pane also carries the recap for a final game (folded in — no separate tab).
       /* ═══════════ CBS-STYLE HIERARCHY ON A GAME THAT HAS STARTED ═══════════
          Leon: "box score should be at the VERY top and simplify the full game screen… it
@@ -11293,27 +11505,12 @@ export default function Home() {
       const livePane = "";   // retired — the live-vs-line meter lives at the top of Box Score now
       // The star-tier legend was cut from the bottom of the board (it explained a five-step
       // scale to every reader on every visit).
-      /* ═══════════ ODDS: THE MARKET DETAIL ═══════════
-         Leon: "the market detail — locked line, current line, and all suggested picks/leans
-         with their reasoning." So the pane opens with the LOCKED pregame line (the number
-         every pick on this game is graded against — it was above the tabs, competing with
-         the pick banner, and it belongs with the market), then the live-vs-line read, then
-         every market's current number, then the reasoning and the per-market detail. */
-      /* SINGLE HOME, APPLIED. Three blocks left this pane in the dedup pass, and each one was
-         a verbatim second rendering rather than a second SHAPE of the same fact:
-           · liveVsLineBlock — also rendered by the Live pane. The live read is "what is
-             happening", which is the Live tab's whole subject; Odds keeps the market.
-           · deCallBlock (full) — the hero's betting strip is the same component in compact
-             form: same side, same line, same price, same result chip, ~200px apart. The
-             headline call belongs to the hero; the ARGUMENT (diamondEdgeReasoning) stays here.
-           · `more` → intelSection — also rendered by Stats, which is where matchup intel
-             belongs. The fold keeps every market's number, which is Odds-only material. */
+      /* ═══════════ ODDS — TWO THINGS, NOT NINE ═══════════
+         The whole pane is now oddsPane(): the number this game is graded against, and the
+         market's own record of how it got there (see the note on oddsPane for what left and
+         where it went). The argument moved to the Preview's "why" section. */
       const dePane = `<div class="gp-pane" data-pane="odds" style="display:${detailTab === "odds" ? "block" : "none"}">
-        ${pregameLineBlock(g, "big")}
-        ${marketsTable(g)}
-        ${gpUnob}
-        ${diamondEdgeReasoning(g, lead, leadLocked)}
-        ${leadLocked ? "" : more}
+        ${safeHtml("odds pane", () => oddsPane(g, lead, leadLocked), "")}
       </div>`;
       // THE GAME PAGE LEADS WITH THE SAME THREE BEATS AS THE CARD: the locked pregame line
       // (big), the live read measured against it, then the desk's conclusion — all above the
@@ -11341,16 +11538,41 @@ export default function Home() {
          The banner that remains is the answer to the only question the page is opened to
          ask. A pass renders NOTHING — an empty slot above the tabs is the honest shape of
          "we are not on this game", and it costs zero pixels. */
-      /* THE ORDER, ONCE: hero (crests · records · score · state · the betting strip) → tabs →
-         one pane. Every fact on this page now has exactly ONE home:
-           hero      score, state, crests, records, the headline line + gated pick + result
-           Recap     narrative only — no score blocks, no chips
-           Box Score every in-game number: line score, hitters, pitchers
-           Stats     pregame and analytical material, including the four reads
-           Odds      market detail and the argument behind the call
-         The betting strip is INSIDE the hero rather than a banner below it, so the hero is a
-         single object the way CBS's is, and nothing sits between the header and the tabs. */
-      return `<div class="gp-heroblk">${gameHero}${gpBanner ? `<div class="gp-lead">${gpBanner}</div>` : ""}</div>${tabsBar}${previewPane}${boxPane}${statsPane}${dePane}${livePane}`;
+      /* ═══════════ WHAT IS ALWAYS ON SCREEN, WHATEVER TAB YOU ARE ON ═══════════
+         Leon: "Once the game starts, there should always be a box score on the top and a
+         reminder of whatever the bet is that we have and likelihood to cash."
+
+         So the block above the tab bar reads, in this order and nothing between:
+           1. the hero          crests, records, the score and the state of the game
+           2. the LINE SCORE    innings across, R/H/E pinned — the box score, at the top
+           3. the BET REMINDER  the ticket we served (side · line · price · result stamp)
+                                and, under it, the live chance it cashes
+
+         THE REMINDER IS ONE OBJECT. The strip and the meter used to be a hundred pixels and
+         a hero apart, which made the percentage read as a property of the scoreboard rather
+         than of our bet. They are now the same block, and the meter is the app's existing
+         cash-probability read — not a second number derived a second way (see cashMeterHtml).
+
+         PREGAME the line score is absent (there is nothing in it) and the reminder is just
+         the pick strip, which is what has always sat here. A PASS renders nothing at all: an
+         empty slot is the honest shape of "we are not on this game", and it costs no pixels.
+
+         THE HERO'S SCORE AND THE LINE SCORE'S "R" ARE THE SAME TWO NUMBERS, and they stay
+         that way on purpose — it is the one overlap the single-home rule concedes, because a
+         line score without its R/H/E block is not a line score, and the reader's first glance
+         wants the score in display type rather than in a table cell. Everything else divides
+         cleanly: the hero owns the state, the grid owns the innings.
+
+         THE HEIGHT BUDGET IS THE REASON THE PLAYER LINES ARE NOT HERE. Everything above the
+         tab bar is a tax on every tab. Hero + line score + reminder is ~300px on a 375
+         phone, which keeps the tabs on the first screen; the hitters and pitchers tables are
+         another ~700px, so they head the Stats pane — the tab this page now opens on the
+         moment the game starts. */
+      const boxTop = showLive ? `<div class="gp-boxtop" id="gp-boxtop">${boxScoreTab(g, "top")}</div>` : "";
+      const cashMeter = safeHtml("cash meter", () => cashMeterHtml(g), "");
+      const remBody = `${gpBanner}${(cashMeter || atlHero) ? `<div class="gp-trend" id="gp-cashmeter">${cashMeter}${atlHero}</div>` : ""}`;
+      const reminder = (gpBanner || cashMeter || atlHero) ? `<div class="gp-lead">${remBody}</div>` : "";
+      return `<div class="gp-heroblk">${gameHero}${boxTop}${reminder}</div>${tabsBar}${previewPane}${statsPane}${dePane}${livePane}`;
       }
 
       // Wire the handlers that live INSIDE #gp-body (tabs). Called after every (re)build so a
@@ -11358,10 +11580,13 @@ export default function Home() {
       function wireBody() {
         const page = $("gamepage"); if (!page) return;
         page.querySelectorAll("[data-dtab]").forEach((b: any) => (b.onclick = () => switchDetailTab(b.dataset.dtab)));
-        // Preview → the strategies panel (same sheet, middle tab), scrolled into view.
+        // → the strategies panel, which now lives inside the Preview's "full read" fold
+        // (it left the Odds tab with the rest of the argument). Opened, then scrolled to.
         page.querySelectorAll("[data-gostrat]").forEach((b: any) => (b.onclick = (e: any) => {
           e.stopPropagation();
-          switchDetailTab("odds");
+          switchDetailTab("preview");
+          const fold = page.querySelector("details.fullread") as any;
+          if (fold) fold.open = true;
           // The sheet body is its own scroller and KEEPS its offset across tabs, so a bare
           // scrollIntoView lands the panel above the fold. Scroll the container by the
           // measured delta instead.
@@ -11425,6 +11650,12 @@ export default function Home() {
       wireBody();
       // if opened on a live game, pull the box score right away
       if (!g._recipe && (gameState(g).kind === "live" || gameState(g).kind === "final")) pollLiveDetail();
+      // Opened DIRECTLY on Odds (a shared link, a back-button restore) — switchDetailTab never
+      // fires on that path, so the wall record is asked for here too.
+      if (!g._recipe && detailTab === "odds") {
+        const gidAtOpen = String(g.game_id);
+        loadWallGrid().then(() => { if (detail && String(detail.game_id) === gidAtOpen) repaintOddsMove(); }).catch(() => {});
+      }
       // ASYNC FEEDS → RE-RENDER. The pitcher cards (pitchers_v4), records+form (teams_v4), and
       // the totals pick (the v4 board) all key off game_pk / abbr and load async — a game opened
       // before they land would paint a bare preview and never fill in. We load all four here, and
@@ -11483,13 +11714,20 @@ export default function Home() {
       page.querySelectorAll(".gp-tab").forEach((b: any) => b.classList.toggle("on", b.dataset.dtab === t));
       page.querySelectorAll(".gp-pane").forEach((p: any) => { p.style.display = p.dataset.pane === t ? "block" : "none"; });
       positionDetailInk();
-      if (t === "live") { pollLiveDetail(); const b = $("gp-body"); if (b) b.scrollTop = b.scrollTop; }
-      // arriving on the box score pulls a fresh MLB document if the cached one is stale
-      // arriving on the box score OR the stats tab pulls a fresh MLB document if the cached
-      // one is stale — the Statcast leaders read the same cached document as the box score,
-      // so a reader who opens Stats first is not made to wait for a tab they never visited.
-      if ((t === "box" || t === "stats") && detail) {
+      // Arriving on Stats pulls a fresh MLB document if the cached one is stale — the player
+      // lines and the Statcast leaders both read it.
+      if (t === "stats" && detail) {
         loadMlbBox(detail).then((m: any) => { if (m) { repaintBoxPane(); repaintGameLeaders(); } }).catch(() => {});
+      }
+      /* ARRIVING ON ODDS FETCHES THE WALL RECORD, and only then. It is the one feed no other
+         surface reads, so it is not on the app's load path at all: the pane paints its locked
+         line immediately and the movement chart fills in when the record lands (guarded to
+         the same game still being open, like every other late-feed repaint here). */
+      if (t === "odds" && detail) {
+        const gidAtTap = String(detail.game_id);
+        loadWallGrid().then(() => {
+          if (detail && String(detail.game_id) === gidAtTap) repaintOddsMove();
+        }).catch(() => {});
       }
     }
     function closeDetail(fromHistory = false, forceRoot = false) {
@@ -16508,6 +16746,66 @@ export default function Home() {
         setTimeout(() => { try { openPaper(id); } catch {} }, 240);
       });
     }
+    /* ══════ THE DESK SAYS THE REST — the long half of the board's strategy strip ══════
+       The strip above the board is three beats and a link. This is where the link lands, and
+       so this is where everything the strip stopped saying has to actually exist:
+
+         · THE WHOLE COMMENTARY. The backend generates three paragraphs of analyst voice from
+           the winning rule's own conditions (`voice.paragraphs`, rule_voice.py). The strip
+           carries the first SENTENCE of the first one. Paragraphs two and three — why the
+           shape points at the over here and the under there, and what it deliberately sits
+           out — had no home on any surface until now.
+         · THE EXACT RULE, as the search serialised it. It moved off the strip in the same
+           pass; it must not simply vanish, because a generated commentary a reader cannot
+           check against the literal conditions is marketing. Closed by default, one tap.
+
+       EVERY WORD OF IT IS SERVED, WHOLE. The commentary, the summary line (which states the
+       window and what the rule did over it), the in-sample caveat and the rule text are all
+       fields on the day block, rendered as they arrive. Nothing here is assembled from parts,
+       and nothing here asserts anything about which picks on today's board the rule made —
+       that is the mixed-board trap the strip was already fixed for, and it is not re-set here.
+
+       WHICH DAY IT SHOWS. The Desk is not date-scoped — it is the product's own page, not a
+       board — so it shows the latest strategy served up to today, and names the date it is
+       talking about rather than assuming "today" is what got served. */
+    function deskStrategyDate() {
+      const today = todayISO();
+      const keys: string[] = [];
+      [livePayload, betaLiveData, betaData, payload].filter(Boolean).forEach((src: any) => {
+        const by = src && src.adaptive_strategy_by_date;
+        if (by && typeof by === "object") keys.push(...Object.keys(by));
+        const root = adaptiveStrategyRoot(src);
+        const sb = root && root.strategy_by_date;
+        if (sb && typeof sb === "object") keys.push(...Object.keys(sb));
+      });
+      const ok = keys.filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k) && k <= today).sort();
+      return ok.length ? ok[ok.length - 1] : today;
+    }
+    function deskTodayStrategyHtml() {
+      const dateISO = deskStrategyDate();
+      const s = adaptiveDayStrategy(dateISO);
+      if (!s || s.status === "ERROR") return "";
+      const name = strategyLabelPublic(s);
+      const fv = forgeVoice(s);
+      const paras = fv ? fv.paras : [strategySentence(s)].filter(Boolean);
+      if (!name && !paras.length) return "";
+      // proseDates only: the served summary dates itself in ISO ("2026-07-22 to 2026-08-07")
+      // while the commentary above it already reads "Jul 22 to Aug 7". Same normalisation the
+      // rest of the app applies to served prose — a date format, not a word.
+      const summary = proseDates(humanNote(s.summary_line));
+      const caveat = humanNote(s.record_is_about_the_past_only);
+      const exact = humanNote(s.plain_english_rule);
+      const isToday = dateISO === todayISO();
+      const dateTxt = stratDateTxt(dateISO) || dateISO;
+      return `<section class="dp-today">
+        <div class="dp-today-k"><span class="dp-today-mk">${strategyMark()}</span>${isToday ? "Today's strategy" : "The last strategy we played"}<i>${esc(dateTxt)}</i></div>
+        ${name ? `<h3 class="dp-today-h">${esc(name)}</h3>` : ""}
+        ${paras.map((p: string) => `<p class="dp-today-p">${esc(p)}</p>`).join("")}
+        ${summary ? `<p class="dp-today-w">${esc(summary)}</p>` : ""}
+        ${exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p>${
+          caveat ? `<p class="dp-today-cav">${esc(caveat)}</p>` : ""}</details>` : ""}
+      </section>`;
+    }
     function renderDesk() {
       const v = $("desk-view"); if (!v) return;
       if (!betaData) {
@@ -16553,6 +16851,11 @@ export default function Home() {
               <button class="dp-recbtn" id="dp-torecord">See every graded pick, day by day<em>→</em></button>
             </div>
           </header>
+
+          <!-- THE STRIP'S OTHER HALF, one scroll under the record it links to: the whole
+               generated commentary and the literal rule beneath it. See
+               deskTodayStrategyHtml() for why each piece is here and not on the board. -->
+          ${deskTodayStrategyHtml()}
 
           <div class="dp-section-k">The four analysis engines</div>
           <div class="dp-grid" role="group" aria-label="The four analysts">${cards}</div>

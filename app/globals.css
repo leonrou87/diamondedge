@@ -8734,6 +8734,12 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   color:var(--ink3);margin:7px 0 0}
 .stgy-win,.stgy-n{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3);margin-top:7px}
 .stgy-n b{color:var(--ink);font-weight:700}
+/* THE SECOND BEAT — what the rule did over its lookback, and therefore why it is today's.
+   It shipped with NO rule of its own: a bare <p> in the fold, so it inherited the document's
+   default 16px and rendered a size and a half larger than the lead line above it, which is
+   the opposite of the intended emphasis. It is the quieter of the two lines. */
+.stgy-why{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink3);margin:0}
+.stgy-voice + .stgy-why{margin-top:7px}
 .stgy-link{display:inline-flex;align-items:center;gap:7px;margin-top:11px;
   padding:7px 13px;border:0;border-radius:999px;cursor:pointer;
   font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.01em;
@@ -8784,6 +8790,28 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   color:var(--ink);margin:9px 0 0;letter-spacing:-.01em}
 .lab-today-p{font-family:var(--sans);font-size:13.5px;line-height:1.55;color:var(--ink2);margin:8px 0 0}
 .lab-today-w{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3);margin:9px 0 0}
+
+/* ══ THE SAME FACT ON THE DESK — the strip's long half (see deskTodayStrategyHtml) ══
+   Three registers now carry the day's strategy and each belongs to its page: the board's
+   strip is product voice and says the least that is true; Research is the journal; this is
+   the Desk's, which is the sales page — so it borrows the Desk's own panel language rather
+   than the strip's glass, and sits directly under the record it explains. */
+.dp-today{position:relative;margin:16px 0 4px;padding:15px 16px 16px;border-radius:16px;
+  background:linear-gradient(150deg,rgba(var(--goldc),.075),rgba(var(--panec),.34) 62%);
+  box-shadow:inset 0 0 0 1px rgba(var(--goldc),.20)}
+.dp-today-k{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:700;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--golddeep)}
+.dp-today-k i{font-style:normal;font-weight:600;letter-spacing:.05em;text-transform:none;
+  color:var(--ink3);margin-left:auto;font-size:11px;white-space:nowrap}
+.dp-today-mk{width:17px;height:17px;flex:none;display:grid;place-items:center;color:var(--golddeep)}
+.dp-today-h{font-family:var(--disp);font-weight:700;font-size:18px;line-height:1.26;
+  color:var(--ink);margin:9px 0 0;letter-spacing:-.01em}
+.dp-today-p{font-family:var(--sans);font-size:13.5px;line-height:1.6;color:var(--ink2);margin:9px 0 0}
+.dp-today-p:first-of-type{color:var(--ink)}
+.dp-today-w{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink3);
+  margin:11px 0 0;padding-top:10px;border-top:1px solid rgba(var(--rimc),.10)}
+.dp-today-x{margin-top:11px}
+.dp-today-cav{margin-top:8px}
 
 /* ══════════ THE NIGHTLY SEARCH — "How we chose today's strategy" (see researchSearchHtml) ══════════
    The heaviest block on the Research index, on purpose. Everything above it is a lab telling
@@ -9139,3 +9167,75 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .ad-house-cta{flex:none;font-family:var(--sans);font-weight:800;font-size:11px;
   letter-spacing:.04em;color:#fff;background:var(--golddeep);padding:7px 12px;border-radius:10px}
 .sh-body .ad-slot{margin:16px 0 4px}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   THE RESTRUCTURED GAME PAGE (2026-08-08)
+   Pregame: Preview · Odds.  Once it starts: the line score and the bet reminder
+   pin above the tabs, and the tabs read Preview · Stats · Odds.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+/* ── the line score, pinned above the tabs ── */
+.gp-boxtop{margin:10px 0 0}
+.gp-boxtop .boxscore{margin:0}
+.gp-boxtop .bx-lswrap{margin:0}
+.gp-boxtop .bx-state{margin:0 0 7px}
+
+/* ── the full argument, folded under the "why" card ── */
+details.fullread{margin:0 0 12px;border-radius:var(--r-md);background:rgba(var(--panec),.4);
+  box-shadow:inset 0 0 0 1px rgba(var(--rimc),.06)}
+details.fullread>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  cursor:pointer;list-style:none;padding:12px 14px;
+  font-family:var(--disp);font-weight:700;font-size:12.5px;letter-spacing:.02em;color:var(--ink2)}
+details.fullread>summary::-webkit-details-marker{display:none}
+details.fullread[open]>summary .sgc-caret{transform:rotate(90deg)}
+details.fullread>.de-pane{padding:0 12px 12px}
+
+/* ═══════════ ODDS — the number, and how it got there ═══════════ */
+.oddspane{display:flex;flex-direction:column;gap:14px}
+.oline{position:relative;border-radius:var(--r-sm);padding:13px 15px 12px;background:var(--paper);box-shadow:var(--e0)}
+.oline::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:var(--r-sm) 0 0 var(--r-sm);background:var(--gold)}
+.oline-k{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gold);line-height:1}
+.oline-main{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-top:9px}
+.oline-tot{display:inline-flex;flex-direction:column;gap:2px;line-height:1}
+.oline-tot b{font-family:var(--mono);font-weight:700;font-size:38px;letter-spacing:-.09em;
+  color:var(--ink);font-variant-numeric:tabular-nums}
+.oline-tot i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:11px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink4)}
+.oline-px{display:inline-flex;gap:14px;padding-bottom:3px}
+.oline-px span{display:inline-flex;flex-direction:column;gap:3px;
+  font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:-.03em;color:var(--ink2);
+  font-variant-numeric:tabular-nums}
+.oline-px em{font-style:normal;font-family:var(--disp);font-weight:600;font-size:10px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink4)}
+.oline-foot{margin-top:9px;font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--ink4)}
+
+.osec-h{font-family:var(--disp);font-weight:700;font-size:16px;line-height:1.25;
+  letter-spacing:.01em;color:var(--ink);margin:0 0 8px}
+
+/* the move chart — a step line, because a posted number holds until it is moved */
+.omv{margin:0 0 12px}
+.omv-svg{display:block;width:100%;height:auto;overflow:visible}
+.omv-grid{stroke:var(--line3);stroke-width:1;stroke-dasharray:2 4}
+.omv-step{fill:none;stroke:var(--acc2);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.omv-dot{fill:var(--acc2)}
+.omv-take path{fill:var(--gold)}
+.omv-yl,.omv-xl,.omv-xk{font-family:var(--mono);font-size:9.5px;fill:var(--ink4);
+  font-variant-numeric:tabular-nums}
+.omv-xk{font-family:var(--sans);font-size:9px;fill:var(--ink4)}
+.omv-cap{margin:6px 2px 0;font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink3)}
+.omv-wait{font-family:var(--sans);font-size:12.5px;color:var(--ink4);padding:6px 2px}
+
+/* the same checks as rows: the number, the best price, the book quoting it */
+.owt-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.owt{width:100%;min-width:100%;border-collapse:collapse}
+table.owt th{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink4);text-align:right;padding:0 0 7px;white-space:nowrap}
+table.owt th:first-child{text-align:left}
+table.owt td{font-family:var(--mono);font-size:13px;color:var(--ink2);text-align:right;
+  padding:7px 0;border-top:1px solid var(--line3);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.owt td.owt-w{text-align:left;font-family:var(--disp);font-weight:700;color:var(--ink3);font-size:12px}
+table.owt td.owt-l{color:var(--ink);font-weight:700}
+table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
+.owt-foot{margin:8px 2px 0;font-family:var(--sans);font-size:11.5px;line-height:1.45;color:var(--ink4)}
