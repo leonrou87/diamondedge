@@ -1608,6 +1608,15 @@ export default function Home() {
             ? c.strength : null;
           return take && s && s.tier ? s : null;
         })(),
+        /* THE 0–100 CONFIDENCE — carried, never rebuilt. Same trap as `strength` above: this
+           normaliser names its fields, so anything it does not name is dropped on the floor,
+           and the served confidence block would have been invisible on every board surface
+           while sitting in the payload. The three keys travel TOGETHER (the backend's own
+           contract: `confidence`, `confidence_score`, `confidence_basis`) or not at all, so
+           they are copied together and only onto a pick that was actually taken. */
+        confidence: take && pk.confidence && typeof pk.confidence === "object" ? pk.confidence : null,
+        confidence_score: take && pk.confidence_score != null ? pk.confidence_score : null,
+        confidence_basis: take && pk.confidence_basis != null ? pk.confidence_basis : null,
       };
     }
     // ═══════════ SPREAD STREAM — run lines RETURN (Leon, 2026-07-26; live 2026-07-27) ═══════════
@@ -3197,6 +3206,12 @@ export default function Home() {
       return `<section class="decall ${cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
         ${head}${callRow}${unlockRow}
         ${locked ? "" : unobtainableRow(g)}
+        ${/* THE CONFIDENCE, WHERE THERE IS ROOM TO SAY WHAT IT IS. The board tag prints the
+             bare number; this is the surface a reader stopped on, so it gets the served score
+             with its basis and its vote counts. Gated on `locked` and on `avoid` exactly like
+             the side is — the vote counts reconstruct the direction, so a redacted call must
+             not carry them, and a game we passed on has no pick to be confident about. */
+          !locked && !avoid ? confidenceBlock(pl) : ""}
         ${!locked && (rlHtml || predHtml) ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
         ${rat && !locked ? `<p class="de-rat">${esc(rat)}</p>` : ""}
         ${locked ? "" : coherenceBlock(chief)}
@@ -7426,52 +7441,37 @@ export default function Home() {
        resolves the direction to "", so a locked tag has no tier in its class, its title, its
        aria-label or anywhere else in the DOM. */
     const STRENGTH_RANK: any = { strong: 3, standard: 2, lean: 1 };
-    /* ════════════════ THE CONFIDENCE PERCENT — ONE NUMBER, HONESTLY DERIVED ════════════════
-       Leon: "goal wasn't to rank picks but rather… just have some cool percent on confidence
-       of pick."
+    /* ════════════ THE CONFIDENCE 0–100 — SERVED, AND NEVER RECOMPUTED HERE ════════════
+       Leon, 2026-08-08: "Add some kind of confidence score that we should just normalize
+       based on pick strength from 0 to 100 and weave that into the UI."
 
-       IT IS NOT A NEW MEASUREMENT AND IT IS NOT A GUESS. It is the committee vote the payload
-       already carries, rescaled onto a readable 0–100 axis. Nothing is sampled, nothing is
-       randomised, nothing is fitted: the same board always produces the same number, and a
-       room that backed its side harder always produces a higher one.
+       THE NUMBER BELONGS TO THE BACKEND. `v4/serve/pick_confidence.py` computes it and
+       publishes it on the served pick as three keys that always travel together —
+       `confidence` (the whole block, with its own version stamp), plus the flat mirrors
+       `confidence_score` and `confidence_basis`. One measure
+       (`smoothed_backing_margin`, p = (for+1)/(for+against+2), capped at 99 so no card ever
+       prints certainty), one scale, one place it is decided. This file READS it.
 
-       WHAT GOES IN — two facts, both served, both already published on the pick:
-         backing   = votes_for / seats_total     the backend's own measure (pick_strength.py);
-                                                 seats_total INCLUDES abstentions, so a seat
-                                                 that stayed silent counts against the number
-         unanimity = votes_for / (votes_for + votes_against)   1.0 when nobody voted the other
-                                                 way; below 1 when the room was split
+       WHY THE CLIENT-SIDE DERIVATION THAT USED TO LIVE HERE IS GONE. It rescaled
+       `pick_strength`'s vote share onto its own 0–100 bands. That share divides by every
+       SEATED strategy, abstentions included, and on a 31-seat committee where the top pick
+       draws four seats it puts every pick on every board under the "lean" cut — which is the
+       argument `pick_confidence` was written to answer. The two formulas do not agree:
+       on tonight's board the old rescale reads 52 where the served measure reads 33. Two
+       numbers behind the same "%" is not a fallback, it is the app contradicting its own
+       backend on a card. So there is exactly ONE source, and when it is absent the surface
+       shows NOTHING — never a locally-derived stand-in, never a default 50.
 
-       HOW IT MAPS. The percent is anchored to the SAME pre-specified cuts the tier ladder uses
-       (strong ≥ .50 of the seated committee, standard ≥ .25) so the number and the tier can
-       never contradict each other — a Strong pick always reads 85 or above, a Standard one 70
-       to 84, a Lean below 70. Inside its band the percent moves linearly with `backing`:
+       ABSENT IS NORMAL AND MUST COST NOTHING. Six of the twelve picks on 2026-08-08 came
+       through the owner-directed channel with no committee vote and no rule record behind
+       them; the backend refuses to score those rather than invent a number, and they render
+       exactly as they did before this measure existed. Same for every archived board — the
+       contract publishes confidence on a LIVE pick only.
 
-            lean      backing 0    → .25   ⇒  50 → 69
-            standard  backing .25  → .50   ⇒  70 → 84
-            strong    backing .50  → 1.0   ⇒  85 → 99
-
-       THEN THE DISSENT HAIRCUT. A room that argued is less confident than a room that did
-       not, at identical backing, so the distance travelled ABOVE the band's floor is scaled by
-       `unanimity`. It can never push a pick below its own tier's floor — the tier is the
-       backend's call and this only positions within it.
-
-       WHY 50 IS THE FLOOR. The committee's majority side IS the pick — the pick was taken, so
-       the number that describes it starts at the coin flip and goes up. A percent under 50
-       would be describing a pick nobody made.
-
-       WHAT IT IS NOT. Not a win probability, not an edge, not a price. It says how much of the
-       room was behind the call, and nothing whatever about how often such calls land — which
-       is why the per-tier record is published separately and the number never sits next to a
-       payout. The tier name and the raw seat count both ride in the title.
-
-       NO COMMITTEE ⇒ NO NUMBER. A desk-sourced or legacy pick has no vote to read and gets
-       nothing at all — never 50, never a dash. */
-    const CONF_BANDS: any = {
-      lean: { lo: 0, hi: 0.25, floor: 50, span: 19 },
-      standard: { lo: 0.25, hi: 0.50, floor: 70, span: 14 },
-      strong: { lo: 0.50, hi: 1.00, floor: 85, span: 14 },
-    };
+       WHAT IT IS NOT — and the reason it never sits beside a payout. Not a win probability
+       (90 does not mean 90%), not an edge, not a price, and not comparable between its two
+       bases. The served block says all of that in its own words and those words, not ours,
+       are what the explainer surfaces print. */
     /* ABSENT IS NOT ZERO. `Number(null)` is 0 and `Number("")` is 0, so a plain Number() cast
        turns "this pick has no committee" into "this pick had zero seats behind it" — which is
        exactly how a desk-sourced pick with no vote at all first rendered a confident-looking
@@ -7481,14 +7481,69 @@ export default function Home() {
       const n = Number(v);
       return Number.isFinite(n) ? n : null;
     };
-    function confidencePct(tier: string, backing: number | null, vf: number | null, va: number | null) {
-      const b = CONF_BANDS[tier];
-      if (!b || backing == null || !(backing >= 0)) return null;
-      const pos = Math.max(0, Math.min(1, (backing - b.lo) / (b.hi - b.lo)));
-      // the haircut only applies when BOTH counts are known; an unknown room is not a split one
-      const cast = vf != null && va != null && vf >= 0 && va >= 0 ? vf + va : null;
-      const unan = cast && cast > 0 ? Math.max(0, Math.min(1, (vf as number) / cast)) : 1;
-      return Math.max(50, Math.min(99, Math.round(b.floor + b.span * pos * unan)));
+    /* THE ONE READER. Takes a pick in either shape — the raw served object off the feed, or
+       the normalised play v4ToPlay() builds (which now copies the three keys forward) — and
+       returns the served score with the facts that back it, or null.
+
+       IT REFUSES A BROKEN CONTRACT RATHER THAN GUESSING PAST IT. The block's own `score` and
+       the flat `confidence_score` are the same fact published twice; if a payload ever ships
+       them disagreeing, one of them is wrong and there is no way to know which, so this
+       returns null and the surfaces stay quiet. Out-of-range scores are refused the same
+       way. Everything else — the vote counts, the rule's record, the high band — is read
+       straight off the block and is optional. */
+    function servedConfidence(pl: any) {
+      if (!pl || typeof pl !== "object") return null;
+      const blk = pl.confidence && typeof pl.confidence === "object" ? pl.confidence : null;
+      const inner = blk ? numOr(blk.score) : null;
+      const flat = numOr(pl.confidence_score);
+      if (inner != null && flat != null && Math.round(inner) !== Math.round(flat)) return null;
+      const raw = inner != null ? inner : flat;
+      if (raw == null || !(raw >= 0 && raw <= 100)) return null;
+      const score = Math.round(raw);
+      const basis = String((blk && blk.basis) || pl.confidence_basis || "");
+      const hiMin = (blk && numOr(blk.high_band_min)) != null ? (numOr(blk!.high_band_min) as number) : null;
+      return {
+        score,
+        basis,
+        basisLabel: String((blk && blk.basis_label) || ""),
+        // `is_per_game: false` is the forge basis saying out loud that one rule chose the
+        // whole board and this number does not separate the picks on it.
+        perGame: blk ? blk.is_per_game !== false : true,
+        // the high band is the backend's flag, not a threshold this file invented
+        high: !!(blk && blk.high_band === true),
+        highMin: hiMin,
+        votesFor: blk ? numOr(blk.votes_for) : null,
+        votesAgainst: blk ? numOr(blk.votes_against) : null,
+        votesCast: blk ? numOr(blk.votes_cast) : null,
+        votesAbstain: blk ? numOr(blk.votes_abstain) : null,
+        seats: blk ? numOr(blk.seats_total) : null,
+        record: blk && typeof blk.record === "string" ? blk.record : "",
+        windowNights: blk ? numOr(blk.window_nights) : null,
+        what: String((blk && blk.what_it_is) || ""),
+        notProb: String((blk && blk.not_a_probability) || ""),
+        inSample: String((blk && blk.evidence_is_in_sample) || ""),
+      };
+    }
+    /* THE SENTENCE UNDER THE NUMBER — assembled only from counts the block actually carries.
+       Each branch is a lookup: no clause here can be produced without the field it states.
+       When the block carries no counts at all, the backend's own `what_it_is` prose is used
+       verbatim rather than a sentence written from nothing. */
+    function confidenceSentence(c: any) {
+      if (!c) return "";
+      if (c.basis === "committee_vote" && c.votesFor != null && c.votesCast != null && c.votesCast > 0) {
+        const room = c.votesAgainst === 0
+          ? `All ${c.votesCast} ${c.votesCast === 1 ? "strategy" : "strategies"} that had a read on this game took this side`
+          : `${c.votesFor} of the ${c.votesCast} strategies that had a read on this game took this side`;
+        const quiet = c.votesAbstain != null && c.seats != null
+          ? `, and ${c.votesAbstain} of the ${c.seats} seats stayed out of it`
+          : "";
+        return `${room}${quiet}.`;
+      }
+      if (c.basis === "rule_lookback" && c.record) {
+        const win = c.windowNights ? ` across its last ${c.windowNights} nights` : "";
+        return `One rule chose every pick on this board and it went ${c.record}${win} — on the same games that chose it.`;
+      }
+      return c.what || "";
     }
     /* ONE PLACE KNOWS THE PAYLOAD SHAPE. A pick reaches a renderer in two forms — the raw
        served object straight off the feed, and the normalised `play` v4ToPlay() builds for
@@ -7544,49 +7599,104 @@ export default function Home() {
       if (!STRENGTH_RANK[tier]) return null;
       const rank = Math.max(1, Math.min(3, Number(s && s.rank) || STRENGTH_RANK[tier]));
       const label = String((s && s.label) || "") || (tier.charAt(0).toUpperCase() + tier.slice(1));
-      const pct = confidencePct(tier, backing, vf, va);
       return {
-        tier, rank, label, pct, seats, votesFor: vf,
+        tier, rank, label, seats, votesFor: vf,
         blurb: String((s && s.blurb) || ""),
       };
     }
-    /* THE PERCENT ON THE TAG. `reveal` is the caller's gate — pass the same flag that decides
-       whether the side may be named, so the two can never diverge: a locked tag carries no
-       tier, no number and no seat count anywhere in its DOM.
-       The tier survives underneath, in the title, exactly as the pips used to say it. */
-    function strengthConfTitle(s: any) {
-      if (!s || s.pct == null) return "";
-      const room = s.votesFor != null && s.seats
-        ? ` — ${s.votesFor} of ${s.seats} seats backed this side`
-        : "";
-      return `${s.pct}% confidence · ${s.label}${room}`;
+    /* THE TITLE BEHIND THE NUMBER. The score, the basis it came from, and the sentence that
+       backs it — all served. The strength TIER is appended when the pick has one, because it
+       answers a different question (how much of the whole committee, abstentions included)
+       and the two must never be mistaken for the same fact. */
+    function confidenceTitle(pl: any) {
+      const c = servedConfidence(pl);
+      if (!c) return "";
+      const s = committeeStrength(pl);
+      const sentence = confidenceSentence(c);
+      return [
+        `${c.score}/100 confidence${c.basisLabel ? ` · ${c.basisLabel}` : ""}`,
+        sentence,
+        s ? `Strength tier: ${s.label}.` : "",
+      ].filter(Boolean).join(" — ");
     }
+    /* THE NUMBER ON THE TAG. `reveal` is the caller's gate — pass the same flag that decides
+       whether the side may be named, so the two can never diverge: a locked tag carries no
+       number, no vote count and no tier anywhere in its DOM.
+       NOTE it no longer needs a committee: a pick scored on the forge's rule-lookback basis
+       has no per-game vote and still carries a served score, and this prints it. */
     function strengthPct(pl: any, reveal: boolean) {
       if (!reveal) return "";
-      const s = committeeStrength(pl);
-      if (!s || s.pct == null) return "";
-      return `<span class="de-conf q-${esc(s.tier)}" title="${esc(strengthConfTitle(s))}">${s.pct}%</span>`;
+      const c = servedConfidence(pl);
+      if (!c) return "";
+      return `<span class="de-conf${c.high ? " is-high" : ""}" title="${esc(confidenceTitle(pl))}">${c.score}%</span>`;
     }
     /* (the pips helper retired with the pips' last call site on the tag. The dots survive as
        markup in the two places the TIER itself is the subject — the story-deck chip below and
        the research plate's per-tier record rows — and both write them inline.) */
     function strengthWords(pl: any, reveal: boolean) {
-      const s = reveal ? committeeStrength(pl) : null;
-      if (!s) return "";
-      return s.pct != null ? strengthConfTitle(s) : `${s.label} conviction`;
+      if (!reveal) return "";
+      const t = confidenceTitle(pl);
+      if (t) return t;
+      const s = committeeStrength(pl);
+      return s ? `${s.label} conviction` : "";
     }
     /* WHERE THE NUMBER GETS ITS NAME. The story deck is the one surface a reader meets at
        walking pace, and it is where the percent is taught rather than merely shown: the tier's
-       own pips, the tier's word, and the percent that came out of the same vote, side by side
-       once. By the time a reader reaches the board, "62%" on a black tag needs no caption. */
+       own pips, the tier's word, and the served confidence beside them, once, with the word
+       "confidence" actually said. By the time a reader reaches the board, "75%" on a black tag
+       needs no caption. A pick with a score and no tier still gets the chip — the number is
+       the subject, the pips are the optional part. */
     function strengthChip(pl: any, reveal: boolean) {
       if (!reveal) return "";
       const s = committeeStrength(pl);
-      if (!s) return "";
-      return `<span class="strchip q-${esc(s.tier)}" title="${esc(strengthConfTitle(s) || s.blurb || "")}">
-        <span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(s.label)}</b>${
-        s.pct != null ? `<span class="de-conf">${s.pct}%</span>` : ""}
+      const c = servedConfidence(pl);
+      if (!s && !c) return "";
+      return `<span class="strchip${s ? ` q-${esc(s.tier)}` : ""}${c && c.high ? " is-high" : ""}" title="${esc(confidenceTitle(pl) || (s && s.blurb) || "")}">
+        ${s ? `<span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(s.label)}</b>` : ""}${
+        c ? `<span class="de-conf">${c.score}<i>% confidence</i></span>` : ""}
       </span>`;
+    }
+    /* ════════ THE CONFIDENCE BLOCK — the number with its evidence, on a pick surface ════════
+       The tag carries the bare percent because a board tile has 139px and no room to explain
+       anything. Every surface where the reader has stopped ON one pick gets the full object:
+       the score against its scale, a meter, the basis it was computed from, and the sentence
+       that backs it. Nothing here is written unless the served block carries the fields for
+       it — an absent count removes a clause, an absent block removes the whole element.
+
+       THE THREE THINGS IT REFUSES TO IMPLY:
+         · it is not a probability — the served `not_a_probability` line is the caption, in
+           the backend's words rather than ours;
+         · a forge-basis score is the SAME number on every pick on the board, and says so;
+         · a high-band pick is marked only because the backend set `high_band`, which is a
+           label on the scale and not a claim that those picks win more often. */
+    function confidenceBlock(pl: any, reveal = true) {
+      if (!reveal) return "";
+      const c = servedConfidence(pl);
+      if (!c) return "";
+      const sentence = confidenceSentence(c);
+      /* THE FOOTNOTE IS ONE LINE, AND THE SERVED PARAGRAPH RIDES IN THE TITLE.
+         The block's `not_a_probability` text is 60 words and rendered six lines of caveat
+         under a two-line fact — a consumer surface hedging at four times the length of the
+         thing it qualifies. The qualification still has to be MADE, so it is made once,
+         short, and the backend's full wording is one hover/long-press away on the element
+         itself. A forge-basis score says its own more important thing instead: that it does
+         not separate the picks on this board. */
+      const foot = !c.perGame
+        ? "One rule chose every pick on this board, so this score is the same for all of them."
+        : "Not a win probability — it measures how one-sided the evidence behind the pick is.";
+      const full = [c.what, c.inSample, c.notProb].filter(Boolean).join(" ");
+      return `<div class="cfblk${c.high ? " is-high" : ""}"${full ? ` title="${esc(full)}"` : ""}>
+        <div class="cfb-h">
+          <span class="cfb-k">Pick confidence${c.basisLabel ? ` · ${esc(c.basisLabel)}` : ""}</span>
+          <span class="cfb-v"><b>${c.score}</b><i>/100</i></span>
+        </div>
+        <div class="cfb-bar" role="img" aria-label="Confidence ${c.score} out of 100">
+          <span class="cfb-fill" style="width:${Math.max(2, Math.min(100, c.score))}%"></span>
+          ${c.highMin != null ? `<span class="cfb-mark" style="left:${Math.max(0, Math.min(100, c.highMin))}%" aria-hidden="true"></span>` : ""}
+        </div>
+        ${sentence ? `<p class="cfb-s">${esc(sentence)}</p>` : ""}
+        ${foot ? `<p class="cfb-f">${esc(foot)}</p>` : ""}
+      </div>`;
     }
     function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false, stamp = "") {
       const line = noPick ? (ouLineForPick(g, null) || ouLineForPick(g, pl)) : ouLineForPick(g, pl);
@@ -8848,13 +8958,53 @@ export default function Home() {
             ${rule ? `<p class="stgy-rule"><span>How it reads a game</span>${esc(rule)}</p>` : ""}
             <p class="stgy-win">${esc(windowTxt)}</p>
             <p class="stgy-n">${countTxt}</p>
-            <button class="stgy-link" id="stgy-paper" type="button">How our nightly engine works<em>→</em></button>
+            <!-- THE LABEL KEEPS ITS NAME AND GAINS ITS DESTINATION. It is the phrase Leon
+                 refers to this link by, so it stays; what follows the dash is where it now
+                 goes — the Desk, and specifically the record on it. -->
+            <button class="stgy-link" id="stgy-paper" type="button">How our nightly engine works — and how it's doing<em>→</em></button>
           </div>
         </div>
       </div>`;
     }
+    /* ════════ LANDING ON THE DESK'S RESULTS — not at the top of a long tab ════════
+       Leon: "when you click on how the strategy works take us to the Desk page and really
+       highlight the DiamondEdge results and all the stats on performance."
+
+       THREE THINGS HAVE TO HAPPEN, IN ORDER, AND THE THIRD IS THE ONE THAT IS USUALLY
+       MISSED. switch the tab; make sure the Desk has actually RENDERED (it is cached and
+       invalidated by the pick poller, so on a stale cache the region does not exist yet at
+       the moment the click is handled); then scroll to the record region and ring it.
+
+       WHY IT POLLS RATHER THAN SLEEPS. switchTab defers its render behind
+       requestAnimationFrame — which is SUSPENDED in a background tab — with a 120ms timeout
+       as the fallback, and its pan phase adds another 152ms. A single fixed setTimeout is a
+       race against all three. This retries on a short interval until the element exists and
+       gives up after ~1.6s rather than scrolling a page that is not there.
+
+       THE SCROLL IS OFFSET BY THE STICKY HEADER, measured off the element rather than
+       assumed — it differs between web and the native shell, and between date-strip states. */
+    function goDeskResults() {
+      let tries = 0;
+      const land = () => {
+        if (tab !== "desk") return;               // the reader navigated away mid-flight
+        const el = $("desk-results");
+        if (!el) { if (++tries < 14) setTimeout(land, 120); return; }
+        const hdr = $("app-header");
+        const hh = hdr ? hdr.getBoundingClientRect().height : 0;
+        const top = el.getBoundingClientRect().top + window.scrollY - hh - 14;
+        try { window.scrollTo({ top: Math.max(0, top), behavior: REDUCE ? "auto" : "smooth" }); }
+        catch { window.scrollTo(0, Math.max(0, top)); }
+        // restart the ring even if the reader lands here twice in a row
+        el.classList.remove("dp-spot"); void (el as any).offsetWidth; el.classList.add("dp-spot");
+        window.setTimeout(() => el.classList.remove("dp-spot"), 2600);
+      };
+      if (tab === "desk") { if (deskStale || !($("desk-view") || {} as any).innerHTML.trim()) { renderDesk(); deskStale = false; } setTimeout(land, 40); }
+      else { switchTab("desk"); setTimeout(land, 300); }
+    }
     // The bar's two bindings. Expansion is in place (no navigation, no sheet); the link is the
-    // one place the reader leaves, and it lands on the paper rather than on the tab's top.
+    // one place the reader leaves, and it lands on the Desk's record — the proof — rather than
+    // on a research paper. The papers are still one tap further on, linked from the Desk's own
+    // text, which is the order Leon asked for: board → proof → the research behind it.
     function bindStrategyBar() {
       bindClick("stgy-btn", () => {
         const wrap = $("stgy"), btn = $("stgy-btn");
@@ -8864,11 +9014,7 @@ export default function Home() {
       }, { optional: "the strategy bar only renders for MLB/All on today or a forward board" });
       bindClick("stgy-paper", (e: any) => {
         if (e) e.stopPropagation();
-        // Papers may not be loaded yet (Research has never been opened) — load, then land.
-        loadPapers().catch(() => null).then(() => {
-          switchTab("research");
-          setTimeout(() => { try { openPaper(STRATEGY_PAPER_ID); } catch {} }, 240);
-        });
+        goDeskResults();
       }, { optional: "only rendered inside the expanded strategy bar" });
     }
     // Contained like every other served-data renderer here: the strip reads the day ledger,
@@ -10276,7 +10422,12 @@ export default function Home() {
       };
       // TOTALS-ONLY product: only the over/under is our call — no spread/ML rows.
       return `<div class="mkt-table"><div class="mt-h">The DiamondEdge call</div>
-        <table class="mt-tbl"><thead><tr><th>Market</th><th>Line</th><th>Our call</th><th>Confidence</th></tr></thead>
+        <!-- THE COLUMN IS "RATING", NOT "CONFIDENCE" — it holds the star tier and the model's
+             0–5 score, and since 2026-08-08 this same pane also carries the served 0–100 PICK
+             CONFIDENCE a few hundred pixels below. Two different measurements under one word,
+             on one screen, is the exact confusion the confidence number was added to avoid.
+             The cell's contents are unchanged; only the word above them is. -->
+        <table class="mt-tbl"><thead><tr><th>Market</th><th>Line</th><th>Our call</th><th>Rating</th></tr></thead>
         <tbody>${row("total", "Total (O/U)")}</tbody></table></div>`;
     }
     // The core thesis, made visible: OUR number vs the MARKET's, and the gap that makes the bet.
@@ -10420,8 +10571,14 @@ export default function Home() {
       // stays available underneath as the raw streams; without the desk it renders as before.
       const debate = deskDebatePanel(g, leadLocked);
       const stratHtml = strategiesPanel(g);
+      /* THE CONFIDENCE, ON THE TAB THAT ARGUES THE CALL. The board tile has room for the bare
+         number and nothing else; this pane is where a reader came to read the reasoning, so
+         the served score appears here with the evidence under it. TAKE only — a pass has no
+         pick to be confident about — and it renders nothing at all on a pick the backend
+         declined to score. */
+      const confHtml = lead2 ? confidenceBlock(lead) : "";
       return `<div class="de-pane">
-        <div class="de-lead"><div class="de-k">◆ Why DiamondEdge ${lead2 ? "is on this" : "passed"}</div><p class="de-sub">${intro}</p></div>
+        <div class="de-lead"><div class="de-k">◆ Why DiamondEdge ${lead2 ? "is on this" : "passed"}</div><p class="de-sub">${intro}</p>${confHtml}</div>
         ${debate || stratHtml}
         ${debate && stratHtml ? `<details class="dskdb-raw"><summary><span>The raw model streams behind the desk</span><span class="sgc-caret" aria-hidden="true">›</span></summary>${stratHtml.replace(' id="stgy-panel"', "")}</details>` : ""}
         ${narrative}
@@ -15828,6 +15985,48 @@ export default function Home() {
         ${deskCalendar(d)}
       </div>`;
     }
+    /* ════════ IN-TEXT LINKS FROM THE DESK INTO THE RESEARCH ════════
+       Leon: "then links in text of research page too", and the whole path he described is
+       board → proof → the research behind it. So the Desk's own sentences carry the links,
+       and each one opens the SPECIFIC paper rather than dropping the reader at the top of the
+       Research tab to go looking.
+
+       ONE MECHANISM, TWO CHECKS. `paperLink` refuses to render a link to a paper id the
+       corpus does not contain — the text survives, the link does not, so a renamed or retired
+       paper degrades to prose instead of to a dead button. And because the papers file is
+       lazy-loaded (Research may never have been opened), the id cannot be validated at render
+       time on a cold start; the guard therefore runs on CLICK as well, where `openPaper` is a
+       no-op for an unknown id. */
+    const DESK_PAPERS = {
+      SEARCH: "kr-2026-003",     // We Don't Have a System. We Have 2,848 of Them
+      WALKFWD: "kr-2026-006",    // No Rewinding the Tape
+      ANALYSTS: "kr-2026-002",   // Why Our Four Analysts Never Read the Same Stats
+      MULTITEST: "kr-2026-007",  // Test 41 Ideas and Two Will Look Brilliant By Pure Luck
+      GRADING: "kr-2026-009",    // Two Sources Have To Agree On the Score
+      PRICES: "kr-2026-008",     // The Prices We Were Betting Into Did Not Exist
+      NULLS: "kr-2026-017",      // Everything That Didn't Work — and Why We Show You All of It
+    };
+    /* IT IS AN ANCHOR, NOT A BUTTON, AND THAT IS A LAYOUT DECISION. A <button> is an
+       inline-BLOCK whatever `display:inline` claims: the phrase becomes one unbreakable box,
+       so "chosen before the games it is graded on" jumped to its own line and left the full
+       stop stranded on the next one. An <a> flows and wraps like the words around it, which
+       is the entire point of an in-text link. No href — it navigates in-app, not by URL — so
+       the role and the tabindex are stated, and the binder answers Enter and Space the way a
+       real link would. */
+    function paperLink(id: string, text: string) {
+      const loaded = allPapers();
+      // unknown id + a corpus we can actually check ⇒ plain text, never a dead control
+      if (loaded && loaded.length && !loaded.some((p: any) => p && p.id === id)) return esc(text);
+      return `<a class="rlink" role="button" tabindex="0" data-gopaper="${esc(id)}">${esc(text)}</a>`;
+    }
+    // The one way into a specific paper from outside Research. Papers are lazy-loaded, so the
+    // fetch has to settle before the tab switch or `openPaper` finds an empty corpus.
+    function openResearchPaper(id: string) {
+      loadPapers().catch(() => null).then(() => {
+        switchTab("research");
+        setTimeout(() => { try { openPaper(id); } catch {} }, 240);
+      });
+    }
     function renderDesk() {
       const v = $("desk-view"); if (!v) return;
       if (!betaData) {
@@ -15857,10 +16056,21 @@ export default function Home() {
                science for the reader who wants it. -->
           <header class="dp-mast">
             <span class="dp-k">The Desk</span>
-            ${deskRecordHero()}
-            <p class="dp-pitch">Every night our system replays thousands of strategy combinations across our four analysts, and plays only the best one the next day.</p>
-            ${deskLast14Widget(betaData)}
-            <button class="dp-recbtn" id="dp-torecord">See every graded pick, day by day<em>→</em></button>
+            <!-- ═══ THE RESULTS REGION, WHICH IS ALSO A LANDING TARGET ═══
+                 Leon: "when you click on how the strategy works take us to the Desk page and
+                 really highlight the DiamondEdge results and all the stats on performance."
+                 That link used to open a research paper. It now lands HERE, and "here" has to
+                 be a real place — so the four things a reader came to check (the headline
+                 record, the cumulative curve, the fortnight calendar, and the way through to
+                 every graded pick) are one addressable region with one id, rather than four
+                 siblings the scroll has to guess between. goDeskResults() scrolls to this
+                 element and rings it; nothing else about it changes. -->
+            <div class="dp-results" id="desk-results" tabindex="-1">
+              ${deskRecordHero()}
+              <p class="dp-pitch">Every night our system replays ${paperLink(DESK_PAPERS.SEARCH, "thousands of strategy combinations")} across our four analysts, and plays only the best one the next day.</p>
+              ${deskLast14Widget(betaData)}
+              <button class="dp-recbtn" id="dp-torecord">See every graded pick, day by day<em>→</em></button>
+            </div>
           </header>
 
           <div class="dp-section-k">The four analysis engines</div>
@@ -15880,10 +16090,15 @@ export default function Home() {
                reader who wants methodology already is. -->
           <section class="dp-cred">
             <div class="dp-cred-k">Why it holds up</div>
+            <!-- EACH CLAIM CARRIES ITS OWN PROOF. Leon: "links in text of research page too."
+                 The three sentences are unchanged; what is new is that the phrase making each
+                 claim is the link to the paper that tests it, so a sceptical reader goes from
+                 the assertion straight to the evidence for that assertion — not to a corpus
+                 index. -->
             <ul class="dp-cred-list">
-              <li><b>An overnight search.</b> Thousands of strategy combinations, replayed against every finished game, every night.</li>
-              <li><b>Walk-forward, never hindsight.</b> Each day's strategy is chosen before the games it is graded on.</li>
-              <li><b>Four independent engines.</b> They read different things and are graded separately, so agreement means something.</li>
+              <li><b>An overnight search.</b> ${paperLink(DESK_PAPERS.SEARCH, "Thousands of strategy combinations")}, replayed against every finished game, every night.</li>
+              <li><b>Walk-forward, never hindsight.</b> Each day's strategy is ${paperLink(DESK_PAPERS.WALKFWD, "chosen before the games it is graded on")} — and we ${paperLink(DESK_PAPERS.MULTITEST, "count every idea we tested")}, so a lucky one cannot pose as a real one.</li>
+              <li><b>Four independent engines.</b> They ${paperLink(DESK_PAPERS.ANALYSTS, "read different things")} and are graded separately, so agreement means something.</li>
             </ul>
             <button class="dp-more-btn" id="dp-toresearch">How we test it — the research programme<em>→</em></button>
           </section>
@@ -15910,7 +16125,7 @@ export default function Home() {
                  The fold does not render at all when there are no tiered picks. -->
             ${strengthRecordBlock() ? lazyFold("dp-strength", `<span>Strong picks vs thin ones</span><span class="sgc-caret" aria-hidden="true">›</span>`,
               () => `<div class="dp-more-body">${researchStrengthHtml()}</div>`) : ""}
-            <p class="dp-note"><b>How the records work.</b> Each analyst is measured on the calls they filed. DiamondEdge is measured on the picks it published. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
+            <p class="dp-note"><b>How the records work.</b> Each analyst is measured on the calls they filed. DiamondEdge is measured on the picks it published, at ${paperLink(DESK_PAPERS.PRICES, "prices that were really on the board")} and against ${paperLink(DESK_PAPERS.GRADING, "finals two sources agree on")}. We publish ${paperLink(DESK_PAPERS.NULLS, "everything that didn't work")} too. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
           </div>
 
           <!-- ONE ASK, AT THE FOOT OF THE SELL. A landing page earns its CTA by the time the
@@ -15929,6 +16144,14 @@ export default function Home() {
       // this button, and the 14-day widget itself.
       bindClick("dp-torecord", () => switchTab("results"));
       bindClick("dp-toresearch", () => switchTab("research"));
+      // THE IN-TEXT RESEARCH LINKS. Deep-linked: each one opens its own paper, not the tab.
+      // Anchor + role=button ⇒ the keyboard contract is ours to honour, so Enter and Space
+      // both fire it and Space does not scroll the page out from under the reader.
+      v.querySelectorAll("[data-gopaper]").forEach((b: any) => {
+        const go = (e: any) => { e.preventDefault(); e.stopPropagation(); openResearchPaper(b.dataset.gopaper); };
+        b.onclick = go;
+        b.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") go(e); };
+      });
       bindClick("dp-premium", () => openUnlock(), { optional: "hidden for premium members" });
       const w14 = v.querySelector(".dp-14") as any;
       if (w14) {

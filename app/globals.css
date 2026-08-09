@@ -2791,14 +2791,49 @@ details.more .more-body{padding-top:12px}
 /* on a board tile: ~15px, the slot the pips vacated */
 .de-mini-pick.dmp-tile .de-conf{font-size:9px;letter-spacing:-.03em}
 .de-mini-pick.dmp-detail .de-conf{font-size:12.5px}
-/* a STRONG room is the one case the number is allowed to warm up — the tag's own gold, at the
-   same weight, so the rare pick with half the committee behind it is findable in a column */
-.de-mini-call .de-conf.q-strong{color:rgba(246,199,69,.92)}
+/* THE HIGH BAND is the one case the number is allowed to warm up — the tag's own gold, at the
+   same weight, so a 90+ pick is findable in a column. The class comes from the backend's own
+   `high_band` flag (pick_confidence.HIGH_BAND_MIN), never from a threshold written here, and
+   it is a LABEL on the scale: it says where the number sits, not that those picks win more. */
+.de-mini-call .de-conf.is-high{color:rgba(246,199,69,.92)}
 /* the game page's full call block is INK ON PAPER, not white on black — same figure, page palette */
 .de-side .de-conf{margin-left:6px;color:var(--ink3)}
-.de-side .de-conf.q-strong{color:var(--golddeep)}
-.strchip .de-conf{color:var(--ink2)}
-.strchip.q-strong .de-conf{color:var(--golddeep)}
+.de-side .de-conf.is-high{color:var(--golddeep)}
+.strchip .de-conf{color:var(--ink2);display:inline-flex;align-items:baseline;gap:2px}
+/* the chip is the one place the number says its own name, so the caption rides with it */
+.strchip .de-conf i{font-family:var(--disp);font-style:normal;font-weight:700;font-size:8.5px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.strchip.is-high .de-conf,.strchip.is-high .de-conf i{color:var(--golddeep)}
+
+/* ══════════════ THE CONFIDENCE BLOCK — the number with its evidence ══════════════
+   The tag prints the bare percent because a board tile has 139px and no room to explain.
+   Wherever the reader has STOPPED on one pick — the game page's call block, the pick sheet —
+   the same served number appears as an object that states what it is: the score against its
+   scale, a meter, the basis, and the sentence of served counts that backs it.
+
+   THE MARK ON THE BAR is the backend's own high band (`high_band_min`, 90), drawn only when
+   the block publishes it. It is a tick on a scale, not a target: nothing here claims a pick
+   past it wins more often, which is exactly the open question being tracked. */
+.cfblk{margin:10px 0 0;padding:9px 11px 10px;border-radius:12px;
+  background:rgba(var(--tintc),.05);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.14)}
+.cfb-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.cfb-k{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink3)}
+.cfb-v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+.cfb-v b{font-weight:800;font-size:19px;letter-spacing:-.02em}
+.cfb-v i{font-style:normal;font-size:10.5px;color:var(--ink3);margin-left:1px}
+.cfb-bar{position:relative;height:5px;margin:7px 0 0;border-radius:999px;overflow:hidden;
+  background:rgba(var(--rimc),.16)}
+.cfb-fill{position:absolute;inset:0 auto 0 0;border-radius:999px;
+  background:linear-gradient(90deg,rgba(var(--tintc),.55),var(--ink2))}
+.cfb-mark{position:absolute;top:-2px;bottom:-2px;width:1.5px;background:rgba(var(--rimc),.55)}
+.cfblk.is-high .cfb-fill{background:linear-gradient(90deg,rgba(246,199,69,.55),var(--golddeep))}
+.cfb-s{margin:8px 0 0;font-size:12.5px;line-height:1.45;color:var(--ink2)}
+.cfb-f{margin:5px 0 0;font-size:11px;line-height:1.42;color:var(--ink3)}
+@media (prefers-reduced-motion:no-preference){
+  .cfb-fill{animation:cfbGrow .62s cubic-bezier(.22,1,.36,1) both}
+}
+@keyframes cfbGrow{from{transform:scaleX(.04);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
 
 /* ══════════════ PICK STRENGTH — THE PIPS ══════════════
    Leon: "Can we have the notion of strong picks / weak picks."
@@ -6074,6 +6109,31 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
    ══════════════════════════════════════════════════════════════════════════════ */
 .deskpage{padding:8px 0 20px;max-width:900px;margin:0 auto}
 .dp-mast{margin:0 0 16px;max-width:760px}
+/* ══ THE RESULTS REGION, AND THE RING THAT SAYS "THIS IS WHY YOU'RE HERE" ══
+   The strategy strip's "How our nightly engine works" lands on the Desk (it used to open a
+   research paper). A tab switch alone is not an answer to "where did I just go", so the
+   region the reader was sent to identifies itself for a beat: a gold ring and a soft lift
+   that fade out on their own. It is a POINTER, not a state — nothing about the record
+   changes, the class removes itself, and prefers-reduced-motion gets the ring without the
+   pulse rather than nothing at all (the pointer is the point). */
+.dp-results{border-radius:26px;outline:0;padding:10px;margin:-10px;
+  transition:box-shadow .55s ease,background-color .55s ease,transform .55s ease}
+/* the resting form of the pointer — what a reduced-motion reader gets, and what the animation
+   settles through. The ring is the DEEP gold, not the light one: the record hero inside this
+   region is itself gold-tinted, and a pale ring around a pale card is not a pointer. */
+.dp-results.dp-spot{background:rgba(var(--goldc),.09);
+  box-shadow:0 0 0 2.5px var(--golddeep),0 18px 44px -16px rgba(var(--goldc),.65)}
+@media (prefers-reduced-motion:no-preference){
+  .dp-results.dp-spot{animation:dpSpot 2.6s cubic-bezier(.22,1,.36,1) 1}
+}
+/* held, not flashed: full strength by ~250ms and still unmistakable past a second, so the ring
+   is on screen for the whole time it takes a reader to look up after the tab change. */
+@keyframes dpSpot{
+  0%{box-shadow:0 0 0 0 rgba(var(--goldc),0);background:rgba(var(--goldc),0);transform:scale(.985)}
+  10%{box-shadow:0 0 0 3px var(--golddeep),0 20px 50px -14px rgba(var(--goldc),.7);background:rgba(var(--goldc),.13);transform:scale(1)}
+  55%{box-shadow:0 0 0 2.5px var(--golddeep),0 18px 44px -16px rgba(var(--goldc),.55);background:rgba(var(--goldc),.10);transform:scale(1)}
+  100%{box-shadow:0 0 0 0 rgba(var(--goldc),0);background:rgba(var(--goldc),0);transform:scale(1)}
+}
 .dp-k{display:inline-block;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.2em;
   text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
 .dp-h{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.04;letter-spacing:-.035em;
@@ -7434,6 +7494,21 @@ a.acct-link{text-decoration:none}
   padding-left:15px;position:relative}
 .dp-cred-list li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:rgba(var(--goldc),.55)}
 .dp-cred-list b{color:var(--ink);font-weight:700}
+/* ══ IN-TEXT RESEARCH LINK — a link inside a sentence, not a button pretending to be one ══
+   Leon: "links in text of research page too." It has to READ as prose — same face, same size,
+   same colour as the words around it — and be unmistakably tappable. A gold underline does
+   both: nothing else in the Desk's body copy is underlined, so the affordance is unambiguous
+   without a chip, an arrow or a colour change breaking the sentence.
+   It is an <a> precisely so it BREAKS ACROSS LINES like the words around it — a <button> is
+   an inline-block box at any `display` value, which pushed each linked phrase onto a line of
+   its own and stranded the following full stop on the next one. */
+.rlink{display:inline;margin:0;padding:0;border:0;background:none;cursor:pointer;
+  font:inherit;color:inherit;letter-spacing:inherit;text-align:left;
+  text-decoration:underline;text-decoration-color:rgba(var(--goldc),.62);
+  text-decoration-thickness:1.5px;text-underline-offset:2.5px;
+  transition:text-decoration-color .16s ease,color .16s ease}
+.rlink:hover,.rlink:focus-visible{color:var(--golddeep);text-decoration-color:rgba(var(--goldc),.95)}
+.rlink:active{opacity:.72}
 .dp-more-btn{display:flex;align-items:center;gap:8px;width:100%;margin-top:15px;padding:12px 14px;border:0;cursor:pointer;
   border-radius:14px;background:rgba(var(--tintc),.05);box-shadow:inset 0 0 0 1px var(--line3);
   font-family:var(--sans);font-weight:700;font-size:13.5px;color:var(--ink2);text-align:left}
