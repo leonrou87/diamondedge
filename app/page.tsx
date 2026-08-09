@@ -675,13 +675,87 @@ export default function Home() {
       const rows = await r.json();
       return rows && rows[0] ? rows[0].payload : null;
     }
+    /* ═══════════ ONE SMALL POLL TELLS US WHAT EVERY SURFACE IS ON ═══════════
+       2026-08-09. The edge cache made N readers cost 1 Supabase read. It did not
+       stop the CLOCK from costing reads: a 120s TTL is 720 origin reads a day
+       whether anyone is watching or not, and Vercel's CDN is per-POP, so that
+       multiplied by every city the audience happened to be in. Measured on
+       picks_unified: 564 origin reads a day against FOUR real publishes.
+
+       The fix has two halves and this is the client's half. Payload URLs now
+       carry the content version (`&cv=`), which lets the edge serve them
+       `immutable` — a version is fetched once per POP ever, and once per BROWSER
+       ever, so a reader who reloads pays nothing at all for data they already
+       have. To do that a reader has to know which version is current, and this
+       is the object that tells them: every surface's version in one ~700-byte
+       response, replacing the separate per-key `?v=1` probes that each ran on
+       their own 15-second timer.
+
+       IN-FLIGHT DEDUPE IS THE POINT, NOT A DETAIL. The board poller, the live
+       poller and any surface loading at the same moment all want this answer at
+       the same moment. Sharing one promise is what makes "one reader per origin
+       object" true inside a single tab, the same way the edge makes it true
+       across tabs. Without it the cheap object just becomes a frequently-fetched
+       cheap object.
+
+       IT FAILS OPEN. An unavailable manifest returns "" for every key, callers
+       drop `cv`, and every fetch falls back to exactly the TTL-based behaviour
+       that shipped yesterday: more expensive, still correct, still fresh. The
+       pin is an optimisation, never a dependency — the same rule /api/snap
+       itself follows. */
+    let manifestData: any = null;
+    let manifestAt = 0;
+    let manifestInflight: Promise<any> | null = null;
+    /* Shorter than the edge's own 10s TTL so a reader is never the reason a
+       change is late, and long enough that a burst of surfaces booting together
+       asks once. */
+    const MANIFEST_TTL_MS = 8000;
+    async function manifest(): Promise<any> {
+      if (manifestData && Date.now() - manifestAt < MANIFEST_TTL_MS) return manifestData;
+      if (manifestInflight) return manifestInflight;
+      manifestInflight = (async () => {
+        const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, 4000);
+        try {
+          const r = await fetch("/api/manifest", { ...(ac ? { signal: ac.signal } : {}) });
+          if (!r.ok) throw new Error(`manifest ${r.status}`);
+          const j = await r.json();
+          manifestData = j; manifestAt = Date.now();
+          return j;
+        } catch {
+          /* Deliberately does NOT clear a previously good manifest: a blip
+             should cost freshness, not send every surface back to the
+             unpinned path and re-inflate the bill for the rest of the session. */
+          return manifestData;
+        } finally { clearTimeout(t); manifestInflight = null; }
+      })();
+      return manifestInflight;
+    }
+    async function contentVersion(k: string): Promise<string> {
+      try {
+        const m = await manifest();
+        return String((m && m.v && m.v[k]) || "");
+      } catch { return ""; }
+    }
+    /* Warm it immediately. The pinned payload fetch wants this answer, and
+       paying its round trip in parallel with the rest of boot rather than in
+       front of the first payload keeps first paint where it was. */
+    try { manifest(); } catch {}
+
     async function snap(k: string, ms = SNAP_MS, opts: any = {}) {
       const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
       const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
       try {
         if (snapProxyUsable()) {
           try {
-            const r = await fetch(`/api/snap/${encodeURIComponent(k)}${opts.lite ? "?lite=1" : ""}`,
+            /* PIN THE READ TO A VERSION WHEN WE KNOW ONE. Dated archive keys
+               (`pregame_picks:2026-08-09`) are not in the manifest and simply do
+               not get a pin — they are already frozen by the route's own dated
+               rule, so there is nothing left to win there. */
+            const cv = await contentVersion(k);
+            const qs = [opts.lite ? "lite=1" : "", cv ? `cv=${encodeURIComponent(cv)}` : ""]
+              .filter(Boolean).join("&");
+            const r = await fetch(`/api/snap/${encodeURIComponent(k)}${qs ? "?" + qs : ""}`,
               { ...(ac ? { signal: ac.signal } : {}) });
             if (r.ok) return await r.json();
             snapProxyFailed();
@@ -714,6 +788,17 @@ export default function Home() {
       const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
       try {
         if (snapProxyUsable()) {
+          /* ASK THE MANIFEST, NOT A PER-KEY PROBE (2026-08-09). This used to
+             issue its own `?v=1` request per key, on its own timer — three of
+             them on the hot path, ~1.1 KB each on the origin leg, 5,760 a day
+             each. That is the same mistake as the payload poll in miniature: N
+             round trips to learn one fact. The manifest answers for every
+             surface at once and is shared with every other caller in the tab,
+             so asking here is usually free. */
+          const v = await contentVersion(k);
+          if (v) return v;
+          /* No manifest answer (blip, or a dated archive key it does not carry)
+             — fall through to the single-key probe, which still works. */
           try {
             const r = await fetch(`/api/snap/${encodeURIComponent(k)}?v=1`, { ...(ac ? { signal: ac.signal } : {}) });
             if (r.ok) { const j = await r.json(); return String((j && j.v) || ""); }
