@@ -603,14 +603,91 @@ export default function Home() {
        body read too (`r.json()` on a stalled body is the same hang one layer down), and it
        is always cleared in `finally` so a fast response costs nothing. */
     const SNAP_MS = 9000;
-    async function snap(k: string, ms = SNAP_MS) {
+
+    /* ═══════════ EVERY SNAPSHOT READ GOES THROUGH THE EDGE, NOT THE DATABASE ═══════════
+       2026-08-08. The KytePush Supabase project hit 208% of the free plan's 5 GB egress
+       allowance — 10.398 GB — on NINE monthly active users. ~1.15 GB per user per month.
+       Grace ends 2026-09-04, after which every app on that project (this one, CLOUT,
+       Nanny, THE DOCKET) returns HTTP 402. Upgrading does not fix it: the same pattern at
+       1,000 users is ~1.15 TB/month and Pro ships 250 GB. The access pattern was the bug.
+
+       The pattern: this function fetched slate_snapshots DIRECTLY from every browser tab.
+       Nothing sat in between, so N readers cost N full payloads — and the free 5 GB of
+       CACHED egress sat at exactly 0 used, because there was no cache to hit.
+
+       `/api/snap/<key>` is that cache: same-origin, held at Vercel's edge with per-key
+       TTLs, so one Supabase read serves every reader inside the window. Being same-origin
+       it also deletes the CORS preflight that rode in front of every one of these reads
+       (`apikey` is not a safelisted header, so each GET cost an extra OPTIONS round trip).
+
+       THE PROXY IS AN OPTIMISATION, NOT A DEPENDENCY. If it fails we fall straight back to
+       the direct read: expensive, but the reader still sees their picks. One failure
+       demotes the rest of the session so a broken deploy costs one retry, not one per read.
+       An ABORT is never a proxy failure — the deadline below fired, and re-issuing the same
+       request against Supabase would spend the bytes twice and hang twice. */
+    let snapProxyOk = true;
+    async function snapDirect(k: string, ac: AbortController | null) {
+      const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`,
+        { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, ...(ac ? { signal: ac.signal } : {}) });
+      const rows = await r.json();
+      return rows && rows[0] ? rows[0].payload : null;
+    }
+    async function snap(k: string, ms = SNAP_MS, opts: any = {}) {
       const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
       const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
       try {
-        const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`,
-          { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, ...(ac ? { signal: ac.signal } : {}) });
+        if (snapProxyOk) {
+          try {
+            const r = await fetch(`/api/snap/${encodeURIComponent(k)}${opts.lite ? "?lite=1" : ""}`,
+              { ...(ac ? { signal: ac.signal } : {}) });
+            if (r.ok) return await r.json();
+            snapProxyOk = false;
+          } catch (e) {
+            if (ac && ac.signal.aborted) throw e;
+            snapProxyOk = false;
+          }
+        }
+        return await snapDirect(k, ac);
+      } finally { clearTimeout(t); }
+    }
+
+    /* ═══════════ ASK WHETHER IT CHANGED BEFORE ASKING FOR IT ═══════════
+       The single most expensive line in the app was a poller that downloaded the entire
+       1.2 MB pregame_picks payload every 4 minutes and THEN compared generated_at to
+       decide that nothing had changed — 15 times an hour, per open tab. It spent a
+       megabyte to learn "no".
+
+       This asks first. ~200 bytes, measured. Returns the CONTENT stamp, never updated_at:
+       the sync scripts deliberately touch updated_at every cycle even when the payload is
+       byte-identical, so the watchdog can tell "quiet" from "dead" (sync_unified_live.sh,
+       "HEARTBEAT 2026-07-31"). Polling on updated_at would re-pull the payload every cycle
+       and put the whole leak straight back.
+
+       Returns "" when the version cannot be established — which callers must read as "I
+       don't know", not as "unchanged". On an unknown, fetch the payload: correctness on an
+       error path is worth more than the bytes. */
+    async function snapVersion(k: string, ms = 4000) {
+      const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
+      try {
+        if (snapProxyOk) {
+          try {
+            const r = await fetch(`/api/snap/${encodeURIComponent(k)}?v=1`, { ...(ac ? { signal: ac.signal } : {}) });
+            if (r.ok) { const j = await r.json(); return String((j && j.v) || ""); }
+            snapProxyOk = false;
+          } catch (e) {
+            if (ac && ac.signal.aborted) throw e;
+            snapProxyOk = false;
+          }
+        }
+        const q = `${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}`
+          + `&select=updated_at,ga:payload->>generated_at,gu:payload->>generated_utc`;
+        const r = await fetch(q, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, ...(ac ? { signal: ac.signal } : {}) });
         const rows = await r.json();
-        return rows && rows[0] ? rows[0].payload : null;
+        const row = rows && rows[0];
+        return row ? String(row.gu || row.ga || row.updated_at || "") : "";
+      } catch {
+        return "";
       } finally { clearTimeout(t); }
     }
     // The same deadline for a plain static-file read (the bundled fallbacks + the news feed).
@@ -6491,16 +6568,34 @@ export default function Home() {
       // after the fresh scores have painted: celebrate any runs that just landed
       requestAnimationFrame(() => { try { flashRunScored(); } catch {} });
     }
-    // ---- BANDWIDTH-SMART big-payload refresh: the pregame_picks payload changes ~every
-    // 30 min. Re-fetch infrequently and ONLY apply when generated_at advanced (no wasteful
-    // re-render). Paused while hidden; runs one immediate check on focus. ----
+    /* ---- BANDWIDTH-SMART big-payload refresh: the pregame_picks payload changes ~every
+       30 min. Re-fetch infrequently and ONLY apply when generated_at advanced (no wasteful
+       re-render). Paused while hidden; runs one immediate check on focus. ----
+
+       IT USED TO BUY THE ANSWER BEFORE ASKING THE QUESTION (fixed 2026-08-08). The
+       generated_at comparison below has always been here — but it ran AFTER the fetch, so
+       the tab downloaded the whole 1.2 MB payload (350 KB on the wire, gzipped) and only
+       then discovered nothing had changed. Fifteen times an hour. Per open tab. Measured
+       over a 20-minute session that is 1.75 MB of Supabase egress spent to learn "no", and
+       it was the largest single line in an account running at 208% of its allowance.
+
+       The version probe is ~200 bytes and answers the same question. The payload is pulled
+       ONLY when the stamp actually moved — which, at a 30-minute rebuild cadence, is at
+       most once in a 20-minute session and usually not at all. When the probe cannot
+       establish a version it returns "" and we fall through to the full fetch: an unknown
+       is not an "unchanged", and being right costs less than being cheap here. */
     async function pollPregame() {
       if (document.hidden) return;
       if (curDate !== todayISO() || rangeMode) return; // only the live "today" board auto-refreshes
+      const oldStamp = (livePayload && (livePayload.generated_at || livePayload.date)) || "";
+      if (oldStamp) {
+        let v = "";
+        try { v = await snapVersion("pregame_picks"); } catch {}
+        if (v && v === oldStamp) return;   // 200 bytes bought the entire answer
+      }
       let p: any = null;
       try { p = await snap("pregame_picks"); } catch {}
       if (!p || !p.games) return;
-      const oldStamp = (livePayload && (livePayload.generated_at || livePayload.date)) || "";
       const newStamp = p.generated_at || p.date || "";
       if (newStamp && oldStamp && newStamp === oldStamp) return; // unchanged → do nothing
       livePayload = p;
@@ -8729,7 +8824,42 @@ export default function Home() {
        doesn't. The match keys off the served label/rule text, so a family the engine has
        not shipped yet simply falls back to the served label with its dials stripped —
        unknown never becomes wrong. ARCHIVE stores stay verbatim; this is display copy. */
+    /* ════════ THE ANALYST'S VOICE — the backend now writes it, we just read it ════════
+       Leon, 2026-08-08, on the served rule sentence ("Bet OVER when the ANVIL shadow model's
+       P(over) is at least 0.5 and the park suppresses runs and the away starter is known
+       and the away starter's days of rest is at least 6…"): "wayyyy too complex, make this a
+       shorter layman explanation" — then, refining it: "Make the expansion a lot more from a
+       sports analyst commentary on the thinking."
+
+       Both together: what he is rejecting is ENGINEER-SPEAK, not length. So the fix is not a
+       terse summary. The backend (`v4/serve/rule_voice.py`) now generates, from the winning
+       rule's OWN conditions, a NAME and three paragraphs of analyst commentary — what the
+       rule believes about how runs get scored, why that points at the over in one spot and
+       the under in another, and what it deliberately sits out. A different rule wins the
+       search every night, so all of it is derived; none of it is written here.
+
+       WHY THIS FUNCTION READS RATHER THAN WRITES. Every table below this branch is a
+       hand-written translation of a strategy FAMILY the engine ships. That works because
+       there are eight families. It cannot work for the forge, whose rule is a fresh
+       conjunction out of an 835-predicate language every night — there is no family to key
+       on. The voice therefore has to be generated where the rule and its data live, and this
+       surface's job is to render it. The served block is checked for shape, and anything
+       malformed falls straight through to the existing tables. */
+    function forgeVoice(s: any) {
+      const v = s && s.voice;
+      if (!v || typeof v !== "object" || v.status !== "ACTIVE") return null;
+      const name = String(v.name || "").trim();
+      const paras = (Array.isArray(v.paragraphs) ? v.paragraphs : [])
+        .map((p: any) => String(p || "").trim()).filter(Boolean);
+      if (!name || !paras.length) return null;
+      return { name, paras };
+    }
     function strategyFriendly(s: any) {
+      const fv = forgeVoice(s);
+      // The first paragraph is the "what is this looking at" one, which is exactly the
+      // single-line blurb every caller of strategySentence() wants. The full commentary is
+      // rendered by the strip, which asks for it by name.
+      if (fv) return { name: fv.name, blurb: fv.paras[0] };
       const lab = String((s && s.label) || "");
       const rule = String((s && (s.plain_english_rule || s.summary_line || s.reason)) || "");
       /* The names read like NAMED PLAYS (Leon: "get more creative… super interesting, but
@@ -8870,6 +9000,25 @@ export default function Home() {
       }
       const label = strategyLabelPublic(s) || "Chosen overnight from the last three weeks";
       const rule = strategySentence(s);
+      /* ════════ THE COMMENTARY, AND THE EXACT RULE UNDERNEATH IT ════════
+         The strip's fold used to carry one line: the served rule sentence, which on a forge
+         board is the raw serialisation. It now carries the full generated commentary — three
+         paragraphs of analyst voice — because that is what Leon asked for ("make the
+         expansion a lot more from a sports analyst commentary on the thinking") and a
+         one-liner is not an expansion.
+
+         THE EXACT RULE DOES NOT GO AWAY. It moves one fold deeper, closed by default. The
+         objection was to the serialisation being the ONLY thing on the surface, not to it
+         existing — and a reader who wants to check a call against the literal conditions
+         must still be able to, or the commentary becomes unfalsifiable marketing. */
+      const fv = forgeVoice(s);
+      const voiceHtml = fv
+        ? `<div class="stgy-voice"><span class="stgy-vk">How it reads a game</span>${
+            fv.paras.map((p: string) => `<p>${esc(p)}</p>`).join("")}</div>`
+        : "";
+      const exactRuleHtml = (fv && humanNote(s.plain_english_rule))
+        ? `<details class="stgy-exact"><summary>The exact rule, as the search wrote it</summary><p>${esc(humanNote(s.plain_english_rule))}</p></details>`
+        : "";
       const days = s.window_days ? Number(s.window_days) : 0;
       const windowSpan = days
         ? ({ 14: "two weeks", 21: "three weeks", 28: "four weeks", 35: "five weeks" } as any)[days] || `${days} days`
@@ -8955,9 +9104,10 @@ export default function Home() {
         </button>
         <div class="stgy-more" id="stgy-more">
           <div class="stgy-more-in">
-            ${rule ? `<p class="stgy-rule"><span>How it reads a game</span>${esc(rule)}</p>` : ""}
+            ${voiceHtml || (rule ? `<p class="stgy-rule"><span>How it reads a game</span>${esc(rule)}</p>` : "")}
             <p class="stgy-win">${esc(windowTxt)}</p>
             <p class="stgy-n">${countTxt}</p>
+            ${exactRuleHtml}
             <!-- THE LABEL KEEPS ITS NAME AND GAINS ITS DESTINATION. It is the phrase Leon
                  refers to this link by, so it stays; what follows the dash is where it now
                  goes — the Desk, and specifically the record on it. -->
@@ -10730,6 +10880,42 @@ export default function Home() {
          six individual calls in the Stats pane, and a third time inside diamondEdgeReasoning
          on the Odds pane — so a reader met the same six charts on three of four tabs. Preview
          is the STORY now: masthead, setup prose, the lines sentence. */
+      /* ════════ WHY DIAMONDEDGE LEANS THIS WAY, ON THIS GAME ════════
+         Leon, 2026-08-08: "When you click on a game with the DiamondEdge pick, transpose the
+         rule strategy into real stats and interesting storylines from the game and why
+         DiamondEdge leans that way since it has that strategy / perspective." And on the
+         shape: "one which is the core strategy that contextualises the strategy with the
+         game, and then another paragraph that has other reasons to believe."
+
+         BOTH PARAGRAPHS ARE GENERATED BACKEND-SIDE and rendered verbatim. That is not a
+         convenience — it is the only place the guarantee can hold. `rule_voice` builds every
+         sentence out of a value lookup against THIS game's own served feature row, and
+         re-audits the finished prose: a numeral that was not read from that row raises
+         rather than ships. Composing any of it here, where the feature row does not exist,
+         would put an unsourceable number one template away.
+
+         SO THIS FUNCTION ADDS NOTHING. No joining, no rounding, no "and" between clauses,
+         no fallback prose when the block is missing — a missing block renders no card. The
+         one thing it does is refuse a shape it does not recognise. */
+      const forgeCase = (() => {
+        const vg = v4GameFor(g) || g;
+        const blk = vg && vg.pick && vg.pick.forge_strategy;
+        const gc = blk && typeof blk === "object" ? blk.game_case : null;
+        if (!gc || typeof gc !== "object" || gc.status !== "ACTIVE") return null;
+        const paras = (Array.isArray(gc.paragraphs) ? gc.paragraphs : [])
+          .map((p: any) => String(p || "").trim()).filter(Boolean);
+        if (!paras.length) return null;
+        return { paras, name: String((blk.rule_name || "") as string).trim() };
+      })();
+      // Gated with the rest of the read: the case names the side in its own last clause,
+      // and the side is the product.
+      const forgeCaseBlock = (!leadLocked && forgeCase)
+        ? `<div class="whycard rulecase">
+            <div class="wc-k">Why we lean this way</div>
+            ${forgeCase.name ? `<div class="rc-rule">${esc(forgeCase.name)}</div>` : ""}
+            ${forgeCase.paras.map((p: string) => `<p>${esc(p)}</p>`).join("")}
+          </div>`
+        : "";
       const previewBlock = leadLocked
         ? `<div class="whycard">
             <div class="wc-k">Game preview</div>
@@ -10898,6 +11084,7 @@ export default function Home() {
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
         ${showLive ? `<div class="gp-prekick">How we saw it before first pitch</div>` : ""}
         ${leadLocked ? "" : previewMasthead}
+        ${forgeCaseBlock}
         ${previewBlock}
         ${linesBlock}
         <!-- (strategiesTeaser lived here — a fold listing the OTHER reads on this game.
@@ -11115,14 +11302,20 @@ export default function Home() {
          cold open, a slow connection) still rebuilds, which is the case the rebuild exists
          for. */
       if (g.game_id != null && !g._recipe) {
+        /* betaFull RIDES IN THE SIGNATURE, and it has to (2026-08-08). loadBeta() serves the
+           LITE history — no diamondedge / strategies / analysts_v2 / scout — and opening a
+           game is exactly the moment those blobs are wanted, so this is the one caller that
+           asks for the full payload. But lite and full carry the SAME generated_utc, so a
+           signature built only from stamps would read "nothing arrived" the instant the
+           detail blobs landed and skip the rebuild that renders them. */
         const feedSig = () => [
           betaLiveData && betaLiveData.generated_utc, betaData && betaData.generated_utc,
-          pitchersData ? 1 : 0, teamsData ? 1 : 0,
+          betaFull ? 1 : 0, pitchersData ? 1 : 0, teamsData ? 1 : 0,
         ].join("|");
         const before = feedSig();
         Promise.all([
           loadBetaLive().catch(() => null),
-          loadBeta().catch(() => null),
+          loadBeta(true).catch(() => null),
           loadPitchers().catch(() => null),
           loadTeams().catch(() => null),
         ]).then(() => {
@@ -13790,14 +13983,53 @@ export default function Home() {
       const t = Date.parse(String((src && (src.generated_utc || src.generated_at || src.as_of)) || ""));
       return Number.isFinite(t) ? t : 0;
     }
-    async function loadBeta() {
-      if (betaData) return betaData;
+    /* THE DESK DOES NOT NEED THE WHOLE ARCHIVE TO DRAW A RECORD (2026-08-08).
+       picks_unified is one blob of all history: 8.27 MB, 2.15 MB on the wire. 93% of it is
+       games[], and inside games[] the five per-game detail blobs — diamondedge (2.29 MB),
+       analysts (1.46 MB), strategies (1.26 MB), analysts_v2 (0.55 MB), scout (0.18 MB) —
+       are 75% of THAT. Not one of them is read until a reader OPENS a game. The Desk's own
+       surfaces (the record, the by-date board, the last-14 widget, the ROI curve, the
+       postponed cards) read pick / final / consensus / spread / simulator / line and the
+       top-level record blocks, all of which survive the projection.
+
+       So loadBeta() takes the LITE history by default — projected in Postgres, so the bytes
+       are never read off disk, never cross the Supabase egress meter, and never reach the
+       browser. 2.15 MB -> 850 KB on the wire, measured.
+
+       loadBeta(true) takes the whole thing, and openDetail is the one caller that asks for
+       it, because opening a game is the one moment those blobs are wanted. A reader who
+       looks at the Desk and never opens a game now never pays for them at all.
+
+       (analysts is NOT stripped wholesale: the analyst pages build a recent-calls ledger
+       straight off betaData.games[].analysts and then slice(0, 10). The projection keeps
+       the last 21 days of analyst rows — far more than ten calls — and drops the rest. Every
+       analyst RECORD comes from record.analysts at the top level, untouched.) */
+    let betaFull = false;    // does betaData carry the detail blobs, or is it the projection?
+    /* A MEMO THAT ONLY MEMOISES AFTER THE AWAIT IS NOT A MEMO (found 2026-08-08 by watching
+       the network panel). Boot fires loadBeta() from two places on the same tick — the feed
+       warm-up and the meta row — and the `if (betaData)` guard above cannot help either of
+       them, because neither has resolved yet when the other starts. The history was being
+       downloaded TWICE on every cold load, in full, forever. Holding the in-flight promise
+       makes the second caller await the first request instead of issuing its own. */
+    let betaInflight: Promise<any> | null = null;
+    async function loadBeta(full = false) {
+      if (betaData && (betaFull || !full)) return betaData;
+      if (betaInflight) {
+        const d = await betaInflight;
+        if (!full || betaFull) return d;   // an in-flight LITE cannot satisfy a FULL caller
+      }
+      const p = loadBetaOnce(full);
+      betaInflight = p;
+      try { return await p; } finally { if (betaInflight === p) betaInflight = null; }
+    }
+    async function loadBetaOnce(full = false) {
+      if (betaData && (betaFull || !full)) return betaData;
       // FRESH source = Supabase (slate_snapshots key 'picks_unified'), synced every cycle from
       // the pick box — so prior-day picks/results update with NO deploy. The bundled static
       // file is only a fallback for the deep archive. (Fixes the recurring "yesterday shows
       // all-PASS" bug: the static file only updated on git push, so recent days went missing.)
       let fresh: any = null;
-      try { fresh = await Promise.race([snap("picks_unified"), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
+      try { fresh = await Promise.race([snap("picks_unified", SNAP_MS, full ? {} : { lite: true }), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch {}
       if (!fresh || !fresh.games || feedStampMs(fresh) < feedStampMs({ generated_utc: UNIFIED_HISTORY_MIN_UTC })) {
         /* ═══ A DAY-GRANULAR CACHE KEY CANNOT BUST A FILE THAT CHANGES HOURLY ═══
            THIS WAS A REAL STALENESS BUG, and the record-contract guard is what found it.
@@ -13819,6 +14051,9 @@ export default function Home() {
         if (!fresh || !fresh.games || feedStampMs(bundled) >= feedStampMs(fresh)) fresh = bundled;
       }
       betaData = applyDeskMock(fresh);
+      // the bundled static file and the un-projected key are both FULL; only the RPC
+      // projection stamps `_lite`, and only it leaves a later loadBeta(true) work to do.
+      betaFull = !(fresh && fresh._lite === true);
       checkRecordContract(betaData, "picks_unified (history)");
       return betaData;
     }
@@ -14111,8 +14346,10 @@ export default function Home() {
     }
 
     // ---- the per-game pick card: the one DiamondEdge Pick (or the honest pass + its reason) ----
+    let betaSheetSeq = 0;   // which beta sheet is on screen — see the hydrate at the end
     function openBetaGame(g: any) {
       if (!g) return;
+      const mySeq = ++betaSheetSeq;
       detail = detailWithGameReturn({ _betaGame: true });
       const fin = g.final || {};
       const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
@@ -14173,6 +14410,22 @@ export default function Home() {
       bindClick("gp-back", () => closeDetail());
       bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
       bindSwipeBack($("gamepage"));
+      /* PAINT FROM LITE, THEN FILL IN (2026-08-08). loadBeta() serves the projected history,
+         which deliberately does not carry games[].strategies — so strategiesPanel() above
+         renders empty on a sheet opened straight off the Desk until the full payload lands.
+         Painting first is the right order and not a compromise: the header, the score and
+         the pick all live in the projection and appear instantly, and the stream panel fills
+         in a beat later instead of the entire sheet waiting on 2 MB of blobs.
+         `betaSheetSeq` is the guard — a reader who taps through to another game before the
+         hydrate returns must not have this one redrawn over the top of it. */
+      if (!betaFull) {
+        loadBeta(true).then(() => {
+          if (mySeq !== betaSheetSeq || !$("gamepage")) return;
+          const fresh = ((betaData && betaData.games) || [])
+            .find((x: any) => String(x.game_id) === String(g.game_id));
+          if (fresh) openBetaGame(fresh);
+        }).catch(() => {});
+      }
     }
 
     // ===================== RESEARCH — "THE LAB" (public roadmap of every idea we test) =====================

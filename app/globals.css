@@ -1966,6 +1966,15 @@ details.more .more-body{padding-top:12px}
 .whycard .ls-facts{margin-top:11px}
 .whycard .pv-stks{margin-top:10px}
 .whycard.lines p{font-size:15px}
+/* ── THE PER-GAME CASE ──
+   Two paragraphs, and the SECOND ONE IS NOT MARKED. Leon was explicit that the supporting
+   reasons must not be labelled, hedged or fenced off from the strategy paragraph — so there
+   is no divider, no second heading and no muted tone here. Both paragraphs read as one piece
+   of prose, which is what an analyst making a case sounds like. The only differentiated
+   element is the rule's NAME, which is a byline, not a caveat. */
+.whycard.rulecase .rc-rule{font-family:var(--disp);font-weight:700;font-size:12.5px;
+  letter-spacing:.005em;color:var(--golddeep);margin:-2px 0 9px}
+.whycard.rulecase p{font-size:15px;line-height:1.62}
 @media(max-width:640px){
   .hbar{padding:8px max(14px,var(--sal));gap:8px}
   .brand h1{font-size:18px}
@@ -8648,7 +8657,13 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .stgy-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .stgy-tx i{font-family:var(--disp);font-style:normal;font-weight:700;font-size:9.5px;
   letter-spacing:.15em;text-transform:uppercase;color:var(--golddeep)}
+/* THE NAME GETS ITS SECOND LINE. The clamp always said 2, but an inherited
+   `white-space:nowrap` meant it never reached one — so "The Pitcher's Park and
+   ATLAS's Read" rendered as "The Pitcher's Park and ATLAS's …" in 188px. The
+   strategy's name is the headline of this strip now that the backend generates
+   one; truncating it mid-word is the one thing it must not do. */
 .stgy-tx b{font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.32;color:var(--ink);
+  white-space:normal;overflow-wrap:anywhere;
   overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .stgy-caret{flex-shrink:0;width:20px;height:20px;display:grid;place-items:center;color:var(--ink3);
   transition:transform .34s var(--spring),color .2s ease}
@@ -8666,6 +8681,29 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   padding-top:2px;border-top:1px solid rgba(var(--rimc),.10);margin-top:0}
 .stgy-rule span{display:block;font-family:var(--disp);font-weight:700;font-size:9.5px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:9px 0 4px}
+/* ── THE ANALYST COMMENTARY IN THE STRIP FOLD ──
+   Three paragraphs where there used to be one clause, so it needs paragraph rhythm rather
+   than the single-line treatment .stgy-rule gives. Same eyebrow, same rule above it, same
+   ink ramp — this is .stgy-rule grown up, not a new voice. */
+.stgy-voice{padding-top:2px;border-top:1px solid rgba(var(--rimc),.10)}
+.stgy-vk{display:block;font-family:var(--disp);font-weight:700;font-size:9.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:9px 0 5px}
+.stgy-voice p{font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink2);
+  margin:0 0 8px}
+.stgy-voice p:first-of-type{color:var(--ink);font-weight:600}
+.stgy-voice p:last-child{margin-bottom:0}
+/* THE EXACT RULE, ONE FOLD DEEPER. Deliberately quiet and deliberately present: the
+   commentary above is generated from these conditions, and a reader has to be able to
+   check it against them. */
+.stgy-exact{margin-top:9px}
+.stgy-exact>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3)}
+.stgy-exact>summary::-webkit-details-marker{display:none}
+.stgy-exact>summary::after{content:"⌄";font-size:11px;transition:transform .18s var(--ease-out)}
+.stgy-exact[open]>summary::after{transform:rotate(180deg)}
+.stgy-exact p{font-family:var(--mono,var(--sans));font-size:11.5px;line-height:1.55;
+  color:var(--ink3);margin:7px 0 0}
 .stgy-win,.stgy-n{font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3);margin-top:7px}
 .stgy-n b{color:var(--ink);font-weight:700}
 .stgy-link{display:inline-flex;align-items:center;gap:7px;margin-top:11px;
@@ -9001,7 +9039,11 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .stgy-stat i{font-style:normal;font-family:var(--sans);font-weight:600;font-size:9px;
   letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
 .stgy-bar .stgy-tx{min-width:0}
-.stgy-bar .stgy-tx b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+/* TWO LINES, NOT AN ELLIPSIS. This later rule was overriding the clamp above with a
+   single nowrap line, which is why the generated strategy name arrived as
+   "The Pitcher's Park and ATLAS's …". The name is the headline; it wraps. */
+.stgy-bar .stgy-tx b{overflow:hidden;white-space:normal;overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 
 /* Motion pass (Leon: "more moving animations… modern and swift"): the game page's panes
    arrive with a short rise instead of a hard cut when the reader changes tabs. The
