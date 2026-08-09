@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-08T23:18:47Z",
+  "generated_utc": "2026-08-08T23:58:33Z",
   "dates": [
     "2026-08-08"
   ],
@@ -1406,7 +1406,7 @@
           "now": -102,
           "was": -106,
           "book": "lowvig",
-          "ts": "2026-08-08T23:18:19Z"
+          "ts": "2026-08-08T23:58:25Z"
         }
       },
       {
@@ -1550,6 +1550,77 @@
           "stale_hours": 0.01
         },
         "asof_utc": "2026-08-08T22:38:55Z"
+      },
+      {
+        "model": "champion_v2",
+        "source": "live",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-1h",
+        "date": "2026-08-08",
+        "game_pk": 823102,
+        "game_id": "2026-08-08-TB-SEA",
+        "matchup": "TB @ SEA",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-08-09T01:50:00Z",
+        "market_line": 7.0,
+        "pick_side": "over",
+        "pick_line": 7.0,
+        "lean": {
+          "side": "over",
+          "line": 7.0
+        },
+        "our_prob": 0.5584,
+        "per_side_price": -102,
+        "best_book": "lowvig",
+        "median_price": -105,
+        "p_breakeven": 0.505,
+        "ev": 0.1059,
+        "ev_min": 0.015,
+        "take": true,
+        "playable": true,
+        "gate_price": -105,
+        "gate_ev": 0.0902,
+        "gate_p_breakeven": 0.5122,
+        "tier": "Strong",
+        "stars": 5,
+        "star_tier": "Elite (v3.3: top ~10% of playable scores season-wide \u2014 the strongest conviction band; NOT a certification)",
+        "score": 4.89,
+        "gate_reason": "take_+ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0393,
+          "signed_edge": 0.0393,
+          "side": "over",
+          "frozen_at": "2026-08-08T12:18:58.329578+00:00",
+          "morning_price": -119,
+          "nlines": 1
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0393,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "suggested_units": 2.0,
+        "price": {
+          "basis": "served/graded at the BEST executable per-side price across books quoting the pick's line at the latest pregame snapshot (v4 odds store); the +EV GATE evaluates at the MEDIAN-in-decimal price at the same line (EXECUTION LAYER, Leon 2026-07-09 \u2014 gate at MEDIAN, price/grade at BEST: the proven config)",
+          "snapshot_ts": "2026-08-08T23:54:01Z",
+          "n_books_at_line": 18,
+          "best_price": -102,
+          "best_book": "lowvig",
+          "median_price": -105,
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.07
+        },
+        "asof_utc": "2026-08-08T23:58:20Z"
       },
       {
         "model": "champion_v2",
@@ -1778,24 +1849,24 @@
         "locked_at_utc": "2026-08-08T19:41:13Z"
       }
     ],
-    "n_picks_on_board": 10,
+    "n_picks_on_board": 11,
     "n_voided": 0
   },
   "board_notice": {
     "2026-08-08": {
       "one_sided": true,
       "side": "over",
-      "n_playable": 8,
-      "n_on_side": 8,
+      "n_playable": 9,
+      "n_on_side": 9,
       "share": 1.0,
-      "note": "one-sided board: 8 of 8 playable picks today are OVERs. That is correlated exposure to a single day-level model-vs-market disagreement (e.g. a global scoring-environment view), NOT 8 independent edges \u2014 treat it as roughly one position, not a slate of them. Shown honestly, not suppressed."
+      "note": "one-sided board: 9 of 9 playable picks today are OVERs. That is correlated exposure to a single day-level model-vs-market disagreement (e.g. a global scoring-environment view), NOT 9 independent edges \u2014 treat it as roughly one position, not a slate of them. Shown honestly, not suppressed."
     }
   },
   "lock_policy": {
     "hard_lock_at_first_pitch": true,
     "wall_rows_first_write_wins": true,
     "locked_this_cycle": {
-      "n_locked_now": 90,
+      "n_locked_now": 0,
       "n_locked_total": 152
     },
     "note": "once now >= first_pitch_utc a game's rows are IMMUTABLE: locked:true, no re-evaluation, no side/price/line/star changes \u2014 the payload permanently carries the last PRE-START state (the judged Vegas line) and grading uses exactly that locked state. Each wall row is also first-write-wins: once written at its wall it is never overwritten by a later cycle. Game cards carry locked/locked_at (wall + utc + line) for the UI badge, e.g. 'Locked at T-1h \u00b7 O/U 8.5'."

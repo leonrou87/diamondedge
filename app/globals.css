@@ -2724,8 +2724,13 @@ details.more .more-body{padding-top:12px}
    make the CTA the one element that yields if a future addition ever overruns. */
 .de-mini-pick.dmp-tile{flex-wrap:nowrap}
 .de-mini-pick.dmp-tile .dmp-right{min-width:0}
-/* 1. the label goes where a call is present; a pass / an upcoming tile keeps it */
-.de-mini-pick.dmp-tile:not(.nopick):not(.upcoming) .de-mini-ou i{display:none}
+/* 1. THE "O/U" LABEL STAYS ON EVERY TILE. It was dropped here on tiles carrying a call, to
+      buy the ~20px that got the row back onto one line — and Leon caught it immediately:
+      the number is meaningless without the label saying what it IS, and a card that shows a
+      bare "7.5" next to a card showing "O/U 9" reads as two different things. The row is
+      structurally single-line now (flex-wrap:nowrap above, with the CTA as the designated
+      yielder), so the label costs the CTA a few pixels rather than costing a second line —
+      which is the trade that should have been made the first time. */
 /* 2. the live pill keeps its percent and loses its word — colour, fill, title and
       aria-label all still carry the state */
 .de-mini-pick.dmp-tile .dmp-res.has-meter{margin-left:4px;padding:3px 5px}
