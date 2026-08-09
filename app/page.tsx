@@ -3198,11 +3198,24 @@ export default function Home() {
     // for a graded number.
     // A LIVE READ IS THE LIVE ANSWER. This block measures the game so far against the pick's
     // own line and names the side it still needs — so it is gated exactly like the pick is.
+    /* "LIVE VS THE LOCKED LINE" — the runs against the number we are graded at.
+       TWO THINGS IT USED TO GET WRONG:
+
+       1. IT NEVER CHECKED THAT WE HAVE A BET. On a PASS it still opened the
+          default Stats pane with "LIVE VS THE LOCKED LINE — 14 of 8.5 · over has
+          cleared" — a meter tracking a wager we did not make, on precisely the
+          game where the design promises an empty slot is the honest shape of
+          "we are not on this game".
+       2. IT CARRIED A THIRD LIVE PROBABILITY. `pHitNow` ("LIVE 71% it still
+          hits") is a different quantity from the cash meter pinned above the
+          tabs and sat ~130px from it. The meter is the page's single live read;
+          this block's subject is the RUNS, which nothing else states. */
     function liveVsLineBlock(g: any, locked = false) {
       if (locked) return "";
+      const _pl = displayPick(g);
+      if (!isPick(_pl)) return "";
       const lp = liveProgress(g);
       if (!lp) return "";
-      const ph = pHitNow(g);
       const pctW = lp.tot != null && lp.scored != null ? Math.max(3, Math.min(100, (lp.scored / Math.max(lp.tot + 2, 1)) * 100)) : 0;
       // THE HERO OWNS THE HALF-INNING. `liveProgress().when` exists for the board tile, which
       // has no hero above it to say where the game is; this block renders in exactly one
@@ -3221,7 +3234,6 @@ export default function Home() {
           ${lp.tot != null ? `<span class="lvl-mark" style="left:${Math.max(2, Math.min(98, (lp.tot / Math.max(lp.tot + 2, 1)) * 100)).toFixed(0)}%"></span>` : ""}
         </div>
         <div class="lvl-row">${bits.map((b) => `<span>${b}</span>`).join(`<i class="lvl-sep" aria-hidden="true">·</i>`)}</div>
-        ${ph ? `<div class="lvl-ph"><span class="lvl-badge">LIVE</span><b>${Math.round(ph.p * 100)}%</b><span class="lvl-phtx">it still hits${ph.side ? ` (${esc(ph.side.toUpperCase())})` : ""}</span></div>` : ""}
       </div>`;
     }
 
@@ -6361,6 +6373,22 @@ export default function Home() {
     let indexData: any = null;      // pregame_picks_index
     let detail: any = null;         // open detail game
     let detailTab = "preview";      // detail page tab: "preview" | "live"
+    /* ═══════ THE PAGE HAS TO FOLLOW THE GAME ACROSS FIRST PITCH ═══════
+       `openDetail` chose the page's SHAPE once — which tabs exist, whether there
+       is a line score, whether the reminder has a meter — and the live path
+       never rebuilt it. `refreshLiveViews` → `refreshSheetScore` → `repaintBoxPane`
+       repaints `#gp-boxtop` / `#gp-boxplayers` / `#gp-cashmeter`, all of which
+       simply DO NOT EXIST on a body built before first pitch, so every repaint
+       no-opped. Demonstrated: open a game pregame, let it start — the board tile
+       flips to "Top 9th" and the hero updates, while the page still shows
+       Preview·Odds, no Stats tab, no line score and no meter. A reader who opens
+       a game before first pitch and watches it start got none of the feature.
+
+       So the rebuilder is published here, together with the state it was built
+       for, and the live path calls it when — and only when — that state changes.
+       A full rebuild on every poll would fight the reader's scroll position. */
+    let detailRerender: (() => void) | null = null;
+    let detailBuiltKind = "";
     let liveScores: any = null;     // latest live_scores snapshot (fresh score overlay)
     let liveDetail: any = null;     // latest live_detail snapshot (box scores) — polled while live
     let liveDetailTried = false;    // avoid hammering a missing live_detail key
@@ -6679,6 +6707,17 @@ export default function Home() {
     function refreshSheetScore(g: any) {
       const page = $("gamepage"); if (!page) return;
       const gs = gameState(g);
+      /* FIRST PITCH CHANGES THE PAGE, NOT JUST THE SCORE. When the state the
+         body was built for is no longer the state the game is in, the body is
+         rebuilt whole — that is the only thing that adds the Stats tab, the
+         line score above the tabs and the cash meter to a page that opened
+         pregame. `rerenderDetailBody` preserves the active tab and re-wires,
+         and returning here is deliberate: it has already repainted everything
+         the rest of this function would. */
+      if (detailBuiltKind && gs.kind !== detailBuiltKind && detailRerender) {
+        detailRerender();
+        return;
+      }
       paintHeroScore(g);
       // the box score is its own tab now — repaint the pane, and pull a fresh MLB document
       repaintBoxPane();
@@ -6894,10 +6933,53 @@ export default function Home() {
       const per = ca.period_label ? String(ca.period_label) : "";
       return st === "live" && HARD_FINAL_RE.test(per);
     }
+    /* ═══════════ THE STATES A BASEBALL GAME IS ACTUALLY IN ═══════════
+       `gameState` returned pre / live / final and nothing else, so `delayed`,
+       `postponed`, `suspended`, `cancelled` and `canceled` all fell through the
+       bottom and came back as "pre" — a SCHEDULED GAME. Walked: a postponed
+       game rendered a first-pitch time, a Preview·Odds tab set, the words
+       "First pitch hasn't happened", and a live-looking premium pick strip on a
+       bet that will never be graded. A delayed game showed a first-pitch time
+       that had already passed and never acknowledged it.
+
+       The app has owned the vocabulary for this since long before the game page
+       was restructured — `ppdCard`, the VOID chips, "Postponed — pick void, no
+       action" — the restructured page simply stopped reaching for it.
+
+       THREE KINDS, because the states differ in the one way that matters, which
+       is WHAT HAPPENS TO THE BET:
+         delayed    first pitch is late; the game is coming; the bet stands.
+         suspended  it started and stopped; there is a partial box score to
+                    show, so it is treated as live and labelled honestly.
+         void       postponed / cancelled; there will be no result and the
+                    pick is no action. */
+    const PPD_LABEL: any = { postponed: "Postponed", cancelled: "Cancelled", canceled: "Cancelled" };
+    /* HAS A BALL ACTUALLY BEEN THROWN? The single question that decides whether a
+       game has a box score, a running total, or a gradeable in-play read — and
+       the one that `kind !== "pre"` used to stand in for. That stand-in was
+       right while "pre" was the only pregame state; with `delayed` and `void`
+       in the vocabulary it silently starts calling a postponed game started. */
+    const startedKind = (k: string) => k === "live" || k === "final" || k === "suspended";
+    /* …and its complement for the box score: a game that has not started has no
+       line score to draw, whether it is scheduled, delayed or called off. */
+    const noBoxKind = (k: string) => k === "pre" || k === "delayed" || k === "void";
     function gameState(g: any) {
       const st = (g.status || "pre").toLowerCase();
       const si = startInfo(g);
       const t = si.time || si.date || "";
+      if (PPD_LABEL[st]) {
+        return { kind: "void", label: PPD_LABEL[st], time: "", score: null, si };
+      }
+      if (st === "suspended") {
+        const ca = g.current_actuals;
+        const sc = ca && ca.home_score != null && ca.away_score != null
+          ? { total: Number(ca.home_score) + Number(ca.away_score), home: Number(ca.home_score), away: Number(ca.away_score), margin: Number(ca.home_score) - Number(ca.away_score), split: true }
+          : null;
+        return { kind: "suspended", label: "Suspended", time: t, score: sc, si };
+      }
+      if (st === "delayed") {
+        return { kind: "delayed", label: "Delayed", time: t, score: null, si };
+      }
       if (st === "final") {
         let sc = actualScore(g);
         // Overlay-flipped finals may not have graded pick results yet — use the live score.
@@ -7376,7 +7458,7 @@ export default function Home() {
         : "";
       const pitcher = tilePitcherMeta(g, which);
       const sc = gs.score;
-      const started = gs.kind !== "pre";
+      const started = startedKind(gs.kind);
       let scoreHtml = "", winner = false, loser = false;
       if (started && sc && sc.split && sc.home != null) {
         const mine = which === "home" ? sc.home : sc.away;
@@ -8747,7 +8829,7 @@ export default function Home() {
           else if (r === "miss") T[q].l++;
           else if (r === "push") T[q].push++;
           else if (gs.kind === "live") T[q].live++;
-          else if (gs.kind !== "final") T[q].up++;
+          else if (gs.kind !== "final" && gs.kind !== "void") T[q].up++;
         });
       });
       const graded = (t: any) => t.w + t.l;
@@ -10530,7 +10612,7 @@ export default function Home() {
        that wants the whole thing in one place. */
     function boxScoreTab(g: any, part: "all" | "top" | "players" = "all") {
       const gs = gameState(g);
-      if (gs.kind === "pre") {
+      if (noBoxKind(gs.kind)) {
         if (part === "top") return "";
         return `<div class="bx-empty"><b>First pitch hasn't happened</b><span>The line score, hitters and pitchers appear here once ${esc(g.away_abbr)} @ ${esc(g.home_abbr)} is underway.</span></div>`;
       }
@@ -10623,12 +10705,16 @@ export default function Home() {
       }
       // The reminder above the tabs tracks the same live score the box score does — the cash
       // meter AND the sim's live read, rebuilt together because they share one container.
+      /* ONE LIVE PROBABILITY ON THE PAGE, AND THIS IS IT.
+         This slot used to append `atlasLiveChip(detail,"full")` under the meter,
+         which put TWO percentages 98px apart — "62% to cash" from
+         `live_status.prob_hit` and "ATLAS · LIVE 62% under" from the sim — two
+         quantities, two provenances, stacked, with nothing telling a reader they
+         were different questions. A third (`liveVsLineBlock`'s "LIVE 71% it
+         still hits") headed the tab the page opens on. The meter is the app's
+         designated live read; the other two are gone from this page. */
       const rem = document.getElementById("gp-cashmeter");
-      if (rem) rem.innerHTML = safeHtml("cash meter", () => {
-        const pl = displayPick(detail);
-        const locked = pl ? pickLocked(pl, playState(detail, pl)) : false;
-        return cashMeterHtml(detail) + (locked ? "" : atlasLiveChip(detail, "full"));
-      }, "");
+      if (rem) rem.innerHTML = safeHtml("cash meter", () => cashMeterHtml(detail), "");
       wireBoxPane();
     }
     function wireBoxPane() {
@@ -10646,7 +10732,7 @@ export default function Home() {
        one is redacted like every other unsettled pick on the site. */
     function boxScorePanel(g: any, locked = false) {
       const gs = gameState(g);
-      const started = gs.kind !== "pre";
+      const started = startedKind(gs.kind);
       if (!started) {
         return `<div class="livepanel"><div class="state mini"><div class="big">Game hasn't started</div><div class="sm">The box score and live stats appear here once ${esc(g.away_abbr)} @ ${esc(g.home_abbr)} is underway.</div></div></div>`;
       }
@@ -10896,20 +10982,23 @@ export default function Home() {
       const intro = lead2
         ? `How the model sees ${esc(g.away_abbr)} at ${esc(g.home_abbr)} — and where it disagrees with Vegas.`
         : `We're passing this one. Here's the read that didn't clear our bar.`;
-      // THE DESK DEBATE leads when the four analysts are served — the strategies panel
-      // stays available underneath as the raw streams; without the desk it renders as before.
-      const debate = deskDebatePanel(g, leadLocked);
+      /* THE DESK HAS ONE HOME, AND IT IS "WHAT THE FOUR MEASURED".
+         `deskDebatePanel` rendered here too, inside the fold — so a single
+         Preview pane carried the four analysts twice, one scroll apart: the
+         fold's "◆ THE DESK ON THIS GAME · SPLIT 2–2 · VEGA ▲OVER 9 53% · ATLAS
+         ▲OVER 9 53% · NOVA ▼UNDER 9 50%…" and, lower down, "What the four
+         measured · THE DESK READS IT SPLIT 2–2 · VEGA CALL OVER 53%…". Same
+         four convictions, same split, same numbers. `deskBlockTile` keeps them
+         (it is a titled section on the pane the reader is already on); the raw
+         per-stream panel stays here, because that is a different object.
+
+         THE CONFIDENCE GOES FOR THE SAME REASON: this fold renders inside a
+         `whySection` that already prints `confidenceBlock(lead)` directly above
+         it, so the served score appeared twice on one screen. */
       const stratHtml = strategiesPanel(g);
-      /* THE CONFIDENCE, ON THE TAB THAT ARGUES THE CALL. The board tile has room for the bare
-         number and nothing else; this pane is where a reader came to read the reasoning, so
-         the served score appears here with the evidence under it. TAKE only — a pass has no
-         pick to be confident about — and it renders nothing at all on a pick the backend
-         declined to score. */
-      const confHtml = lead2 ? confidenceBlock(lead) : "";
       return `<div class="de-pane">
-        <div class="de-lead"><div class="de-k">◆ Why DiamondEdge ${lead2 ? "is on this" : "passed"}</div><p class="de-sub">${intro}</p>${confHtml}</div>
-        ${debate || stratHtml}
-        ${debate && stratHtml ? `<details class="dskdb-raw"><summary><span>The raw model streams behind the desk</span><span class="sgc-caret" aria-hidden="true">›</span></summary>${stratHtml.replace(' id="stgy-panel"', "")}</details>` : ""}
+        <div class="de-lead"><div class="de-k">◆ Why DiamondEdge ${lead2 ? "is on this" : "passed"}</div><p class="de-sub">${intro}</p></div>
+        ${stratHtml}
         ${narrative}
         ${div ? `<div class="de-sec"><div class="de-h">Our number vs the market</div>${div}</div>` : ""}
       </div>`;
@@ -11006,7 +11095,16 @@ export default function Home() {
           && String(x.scope || "full_game") === "full_game");
         const ln = r ? _fin(r.market_line) : null;
         if (ln == null) continue;
-        out.push({ wall: lab, line: ln, price: _fin(r.per_side_price), book: String(r.best_book || "").trim() });
+        /* THE SIDE THE PRICE IS FOR TRAVELS WITH THE PRICE.
+           `per_side_price` is the best price for whichever side the row's `lean`
+           names, and that lean CHANGES from wall to wall — on a real game the
+           column read −108 / −104 / −112 / +100 / −101 where the first three
+           were the OVER and the last two the UNDER. Rendered as one unlabelled
+           "Best price" column it drew a price series for a bet that changed
+           identity halfway down: the same class of claim the step chart refuses
+           to make about the line. `lean` was read and dropped here; it is kept. */
+        const lean = r && r.lean && typeof r.lean === "object" ? String(r.lean.side || "") : "";
+        out.push({ wall: lab, line: ln, price: _fin(r.per_side_price), book: String(r.best_book || "").trim(), side: lean });
       }
       return out;
     }
@@ -11069,13 +11167,17 @@ export default function Home() {
       const rows = w.map((x: any) => `<tr>
         <td class="owt-w">${esc(x.wall)}</td>
         <td class="owt-l">${esc(lineStr(x.line))}</td>
-        <td class="owt-p">${x.price != null ? esc(fmtOdds(x.price)) : "—"}</td>
+        <td class="owt-p">${x.price != null ? `${esc(fmtOdds(x.price))}${x.side ? `<i class="owt-side">${esc(x.side)}</i>` : ""}` : "—"}</td>
         <td class="owt-b">${x.book ? esc(bookName(x.book)) : "—"}</td>
       </tr>`).join("");
+      // Every price says which side it is for — see the note in `totalWalls`.
+      // The footer no longer claims a single "best book" for the column either:
+      // the line card above prints its own best-price book, and a reader met two
+      // different book names on one pane with nothing distinguishing them.
       return `<div class="owt-wrap"><table class="owt">
         <thead><tr><th>Check</th><th>Total</th><th>Best price</th><th>Book</th></tr></thead>
         <tbody>${rows}</tbody></table>
-        <p class="owt-foot">The best per-side price we could find at each check, and the book showing it.</p>
+        <p class="owt-foot">At each check: the total, the best price we could find, which side that price was for, and the book showing it. The side moves as the market does, so the prices down this column are not all for the same bet.</p>
       </div>`;
     }
     // The raw served pregame_line block (n_books / open / move live here, not on pregameLine()).
@@ -11109,7 +11211,9 @@ export default function Home() {
         <div class="oline-foot">${[
           open != null && Math.abs(open - tot) > 0.001 ? `opened ${lineStr(open)}` : open != null ? "never moved off the open" : "",
           nBooks != null ? `${Math.round(nBooks)} books read` : "",
-          book ? `best price at ${book}` : "",
+          // "best price at X" sat above a table whose every row named a
+          // different book; naming what this one is about tells them apart.
+          book ? `best at the close: ${book}` : "",
         ].filter(Boolean).map((s) => esc(s)).join(" · ")}</div>
       </div>`;
       // (2) HOW IT TRADED IN — the chart and the wall table share one slot, so the on-demand
@@ -11129,7 +11233,25 @@ export default function Home() {
       if (!chart && !table) {
         if (wallGridPending) return `<div class="omv-wait">Loading the market's record…</div>`;
         const pg = pregameLine(g);
-        if (pg && pg.total && pg.total.line != null) return "";   // the line card carries the pane
+        const hasLine = !!(pg && pg.total && pg.total.line != null);
+        /* THE WALL RECORD ONLY EXISTS FOR THE CURRENT BOARD. `loadWallGrid`
+           reads `picks_v4_beta_live`, which carries one day of games; on any
+           older game `totalWalls` returns [] and this pane silently collapsed
+           to the line card alone — no chart, no table, and no word about why.
+           And where there was no captured line either, it printed, in the
+           PRESENT TENSE, on a game two days finished: "No line on this game yet
+           … Nothing has been captured for this game so far", while the Preview
+           pane of the same page printed the total we graded it at.
+
+           So the two cases are separated and both are said in the right tense. */
+        const started = startedKind(gameState(g).kind);
+        if (started) {
+          return `<div class="oempty past">
+            <b>The check-by-check record isn't kept for past games</b>
+            <span>We record the market's number at five checks before first pitch, and that grid is held for the current board only.${hasLine ? " The number this game was graded at is above." : " Nothing was captured for this game."}</span>
+          </div>`;
+        }
+        if (hasLine) return "";   // the line card carries the pane
         return `<div class="oempty">
           <b>No line on this game yet</b>
           <span>We record the market's number at five checks, the first about 24 hours before
@@ -11156,7 +11278,7 @@ export default function Home() {
          "box" is the retired tab's key: an old URL or a back-button restore lands on Stats,
          which is where the box score went. */
       const _restore = restoreTab === "de" ? "odds" : restoreTab === "box" || restoreTab === "live" ? "stats" : restoreTab;
-      detailTab = _restore || (_gsk === "final" || _gsk === "live" ? "stats" : "preview");
+      detailTab = _restore || (startedKind(_gsk) ? "stats" : "preview");
       if (!fromHistory && g && g.game_id != null && !g._recipe) pushGameUrl(g.game_id);
       if (g && g.game_id != null && !g._recipe) { try { document.title = `${g.away_abbr} @ ${g.home_abbr} — DiamondEdge`; } catch {} }
       // Everything the detail body renders is derived FROM g (+ the live feeds by key), so it's
@@ -11273,23 +11395,46 @@ export default function Home() {
          SO THIS FUNCTION ADDS NOTHING. No joining, no rounding, no "and" between clauses,
          no fallback prose when the block is missing — a missing block renders no card. The
          one thing it does is refuse a shape it does not recognise. */
+      /* WHERE THE CASE LIVES NOW: `pick.game_case`, at the pick level.
+         It used to be read only from `pick.forge_strategy.game_case`, and the
+         backend only built it inside the forge's own block and only when a
+         frozen forge row existed — so on the 2026-08-08 board, whose picks were
+         chosen by a strategy_forge rule but served through the OWNER channel
+         (and so carry `owner_strategy`), the card rendered on 0 of 15 games.
+         The generator never read the rule anyway, so the case is not a claim
+         about which channel chose the side and now travels on the pick itself.
+         The old path is still read, so a payload built before this still shows. */
       const forgeCase = (() => {
         const vg = v4GameFor(g) || g;
-        const blk = vg && vg.pick && vg.pick.forge_strategy;
-        const gc = blk && typeof blk === "object" ? blk.game_case : null;
+        const pk0 = vg && vg.pick;
+        const blk = pk0 && pk0.forge_strategy;
+        const gc = (pk0 && typeof pk0.game_case === "object" && pk0.game_case)
+          || (blk && typeof blk === "object" ? blk.game_case : null);
         if (!gc || typeof gc !== "object" || gc.status !== "ACTIVE") return null;
         const paras = (Array.isArray(gc.paragraphs) ? gc.paragraphs : [])
           .map((p: any) => String(p || "").trim()).filter(Boolean);
         if (!paras.length) return null;
-        return { paras, name: String((blk.rule_name || "") as string).trim() };
+        return { paras, how: String(gc.how_to_read || "").trim() };
       })();
-      // Gated with the rest of the read: the case names the side in its own last clause,
-      // and the side is the product.
+      /* Gated with the rest of the read: the case names the side in its own last
+         clause, and the side is the product.
+
+         NO RULE-NAME CHIP. This card used to print `forge_strategy.rule_name` —
+         "ATLAS's Call", "The Priced Apart and VEGA's Call" — one line above
+         prose whose own voice check REFUSES those exact strings inside it. A
+         reader does not read a card in sections, so the machinery the prose was
+         rewritten to keep out was sitting in the same box, in bolder type.
+
+         AND THE QUALIFIER IS RENDERED. `how_to_read` was written by the backend
+         and mapped by nothing: the caveat never reached a viewer while the
+         prose's closing sentence did. It is the one line that says what the
+         paragraphs are — the game and the facts that agree with the side, not a
+         re-derivation of the pick — so it ships with them or they overclaim. */
       const forgeCaseBlock = (!leadLocked && forgeCase)
         ? `<div class="whycard rulecase">
-            <div class="wc-k">Why we lean this way</div>
-            ${forgeCase.name ? `<div class="rc-rule">${esc(forgeCase.name)}</div>` : ""}
+            <div class="wc-k">The game, and what points this way</div>
             ${forgeCase.paras.map((p: string) => `<p>${esc(p)}</p>`).join("")}
+            ${forgeCase.how ? `<p class="rc-how">${esc(forgeCase.how)}</p>` : ""}
           </div>`
         : "";
       const previewBlock = leadLocked
@@ -11324,16 +11469,26 @@ export default function Home() {
       // FUSED HERO HEADER — the matchup (crests + records) and the live trend woven into
       // ONE header over a subtle team-tinted wash. Sits above the tabs.
       const heroScore = (gs.score && gs.score.split && gs.score.home != null)
-        ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
-        : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
+        ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : gs.kind === "suspended" ? esc(gs.label) : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
+        /* A CALLED-OFF GAME'S HERO SAID "11:00 PM PDT". The scheduled time is
+           the least true thing on the page once the game is off; the state is
+           the headline, and the date it was scheduled for follows it. */
+        : gs.kind === "void" || gs.kind === "delayed"
+          ? `<div class="gp-when ${gs.kind}"><b class="gp-statebig">${esc(gs.label)}</b>${startTxt ? `<span class="gp-wassched">was ${esc(startTxt)}</span>` : ""}</div>`
+          : `<div class="gp-when">${esc(startTxt || dispDate || "")}</div>`;
       const heroForm = (side: "away" | "home") => { const f = teamForm(g, side); return f && f.rec ? `<span class="gp-form">${esc(f.rec)}${f.recIsL15 ? ` <span class="gp-rec-tag">L15</span>` : ""}${f.streak ? ` <i class="${f.hot ? "hot" : ""}">${esc(f.streak)}</i>` : ""}</span>` : ""; };
       /* THE LIVE TREND LEFT THE HERO. It used to sit inside the crest header; it is now part
          of the BET REMINDER below the line score, because the meter and the ticket it
          measures are one thought ("our bet, and how likely it is to cash") and splitting
          them across two blocks made the percentage look like a property of the scoreboard.
-         ATLAS's live read rides with it, as it always has. */
-      const atlHero = !leadLocked ? atlasLiveChip(g, "full") : "";
-      const gameHero = `<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
+
+         ATLAS'S LIVE CHIP NO LONGER RIDES WITH IT. It is a DIFFERENT quantity —
+         the sim's live P(side) — and stacking it 98px under the served cash
+         meter put two percentages, two provenances, on one block with nothing
+         saying they answered different questions. One live number on this page.
+         (The chip is unchanged and still renders on the board tile, where it is
+         the only live read present.) */
+      const gameHero =`<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
         <div class="gp-mu">
           <div class="gp-team away"><span class="gp-crest">${gCrest(g, "away")}</span><span class="gp-ab">${esc(g.away_abbr)}</span>${heroForm("away")}</div>
@@ -11359,8 +11514,25 @@ export default function Home() {
          renders NOTHING: an empty slot above the tabs is the honest shape of "we are not on
          this game", and it costs zero pixels. */
       const gpDesk = deskBlockTile(g, leadLocked);
-      const gpBanner = (lead || leadLocked) ? deCallBlock(g, leadLocked, true) : "";
-      const showLive = gs.kind === "live" || gs.kind === "final";
+      /* A GAME THAT WILL NOT BE PLAYED HAS NO BET TO REMIND ANYBODY OF.
+         The strip renders the served ticket — "O/U 8 ◆DE OVER −105" — which on a
+         postponed game is a live-looking recommendation on a wager that will
+         never grade. The app's own vocabulary for this ("pick void, no action")
+         replaces it, and the ticket's numbers still show, greyed, because the
+         permanent record of what we served is the point. */
+      const isVoid = gs.kind === "void";
+      const gpBanner = isVoid
+        ? ((lead || leadLocked) ? `<div class="gp-void">
+             <div class="gp-void-k">${esc(gs.label)} — pick void, no action</div>
+             <p>This game will not be played as scheduled, so the call we served on it is not graded and counts in no record.</p>
+           </div>` : "")
+        : (lead || leadLocked) ? deCallBlock(g, leadLocked, true) : "";
+      /* A DELAYED GAME IS STILL COMING, and its first-pitch time is now in the
+         past — which the page used to print with no acknowledgement at all. */
+      const delayNote = gs.kind === "delayed"
+        ? `<div class="gp-delaynote">First pitch is delayed. The scheduled time has passed; the game and the call on it both stand.</div>`
+        : "";
+      const showLive = startedKind(gs.kind);
       const isFinal = gs.kind === "final";
       /* ════════ THE TAB SET FOLLOWS THE GAME (Leon, 2026-08-08) ════════
            pre    Preview* · Odds                 — "pregame there just should be Preview and Odds"
@@ -11395,10 +11567,22 @@ export default function Home() {
       /* THE REFERENCE SECTIONS — one builder, two possible homes (see the tab-set note).
          Every block is already defensive; an absent feed drops its own section. Nothing here
          is gated: context is free, the CALL is the product. */
+      /* THE PROJECTION IS THE PICK IN A DIFFERENT COSTUME, AND IT IS GATED.
+         `deCallBlock` has guarded exactly this since it was written — "the
+         predicted final score is directional: the score, read against the
+         market total, gives away the over/under" — but `vizPredScore` /
+         `vizWinProb` take no `locked` argument, and the restructure moved these
+         sections onto the PREGAME DEFAULT TAB. Before it they lived on Stats,
+         which does not exist pregame, so nobody signed out ever met them.
+         Walked signed-out on a real game: Preview printed "MODEL'S EXPECTED
+         FINAL CHC 5.7 KC 4.3 — ~10.1 runs combined" while the Odds tab printed
+         the line as 9. That is the served side, handed over for free, on the
+         one pane the page opens on. Everything else here is context and stays
+         free; this section is the call. */
       const referenceSections = `
         ${vizPitchers(g) ? `<section class="st-sec"><h3 class="st-h">Starting pitchers</h3>${vizPitchers(g)}</section>` : ""}
         ${vizTeamRecords(g) || vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Team performance</h3>${vizTeamRecords(g)}${vizFormStrip(g)}</section>` : ""}
-        ${vizPredScore(g) || vizWinProb(g) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
+        ${!leadLocked && (vizPredScore(g) || vizWinProb(g)) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
         ${vizH2H(g) ? `<section class="st-sec"><h3 class="st-h">Head to head</h3>${vizH2H(g)}</section>` : ""}
         ${intelSection(g)}
         ${(facts.length || stks) ? `<section class="st-sec"><h3 class="st-h">Game notes</h3>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</section>` : ""}`;
@@ -11575,8 +11759,8 @@ export default function Home() {
          moment the game starts. */
       const boxTop = showLive ? `<div class="gp-boxtop" id="gp-boxtop">${boxScoreTab(g, "top")}</div>` : "";
       const cashMeter = safeHtml("cash meter", () => cashMeterHtml(g), "");
-      const remBody = `${gpBanner}${(cashMeter || atlHero) ? `<div class="gp-trend" id="gp-cashmeter">${cashMeter}${atlHero}</div>` : ""}`;
-      const reminder = (gpBanner || cashMeter || atlHero) ? `<div class="gp-lead">${remBody}</div>` : "";
+      const remBody = `${delayNote}${gpBanner}${cashMeter ? `<div class="gp-trend" id="gp-cashmeter">${cashMeter}</div>` : ""}`;
+      const reminder = (delayNote || gpBanner || cashMeter) ? `<div class="gp-lead">${remBody}</div>` : "";
       return `<div class="gp-heroblk">${gameHero}${boxTop}${reminder}</div>${tabsBar}${previewPane}${statsPane}${dePane}${livePane}`;
       }
 
@@ -11618,6 +11802,7 @@ export default function Home() {
         if (!$("gamepage") || !detail || String(detail.game_id) !== String(g.game_id)) return;
         const body = $("gp-body"); if (!body) return;
         body.innerHTML = buildBody();
+        detailBuiltKind = g && !g._recipe ? gameState(g).kind : "pre";
         wireBody();
         positionDetailInk();
         if (gameState(g).kind === "live" || gameState(g).kind === "final") pollLiveDetail();
@@ -11633,6 +11818,11 @@ export default function Home() {
           </div>
           <div class="gp-body" id="gp-body">${buildBody()}</div>
         </div>`;
+
+      // Publish the rebuilder and the state the body was built for, so the live
+      // path can restructure the page when the game crosses first pitch.
+      detailRerender = rerenderDetailBody;
+      detailBuiltKind = _gsk;
 
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
@@ -11742,6 +11932,9 @@ export default function Home() {
         pitcherPushed = false; history.back(); return;
       }
       pitcherPushed = false;
+      // The closure this points into is about to be orphaned; a stale rebuilder
+      // firing against a torn-down page is the one way this can misbehave.
+      detailRerender = null; detailBuiltKind = "";
       if (!fromHistory && !forceRoot && detail && detail._backToGame && restoreGameDetail(detail._backToGame)) return;
       const wasGame = isGameDetail(detail) || !!(forceRoot && detail && detail._backToGame && detail._backToGame.game && detail._backToGame.game.game_id != null);
       try { document.title = DEF_TITLE; } catch {}   // restore the base tab title on close
