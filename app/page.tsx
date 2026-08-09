@@ -1537,8 +1537,10 @@ export default function Home() {
     const unlockPitchTxt = () => (isSignedIn() ? "Unlock today's picks" : "Sign in to unlock all picks");
     // Every locked surface routes here: signed-out → the sign-in gateway; free member → Premium.
     function openUnlock() {
-      if (!isSignedIn()) { accountMode = "signin"; switchTab("account"); return; }
-      switchTab("upgrade");
+      // ONE PAYWALL. This used to open the Upgrade view while Account's own CTA opened the
+      // subscribe mode — two screens selling the same thing, reached by different buttons.
+      accountMode = isSignedIn() ? "subscribe" : "signin";
+      switchTab("account");
     }
     /* ═════════════ THE PAYWALL, IN ONE PLACE ═════════════
        Leon: "ALL picks anywhere on the site are blurred/redacted unless the user has a
@@ -5945,8 +5947,8 @@ export default function Home() {
          settings → Preferences, opened from Account
          upgrade  → Premium, opened from any locked pick or from Account
        "beta" (the old Totals board) has no door left at all and is not rendered. */
-    let tab = "games";              // "today" | "games" | "desk" | "research" | "settings" | "upgrade" | "account"
-    const TABS = ["today", "games", "desk", "research", "settings", "upgrade", "account"];
+    let tab = "games";              // "today" | "games" | "desk" | "research" | "account"
+    const TABS = ["today", "games", "desk", "research", "account"];
     let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
@@ -13797,99 +13799,8 @@ export default function Home() {
     }
 
     // ===================== SETTINGS =====================
-    function renderSettings() {
-      const view = $("settings-view");
-      if (!view) return;
-      const prem = isPremium();
-      view.innerHTML = `
-        <div class="set-h">Settings</div>
-        <div class="set-card">
-          <div class="set-k">Membership</div>
-          <div class="set-row">
-            <div class="sr-txt"><b>DiamondEdge Premium <span class="set-badge ${prem ? "prem" : "free"}">${prem ? "Active" : "Free"}</span></b>
-            <span>${prem ? "Every pick unlocked — sides, lines, and the plain-English why." : "Strong and Good picks are locked. Leans, results and the full record stay free."}</span></div>
-            <button class="switch ${prem ? "on" : ""}" id="prem-switch" role="switch" aria-checked="${prem}" aria-label="Premium preview"></button>
-          </div>
-          <div class="set-note">Flip this off any time to see what free members see — the record stays open to everyone.</div>
-        </div>
-        <div class="set-card">
-          <div class="set-k">Leagues</div>
-          <div class="set-about" style="margin-bottom:9px">League tabs are ordered by how many games are on — busiest first. Reorder them to your taste and your order sticks.</div>
-          <div class="lg-order" id="lg-order">${orderedLeagues(livePayload || payload).map((lg, i, arr) => `<div class="lg-item"><span class="lg-name">${SPORT_LABEL[lg] || lg}</span><span class="lg-btns"><button class="lg-mv lg-up" data-lg="${lg}" ${i === 0 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} up">▲</button><button class="lg-mv lg-dn" data-lg="${lg}" ${i === arr.length - 1 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} down">▼</button></span></div>`).join("")}</div>
-          ${leagueOrderPref() ? `<button class="set-link" id="lg-reset">↺ Reset to auto (by games)<em>→</em></button>` : ""}
-        </div>
-        <div class="set-card">
-          <div class="set-k">Appearance</div>
-          <div class="set-about"><b>Light liquid glass</b> is the DiamondEdge identity — airy daylight surfaces, frosted white cards, emerald and red for results, gold reserved for Strong picks. Depth comes from light and shadow, not boxes.</div>
-        </div>
-        <div class="set-card">
-          <div class="set-k">About</div>
-          <button class="set-link" id="set-how">ⓘ How picks work<em>→</em></button>
-          <button class="set-link" id="set-results">Our full record<em>→</em></button>
-          <button class="set-link" id="set-upgrade">DiamondEdge Premium<em>→</em></button>
-          <div class="set-about" style="margin-top:10px">Every DiamondEdge Pick is graded in the open against real final scores — games the model never saw in advance. Win rates always travel with prices and returns. That transparency is the whole product.</div>
-        </div>`;
-      bindClick("prem-switch", () => {
-        setPremium(!isPremium());
-        renderSettings();
-        renderToday();
-        if ($("slate-body")) renderSlate();
-      });
-      bindClick("set-how", () => openRecipeSheet());
-      bindClick("set-results", () => { switchTab("desk"); goDeskResults(); });
-      bindClick("set-upgrade", () => switchTab("upgrade"));
-      const moveLeague = (lg: string, dir: number) => {
-        const cur = orderedLeagues(livePayload || payload);
-        const i = cur.indexOf(lg), j = i + dir;
-        if (i < 0 || j < 0 || j >= cur.length) return;
-        const arr = [...cur]; [arr[i], arr[j]] = [arr[j], arr[i]];
-        try { localStorage.setItem("de_league_order", JSON.stringify(arr)); } catch {}
-        renderSettings();                       // Games tab re-reads the order when next shown
-      };
-      view.querySelectorAll(".lg-up").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, -1)));
-      view.querySelectorAll(".lg-dn").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, 1)));
-      bindClick("lg-reset", () => { try { localStorage.removeItem("de_league_order"); } catch {} renderSettings(); });
-    }
 
     // ===================== UPGRADE (stub checkout — no real payments) =====================
-    function renderUpgrade() {
-      const view = $("upgrade-view");
-      if (!view) return;
-      const rh = recipeHistory();
-      const fwd = forwardRecord();
-      const perk = (t: string, s: string) => `<div class="up-perk"><span class="pk-ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><b>${t}</b><span>${s}</span></div></div>`;
-      view.innerHTML = `
-        <div class="up-hero">
-          <div class="up-dia" aria-hidden="true"></div>
-          <h2>Every pick. Every why. Nothing hidden.</h2>
-          <div class="up-sub">One honest model, graded in public since 2022. Premium unlocks the side and line on every Strong and Good pick — plus the plain-English read behind each one.</div>
-          <div class="up-stats">
-            <div class="up-st"><div class="v">≈55%</div><div class="k">expected · morning prices</div></div>
-            <div class="up-st"><div class="v">56.9%</div><div class="k">out-of-sample · 239 picks</div></div>
-            <div class="up-st"><div class="v">${(rh.hit * 100).toFixed(1)}%</div><div class="k">historical model edge</div></div>
-            <div class="up-st"><div class="v">${rh.n.toLocaleString()}</div><div class="k">graded model picks</div></div>
-          </div>
-        </div>
-        <div class="up-perks">
-          ${perk("Every Strong ◆◆◆ and Good ◆◆ pick, unlocked", "The exact side, line and price we froze before the game — never re-written after the fact.")}
-          ${perk("The why, in plain English", "Two or three sentences a first-time reader can follow: the model's number, the line it beats, and the history behind calls made exactly this way.")}
-          ${perk("Live reads and score overlay", "Fresh scores every minute during games, with each pick's progress toward its line.")}
-          ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free users; you just get the picks that build it.")}
-        </div>
-        <div class="up-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
-        <button class="up-cta" id="up-sub">Unlock DiamondEdge</button>
-        <button class="up-back" id="up-back">Not now</button>
-        <div class="up-honest">Premium unlocks the exact side, line and plain-English read behind every DiamondEdge Pick.</div>
-        ${termsMini("up-terms")}`;
-      bindClick("up-sub", () => {
-        // The buy-flow lives on the Account screen's payment step (Card / Apple Pay / …).
-        // Sign-in gates checkout; the payment stub sets the de_premium entitlement there.
-        accountMode = isSignedIn() ? "subscribe" : "signin";
-        switchTab("account");
-      });
-      bindClick("up-back", () => switchTab("today"));
-      bindClick("up-terms", () => openTermsSheet());
-    }
 
     // ===================== ACCOUNT / SIGN-IN / SUBSCRIBE (stubs) =====================
     // Top-right header button: an avatar (initials) when signed in, a person glyph when not.
@@ -14063,10 +13974,29 @@ export default function Home() {
                  ${termsMini("plan-terms")}`}
           </section>
 
-          <!-- ── 3. PREFERENCES ── -->
+          <!-- ── 3. PREFERENCES ──
+               THE SETTINGS SCREEN FOLDED IN HERE (2026-08-09). It had exactly one door — this
+               row — and three of its four cards ("How picks work", "Our full record",
+               "DiamondEdge Premium") were the same links sitting 40px above the link that
+               opened it. Only the premium preview and the league order were its own, so they
+               expand IN PLACE rather than being a destination: a section beats a sheet. -->
           <section class="acct-card">
             <div class="acct-card-k">Preferences</div>
-            <button class="acct-link" id="acct-prefs">Leagues &amp; display<span class="al-sub">Order the league tabs, preview the free view</span><em>→</em></button>
+            <details class="acct-fold" id="acct-prefs-fold">
+              <summary class="acct-link as-summary">Leagues &amp; display<span class="al-sub">Order the league tabs, preview the free view</span><em>→</em></summary>
+              <div class="acct-foldbody">
+                <div class="set-row">
+                  <div class="sr-txt"><b>Premium preview <span class="set-badge ${prem ? "prem" : "free"}">${prem ? "Active" : "Free"}</span></b>
+                  <span>${prem ? "Every pick unlocked — sides, lines, and the plain-English why." : "Strong and Good picks are locked. Leans, results and the full record stay open."}</span></div>
+                  <button class="switch ${prem ? "on" : ""}" id="prem-switch" role="switch" aria-checked="${prem}" aria-label="Premium preview"></button>
+                </div>
+                <div class="set-note">Flip this off any time to see what free members see — the record stays open to everyone.</div>
+                <div class="set-about" style="margin:12px 0 9px">League tabs are ordered by how many games are on — busiest first. Reorder them to your taste and your order sticks.</div>
+                <div class="lg-order" id="lg-order">${orderedLeagues(livePayload || payload).map((lg, i, arr) => `<div class="lg-item"><span class="lg-name">${SPORT_LABEL[lg] || lg.toUpperCase()}</span><span class="lg-btns"><button class="lg-up" data-lg="${lg}" ${i === 0 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} up">↑</button><button class="lg-dn" data-lg="${lg}" ${i === arr.length - 1 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} down">↓</button></span></div>`).join("")}</div>
+                ${leagueOrderPref() ? `<button class="set-link" id="lg-reset">↺ Reset to auto (by games)<em>→</em></button>` : ""}
+                <div class="set-about" style="margin-top:12px"><b>Light liquid glass</b> is the DiamondEdge identity — airy daylight surfaces, frosted white cards, emerald and red for results, gold for the mark.</div>
+              </div>
+            </details>
             <button class="acct-link" id="acct-record">Our full record<em>→</em></button>
             <button class="acct-link" id="acct-how">How picks work<em>→</em></button>
           </section>
@@ -14090,7 +14020,28 @@ export default function Home() {
         </div>`;
       bindClick("acct-upgrade", () => { accountMode = "subscribe"; renderSubscribe(); }, { optional: "premium members see Manage instead" });
       bindClick("acct-manage", () => { accountMode = "manage"; renderManagePlan(); }, { optional: "free members see the upgrade CTA instead" });
-      bindClick("acct-prefs", () => switchTab("settings"));
+      /* The preferences fold is part of THIS page now, so its controls bind here. Each
+         re-render reopens the fold, because a toggle that closes the panel it lives in
+         reads as the page throwing the reader out. */
+      const prefsOpen = () => { const d: any = $("acct-prefs-fold"); if (d) d.open = true; };
+      bindClick("prem-switch", () => {
+        setPremium(!isPremium());
+        renderAccount(); prefsOpen();
+        renderToday();
+        if ($("slate-body")) renderSlate();
+      }, { optional: "only inside the Leagues & display fold" });
+      const moveLeague = (lg: string, dir: number) => {
+        const cur = orderedLeagues(livePayload || payload);
+        const i = cur.indexOf(lg), j = i + dir;
+        if (i < 0 || j < 0 || j >= cur.length) return;
+        const arr = [...cur]; [arr[i], arr[j]] = [arr[j], arr[i]];
+        try { localStorage.setItem("de_league_order", JSON.stringify(arr)); } catch {}
+        renderAccount(); prefsOpen();          // Games re-reads the order when next shown
+      };
+      view.querySelectorAll(".lg-up").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, -1)));
+      view.querySelectorAll(".lg-dn").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, 1)));
+      bindClick("lg-reset", () => { try { localStorage.removeItem("de_league_order"); } catch {} renderAccount(); prefsOpen(); },
+        { optional: "only shown once a custom league order exists" });
       bindClick("acct-record", () => { switchTab("desk"); goDeskResults(); });
       bindClick("acct-how", () => openRecipeSheet());
       bindClick("acct-billing", () => { location.href = "mailto:support@diamondedge.app?subject=DiamondEdge%20billing"; });
@@ -14232,6 +14183,7 @@ export default function Home() {
       if (!view) return;
       const rh = recipeHistory();
       const fwd = forwardRecord();
+      const perk = (t: string, s: string) => `<div class="up-perk"><span class="pk-ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><b>${t}</b><span>${s}</span></div></div>`;
       const method = (id: string, label: string, mark: string) =>
         `<button class="pay-m ${payMethod === id ? "on" : ""}" data-pm="${id}"><span class="pm-mark">${mark}</span><span class="pm-l">${esc(label)}</span><span class="pm-r" aria-hidden="true"></span></button>`;
       const cardMark = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/></svg>`;
@@ -14262,8 +14214,24 @@ export default function Home() {
           <div class="sub-hero">
             <div class="sub-dia" aria-hidden="true"></div>
             <div class="sub-k">DiamondEdge Premium</div>
+            <h2 class="sub-h">Every pick. Every why. Nothing hidden.</h2>
             <div class="sub-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
             <p class="sub-sell">Every Strong ◆◆◆ and Good ◆◆ pick, unlocked — the exact calls behind a <b>${(rh.hit * 100).toFixed(1)}%</b> record across <b>${rh.n.toLocaleString()}</b> graded picks since 2022${fwd ? `, and <b>${fwd.wins || 0}-${fwd.losses || 0}</b> since going live` : ""}. Cancel anytime.</p>
+          </div>
+          <!-- THE SELL, LIFTED OFF THE DELETED UPGRADE VIEW (2026-08-09). There were two
+               paywalls selling the same $9.99 with the same four stats, and which one a
+               reader got depended on where they tapped: openUnlock() sent them to the
+               Upgrade view, acct-upgrade sent them straight here. The perks belong with the
+               price, and the price belongs with the payment methods, so there is one.
+               ITS STATS NOW COME FROM THE RECORD. The Upgrade hero opened with a hardcoded
+               "≈55%" and "56.9% · 239 picks" — the same invented literals the share card
+               carried until this pass. A sell that quotes a number the record cannot
+               produce is the one place it matters most that they agree. -->
+          <div class="up-perks">
+            ${perk("Every Strong ◆◆◆ and Good ◆◆ pick, unlocked", "The exact side, line and price we froze before the game — never re-written after the fact.")}
+            ${perk("The why, in plain English", "Two or three sentences a first-time reader can follow: the model's number, the line it beats, and what the desk disagreed about.")}
+            ${perk("Live reads and score overlay", "Fresh scores every minute during games, with each pick's progress toward its line.")}
+            ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free readers; you just get the calls too.")}
           </div>
           <div class="pay-methods">
             <div class="pay-k">Pay with</div>
@@ -16685,8 +16653,6 @@ export default function Home() {
           <div id="games-view" style="display:${tab === "games" ? "block" : "none"}"></div>
           <div id="desk-view" style="display:none"></div>
           <div id="research-view" style="display:none"></div>
-          <div id="settings-view" style="display:none"></div>
-          <div id="upgrade-view" style="display:none"></div>
           <div id="account-view" style="display:none"></div>
         </main>
         <nav class="dockwrap" aria-label="Primary"><div class="dock" id="dock"></div></nav>`;
@@ -16731,10 +16697,10 @@ export default function Home() {
     function renderDock() {
       const el = $("dock"); if (!el) return;
       el.innerHTML = DOCK_TABS.map((t) => {
-        // "Record" is not in the bar, but arriving there must not leave every tab dark —
-        // it is the Desk's own surface, so the Desk stays inked while you are on it.
-        const on = tab === t
-          || (t === "account" && (tab === "settings" || tab === "upgrade"));
+        // Every destination is now inside one of the five, so the ink is a plain match:
+        // the record is the Desk's own region, and settings and the paywall are Account's
+        // own modes. Nothing lands the reader on a tab that is not lit.
+        const on = tab === t;
         // EVERY tab keeps its label. iOS never hides the label of an inactive tab.
         return `<button class="dock-item${on ? " on" : ""}${t === "games" ? " main" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
           <span class="dock-ic">${DOCK_ICONS[t] || ""}</span>
@@ -16889,7 +16855,7 @@ export default function Home() {
       // Pan direction follows the TAB BAR's order, with each sub-surface sitting immediately
       // after the tab that owns it (Record after Desk; Premium/Settings after Account) so
       // "open the record" pans forward and "back" pans back.
-      const navOrder = ["today", "desk", "games", "research", "account", "upgrade", "settings"];
+      const navOrder = ["today", "desk", "games", "research", "account"];
       const oldIdx = navOrder.indexOf(oldTab), newIdx = navOrder.indexOf(t);
       const dir = oldIdx >= 0 && newIdx >= 0 && newIdx < oldIdx ? "left" : "right";
       const body = document.body;
@@ -16932,8 +16898,6 @@ export default function Home() {
           // and invalidated by the pick-feed poller (see betaLiveData refresh).
           if (t === "desk" && (!$("desk-view").innerHTML.trim() || deskStale)) { renderDesk(); deskStale = false; }
           if (t === "research" && !$("research-view").innerHTML.trim()) renderResearch();
-          if (t === "settings") renderSettings();
-          if (t === "upgrade") renderUpgrade();
           if (t === "account") renderAccount();
           if (t === "games") setTimeout(() => { positionInk(); recenterStrip(false); }, 30);
         };

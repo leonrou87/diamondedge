@@ -233,6 +233,15 @@
   --dirnearbg:rgba(92,104,121,.10); --dirnearline:rgba(92,104,121,.26);
   --dirbad:#9c4a08; --dirbadc:156,74,8;
   --dirbadbg:rgba(156,74,8,.10); --dirbadline:rgba(156,74,8,.28);
+  /* ── THE SIDE, ON BLACK ── The pick plate and the story cards are dark, and
+     --over/--under are tuned for ink on white, so those surfaces carry their own
+     pair. They were mint #5fe0ac and rose #ff8fa3: the light-on-dark analogues of
+     the WIN and LOSS inks, spelled as raw literals rather than tokens — which is
+     why the token work did not reach them, and why the most prominent element on
+     the whole board, the pick pill, still rendered a WON under in a loss-pink
+     beside a green seal. Same hues as --over/--under, lifted for a dark plate:
+     8.5:1 and 10.3:1 on --ink, ΔE 37 apart, and ΔE 80+ from the dark loss ink. */
+  --overdark:#7fb2ff; --underdark:#5fd0e8;
   /* THE BRAND MARK. Gold is DiamondEdge's identity, but at text sizes on white
      it is illegible, so it splits in two: a real metallic gradient for the
      diamond itself, and a deep bronze ink wherever the brand has to be read. */
@@ -2843,8 +2852,16 @@ details.more .more-body{padding-top:12px}
    come, so "a DiamondEdge pick exists here" is legible before anything is read.
 
    THE ON-BLACK PALETTE. The page's --gold (#8a5f06) and --over/--under are tuned for INK ON
-   WHITE and are unreadable here, so the tag carries its own three tones, each measured on
-   #0d1420: light gold #f6c745 (12.4:1), mint #5fe0ac (10.9:1), rose #ff8fa3 (8.6:1). */
+   WHITE and are unreadable here, so the tag carries its own tones, each measured on #0d1420:
+   light gold #f6c745 (12.4:1), and the side pair --overdark #7fb2ff (8.5:1) / --underdark
+   #5fd0e8 (10.3:1).
+   IT USED TO BE MINT #5fe0ac AND ROSE #ff8fa3, and that was the sharpest surviving instance
+   of the bug this whole system exists to kill: those are the light-on-dark WIN and LOSS
+   inks, so the pick pill — the single most-looked-at element on the board — rendered a
+   WON under in a loss-pink immediately beside its green ✓ seal, and a LOST over in a
+   win-mint beside its red ✗. They were raw literals, not tokens, which is exactly why
+   retokenising --over/--under never reached them. A side is not an outcome, on any
+   background. */
 /* The tag and its seal are ONE right-hand group, so when the row has to wrap they move
    together — a seal orphaned on its own line reads as a second, unrelated object. */
 .dmp-right{margin-left:auto;display:inline-flex;align-items:center;min-width:0;flex-shrink:0}
@@ -2855,10 +2872,10 @@ details.more .more-body{padding-top:12px}
 .de-mini-call .de-mini-logo{background:#f6c745}
 .de-mini-call .de-mini-de{color:#e8c877}
 .de-mini-word{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.03em;color:#fff}
-.de-mini-pick.over .de-mini-word{color:#5fe0ac}
-.de-mini-pick.under .de-mini-word{color:#ff8fa3}
-.de-mini-pick.over .de-mini-call .de-mini-arrow{color:#5fe0ac}
-.de-mini-pick.under .de-mini-call .de-mini-arrow{color:#ff8fa3}
+.de-mini-pick.over .de-mini-word{color:var(--overdark)}
+.de-mini-pick.under .de-mini-word{color:var(--underdark)}
+.de-mini-pick.over .de-mini-call .de-mini-arrow{color:var(--overdark)}
+.de-mini-pick.under .de-mini-call .de-mini-arrow{color:var(--underdark)}
 .de-mini-call .de-mini-arrow{color:rgba(255,255,255,.62)}
 .de-mini-call .de-mini-lockdots{background:#f6c745}
 .de-mini-call .de-mini-redact{background:repeating-linear-gradient(115deg,rgba(246,199,69,.55) 0 3px,rgba(246,199,69,.16) 3px 6px)}
@@ -4674,7 +4691,7 @@ body.stories-on{background:#060912}
   --blue:#8cadff; --bluebg:rgba(110,161,255,.15);
   --amber:#e7b62e; --amberbg:rgba(224,172,32,.16);
   --slate:#93a1b8; --slatebg:rgba(147,161,184,.15);
-  --over:#32df97; --under:#ff4277;
+  --over:#7fb2ff; --under:#5fd0e8;
   --hit:#2bd695; --hitbg:rgba(25,197,138,.16); --hitline:rgba(25,197,138,.36);
   --miss:#ff6b83; --missbg:rgba(255,77,104,.14); --missline:rgba(255,77,104,.3);
   --push:#93a1b8; --pushbg:rgba(147,161,184,.15); --pushline:rgba(147,161,184,.3);
@@ -4933,7 +4950,7 @@ body.stories-on{background:#060912}
 .stories .sts-rrow,.stories .sts-srow,.stories .sts-strow{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 30px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.13)}
 .stories .sts-team i,.stories .sts-rside,.stories .sts-sside,.stories .sts-strank,.stories .sts-strow2 i{color:rgba(235,244,255,.62)}
 .stories .sts-call{font-size:clamp(40px,13vw,72px);color:#f8fbff;text-shadow:0 0 26px rgba(125,220,255,.24)}
-.stories .sts-call.ou-over{color:#32df97}.stories .sts-call.ou-under{color:#ff4277}
+.stories .sts-call.ou-over{color:var(--overdark)}.stories .sts-call.ou-under{color:var(--underdark)}
 .stories .sts-meta .pgrade,.stories .sts .pk-count,.stories .sts-srank{background:rgba(255,255,255,.1);color:rgba(248,251,255,.82)}
 .stories .st-cta{background:linear-gradient(135deg,#f8fbff,#cde9ff);color:#0d1420;box-shadow:0 14px 34px rgba(125,220,255,.22),inset 0 1px 0 rgba(255,255,255,.8)}
 .stories .st-cta.lock{background:linear-gradient(135deg,var(--gold),#ffe08a);color:#060912}

@@ -109,6 +109,21 @@ WASHES = [
     ("cyan icon on cyan wash .14 (news)", rgb("#08749e"), rgb("#08749e"), .14, 3.0),
 ]
 
+# ── THE DARK SURFACES: the pick plate and the story cards ──────────────────
+# Two surfaces in this app are dark by design, and --over/--under are tuned for
+# ink on white, so they carry their own side pair. It was mint/rose — the
+# light-on-dark WIN and LOSS inks, written as raw literals, which is how the
+# most prominent element on the board kept rendering a won under in loss-pink
+# right through a colour sprint aimed at exactly that. Gated here so it cannot
+# happen again by being spelled rather than named.
+DARK = [
+    ("--overdark  on the pick plate --ink", rgb("#7fb2ff"), rgb("#0d1420"), 4.5),
+    ("--underdark on the pick plate --ink", rgb("#5fd0e8"), rgb("#0d1420"), 4.5),
+    ("--overdark  on a story card", rgb("#7fb2ff"), rgb("#0b1018"), 4.5),
+    ("--underdark on a story card", rgb("#5fd0e8"), rgb("#0b1018"), 4.5),
+    ("brand gold on the pick plate", rgb("#f6c745"), rgb("#0d1420"), 4.5),
+]
+
 # ── white glyph/word on a saturated fill (the seals, the LIVE badge, tabs) ──
 FILLS = [
     ("white on WIN fill        (won seal)", rgb("#07734f"), 4.5),
@@ -136,6 +151,12 @@ DISTINCT = [
      rgb("#1a5bc4"), rgb("#07734f")),
     ("--dirbad vs --miss  (an ungraded bet running against us vs a loss)",
      rgb("#9c4a08"), rgb("#c02038")),
+    ("--overdark vs the dark WIN ink  (the side, on the pick plate)",
+     rgb("#7fb2ff"), rgb("#2bd695")),
+    ("--underdark vs the dark LOSS ink (the side, on the pick plate)",
+     rgb("#5fd0e8"), rgb("#ff6b83")),
+    ("--overdark vs --underdark        (the two sides must read apart)",
+     rgb("#7fb2ff"), rgb("#5fd0e8")),
 ]
 
 
@@ -203,6 +224,15 @@ if __name__ == "__main__":
         if not ok:
             fails.append(f"{label} = {worst:.2f} on {worst_s}")
         print(f"{label:56} {worst:6.2f} {mn:4.1f}  {'PASS' if ok else '**FAIL**'}")
+
+    print("\n═══ THE DARK SURFACES (pick plate, story cards) ═══")
+    for label, fg, bg, mn in DARK:
+        r = ratio(fg, bg)
+        n += 1
+        ok = r >= mn
+        if not ok:
+            fails.append(f"{label} = {r:.2f}")
+        print(f"{label:56} {r:6.2f} {mn:4.1f}  {'PASS' if ok else '**FAIL**'}")
 
     print("\n═══ WHITE ON A SATURATED FILL ═══")
     for label, bg, mn in FILLS:
