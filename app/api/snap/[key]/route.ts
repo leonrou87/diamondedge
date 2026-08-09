@@ -382,25 +382,7 @@ async function rawBody(key: string, mode: string, gameId: string): Promise<strin
   return JSON.stringify(payload ?? null);
 }
 
-/* WHAT VERSION ARE THESE ACTUAL BYTES? — read off the body we are about to
-   send, not off a second request that could have raced it.
-
-   This is what makes the `immutable` promise safe. Comparing the caller's pin
-   against a SEPARATELY fetched version would leave a window in which the
-   publisher writes between the two reads, and we would then stamp a year of
-   immutability onto a generation that is not the one the URL names — wrong
-   bytes, in every POP and every browser, unrevokable. Reading the stamp out of
-   the payload itself closes that window by construction: the thing we compare
-   IS the thing we serve.
-
-   A regex, not JSON.parse, because this runs on every request and the payloads
-   run to megabytes; parsing one to read a 20-byte field would be the most
-   expensive line in the route. */
-const STAMP_RE = /"generated_utc"\s*:\s*"([^"]{4,64})"/;
-function bodyVersion(body: string): string {
-  const m = STAMP_RE.exec(body);
-  return m ? m[1] : "";
-}
+import { topLevelStamp } from "./stamp";
 
 export async function GET(
   req: Request,
@@ -445,14 +427,22 @@ export async function GET(
        under the ordinary short TTL, and its next manifest poll moves it onto
        the new pin. Never `immutable`, because the URL would then be lying about
        which generation it holds. */
-    if (cv) {
-      let actual = bodyVersion(body);
-      /* `?game=` returns one game object, which carries no feed-level stamp of
-         its own. Fall back to the key's version — same tag, so it was
-         invalidated by the same publish that produced these bytes. */
-      if (!actual && mode === "game") {
-        try { actual = (await cachedVersion(key)()).v; } catch { actual = ""; }
-      }
+    /* PINNING IS OFFERED ONLY WHERE IT CAN BE PROVEN.
+
+       `?game=` returns a single game object, which carries no feed-level stamp
+       of its own — so there is nothing in those bytes to check a pin against,
+       and the only alternative is the second-request race described above. It
+       is therefore left on its ordinary TTL rather than given an immutability
+       promise nothing can verify.
+
+       That costs almost nothing, which is why it is an easy call: game detail is
+       ~13 KB, changes ~25 times a day, and is fetched only when a reader opens a
+       game. The expensive keys — the board and the history — all carry a
+       top-level stamp and all get pinned. Declining to pin the one surface whose
+       correctness cannot be established is the whole "fail toward correctness"
+       rule applied to ourselves. */
+    if (cv && mode !== "game") {
+      const actual = topLevelStamp(body);
       if (actual && actual === cv) {
         return new NextResponse(body, {
           status: 200,
