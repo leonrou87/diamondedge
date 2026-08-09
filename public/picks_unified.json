@@ -4,7 +4,7 @@
   "status": "production",
   "board": "history",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-09T07:24:19Z",
+  "generated_utc": "2026-08-09T09:14:21Z",
   "dates": [
     "2026-03-27",
     "2026-03-28",
@@ -106,7 +106,7 @@
     },
     "n_playable_scores": 537,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-08T22:13:00Z",
+    "generated_utc": "2026-08-09T09:14:20Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
     "n_nonplayable_scores": 6119
@@ -856,7 +856,7 @@
     "continuity_note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top. COHERENCE (2026-07-31 \u2014 the defect this replaced): the action used to be a four-way VOTE, so a card could serve a real staked bet and, in the same breath, tell the reader the desk was passing on it. It did exactly that on both served bets of 2026-07-31. AVOID now means, and only ever means, THAT NO BET WAS SERVED (pick.status != PICK); a served bet displays as PLAY or LEAN by its star tier, and the desk's disagreement \u2014 which is real and is worth reading \u2014 is carried in `desk_agreement` (ALIGNED|MIXED|AGAINST|PENDING) and said out loud in the rationale as CONTEXT, never as a veto. The rail is unchanged in the direction that matters: the synthesis can never manufacture a bet, a PASS can never become a PLAY, and no served pick was created, altered, re-graded or removed by any of this. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that.",
     "synthesis_config": {
       "version": "v2_live_patterns",
-      "generated": "2026-08-08T09:04:02Z",
+      "generated": "2026-08-09T09:03:39Z",
       "path": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/analyst_desk/synthesis_config_v2.json",
       "fallback_path": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/analyst_desk/synthesis_config_v1.json",
       "generated_from": "v4/serve/consensus_patterns.py (nightly)",
@@ -956,7 +956,7 @@
             "fade_hit": 0.5789,
             "win": 8,
             "loss": 11,
-            "push": 1,
+            "push": 2,
             "p_two_sided": 0.647606,
             "ci_excludes_50": false,
             "bh_significant": false,
@@ -981,20 +981,20 @@
             "reads_as": "95% CI 31%-61%, NOT distinguishable from a coin flip"
           },
           "live_era": {
-            "n": 29,
-            "hit": 0.4483,
+            "n": 33,
+            "hit": 0.5152,
             "hit_ci95_exact": [
-              0.2645,
-              0.6431
+              0.3354,
+              0.692
             ],
-            "fade_hit": 0.5517,
-            "win": 13,
+            "fade_hit": 0.4848,
+            "win": 17,
             "loss": 16,
             "push": 0,
-            "p_two_sided": 0.711071,
+            "p_two_sided": 1.0,
             "ci_excludes_50": false,
             "bh_significant": false,
-            "reads_as": "95% CI 26%-64%, NOT distinguishable from a coin flip"
+            "reads_as": "95% CI 34%-69%, NOT distinguishable from a coin flip"
           }
         }
       },
@@ -1113,20 +1113,20 @@
             "reads_as": "95% CI 15%-65%, NOT distinguishable from a coin flip"
           },
           "live_era": {
-            "n": 4,
-            "hit": 0.25,
+            "n": 9,
+            "hit": 0.5556,
             "hit_ci95_exact": [
-              0.0063,
-              0.8059
+              0.212,
+              0.863
             ],
-            "fade_hit": 0.75,
-            "win": 1,
-            "loss": 3,
-            "push": 1,
-            "p_two_sided": 0.625,
+            "fade_hit": 0.4444,
+            "win": 5,
+            "loss": 4,
+            "push": 2,
+            "p_two_sided": 1.0,
             "ci_excludes_50": false,
             "bh_significant": false,
-            "reads_as": "95% CI 1%-81%, NOT distinguishable from a coin flip"
+            "reads_as": "95% CI 21%-86%, NOT distinguishable from a coin flip"
           },
           "over_pair": [
             "vega",
@@ -1155,20 +1155,20 @@
             "reads_as": "95% CI 33%-82%, NOT distinguishable from a coin flip"
           },
           "live_era": {
-            "n": 14,
-            "hit": 0.3571,
+            "n": 15,
+            "hit": 0.3333,
             "hit_ci95_exact": [
-              0.1276,
-              0.6486
+              0.1182,
+              0.6162
             ],
-            "fade_hit": 0.6429,
+            "fade_hit": 0.6667,
             "win": 5,
-            "loss": 9,
+            "loss": 10,
             "push": 0,
-            "p_two_sided": 0.42395,
+            "p_two_sided": 0.301758,
             "ci_excludes_50": false,
             "bh_significant": false,
-            "reads_as": "95% CI 13%-65%, NOT distinguishable from a coin flip"
+            "reads_as": "95% CI 12%-62%, NOT distinguishable from a coin flip"
           },
           "over_pair": [
             "vega",
@@ -1197,20 +1197,20 @@
             "reads_as": "95% CI 10%-65%, NOT distinguishable from a coin flip"
           },
           "live_era": {
-            "n": 7,
-            "hit": 0.4286,
+            "n": 8,
+            "hit": 0.5,
             "hit_ci95_exact": [
-              0.099,
-              0.8159
+              0.157,
+              0.843
             ],
-            "fade_hit": 0.5714,
-            "win": 3,
+            "fade_hit": 0.5,
+            "win": 4,
             "loss": 4,
-            "push": 0,
+            "push": 1,
             "p_two_sided": 1.0,
             "ci_excludes_50": false,
             "bh_significant": false,
-            "reads_as": "95% CI 10%-82%, NOT distinguishable from a coin flip"
+            "reads_as": "95% CI 16%-84%, NOT distinguishable from a coin flip"
           },
           "over_pair": [
             "vega",
@@ -1230,20 +1230,20 @@
           "historical": null,
           "core3_support": null,
           "live_era": {
-            "n": 16,
-            "hit": 0.625,
+            "n": 17,
+            "hit": 0.6471,
             "hit_ci95_exact": [
-              0.3543,
-              0.848
+              0.3833,
+              0.8579
             ],
-            "fade_hit": 0.375,
-            "win": 10,
+            "fade_hit": 0.3529,
+            "win": 11,
             "loss": 6,
             "push": 0,
-            "p_two_sided": 0.454498,
+            "p_two_sided": 0.332306,
             "ci_excludes_50": false,
             "bh_significant": false,
-            "reads_as": "95% CI 35%-85%, NOT distinguishable from a coin flip"
+            "reads_as": "95% CI 38%-86%, NOT distinguishable from a coin flip"
           },
           "reconstructed_era": {
             "n": 60,
@@ -1269,20 +1269,20 @@
           "historical": null,
           "core3_support": null,
           "live_era": {
-            "n": 62,
-            "hit": 0.371,
+            "n": 66,
+            "hit": 0.4091,
             "hit_ci95_exact": [
-              0.2516,
-              0.5031
+              0.2895,
+              0.5371
             ],
-            "fade_hit": 0.629,
-            "win": 23,
+            "fade_hit": 0.5909,
+            "win": 27,
             "loss": 39,
-            "push": 2,
-            "p_two_sided": 0.055897,
+            "push": 3,
+            "p_two_sided": 0.175286,
             "ci_excludes_50": false,
             "bh_significant": false,
-            "reads_as": "95% CI 25%-50%, NOT distinguishable from a coin flip"
+            "reads_as": "95% CI 29%-54%, NOT distinguishable from a coin flip"
           },
           "reconstructed_era": {
             "n": 146,
@@ -1308,20 +1308,20 @@
           "historical": null,
           "core3_support": null,
           "live_era": {
-            "n": 26,
-            "hit": 0.3846,
+            "n": 33,
+            "hit": 0.4545,
             "hit_ci95_exact": [
-              0.2023,
-              0.5943
+              0.2811,
+              0.6365
             ],
-            "fade_hit": 0.6154,
-            "win": 10,
-            "loss": 16,
-            "push": 1,
-            "p_two_sided": 0.32694,
+            "fade_hit": 0.5455,
+            "win": 15,
+            "loss": 18,
+            "push": 3,
+            "p_two_sided": 0.728332,
             "ci_excludes_50": false,
             "bh_significant": false,
-            "reads_as": "95% CI 20%-59%, NOT distinguishable from a coin flip"
+            "reads_as": "95% CI 28%-64%, NOT distinguishable from a coin flip"
           },
           "reconstructed_era": {
             "n": 118,
@@ -1351,48 +1351,48 @@
     "positioning": "THE ANALYST DESK (Leon, 2026-07-30): the home screen is a competition \u2014 four named analysts, each a real graded engine, call every game; the desk states its consensus and DiamondEdge synthesizes the final frame. SEMANTICS (2026-07-31): the frame follows THE BET, not the vote \u2014 a served bet reads PLAY or LEAN by its star tier, a game with no served bet reads AVOID, and the desk's agreement or disagreement is rendered alongside as context. The desk weights its analysts by a nightly rolling 30-day fit of their disagreement with the price (chief.desk_fit), which falls back to equal weighting \u2014 and says so \u2014 whenever the fit cannot beat equal weighting walk-forward, which is the state today. The underlying pick machinery, every record, and every honesty rail are UNCHANGED underneath.",
     "rolling_desk_fit": {
       "status": "ok",
-      "updated": "2026-08-08T09:04:03Z",
+      "updated": "2026-08-09T09:03:39Z",
       "window_days": 30,
       "window": [
-        "2026-07-09",
-        "2026-08-08"
+        "2026-07-10",
+        "2026-08-09"
       ],
-      "window_n_games": 340,
+      "window_n_games": 339,
       "reads_by_analyst": {
-        "vega": 340,
-        "atlas": 340,
-        "nova": 340,
-        "scout": 340
+        "vega": 339,
+        "atlas": 339,
+        "nova": 339,
+        "scout": 339
       },
       "fitted_weights": {
-        "vega": -0.00925,
-        "atlas": -0.03008,
-        "nova": -0.01838,
-        "scout": -0.05452
+        "vega": -0.00101,
+        "atlas": 0.00259,
+        "nova": -0.02048,
+        "scout": -0.03525
       },
       "fitted_weights_ci95": {
         "vega": [
-          -0.39786,
-          0.37936
+          -0.38973,
+          0.38771
         ],
         "atlas": [
-          -0.40067,
-          0.34051
+          -0.36806,
+          0.37324
         ],
         "nova": [
-          -0.40182,
-          0.36507
+          -0.40407,
+          0.36312
         ],
         "scout": [
-          -0.43526,
-          0.32622
+          -0.41604,
+          0.34553
         ]
       },
       "fitted_weights_se": {
-        "vega": 0.19827,
-        "atlas": 0.18908,
-        "nova": 0.19564,
-        "scout": 0.19426
+        "vega": 0.19833,
+        "atlas": 0.18911,
+        "nova": 0.19571,
+        "scout": 0.19428
       },
       "any_weight_separates_from_zero": false,
       "weights_basis": "equal_weight",
@@ -1405,7 +1405,7 @@
       "verdict": "equal_weight_fallback",
       "fitted_weights_adopted": false,
       "why": [
-        "walk-forward, the fitted weights are not distinguishable from equal weighting (delta log-loss -0.00035, 95% CI [-0.00131, +0.00049] on 272 games over 21 days)"
+        "walk-forward, the fitted weights are not distinguishable from equal weighting (delta log-loss -0.00040, 95% CI [-0.00127, +0.00047] on 284 games over 22 days)"
       ],
       "gate": "adopt fitted weights only when the trailing window holds >= 300 graded games with >= 100 reads for every analyst AND the walk-forward log-loss improvement over equal weighting has a 95% day-clustered interval strictly better than zero",
       "source": {
@@ -1414,92 +1414,92 @@
         "stream": "analyst_v2",
         "record_start": "2026-07-01",
         "trained_through": "2026-06-30",
-        "n_games": 428,
+        "n_games": 440,
         "span": [
           "2026-07-01",
-          "2026-08-07"
+          "2026-08-08"
         ],
         "note": "the v2 stream's own append-only GRADED LEDGER \u2014 the graded half of the write-once board that analyst_v2_stream.reads_for_date() serves the desk chief, so the combiner and the chief describe the same desk. Read only; nothing here re-prices or re-grades. Pushes carry no outcome and are dropped, as are games whose analysts were priced at different lines and landed between them.",
         "no_longer_read": "v4/models/analyst_desk/history.parquet \u2014 the walk-forward reconstruction of the PREVIOUS four analysts (VEGA the champion engine, NOVA the v4 grid, ATLAS the simulator, SCOUT the simple-8 fundamentals). Those four were dismantled on 2026-07-31; a weight fitted on their behaviour is not a weight for the analysts it would be applied to. The file is left on disk untouched \u2014 nothing is deleted or restated \u2014 and is simply never opened by this module.",
         "fence": "no frame on or before 2026-06-30 \u2014 the four models were fitted through that date, so a frame at or before it would be a fit on training data"
       },
       "walk_forward": {
-        "n_games_scored": 272,
-        "n_days_scored": 21,
+        "n_games_scored": 284,
+        "n_days_scored": 22,
         "span": [
           "2026-07-18",
-          "2026-08-07"
+          "2026-08-08"
         ],
         "mean_logloss": {
-          "fitted": 0.688164,
-          "equal_weight": 0.68781,
-          "market": 0.691768
+          "fitted": 0.688369,
+          "equal_weight": 0.687974,
+          "market": 0.691503
         },
         "fitted_vs_equal": {
-          "delta_logloss": -0.000354,
+          "delta_logloss": -0.000395,
           "ci95": [
-            -0.001306,
-            0.000489
+            -0.001273,
+            0.000475
           ],
           "better": false,
           "worse": false,
           "separated": false,
-          "n_games": 272,
-          "n_days": 21,
+          "n_games": 284,
+          "n_days": 22,
           "bootstrap_B": 2000,
           "bootstrap_seed": 20260731,
           "clustered_by": "slate day"
         },
         "equal_vs_market": {
-          "delta_logloss": 0.003958,
+          "delta_logloss": 0.00353,
           "ci95": [
-            -0.00264,
-            0.011167
+            -0.002454,
+            0.010557
           ],
           "better": false,
           "worse": false,
           "separated": false,
-          "n_games": 272,
-          "n_days": 21,
+          "n_games": 284,
+          "n_days": 22,
           "bootstrap_B": 2000,
           "bootstrap_seed": 20260731,
           "clustered_by": "slate day"
         },
         "fitted_vs_market": {
-          "delta_logloss": 0.003605,
+          "delta_logloss": 0.003135,
           "ci95": [
-            -0.002928,
-            0.01086
+            -0.002726,
+            0.01016
           ],
           "better": false,
           "worse": false,
           "separated": false,
-          "n_games": 272,
-          "n_days": 21,
+          "n_games": 284,
+          "n_days": 22,
           "bootstrap_B": 2000,
           "bootstrap_seed": 20260731,
           "clustered_by": "slate day"
         },
         "side_hit_vs_market": {
           "fitted": {
-            "n": 272,
-            "hit_rate": 0.5551,
+            "n": 284,
+            "hit_rate": 0.5528,
             "hit_ci95": [
-              0.4961,
-              0.6142
+              0.495,
+              0.6106
             ]
           },
           "equal_weight": {
-            "n": 272,
-            "hit_rate": 0.5551,
+            "n": 284,
+            "hit_rate": 0.5528,
             "hit_ci95": [
-              0.4961,
-              0.6142
+              0.495,
+              0.6106
             ]
           }
         }
       },
-      "headline": "Fitting the four analysts' disagreement-with-the-price over a rolling 30-day window does NOT beat weighting them equally: walk-forward over 272 games and 21 days the log-loss difference is -0.00035 (95% CI [-0.00131, +0.00049]). The desk uses EQUAL WEIGHTS. Neither is the combined desk distinguishable from simply using the price.",
+      "headline": "Fitting the four analysts' disagreement-with-the-price over a rolling 30-day window does NOT beat weighting them equally: walk-forward over 284 games and 22 days the log-loss difference is -0.00040 (95% CI [-0.00127, +0.00047]). The desk uses EQUAL WEIGHTS. Neither is the combined desk distinguishable from simply using the price.",
       "model": "P(over) = sigmoid( logit(p_mkt) + b + SUM_a w_a * d_a ), d_a = logit(p_over_a) - logit(p_mkt_a), 0 where analyst a has no read. The market log-odds are a FIXED OFFSET, so w_a asks only whether that analyst's disagreement with the number adds anything the number does not already carry. Ridge-penalised (lambda pre-specified, not scanned), fit by IRLS, standard errors from the penalised Hessian.",
       "baselines": "EQUAL WEIGHT = the same model with one shared coefficient on the mean divergence of the analysts who read the game, fit on the same window \u2014 so the comparison isolates differential weighting. MARKET = p_mkt untouched.",
       "caveats": [
@@ -2593,8 +2593,8 @@
         "no_lookahead_in_data": true,
         "no_lookahead_basis": "adaptive_desk_strategy.choose_strategy fits each date only on games final BEFORE that date; this holds for every date, including recomputations.",
         "evidence_mode": "mixed",
-        "n_dates": 36,
-        "n_locked_before_slate": 6,
+        "n_dates": 37,
+        "n_locked_before_slate": 7,
         "n_recomputed_after_the_fact": 30,
         "selector_version": "adaptive_desk_v20",
         "pre_slate_cutoff_utc_hour": 16,
@@ -2884,6 +2884,14 @@
             "version": "adaptive_desk_v20",
             "selected_at_utc": "2026-08-08T09:14:02.365249+00:00",
             "first_seen_utc": "2026-08-08T09:14:02Z",
+            "first_seen_version": "adaptive_desk_v20",
+            "locked_before_slate": true,
+            "rule_key": "vote_count:2:under"
+          },
+          "2026-08-09": {
+            "version": "adaptive_desk_v20",
+            "selected_at_utc": "2026-08-09T09:13:17.860520+00:00",
+            "first_seen_utc": "2026-08-09T09:13:18Z",
             "first_seen_version": "adaptive_desk_v20",
             "locked_before_slate": true,
             "rule_key": "vote_count:2:under"
@@ -3822,22 +3830,22 @@
         "units": 0.0,
         "roi": null,
         "strategy": {
-          "rule_key": "vote_count:2:under",
-          "label": "Adaptive room-shape rule: 2 of 4 OVER \u2192 UNDER",
-          "plain_english_rule": "when exactly 2 of the four analysts say OVER, take UNDER",
-          "confidence_tier": "STRONG",
-          "window_days": 35,
+          "rule_key": "nightly_engine_v3:committee_top31",
+          "label": "The Full Committee \u2014 31 strategies vote",
+          "plain_english_rule": "the 31 strategies that held up best over the last 17 nights each vote on every game; the side with the majority becomes the pick, and a tie passes",
+          "confidence_tier": null,
+          "window_days": 17,
           "status": "ACTIVE",
-          "selector": "adaptive_desk",
-          "summary_line": "Lookback evidence: over the prior 35 days, this strong-confidence rule went 80-53-5 (60% hit, +27 net wins).",
+          "selector": "nightly_engine",
+          "summary_line": "Chosen overnight from 4,024 candidate strategies; 224 cleared the evidence floors on the holdout slice, and the best 31 were seated to vote on today's games.",
           "full_block_at": "adaptive_strategy_by_date.2026-08-09"
         },
-        "selector_version": "adaptive_desk_v20",
-        "engine": "adaptive_desk",
+        "selector_version": "nightly_engine_v3",
+        "engine": "nightly_engine",
         "is_engine_changeover": false,
-        "basis": "process_replay",
+        "basis": "served_locked",
         "no_action_reason": "strategy_passed",
-        "walk_forward": false,
+        "walk_forward": true,
         "counts_in_record": false,
         "model_generation": "v2",
         "is_model_seam": false,
@@ -5568,18 +5576,18 @@
       "basis": "honest aggregates over the SAME one-per-game graded unified picks as record.overall \u2014 nothing re-graded, no new claims. equity_curve is CUMULATIVE (units_flat = 1u per pick at the row's own executable price; units_weighted = tier-ladder staked, expanded fills 0.5u); by_star_perf uses the current v3.3 display bands over all history; calibration_buckets compare the served side's model probability to the realized win rate (pushes excluded); streaks treat pushes as neutral."
     },
     "spread_stream": {
-      "n": 157,
-      "win": 76,
-      "loss": 80,
+      "n": 172,
+      "win": 86,
+      "loss": 85,
       "push": 1,
-      "roi": -0.0683,
-      "hit_rate": 0.4872,
-      "units_flat": -10.657,
+      "roi": -0.0417,
+      "hit_rate": 0.5029,
+      "units_flat": -7.123,
       "units_weighted": {
-        "units": -10.657,
-        "staked": 156.0,
-        "roi": -0.0683,
-        "n_offladder_flat_1u": 156
+        "units": -7.123,
+        "staked": 171.0,
+        "roi": -0.0417,
+        "n_offladder_flat_1u": 171
       },
       "key": "spread_stream",
       "label": "Spread stream (run line)",
@@ -5591,7 +5599,7 @@
       "is_new_stream": true,
       "new_tag": "NEW \u2014 graded from day one",
       "first_graded_date": "2026-07-27",
-      "last_graded_date": "2026-08-07",
+      "last_graded_date": "2026-08-08",
       "no_double_count": true,
       "engine": {
         "mode": "lean_only",
@@ -5614,18 +5622,18 @@
       }
     },
     "sim_stream": {
-      "n": 132,
-      "win": 58,
-      "loss": 71,
-      "push": 3,
-      "roi": -0.112,
-      "hit_rate": 0.4496,
-      "units_flat": -14.451,
+      "n": 147,
+      "win": 66,
+      "loss": 75,
+      "push": 6,
+      "roi": -0.0765,
+      "hit_rate": 0.4681,
+      "units_flat": -10.78,
       "units_weighted": {
-        "units": -14.451,
-        "staked": 129.0,
-        "roi": -0.112,
-        "n_offladder_flat_1u": 129
+        "units": -10.78,
+        "staked": 141.0,
+        "roi": -0.0765,
+        "n_offladder_flat_1u": 141
       },
       "key": "simulator",
       "label": "Physical run simulator",
@@ -5637,7 +5645,7 @@
       "is_new_stream": true,
       "new_tag": "PHYSICS MODEL \u2014 tracking, not bets",
       "first_graded_date": "2026-07-29",
-      "last_graded_date": "2026-08-07",
+      "last_graded_date": "2026-08-08",
       "no_double_count": true,
       "engine": {
         "mode": "transparent_voice",
@@ -5673,18 +5681,18 @@
       "separation": "this record counts ONLY sim-stamped rows from the stream's own ledger (state/sim_graded.jsonl), graded on/after 2026-07-28; it never contains a row from the totals or spread ledgers, and no totals/spread record ever contains a simulator row \u2014 the simulator never writes the shared board or the shared graded ledger at all (selftested in sim_stream, daily_cycle and unified_model)"
     },
     "scout_stream": {
-      "n": 113,
-      "win": 60,
-      "loss": 50,
-      "push": 3,
-      "roi": 0.075,
-      "hit_rate": 0.5455,
-      "units_flat": 8.25,
+      "n": 128,
+      "win": 64,
+      "loss": 58,
+      "push": 6,
+      "roi": 0.0332,
+      "hit_rate": 0.5246,
+      "units_flat": 4.055,
       "units_weighted": {
-        "units": 8.25,
-        "staked": 110.0,
-        "roi": 0.075,
-        "n_offladder_flat_1u": 110
+        "units": 4.055,
+        "staked": 122.0,
+        "roi": 0.0332,
+        "n_offladder_flat_1u": 122
       },
       "key": "scout",
       "label": "Simple-8 fundamentals model",
@@ -5696,7 +5704,7 @@
       "is_new_stream": true,
       "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
       "first_graded_date": "2026-07-30",
-      "last_graded_date": "2026-08-07",
+      "last_graded_date": "2026-08-08",
       "no_double_count": true,
       "engine": {
         "mode": "transparent_voice",
@@ -5790,57 +5798,57 @@
         "what": "The champion engine's own totals play \u2014 its frozen pipeline plus the +EV gate at the real per-side price. It only speaks on games where its trigger fires; on every other game it has no view at all.",
         "is_headline": false,
         "activation_date": "2026-07-02",
-        "n": 24,
-        "win": 8,
-        "loss": 14,
+        "n": 26,
+        "win": 9,
+        "loss": 15,
         "push": 2,
-        "roi": -0.2849,
-        "hit_rate": 0.3636,
-        "units_flat": -6.268,
+        "roi": -0.2545,
+        "hit_rate": 0.375,
+        "units_flat": -6.107,
         "units_weighted": {
-          "units": -10.036,
-          "staked": 39.5,
-          "roi": -0.2541,
+          "units": -10.784,
+          "staked": 42.5,
+          "roi": -0.2537,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-02",
         "last_graded_date": "2026-08-08",
         "evidence_split": {
           "forward_paper_live": {
-            "n": 5,
-            "win": 4,
+            "n": 4,
+            "win": 3,
             "loss": 1,
             "push": 0,
-            "roi": 0.5617,
-            "hit_rate": 0.8,
-            "units_flat": 2.809,
+            "roi": 0.4749,
+            "hit_rate": 0.75,
+            "units_flat": 1.9,
             "units_weighted": {
-              "units": 5.617,
-              "staked": 8.0,
-              "roi": 0.7022,
+              "units": 3.799,
+              "staked": 6.0,
+              "roi": 0.6332,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-12",
-            "last_graded_date": "2026-08-08",
+            "last_graded_date": "2026-08-07",
             "kind": "live",
             "what": "logged forward in the champion's paper ledger before first pitch"
           },
           "live_board": {
-            "n": 16,
-            "win": 4,
-            "loss": 10,
+            "n": 19,
+            "win": 6,
+            "loss": 11,
             "push": 2,
-            "roi": -0.4341,
-            "hit_rate": 0.2857,
-            "units_flat": -6.077,
+            "roi": -0.2945,
+            "hit_rate": 0.3529,
+            "units_flat": -5.007,
             "units_weighted": {
-              "units": -11.153,
-              "staked": 27.0,
-              "roi": -0.4131,
+              "units": -10.083,
+              "staked": 32.0,
+              "roi": -0.3151,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-09",
-            "last_graded_date": "2026-08-07",
+            "last_graded_date": "2026-08-08",
             "kind": "live",
             "what": "served live on the v4 board and graded that night"
           },
@@ -5926,17 +5934,17 @@
           }
         ],
         "combined_view": {
-          "n": 99,
-          "win": 49,
-          "loss": 47,
+          "n": 101,
+          "win": 50,
+          "loss": 48,
           "push": 3,
-          "roi": -0.019,
-          "hit_rate": 0.5104,
-          "units_flat": -1.824,
+          "roi": -0.017,
+          "hit_rate": 0.5102,
+          "units_flat": -1.663,
           "units_weighted": {
-            "units": -3.368,
-            "staked": 178.5,
-            "roi": -0.0189,
+            "units": -4.117,
+            "staked": 181.5,
+            "roi": -0.0227,
             "n_offladder_flat_1u": 0
           },
           "first_graded_date": "2026-03-30",
@@ -6102,38 +6110,38 @@
         "what": "The run-line (\u00b11.5) side per game \u2014 a NEW stream, live from 2026-07-27, graded in public from day one, starting 0-0-0. Separate from the totals product in every record.",
         "is_headline": false,
         "activation_date": "2026-07-27",
-        "n": 157,
-        "win": 76,
-        "loss": 80,
+        "n": 172,
+        "win": 86,
+        "loss": 85,
         "push": 1,
-        "roi": -0.0683,
-        "hit_rate": 0.4872,
-        "units_flat": -10.657,
+        "roi": -0.0417,
+        "hit_rate": 0.5029,
+        "units_flat": -7.123,
         "units_weighted": {
-          "units": -10.657,
-          "staked": 156.0,
-          "roi": -0.0683,
-          "n_offladder_flat_1u": 156
+          "units": -7.123,
+          "staked": 171.0,
+          "roi": -0.0417,
+          "n_offladder_flat_1u": 171
         },
         "first_graded_date": "2026-07-27",
-        "last_graded_date": "2026-08-07",
+        "last_graded_date": "2026-08-08",
         "evidence_split": {
           "live_ledger": {
-            "n": 157,
-            "win": 76,
-            "loss": 80,
+            "n": 172,
+            "win": 86,
+            "loss": 85,
             "push": 1,
-            "roi": -0.0683,
-            "hit_rate": 0.4872,
-            "units_flat": -10.657,
+            "roi": -0.0417,
+            "hit_rate": 0.5029,
+            "units_flat": -7.123,
             "units_weighted": {
-              "units": -10.657,
-              "staked": 156.0,
-              "roi": -0.0683,
-              "n_offladder_flat_1u": 156
+              "units": -7.123,
+              "staked": 171.0,
+              "roi": -0.0417,
+              "n_offladder_flat_1u": 171
             },
             "first_graded_date": "2026-07-27",
-            "last_graded_date": "2026-08-07",
+            "last_graded_date": "2026-08-08",
             "kind": "live",
             "what": "the v4 grid's own live graded ledger \u2014 the rows the board served"
           }
@@ -6156,38 +6164,38 @@
         "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on, 20,000 games simulated \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
         "is_headline": false,
         "activation_date": "2026-07-28",
-        "n": 132,
-        "win": 58,
-        "loss": 71,
-        "push": 3,
-        "roi": -0.112,
-        "hit_rate": 0.4496,
-        "units_flat": -14.451,
+        "n": 147,
+        "win": 66,
+        "loss": 75,
+        "push": 6,
+        "roi": -0.0765,
+        "hit_rate": 0.4681,
+        "units_flat": -10.78,
         "units_weighted": {
-          "units": -14.451,
-          "staked": 129.0,
-          "roi": -0.112,
-          "n_offladder_flat_1u": 129
+          "units": -10.78,
+          "staked": 141.0,
+          "roi": -0.0765,
+          "n_offladder_flat_1u": 141
         },
         "first_graded_date": "2026-07-29",
-        "last_graded_date": "2026-08-07",
+        "last_graded_date": "2026-08-08",
         "evidence_split": {
           "live_ledger": {
-            "n": 132,
-            "win": 58,
-            "loss": 71,
-            "push": 3,
-            "roi": -0.112,
-            "hit_rate": 0.4496,
-            "units_flat": -14.451,
+            "n": 147,
+            "win": 66,
+            "loss": 75,
+            "push": 6,
+            "roi": -0.0765,
+            "hit_rate": 0.4681,
+            "units_flat": -10.78,
             "units_weighted": {
-              "units": -14.451,
-              "staked": 129.0,
-              "roi": -0.112,
-              "n_offladder_flat_1u": 129
+              "units": -10.78,
+              "staked": 141.0,
+              "roi": -0.0765,
+              "n_offladder_flat_1u": 141
             },
             "first_graded_date": "2026-07-29",
-            "last_graded_date": "2026-08-07",
+            "last_graded_date": "2026-08-08",
             "kind": "live",
             "what": "the v4 grid's own live graded ledger \u2014 the rows the board served"
           }
@@ -6395,7 +6403,7 @@
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-09T05:07:45Z",
+      "updated": "2026-08-09T09:14:19Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -6650,7 +6658,7 @@
       "note": "the served unified pick's graded results bucketed by the desk's consensus state, over ONLY the games where all four analysts filed a read. Sides come from the v2 reads (records start 2026-07-01), so this table is sparse and will accrue slowly \u2014 small n means NO conclusion; it is reported honestly, not hidden. THE BUCKETS MOVED ON 2026-07-31 AND THAT IS NOT A RESULT: the re-architecture decorrelated the four analysts on purpose, so they disagree far more and every bucket is differently populated than under the previous four models. Different population is not better or worse performance. Only the intervals and the family-wide correction on each row speak to accuracy, and they are printed beside every row. This block re-buckets already-graded results; it regrades nothing, restates nothing, and gates nothing today."
     },
     "patterns": {
-      "updated": "2026-08-08T09:04:02Z",
+      "updated": "2026-08-09T09:03:39Z",
       "desk_activation": "2026-07-01",
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
@@ -6659,7 +6667,7 @@
         "line": "Across 331 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 41 (BH q=0.1). 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all land at a coin flip.",
         "any_finding": false,
         "status": "no_measurable_signal",
-        "live_era_line": "Across 107 games and 34 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 34 (BH q=0.1). Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all land at a coin flip.",
+        "live_era_line": "Across 122 games and 34 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 34 (BH q=0.1). Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all land at a coin flip.",
         "live_era_status": "accruing",
         "live_era_blocked_because": null,
         "reconstructed_era_line": "Across 331 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 41 (BH q=0.1). 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all land at a coin flip.",
@@ -6667,12 +6675,12 @@
       },
       "live_era": {
         "era": "live_era",
-        "n_games": 107,
+        "n_games": 122,
         "date_range": [
           "2026-07-31",
-          "2026-08-07"
+          "2026-08-08"
         ],
-        "headline": "Across 107 games and 34 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 34 (BH q=0.1). Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all land at a coin flip.",
+        "headline": "Across 122 games and 34 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 34 (BH q=0.1). Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all land at a coin flip.",
         "era_label": "The live era",
         "era_sub": "reads the analysts filed BEFORE the games were played, written once and never restated",
         "era_basis": "live",
@@ -6681,76 +6689,76 @@
           "method": "Benjamini-Hochberg step-up at q=0.1",
           "n_rows_ci_excludes_50": 0,
           "n_rows_bh_significant": 0,
-          "smallest_p_two_sided": 0.055897,
+          "smallest_p_two_sided": 0.0625,
           "any_finding": false,
           "note": "the configuration rows are NESTED (a family row aggregates its own dissenter/split rows), so these tests are not independent and BH is approximate here \u2014 it is applied as a FLOOR on what may be called a finding, never as a licence."
         },
         "by_family": {
           "MAJORITY_3-1": {
-            "n": 64,
-            "n_decided": 62,
-            "win": 23,
+            "n": 69,
+            "n_decided": 66,
+            "win": 27,
             "loss": 39,
-            "push": 2,
-            "hit_rate": 0.371,
+            "push": 3,
+            "hit_rate": 0.4091,
             "hit_ci95": [
-              0.2516,
-              0.5031
+              0.2895,
+              0.5371
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.055897,
+            "p_two_sided": 0.175286,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.629,
+              "hit_rate": 0.5909,
               "hit_ci95": [
-                0.4969,
-                0.7484
+                0.4629,
+                0.7105
               ]
             },
             "family": "MAJORITY_3-1"
           },
           "SPLIT_2-2": {
-            "n": 27,
-            "n_decided": 26,
-            "win": 10,
-            "loss": 16,
-            "push": 1,
-            "hit_rate": 0.3846,
+            "n": 36,
+            "n_decided": 33,
+            "win": 15,
+            "loss": 18,
+            "push": 3,
+            "hit_rate": 0.4545,
             "hit_ci95": [
-              0.2023,
-              0.5943
+              0.2811,
+              0.6365
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.32694,
+            "p_two_sided": 0.728332,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.6154,
+              "hit_rate": 0.5455,
               "hit_ci95": [
-                0.4057,
-                0.7977
+                0.3635,
+                0.7189
               ]
             },
             "family": "SPLIT_2-2"
           },
           "UNANIMOUS_4": {
-            "n": 16,
-            "n_decided": 16,
-            "win": 10,
+            "n": 17,
+            "n_decided": 17,
+            "win": 11,
             "loss": 6,
             "push": 0,
-            "hit_rate": 0.625,
+            "hit_rate": 0.6471,
             "hit_ci95": [
-              0.3543,
-              0.848
+              0.3833,
+              0.8579
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.454498,
+            "p_two_sided": 0.332306,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.375,
+              "hit_rate": 0.3529,
               "hit_ci95": [
-                0.152,
-                0.6457
+                0.1421,
+                0.6167
               ]
             },
             "family": "UNANIMOUS_4"
@@ -6758,77 +6766,77 @@
         },
         "by_season_family": {
           "2026": {
-            "n_games": 107,
+            "n_games": 122,
             "date_range": [
               "2026-07-31",
-              "2026-08-07"
+              "2026-08-08"
             ],
             "by_family": {
               "MAJORITY_3-1": {
-                "n": 64,
-                "n_decided": 62,
-                "win": 23,
+                "n": 69,
+                "n_decided": 66,
+                "win": 27,
                 "loss": 39,
-                "push": 2,
-                "hit_rate": 0.371,
+                "push": 3,
+                "hit_rate": 0.4091,
                 "hit_ci95": [
-                  0.2516,
-                  0.5031
+                  0.2895,
+                  0.5371
                 ],
                 "ci_excludes_50": false,
-                "p_two_sided": 0.055897,
+                "p_two_sided": 0.175286,
                 "bh_significant": false,
                 "fade": {
-                  "hit_rate": 0.629,
+                  "hit_rate": 0.5909,
                   "hit_ci95": [
-                    0.4969,
-                    0.7484
+                    0.4629,
+                    0.7105
                   ]
                 },
                 "family": "MAJORITY_3-1"
               },
               "SPLIT_2-2": {
-                "n": 27,
-                "n_decided": 26,
-                "win": 10,
-                "loss": 16,
-                "push": 1,
-                "hit_rate": 0.3846,
+                "n": 36,
+                "n_decided": 33,
+                "win": 15,
+                "loss": 18,
+                "push": 3,
+                "hit_rate": 0.4545,
                 "hit_ci95": [
-                  0.2023,
-                  0.5943
+                  0.2811,
+                  0.6365
                 ],
                 "ci_excludes_50": false,
-                "p_two_sided": 0.32694,
+                "p_two_sided": 0.728332,
                 "bh_significant": false,
                 "fade": {
-                  "hit_rate": 0.6154,
+                  "hit_rate": 0.5455,
                   "hit_ci95": [
-                    0.4057,
-                    0.7977
+                    0.3635,
+                    0.7189
                   ]
                 },
                 "family": "SPLIT_2-2"
               },
               "UNANIMOUS_4": {
-                "n": 16,
-                "n_decided": 16,
-                "win": 10,
+                "n": 17,
+                "n_decided": 17,
+                "win": 11,
                 "loss": 6,
                 "push": 0,
-                "hit_rate": 0.625,
+                "hit_rate": 0.6471,
                 "hit_ci95": [
-                  0.3543,
-                  0.848
+                  0.3833,
+                  0.8579
                 ],
                 "ci_excludes_50": false,
-                "p_two_sided": 0.454498,
+                "p_two_sided": 0.332306,
                 "bh_significant": false,
                 "fade": {
-                  "hit_rate": 0.375,
+                  "hit_rate": 0.3529,
                   "hit_ci95": [
-                    0.152,
-                    0.6457
+                    0.1421,
+                    0.6167
                   ]
                 },
                 "family": "UNANIMOUS_4"
@@ -6838,24 +6846,24 @@
         },
         "by_config": {
           "MAJORITY_3-1|dissent=vega|under": {
-            "n": 28,
-            "n_decided": 28,
-            "win": 12,
+            "n": 32,
+            "n_decided": 32,
+            "win": 16,
             "loss": 16,
             "push": 0,
-            "hit_rate": 0.4286,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.2446,
-              0.6282
+              0.3189,
+              0.6811
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.571588,
+            "p_two_sided": 1.0,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5714,
+              "hit_rate": 0.5,
               "hit_ci95": [
-                0.3718,
-                0.7554
+                0.3189,
+                0.6811
               ]
             },
             "family": "MAJORITY_3-1",
@@ -6890,11 +6898,11 @@
             "call": "over"
           },
           "MAJORITY_3-1|dissent=scout|over": {
-            "n": 20,
+            "n": 21,
             "n_decided": 19,
             "win": 8,
             "loss": 11,
-            "push": 1,
+            "push": 2,
             "hit_rate": 0.4211,
             "hit_ci95": [
               0.2025,
@@ -6916,24 +6924,24 @@
             "call": "over"
           },
           "SPLIT_2-2|over=vega+atlas": {
-            "n": 5,
-            "n_decided": 4,
-            "win": 1,
-            "loss": 3,
-            "push": 1,
-            "hit_rate": 0.25,
+            "n": 11,
+            "n_decided": 9,
+            "win": 5,
+            "loss": 4,
+            "push": 2,
+            "hit_rate": 0.5556,
             "hit_ci95": [
-              0.0063,
-              0.8059
+              0.212,
+              0.863
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.625,
+            "p_two_sided": 1.0,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.75,
+              "hit_rate": 0.4444,
               "hit_ci95": [
-                0.1941,
-                0.9937
+                0.137,
+                0.788
               ]
             },
             "family": "SPLIT_2-2",
@@ -6948,24 +6956,24 @@
             "call": "over"
           },
           "UNANIMOUS_4|over": {
-            "n": 16,
-            "n_decided": 16,
-            "win": 10,
+            "n": 17,
+            "n_decided": 17,
+            "win": 11,
             "loss": 6,
             "push": 0,
-            "hit_rate": 0.625,
+            "hit_rate": 0.6471,
             "hit_ci95": [
-              0.3543,
-              0.848
+              0.3833,
+              0.8579
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.454498,
+            "p_two_sided": 0.332306,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.375,
+              "hit_rate": 0.3529,
               "hit_ci95": [
-                0.152,
-                0.6457
+                0.1421,
+                0.6167
               ]
             },
             "family": "UNANIMOUS_4",
@@ -6973,24 +6981,24 @@
             "call": "over"
           },
           "SPLIT_2-2|over=vega+scout": {
-            "n": 7,
-            "n_decided": 7,
-            "win": 3,
+            "n": 9,
+            "n_decided": 8,
+            "win": 4,
             "loss": 4,
-            "push": 0,
-            "hit_rate": 0.4286,
+            "push": 1,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.099,
-              0.8159
+              0.157,
+              0.843
             ],
             "ci_excludes_50": false,
             "p_two_sided": 1.0,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5714,
+              "hit_rate": 0.5,
               "hit_ci95": [
-                0.1841,
-                0.901
+                0.157,
+                0.843
               ]
             },
             "family": "SPLIT_2-2",
@@ -7005,24 +7013,24 @@
             "call": "over"
           },
           "SPLIT_2-2|over=vega+nova": {
-            "n": 14,
-            "n_decided": 14,
+            "n": 15,
+            "n_decided": 15,
             "win": 5,
-            "loss": 9,
+            "loss": 10,
             "push": 0,
-            "hit_rate": 0.3571,
+            "hit_rate": 0.3333,
             "hit_ci95": [
-              0.1276,
-              0.6486
+              0.1182,
+              0.6162
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.42395,
+            "p_two_sided": 0.301758,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.6429,
+              "hit_rate": 0.6667,
               "hit_ci95": [
-                0.3514,
-                0.8724
+                0.3838,
+                0.8818
               ]
             },
             "family": "SPLIT_2-2",
@@ -7149,24 +7157,24 @@
         },
         "by_dissenter": {
           "MAJORITY_3-1|dissent=vega": {
-            "n": 29,
-            "n_decided": 29,
-            "win": 13,
+            "n": 33,
+            "n_decided": 33,
+            "win": 17,
             "loss": 16,
             "push": 0,
-            "hit_rate": 0.4483,
+            "hit_rate": 0.5152,
             "hit_ci95": [
-              0.2645,
-              0.6431
+              0.3354,
+              0.692
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.711071,
+            "p_two_sided": 1.0,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5517,
+              "hit_rate": 0.4848,
               "hit_ci95": [
-                0.3569,
-                0.7355
+                0.308,
+                0.6646
               ]
             },
             "family": "MAJORITY_3-1",
@@ -7197,11 +7205,11 @@
             "dissenter": "atlas"
           },
           "MAJORITY_3-1|dissent=scout": {
-            "n": 20,
+            "n": 21,
             "n_decided": 19,
             "win": 8,
             "loss": 11,
-            "push": 1,
+            "push": 2,
             "hit_rate": 0.4211,
             "hit_ci95": [
               0.2025,
@@ -7247,24 +7255,24 @@
         },
         "by_split_pair": {
           "SPLIT_2-2|over=vega+atlas": {
-            "n": 5,
-            "n_decided": 4,
-            "win": 1,
-            "loss": 3,
-            "push": 1,
-            "hit_rate": 0.25,
+            "n": 11,
+            "n_decided": 9,
+            "win": 5,
+            "loss": 4,
+            "push": 2,
+            "hit_rate": 0.5556,
             "hit_ci95": [
-              0.0063,
-              0.8059
+              0.212,
+              0.863
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.625,
+            "p_two_sided": 1.0,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.75,
+              "hit_rate": 0.4444,
               "hit_ci95": [
-                0.1941,
-                0.9937
+                0.137,
+                0.788
               ]
             },
             "family": "SPLIT_2-2",
@@ -7278,24 +7286,24 @@
             ]
           },
           "SPLIT_2-2|over=vega+scout": {
-            "n": 7,
-            "n_decided": 7,
-            "win": 3,
+            "n": 9,
+            "n_decided": 8,
+            "win": 4,
             "loss": 4,
-            "push": 0,
-            "hit_rate": 0.4286,
+            "push": 1,
+            "hit_rate": 0.5,
             "hit_ci95": [
-              0.099,
-              0.8159
+              0.157,
+              0.843
             ],
             "ci_excludes_50": false,
             "p_two_sided": 1.0,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.5714,
+              "hit_rate": 0.5,
               "hit_ci95": [
-                0.1841,
-                0.901
+                0.157,
+                0.843
               ]
             },
             "family": "SPLIT_2-2",
@@ -7309,24 +7317,24 @@
             ]
           },
           "SPLIT_2-2|over=vega+nova": {
-            "n": 14,
-            "n_decided": 14,
+            "n": 15,
+            "n_decided": 15,
             "win": 5,
-            "loss": 9,
+            "loss": 10,
             "push": 0,
-            "hit_rate": 0.3571,
+            "hit_rate": 0.3333,
             "hit_ci95": [
-              0.1276,
-              0.6486
+              0.1182,
+              0.6162
             ],
             "ci_excludes_50": false,
-            "p_two_sided": 0.42395,
+            "p_two_sided": 0.301758,
             "bh_significant": false,
             "fade": {
-              "hit_rate": 0.6429,
+              "hit_rate": 0.6667,
               "hit_ci95": [
-                0.3514,
-                0.8724
+                0.3838,
+                0.8818
               ]
             },
             "family": "SPLIT_2-2",
@@ -7374,306 +7382,11 @@
         "pairwise": {
           "vega~atlas": {
             "agree": {
-              "n": 50,
-              "n_decided": 48,
-              "win": 21,
-              "loss": 27,
-              "push": 2,
-              "hit_rate": 0.4375,
-              "hit_ci95": [
-                0.2948,
-                0.5882
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 0.470879,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.5625,
-                "hit_ci95": [
-                  0.4118,
-                  0.7052
-                ]
-              },
-              "pair": [
-                "vega",
-                "atlas"
-              ],
-              "mode": "agree",
-              "side": "over"
-            },
-            "disagree": {
-              "n": 57,
-              "n_decided": 56,
-              "win": 24,
-              "loss": 32,
-              "push": 1,
-              "hit_rate": 0.4286,
-              "hit_ci95": [
-                0.2971,
-                0.5678
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 0.349682,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.5714,
-                "hit_ci95": [
-                  0.4322,
-                  0.7029
-                ]
-              },
-              "pair": [
-                "vega",
-                "atlas"
-              ],
-              "mode": "disagree",
-              "call_is": "vega"
-            },
-            "note": "agree = both on the same side, graded on that side; disagree = graded on VEGA's side (fade = ATLAS's side)."
-          },
-          "vega~nova": {
-            "agree": {
-              "n": 57,
-              "n_decided": 55,
-              "win": 23,
-              "loss": 32,
-              "push": 2,
-              "hit_rate": 0.4182,
-              "hit_ci95": [
-                0.2865,
-                0.5589
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 0.28061,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.5818,
-                "hit_ci95": [
-                  0.4411,
-                  0.7135
-                ]
-              },
-              "pair": [
-                "vega",
-                "nova"
-              ],
-              "mode": "agree",
-              "side": "over"
-            },
-            "disagree": {
-              "n": 50,
-              "n_decided": 49,
-              "win": 22,
-              "loss": 27,
-              "push": 1,
-              "hit_rate": 0.449,
-              "hit_ci95": [
-                0.3067,
-                0.5977
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 0.568172,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.551,
-                "hit_ci95": [
-                  0.4023,
-                  0.6933
-                ]
-              },
-              "pair": [
-                "vega",
-                "nova"
-              ],
-              "mode": "disagree",
-              "call_is": "vega"
-            },
-            "note": "agree = both on the same side, graded on that side; disagree = graded on VEGA's side (fade = NOVA's side)."
-          },
-          "vega~scout": {
-            "agree": {
-              "n": 38,
-              "n_decided": 37,
-              "win": 15,
-              "loss": 22,
-              "push": 1,
-              "hit_rate": 0.4054,
-              "hit_ci95": [
-                0.2475,
-                0.579
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 0.324009,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.5946,
-                "hit_ci95": [
-                  0.421,
-                  0.7525
-                ]
-              },
-              "pair": [
-                "vega",
-                "scout"
-              ],
-              "mode": "agree",
-              "side": "over"
-            },
-            "disagree": {
-              "n": 69,
-              "n_decided": 67,
-              "win": 30,
-              "loss": 37,
-              "push": 2,
-              "hit_rate": 0.4478,
-              "hit_ci95": [
-                0.326,
-                0.5742
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 0.463818,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.5522,
-                "hit_ci95": [
-                  0.4258,
-                  0.674
-                ]
-              },
-              "pair": [
-                "vega",
-                "scout"
-              ],
-              "mode": "disagree",
-              "call_is": "vega"
-            },
-            "note": "agree = both on the same side, graded on that side; disagree = graded on VEGA's side (fade = SCOUT's side)."
-          },
-          "atlas~nova": {
-            "agree": {
-              "n": 72,
-              "n_decided": 71,
-              "win": 35,
-              "loss": 36,
-              "push": 1,
-              "hit_rate": 0.493,
-              "hit_ci95": [
-                0.3722,
-                0.6144
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 1.0,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.507,
-                "hit_ci95": [
-                  0.3856,
-                  0.6278
-                ]
-              },
-              "pair": [
-                "atlas",
-                "nova"
-              ],
-              "mode": "agree",
-              "side": "under"
-            },
-            "disagree": {
-              "n": 35,
-              "n_decided": 33,
-              "win": 18,
-              "loss": 15,
-              "push": 2,
-              "hit_rate": 0.5455,
-              "hit_ci95": [
-                0.3635,
-                0.7189
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 0.728332,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.4545,
-                "hit_ci95": [
-                  0.2811,
-                  0.6365
-                ]
-              },
-              "pair": [
-                "atlas",
-                "nova"
-              ],
-              "mode": "disagree",
-              "call_is": "atlas"
-            },
-            "note": "agree = both on the same side, graded on that side; disagree = graded on ATLAS's side (fade = NOVA's side)."
-          },
-          "atlas~scout": {
-            "agree": {
-              "n": 69,
-              "n_decided": 69,
-              "win": 35,
-              "loss": 34,
-              "push": 0,
-              "hit_rate": 0.5072,
-              "hit_ci95": [
-                0.3841,
-                0.6298
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 1.0,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.4928,
-                "hit_ci95": [
-                  0.3702,
-                  0.6159
-                ]
-              },
-              "pair": [
-                "atlas",
-                "scout"
-              ],
-              "mode": "agree",
-              "side": "under"
-            },
-            "disagree": {
-              "n": 38,
-              "n_decided": 35,
-              "win": 18,
-              "loss": 17,
-              "push": 3,
-              "hit_rate": 0.5143,
-              "hit_ci95": [
-                0.3399,
-                0.6862
-              ],
-              "ci_excludes_50": false,
-              "p_two_sided": 1.0,
-              "bh_significant": false,
-              "fade": {
-                "hit_rate": 0.4857,
-                "hit_ci95": [
-                  0.3138,
-                  0.6601
-                ]
-              },
-              "pair": [
-                "atlas",
-                "scout"
-              ],
-              "mode": "disagree",
-              "call_is": "atlas"
-            },
-            "note": "agree = both on the same side, graded on that side; disagree = graded on ATLAS's side (fade = SCOUT's side)."
-          },
-          "nova~scout": {
-            "agree": {
-              "n": 56,
+              "n": 58,
               "n_decided": 54,
               "win": 26,
               "loss": 28,
-              "push": 2,
+              "push": 4,
               "hit_rate": 0.4815,
               "hit_ci95": [
                 0.3434,
@@ -7690,6 +7403,301 @@
                 ]
               },
               "pair": [
+                "vega",
+                "atlas"
+              ],
+              "mode": "agree",
+              "side": "over"
+            },
+            "disagree": {
+              "n": 64,
+              "n_decided": 62,
+              "win": 25,
+              "loss": 37,
+              "push": 2,
+              "hit_rate": 0.4032,
+              "hit_ci95": [
+                0.2805,
+                0.5355
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.161881,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.5968,
+                "hit_ci95": [
+                  0.4645,
+                  0.7195
+                ]
+              },
+              "pair": [
+                "vega",
+                "atlas"
+              ],
+              "mode": "disagree",
+              "call_is": "vega"
+            },
+            "note": "agree = both on the same side, graded on that side; disagree = graded on VEGA's side (fade = ATLAS's side)."
+          },
+          "vega~nova": {
+            "agree": {
+              "n": 60,
+              "n_decided": 57,
+              "win": 24,
+              "loss": 33,
+              "push": 3,
+              "hit_rate": 0.4211,
+              "hit_ci95": [
+                0.2914,
+                0.5592
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.289244,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.5789,
+                "hit_ci95": [
+                  0.4408,
+                  0.7086
+                ]
+              },
+              "pair": [
+                "vega",
+                "nova"
+              ],
+              "mode": "agree",
+              "side": "over"
+            },
+            "disagree": {
+              "n": 62,
+              "n_decided": 59,
+              "win": 27,
+              "loss": 32,
+              "push": 3,
+              "hit_rate": 0.4576,
+              "hit_ci95": [
+                0.3272,
+                0.5925
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.602923,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.5424,
+                "hit_ci95": [
+                  0.4075,
+                  0.6728
+                ]
+              },
+              "pair": [
+                "vega",
+                "nova"
+              ],
+              "mode": "disagree",
+              "call_is": "vega"
+            },
+            "note": "agree = both on the same side, graded on that side; disagree = graded on VEGA's side (fade = NOVA's side)."
+          },
+          "vega~scout": {
+            "agree": {
+              "n": 41,
+              "n_decided": 39,
+              "win": 17,
+              "loss": 22,
+              "push": 2,
+              "hit_rate": 0.4359,
+              "hit_ci95": [
+                0.2781,
+                0.6038
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.522397,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.5641,
+                "hit_ci95": [
+                  0.3962,
+                  0.7219
+                ]
+              },
+              "pair": [
+                "vega",
+                "scout"
+              ],
+              "mode": "agree",
+              "side": "over"
+            },
+            "disagree": {
+              "n": 81,
+              "n_decided": 77,
+              "win": 34,
+              "loss": 43,
+              "push": 4,
+              "hit_rate": 0.4416,
+              "hit_ci95": [
+                0.3284,
+                0.5593
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.362032,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.5584,
+                "hit_ci95": [
+                  0.4407,
+                  0.6716
+                ]
+              },
+              "pair": [
+                "vega",
+                "scout"
+              ],
+              "mode": "disagree",
+              "call_is": "vega"
+            },
+            "note": "agree = both on the same side, graded on that side; disagree = graded on VEGA's side (fade = SCOUT's side)."
+          },
+          "atlas~nova": {
+            "agree": {
+              "n": 80,
+              "n_decided": 77,
+              "win": 40,
+              "loss": 37,
+              "push": 3,
+              "hit_rate": 0.5195,
+              "hit_ci95": [
+                0.4026,
+                0.6348
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.819893,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.4805,
+                "hit_ci95": [
+                  0.3652,
+                  0.5974
+                ]
+              },
+              "pair": [
+                "atlas",
+                "nova"
+              ],
+              "mode": "agree",
+              "side": "under"
+            },
+            "disagree": {
+              "n": 42,
+              "n_decided": 39,
+              "win": 23,
+              "loss": 16,
+              "push": 3,
+              "hit_rate": 0.5897,
+              "hit_ci95": [
+                0.421,
+                0.7443
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.336784,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.4103,
+                "hit_ci95": [
+                  0.2557,
+                  0.579
+                ]
+              },
+              "pair": [
+                "atlas",
+                "nova"
+              ],
+              "mode": "disagree",
+              "call_is": "atlas"
+            },
+            "note": "agree = both on the same side, graded on that side; disagree = graded on ATLAS's side (fade = NOVA's side)."
+          },
+          "atlas~scout": {
+            "agree": {
+              "n": 75,
+              "n_decided": 75,
+              "win": 41,
+              "loss": 34,
+              "push": 0,
+              "hit_rate": 0.5467,
+              "hit_ci95": [
+                0.4275,
+                0.6621
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.488683,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.4533,
+                "hit_ci95": [
+                  0.3379,
+                  0.5725
+                ]
+              },
+              "pair": [
+                "atlas",
+                "scout"
+              ],
+              "mode": "agree",
+              "side": "under"
+            },
+            "disagree": {
+              "n": 47,
+              "n_decided": 41,
+              "win": 22,
+              "loss": 19,
+              "push": 6,
+              "hit_rate": 0.5366,
+              "hit_ci95": [
+                0.3742,
+                0.6934
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 0.755229,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.4634,
+                "hit_ci95": [
+                  0.3066,
+                  0.6258
+                ]
+              },
+              "pair": [
+                "atlas",
+                "scout"
+              ],
+              "mode": "disagree",
+              "call_is": "atlas"
+            },
+            "note": "agree = both on the same side, graded on that side; disagree = graded on ATLAS's side (fade = SCOUT's side)."
+          },
+          "nova~scout": {
+            "agree": {
+              "n": 67,
+              "n_decided": 64,
+              "win": 32,
+              "loss": 32,
+              "push": 3,
+              "hit_rate": 0.5,
+              "hit_ci95": [
+                0.3723,
+                0.6277
+              ],
+              "ci_excludes_50": false,
+              "p_two_sided": 1.0,
+              "bh_significant": false,
+              "fade": {
+                "hit_rate": 0.5,
+                "hit_ci95": [
+                  0.3723,
+                  0.6277
+                ]
+              },
+              "pair": [
                 "nova",
                 "scout"
               ],
@@ -7697,24 +7705,24 @@
               "side": "under"
             },
             "disagree": {
-              "n": 51,
-              "n_decided": 50,
+              "n": 55,
+              "n_decided": 52,
               "win": 24,
-              "loss": 26,
-              "push": 1,
-              "hit_rate": 0.48,
+              "loss": 28,
+              "push": 3,
+              "hit_rate": 0.4615,
               "hit_ci95": [
-                0.3366,
-                0.6258
+                0.3223,
+                0.6053
               ],
               "ci_excludes_50": false,
-              "p_two_sided": 0.887725,
+              "p_two_sided": 0.677809,
               "bh_significant": false,
               "fade": {
-                "hit_rate": 0.52,
+                "hit_rate": 0.5385,
                 "hit_ci95": [
-                  0.3742,
-                  0.6634
+                  0.3947,
+                  0.6777
                 ]
               },
               "pair": [
@@ -7731,23 +7739,23 @@
         "status": {
           "state": "accruing",
           "accruing": true,
-          "n_games": 107,
+          "n_games": 122,
           "desk_activation": "2026-07-01",
-          "days_since_activation": 38,
-          "graded_days": 8,
+          "days_since_activation": 39,
+          "graded_days": 9,
           "graded_date_range": [
             "2026-07-31",
-            "2026-08-07"
+            "2026-08-08"
           ],
-          "games_seen": 107,
+          "games_seen": 122,
           "native_games_per_analyst": {
-            "vega": 107,
-            "atlas": 107,
-            "nova": 107,
-            "scout": 107
+            "vega": 122,
+            "atlas": 122,
+            "nova": 122,
+            "scout": 122
           },
           "games_by_n_analysts_native": {
-            "4": 107
+            "4": 122
           },
           "best_analyst_count_on_a_game": 4,
           "silent_analysts": [],
@@ -7755,7 +7763,7 @@
           "requires": "a configuration needs all four v2 analysts to have a GRADED read, carrying basis 'live', on the same game \u2014 a read reconstructed after the fact belongs to the other era and is counted there instead, never here and never in both",
           "unblocks_when": null,
           "structural_note": "this is expected to be a transient, and that is a CHANGE from the previous desk. The old live era required all four analysts to read NATIVELY on one game and VEGA spoke natively only when the champion engine froze a playable row, so it could sit at zero indefinitely by construction. The v2 board has no native-versus-coverage distinction at all: it writes one read per analyst for every game carrying a consensus total line, so a live slate that grades normally produces a full set of configurations. What will NOT change quickly is the power \u2014 a slate a night against sixteen configurations means this era stays statistically thin for months, and the intervals say so rather than the sample being hidden. Whether the two eras are ever pooled is a product decision and is not made here.",
-          "line": "The live era is accruing: 107 games where all four v2 analysts filed a live read that has since graded, over 8 graded days since the analysts were re-architected. It grows by a slate a night."
+          "line": "The live era is accruing: 122 games where all four v2 analysts filed a live read that has since graded, over 9 graded days since the analysts were re-architected. It grows by a slate a night."
         }
       },
       "reconstructed_era": {
@@ -9055,23 +9063,23 @@
       "live_era_status": {
         "state": "accruing",
         "accruing": true,
-        "n_games": 107,
+        "n_games": 122,
         "desk_activation": "2026-07-01",
-        "days_since_activation": 38,
-        "graded_days": 8,
+        "days_since_activation": 39,
+        "graded_days": 9,
         "graded_date_range": [
           "2026-07-31",
-          "2026-08-07"
+          "2026-08-08"
         ],
-        "games_seen": 107,
+        "games_seen": 122,
         "native_games_per_analyst": {
-          "vega": 107,
-          "atlas": 107,
-          "nova": 107,
-          "scout": 107
+          "vega": 122,
+          "atlas": 122,
+          "nova": 122,
+          "scout": 122
         },
         "games_by_n_analysts_native": {
-          "4": 107
+          "4": 122
         },
         "best_analyst_count_on_a_game": 4,
         "silent_analysts": [],
@@ -9079,13 +9087,13 @@
         "requires": "a configuration needs all four v2 analysts to have a GRADED read, carrying basis 'live', on the same game \u2014 a read reconstructed after the fact belongs to the other era and is counted there instead, never here and never in both",
         "unblocks_when": null,
         "structural_note": "this is expected to be a transient, and that is a CHANGE from the previous desk. The old live era required all four analysts to read NATIVELY on one game and VEGA spoke natively only when the champion engine froze a playable row, so it could sit at zero indefinitely by construction. The v2 board has no native-versus-coverage distinction at all: it writes one read per analyst for every game carrying a consensus total line, so a live slate that grades normally produces a full set of configurations. What will NOT change quickly is the power \u2014 a slate a night against sixteen configurations means this era stays statistically thin for months, and the intervals say so rather than the sample being hidden. Whether the two eras are ever pooled is a product decision and is not made here.",
-        "line": "The live era is accruing: 107 games where all four v2 analysts filed a live read that has since graded, over 8 graded days since the analysts were re-architected. It grows by a slate a night."
+        "line": "The live era is accruing: 122 games where all four v2 analysts filed a live read that has since graded, over 9 graded days since the analysts were re-architected. It grows by a slate a night."
       },
       "status": "ok"
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-09T07:24:43Z",
+      "updated": "2026-08-09T09:14:22Z",
       "order": [
         "vega",
         "atlas",
@@ -9185,13 +9193,13 @@
           "analyst": "vega",
           "activation_date": "2026-07-30",
           "is_betting_record": false,
-          "n": 117,
-          "win": 65,
-          "loss": 50,
-          "push": 2,
-          "hit_rate": 0.5652,
+          "n": 132,
+          "win": 70,
+          "loss": 59,
+          "push": 3,
+          "hit_rate": 0.5426,
           "first_graded_date": "2026-07-30",
-          "last_graded_date": "2026-08-07",
+          "last_graded_date": "2026-08-08",
           "note": "FORCED-COVERAGE ledger only \u2014 reads this analyst would NOT have published natively, filled so every game carries all four voices from 2026-07-30 forward. Separate population, separate activation date; the analyst's own record is untouched and never restated.",
           "describes_previous_analysts": true
         },
@@ -9247,15 +9255,15 @@
     "desk_calls": {
       "stream": "desk_call",
       "record_start": "2026-08-01",
-      "n": 92,
-      "win": 38,
-      "loss": 51,
-      "push": 3,
-      "decided": 89,
-      "hit_rate": 0.427,
+      "n": 107,
+      "win": 47,
+      "loss": 54,
+      "push": 6,
+      "decided": 101,
+      "hit_rate": 0.4653,
       "hit_ci95": [
-        0.3293,
-        0.5306
+        0.3711,
+        0.5621
       ],
       "by_conviction": {
         "STRONG": {
@@ -9270,31 +9278,31 @@
           ]
         },
         "CLEAR": {
-          "n": 35,
-          "win": 12,
-          "loss": 21,
-          "push": 2,
-          "hit_rate": 0.3636,
+          "n": 43,
+          "win": 17,
+          "loss": 22,
+          "push": 4,
+          "hit_rate": 0.4359,
           "hit_ci95": [
-            0.2219,
-            0.5338
+            0.293,
+            0.5902
           ]
         },
         "SLIGHT": {
-          "n": 50,
-          "win": 21,
-          "loss": 28,
-          "push": 1,
-          "hit_rate": 0.4286,
+          "n": 57,
+          "win": 25,
+          "loss": 30,
+          "push": 2,
+          "hit_rate": 0.4545,
           "hit_ci95": [
-            0.3002,
-            0.5673
+            0.3303,
+            0.5848
           ]
         }
       },
-      "n_called_and_bet": 32,
-      "n_called_not_bet": 60,
-      "updated": "2026-08-08T22:12:59Z",
+      "n_called_and_bet": 43,
+      "n_called_not_bet": 64,
+      "updated": "2026-08-09T09:14:19Z",
       "is_a_betting_record": false,
       "note": "THE DESK'S CALLS, GRADED IN THEIR OWN LEDGER. This is NOT a betting record and must never be summed with one, shown beside one as a comparison, or described in units: a call has no price and no stake, so it has no ROI. It counts one row per game \u2014 the desk's view at the most informed wall it reached \u2014 and it exists to answer one question the product could not previously ask: when the desk says something, is it right? A CALL IS NOT A BET. This is the desk's directional view on the game \u2014 what it actually thinks \u2014 built from the four analysts' own reads, equal-weighted. It is NEVER staked, it NEVER enters games[].pick, it is never counted in the product record, and it cannot be sized. Whether we are betting this game is a separate question with a separate answer, at `we_are_betting` / `bet_action`, decided by the price gate alone and unchanged by anything here. The graded product remains games[].pick and only games[].pick; the desk's calls are graded in their own ledger, separately, from 2026-08-01.",
       "honest_note": "THE STANDING HYGIENE RULE APPLIES IN FULL. This ledger starts at 2026-08-01 and will take months to say anything. A hit rate here is not evidence of edge in either direction, and in particular a call that beats 50% is NOT an argument for loosening the price gate \u2014 the gate is what protects the product record and it does not move on this.",
@@ -9302,14 +9310,14 @@
       "separated_from": "record.overall / record.overall_playable, which are the graded product and are built from games[].pick alone"
     },
     "desk_recap": {
-      "date": "2026-08-07",
+      "date": "2026-08-08",
       "desk_era": "v2",
       "source": "analyst_v2_stream",
       "winner": {
         "key": "atlas",
         "name": "ATLAS \u00b7 The Conditions",
-        "line": "9-6",
-        "avg_conviction": 0.5248,
+        "line": "10-2-3",
+        "avg_conviction": 0.5243,
         "tiebreak": "wins-losses, then hit rate, ties to higher average conviction"
       },
       "lines": {
@@ -9318,23 +9326,23 @@
           "name": "VEGA \u00b7 The Price",
           "n": 15,
           "win": 6,
-          "loss": 9,
-          "push": 0,
-          "hit_rate": 0.4,
-          "line": "6-9",
-          "avg_conviction": 0.5128,
+          "loss": 6,
+          "push": 3,
+          "hit_rate": 0.5,
+          "line": "6-6-3",
+          "avg_conviction": 0.5138,
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
           "n": 15,
-          "win": 9,
-          "loss": 6,
-          "push": 0,
-          "hit_rate": 0.6,
-          "line": "9-6",
-          "avg_conviction": 0.5248,
+          "win": 10,
+          "loss": 2,
+          "push": 3,
+          "hit_rate": 0.8333,
+          "line": "10-2-3",
+          "avg_conviction": 0.5243,
           "is_betting_record": false
         },
         "nova": {
@@ -9342,59 +9350,59 @@
           "name": "NOVA \u00b7 The Bats",
           "n": 15,
           "win": 6,
-          "loss": 9,
-          "push": 0,
-          "hit_rate": 0.4,
-          "line": "6-9",
-          "avg_conviction": 0.5172,
+          "loss": 6,
+          "push": 3,
+          "hit_rate": 0.5,
+          "line": "6-6-3",
+          "avg_conviction": 0.5157,
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
           "n": 15,
-          "win": 7,
-          "loss": 8,
-          "push": 0,
-          "hit_rate": 0.4667,
-          "line": "7-8",
-          "avg_conviction": 0.5284,
+          "win": 8,
+          "loss": 4,
+          "push": 3,
+          "hit_rate": 0.6667,
+          "line": "8-4-3",
+          "avg_conviction": 0.5268,
           "is_betting_record": false
         }
       },
       "best_call": {
-        "analyst": "atlas",
-        "name": "ATLAS \u00b7 The Conditions",
-        "game_pk": 822863,
-        "date": "2026-08-07",
+        "analyst": "scout",
+        "name": "SCOUT \u00b7 The Arms",
+        "game_pk": 823426,
+        "date": "2026-08-08",
         "matchup": null,
-        "line": "ATLAS said 57% under at 7.5 \u2014 it landed 3",
-        "conviction": 0.5651
+        "line": "SCOUT said 55% over at 9.5 \u2014 it landed 12",
+        "conviction": 0.5503
       },
       "worst_call": {
         "analyst": "scout",
         "name": "SCOUT \u00b7 The Arms",
-        "game_pk": 823836,
-        "date": "2026-08-07",
+        "game_pk": 823514,
+        "date": "2026-08-08",
         "matchup": null,
-        "line": "SCOUT said 58% over at 8.5 \u2014 it landed 7",
-        "conviction": 0.5817
+        "line": "SCOUT said 55% under at 7.5 \u2014 it landed 9",
+        "conviction": 0.5512
       },
-      "consensus_note": "2 game(s) had every graded voice on the same side \u2014 the desk swept 1 of them; 13 game(s) split the desk.",
-      "desk_verdict_line": "ATLAS took the night at 9-6.",
-      "computed_at_utc": "2026-08-08T09:04:02Z",
+      "consensus_note": "1 game(s) had every graded voice on the same side \u2014 the desk swept 1 of them; 14 game(s) split the desk.",
+      "desk_verdict_line": "ATLAS took the night at 10-2-3.",
+      "computed_at_utc": "2026-08-09T09:03:38Z",
       "note": "nightly desk recap \u2014 computed once per date from the v2 stream's own graded reads (one row per game per analyst from 2026-07-01, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed"
     },
     "desk_recaps": {
       "latest": {
-        "date": "2026-08-07",
+        "date": "2026-08-08",
         "desk_era": "v2",
         "source": "analyst_v2_stream",
         "winner": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "line": "9-6",
-          "avg_conviction": 0.5248,
+          "line": "10-2-3",
+          "avg_conviction": 0.5243,
           "tiebreak": "wins-losses, then hit rate, ties to higher average conviction"
         },
         "lines": {
@@ -9403,23 +9411,23 @@
             "name": "VEGA \u00b7 The Price",
             "n": 15,
             "win": 6,
-            "loss": 9,
-            "push": 0,
-            "hit_rate": 0.4,
-            "line": "6-9",
-            "avg_conviction": 0.5128,
+            "loss": 6,
+            "push": 3,
+            "hit_rate": 0.5,
+            "line": "6-6-3",
+            "avg_conviction": 0.5138,
             "is_betting_record": false
           },
           "atlas": {
             "key": "atlas",
             "name": "ATLAS \u00b7 The Conditions",
             "n": 15,
-            "win": 9,
-            "loss": 6,
-            "push": 0,
-            "hit_rate": 0.6,
-            "line": "9-6",
-            "avg_conviction": 0.5248,
+            "win": 10,
+            "loss": 2,
+            "push": 3,
+            "hit_rate": 0.8333,
+            "line": "10-2-3",
+            "avg_conviction": 0.5243,
             "is_betting_record": false
           },
           "nova": {
@@ -9427,47 +9435,47 @@
             "name": "NOVA \u00b7 The Bats",
             "n": 15,
             "win": 6,
-            "loss": 9,
-            "push": 0,
-            "hit_rate": 0.4,
-            "line": "6-9",
-            "avg_conviction": 0.5172,
+            "loss": 6,
+            "push": 3,
+            "hit_rate": 0.5,
+            "line": "6-6-3",
+            "avg_conviction": 0.5157,
             "is_betting_record": false
           },
           "scout": {
             "key": "scout",
             "name": "SCOUT \u00b7 The Arms",
             "n": 15,
-            "win": 7,
-            "loss": 8,
-            "push": 0,
-            "hit_rate": 0.4667,
-            "line": "7-8",
-            "avg_conviction": 0.5284,
+            "win": 8,
+            "loss": 4,
+            "push": 3,
+            "hit_rate": 0.6667,
+            "line": "8-4-3",
+            "avg_conviction": 0.5268,
             "is_betting_record": false
           }
         },
         "best_call": {
-          "analyst": "atlas",
-          "name": "ATLAS \u00b7 The Conditions",
-          "game_pk": 822863,
-          "date": "2026-08-07",
+          "analyst": "scout",
+          "name": "SCOUT \u00b7 The Arms",
+          "game_pk": 823426,
+          "date": "2026-08-08",
           "matchup": null,
-          "line": "ATLAS said 57% under at 7.5 \u2014 it landed 3",
-          "conviction": 0.5651
+          "line": "SCOUT said 55% over at 9.5 \u2014 it landed 12",
+          "conviction": 0.5503
         },
         "worst_call": {
           "analyst": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "game_pk": 823836,
-          "date": "2026-08-07",
+          "game_pk": 823514,
+          "date": "2026-08-08",
           "matchup": null,
-          "line": "SCOUT said 58% over at 8.5 \u2014 it landed 7",
-          "conviction": 0.5817
+          "line": "SCOUT said 55% under at 7.5 \u2014 it landed 9",
+          "conviction": 0.5512
         },
-        "consensus_note": "2 game(s) had every graded voice on the same side \u2014 the desk swept 1 of them; 13 game(s) split the desk.",
-        "desk_verdict_line": "ATLAS took the night at 9-6.",
-        "computed_at_utc": "2026-08-08T09:04:02Z",
+        "consensus_note": "1 game(s) had every graded voice on the same side \u2014 the desk swept 1 of them; 14 game(s) split the desk.",
+        "desk_verdict_line": "ATLAS took the night at 10-2-3.",
+        "computed_at_utc": "2026-08-09T09:03:38Z",
         "note": "nightly desk recap \u2014 computed once per date from the v2 stream's own graded reads (one row per game per analyst from 2026-07-01, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed"
       },
       "latest_note": null,
@@ -10311,9 +10319,93 @@
           "desk_verdict_line": "ATLAS took the night at 9-6.",
           "computed_at_utc": "2026-08-08T09:04:02Z",
           "note": "nightly desk recap \u2014 computed once per date from the v2 stream's own graded reads (one row per game per analyst from 2026-07-01, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed"
+        },
+        {
+          "date": "2026-08-08",
+          "desk_era": "v2",
+          "source": "analyst_v2_stream",
+          "winner": {
+            "key": "atlas",
+            "name": "ATLAS \u00b7 The Conditions",
+            "line": "10-2-3",
+            "avg_conviction": 0.5243,
+            "tiebreak": "wins-losses, then hit rate, ties to higher average conviction"
+          },
+          "lines": {
+            "vega": {
+              "key": "vega",
+              "name": "VEGA \u00b7 The Price",
+              "n": 15,
+              "win": 6,
+              "loss": 6,
+              "push": 3,
+              "hit_rate": 0.5,
+              "line": "6-6-3",
+              "avg_conviction": 0.5138,
+              "is_betting_record": false
+            },
+            "atlas": {
+              "key": "atlas",
+              "name": "ATLAS \u00b7 The Conditions",
+              "n": 15,
+              "win": 10,
+              "loss": 2,
+              "push": 3,
+              "hit_rate": 0.8333,
+              "line": "10-2-3",
+              "avg_conviction": 0.5243,
+              "is_betting_record": false
+            },
+            "nova": {
+              "key": "nova",
+              "name": "NOVA \u00b7 The Bats",
+              "n": 15,
+              "win": 6,
+              "loss": 6,
+              "push": 3,
+              "hit_rate": 0.5,
+              "line": "6-6-3",
+              "avg_conviction": 0.5157,
+              "is_betting_record": false
+            },
+            "scout": {
+              "key": "scout",
+              "name": "SCOUT \u00b7 The Arms",
+              "n": 15,
+              "win": 8,
+              "loss": 4,
+              "push": 3,
+              "hit_rate": 0.6667,
+              "line": "8-4-3",
+              "avg_conviction": 0.5268,
+              "is_betting_record": false
+            }
+          },
+          "best_call": {
+            "analyst": "scout",
+            "name": "SCOUT \u00b7 The Arms",
+            "game_pk": 823426,
+            "date": "2026-08-08",
+            "matchup": null,
+            "line": "SCOUT said 55% over at 9.5 \u2014 it landed 12",
+            "conviction": 0.5503
+          },
+          "worst_call": {
+            "analyst": "scout",
+            "name": "SCOUT \u00b7 The Arms",
+            "game_pk": 823514,
+            "date": "2026-08-08",
+            "matchup": null,
+            "line": "SCOUT said 55% under at 7.5 \u2014 it landed 9",
+            "conviction": 0.5512
+          },
+          "consensus_note": "1 game(s) had every graded voice on the same side \u2014 the desk swept 1 of them; 14 game(s) split the desk.",
+          "desk_verdict_line": "ATLAS took the night at 10-2-3.",
+          "computed_at_utc": "2026-08-09T09:03:38Z",
+          "note": "nightly desk recap \u2014 computed once per date from the v2 stream's own graded reads (one row per game per analyst from 2026-07-01, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed"
         }
       ],
-      "n_written": 10,
+      "n_written": 11,
       "n_previous_desk": 2,
       "source": "analyst_v2_stream",
       "note": "write-once nightly recaps, newest last; computed from graded reads only, never restated. History carries the last 14 written dates, each stamped with the desk era it describes. `latest` is always a v2 night or null \u2014 a recap of the previous four analysts is never presented as the current desk's."
@@ -321485,8 +321577,6 @@
         "our_prob_basis": "reference_side",
         "p_over": 0.4858,
         "ev": null,
-        "prob_calibrated": true,
-        "our_prob_raw": 0.4961,
         "expanded_band": false,
         "certified": false,
         "premium": true,
@@ -321619,9 +321709,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "Atlanta Braves at New York Yankees, and it is Chris Sale for the visitors against Gerrit Cole. Over his last 7 starts Sale has worked to a 1.63 ERA, with 51 strikeouts in 38 2/3 innings and he has gone 4-1 in them. Cole answers with a 3.27 ERA over his own last 7 starts, 49 strikeouts in 41 1/3 innings and he has gone 3-3 in them. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The Yankees have scored 3.0 runs a game over their last fifteen, the Braves 4.1.",
-            "The Braves went to 5 relievers yesterday and first pitch is at 90 degrees. Cole has kept 33% of the balls hit off him on the ground over his last five starts and Braves hitters have struck out in 22% of their trips to the plate. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+            "The Braves went to 5 relievers yesterday and games worked by tonight's plate umpire carry 0.1 fewer strikeouts than the league average. First pitch is at 90 degrees and Cole has kept 33% of the balls hit off him on the ground over his last five starts. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
           ],
-          "text": "Atlanta Braves at New York Yankees, and it is Chris Sale for the visitors against Gerrit Cole. Over his last 7 starts Sale has worked to a 1.63 ERA, with 51 strikeouts in 38 2/3 innings and he has gone 4-1 in them. Cole answers with a 3.27 ERA over his own last 7 starts, 49 strikeouts in 41 1/3 innings and he has gone 3-3 in them. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The Yankees have scored 3.0 runs a game over their last fifteen, the Braves 4.1.\n\nThe Braves went to 5 relievers yesterday and first pitch is at 90 degrees. Cole has kept 33% of the balls hit off him on the ground over his last five starts and Braves hitters have struck out in 22% of their trips to the plate. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "text": "Atlanta Braves at New York Yankees, and it is Chris Sale for the visitors against Gerrit Cole. Over his last 7 starts Sale has worked to a 1.63 ERA, with 51 strikeouts in 38 2/3 innings and he has gone 4-1 in them. Cole answers with a 3.27 ERA over his own last 7 starts, 49 strikeouts in 41 1/3 innings and he has gone 3-3 in them. They are playing at Yankee Stadium, a ballpark that has played right at league-average scoring over the last three years. The Yankees have scored 3.0 runs a game over their last fifteen, the Braves 4.1.\n\nThe Braves went to 5 relievers yesterday and games worked by tonight's plate umpire carry 0.1 fewer strikeouts than the league average. First pitch is at 90 degrees and Cole has kept 33% of the balls hit off him on the ground over his last five starts. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
           "side": "over",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -321649,7 +321739,7 @@
         "score": 1.99,
         "our_prob": 0.5644,
         "ev": 0.0308,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T19:41:26Z",
         "lead_time": "T-1h",
@@ -321678,7 +321768,7 @@
         "sim_sd": 4.27,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T19:41:26Z",
         "lead_time": "T-1h",
@@ -321722,21 +321812,21 @@
         {
           "key": "champion",
           "label": "Champion engine",
-          "status": "PASS",
+          "status": "PICK",
           "is_headline": false,
           "is_served_source": false,
           "side": "over",
           "line": 7.5,
           "vegas_line": 7.5,
           "price": 107,
-          "stars": 1,
-          "score": 1.95,
+          "stars": 3,
+          "score": 3.54,
           "result": "win",
-          "lead_time": "T-12h",
-          "locked": false,
+          "lead_time": "T-6h",
+          "locked": true,
           "expanded_band": false,
-          "pass_why": "ev_gate",
-          "reason": "Priced out \u2014 no value at the real price"
+          "pass_why": null,
+          "reason": "Good"
         },
         {
           "key": "model_v4",
@@ -321750,7 +321840,7 @@
           "price": 107,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-24h",
           "locked": true,
           "expanded_band": false,
@@ -321788,7 +321878,7 @@
           "price": -121,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -321809,7 +321899,7 @@
           "price": -106.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -321848,7 +321938,7 @@
           "enr_park_run_factor_3y": 0.9911,
           "wx_temp_f": 90.14
         },
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T19:41:26Z",
         "lead_time": "T-1h",
@@ -322396,7 +322486,7 @@
         "score": 1.15,
         "our_prob": 0.5533,
         "ev": 0.0262,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T20:20:14Z",
         "lead_time": "T-1h",
@@ -322425,7 +322515,7 @@
         "sim_sd": 4.555,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T20:20:14Z",
         "lead_time": "T-1h",
@@ -322497,7 +322587,7 @@
           "price": -109,
           "stars": 1,
           "score": 1.28,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-6h",
           "locked": true,
           "expanded_band": false,
@@ -322535,7 +322625,7 @@
           "price": -117,
           "stars": 1,
           "score": 1.15,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -322556,7 +322646,7 @@
           "price": 102.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -322595,7 +322685,7 @@
           "enr_park_run_factor_3y": 1.0603,
           "wx_temp_f": 91.22
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T20:20:14Z",
         "lead_time": "T-1h",
@@ -323225,9 +323315,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "Los Angeles Angels at Miami Marlins, and it is Walbert Ure\u00f1a for the visitors against Sandy Alcantara. Over his last 7 starts Ure\u00f1a has worked to a 2.43 ERA, with 37 strikeouts in 37 innings and he has gone 3-2 in them. Alcantara answers with a 2.89 ERA over his own last 7 starts, 39 strikeouts in 46 2/3 innings and he has gone 4-2 in them. They are playing at loanDepot park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Marlins have scored 5.7 runs a game over their last fifteen, the Angels 4.0.",
-            "The Angels went to 5 relievers yesterday and Ure\u00f1a has walked 14% of the hitters he has faced across his last five starts. Their recent scoring has been running 2.2 runs a game clear of tonight's total and the posted total is 1.2 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
+            "The Angels went to 5 relievers yesterday and games worked by tonight's plate umpire carry 0.8 more walks than the league average. Ure\u00f1a has walked 14% of the hitters he has faced across his last five starts and their recent scoring has been running 2.2 runs a game clear of tonight's total. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way."
           ],
-          "text": "Los Angeles Angels at Miami Marlins, and it is Walbert Ure\u00f1a for the visitors against Sandy Alcantara. Over his last 7 starts Ure\u00f1a has worked to a 2.43 ERA, with 37 strikeouts in 37 innings and he has gone 3-2 in them. Alcantara answers with a 2.89 ERA over his own last 7 starts, 39 strikeouts in 46 2/3 innings and he has gone 4-2 in them. They are playing at loanDepot park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Marlins have scored 5.7 runs a game over their last fifteen, the Angels 4.0.\n\nThe Angels went to 5 relievers yesterday and Ure\u00f1a has walked 14% of the hitters he has faced across his last five starts. Their recent scoring has been running 2.2 runs a game clear of tonight's total and the posted total is 1.2 runs lower than what this ballpark has typically supported. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
+          "text": "Los Angeles Angels at Miami Marlins, and it is Walbert Ure\u00f1a for the visitors against Sandy Alcantara. Over his last 7 starts Ure\u00f1a has worked to a 2.43 ERA, with 37 strikeouts in 37 innings and he has gone 3-2 in them. Alcantara answers with a 2.89 ERA over his own last 7 starts, 39 strikeouts in 46 2/3 innings and he has gone 4-2 in them. They are playing at loanDepot park, a ballpark that has been playing about 3% above league-average scoring over the last three years. The Marlins have scored 5.7 runs a game over their last fifteen, the Angels 4.0.\n\nThe Angels went to 5 relievers yesterday and games worked by tonight's plate umpire carry 0.8 more walks than the league average. Ure\u00f1a has walked 14% of the hitters he has faced across his last five starts and their recent scoring has been running 2.2 runs a game clear of tonight's total. The total opened at 7.5 and has not moved off it. We lean the over here, and those are the things on this game that point that way.",
           "side": "over",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -323255,7 +323345,7 @@
         "score": 1.99,
         "our_prob": 0.3769,
         "ev": 0.0278,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T20:20:14Z",
         "lead_time": "T-1h",
@@ -323284,7 +323374,7 @@
         "sim_sd": 4.532,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T20:20:14Z",
         "lead_time": "T-1h",
@@ -323356,7 +323446,7 @@
           "price": 106,
           "stars": 1,
           "score": 1.29,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-6h",
           "locked": true,
           "expanded_band": false,
@@ -323394,7 +323484,7 @@
           "price": -154,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -323415,7 +323505,7 @@
           "price": 107.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -323454,7 +323544,7 @@
           "enr_park_run_factor_3y": 1.0271,
           "wx_temp_f": 87.08
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T20:20:14Z",
         "lead_time": "T-1h",
@@ -324089,9 +324179,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "Toronto Blue Jays at Philadelphia Phillies, and it is Max Scherzer for the visitors against Aaron Nola. Over his last 7 starts Scherzer has worked to a 9.49 ERA, with 19 strikeouts in 24 2/3 innings and he has gone 0-4 in them. Nola answers with a 5.49 ERA over his own last 7 starts, 39 strikeouts in 39 1/3 innings and he has gone 0-5 in them. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Phillies have scored 6.4 runs a game over their last fifteen, the Blue Jays 3.6.",
-            "The Phillies went to 3 relievers yesterday and games worked by tonight's plate umpire have averaged 0.1 runs fewer than the league. Scherzer takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 10 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way."
+            "The Phillies went to 3 relievers yesterday and games worked by tonight's plate umpire carry 0.3 fewer walks than the league average. Scherzer takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 10 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way."
           ],
-          "text": "Toronto Blue Jays at Philadelphia Phillies, and it is Max Scherzer for the visitors against Aaron Nola. Over his last 7 starts Scherzer has worked to a 9.49 ERA, with 19 strikeouts in 24 2/3 innings and he has gone 0-4 in them. Nola answers with a 5.49 ERA over his own last 7 starts, 39 strikeouts in 39 1/3 innings and he has gone 0-5 in them. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Phillies have scored 6.4 runs a game over their last fifteen, the Blue Jays 3.6.\n\nThe Phillies went to 3 relievers yesterday and games worked by tonight's plate umpire have averaged 0.1 runs fewer than the league. Scherzer takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 10 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way.",
+          "text": "Toronto Blue Jays at Philadelphia Phillies, and it is Max Scherzer for the visitors against Aaron Nola. Over his last 7 starts Scherzer has worked to a 9.49 ERA, with 19 strikeouts in 24 2/3 innings and he has gone 0-4 in them. Nola answers with a 5.49 ERA over his own last 7 starts, 39 strikeouts in 39 1/3 innings and he has gone 0-5 in them. They are playing at Citizens Bank Park, a ballpark that has been playing about 2% above league-average scoring over the last three years. The Phillies have scored 6.4 runs a game over their last fifteen, the Blue Jays 3.6.\n\nThe Phillies went to 3 relievers yesterday and games worked by tonight's plate umpire carry 0.3 fewer walks than the league average. Scherzer takes the ball on 6 days' rest and the Blue Jays have been reaching base at a .274 clip. The total opened at 10 and has come down to 9.5. We lean the under here, and those are the things on this game that point that way.",
           "side": "under",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -324099,7 +324189,12 @@
           "n_support_facts": 4,
           "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
         },
-        "signals": []
+        "signals": [
+          {
+            "text": "Plate ump Miller trends under (41% overs L2)",
+            "dir": "under"
+          }
+        ]
       },
       "spread": {
         "status": "LEAN",
@@ -324114,7 +324209,7 @@
         "score": 0.89,
         "our_prob": 0.4343,
         "ev": 0.0008,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T22:12:59Z",
         "lead_time": "T-3h",
@@ -324143,7 +324238,7 @@
         "sim_sd": 4.774,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T22:12:59Z",
         "lead_time": "T-3h",
@@ -324214,7 +324309,7 @@
           "price": -106,
           "stars": 1,
           "score": 0.65,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-6h",
           "locked": true,
           "expanded_band": false,
@@ -324252,7 +324347,7 @@
           "price": -130,
           "stars": 1,
           "score": 0.89,
-          "result": null,
+          "result": "win",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -324273,7 +324368,7 @@
           "price": -102.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -324312,7 +324407,7 @@
           "enr_park_run_factor_3y": 1.0233,
           "wx_temp_f": 81.86
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T22:12:59Z",
         "lead_time": "T-3h",
@@ -324863,9 +324958,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "New York Mets at Pittsburgh Pirates, and it is Robert Stock for the visitors against Bubba Chandler. In his one start Stock has covered 5 innings, giving up 1 earned run with 4 strikeouts and he has gone 0-1 in it. Chandler answers with a 4.21 ERA over his own last 7 starts, 29 strikeouts in 36 1/3 innings and he has gone 2-1 in them. They are playing at PNC Park, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Pirates have scored 5.7 runs a game over their last fifteen, the Mets 3.5.",
-            "The two bullpens have thrown 25 innings between them over three days and first pitch is at 81 degrees. Chandler has walked 12% of the hitters he has faced across his last five starts and the Pirates have been reaching base at a .351 clip. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way."
+            "The two bullpens have thrown 25 innings between them over three days and games worked by tonight's plate umpire carry 0.4 fewer strikeouts than the league average. First pitch is at 81 degrees and Chandler has walked 12% of the hitters he has faced across his last five starts. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way."
           ],
-          "text": "New York Mets at Pittsburgh Pirates, and it is Robert Stock for the visitors against Bubba Chandler. In his one start Stock has covered 5 innings, giving up 1 earned run with 4 strikeouts and he has gone 0-1 in it. Chandler answers with a 4.21 ERA over his own last 7 starts, 29 strikeouts in 36 1/3 innings and he has gone 2-1 in them. They are playing at PNC Park, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Pirates have scored 5.7 runs a game over their last fifteen, the Mets 3.5.\n\nThe two bullpens have thrown 25 innings between them over three days and first pitch is at 81 degrees. Chandler has walked 12% of the hitters he has faced across his last five starts and the Pirates have been reaching base at a .351 clip. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way.",
+          "text": "New York Mets at Pittsburgh Pirates, and it is Robert Stock for the visitors against Bubba Chandler. In his one start Stock has covered 5 innings, giving up 1 earned run with 4 strikeouts and he has gone 0-1 in it. Chandler answers with a 4.21 ERA over his own last 7 starts, 29 strikeouts in 36 1/3 innings and he has gone 2-1 in them. They are playing at PNC Park, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Pirates have scored 5.7 runs a game over their last fifteen, the Mets 3.5.\n\nThe two bullpens have thrown 25 innings between them over three days and games worked by tonight's plate umpire carry 0.4 fewer strikeouts than the league average. First pitch is at 81 degrees and Chandler has walked 12% of the hitters he has faced across his last five starts. The total opened at 8.5 and has gone up to 9. We lean the over here, and those are the things on this game that point that way.",
           "side": "over",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -324901,7 +324996,7 @@
         "score": 0.32,
         "our_prob": 0.3653,
         "ev": -0.0101,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -324930,7 +325025,7 @@
         "sim_sd": 4.353,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -325002,7 +325097,7 @@
           "price": -110,
           "stars": 1,
           "score": 0.76,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-24h",
           "locked": true,
           "expanded_band": false,
@@ -325040,7 +325135,7 @@
           "price": 171,
           "stars": 1,
           "score": 0.32,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -325061,7 +325156,7 @@
           "price": 103.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "push",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -325100,7 +325195,7 @@
           "enr_park_run_factor_3y": 0.9595,
           "wx_temp_f": 80.96
         },
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -325744,7 +325839,12 @@
           "n_support_facts": 3,
           "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
         },
-        "signals": []
+        "signals": [
+          {
+            "text": "Both lineups weak vs these arms lately",
+            "dir": "under"
+          }
+        ]
       },
       "spread": {
         "status": "LEAN",
@@ -325759,7 +325859,7 @@
         "score": 1.3,
         "our_prob": 0.5689,
         "ev": 0.0133,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -325788,7 +325888,7 @@
         "sim_sd": 4.446,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -325860,7 +325960,7 @@
           "price": 105,
           "stars": 1,
           "score": 1.6,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-24h",
           "locked": true,
           "expanded_band": false,
@@ -325898,7 +325998,7 @@
           "price": -128,
           "stars": 1,
           "score": 1.3,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -325919,7 +326019,7 @@
           "price": -105.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -325958,7 +326058,7 @@
           "enr_park_run_factor_3y": 1.0523,
           "wx_temp_f": 91.94
         },
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -326534,7 +326634,7 @@
         "score": 0.86,
         "our_prob": 0.5265,
         "ev": 0.0008,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -326563,7 +326663,7 @@
         "sim_sd": 4.414,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -326635,7 +326735,7 @@
           "price": -112,
           "stars": 1,
           "score": 1.14,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-6h",
           "locked": true,
           "expanded_band": false,
@@ -326673,7 +326773,7 @@
           "price": -111,
           "stars": 1,
           "score": 0.86,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -326694,7 +326794,7 @@
           "price": -101.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "push",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -326733,7 +326833,7 @@
           "enr_park_run_factor_3y": 0.9864,
           "wx_temp_f": 89.6
         },
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -327315,7 +327415,7 @@
         "score": 1.1,
         "our_prob": 0.3978,
         "ev": 0.0066,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -327344,7 +327444,7 @@
         "sim_sd": 4.315,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -327416,7 +327516,7 @@
           "price": -107,
           "stars": 1,
           "score": 1.0,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-6h",
           "locked": true,
           "expanded_band": false,
@@ -327454,7 +327554,7 @@
           "price": 153,
           "stars": 1,
           "score": 1.1,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -327475,7 +327575,7 @@
           "price": -110.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -327514,7 +327614,7 @@
           "enr_park_run_factor_3y": 0.9492,
           "wx_temp_f": 82.76
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -328071,9 +328171,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "Baltimore Orioles at Texas Rangers, and it is Kyle Bradish for the visitors against Jacob deGrom. Over his last 7 starts Bradish has worked to a 3.38 ERA, with 32 strikeouts in 40 innings and he has gone 3-3 in them. DeGrom answers with a 5.59 ERA over his own last 7 starts, 46 strikeouts in 37 innings and he has gone 2-3 in them. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Rangers have scored 4.8 runs a game over their last fifteen, the Orioles 4.3.",
-            "The Rangers bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. DeGrom has kept 44% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.6 runs a game clear of tonight's total. The total opened at 7 and has gone up to 7.5. We lean the over here, and those are the things on this game that point that way."
+            "The Rangers bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire carry 0.1 more walks than the league average. DeGrom has kept 44% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.6 runs a game clear of tonight's total. The total opened at 7 and has gone up to 7.5. We lean the over here, and those are the things on this game that point that way."
           ],
-          "text": "Baltimore Orioles at Texas Rangers, and it is Kyle Bradish for the visitors against Jacob deGrom. Over his last 7 starts Bradish has worked to a 3.38 ERA, with 32 strikeouts in 40 innings and he has gone 3-3 in them. DeGrom answers with a 5.59 ERA over his own last 7 starts, 46 strikeouts in 37 innings and he has gone 2-3 in them. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Rangers have scored 4.8 runs a game over their last fifteen, the Orioles 4.3.\n\nThe Rangers bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. DeGrom has kept 44% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.6 runs a game clear of tonight's total. The total opened at 7 and has gone up to 7.5. We lean the over here, and those are the things on this game that point that way.",
+          "text": "Baltimore Orioles at Texas Rangers, and it is Kyle Bradish for the visitors against Jacob deGrom. Over his last 7 starts Bradish has worked to a 3.38 ERA, with 32 strikeouts in 40 innings and he has gone 3-3 in them. DeGrom answers with a 5.59 ERA over his own last 7 starts, 46 strikeouts in 37 innings and he has gone 2-3 in them. They are playing at Globe Life Field, a ballpark that has been playing about 4% below league-average scoring over the last three years. The Rangers have scored 4.8 runs a game over their last fifteen, the Orioles 4.3.\n\nThe Rangers bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire carry 0.1 more walks than the league average. DeGrom has kept 44% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.6 runs a game clear of tonight's total. The total opened at 7 and has gone up to 7.5. We lean the over here, and those are the things on this game that point that way.",
           "side": "over",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -328096,7 +328196,7 @@
         "score": 1.34,
         "our_prob": 0.3783,
         "ev": 0.0078,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -328125,7 +328225,7 @@
         "sim_sd": 4.296,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -328197,7 +328297,7 @@
           "price": 103,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-24h",
           "locked": true,
           "expanded_band": false,
@@ -328235,7 +328335,7 @@
           "price": -161,
           "stars": 1,
           "score": 1.34,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -328256,7 +328356,7 @@
           "price": 104.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -328295,7 +328395,7 @@
           "enr_park_run_factor_3y": 0.9601,
           "wx_temp_f": 100.4
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -328930,9 +329030,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "Cleveland Guardians at Chicago White Sox, and it is Gavin Williams for the visitors against Anthony Kay. Over his last 7 starts Williams has worked to a 2.98 ERA, with 67 strikeouts in 42 1/3 innings and he has gone 2-2 in them. Kay answers with a 3.48 ERA over his own last 7 starts, 27 strikeouts in 33 2/3 innings and he has gone 2-3 in them. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9.",
-            "The two bullpens have thrown 32 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. First pitch is at 75 degrees and Williams has kept 38% of the balls hit off him on the ground over his last five starts. The total opened at 8 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way."
+            "The two bullpens have thrown 32 innings between them over three days and games worked by tonight's plate umpire carry 0.3 more walks than the league average. First pitch is at 75 degrees and Williams has kept 38% of the balls hit off him on the ground over his last five starts. The total opened at 8 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way."
           ],
-          "text": "Cleveland Guardians at Chicago White Sox, and it is Gavin Williams for the visitors against Anthony Kay. Over his last 7 starts Williams has worked to a 2.98 ERA, with 67 strikeouts in 42 1/3 innings and he has gone 2-2 in them. Kay answers with a 3.48 ERA over his own last 7 starts, 27 strikeouts in 33 2/3 innings and he has gone 2-3 in them. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9.\n\nThe two bullpens have thrown 32 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. First pitch is at 75 degrees and Williams has kept 38% of the balls hit off him on the ground over his last five starts. The total opened at 8 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way.",
+          "text": "Cleveland Guardians at Chicago White Sox, and it is Gavin Williams for the visitors against Anthony Kay. Over his last 7 starts Williams has worked to a 2.98 ERA, with 67 strikeouts in 42 1/3 innings and he has gone 2-2 in them. Kay answers with a 3.48 ERA over his own last 7 starts, 27 strikeouts in 33 2/3 innings and he has gone 2-3 in them. They are playing at Rate Field, a ballpark that has been playing about 5% below league-average scoring over the last three years. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9.\n\nThe two bullpens have thrown 32 innings between them over three days and games worked by tonight's plate umpire carry 0.3 more walks than the league average. First pitch is at 75 degrees and Williams has kept 38% of the balls hit off him on the ground over his last five starts. The total opened at 8 and has come down to 7.5. We lean the over here, and those are the things on this game that point that way.",
           "side": "over",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -328941,6 +329041,10 @@
           "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
         },
         "signals": [
+          {
+            "text": "Plate ump Fletcher trends over (60% L2 szn)",
+            "dir": "over"
+          },
           {
             "text": "Both bullpens heavily worked last 3 days",
             "dir": "over"
@@ -328960,7 +329064,7 @@
         "score": 1.99,
         "our_prob": 0.6074,
         "ev": 0.0412,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -328989,7 +329093,7 @@
         "sim_sd": 4.305,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -329061,7 +329165,7 @@
           "price": 110,
           "stars": 1,
           "score": 1.95,
-          "result": null,
+          "result": "win",
           "lead_time": "T-6h",
           "locked": true,
           "expanded_band": false,
@@ -329099,7 +329203,7 @@
           "price": -140,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -329120,7 +329224,7 @@
           "price": -110.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -329159,7 +329263,7 @@
           "enr_park_run_factor_3y": 0.9547,
           "wx_temp_f": 74.66
         },
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -329730,7 +329834,7 @@
         "score": 1.34,
         "our_prob": 0.4002,
         "ev": 0.005,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -329759,7 +329863,7 @@
         "sim_sd": 5.372,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -329809,15 +329913,15 @@
           "side": "over",
           "line": 8.5,
           "vegas_line": 8.5,
-          "price": -110,
-          "stars": 4,
-          "score": 4.34,
+          "price": 100,
+          "stars": 5,
+          "score": 4.83,
           "result": "win",
-          "lead_time": "T-12h",
-          "locked": false,
+          "lead_time": "T-1h",
+          "locked": true,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Strong"
+          "reason": "Elite"
         },
         {
           "key": "model_v4",
@@ -329831,7 +329935,7 @@
           "price": -115,
           "stars": 1,
           "score": 1.39,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-24h",
           "locked": true,
           "expanded_band": false,
@@ -329869,7 +329973,7 @@
           "price": -148,
           "stars": 1,
           "score": 1.34,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -329890,7 +329994,7 @@
           "price": 100.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -329929,7 +330033,7 @@
           "enr_park_run_factor_3y": 0.9955,
           "wx_temp_f": 90.14
         },
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -330539,9 +330643,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "Detroit Tigers at San Francisco Giants, and it is Jackson Jobe for the visitors against Landen Roupp. Over his last 7 starts Roupp has worked to a 4.74 ERA, with 31 strikeouts in 38 innings and he has gone 2-3 in them. They are playing at Oracle Park, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Giants have scored 3.7 runs a game over their last fifteen, the Tigers 4.8.",
-            "The two bullpens have thrown 21 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. The wind is blowing out toward centre, 15 miles an hour of it straight out. Roupp has walked 10% of the hitters he has faced across his last five starts. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
+            "The two bullpens have thrown 21 innings between them over three days and games worked by tonight's plate umpire carry 0.5 fewer strikeouts than the league average. The wind is blowing out toward centre, 15 miles an hour of it straight out. Roupp has walked 10% of the hitters he has faced across his last five starts. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way."
           ],
-          "text": "Detroit Tigers at San Francisco Giants, and it is Jackson Jobe for the visitors against Landen Roupp. Over his last 7 starts Roupp has worked to a 4.74 ERA, with 31 strikeouts in 38 innings and he has gone 2-3 in them. They are playing at Oracle Park, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Giants have scored 3.7 runs a game over their last fifteen, the Tigers 4.8.\n\nThe two bullpens have thrown 21 innings between them over three days and games worked by tonight's plate umpire have averaged 1.8 runs more than the league. The wind is blowing out toward centre, 15 miles an hour of it straight out. Roupp has walked 10% of the hitters he has faced across his last five starts. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way.",
+          "text": "Detroit Tigers at San Francisco Giants, and it is Jackson Jobe for the visitors against Landen Roupp. Over his last 7 starts Roupp has worked to a 4.74 ERA, with 31 strikeouts in 38 innings and he has gone 2-3 in them. They are playing at Oracle Park, a ballpark that has been playing about 9% below league-average scoring over the last three years. The Giants have scored 3.7 runs a game over their last fifteen, the Tigers 4.8.\n\nThe two bullpens have thrown 21 innings between them over three days and games worked by tonight's plate umpire carry 0.5 fewer strikeouts than the league average. The wind is blowing out toward centre, 15 miles an hour of it straight out. Roupp has walked 10% of the hitters he has faced across his last five starts. The total opened at 8.5 and has come down to 8. We lean the over here, and those are the things on this game that point that way.",
           "side": "over",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -330550,6 +330654,10 @@
           "every_number_is_served_data": "Every figure above was read from this game's own served data \u2014 the feature row for the game numbers, and each starter's own game log, checked to contain no start on or after this game, for the names and the records. Nothing is estimated, rounded from memory, or carried over from another game. The per-figure ledger is not carried on the card; it is regenerated by the generator for audit."
         },
         "signals": [
+          {
+            "text": "Ump's games run high (+0.8 R/G vs league)",
+            "dir": "over"
+          },
           {
             "text": "Both starters walk-prone lately (10%/11% BB)",
             "dir": "over"
@@ -330569,7 +330677,7 @@
         "score": 1.99,
         "our_prob": 0.6092,
         "ev": 0.0208,
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -330598,7 +330706,7 @@
         "sim_sd": 4.423,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -330670,7 +330778,7 @@
           "price": -102,
           "stars": 1,
           "score": 0.66,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -330708,7 +330816,7 @@
           "price": -148,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -330729,7 +330837,7 @@
           "price": -103.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "push",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -330768,7 +330876,7 @@
           "enr_park_run_factor_3y": 0.9119,
           "wx_temp_f": 64.4
         },
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -331344,7 +331452,7 @@
         "score": 1.99,
         "our_prob": 0.3267,
         "ev": 0.024,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -331373,7 +331481,7 @@
         "sim_sd": 4.24,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -331445,7 +331553,7 @@
           "price": 101,
           "stars": 1,
           "score": 1.12,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-24h",
           "locked": true,
           "expanded_band": false,
@@ -331483,7 +331591,7 @@
           "price": -192,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -331504,7 +331612,7 @@
           "price": -113.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -331543,7 +331651,7 @@
           "enr_park_run_factor_3y": 0.9169,
           "wx_temp_f": 82.4
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-08T23:18:46Z",
         "lead_time": "T-1h",
@@ -332091,7 +332199,7 @@
         "score": 1.99,
         "our_prob": 0.4891,
         "ev": 0.0271,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-09T00:21:02Z",
         "lead_time": "T-1h",
@@ -332120,7 +332228,7 @@
         "sim_sd": 4.262,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-09T00:21:02Z",
         "lead_time": "T-1h",
@@ -332192,7 +332300,7 @@
           "price": 105,
           "stars": 1,
           "score": 1.06,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-24h",
           "locked": true,
           "expanded_band": false,
@@ -332230,7 +332338,7 @@
           "price": 110,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -332251,7 +332359,7 @@
           "price": -102.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -332290,7 +332398,7 @@
           "enr_park_run_factor_3y": 1.0849,
           "wx_temp_f": 110.48
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-09T00:21:02Z",
         "lead_time": "T-1h",
@@ -332837,9 +332945,9 @@
           "identity": "matchup_facts/1.1",
           "paragraphs": [
             "Tampa Bay Rays at Seattle Mariners, and it is Casey Legumina for the visitors against George Kirby. Over his last 4 starts Legumina has covered 6 2/3 innings, giving up 2 earned runs with 3 strikeouts and no decision has gone his way or against him in any of them. Kirby answers with a 3.14 ERA over his own last 7 starts, 36 strikeouts in 43 innings and he has gone 3-3 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.",
-            "The Mariners bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 1.9 runs more than the league. Kirby has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.8 runs a game clear of tonight's total. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way."
+            "The Mariners bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 0.1 runs more than the league. Kirby has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.8 runs a game clear of tonight's total. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way."
           ],
-          "text": "Tampa Bay Rays at Seattle Mariners, and it is Casey Legumina for the visitors against George Kirby. Over his last 4 starts Legumina has covered 6 2/3 innings, giving up 2 earned runs with 3 strikeouts and no decision has gone his way or against him in any of them. Kirby answers with a 3.14 ERA over his own last 7 starts, 36 strikeouts in 43 innings and he has gone 3-3 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.\n\nThe Mariners bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 1.9 runs more than the league. Kirby has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.8 runs a game clear of tonight's total. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way.",
+          "text": "Tampa Bay Rays at Seattle Mariners, and it is Casey Legumina for the visitors against George Kirby. Over his last 4 starts Legumina has covered 6 2/3 innings, giving up 2 earned runs with 3 strikeouts and no decision has gone his way or against him in any of them. Kirby answers with a 3.14 ERA over his own last 7 starts, 36 strikeouts in 43 innings and he has gone 3-3 in them. They are playing at T-Mobile Park, a ballpark that has been playing about 13% below league-average scoring over the last three years. The Mariners have scored 3.4 runs a game over their last fifteen, the Rays 5.4.\n\nThe Mariners bullpen has thrown 8.3 innings in the last three days and games worked by tonight's plate umpire have averaged 0.1 runs more than the league. Kirby has kept 34% of the balls hit off him on the ground over his last five starts and their recent scoring has been running 1.8 runs a game clear of tonight's total. The total opened at 7.5 and has come down to 7. We lean the over here, and those are the things on this game that point that way.",
           "side": "over",
           "how_to_read": "The side came first. What you have just read is this game, and the measured facts on it that point the same way \u2014 not a re-derivation of the pick.",
           "explains_a_lean_not_a_result": "This explains why we lean this way on this game. It is not a prediction of the result.",
@@ -332862,7 +332970,7 @@
         "score": 1.99,
         "our_prob": 0.3374,
         "ev": 0.017,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-09T01:54:12Z",
         "lead_time": "T-1h",
@@ -332891,7 +332999,7 @@
         "sim_sd": 4.271,
         "n_sims": 20000,
         "hfa": "on",
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-09T01:54:12Z",
         "lead_time": "T-1h",
@@ -332941,12 +333049,12 @@
           "side": "over",
           "line": 7.0,
           "vegas_line": 7.0,
-          "price": -109,
+          "price": -102,
           "stars": 5,
-          "score": 4.81,
-          "result": null,
-          "lead_time": "T-12h",
-          "locked": false,
+          "score": 4.89,
+          "result": "loss",
+          "lead_time": "T-6h",
+          "locked": true,
           "expanded_band": false,
           "pass_why": null,
           "reason": "Elite"
@@ -332963,7 +333071,7 @@
           "price": -102,
           "stars": 1,
           "score": 1.1,
-          "result": null,
+          "result": "pass",
           "lead_time": "T-6h",
           "locked": true,
           "expanded_band": false,
@@ -333001,7 +333109,7 @@
           "price": -187,
           "stars": 1,
           "score": 1.99,
-          "result": null,
+          "result": "win",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -333022,7 +333130,7 @@
           "price": -110.0,
           "stars": 1,
           "score": null,
-          "result": null,
+          "result": "loss",
           "lead_time": "T-1h",
           "locked": true,
           "expanded_band": false,
@@ -333061,7 +333169,7 @@
           "enr_park_run_factor_3y": 0.8656,
           "wx_temp_f": 76.1
         },
-        "result": null,
+        "result": "loss",
         "locked": true,
         "locked_at_utc": "2026-08-09T01:54:12Z",
         "lead_time": "T-1h",

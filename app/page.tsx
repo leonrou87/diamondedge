@@ -7963,12 +7963,18 @@ export default function Home() {
          question ("chance this pick cashes, right now"). Two percents side by side is not a
          denser row, it is an ambiguous one, and the live number is the one that matters after
          the first pitch: the confidence is a PREGAME fact about how the room voted and it does
-         not move once the game starts. So the visible percent stands down for the duration of
-         the game and the fact survives in the tag's title and aria-label, which are built from
-         `strTxt` a few lines below and are not gated on this at all.
-         (It also keeps the live row inside its width budget — measured: 132px of content in a
-         139px column at 375 with the meter present, which leaves no room for a fourth cell.) */
-      const liveChip = /\bdmp-res\b/.test(String(stamp || ""));
+         not move once the game starts.
+
+         THAT ARGUMENT DIED WITH THE PERCENT (2026-08-09). Confidence is STARS now, and both
+         halves of the reason were about a percent. Ambiguity: stars and a percent are
+         unmistakably different objects, so there is nothing left to confuse. Width: the stars
+         sit UNDER the word inside `.de-callcol`, one flex item, so they cost the row zero
+         horizontal pixels and the 139px budget is untouched with the meter present.
+         What remained was only the habit — and it read as the rating vanishing the moment a
+         game got interesting, which is exactly when a reader looks. Leon: "the star rating is
+         gone after the game starts."
+         The `liveChip` probe that gated it is gone with it rather than left dangling: it had
+         no other caller, and the title and aria-label were never gated on it. */
       const title = noPick ? `Market total${line ? ` ${line}` : ""}`
         : locked ? "DiamondEdge Pick locked"
           : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}${strTxt ? ` · ${strTxt}` : ""}` : "DiamondEdge Pick";
@@ -8053,7 +8059,7 @@ export default function Home() {
         : noPick ? ""
         : `<span class="de-mini-call">${mark}${locked
             ? `<i class="de-mini-redact" aria-hidden="true"></i>`
-            : `<span class="de-callcol"><b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPct(pl, reveal && !liveChip)}</span>`}</span>`;
+            : `<span class="de-callcol"><b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPct(pl, reveal)}</span>`}</span>`;
       return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${upcoming ? " upcoming" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(upcoming ? picksEtaLong(g) : title)}" role="img" aria-label="${esc(upcoming ? picksEtaLong(g) : aria)}">
         ${ouCell}${callCell || stamp ? `<span class="dmp-right">${callCell}${stamp}</span>` : ""}
       </span>`;
@@ -9544,10 +9550,21 @@ export default function Home() {
        — which is a cron description, not a product promise, and the chip's fixed
        "2:00 AM PT → 6:00 AM PT" string was wide enough to push the whole page into
        horizontal scroll at 375px. It now says the time, once, in words, and wraps. */
+    /* WHEN THE PICKS ACTUALLY LAND, WHICH IS NOT ONE TIME (2026-08-09).
+       This said "this board fills in with the day's picks by 6:00 AM PT", and that was never
+       going to be true. The day's RULE is locked overnight, but a PICK cannot exist until its
+       game has been read, and that read happens about three hours before THAT game's first
+       pitch. On the 9th the earliest game was 9:15 AM, so the earliest possible pick was 6:15
+       — and the 7 PM games could not be picked before 4 PM. At 6:00 the board would have been
+       empty underneath a promise that it would be full.
+       So the card now says the shape of it: the first pick lands at the earliest game's own
+       wall, and the rest follow their games through the day. The served `picks_eta` is per
+       game now (schedule_forward.picks_eta), so `games[0]` — the slate is sorted by first
+       pitch — is genuinely the first one, not a slate-wide guess. */
     function futureNote(dispDate: string, full: boolean, games?: any[]) {
-      const when = esc(picksEtaTime(games && games[0]));
-      const countdown = `<div class="fn-countdown soon"><span class="fnc-k">Picks post</span><b class="fnc-val">${when}</b></div>`;
-      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Tonight our system replays every strategy against the latest results and locks the one it will play. This board fills in with the day's picks by <b>${when}</b>.${full ? "" : " Until then, here is the slate."}</span></div>`;
+      const first = esc(picksEtaTime(games && games[0]));
+      const countdown = `<div class="fn-countdown soon"><span class="fnc-k">First pick</span><b class="fnc-val">${first}</b></div>`;
+      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Overnight our system replays every strategy against the latest results and locks the one it will play. Each game's pick then posts about three hours before its own first pitch — the first around <b>${first}</b>, the rest through the day.${full ? "" : " Until then, here is the slate."}</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     /* ═══════════ THE BOARD IS NOT REPAINTED WHILE YOU ARE SCROLLING ═══════════
