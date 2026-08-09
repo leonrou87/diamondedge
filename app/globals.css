@@ -9239,3 +9239,8 @@ table.owt td.owt-w{text-align:left;font-family:var(--disp);font-weight:700;color
 table.owt td.owt-l{color:var(--ink);font-weight:700}
 table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
 .owt-foot{margin:8px 2px 0;font-family:var(--sans);font-size:11.5px;line-height:1.45;color:var(--ink4)}
+/* the Odds pane's honest empty state — a promised tab that has nothing to show yet */
+.oempty{display:flex;flex-direction:column;gap:5px;padding:16px 16px 17px;border-radius:var(--r-md);
+  background:var(--glass-hi);box-shadow:inset 0 0 0 1px var(--glass-brd)}
+.oempty b{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink)}
+.oempty span{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink3)}

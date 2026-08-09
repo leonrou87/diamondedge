@@ -10419,14 +10419,6 @@ export default function Home() {
        column with no half played prints an en dash, and the bottom of the ninth prints one
        too when the home side never batted. Nothing is invented. */
     function lineScoreGrid(g: any, ls: any) {
-      // TEMP-QA-REWIND — REMOVE BEFORE LANDING
-      try {
-        if (new URL(location.href).searchParams.get("qa") === "live" && ls && Array.isArray(ls.innings)) {
-          const cut = ls.innings.slice(0, 5);
-          const sum = (side: string) => cut.reduce((a: number, r: any) => a + Number((r[side] && r[side].runs) || 0), 0);
-          ls = { ...ls, innings: cut, teams: { away: { runs: sum("away") }, home: { runs: sum("home") } } };
-        }
-      } catch {}
       const inn = (ls && Array.isArray(ls.innings) ? ls.innings : []) as any[];
       if (!inn.length) return "";
       const sched = Math.max(Number(ls.scheduledInnings) || 9, inn.length);
@@ -11125,11 +11117,24 @@ export default function Home() {
       const grid = `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`;
       return `<div class="oddspane">${lineCard}${grid}${leadLocked ? "" : unobtainableRow(g)}</div>`;
     }
+    /* A TAB IS NOT ALLOWED TO BE EMPTY — the rule the retired Live tab was killed for.
+       Odds is promised on every pregame game, but a game far enough out has no captured
+       line and no wall rows, so the pane would open onto nothing. It says what is true
+       instead: when the market's number gets recorded, and that none of it has arrived yet.
+       (The five checks are the app's own wall schedule, the same T-24h → T-1h the countdown
+       chip counts down to; nothing here is guessed.) */
     function oddsMoveBody(g: any, lead: any, leadLocked: boolean) {
       const chart = oddsMoveChart(g, lead, leadLocked);
       const table = oddsWallTable(g);
       if (!chart && !table) {
-        return wallGridPending ? `<div class="omv-wait">Loading the market's record…</div>` : "";
+        if (wallGridPending) return `<div class="omv-wait">Loading the market's record…</div>`;
+        const pg = pregameLine(g);
+        if (pg && pg.total && pg.total.line != null) return "";   // the line card carries the pane
+        return `<div class="oempty">
+          <b>No line on this game yet</b>
+          <span>We record the market's number at five checks, the first about 24 hours before
+          first pitch. Nothing has been captured for this game so far.</span>
+        </div>`;
       }
       return `<section class="osec"><h3 class="osec-h">How the total moved into first pitch</h3>${chart}${table}</section>`;
     }
@@ -11142,12 +11147,6 @@ export default function Home() {
     }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
-      // TEMP-QA-REWIND — REMOVE BEFORE LANDING
-      try {
-        const qa = new URL(location.href).searchParams.get("qa");
-        if (qa === "pre") { g.status = "upcoming"; g.current_actuals = null; }
-        if (qa === "live") { g.status = "live"; g.current_actuals = { home_score: 3, away_score: 2, total_so_far: 5, period_label: "Top 6th" }; }
-      } catch {}
       const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
       /* THE DEFAULT TAB FOLLOWS THE GAME (Leon, 2026-08-08): "when you click on a game, let's
          have Preview be the default thing that's shown… once the game starts… instead of
@@ -11438,8 +11437,14 @@ export default function Home() {
          that has started the pane already opens with a kicker, so this one stands down. */
       const whyHead = (!forgeCaseBlock && !showLive && !!(lead || passBlock))
         ? `<div class="gp-prekick">Why we're on this</div>` : "";
+      /* LOCKED (signed-out / free) RENDERS NO WHY SECTION AT ALL, and that is not an
+         oversight — every part of it argues the side. The case names it, the confidence
+         reconstructs it, the fold is the whole argument. The reminder strip above the tabs
+         already carries the redacted ticket and IS the unlock affordance, and `previewBlock`
+         states in plain words what the paywall is holding. A second locked slab here would
+         be the same redaction twice on one screen. */
       const whySection = leadLocked
-        ? deCallBlock(g, true, false)
+        ? ""
         : `${whyHead}
            ${forgeCaseBlock}
            ${lead && !leadLocked ? confidenceBlock(lead) : ""}
