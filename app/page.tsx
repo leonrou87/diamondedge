@@ -9717,16 +9717,31 @@ export default function Home() {
        This searches every pool the app has, freshest first, and is what the deep-link and
        cross-surface lookups use. The two narrow readers stay as they are: each is asking a
        narrower question (the viewed day; the freshest copy) and answering it correctly. */
+    /* TWO FEEDS, TWO ID SHAPES — AND THAT IS WHY THERE WERE TWO GAME PAGES.
+       The board's `game_id` is the bare MLB pk ("822946"). The unified/history feed builds a
+       COMPOSITE key with the pk on the end:
+           "2026-07-30-Texas Rangers-Tampa Bay Rays-822946"
+       So a record surface holding a unified id could never find the board's copy of the same
+       game — which is the real reason the archive shipped its own frozen game page instead of
+       opening the one every other surface opens. Matching on the trailing pk as well as the
+       whole string is what lets those two pages become one. */
+    const gamePk = (gid: any) => { const m = String(gid == null ? "" : gid).match(/(\d+)\s*$/); return m ? m[1] : null; };
+    function sameGame(x: any, id: string, pk: string | null) {
+      if (!x) return false;
+      if (String(x.game_id) === id) return true;
+      if (!pk) return false;
+      return String(x.game_id) === pk || String(x.game_pk) === pk || gamePk(x.game_id) === pk;
+    }
     function gameAnywhere(gid: any) {
       if (gid == null) return null;
-      const id = String(gid);
+      const id = String(gid), pk = gamePk(gid);
       const pools = [
         livePayload && livePayload.games,
         payload && payload.games,
         slateGames,
       ];
       for (const pool of pools) {
-        const hit = (pool || []).find((x: any) => String(x.game_id) === id);
+        const hit = (pool || []).find((x: any) => sameGame(x, id, pk));
         if (hit) return hit;
       }
       return null;
@@ -12406,7 +12421,7 @@ export default function Home() {
              competing signals: a gold star count, a tier-tinted side, a green/red W/L
              letter and a void chip — four vocabularies for one pick. It now carries three
              plain facts in a fixed order: who played, what we called, how it went. */
-          return `<button class="pp-row${isV ? " isvoid" : ""}" data-ppgid="${esc(g.game_id)}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${unifiedPickLocked(p) ? lockedSideChip(true) : `${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}`}</span>${res}</button>`;
+          return `<button class="pp-row${isV ? " isvoid" : ""}" data-ppgid="${esc(g.game_id)}" data-ppdate="${esc(String(g.date || k))}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${unifiedPickLocked(p) ? lockedSideChip(true) : `${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}`}</span>${res}</button>`;
         }).join("");
         const nV = list.filter((g: any) => String((g.pick || {}).status || "").toUpperCase() === "VOID").length;
         const nP = list.length - nV;
@@ -12432,13 +12447,38 @@ export default function Home() {
       if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
       try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
     }
+    /* ONE GAME PAGE (2026-08-09). An archive row used to open openBetaGame() — a SECOND
+       game page with a different layout, no tabs, no box score, no live overlay, a frozen
+       score off the history feed, and two different premium gates inside one card (the pick
+       card asked unifiedPickLocked, the strategies panel below it asked gameLocked). It was
+       four clicks down and reachable only from inside a sheet, so the one game a reader had
+       already learned how to read was the one they could not get.
+
+       It opens openDetail() now — tabs, box score, live-overlaid score, and the SAME
+       strategiesPanel() the archive page carried, which openDetail already renders inside
+       "The full DiamondEdge read" and already hydrates via hydrateBetaGame(). Nothing is
+       lost, one gate applies, and a game that finished after the history feed's last
+       generation shows the right score for the first time.
+
+       A pick from three weeks ago is on no loaded board, so its own day is fetched first —
+       the same loadDay() the date strip uses. */
+    async function openArchiveGame(gid: any, dateISO?: string) {
+      const hit = gameAnywhere(gid);
+      if (hit) { openDetail(hit); return; }
+      if (dateISO && /^\d{4}-\d{2}-\d{2}$/.test(dateISO)) {
+        try {
+          const p = await loadDay(dateISO);
+          const id = String(gid), pk = gamePk(gid);
+          const g = ((p && p.games) || []).find((x: any) => sameGame(x, id, pk));
+          if (g) { openDetail(g); return; }
+        } catch {}
+      }
+      toast("That game page isn't available yet");
+    }
     function wireHistoryRows(container?: any) {
       const b = container || $("gp-body"); if (!b) return;
       b.querySelectorAll(".pp-row[data-ppgid]").forEach((r: any) => (r.onclick = () => {
-        const gid = r.dataset.ppgid;
-        const bg = (betaLiveData && (betaLiveData.games || []).find((g: any) => String(g.game_id) === gid))
-          || ((betaData && betaData.games) || []).find((g: any) => String(g.game_id) === gid);
-        if (bg) openBetaGame(bg);
+        openArchiveGame(r.dataset.ppgid, r.dataset.ppdate);
       }));
     }
 
@@ -14509,88 +14549,6 @@ export default function Home() {
     const bWL = (r: any) => (r && r.n ? wlTxt(r) : "0–0");
 
     // ---- the per-game pick card: the one DiamondEdge Pick (or the honest pass + its reason) ----
-    let betaSheetSeq = 0;   // which beta sheet is on screen — see the hydrate at the end
-    function openBetaGame(g: any) {
-      if (!g) return;
-      const mySeq = ++betaSheetSeq;
-      detail = detailWithGameReturn({ _betaGame: true });
-      const fin = g.final || {};
-      const dd = g.date ? new Date(g.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "";
-      const p = g.pick || null;
-      const future = isFutureDate(g.date);
-      const isPick = !future && p && String(p.status || "").toUpperCase() === "PICK";
-      // VISIBLE-VOID: a postponed game's sheet shows the frozen pick with a
-      // neutral VOID chip — the pick never changes and never grades.
-      const isVoid = !future && p && String(p.status || "").toUpperCase() === "VOID";
-      const side = (isPick || (isVoid && p.side)) ? `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim() : "";
-      const resTag = isPick && p.result && p.result !== "push"
-        ? `<span class="bcell-res ${p.result}">${gradeOf(p) === "win" ? "✓ RIGHT" : "✕ WRONG"}</span>`
-        : isPick && gradeOf(p) === "push" ? `<span class="bcell-res push">PUSH</span>` : "";
-      const scoreChip = p && p.score != null ? `<i class="pgrade">${Number(p.score).toFixed(2)}</i>` : "";
-      const pickCard = isVoid
-        ? `<div class="bcell voidppd" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
-             ${p.side ? `${pickStrengthPill(p)}<span class="bcell-side">${unifiedPickLocked(p) ? lockedSideChip() : `<b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}`}</span>` : ""}<span class="void-chip">VOID — no action</span>
-           </div>
-           <div class="bgrid-legend">${esc((g.postponed && g.postponed.note) || "Postponed — pick void, no action")} The pick stays exactly as served; it counts in no record.</div>`
-        : isPick
-        ? `<div class="bcell take s${p.stars} ${p.result || ""}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px">
-             ${pickStrengthPill(p)}
-             <span class="bcell-side">${unifiedPickLocked(p) ? lockedSideChip() : `<b>${esc(side)}</b>${p.price != null ? ` ${fmtOdds(p.price)}` : ""}`}</span>${resTag}
-           </div>
-           ${p.vegas_line != null ? `<div class="bgrid-legend">vs Vegas O/U ${esc(lineStr(p.vegas_line))}${p.lead_time ? ` · locked at ${esc(p.lead_time)}` : ""}.</div>` : ""}`
-        : future
-        ? `<div class="bcell pass" style="padding:14px 16px"><span class="bcell-pass">Schedule only</span> <span class="bpass-why">Strategy and DiamondEdge picks publish by 6:00 AM PT after the 2:00 AM PT model run.</span></div>`
-        : `<div class="bcell pass" style="padding:14px 16px"><span class="bcell-pass">O/U ${esc(p && p.line != null ? lineStr(p.line) : "")}</span> <span class="bpass-why">${esc(p ? plainPassReason(v4ToPlay(g, p).v4pass) : "No DiamondEdge Pick on this game.")}</span></div>`;
-      const html = `
-        <div class="gamepage betapage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(g.away)} at ${esc(g.home)}">
-          <div class="gp-head">
-            <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <button class="gp-brand" id="gp-brand" aria-label="DiamondEdge — home"><span class="diamond" aria-hidden="true"></span><span class="gp-brand-tx">Diamond<b>Edge</b></span></button>
-            <div class="hspacer"></div>
-          </div>
-          <div class="gp-body" id="gp-body">
-            <div class="bgame-hero">
-              <div class="bgh-mu"><b>${esc(teamShort(g.away))}</b> @ <b>${esc(teamShort(g.home))}</b></div>
-              <div class="bgh-fin">${isVoid || String(g.status || "") === "postponed"
-                ? `<span class="ppd-tag">POSTPONED</span> · never played as scheduled`
-                : fin.away_runs != null
-                ? `Final · ${esc(teamShort(g.away))} <b>${fin.away_runs}</b> – <b>${fin.home_runs}</b> ${esc(teamShort(g.home))}`
-                : (() => { const fp = firstPitchTs({ start_ts: g.first_pitch_utc }); return fp ? `First pitch ${esc(new Date(fp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))} · the pick firms up as game time nears` : "Upcoming"; })()}</div>
-              <div class="bgh-date">${esc(dd)} · full game</div>
-            </div>
-            <div class="bgrid-card">
-              <div class="bgrid-h">The DiamondEdge Pick</div>
-              ${pickCard}
-            </div>
-            ${gameLocked(g) ? "" : strategiesPanel(g)}
-          </div>
-        </div>`;
-      let layer = $("sheet-layer");
-      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
-      layer.innerHTML = html;
-      document.body.classList.add("sheet-open");
-      requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
-      bindClick("gp-back", () => closeDetail());
-      bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
-      bindSwipeBack($("gamepage"));
-      /* PAINT FROM LITE, THEN FILL IN (2026-08-08). loadBeta() serves the projected history,
-         which deliberately does not carry games[].strategies — so strategiesPanel() above
-         renders empty on a sheet opened straight off the Desk until the blobs land.
-         Painting first is the right order and not a compromise: the header, the score and
-         the pick all live in the projection and appear instantly, and the stream panel fills
-         in a beat later. What arrives is THIS GAME's 2.9 KB, not a 2.1 MB re-download of the
-         whole archive to read one row of it.
-         `betaSheetSeq` is the guard — a reader who taps through to another game before the
-         hydrate returns must not have this one redrawn over the top of it. */
-      if (!betaFull) {
-        hydrateBetaGame(g).then((added) => {
-          if (!added || mySeq !== betaSheetSeq || !$("gamepage")) return;
-          const fresh = ((betaData && betaData.games) || [])
-            .find((x: any) => String(x.game_id) === String(g.game_id));
-          if (fresh) openBetaGame(fresh);
-        }).catch(() => {});
-      }
-    }
 
     // ===================== RESEARCH — "THE LAB" (public roadmap of every idea we test) =====================
     // Every idea gets a card: what it looks to do, latest progress, timeline, status. Most die.
