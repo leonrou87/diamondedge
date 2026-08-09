@@ -147,14 +147,19 @@ function etDate(offsetDays = 0): string {
 
 function ttlFor(key: string, mode: "full" | "lite" | "version" | "game") {
   if (mode === "version") return { s: 15, swr: 60 };
+  let base = key;
   if (DATED.test(key)) {
-    const [, d] = key.split(":");
+    const [b, d] = key.split(":");
     const yesterdayET = etDate(-1);
     if (d < yesterdayET) return { s: 86400, swr: 604800 };   // frozen
     if (d === yesterdayET) return { s: 300, swr: 3600 };      // still settling
-    // today or a future date: fall through to the key's live cadence
+    // Today or later: use the BASE key's live cadence. Looking up the full dated
+    // key here would always miss (TTL is keyed on bare names) and silently hand
+    // today's board DEFAULT_TTL's 300s instead of pregame_picks' 120s — the
+    // comment would have been describing something the code did not do.
+    base = b;
   }
-  return TTL[key] || DEFAULT_TTL;
+  return TTL[base] || DEFAULT_TTL;
 }
 
 /* Keys are a closed set of identifiers, never free text from a caller: this is
