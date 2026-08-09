@@ -440,6 +440,85 @@ header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px 
   background:var(--gold);border-radius:0;transform:none;box-shadow:none;position:relative;
   -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
 .diamond::after{display:none}
+
+/* ═══════════════════ THE EDGE LIGHT ═══════════════════
+   Leon: "a gold dot or line that has a trail, outlining the border of the diamond, slowly
+   moving around it… subtle but really cool streaking line."
+
+   A single point of light with a comet tail behind it, walking the diamond's outline. It
+   runs on the masthead mark and on the pick lockup's mark, which are the two places the
+   house diamond means "this is ours".
+
+   HOW IT IS DRAWN — and why it is ONE pseudo-element and not an SVG.
+   The mark is already a gold rectangle cut to shape by `--de-mark` (outer stroke + solid
+   core). A CSS mask clips the element AND everything inside it, so a child painted on top
+   is automatically confined to the mark's own silhouette — no second copy of the geometry
+   to keep in sync, no `url(#id)` references (this page renders the mark a dozen times at
+   once, and duplicate SVG gradient ids are a bug we have already paid for once — see
+   strategyMark()).
+
+   So the trail is a CONIC GRADIENT — one bright stop with a long fade running backwards
+   from it — on a pseudo-element that simply ROTATES. Where the bright wedge crosses the
+   stroke, the stroke lights up; because the parent's mask is the diamond, the lit patch is
+   always exactly on the outline and rounds the corners correctly, which is the thing a
+   keyframed x/y dot can never do.
+
+   THE CORE STAYS DARK. A wedge that starts at the centre would light the solid middle
+   facet too, and the mark would read as a rotating pie slice. The pseudo-element carries a
+   second mask — a radial hole — that removes everything inside 8.8 units of the 32-unit
+   box. The core's furthest point is 6.0 and the outline's nearest is 9.19, so the hole
+   lands cleanly between them. It is radially symmetric, which is the whole trick: it is
+   unchanged by the rotation it rides on, so one element does both jobs.
+
+   THE SPEED IS CORRECTED. Angle and perimeter are not the same thing on a rhombus — at a
+   corner the radius is 14.3 and at the middle of an edge it is 10.1, so a plain
+   `rotate(0→360deg)` would whip the light through the corners at twice the speed it
+   crosses the flats. `de-orbit` is therefore keyed at 32 points along the PERIMETER, with
+   the angle at each one solved from the edge (φ = atan(u/(1−u)) across a side). The result
+   travels at a constant pace the whole way round, which is what "slowly moving around it"
+   actually looks like.
+
+   IT IS A TRANSFORM AND NOTHING ELSE. No stroke-dashoffset (a paint property — thirteen
+   marks repainting every frame), no filters, no blend modes. One composited rotation per
+   mark, which is what keeps the board's scroll intact. */
+:root{
+  --de-orbit-dur:8.5s;      /* one lap of the masthead mark */
+  --de-orbit-c:255,214,120; /* the light: a gold brighter than the mark it walks on */
+  --de-orbit-a:.85;         /* peak alpha at the head */
+}
+.diamond::before,.de-mini-logo::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  /* the comet: a hard leading edge, a head about 10° wide, and a long faint tail behind it.
+     The first draft ramped evenly from 0 to full over 60°, which is a SHEEN sliding along
+     the edge — pretty, and not what was asked for. A comet needs most of its arc spent
+     nearly dark so the head reads as a point. */
+  background:conic-gradient(from 0deg at 50% 50%,
+    rgba(var(--de-orbit-c),var(--de-orbit-a)) 0deg,
+    rgba(var(--de-orbit-c),0) 5deg,
+    rgba(var(--de-orbit-c),0) 292deg,
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .12)) 330deg,
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .34)) 350deg,
+    rgba(var(--de-orbit-c),var(--de-orbit-a)) 360deg);
+  -webkit-mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 42%,#000 55%);
+  mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 42%,#000 55%);
+  animation:de-orbit var(--de-orbit-dur) linear infinite;
+}
+@keyframes de-orbit{
+  0%{transform:rotate(0deg)}3.125%{transform:rotate(8.13deg)}6.25%{transform:rotate(18.435deg)}9.375%{transform:rotate(30.964deg)}12.5%{transform:rotate(45deg)}
+  15.625%{transform:rotate(59.036deg)}18.75%{transform:rotate(71.565deg)}21.875%{transform:rotate(81.87deg)}25%{transform:rotate(90deg)}28.125%{transform:rotate(98.13deg)}
+  31.25%{transform:rotate(108.435deg)}34.375%{transform:rotate(120.964deg)}37.5%{transform:rotate(135deg)}40.625%{transform:rotate(149.036deg)}43.75%{transform:rotate(161.565deg)}
+  46.875%{transform:rotate(171.87deg)}50%{transform:rotate(180deg)}53.125%{transform:rotate(188.13deg)}56.25%{transform:rotate(198.435deg)}59.375%{transform:rotate(210.964deg)}
+  62.5%{transform:rotate(225deg)}65.625%{transform:rotate(239.036deg)}68.75%{transform:rotate(251.565deg)}71.875%{transform:rotate(261.87deg)}75%{transform:rotate(270deg)}
+  78.125%{transform:rotate(278.13deg)}81.25%{transform:rotate(288.435deg)}84.375%{transform:rotate(300.964deg)}87.5%{transform:rotate(315deg)}90.625%{transform:rotate(329.036deg)}
+  93.75%{transform:rotate(341.565deg)}96.875%{transform:rotate(351.87deg)}100%{transform:rotate(360deg)}
+}
+/* REDUCED MOTION REMOVES THE LIGHT, it does not speed it up. The blanket rule at the top of
+   this file collapses every animation to .001s, which for a rotation means a lap 8,500
+   times a second — the one outcome worse than the motion itself. The trail is taken out of
+   the render entirely and what is left is the static mark, exactly as it was before. */
+@media(prefers-reduced-motion:reduce){
+  .diamond::before,.de-mini-logo::before{display:none}
+}
 /* ═══════════════════ THE WORDMARK ═══════════════════
    The gold used to be spent TWICE — a gold badge and a gold "EDGE" — which is why the
    lockup read as decorated rather than designed. The accent is now spent ONCE, on the mark,
@@ -970,6 +1049,9 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 /* LIVE is the only state that changes the card's own surface, and it does it with a
    1px top rule in the live red — the scoreboard convention, not a bloom. */
 .tile.live::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--livemark)}
+/* the live rule is a claim that the game is being played; a delay retires it to a hairline */
+.tile.live.delayed::before{background:var(--line2)}
+.tile.live.delayed .t-score{color:var(--ink2)}
 .tile.hl{outline:2px solid var(--blue);outline-offset:2px}
 /* RESULT, once a game is graded: a hairline tint down the leading edge. Deliberately
    quiet — a board of finals should read as a board, not as a scorecard of our day. */
@@ -985,6 +1067,11 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .statechip{display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.03em;white-space:nowrap;flex-shrink:0;line-height:1.4}
 .statechip.live{color:var(--live)}
 .statechip.live .livedot{width:5px;height:5px;border-radius:50%;background:var(--livemark);animation:pulse 1.4s infinite;flex-shrink:0}
+/* A DELAYED GAME'S CHIP. No dot — the dot means "happening", and nothing is. Recessed
+   rather than live-gold, so a scan down the board separates the games being played from
+   the one sitting under a tarp without having to read either. */
+.statechip.delayed{color:var(--ink2);background:var(--sunken);border-radius:999px;
+  padding:3px 9px;box-shadow:inset 0 0 0 1px var(--line3);text-transform:none;letter-spacing:.02em}
 .statechip.final{color:var(--ink3)}
 .statechip.pre{color:var(--ink2);font-variant-numeric:tabular-nums}
 @keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
@@ -2661,8 +2748,35 @@ details.more .more-body{padding-top:12px}
   background:linear-gradient(180deg,rgba(var(--goldc),.16),rgba(var(--goldc),.07));
   box-shadow:inset 0 0 0 1px rgba(var(--goldc),.30)}
 .de-mini-logo{font-style:normal;flex-shrink:0;display:inline-block;width:13px;height:13px;line-height:0;
-  color:transparent;background:var(--gold);
+  position:relative;color:transparent;background:var(--gold);
   -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
+/* THE EDGE LIGHT ON THE BOARD (see --de-orbit up at the mark). Two things change from the
+   masthead, and both exist because a board is FIFTEEN of these at once rather than one.
+
+   IT IS SLOWER AND DIMMER. 13s a lap against the masthead's 8.5, at roughly half the peak
+   alpha, on an 11px mark: at reading distance it is a shimmer you notice on the tile you
+   are looking at, not a light that waves at you from the tile you are not.
+
+   THEY ARE OUT OF PHASE. Fifteen marks on one clock is a board that PULSES — the failure
+   Leon's "subtle" was aimed at, and one that only appears in aggregate, so each mark can
+   look perfect on its own while the page reads like a strobe. The tiles carry a five-step
+   negative delay, which in a two-column grid leaves no two neighbours (across or down)
+   anywhere near each other's phase.
+
+   THE INCOMING TAG GETS NO LIGHT. That mark stands for "we have not made this call yet";
+   lighting it would say the opposite. */
+/* IT IS A WHITER LIGHT HERE, and that is not a style choice. The masthead mark is deep
+   bronze (#8a5f06), so a bright gold head reads as light on it. The pick lockup's mark is
+   already #f6c745 — the same bright gold — and the first pass painted a gold light onto a
+   gold mark and disappeared. What lifts gold is the specular colour: near-white, which is
+   physically what a highlight on metal looks like and reads as a moving point rather than
+   a second coat of paint. */
+.de-mini-logo::before{--de-orbit-dur:13s;--de-orbit-c:255,251,236;--de-orbit-a:.85}
+.slate .tile:nth-child(5n+2) .de-mini-logo::before{animation-delay:-2.6s}
+.slate .tile:nth-child(5n+3) .de-mini-logo::before{animation-delay:-5.2s}
+.slate .tile:nth-child(5n+4) .de-mini-logo::before{animation-delay:-7.8s}
+.slate .tile:nth-child(5n+5) .de-mini-logo::before{animation-delay:-10.4s}
+.de-mini-call.incoming .de-mini-logo::before{display:none}
 .de-mini-de{font-style:normal;flex-shrink:0;font-family:var(--disp);font-weight:850;font-size:10px;
   letter-spacing:.06em;line-height:1;color:var(--golddeep)}
 /* the direction mark REINFORCES the word rather than replacing it: a solid triangle, apex up
@@ -8191,10 +8305,52 @@ main.swiping{transition:none !important;will-change:transform}
    pinned left and the R/H/E block pinned right — so the two things a reader looks for first
    are always on screen, and the page itself never scrolls sideways. */
 .boxscore{display:flex;flex-direction:column;gap:16px;padding:2px 0 6px}
-.bx-state{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;
-  font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--live);border-radius:999px;padding:5px 12px;background:var(--livebg)}
-.bx-state .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.4s infinite}
+/* ── THE SITUATION: the base diamond, the outs, the count, the matchup ──
+   What a fan checks first, in the shape they already know it in. The diamond is a fixed
+   46px column so the text beside it starts on the same x on every game; the right column
+   is free to wrap, which at 375px it occasionally does on two long surnames.
+   `.bx-state` (the old "0 OUT · 0–0 COUNT" text pill) is gone — nothing emits it. */
+.bx-live{display:flex;align-items:center;gap:13px;padding:9px 13px 9px 11px;border-radius:var(--r-sm);
+  background:var(--livebg);box-shadow:inset 0 0 0 1px var(--liveline)}
+.bx-live .bd{flex:0 0 auto;display:block;overflow:visible}
+/* an empty bag reads as an outline, an occupied one as a solid — the same contrast a
+   scoreboard uses, so occupancy is legible without colour vision or a legend */
+.bd-bag{fill:transparent;stroke:var(--livemark);stroke-width:1.5;opacity:.5}
+.bd-bag.on{fill:var(--livemark);stroke:var(--livemark);opacity:1}
+.bd-home{fill:var(--livemark);opacity:.28}
+.bd-right{display:flex;flex-direction:column;gap:3px;min-width:0}
+.bd-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+/* three pips, filled left to right — the out count as a quantity, not a sentence */
+.bd-outs{display:inline-flex;gap:3.5px;align-items:center}
+.bd-outs i{width:7px;height:7px;border-radius:50%;background:transparent;
+  box-shadow:inset 0 0 0 1.4px var(--livemark);opacity:.55}
+.bd-outs i.on{background:var(--livemark);opacity:1}
+.bd-outk{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--live)}
+.bd-count{display:inline-flex;align-items:baseline;gap:5px}
+.bd-count b{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:-.02em;
+  color:var(--ink);font-variant-numeric:tabular-nums}
+.bd-count em{font-style:normal;font-family:var(--disp);font-weight:700;font-size:10px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink4)}
+/* between innings: no count, no outs, no names — one honest phrase beside an empty diamond */
+.bd-between{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink4)}
+/* who is pitching to whom. The names are the loud part; the roles are the labels. */
+.bd-mu{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;min-width:0}
+.bd-mu-n{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.01em;color:var(--ink)}
+.bd-mu em{font-style:normal;font-family:var(--disp);font-weight:600;font-size:9.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink4)}
+.bd-mu-to{font-family:var(--sans);font-size:11px;color:var(--ink4);padding:0 1px}
+/* ── AND WHEN PLAY IS STOPPED ──
+   Deliberately NOT the live palette: a delay is the absence of play, so it takes the
+   neutral recessed treatment and no pulsing dot. Calm, and unmistakably not live. */
+.bx-delay{display:flex;align-items:center;gap:9px;flex-wrap:wrap;align-self:flex-start;
+  padding:7px 13px;border-radius:999px;background:var(--sunken);
+  box-shadow:inset 0 0 0 1px var(--line3)}
+.bxd-k{font-family:var(--disp);font-weight:800;font-size:11.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink2)}
+.bxd-r{font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink3)}
+.bxd-d{font-family:var(--sans);font-size:11px;color:var(--ink4)}
 /* ── the line score grid ── */
 .bx-lswrap{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;
   border-radius:var(--r-md);background:var(--paper);box-shadow:var(--e0)}
@@ -9218,7 +9374,7 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .gp-boxtop{margin:10px 0 0}
 .gp-boxtop .boxscore{margin:0}
 .gp-boxtop .bx-lswrap{margin:0}
-.gp-boxtop .bx-state{margin:0 0 7px}
+.gp-boxtop .bx-live,.gp-boxtop .bx-delay{margin:0 0 8px}
 
 /* ── the full argument, folded under the "why" card ── */
 details.fullread{margin:0 0 12px;border-radius:var(--r-md);background:rgba(var(--panec),.4);
@@ -9260,7 +9416,19 @@ details.fullread>.de-pane{padding:0 12px 12px}
 .omv-grid{stroke:var(--line3);stroke-width:1;stroke-dasharray:2 4}
 .omv-step{fill:none;stroke:var(--acc2);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
 .omv-dot{fill:var(--acc2)}
-.omv-take path{fill:var(--gold)}
+/* OUR SIDE OF THE NUMBER. The band is the half of the chart the bet is on — gold at 7%,
+   because it is the ground the mark stands on, not a second mark. The rule is the number
+   we took. Neither is drawn on a game with no shown pick, so neither can imply one. */
+.omv-band{fill:rgba(var(--goldc),.085)}
+.omv-ourline{stroke:rgba(var(--goldc),.5);stroke-width:1.4;stroke-dasharray:4 3}
+.omv-stem{stroke:var(--gold);stroke-width:1.4}
+.omv-takedot{fill:none;stroke:var(--gold);stroke-width:1.8}
+/* The marker states the bet: a solid gold pill, the diamond, and the side and number in
+   words. White on --gold is 5.6:1 — the same pairing every gold plate in the app uses. */
+.omv-pill{fill:var(--gold)}
+.omv-dia{fill:#fff}
+.omv-pilltxt{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.07em;
+  fill:#fff;font-variant-numeric:tabular-nums}
 .omv-yl,.omv-xl,.omv-xk{font-family:var(--mono);font-size:9.5px;fill:var(--ink4);
   font-variant-numeric:tabular-nums}
 .omv-xk{font-family:var(--sans);font-size:9px;fill:var(--ink4)}
@@ -9312,6 +9480,14 @@ table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
 .gp-delaynote{margin-bottom:8px;padding:9px 12px;border-radius:var(--r-sm);
   background:var(--glass-hi);box-shadow:inset 0 0 0 1px var(--glass-brd);
   font-family:var(--sans);font-size:12.5px;line-height:1.45;color:var(--ink3)}
+/* the state and its reason lead the sentence, in the page's own ink */
+.gp-delaynote b{font-family:var(--disp);font-weight:700;color:var(--ink2)}
+/* A DELAYED GAME'S HERO: the state where the pulsing inning was, the inning demoted to the
+   line beneath it. Same slot, same height — nothing below it moves when play stops. */
+.gp-score.delayed b{color:var(--ink2)}
+.gp-scmid.delayed{color:var(--ink2);letter-spacing:.06em;text-align:center;max-width:150px}
+.gp-scmid.delayed em{font-style:normal;font-family:var(--disp);font-weight:600;font-size:10px;
+  letter-spacing:.09em;color:var(--ink4)}
 /* The hero on a called-off / delayed game: the STATE is the headline, and the
    time it was scheduled for follows it in small type. It used to print the
    scheduled time alone, which on a postponed game is the least true thing on

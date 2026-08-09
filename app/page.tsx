@@ -6388,7 +6388,14 @@ export default function Home() {
        for, and the live path calls it when — and only when — that state changes.
        A full rebuild on every poll would fight the reader's scroll position. */
     let detailRerender: (() => void) | null = null;
+    /* THE STATE THE OPEN BODY WAS BUILT FOR — and it is not just the kind any more.
+       A game entering a rain delay stays kind "live" on purpose (the inning is still true and
+       the box score needs it), so a kind-only comparison saw NO change and left the page
+       exactly as it was: no delay note, no delay in the hero. The key carries the delay and
+       its reason beside the kind, so play stopping restructures the page the same way first
+       pitch does — and so does play RESUMING. */
     let detailBuiltKind = "";
+    const bodyStateKey = (gs: any) => `${gs.kind}|${gs.delayed ? (gs.delayReason || "y") : ""}`;
     let liveScores: any = null;     // latest live_scores snapshot (fresh score overlay)
     let liveDetail: any = null;     // latest live_detail snapshot (box scores) — polled while live
     let liveDetailTried = false;    // avoid hammering a missing live_detail key
@@ -6558,6 +6565,30 @@ export default function Home() {
         if (!ls) return;
         const st = String(ls.status || "").toLowerCase();
         if ((st === "pre" || st === "live" || st === "final") && st !== String(g.status || "pre").toLowerCase()) { g.status = st; changed = true; }
+        /* ═══════════ A DELAY IS A STATE, NOT AN INNING ═══════════
+           `live_scores` learned to carry it on 2026-08-09 (picks_engine/live_scores.py,
+           commit a6dcdfe): MLB's own detailedState says "Delayed" / "Delayed Start" with a
+           `reason` ("Rain"), and abstractGameState stays "Live" straight through, which is
+           why a rain-delayed game used to read "Top 2nd" like nothing was wrong. The
+           collector publishes `delayed` / `delay_reason` / `detailed_state`, present ONLY on
+           a delayed game — and until now nothing on this side read them.
+
+           They ride `current_actuals` beside the score and the inning, because that is the
+           one shared live fact every surface already reads. TWO THINGS MATTER HERE:
+             · this sits OUTSIDE the score block below — a delayed START has no score at all,
+               and would never have reached the fields if it were nested in it;
+             · when the snapshot stops carrying them the keys are DELETED, not left behind.
+               A resumed game that kept saying "Delayed" would be the same bug in reverse. */
+        const cad = g.current_actuals || (g.current_actuals = {});
+        if (ls.delayed) {
+          const rsn = ls.delay_reason != null ? String(ls.delay_reason) : null;
+          const dsl = ls.detailed_state != null ? String(ls.detailed_state) : null;
+          if (!cad.delayed || cad.delay_reason !== rsn || cad.detailed_state !== dsl) changed = true;
+          cad.delayed = true; cad.delay_reason = rsn; cad.detailed_state = dsl;
+        } else if (cad.delayed || cad.delay_reason != null || cad.detailed_state != null) {
+          delete cad.delayed; delete cad.delay_reason; delete cad.detailed_state;
+          changed = true;
+        }
         if (ls.home_score != null && ls.away_score != null) {
           const ca = g.current_actuals || (g.current_actuals = {});
           const tsf = ls.total_so_far != null ? ls.total_so_far : Number(ls.home_score) + Number(ls.away_score);
@@ -6696,13 +6727,29 @@ export default function Home() {
     // box document advance the same fact and so must repaint the same element the same way;
     // when this was inlined only the poller could move the hero, which is why a fresh box
     // score could sit under a stale hero.
+    /* ONE HERO SCOREBOARD, TWO CALLERS. The page builds it on open and this repaints it on
+       every live tick, and while those were two copies of the same markup they were free to
+       disagree — the tick's copy knew nothing about a suspended game and nothing about a
+       delay, so it would quietly overwrite "Delayed · Rain" with a pulsing inning about 25
+       seconds after the delay first showed. One builder; neither caller can drift.
+
+       A DELAYED GAME LEADS WITH THE DELAY. The score is still true and stays. What goes is
+       the pulsing dot and the bare inning, which together read as "this is happening right
+       now"; the inning drops to the line below in small type, because it is still where the
+       game is — it is simply no longer the headline. */
+    function heroScoreHtml(gs: any) {
+      const mid = gs.delayed
+        ? `${esc(gs.delayReason ? `Delayed · ${gs.delayReason}` : "Delayed")}${gs.label && gs.label !== "Live" ? `<em>${esc(gs.label)}</em>` : ""}`
+        : gs.kind === "final" ? "Final"
+          : gs.kind === "suspended" ? esc(gs.label)
+            : `<span class="livedot"></span>${esc(gs.label || "Live")}`;
+      return `<div class="gp-score ${gs.delayed ? "delayed" : gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid${gs.delayed ? " delayed" : ""}">${mid}</span><b>${num(gs.score.home, 0)}</b></div>`;
+    }
     function paintHeroScore(g: any) {
       const page = $("gamepage"); if (!page) return;
       const gs = gameState(g);
       const el = page.querySelector(".gp-center");
-      if (el && gs.score && gs.score.split && gs.score.home != null) {
-        el.innerHTML = `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`;
-      }
+      if (el && gs.score && gs.score.split && gs.score.home != null) el.innerHTML = heroScoreHtml(gs);
     }
     function refreshSheetScore(g: any) {
       const page = $("gamepage"); if (!page) return;
@@ -6714,7 +6761,7 @@ export default function Home() {
          pregame. `rerenderDetailBody` preserves the active tab and re-wires,
          and returning here is deliberate: it has already repainted everything
          the rest of this function would. */
-      if (detailBuiltKind && gs.kind !== detailBuiltKind && detailRerender) {
+      if (detailBuiltKind && bodyStateKey(gs) !== detailBuiltKind && detailRerender) {
         detailRerender();
         return;
       }
@@ -6963,10 +7010,35 @@ export default function Home() {
     /* …and its complement for the box score: a game that has not started has no
        line score to draw, whether it is scheduled, delayed or called off. */
     const noBoxKind = (k: string) => k === "pre" || k === "delayed" || k === "void";
+    /* ═══════════ THE DELAY TRAVELS BESIDE THE INNING, NEVER INSTEAD OF IT ═══════════
+       Leon: a delayed game should SAY it is delayed, with the reason when there is one, on
+       the card and on the game page — and "the inning is still true and still belongs in the
+       box score; the delay is what leads."
+
+       So `gs.label` is left alone. It is the inning, it is what the line score, the ticker
+       and the progress guard all read, and overwriting it with "Delayed" would have made the
+       box score disagree with itself. The delay rides ALONGSIDE as `delayed` / `delayReason`
+       / `delayLabel`, and the four surfaces that should LEAD with it — the board card's state
+       chip, the game hero, the strip over the line score, and the note above the pick — each
+       reach for it explicitly. Everywhere else the game is still in the 2nd inning, because
+       it is.
+
+       A delay BEFORE first pitch is different in kind and is handled below: there is no
+       inning, no box score and nothing to lead past, so it becomes the `delayed` kind the
+       page has had since the states were split out, now carrying its reason. */
+    function delayOf(g: any) {
+      const ca = (g && g.current_actuals) || {};
+      if (!ca.delayed) return null;
+      const reason = ca.delay_reason ? String(ca.delay_reason).trim() : "";
+      const detail = ca.detailed_state ? String(ca.detailed_state).trim() : "";
+      return { reason, detail, label: reason ? `Delayed — ${reason}` : "Delayed" };
+    }
     function gameState(g: any) {
       const st = (g.status || "pre").toLowerCase();
       const si = startInfo(g);
       const t = si.time || si.date || "";
+      const dly = delayOf(g);
+      const dd = dly ? { delayed: true, delayReason: dly.reason, delayLabel: dly.label, delayDetail: dly.detail } : {};
       if (PPD_LABEL[st]) {
         return { kind: "void", label: PPD_LABEL[st], time: "", score: null, si };
       }
@@ -6978,7 +7050,7 @@ export default function Home() {
         return { kind: "suspended", label: "Suspended", time: t, score: sc, si };
       }
       if (st === "delayed") {
-        return { kind: "delayed", label: "Delayed", time: t, score: null, si };
+        return { kind: "delayed", label: dly ? dly.label : "Delayed", time: t, score: null, si, ...dd };
       }
       if (st === "final") {
         let sc = actualScore(g);
@@ -7008,10 +7080,16 @@ export default function Home() {
         }
         if (ca && ca.home_score != null && ca.away_score != null) {
           const home = Number(ca.home_score), away = Number(ca.away_score);
-          return { kind: "live", label: per || "Live", time: t, score: { total: home + away, home, away, margin: home - away, split: true }, si };
+          return { kind: "live", label: per || "Live", time: t, score: { total: home + away, home, away, margin: home - away, split: true }, si, ...dd };
         }
-        return { kind: "live", label: "Live", time: t, score: actualScore(g), si };
+        return { kind: "live", label: "Live", time: t, score: actualScore(g), si, ...dd };
       }
+      /* A DELAYED START. MLB holds abstractGameState at "Preview" while the tarp is on, so
+         this arrives as a scheduled game whose first pitch is quietly not happening. There is
+         no inning to keep and no box score to protect, so it becomes the delayed KIND — the
+         page's existing vocabulary for "the game is coming, the bet stands" — and the reason
+         comes with it. */
+      if (dly) return { kind: "delayed", label: dly.label, time: t, score: null, si, ...dd };
       return { kind: "pre", label: t || "Scheduled", time: t, score: null, si };
     }
 
@@ -7409,6 +7487,15 @@ export default function Home() {
       return `<span class="t-league"><span class="tl-ic" data-ic="${SPORT_ICON[lg] || "◆"}"></span>${esc(SPORT_LABEL[lg] || lg.toUpperCase())}${comp ? `<span class="tl-comp">${comp}</span>` : ""}</span>`;
     }
     function stateChip(g: any, gs: any) {
+      /* THE DELAY IS THE CHIP. A card whose only state word is "Top 2nd" tells a reader the
+         game is being played, which during a rain delay is the one thing it is not — and the
+         chip is the single place on a tile where the state is said. So the delay takes it,
+         with the reason MLB gave, and the pulsing live dot goes with it: nothing is
+         happening, and the dot's whole job is to say something is. The inning is not lost —
+         it is on the game page one tap away, over the line score, where it belongs. */
+      if (gs.delayed || gs.kind === "delayed") {
+        return `<span class="statechip delayed">${esc(gs.delayReason ? `Delayed · ${gs.delayReason}` : "Delayed")}</span>`;
+      }
       if (gs.kind === "live") {
         const lab = gs.label && gs.label !== "Live" ? gs.label : "LIVE";
         return `<span class="statechip live"><span class="livedot"></span>${esc(lab)}</span>`;
@@ -8508,7 +8595,7 @@ export default function Home() {
         needTot && lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
         tileDeskRow(g, locked),
       ].filter(Boolean).join("");
-      return `<article class="tile ${gs.kind}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
+      return `<article class="tile ${gs.kind}${gs.delayed && gs.kind !== "delayed" ? " delayed" : ""}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (locked && vd.kind !== "pass" ? " — the desk's call is locked" : vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
         <div class="tl-top">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="tl-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
@@ -10602,15 +10689,107 @@ export default function Home() {
        THE HERO OWNS THE HALF-INNING. This strip carries only what the hero cannot: the outs,
        and the count while a batter is actually in the box (during Middle/End there is no
        batter, and a leftover count is a stale number pretending to be a live one). With
-       neither fact available the strip is absent rather than restating the hero. */
-    function bxStateStrip(ls: any) {
-      if (!ls) return "";
-      const midHalf = /^(middle|end)/i.test(String(ls.inningState || ""));
-      const bits: string[] = [];
-      if (ls.outs != null) bits.push(`${Number(ls.outs)} out`);
-      if (!midHalf && ls.balls != null && ls.strikes != null) bits.push(`${Number(ls.balls)}–${Number(ls.strikes)} count`);
-      if (!bits.length) return "";
-      return `<div class="bx-state"><span class="livedot"></span>${bits.map((b) => esc(b)).join(" · ")}</div>`;
+       neither fact available the strip is absent rather than restating the hero.
+
+       ══════ AND NOW IT DRAWS THE SITUATION (Leon, 2026-08-09) ══════
+       "A little image with runners on first, second and third in the form of a diamond —
+       they'll commonly see in an app — as well as maybe the number of outs, balls and strikes
+       for a given pitching matchup, when you click on a game."
+
+       A text pill reading "0 OUT · 0–0 COUNT" is the scoreboard written out longhand. Every
+       baseball app on a phone draws it instead, because the diamond, the out pips and the
+       count ARE the shape a fan reads without reading — and the two names underneath are what
+       turn a situation into a matchup.
+
+       WHERE THE FACTS COME FROM — no new feed, the same three tiers as the line score above:
+         1. MLB's own linescore document, already fetched and cached per gamePk by
+            loadMlbBox (offense.first/second/third — present ONLY when occupied — plus
+            offense.batter, defense.pitcher, outs, balls, strikes, inningState);
+         2. the served `live_detail.current`, which now carries pitcher/batter beside the
+            bases it already had (picks_engine/live_detail.py, same day);
+         3. nothing — and then this element is simply absent.
+
+       HOW IT DEGRADES, which is the whole design:
+         · BETWEEN INNINGS (Middle/End) there is no batter in the box. The bases are drawn
+           EMPTY and forced empty rather than trusted, the out pips and the count are dropped
+           entirely — 3 outs is the REASON for the break, not the state of a live half — and
+           the block says so: "Between innings".
+         · IN A DELAY the count is frozen at whatever the last pitch left. A frozen count
+           rendered live is the one lie this surface could tell, so the whole block yields to
+           the delay ribbon (see boxScoreTab) and renders nothing at all.
+         · BEFORE FIRST PITCH there is no block, because there is no box score above it.
+         · Any single fact missing drops only itself: no outs → no pips; no balls/strikes →
+           no count; no names → no matchup line. Nothing is ever inferred from another field. */
+    // The bases themselves. Three 45°-rotated squares in the arrangement every scoreboard
+    // uses — second at the top, third at the left, first at the right — plus a muted home
+    // plate so the orientation is unmistakable at 44px. Occupied bases are filled.
+    function baseDiamondSvg(on1: boolean, on2: boolean, on3: boolean) {
+      // The bags must not touch: a 10.4pt square rotated 45° is 14.7pt across, and the
+      // centres sit 21.9pt apart, which leaves ~7pt of air on each edge. Crowd them and
+      // three bases read as one blob at 48px, which is the only size this ever renders at.
+      const bag = (cx: number, cy: number, on: boolean, k: string) =>
+        `<rect class="bd-bag${on ? " on" : ""}" x="${cx - 5.2}" y="${cy - 5.2}" width="10.4" height="10.4" rx="2" transform="rotate(45 ${cx} ${cy})"><title>${k}${on ? " — occupied" : " — empty"}</title></rect>`;
+      return `<svg class="bd" viewBox="0 0 50 46" width="48" height="44" role="img" aria-hidden="true">
+        ${bag(25, 9.5, on2, "Second")}${bag(9.5, 25, on3, "Third")}${bag(40.5, 25, on1, "First")}
+        <path class="bd-home" d="M21 35.4h8v2.7l-4 2.6l-4-2.6z"/>
+      </svg>`;
+    }
+    /* One normalised live situation from whichever tier answered. `betweenInnings` is decided
+       here, once, and everything downstream obeys it. */
+    function liveSituation(g: any, ls: any) {
+      const d = liveDetailFor(g);
+      const cur = d && d.current ? d.current : null;
+      if (!ls && !cur) return null;
+      const half = String((ls && ls.inningState) || (cur && cur.half) || "");
+      const between = /^(middle|end)/i.test(half);
+      const off = (ls && ls.offense) || {};
+      const def = (ls && ls.defense) || {};
+      const pick = (a: any, b: any) => (a != null ? a : (b != null ? b : null));
+      const on = (k: "first" | "second" | "third", f: "on_1b" | "on_2b" | "on_3b") =>
+        (ls ? !!off[k] : !!(cur && cur[f]));
+      const outs = pick(ls && ls.outs, cur && cur.outs);
+      const balls = pick(ls && ls.balls, cur && cur.balls);
+      const strikes = pick(ls && ls.strikes, cur && cur.strikes);
+      return {
+        between,
+        // a runner between innings is a leftover, never a fact — forced empty, not trusted
+        on1: between ? false : on("first", "on_1b"),
+        on2: between ? false : on("second", "on_2b"),
+        on3: between ? false : on("third", "on_3b"),
+        outs: between || outs == null ? null : Number(outs),
+        balls: between || balls == null ? null : Number(balls),
+        strikes: between || strikes == null ? null : Number(strikes),
+        pitcher: between ? "" : String(((def.pitcher && def.pitcher.fullName) || (cur && cur.pitcher) || "")),
+        batter: between ? "" : String(((off.batter && off.batter.fullName) || (cur && cur.batter) || "")),
+      };
+    }
+    function bxStateStrip(g: any, ls: any) {
+      const s = liveSituation(g, ls);
+      if (!s) return "";
+      const hasCount = s.balls != null && s.strikes != null;
+      const pips = s.outs != null
+        ? `<span class="bd-outs" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < s.outs! ? "on" : ""}"></i>`).join("")}</span><span class="bd-outk">${s.outs} out</span>`
+        : "";
+      const count = hasCount ? `<span class="bd-count"><b>${s.balls}–${s.strikes}</b><em>count</em></span>` : "";
+      const mu = s.pitcher || s.batter
+        ? `<div class="bd-mu">${s.pitcher ? `<span class="bd-mu-n">${esc(shortName(s.pitcher))}</span><em>pitching</em>` : ""}${s.pitcher && s.batter ? `<span class="bd-mu-to" aria-hidden="true">to</span>` : ""}${s.batter ? `<span class="bd-mu-n bat">${esc(shortName(s.batter))}</span><em>batting</em>` : ""}</div>`
+        : "";
+      // between innings: the diamond alone, empty, saying exactly that. Nothing else is true yet.
+      const meta = s.between
+        ? `<div class="bd-line"><span class="bd-between">Between innings</span></div>`
+        : (pips || count ? `<div class="bd-line">${pips}${count}</div>` : "");
+      if (!meta && !mu) return "";
+      // the screen-reader sentence — the SVG is decorative, this is the fact
+      const said = s.between
+        ? "Between innings — bases empty"
+        : [[s.on1 ? "first" : "", s.on2 ? "second" : "", s.on3 ? "third" : ""].filter(Boolean).join(", ") || "bases empty",
+          s.outs != null ? `${s.outs} out` : "",
+          hasCount ? `${s.balls} and ${s.strikes} count` : "",
+          s.pitcher && s.batter ? `${s.pitcher} pitching to ${s.batter}` : ""].filter(Boolean).join(" · ");
+      return `<div class="bx-live" role="group" aria-label="${esc(said)}">
+        ${baseDiamondSvg(s.on1, s.on2, s.on3)}
+        <div class="bd-right">${meta}${mu}</div>
+      </div>`;
     }
     /* ══════ THE BOX SCORE SPLITS IN TWO (Leon, 2026-08-08) ══════
        "Once the game starts, there should always be a box score on the top."  ALWAYS means
@@ -10654,7 +10833,15 @@ export default function Home() {
       const away = esc(g.away_abbr), home = esc(g.home_abbr);
       const tables = bs ? boxTables(bs, boxSide) : "";
       const loading = !m || m.loading;
-      const topHtml = `${gs.kind === "live" ? bxStateStrip(ls) : ""}${grid || ""}`;
+      /* A DELAY REMOVES THE LIVE SITUATION, AND DOES NOT REPLACE IT WITH A THIRD ANNOUNCEMENT.
+         While play is stopped the count and the outs are frozen at whatever the last pitch
+         left them — true five minutes ago, a lie now — so the diamond block yields entirely
+         and this slot simply collapses. The delay itself is already said twice above the tab
+         bar, in the two places that own it: the hero (the state) and the note under it (what
+         it means for the bet). A ribbon here would be the same fact a third time, 40px away.
+         The LINE SCORE stays: the inning and the runs are still true, and they are the reason
+         the delay matters at all. */
+      const topHtml = `${gs.kind === "live" && !gs.delayed ? bxStateStrip(g, ls) : ""}${grid || ""}`;
       const playersHtml = bs
         ? `<div class="bx-seg" role="tablist" aria-label="Box score team">
             <button class="bx-segb ${boxSide === "away" ? "on" : ""}" data-bxside="away" role="tab">${away}</button>
@@ -11127,19 +11314,54 @@ export default function Home() {
     }
     /* THE GRAPH. A step line, because that is what a posted number does — it holds at 8.5
        until somebody moves it, and drawing a smooth slope between two checks would claim
-       intermediate values nobody ever quoted. Every plotted point is a served row. The pick's
-       own entry wall gets a diamond, so "where we got in" is legible against the move — and
-       that marker is gated with the pick, since it names the number we took. */
+       intermediate values nobody ever quoted. Every plotted point is a served row.
+
+       AND IT SAYS WHICH SIDE WE TOOK (Leon, 2026-08-09): "when we put the DiamondEdge total
+       on the graph on the odds tab of how the line moves, let's make it more clear which
+       side of the line we took the bet on — so maybe put the diamond above or below, and
+       maybe state the bet in the visual."
+
+       The gold diamond used to float 11px ABOVE the entry point on every pick, over and
+       under alike — so its position carried no information, and the one fact a reader came
+       to this chart for (which way did we go, and off what number) had to be fetched from a
+       chip on another surface. Three things say it here now, and every one of them is read
+       off the served pick — nothing is inferred from the shape of the move:
+         · the marker sits ABOVE the number on an over and BELOW it on an under;
+         · it carries the bet in words — "OVER 8.5" — so no position has to be decoded;
+         · the half of the chart on our side of that number is shaded, with our number ruled
+           across it, so the side lands in the first glance and the entry lands in the second.
+       COLOUR SAYS NOTHING about direction: both sides are the app's gold, because red and
+       green mean won and lost and nothing else (the colour-system rule). Position and words
+       carry it. And all of it is gated with the pick — a locked or passed game gets the
+       plain step line it always had, with no side stated anywhere. */
     function oddsMoveChart(g: any, lead: any, leadLocked: boolean) {
       const w = totalWalls(g);
       if (w.length < 2) return "";
-      const lines = w.map((x: any) => x.line);
+      // OUR SIDE, read once off the served pick. A premium-locked pick reveals nothing.
+      const take = !leadLocked && lead && String(lead.action || "").toUpperCase() === "TAKE";
+      const sideRaw = take && lead.side != null ? String(lead.side) : "";
+      const isOver = /over/i.test(sideRaw), isUnder = /under/i.test(sideRaw);
+      const sided = !!take && isOver !== isUnder;          // exactly one side, or none
+      const pickWall = sided ? String(lead.lead_time || "") : "";
+      const pi = pickWall ? w.findIndex((x: any) => x.wall === pickWall) : -1;
+      /* THE NUMBER WE TOOK IT AT — the pick's own line, and only if it is absent the line
+         standing at the wall it was priced at. Never a wall line dressed up as our number. */
+      const ourLineV = !sided ? null
+        : lead.line != null ? Number(lead.line)
+        : pi >= 0 ? Number(w[pi].line) : null;
+      const marked = ourLineV != null && isFinite(ourLineV);
+      const ourLine = marked ? (ourLineV as number) : 0;
+      // Our number joins the domain so the rule and the shaded half are always on-canvas.
+      const lines = w.map((x: any) => x.line).concat(marked ? [ourLine] : []);
       const lo = Math.min(...lines), hi = Math.max(...lines);
       const pad = Math.max(0.5, (hi - lo) * 0.6);
       const yMin = lo - pad, yMax = hi + pad;
-      const W = 320, H = 132, L = 34, R = 12, T = 14, B = 26;
+      // Taller than the plain step line was: the marker now needs a lane above OR below the
+      // number, and the padding above/below the extremes is what it lives in.
+      const W = 320, H = 152, L = 34, R = 12, T = 16, B = 30;
       const px = (i: number) => L + (i * (W - L - R)) / Math.max(1, w.length - 1);
       const py = (v: number) => T + (H - T - B) * (1 - (v - yMin) / Math.max(0.001, yMax - yMin));
+      const plotB = H - B, plotR = W - R;
       // step path: hold the level, then jump at the next check
       let d = "";
       w.forEach((x: any, i: number) => {
@@ -11149,32 +11371,54 @@ export default function Home() {
       });
       const levels = Array.from(new Set(lines)).sort((a: any, b: any) => b - a);
       const gridY = levels.map((v: any) =>
-        `<line class="omv-grid" x1="${L}" x2="${W - R}" y1="${py(v).toFixed(1)}" y2="${py(v).toFixed(1)}"/>
+        `<line class="omv-grid" x1="${L}" x2="${plotR}" y1="${py(v).toFixed(1)}" y2="${py(v).toFixed(1)}"/>
          <text class="omv-yl" x="${L - 6}" y="${(py(v) + 3.5).toFixed(1)}" text-anchor="end">${esc(lineStr(v))}</text>`).join("");
       const dots = w.map((x: any, i: number) =>
         `<circle class="omv-dot" cx="${px(i).toFixed(1)}" cy="${py(x.line).toFixed(1)}" r="3.4"/>`).join("");
       const xlab = w.map((x: any, i: number) =>
-        `<text class="omv-xl" x="${px(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${esc(String(x.wall).replace(/^T-/, ""))}</text>`).join("");
-      // our entry: the wall the served pick was priced at, at the line it was priced against
-      const pickWall = !leadLocked && lead && lead.action === "TAKE" ? String(lead.lead_time || "") : "";
-      const pi = pickWall ? w.findIndex((x: any) => x.wall === pickWall) : -1;
-      const mark = pi >= 0
-        ? `<g class="omv-take"><path d="M${px(pi).toFixed(1)} ${(py(w[pi].line) - 11).toFixed(1)} l4.6 4.6 -4.6 4.6 -4.6 -4.6 z"/></g>`
-        : "";
+        `<text class="omv-xl" x="${px(i).toFixed(1)}" y="${H - 11}" text-anchor="middle">${esc(String(x.wall).replace(/^T-/, ""))}</text>`).join("");
+      /* THE SHADED HALF — every number on our side of the one we took, from our number to
+         the top of the plot on an over and to the bottom on an under. It is drawn first, so
+         the grid, the step and the marker all sit on top of it, and it is gold at 7% because
+         it is context for the mark, not a second mark. */
+      const yOur = marked ? py(ourLine) : 0;
+      const band = marked ? `<rect class="omv-band" x="${L}" y="${(isOver ? T : yOur).toFixed(1)}"
+          width="${(plotR - L).toFixed(1)}" height="${Math.max(0, isOver ? yOur - T : plotB - yOur).toFixed(1)}"/>
+        <line class="omv-ourline" x1="${L}" x2="${plotR}" y1="${yOur.toFixed(1)}" y2="${yOur.toFixed(1)}"/>` : "";
+      /* THE MARKER — a diamond and the bet, in one pill, on our side of the rule. It is
+         centred on the check we were priced at and tethered to that point by a stem; where
+         the served pick names no wall we can find on this grid, it labels the rule at the
+         right edge with no stem, because a stem there would claim a moment we do not have. */
+      const label = marked ? `${isOver ? "OVER" : "UNDER"} ${lineStr(ourLine)}` : "";
+      const pillW = Math.round(26 + label.length * 6.2), pillH = 16;
+      const cx = Math.min(plotR - pillW / 2, Math.max(L + pillW / 2, pi >= 0 ? px(pi) : plotR - pillW / 2));
+      const cy = isOver ? yOur - 18 : yOur + 18;
+      const mark = !marked ? "" : `<g class="omv-take">
+        ${pi >= 0 ? `<line class="omv-stem" x1="${px(pi).toFixed(1)}" x2="${px(pi).toFixed(1)}"
+            y1="${py(w[pi].line).toFixed(1)}" y2="${(isOver ? cy + pillH / 2 : cy - pillH / 2).toFixed(1)}"/>
+          <circle class="omv-takedot" cx="${px(pi).toFixed(1)}" cy="${py(w[pi].line).toFixed(1)}" r="5.2"/>` : ""}
+        <rect class="omv-pill" x="${(cx - pillW / 2).toFixed(1)}" y="${(cy - pillH / 2).toFixed(1)}"
+          width="${pillW}" height="${pillH}" rx="8"/>
+        <path class="omv-dia" d="M${(cx - pillW / 2 + 10).toFixed(1)} ${(cy - 4.4).toFixed(1)} l4.4 4.4 -4.4 4.4 -4.4 -4.4 z"/>
+        <text class="omv-pilltxt" x="${(cx - pillW / 2 + 18).toFixed(1)}" y="${(cy + 3.4).toFixed(1)}">${esc(label)}</text>
+      </g>`;
       const first = w[0], last = w[w.length - 1];
       const moved = Math.abs(last.line - first.line) > 0.001;
       const cap = moved
         ? `Opened at ${lineStr(first.line)} at the ${first.wall} check and started at ${lineStr(last.line)}.`
         : `Held at ${lineStr(first.line)} from the ${first.wall} check through first pitch.`;
+      // The bet in prose too, with the terms the pill has no room for: the price we took it
+      // at and the check it was priced at. Both are the served pick's own fields.
+      const bet = !marked ? "" : ` We took ${label.toLowerCase()}${lead.price != null ? ` at ${fmtOdds(lead.price)}` : ""}${pi >= 0 ? `, priced at the ${w[pi].wall} check` : ""} — the shaded half is our side of the number.`;
       // The axis is hours before first pitch, said in the caption rather than as a label at
       // the right edge — at 375px that label lands on top of the last tick.
       return `<div class="omv">
-        <svg viewBox="0 0 ${W} ${H}" class="omv-svg" role="img" aria-label="How the total moved into first pitch">
-          ${gridY}
+        <svg viewBox="0 0 ${W} ${H}" class="omv-svg" role="img" aria-label="${esc(`How the total moved into first pitch.${marked ? ` Our bet: ${label}.` : ""}`)}">
+          ${band}${gridY}
           <path class="omv-step" d="${d}"/>
           ${dots}${mark}${xlab}
         </svg>
-        <p class="omv-cap">${esc(cap)}${pi >= 0 ? ` The diamond is the check our pick was priced at.` : ""} Each mark is a check, that many hours before first pitch.</p>
+        <p class="omv-cap">${esc(cap + bet)} Each mark is a check, that many hours before first pitch.</p>
       </div>`;
     }
     // The same rows as a table — the number, the best price we found and the book quoting it.
@@ -11286,7 +11530,8 @@ export default function Home() {
     }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
-      const _gsk = g && !g._recipe ? gameState(g).kind : "pre";
+      const _gs0 = g && !g._recipe ? gameState(g) : { kind: "pre" };
+      const _gsk = _gs0.kind;
       /* THE DEFAULT TAB FOLLOWS THE GAME (Leon, 2026-08-08): "when you click on a game, let's
          have Preview be the default thing that's shown… once the game starts… instead of
          going to the Preview, which should default to the stats page."  Pre-game opens on
@@ -11492,6 +11737,7 @@ export default function Home() {
             </div>`
           : "";
 
+      /* (heroScoreHtml is shared with paintHeroScore — see the note there.) */
       /* THE LINES SENTENCE IS GONE FROM THE PREVIEW, and so are the two power-user folds that
          used to close the Odds pane (`reasoning` — model notes — and `more` — every market's
          number, spread and moneyline included, on a totals-only product).
@@ -11505,7 +11751,7 @@ export default function Home() {
       // FUSED HERO HEADER — the matchup (crests + records) and the live trend woven into
       // ONE header over a subtle team-tinted wash. Sits above the tabs.
       const heroScore = (gs.score && gs.score.split && gs.score.home != null)
-        ? `<div class="gp-score ${gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid">${gs.kind === "final" ? "Final" : gs.kind === "suspended" ? esc(gs.label) : `<span class="livedot"></span>${esc(gs.label || "Live")}`}</span><b>${num(gs.score.home, 0)}</b></div>`
+        ? heroScoreHtml(gs)
         /* A CALLED-OFF GAME'S HERO SAID "11:00 PM PDT". The scheduled time is
            the least true thing on the page once the game is off; the state is
            the headline, and the date it was scheduled for follows it. */
@@ -11565,8 +11811,16 @@ export default function Home() {
         : (lead || leadLocked) ? deCallBlock(g, leadLocked, true) : "";
       /* A DELAYED GAME IS STILL COMING, and its first-pitch time is now in the
          past — which the page used to print with no acknowledgement at all. */
-      const delayNote = gs.kind === "delayed"
-        ? `<div class="gp-delaynote">First pitch is delayed. The scheduled time has passed; the game and the call on it both stand.</div>`
+      /* TWO DELAYS, TWO SENTENCES, AND THE READER'S QUESTION IS THE SAME ONE: what happens to
+         the bet? A delayed START has not begun; a game delayed IN PLAY has a score and an
+         inning sitting frozen above this note, which is exactly why it needs saying. The
+         reason is MLB's own (`reason`), printed when there is one and never guessed at when
+         there is not — and neither sentence promises a restart time, because no feed here
+         carries one. */
+      const delayNote = (gs.kind === "delayed" || gs.delayed)
+        ? `<div class="gp-delaynote"><b>${esc(gs.delayReason ? `Delayed — ${gs.delayReason}` : "Delayed")}.</b> ${gs.kind === "delayed"
+            ? "First pitch has not happened and the scheduled time has passed."
+            : `Play is stopped${gs.label && gs.label !== "Live" ? ` in the ${esc(String(gs.label).toLowerCase())}` : ""}; the score and the line score are where it paused.`} The game and the call on it both stand.</div>`
         : "";
       const showLive = startedKind(gs.kind);
       const isFinal = gs.kind === "final";
@@ -11837,7 +12091,7 @@ export default function Home() {
         if (!$("gamepage") || !detail || String(detail.game_id) !== String(g.game_id)) return;
         const body = $("gp-body"); if (!body) return;
         body.innerHTML = buildBody();
-        detailBuiltKind = g && !g._recipe ? gameState(g).kind : "pre";
+        detailBuiltKind = g && !g._recipe ? bodyStateKey(gameState(g)) : "pre|";
         wireBody();
         positionDetailInk();
         if (gameState(g).kind === "live" || gameState(g).kind === "final") pollLiveDetail();
@@ -11857,7 +12111,7 @@ export default function Home() {
       // Publish the rebuilder and the state the body was built for, so the live
       // path can restructure the page when the game crosses first pitch.
       detailRerender = rerenderDetailBody;
-      detailBuiltKind = _gsk;
+      detailBuiltKind = bodyStateKey(_gs0);
 
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
