@@ -244,11 +244,38 @@ function cacheHeaders(t: { s: number; swr: number; b?: number }, etag?: string) 
    to a wrong board. Bounded on both axes, which is the whole point.
    ════════════════════════════════════════════════════════════════════════════ */
 
-/* The hook is the fast path; this is the floor under it. 300 s is chosen to be
-   longer than every real publish gap that matters (the board moves ~45x/day,
-   i.e. one publish per ~32 min) and short enough that a WHOLE DAY of failed
-   hooks still cannot show anyone a board more than five minutes stale. */
+/* ═══ THE SAFETY NET IS PER-KEY, AND ON THE LIVE FEEDS IT IS TODAY'S TTL ═══
+
+   The hook is the fast path. This is the floor under it, for the days it is
+   lost — and picking ONE number for every key would quietly break the one
+   guarantee that is not negotiable.
+
+   A single 300 s floor would be right for the board and catastrophic for
+   live_scores: a lost hook would leave a reader looking at a score up to five
+   minutes old, on a feed whose entire job is to be seconds old. Freshness would
+   have been traded for bytes, which is precisely the failure this overhaul is
+   not allowed to commit.
+
+   So the live feeds keep a floor equal to the edge TTL they already run at.
+   Their worst case with a DEAD hook is therefore EXACTLY what ships today —
+   not a regression, not an improvement, identically today — and their best case
+   with a live hook is publish-driven. That is the whole contract in one line:
+   **with the hook, publish-driven; without it, exactly what you have now.**
+
+   It costs almost nothing to be careful here, and the measurements are why:
+   live_scores and live_detail together are 0.35 GB/month of the 27.4 GB
+   problem — 1.3%. The expensive keys are the three that publish a few dozen
+   times a day and were being re-read every two minutes. Freshness was never
+   what cost; there is no reason to buy any of it back. */
+const LIVE_KEYS = new Set(["live_scores", "live_detail"]);
+/* Long enough that the ~45-publishes-a-day board is genuinely publish-driven,
+   short enough that a WHOLE DAY of failed hooks still cannot show anyone a
+   board more than five minutes stale. */
 const SAFETY_NET_S = 300;
+function safetyNetFor(key: string, t: { s: number }) {
+  const base = DATED.test(key) ? key.split(":")[0] : key;
+  return LIVE_KEYS.has(base) ? t.s : Math.max(t.s, SAFETY_NET_S);
+}
 /* The version probe is the freshness clock, so its floor is tighter — and it
    costs ~1 KB, so a tight floor is affordable in a way the payload's is not. */
 const VERSION_SAFETY_NET_S = 30;
@@ -268,11 +295,11 @@ const IMMUTABLE_S = 31536000;
    longer current. Keying on (key, mode, game) instead means every reader, on
    every pin, shares one upstream read per publish. The pin's job is to decide
    how long the ANSWER may be cached, not to fetch a different answer. */
-function cachedBody(key: string, mode: string, gameId: string) {
+function cachedBody(key: string, mode: string, gameId: string, netS: number) {
   return unstable_cache(
     async () => rawBody(key, mode, gameId),
     ["snap-body", key, mode, gameId],
-    { tags: [snapTag(key)], revalidate: SAFETY_NET_S },
+    { tags: [snapTag(key)], revalidate: netS },
   );
 }
 
@@ -409,7 +436,7 @@ export async function GET(
       );
     }
 
-    const body = await cachedBody(key, mode, gameId)();
+    const body = await cachedBody(key, mode, gameId, safetyNetFor(key, t))();
 
     /* THE PINNED PATH. Only a VERIFIED match earns a year of immutability.
        A mismatch is not an error and must not be treated as one — it is simply
