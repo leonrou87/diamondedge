@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-09T21:36:40Z",
+  "generated_utc": "2026-08-09T21:55:19Z",
   "dates": [
     "2026-08-09"
   ],
@@ -8962,7 +8962,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-09T21:36:55Z",
+      "updated": "2026-08-09T21:55:20Z",
       "order": [
         "vega",
         "atlas",
@@ -11440,11 +11440,11 @@
         "provenance": "SHORTLISTED",
         "objective": "W - L (win +1, loss -1, push 0, no vig)",
         "full_block_at": "adaptive_strategy_by_date.2026-08-08",
-        "rule_name": "The Pitcher's Park, aRested Arm and aCloser Up",
+        "rule_name": "The Pitcher's Park, the Rested Arm and the Closer Up",
         "voice": {
           "status": "ACTIVE",
           "generator": "rule_voice_v1",
-          "name": "The Pitcher's Park, aRested Arm and aCloser Up",
+          "name": "The Pitcher's Park, the Rested Arm and the Closer Up",
           "paragraphs": [
             "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
             "It takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds ATLAS is not strongly on the under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and ATLAS is not strongly on the under is the part that cuts against it.",
@@ -11553,7 +11553,7 @@
         "voice": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "name": "The Pitcher's Park and aATLAS's Read",
+          "name": "The Pitcher's Park and ATLAS's Read",
           "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
           "paragraphs": [
             "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -11596,7 +11596,7 @@
             }
           ]
         },
-        "rule_name": "The Pitcher's Park and aATLAS's Read",
+        "rule_name": "The Pitcher's Park and ATLAS's Read",
         "lock_status": "LOCKED_STRATEGY",
         "selector_channel": "strategy_forge:nightly",
         "engine": "strategy_forge",
@@ -12430,11 +12430,11 @@
       "provenance": "SHORTLISTED",
       "objective": "W - L (win +1, loss -1, push 0, no vig)",
       "full_block_at": "adaptive_strategy_by_date.2026-08-08",
-      "rule_name": "The Pitcher's Park, aRested Arm and aCloser Up",
+      "rule_name": "The Pitcher's Park, the Rested Arm and the Closer Up",
       "voice": {
         "status": "ACTIVE",
         "generator": "rule_voice_v1",
-        "name": "The Pitcher's Park, aRested Arm and aCloser Up",
+        "name": "The Pitcher's Park, the Rested Arm and the Closer Up",
         "paragraphs": [
           "This one lives on the ballpark, the starting pitching, and the bullpens. It is a 6-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
           "It takes the OVER when it finds the ANVIL shadow model on the over, a ballpark that has been taking runs away, and a visiting starter working on extra rest. The ANVIL shadow model on the over is the ordinary case for the over. The rest of it is not: a ballpark that has been taking runs away and a visiting starter working on extra rest are what you would normally write down the other way, and wanting both at once is the whole idea. When the picture turns over, so does it \u2014 the UNDER when it finds ATLAS is not strongly on the under, the visiting closer available for the ninth, and ATLAS's read was driven by the park. Same shape, mirrored \u2014 the visiting closer available for the ninth is the obvious part and ATLAS is not strongly on the under is the part that cuts against it.",
@@ -12543,7 +12543,7 @@
       "voice": {
         "status": "ACTIVE",
         "generator": "rule_voice_v2",
-        "name": "The Pitcher's Park and aATLAS's Read",
+        "name": "The Pitcher's Park and ATLAS's Read",
         "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
         "paragraphs": [
           "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -12586,7 +12586,7 @@
           }
         ]
       },
-      "rule_name": "The Pitcher's Park and aATLAS's Read",
+      "rule_name": "The Pitcher's Park and ATLAS's Read",
       "lock_status": "LOCKED_STRATEGY",
       "selector_channel": "strategy_forge:nightly",
       "engine": "strategy_forge",
@@ -13007,6 +13007,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -13018,6 +13019,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 1.6001276858682798,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -13114,7 +13116,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -13157,7 +13159,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -13852,7 +13854,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -14704,6 +14706,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -14715,6 +14718,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.13291630867274445,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "park_run_factor|lt|0.97",
@@ -14811,7 +14815,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -14854,7 +14858,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -15555,7 +15559,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16447,6 +16451,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -16458,6 +16463,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.9075585581452636,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -16554,7 +16560,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -16597,7 +16603,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -17274,7 +17280,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18166,6 +18172,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -18177,6 +18184,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.592134611363313,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -18273,7 +18281,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -18316,7 +18324,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -19000,7 +19008,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -19892,6 +19900,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -19903,6 +19912,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 1.138253657201931,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -19999,7 +20009,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -20042,7 +20052,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -20715,7 +20725,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -21607,6 +21617,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -21618,6 +21629,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 1.0396543391457174,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -21714,7 +21726,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -21757,7 +21769,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -22441,7 +22453,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -23333,6 +23345,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -23344,6 +23357,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.26459810059006195,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "park_run_factor|lt|0.97",
@@ -23440,7 +23454,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -23483,7 +23497,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -24213,7 +24227,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -25175,6 +25189,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -25186,6 +25201,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 1.19711741198956,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -25282,7 +25298,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -25325,7 +25341,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -26012,7 +26028,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -26949,6 +26965,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -26960,6 +26977,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.19457536376682588,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "park_run_factor|lt|0.97",
@@ -27056,7 +27074,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -27099,7 +27117,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -27852,7 +27870,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -28809,7 +28827,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -28852,7 +28870,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "pass_why": "forge_no_bet"
         },
         "is_bet": false,
@@ -29380,7 +29398,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -30272,6 +30290,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -30283,6 +30302,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.3077906014900844,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -30379,7 +30399,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -30422,7 +30442,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -31157,7 +31177,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -32077,7 +32097,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -32120,7 +32140,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "pass_why": "forge_no_bet"
         },
         "is_bet": false,
@@ -32655,7 +32675,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -33614,6 +33634,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -33625,6 +33646,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.7326914836725074,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -33721,7 +33743,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -33764,7 +33786,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -34511,7 +34533,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "STRONG",
@@ -35375,6 +35397,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -35386,6 +35409,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 1.254023831064442,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -35482,7 +35506,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -35525,7 +35549,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -36266,7 +36290,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -37230,6 +37254,7 @@
           "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+          "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
           "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
           "comparable_across_bases": false,
@@ -37241,6 +37266,7 @@
             "is_per_game": true,
             "same_for_every_pick_on_this_board": false,
             "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
+            "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
             "clearance": 0.839258935341196,
             "clearance_units": "robust spreads of each feature over the rule's own window (iqr_then_mad)",
             "binding_condition": "edge_per_dispersion|ge|-1",
@@ -37337,7 +37363,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and aATLAS's Read",
+            "name": "The Pitcher's Park and ATLAS's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -37380,7 +37406,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and aATLAS's Read",
+          "rule_name": "The Pitcher's Park and ATLAS's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -37511,6 +37537,12 @@
                 "feature": "ump_runs_pg_delta",
                 "raw": -1.1718,
                 "rendered": "1.2"
+              },
+              {
+                "feature": "wx_wind_out_score",
+                "raw": 4.056,
+                "rendered": null,
+                "dropped": "the served wx_wind_class is 'cross', which does not agree with this clause's direction ('out')"
               },
               {
                 "feature": "sp_days_rest_away",
@@ -37841,7 +37873,7 @@
         "run_line_price_home": 171.0,
         "run_line_price_away": -190.0,
         "book": "betrivers",
-        "captured_at": "2026-08-09T21:27:09Z",
+        "captured_at": "2026-08-09T21:54:45Z",
         "wall": "T-3h",
         "locked_at": null,
         "game_pk": 823268,
@@ -37874,7 +37906,7 @@
           "total_price_under": -118.0
         },
         "n_books": 22,
-        "as_of": "2026-08-09T21:32:42Z",
+        "as_of": "2026-08-09T21:52:46Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -38130,7 +38162,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T21:33:10Z",
+          "asof_utc": "2026-08-09T21:55:19Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",

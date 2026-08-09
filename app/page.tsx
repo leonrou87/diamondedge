@@ -3317,26 +3317,50 @@ export default function Home() {
       const over = /over/i.test(side);
       const dirCls = over ? "ou-over" : /under/i.test(side) ? "ou-under" : "";
       const arrow = over ? "▲" : /under/i.test(side) ? "▼" : "";
-      // ── how it is going: the app's own live cash read, or nothing ──
+      /* ── HOW IT IS GOING ──
+         `liveStatusOf` is the number; `liveDecided` is the FACT and outranks it. Where the
+         runs and the line are both known the bet's fate is arithmetic, and a live estimate
+         must not overrule it in either direction — the same authority `liveHitOdds` was
+         given on 2026-08-09 and for the same reason.
+
+         A DECIDED PICK SHOWS THE WORD AND NO PERCENT. "3% · not landing" on a bet the runs
+         have already killed prints an estimate next to a fact and invites a reader to trust
+         the wrong one; "97% · cashed" is the same error the other way. The percent is what
+         it says it is — a live estimate of a live question — so it stands down the moment
+         the question is answered, and the fill goes to the answer. */
       const ls = liveStatusOf(g, pl);
       const prob = ls && ls.prob != null ? Math.max(0, Math.min(1, Number(ls.prob))) : null;
-      const clinched = prob != null && prob >= 0.985;
-      const cooked = prob != null && prob <= 0.015;
+      const hard = liveDecided(g, pl);
+      const decidable = pl.market === "total" && pickLineOf(pl) != null
+        && g && g.current_actuals && g.current_actuals.total_so_far != null;
+      const clinched = hard === "win" || (!decidable && prob != null && prob >= 0.985);
+      const cooked = hard === "loss" || (!decidable && prob != null && prob <= 0.015);
+      const decided = clinched || cooked;
       const meta = LIVE_DIR[(ls && ls.dir) || "too_close"] || LIVE_DIR.too_close;
       const word = clinched ? "cashed" : cooked ? "not landing" : meta.short;
-      const cls = clinched ? "hit" : cooked ? "miss" : meta.cls;
-      const pctTxt = prob != null ? `${Math.round(prob * 100)}%` : "";
+      /* RED AND GREEN MEAN ONLY LOST AND WON — the app's one colour system, and the reason
+         this does not reuse `LIVE_DIR.cls` verbatim. `trending_miss` is a live, still-winnable
+         bet; painting it the settled red of a graded loss is the exact conflation that system
+         exists to prevent (it is why the in-play cushion chip tints chase AMBER and tight
+         SLATE). So: green only once the runs have won it, red only once they have killed it,
+         amber while it is going against us, quiet slate while it is a coin flip. */
+      const cls = clinched ? "hit" : cooked ? "cooked"
+        : meta.cls === "miss" ? "against" : meta.cls === "hit" ? "ahead" : "close";
+      const pct = decided ? null : prob;
+      const fill = clinched ? 100 : cooked ? 100 : pct != null ? Math.round(pct * 100) : null;
       // ── how much we liked it: the served rating, never a local map ──
       const r = servedRating(pl);
       const lab = [
         `Our bet: ${side}`,
-        prob != null ? `${Math.round(prob * 100)}% chance it cashes, live estimate — ${word}` : "",
+        decided ? (clinched ? "this pick has cashed" : "this pick can no longer cash")
+          : pct != null ? `${Math.round(pct * 100)}% chance it cashes, live estimate — ${meta.word}`
+            : meta.word,
         r ? `rated ${r.stars} of ${r.of} stars` : "",
       ].filter(Boolean).join(" · ");
       return `<div class="plvl dir-${esc(cls)}" title="${esc(lab)}" aria-label="${esc(lab)}">
-        ${prob != null ? `<i class="plvl-fill" style="width:${Math.round(prob * 100)}%" aria-hidden="true"></i>` : ""}
+        ${fill != null ? `<i class="plvl-fill" style="width:${fill}%" aria-hidden="true"></i>` : ""}
         <b class="plvl-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}${esc(side)}</b>
-        ${pctTxt ? `<span class="plvl-pct"><b>${pctTxt}</b><i>${esc(word)}</i></span>` : `<span class="plvl-pct"><i>${esc(word)}</i></span>`}
+        <span class="plvl-pct">${pct != null ? `<b>${Math.round(pct * 100)}%</b>` : ""}<i>${esc(word)}</i></span>
         ${r ? `<span class="plvl-stars" role="img" aria-label="rated ${r.stars} of 5" title="${esc(ratingTitle(pl))}">${starPips(r.stars)}</span>` : ""}
       </div>`;
     }
@@ -6901,17 +6925,12 @@ export default function Home() {
       // the box score is its own tab now — repaint the pane, and pull a fresh MLB document
       repaintBoxPane();
       if (gs.kind === "live") loadMlbBox(g, true).then((m: any) => { if (m) { repaintBoxPane(); repaintGameLeaders(); } }).catch(() => {});
-      // Keep the hero's live tracking read in step with the fresh score (else it goes stale
-      // vs the score right above it). Only the served-meter-absent fallback lives here.
-      const trendEl = page.querySelector(".gp-trend");
-      if (trendEl && gs.kind === "live") {
-        const lead = displayPick(g) || bestPlay(g);
-        const leadLocked0 = lead ? pickLocked(lead, playState(g, lead)) : false;
-        const trend = lead && !leadLocked0 ? (liveHitOdds(g, lead, "full") || liveTrackCard(g, lead, "hero")) : "";
-        // keep ATLAS LIVE in step with each refresh (same lock gate as the first paint)
-        const atl = !leadLocked0 ? atlasLiveChip(g, "full") : "";
-        if (trend || atl) trendEl.innerHTML = `${trend}${atl}`;
-      }
+      /* THE LIVE READ IS REPAINTED BY `repaintBoxPane` ABOVE, and nowhere else. This
+         function used to keep a second copy of it in step inside `.gp-trend` — the slab
+         above the tabs — which no longer exists (Leon, 2026-08-09; see `pickLiveLine`).
+         The percent lives on the pick line at the top of Stats, which `repaintBoxPane`
+         rebuilds with the box score it is derived from, so it cannot go stale against the
+         score beside it. */
       // also refresh the box score from the (possibly newer) live_detail
       pollLiveDetail();
     }
@@ -7657,7 +7676,10 @@ export default function Home() {
       if (!isFinite(outs) || !isFinite(b) || !isFinite(s)) return "";
       const pips = [0, 1, 2].map((i) => `<i class="${i < outs ? "on" : ""}"></i>`).join("");
       const word = `${outs} out${outs === 1 ? "" : "s"}, ${b}-${s} count`;
-      return `<span class="t-sit" title="${esc(word)}" aria-label="${esc(word)}"><span class="ts-outs" aria-hidden="true">${pips}</span><b aria-hidden="true">${b}-${s}</b></span>`;
+      // role="img" + aria-label, not a bare label on a span: the pips and the two digits are
+      // a picture of the situation, and a reader that cannot see it should hear the sentence
+      // ("2 outs, 1-2 count") rather than the digits on their own.
+      return `<span class="t-sit" role="img" title="${esc(word)}" aria-label="${esc(word)}"><span class="ts-outs" aria-hidden="true">${pips}</span><b aria-hidden="true">${b}-${s}</b></span>`;
     }
     function stateChip(g: any, gs: any) {
       /* THE DELAY IS THE CHIP. A card whose only state word is "Top 2nd" tells a reader the
@@ -8154,6 +8176,8 @@ export default function Home() {
         basis: String((blk && blk.basis) || ""),
         basisLabel: String((blk && blk.basis_label) || ""),
         score: blk ? numOr(blk.score) : null,
+        // the one-breath version for a card, the full definition for the hover
+        brief: String((blk && blk.summary) || (blk && blk.what_it_is) || ""),
         what: String((blk && blk.what_it_is) || ""),
         caveat: String((blk && blk.caveat) || ""),
         note: String((blk && blk.not_a_forecast) || ""),
@@ -8237,6 +8261,22 @@ export default function Home() {
         ? "One rule chose every pick on this board, so this score is the same for all of them."
         : "Not a win probability — it measures how one-sided the evidence behind the pick is.";
       const full = [c.what, c.inSample, c.notProb].filter(Boolean).join(" ");
+      /* THE STARS ARE A DIFFERENT MEASURE, AND THIS IS WHERE THAT GETS SAID.
+         A forge pick's confidence is the rule's board-wide record and says so in its own
+         footnote ("the same for all of them") — while the stars on the very same card DO
+         differ from game to game, because they are a per-game measure with its own name.
+         Leaving those two facts 40px apart with no bridge is a card arguing with itself, so
+         the rating states, in the backend's own `what_it_is`, what it is measuring instead.
+         Rendered ONLY when the two are on different bases: a committee pick's stars are that
+         same confidence in another shape, and repeating it there would be noise. */
+      const r = servedRating(pl);
+      const rateRow = r && r.basis && r.basis !== c.basis && r.brief
+        ? `<div class="cfb-rate" title="${esc(ratingTitle(pl))}">
+             <span class="cfb-rk">${esc(r.basisLabel || "The stars on this pick")}</span>
+             <span class="de-stars" role="img" aria-label="rated ${r.stars} of 5">${starPips(r.stars)}</span>
+             <p class="cfb-rs">${esc(r.brief)}</p>
+           </div>`
+        : "";
       return `<div class="cfblk${c.high ? " is-high" : ""}"${full ? ` title="${esc(full)}"` : ""}>
         <div class="cfb-h">
           <span class="cfb-k">Pick confidence${c.basisLabel ? ` · ${esc(c.basisLabel)}` : ""}</span>
@@ -8248,6 +8288,7 @@ export default function Home() {
         </div>
         ${sentence ? `<p class="cfb-s">${esc(sentence)}</p>` : ""}
         ${foot ? `<p class="cfb-f">${esc(foot)}</p>` : ""}
+        ${rateRow}
       </div>`;
     }
     function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false, stamp = "") {
@@ -11167,9 +11208,11 @@ export default function Home() {
        phrase ("OUT OF REACH") and a bar — 60-odd pixels above the tabs that never said what
        the bet was, what the number was, or how much we liked it. Its one fact, the live
        chance to cash, now rides the single line at the top of the Stats pane beside the pick
-       it belongs to. `liveHitOdds` itself is untouched and still serves the board tiles and
-       the hero; only this page's copy of it is retired, which is what keeps the page at ONE
-       live probability. */
+       it belongs to. `liveHitOdds` itself is left exactly as it is — its clinch/cooked
+       authority was corrected earlier the same day and that correction is reproduced in
+       `pickLiveLine` rather than forked — but this was its last call site, so it is now
+       UNCALLED and is a deletion waiting to happen, not a live component. Nothing renders
+       `.lho`, `.gp-trend` or `#gp-cashmeter` any more. */
     /* Repaint the box score in place (feed arrival, side switch, live cycle). It lives in TWO
        slots now — the line score above the tabs and the player lines inside Stats — so this
        refreshes whichever of them is on the page. The live pick line is rebuilt with the
@@ -12300,12 +12343,13 @@ export default function Home() {
            1. the hero          crests, records, the score and the state of the game
            2. the LINE SCORE    innings across, R/H/E pinned — the box score, at the top
            3. the BET REMINDER  the ticket we served (side · line · price · result stamp)
-                                and, under it, the live chance it cashes
 
-         THE REMINDER IS ONE OBJECT. The strip and the meter used to be a hundred pixels and
-         a hero apart, which made the percentage read as a property of the scoreboard rather
-         than of our bet. They are now the same block, and the meter is the app's existing
-         cash-probability read — not a second number derived a second way (see cashMeterHtml).
+         THE LIVE METER LEFT THIS BLOCK (Leon, 2026-08-09). It was a two-row slab under the
+         ticket that, on a dead pick, read "Not landing" over an empty bar — a phrase and a
+         colour, restating the ticket's own side in worse words and costing ~60px of the
+         height budget every tab pays. Its one fact, the live chance to cash, now rides the
+         single pick line at the top of the Stats pane (`pickLiveLine`), which is the tab a
+         live game opens on and the one place that number now exists on this page.
 
          PREGAME the line score is absent (there is nothing in it) and the reminder is just
          the pick strip, which is what has always sat here. A PASS renders nothing at all: an
@@ -12323,9 +12367,8 @@ export default function Home() {
          another ~700px, so they head the Stats pane — the tab this page now opens on the
          moment the game starts. */
       const boxTop = showLive ? `<div class="gp-boxtop" id="gp-boxtop">${boxScoreTab(g, "top")}</div>` : "";
-      const cashMeter = safeHtml("cash meter", () => cashMeterHtml(g), "");
-      const remBody = `${delayNote}${gpBanner}${cashMeter ? `<div class="gp-trend" id="gp-cashmeter">${cashMeter}</div>` : ""}`;
-      const reminder = (delayNote || gpBanner || cashMeter) ? `<div class="gp-lead">${remBody}</div>` : "";
+      const remBody = `${delayNote}${gpBanner}`;
+      const reminder = (delayNote || gpBanner) ? `<div class="gp-lead">${remBody}</div>` : "";
       return `<div class="gp-heroblk">${gameHero}${boxTop}${reminder}</div>${tabsBar}${previewPane}${statsPane}${dePane}${livePane}`;
       }
 

@@ -3046,6 +3046,18 @@ details.more .more-body{padding-top:12px}
 .cfblk.is-high .cfb-fill{background:linear-gradient(90deg,rgba(246,199,69,.55),var(--golddeep))}
 .cfb-s{margin:8px 0 0;font-size:12.5px;line-height:1.45;color:var(--ink2)}
 .cfb-f{margin:5px 0 0;font-size:11px;line-height:1.42;color:var(--ink3)}
+/* ═══ THE STARS ARE A DIFFERENT MEASURE — the bridge inside the confidence block ═══
+   A forge pick's confidence is the rule's board-wide record and its footnote says so; the
+   stars beside it differ per game. This row carries the rating's own name, its pips and the
+   backend's one-line statement of what it measures, hairlined off the footnote above so it
+   reads as a second fact rather than a continuation of the first. */
+.cfb-rate{margin:9px 0 0;padding-top:8px;border-top:1px solid rgba(var(--tintc),.10);
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 8px}
+.cfb-rk{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink3);line-height:1.3;min-width:0}
+.cfb-rate .de-stars i{font-size:9px;color:var(--golddeep)}
+.cfb-rate .de-stars i.off{color:var(--line)}
+.cfb-rs{grid-column:1/-1;margin:2px 0 0;font-size:11.5px;line-height:1.45;color:var(--ink2)}
 @media (prefers-reduced-motion:no-preference){
   .cfb-fill{animation:cfbGrow .62s cubic-bezier(.22,1,.36,1) both}
 }
@@ -6115,39 +6127,72 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* ─────────── 3 · LIVE, MEASURED AGAINST THE LOCKED LINE ─────────── */
-/* THE STRIP HAS A FLOOR. It is a border-box with 26px of horizontal padding and a 1px
-   border, so its CONTENT box hits zero the moment its column is ≤28px wide — and at zero
-   content width normal wrapping puts one word per line, which turned a long string into a
-   2,105px-tall stack of invisible text on 2026-07-31. min-width stops that failure mode
-   dead: below ~240px the strip keeps its own width and .tile's overflow:hidden clips it,
-   so the worst case is a clipped strip, never an unbounded column. At every real width
-   (the narrowest card is ~305px at 375px viewport) this changes nothing. */
-.lvl{border-radius:14px;padding:11px 13px 10px;min-width:240px;
-  background:linear-gradient(180deg,rgba(var(--redc),.09),rgba(var(--redc),.03));
-  border:1px solid rgba(var(--redc),.22)}
-.lvl.cleared{background:linear-gradient(180deg,rgba(var(--greenc),.11),rgba(var(--greenc),.03));
-  border-color:rgba(var(--greenc),.28)}
-.lvl-k{display:flex;align-items:center;gap:7px;font-family:var(--disp);font-weight:700;font-size:11px;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--r3);line-height:1}
-.lvl.cleared .lvl-k{color:var(--g3)}
-.lvl-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 1.4s infinite;flex-shrink:0}
-.lvl-bar{position:relative;height:6px;border-radius:999px;margin:9px 0 8px;
-  background:rgba(var(--tintc),.09);overflow:hidden}
-.lvl-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;
-  background:linear-gradient(90deg,rgba(var(--redc),.55),var(--r2))}
-.lvl.cleared .lvl-fill{background:linear-gradient(90deg,rgba(var(--greenc),.5),var(--g3))}
-.lvl-mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.75;border-radius:2px}
-.lvl-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
-  font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink2)}
-.lvl-sep{font-style:normal;color:var(--ink4);opacity:.6}
-.lvl-ph{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px;padding-top:9px;
-  border-top:1px solid rgba(var(--tintc),.09)}
-.lvl-badge{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.12em;
-  border-radius:999px;padding:3px 9px;color:#fff;background:var(--amber);white-space:nowrap}
-.lvl-ph b{font-family:var(--mono);font-weight:700;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
-.lvl-phtx{font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--ink3);flex:1;min-width:140px}
-/* (.lvl-note deleted 2026-07-31 — it existed only to print live_progress.note, which is a
-   contract note addressed to the author, not copy. Nothing renders into it any more.) */
+/* ═══════ OUR BET, LIVE — the one line at the top of the Stats pane ═══════
+   Leon, 2026-08-09: "the NOT LANDING widget on the stats tab isn't really helpful — even if
+   it were going over, just in line with the over and what the pick is, how that pick is
+   trending in the percent, as well as the star rating of that pick."
+
+   WHAT IT REPLACED WAS TWO BLOCKS. The `.lho-full` slab above the tabs (two rows: a word, a
+   direction phrase and a bar — 60px that never named the bet) and `.lvl`, a second meter
+   heading this same pane whose subject was the RUNS, four inches under a line score that
+   already had them. Both are gone; the recipes below are the whole replacement.
+
+   IT IS ONE ROW AND MUST STAY ONE ROW. Three items — side+number, the percent with its
+   word, the stars — laid out so the middle one is the only thing that may give: the side is
+   the subject and the stars are 5 fixed glyphs, so `min-width:0` sits on the percent alone.
+   Measured at 375px: "▼ UNDER 10.5" 96px + "0% not landing" 84px + stars 42px + gaps = 240px
+   inside a 327px pane, with the same content at 360px still on one line.
+
+   THE FILL IS THE METER, NOT A DECORATION. It is the same probability the label states,
+   drawn behind the row at that width, so a fuller bar always means "more likely to win" for
+   OVER and UNDER alike. It sits at z-index 0 under the content and is aria-hidden — the
+   number beside it is the accessible fact. */
+.plvl{position:relative;overflow:hidden;display:flex;align-items:center;gap:9px;
+  border-radius:12px;padding:8px 11px;min-height:38px;min-width:0;
+  background:rgba(var(--tintc),.05);border:1px solid var(--line3)}
+.plvl-fill{position:absolute;left:0;top:0;bottom:0;z-index:0;border-radius:0 8px 8px 0;
+  opacity:.16;transition:width .6s var(--ease)}
+.plvl>*:not(.plvl-fill){position:relative;z-index:1}
+.plvl-side{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;
+  font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.plvl-side i{font-style:normal;font-size:10px;line-height:1}
+.plvl-side.ou-over{color:var(--g3)} .plvl-side.ou-over i{color:var(--green)}
+.plvl-side.ou-under{color:var(--r3)} .plvl-side.ou-under i{color:var(--red)}
+/* THE PERCENT IS THE ELEMENT THAT GIVES. min-width:0 + the ellipsis on the word means a
+   narrow pane clips "trending our way" to "trending our…" rather than wrapping the row. */
+.plvl-pct{display:inline-flex;align-items:baseline;gap:5px;min-width:0;flex:1 1 auto;
+  font-family:var(--sans);white-space:nowrap;overflow:hidden}
+.plvl-pct b{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink);
+  font-variant-numeric:tabular-nums;flex-shrink:0}
+.plvl-pct i{font-style:normal;font-size:11px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink3);overflow:hidden;text-overflow:ellipsis}
+.plvl-stars{display:inline-flex;align-items:center;gap:1px;flex-shrink:0;margin-left:auto;
+  line-height:1;font-family:var(--disp)}
+.plvl-stars i{font-style:normal;font-size:9px;line-height:1;color:var(--golddeep)}
+.plvl-stars i.off{color:var(--line)}
+/* ═══ RED AND GREEN MEAN ONLY LOST AND WON ═══
+   The app's one colour system, and the reason there are FOUR tints here rather than the
+   three `LIVE_DIR` carries. A pick trending against us is still a live bet, so it may not
+   wear the settled red of a graded loss — that is the same rule that tints the in-play
+   cushion chip's CHASE amber and its TIGHT slate. Green arrives only when the runs have won
+   the bet; red only when they have killed it. In between: amber against us, quiet slate on a
+   coin flip, quiet green ahead. */
+.plvl.dir-ahead{background:var(--greenbg);border-color:var(--greenline)}
+.plvl.dir-ahead .plvl-fill{background:var(--green)}
+.plvl.dir-ahead .plvl-pct b{color:var(--g3)}
+.plvl.dir-close .plvl-fill{background:var(--ink3)}
+.plvl.dir-close .plvl-pct b{color:var(--ink2)}
+.plvl.dir-against{background:var(--amberbg);border-color:rgba(var(--goldc),.28)}
+.plvl.dir-against .plvl-fill{background:var(--amber)}
+.plvl.dir-against .plvl-pct b{color:var(--a3)}
+/* the two SETTLED-BY-ARITHMETIC states — the only two that may use the result colours */
+.plvl.dir-hit{background:var(--greenbg);border-color:var(--greenline)}
+.plvl.dir-hit .plvl-fill{background:var(--green)}
+.plvl.dir-hit .plvl-pct i{color:var(--g3)}
+.plvl.dir-cooked{background:var(--missbg);border-color:var(--missline)}
+.plvl.dir-cooked .plvl-fill{background:var(--red);opacity:.10}
+.plvl.dir-cooked .plvl-pct i{color:var(--r3)}
 
 /* ─────────── 4 · THE DIAMONDEDGE PICK — the conclusion ─────────── */
 .decall{position:relative;overflow:hidden;border-radius:16px;padding:14px 15px 13px;
