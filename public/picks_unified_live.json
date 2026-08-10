@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T10:37:45Z",
+  "generated_utc": "2026-08-10T11:52:16Z",
   "dates": [
     "2026-08-10"
   ],
@@ -8987,7 +8987,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T10:38:10Z",
+      "updated": "2026-08-10T11:52:41Z",
       "order": [
         "vega",
         "atlas",
@@ -13063,16 +13063,20 @@
     },
     "by_wall": {
       "vega": {
-        "T-24h": 10
+        "T-12h": 4,
+        "T-24h": 6
       },
       "atlas": {
-        "T-24h": 10
+        "T-12h": 4,
+        "T-24h": 6
       },
       "nova": {
-        "T-24h": 10
+        "T-12h": 4,
+        "T-24h": 6
       },
       "scout": {
-        "T-24h": 10
+        "T-12h": 4,
+        "T-24h": 6
       }
     },
     "first_wall_with_a_read": {
@@ -13107,25 +13111,14 @@
     "note": "Per-analyst read counts over the SERVED cards. The four reads come from analyst_v2_stream.reads_for_date and nothing else, so `native` is every read and `coverage` is permanently 0 \u2014 FORCED COVERAGE IS RETIRED. It used to manufacture a fallback read for whichever of the four dismantled engines had frozen nothing on a game, which guaranteed a full board by construction. The v2 stream prices a game only where its T-3h feature frame exists, so a no-read is a real statement about the feed for that game and is counted here rather than filled in from a different model."
   },
   "line_now_audit": {
-    "n_emitted": 9,
+    "n_emitted": 10,
     "n_suppressed_started": 0,
     "n_suppressed_implausible": 0,
-    "n_suppressed_basis_disagreement": 1,
+    "n_suppressed_basis_disagreement": 0,
     "n_no_current": 0,
     "n_no_pregame": 0,
     "max_plausible_move": 2.0,
-    "rejects": [
-      {
-        "game_pk": 824969,
-        "date": "2026-08-10",
-        "pregame": 10.0,
-        "now": 9.5,
-        "move": -0.5,
-        "basis": "book_consensus_median",
-        "book": "betmgm",
-        "reason": "consensus move -0.5 disagrees in direction with betmgm's own +0.5"
-      }
-    ],
+    "rejects": [],
     "note": "line_now is the SAME full-game pregame totals market as the locked line, compared same-book or on the identical book-consensus-median basis, suppressed once the game starts, and refused when the implied move exceeds what a full-game total can do. Refusals appear here; they are never shipped as a move."
   },
   "games": [
@@ -13227,28 +13220,28 @@
         {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
@@ -13259,7 +13252,7 @@
         "locked": false,
         "lead_time": "T-3h",
         "source": "strategy_forge",
-        "consensus_state": "MAJORITY",
+        "consensus_state": "UNANIMOUS",
         "action": "AVOID",
         "action_before_pattern": "AVOID",
         "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
@@ -13395,28 +13388,28 @@
         {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
@@ -13427,7 +13420,7 @@
         "locked": false,
         "lead_time": "T-3h",
         "source": "strategy_forge",
-        "consensus_state": "MAJORITY",
+        "consensus_state": "SPLIT",
         "action": "AVOID",
         "action_before_pattern": "AVOID",
         "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
@@ -13563,28 +13556,28 @@
         {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
@@ -13595,7 +13588,7 @@
         "locked": false,
         "lead_time": "T-3h",
         "source": "strategy_forge",
-        "consensus_state": "SPLIT",
+        "consensus_state": "MAJORITY",
         "action": "AVOID",
         "action_before_pattern": "AVOID",
         "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
@@ -13731,28 +13724,28 @@
         {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
@@ -13763,7 +13756,7 @@
         "locked": false,
         "lead_time": "T-3h",
         "source": "strategy_forge",
-        "consensus_state": "UNANIMOUS",
+        "consensus_state": "MAJORITY",
         "action": "AVOID",
         "action_before_pattern": "AVOID",
         "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",

@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T11:11:49Z",
+  "generated_utc": "2026-08-10T11:48:51Z",
   "dates": [
     "2026-08-10"
   ],
@@ -2290,17 +2290,17 @@
   },
   "board_census": {
     "n_games": 10,
-    "n_rows": 11,
+    "n_rows": 14,
     "n_voided": 0,
     "n_playable": 0,
     "n_takes": 0,
-    "n_passes": 11,
+    "n_passes": 14,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 0,
       "2": 0,
-      "1": 11
+      "1": 14
     }
   },
   "spread_stream": {
@@ -2392,16 +2392,16 @@
         "line": 1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": -156,
+        "price": -154,
         "best_book": null,
         "stars": 1,
-        "score": 1.14,
-        "our_prob": 0.3875,
-        "ev": 0.0052,
+        "score": 0.57,
+        "our_prob": 0.3985,
+        "ev": -0.008,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2419,16 +2419,16 @@
         "line": -1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": 153,
+        "price": 155,
         "best_book": null,
         "stars": 1,
-        "score": 1.74,
-        "our_prob": 0.5949,
-        "ev": 0.0249,
+        "score": 1.31,
+        "our_prob": 0.6011,
+        "ev": 0.0173,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2446,16 +2446,16 @@
         "line": -1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": 150,
+        "price": 158,
         "best_book": null,
         "stars": 1,
-        "score": 1.6,
-        "our_prob": 0.5917,
-        "ev": 0.0207,
+        "score": 0.54,
+        "our_prob": 0.6126,
+        "ev": -0.0005,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2765,22 +2765,22 @@
         "side": "over",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.5946,
+        "p_over": 0.589,
         "p_over_market": 0.5,
-        "sim_edge": 0.0946,
-        "price": -107.0,
-        "best_book": "lowvig",
+        "sim_edge": 0.089,
+        "price": -106.0,
+        "best_book": "pinnacle",
         "stars": 1,
         "score": null,
-        "sim_mu": 10.562,
+        "sim_mu": 10.442,
         "sim_median": 10,
-        "sim_sd": 4.854,
+        "sim_sd": 4.768,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2791,7 +2791,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Philadelphia Phillies-St. Louis Cardinals-823018",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "823189": {
@@ -2867,22 +2868,22 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.5308,
-        "p_over_market": 0.5,
-        "sim_edge": 0.0308,
-        "price": -102.0,
-        "best_book": "lowvig",
+        "p_over": 0.5334,
+        "p_over_market": 0.4892,
+        "sim_edge": 0.0442,
+        "price": 101.0,
+        "best_book": "onexbet",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.221,
+        "sim_mu": 9.227,
         "sim_median": 9,
-        "sim_sd": 4.383,
+        "sim_sd": 4.359,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2893,7 +2894,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Baltimore Orioles-Minnesota Twins-823675",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "823918": {
@@ -2969,22 +2971,22 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.5444,
-        "p_over_market": 0.4948,
-        "sim_edge": 0.0496,
+        "p_over": 0.5534,
+        "p_over_market": 0.4908,
+        "sim_edge": 0.0626,
         "price": 102.0,
         "best_book": "onexbet",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.365,
+        "sim_mu": 9.502,
         "sim_median": 9,
-        "sim_sd": 4.4,
+        "sim_sd": 4.463,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2995,7 +2997,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-New York Mets-Atlanta Braves-824887",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "824969": {
@@ -3219,12 +3222,12 @@
         "side": "over",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.5225,
+        "p_over": 0.5211,
         "p_over_market": 0.5,
-        "scout_edge": 0.0225,
-        "conviction": 0.5225,
-        "price": -107.0,
-        "best_book": "lowvig",
+        "scout_edge": 0.0211,
+        "conviction": 0.5211,
+        "price": -106.0,
+        "best_book": "pinnacle",
         "stars": null,
         "score": null,
         "n_train": 11192,
@@ -3237,12 +3240,12 @@
           "pen_home_era_std": 3.4486,
           "pen_away_era_std": 3.5437,
           "enr_park_run_factor_3y": 0.9955,
-          "wx_temp_f": 95.0
+          "wx_temp_f": 93.92
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3253,7 +3256,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Philadelphia Phillies-St. Louis Cardinals-823018",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "823189": {
@@ -3345,12 +3349,12 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.5088,
-        "p_over_market": 0.5,
-        "scout_edge": 0.0088,
-        "conviction": 0.5088,
-        "price": -102.0,
-        "best_book": "lowvig",
+        "p_over": 0.4973,
+        "p_over_market": 0.4892,
+        "scout_edge": 0.0081,
+        "conviction": 0.4973,
+        "price": 101.0,
+        "best_book": "onexbet",
         "stars": null,
         "score": null,
         "n_train": 11192,
@@ -3363,12 +3367,12 @@
           "pen_home_era_std": 4.2434,
           "pen_away_era_std": 3.9443,
           "enr_park_run_factor_3y": 1.0279,
-          "wx_temp_f": 87.98
+          "wx_temp_f": 87.44
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3379,7 +3383,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Baltimore Orioles-Minnesota Twins-823675",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "823918": {
@@ -3468,14 +3473,14 @@
       },
       "824887": {
         "status": "LEAN",
-        "side": "under",
+        "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.4937,
-        "p_over_market": 0.4948,
-        "scout_edge": -0.0011,
-        "conviction": 0.5063,
-        "price": -111.0,
+        "p_over": 0.4939,
+        "p_over_market": 0.4908,
+        "scout_edge": 0.003,
+        "conviction": 0.4939,
+        "price": 102.0,
         "best_book": "onexbet",
         "stars": null,
         "score": null,
@@ -3489,12 +3494,12 @@
           "pen_home_era_std": 2.5378,
           "pen_away_era_std": 4.3647,
           "enr_park_run_factor_3y": 1.0086,
-          "wx_temp_f": 88.16
+          "wx_temp_f": 91.4
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3505,7 +3510,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-New York Mets-Atlanta Braves-824887",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "824969": {
@@ -4770,7 +4776,8 @@
       "home": "Atlanta Braves",
       "first_pitch_utc": "2026-08-10T23:15:00+00:00",
       "walls_populated": [
-        "T-24h"
+        "T-24h",
+        "T-12h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -4795,6 +4802,28 @@
           "pass_why": "ev_gate",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
       ],
       "locked": false
@@ -4807,7 +4836,8 @@
       "home": "Minnesota Twins",
       "first_pitch_utc": "2026-08-10T23:40:00+00:00",
       "walls_populated": [
-        "T-24h"
+        "T-24h",
+        "T-12h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -4832,6 +4862,28 @@
           "pass_why": "ev_gate",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "betrivers",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
       ],
       "locked": false
@@ -4844,7 +4896,8 @@
       "home": "St. Louis Cardinals",
       "first_pitch_utc": "2026-08-10T23:45:00+00:00",
       "walls_populated": [
-        "T-24h"
+        "T-24h",
+        "T-12h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -4865,6 +4918,28 @@
             "one_sided": false
           },
           "best_book": "betrivers",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
           "premium_locked": true,

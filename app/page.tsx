@@ -2403,6 +2403,11 @@ export default function Home() {
         .replace(/\bis_betting_record\b/g, "the staked-or-lean flag")
         .replace(/`([^`]+)`/g, "$1")
         .replace(/`/g, "")
+        // A source filename that rode in on a sentence ("backfill.py", "SCRUB_LOG.md",
+        // "daily_cycle_report.json") reads as a leak even after the underscores are spaced.
+        // The extension is what marks it as a file rather than a word, so it comes off first;
+        // the stem is then spoken as words by the de-speacer below.
+        .replace(/\.(?:py|mjs|js|ts|tsx|md|json|jsonl|csv|tsv|parquet|sh|txt|sha|log|yml|yaml)\b/gi, "")
         .replace(/\b[a-z0-9]+(?:_[a-z0-9]+)+\b/g, (m) => m.replace(/_/g, " "));
     }
     // Translate technically-correct backend phrases into the way a bettor would say them.
@@ -2442,7 +2447,17 @@ export default function Home() {
         .replace(/\bThat disagreement is context,\s*not a veto\./gi,
           "Plain English: the desk reads are useful background, but the ticket is priced separately.")
         .replace(/\bThe split is context,\s*not a veto\./gi,
-          "Plain English: a split desk does not cancel a bet when the number and price are still worth playing.");
+          "Plain English: a split desk does not cancel a bet when the number and price are still worth playing.")
+        /* THE RETIRED COMMITTEE ENGINE'S PASS RATIONALE, SAID LIKE A PERSON. On a no-bet
+           game it opened with its own internals ("no trailing rule cleared the nested
+           validation filters") and then broke the grammar ("says to do not force a bet").
+           It is a plain pass; the tail already says why, cleanly. The backend is corrected
+           in parallel — this survives whatever is cached or still in flight. */
+        .replace(/no trailing rule cleared the nested validation filters\s*In plain English:\s*today'?s strategy says to do not force a bet without a proven recent pattern;\s*this game showed not all four analyst reads are in,\s*so DiamondEdge passes/gi,
+          "Not all four analyst reads are in, so DiamondEdge passes")
+        .replace(/\bno trailing rule cleared the nested validation filters\b\.?\s*/gi, "")
+        .replace(/\btoday'?s strategy says to do not force a bet\b/gi,
+          "today's strategy is to pass rather than force a bet");
     }
     /* ═════════════ THE RECIPE LINE, DRAWN IN ONE PLACE (2026-08-09) ═════════════
        Leon: "make it seem super sophisticated but not completely give away our magic."
@@ -10742,7 +10757,7 @@ export default function Home() {
           const stale = leagueFeedStale(league);
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
           body.innerHTML = stale
-            ? `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">${esc(SPORT_LABEL[league])} isn't updating</div><div class="sm">We're not receiving ${esc(SPORT_LABEL[league])} right now — the most recent fixture we hold is from ${esc(stale.lastLabel)}, so we can't say what's on today. This isn't a claim that nothing is scheduled. MLB is unaffected, and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`
+            ? `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">${esc(SPORT_LABEL[league])} isn't updating</div><div class="sm">Our ${esc(SPORT_LABEL[league])} feed has gone quiet — the last fixture we hold is from ${esc(stale.lastLabel)}, so there is no ${esc(SPORT_LABEL[league])} board today. MLB is running as normal, and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`
             : `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`;
         } else {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
@@ -17684,7 +17699,7 @@ export default function Home() {
         ${unit && unit !== "%" ? `<div class="rvz-unit">${esc(unit)}</div>` : ""}
         <div class="rvz-body">${body}</div>
         ${v.caption ? `<p class="rvz-cap">${esc(String(v.caption))}</p>` : ""}
-        ${v.source ? `<p class="rvz-src">${esc(String(v.source))}</p>` : ""}
+        ${v.source ? `<p class="rvz-src">${esc(sourceName(String(v.source)))}</p>` : ""}
       </figure>`;
     }
 

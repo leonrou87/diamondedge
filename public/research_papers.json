@@ -2183,7 +2183,7 @@
     },
     {
      "label": "How much coverage it buys",
-     "value": "picks per night 4.31 \u2192 5.94; nights with 2 or fewer 39 \u2192 17; nights with zero 17 \u2192 3",
+     "value": "picks per night 4.31 \u2192 5.94; nights with 2 or fewer 38 \u2192 17; nights with zero 17 \u2192 3",
      "note": "It concentrates on exactly the thin nights, which is the shape you want.",
      "source": "v4/models/output/PICKRATE_ANALYSIS.md"
     },
