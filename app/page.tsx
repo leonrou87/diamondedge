@@ -13125,7 +13125,16 @@ export default function Home() {
       const whySection = leadLocked
         ? ""
         : `${whyHead}
-           ${lead && !leadLocked ? confidenceBlock(lead) : ""}
+           ${""/* THE CONFIDENCE BOX IS GONE (Leon, 2026-08-10: "we still have a pick
+                 confidence box — it should just be narrative and the links").
+                 It was a slab stating a score against a scale, with a meter and a basis line
+                 — the number explaining itself, in the era when the number was the argument.
+                 The four-paragraph narrative directly beneath it now makes the case in
+                 prose, and the STARS on the pick carry the conviction at a glance. A box
+                 restating both, between the heading and the writing, was the third telling
+                 of one thing. The score still rides the tag's title for anyone who wants the
+                 figure, and every surface where a reader has stopped on a single pick still
+                 has it in full. */}
            ${/* the no-bet statement comes BEFORE the fold that elaborates on it — a "full
                 read" disclosure above the sentence explaining there is no bet reads as an
                 answer offered before the question. */ ""}
@@ -14758,8 +14767,11 @@ export default function Home() {
         const k = b.dataset.navk;
         if (!k) return;                                            // an end stop: it is there to say so
         articleTurnBack = navKeys.indexOf(k) < ci;
-        const ns = newsStoryByKey(k);
-        if (ns) { openArticleSheet(ns, k); const sb = $("sheet") && $("sheet").querySelector(".sh-body"); if (sb) sb.scrollTop = 0; }
+        // A missing story goes through the same door as every other failure — never a
+        // dead tap, which is indistinguishable from the control being broken.
+        openArticleSheet(newsStoryByKey(k), k);
+        const sb = $("sheet") && $("sheet").querySelector(".sh-body");
+        if (sb) sb.scrollTop = 0;
       }));
       const shb = $("art-share");
       if (shb) shb.onclick = async (e: any) => {
