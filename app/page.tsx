@@ -17496,6 +17496,19 @@ export default function Home() {
                those are different numbers, printed inches from records that derive it. */
         const dec = Number(r.win || 0) + Number(r.loss || 0);
         const hit = dec ? Number(r.win || 0) / dec : null;
+        /* ═══ A PERCENTAGE OFF ONE PICK IS NOT A HIT RATE (2026-08-09) ═══
+           The forge does not vote, so the served cut has been draining to almost
+           nothing: on the board this shipped against it was one Strong, one
+           Standard and one Lean — and each row printed "100.0%" or "0.0%" in the
+           same type as every real rate on the site. One decimal place on a sample
+           of one is a claim to precision the sample cannot carry, and it is the
+           worse direction of the same failure the foot-note is apologising for
+           two lines below ("far too few to conclude anything yet").
+           The RECORD stays on every row, always — 1-0 is exactly true and a reader
+           can see the sample is one. What is withheld is only the DERIVED figure,
+           and only while the tier has too few decided picks to have a rate at all.
+           Nothing is hidden that was not already visible in the W-L beside it. */
+        const HIT_MIN_DECIDED = 10;
         const u = r["units_flat_-110"] != null ? Number(r["units_flat_-110"])
           : (r.units != null ? Number(r.units) : null);
         return `<div class="rstr-row">
@@ -17505,7 +17518,7 @@ export default function Home() {
           </div>
           <div class="rstr-figs">
             <span class="rstr-f"><b>${esc(wlTxt(r))}</b><i>record</i></span>
-            ${hit != null ? `<span class="rstr-f"><b>${(hit * 100).toFixed(1)}%</b><i>hit</i></span>` : ""}
+            ${hit != null && dec >= HIT_MIN_DECIDED ? `<span class="rstr-f"><b>${(hit * 100).toFixed(1)}%</b><i>hit</i></span>` : ""}
             ${u != null ? `<span class="rstr-f ${u >= 0 ? "pos" : "neg"}"><b>${u >= 0 ? "+" : ""}${u.toFixed(1)}u</b><i>net</i></span>` : ""}
           </div>
         </div>`;
