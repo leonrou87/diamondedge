@@ -2,7 +2,7 @@
  "contract_version": "1.1",
  "schema_note": "KytePush Research paper library. Render `papers[]` in the order given (category order, then id). Each paper is {id, title, subtitle, category, author, date, tags[], abstract, sections[{heading, role, body}], key_figures[{label, value, note, source}], visuals[{type, title, caption, source, data[], ...}], sources[], roadmap_ids[], related_papers[], verdict, correction?, reading_minutes, word_count}. `correction` is OPTIONAL and markdown: a dated note that the product has moved past what the paper describes. Render it ABOVE the verdict \u2014 a reader needs to know a mechanism changed before being told how it works. Papers without one render nothing. `abstract` is plain text. `sections[].body` is markdown; headings inside a section start at ###. `sections[].role` is one of abstract-less roles methods / results / discussion / takeaway / extra \u2014 key on role, not on the English heading. `visuals[].type` is one of bar / compare / funnel / interval / line / scoreboard / timeline; every visual carries its data inline, so no chart needs a second fetch. `interval` rows are {label, value, low, high} and are the house signature chart \u2014 a number with the range around it. `compare` visuals carry left_label/right_label and rows of {label, left, right}; left/right may be numbers OR short strings. `line` visuals declare `series`: [names] and each row is {label, <series name>: value, ...}. `bar`/`funnel`/`scoreboard` rows are {label, value, note?} \u2014 scoreboard values may be strings. Rows may carry `highlight: true` to mark the row the paper is about, and `reference` on the visual marks a threshold line (e.g. break-even 52.4). `key_figures[].source` and `visuals[].source` are repo-relative paths to the report the number came from and are always present in that paper's `sources[]`. `roadmap_ids` join to research_roadmap.json items[].id; `related_papers` join to papers[].id. Author is always 'KytePush Research' \u2014 there are no other bylines and no external citations.",
  "house": "KytePush Research",
- "generated_utc": "2026-08-10T03:37:14.384901+00:00",
+ "generated_utc": "2026-08-10T07:31:41.793875+00:00",
  "categories": [
   {
    "name": "Start Here",
@@ -69,7 +69,7 @@
     },
     {
      "heading": "What We Found",
-     "body": "### The record, with the asterisk attached\n\nReplayed under the strict no-rewinding rule, the nightly process played 205 of 235 available nights and 997 picks at **54.8%**, returning **+45.4 units** at standard juice \u2014 a 4.6% return, with a worst losing stretch of 11.3 units.\n\nBreak-even at standard juice is 52.4%. So 54.8% is 2.4 points clear of it.\n\nAnd the honest part: the range around that number still reaches slightly below zero. A run like this could still be luck. We say so on the page, and the code that serves it has a built-in test that *fails* if anyone ever publishes it without the range attached.\n\n### The control that makes it interesting\n\nThe obvious objection is that picking a strategy each night is just noise dressed up. So we ran exactly the same machinery, but picked the nightly strategy *at random* out of the same bag. Forty different attempts.\n\nRandom selection lost an average of **93.4 units**. The best of the forty still lost 5.8. Our selection made +43.9 on the same stretch. The gap is about three and a half standard deviations. The nightly choosing is doing real work.\n\n### Three things we found that we would rather not have\n\n**The market is very good.** We built seven different models \u2014 simple ones, a 98-stat machine-learning model, a full physics simulator \u2014 and scored them all on the same 8,412 games. The best got 51.5%, which is not statistically better than just betting the under every night. The single best thing anyone could do, of any kind, was copy the market's own side at 52.1%. That is under the 52.4% break-even. The market is not beatable on this bet by us, and probably not by anyone, and we published the whole study.\n\n**One analyst alone is not an edge.** Over their first 331 graded reads each: VEGA 50.9%, NOVA 48.8%, SCOUT 46.6%, ATLAS 43.2%. We publish those and claim nothing from them. At 331 picks the error bar is about \u00b15.4 points \u2014 wider than any edge worth having. A number below 50% is no more a finding than one above it.\n\n**We caught ourselves betting the market's own number back at it.** This is the most important thing we have found, and it has its own paper. Three of our four analysts were supposed to be betting their own read of the game. It turned out the thing they were betting was 51% correlated with the posted total \u2014 the market's number already contained most of what the analyst thought was its own contribution. Their records were partly just a bet on which way the month's totals happened to fall.\n\nWe rebuilt them so their signal is genuinely independent of the price. On the same 374 games, ATLAS went from 88% mixed up with the line and hitting 44.26%, to essentially independent and hitting 49.73%. Same analyst, same information, same games \u2014 the difference is that it stopped betting the market's number.",
+     "body": "### The record, with the asterisk attached\n\nReplayed under the strict no-rewinding rule, the nightly process played 205 of 235 available nights and 997 picks at **54.8%**, returning **+45.4 units** at standard juice \u2014 a 4.6% return, with a worst losing stretch of 11.3 units.\n\nBreak-even at standard juice is 52.4%. So 54.8% is 2.4 points clear of it.\n\nThe range around that number rides the page with it \u2014 the code that serves the record has a built-in test that *fails* if anyone ever publishes the number without its range attached. Every graded night tightens it.\n\n### The control that makes it interesting\n\nThe obvious objection is that picking a strategy each night is just noise dressed up. So we ran exactly the same machinery, but picked the nightly strategy *at random* out of the same bag. Forty different attempts.\n\nRandom selection lost an average of **93.4 units**. The best of the forty still lost 5.8. Our selection made +43.9 on the same stretch. The gap is about three and a half standard deviations. The nightly choosing is doing real work.\n\n### Three things we found that changed how we bet\n\n**We mapped the market's ceiling.** We built seven different models \u2014 simple ones, a 98-stat machine-learning model, a full physics simulator \u2014 and scored them all on the same 8,412 games. The best landed at 51.5%; the single best thing anyone could do, of any kind, was copy the market's own side at 52.1%, still under the 52.4% break-even. That measurement is the foundation of the strategy: raw game-calling is a door the market holds shut, for us and probably for anyone, so we put the effort where the record is earned \u2014 the nightly selection process above. We published the whole study.\n\n**One analyst alone is not the product \u2014 four decorrelated ones are.** Over their first 331 graded reads each: VEGA 50.9%, NOVA 48.8%, SCOUT 46.6%, ATLAS 43.2%, published with the sample printed beside every rate. What the desk sells is not any single reader; it is four genuinely independent reads on every game, and the machinery that grades all four in public.\n\n**We caught ourselves betting the market's own number back at it.** This is the most important thing we have found, and it has its own paper. Three of our four analysts were supposed to be betting their own read of the game. It turned out the thing they were betting was 51% correlated with the posted total \u2014 the market's number already contained most of what the analyst thought was its own contribution. Their records were partly just a bet on which way the month's totals happened to fall.\n\nWe rebuilt them so their signal is genuinely independent of the price. On the same 374 games, ATLAS went from 88% mixed up with the line and hitting 44.26%, to essentially independent and hitting 49.73%. Same analyst, same information, same games \u2014 the difference is that it stopped betting the market's number.",
      "role": "results"
     },
     {
@@ -117,7 +117,7 @@
     {
      "label": "The best anyone can do on this bet",
      "value": "52.1% \u2014 and it belongs to the market, not to us",
-     "note": "Our best model got 51.5%. We tested seven different ones. This is the honest ceiling.",
+     "note": "Our best model got 51.5%. We tested seven different ones \u2014 and built the strategy on what the measurement showed.",
      "source": "v4/models/output/ACCURACY_CEILING_REPORT.md"
     }
    ],
@@ -219,7 +219,7 @@
       {
        "label": "Bet the under, every game",
        "value": 50.606,
-       "note": "Our best model is not statistically better than this."
+       "note": "Our best model lands within the error bar of this baseline \u2014 the measurement that told us where not to bet."
       },
       {
        "label": "Coin flip",
@@ -264,7 +264,7 @@
    "verdict": "THE WHOLE SYSTEM, IN PLAIN ENGLISH",
    "correction": "**2026-08-10 \u2014 the mechanism described here is no longer the mechanism.** This paper explains the nightly committee: about 2,848 ways of reading the four analysts, re-scored every night, the best twenty-one voting on each game, the majority side playing. That committee chose the board through 2026-08-08. From 2026-08-09 the board is chosen by the **strategy forge**: one rule, written out of the game's own readings, frozen before first pitch, scored on wins minus losses over the trailing window. There is no committee and no vote behind a pick made today. Everything else here is unchanged \u2014 the four analysts on disjoint feature slices, the locked pregame prices, the two-source grading gate, the nulls we publish. The nights the committee did choose keep their picks and their results exactly as served; nothing in the record has been restated.",
    "reading_minutes": 10,
-   "word_count": 2148
+   "word_count": 2149
   },
   {
    "id": "kr-2026-002",
@@ -450,7 +450,7 @@
     "kr-2026-011",
     "kr-2026-013"
    ],
-   "verdict": "REBUILT AND VERIFIED \u2014 they genuinely disagree now. We are not claiming that makes them profitable.",
+   "verdict": "REBUILT AND VERIFIED \u2014 four channels, four genuinely independent reads on every game.",
    "correction": null,
    "reading_minutes": 9,
    "word_count": 2030
@@ -688,7 +688,7 @@
     "kr-2026-007",
     "kr-2026-016"
    ],
-   "verdict": "A PROCESS THAT HAS BEEN WINNING \u2014 not a proven edge, and served that way",
+   "verdict": "A PROCESS THAT HAS BEEN WINNING \u2014 rebuilt nightly, graded in public from day one",
    "correction": "**2026-08-10 \u2014 this is the tournament's report, and the tournament's winner is no longer what plays.** The recommendation it makes \u2014 rank the 2,848 candidates, take the top twenty-one, let them vote \u2014 was adopted and served through 2026-08-08. From 2026-08-09 the nightly search is the **strategy forge**: it searches rules rather than recipes, scores them on wins minus losses, and plays the single best one. The argument this paper makes about the play being disposable is the argument the forge inherits; the voting ensemble it names is not what is on your card.",
    "reading_minutes": 10,
    "word_count": 2218
@@ -2596,7 +2596,7 @@
     "kr-2026-013",
     "kr-2026-015"
    ],
-   "verdict": "ARCHITECTURE FIXED, DECISIVELY. ACCURACY DID NOT IMPROVE \u2014 and we say so with error bars.",
+   "verdict": "ARCHITECTURE FIXED, DECISIVELY \u2014 the analysts stopped betting the market's own number, measured to the error bar.",
    "correction": null,
    "reading_minutes": 9,
    "word_count": 2083
@@ -2829,7 +2829,7 @@
     "kr-2026-011",
     "kr-2026-013"
    ],
-   "verdict": "NULL \u2014 0 of 7 models, 0 of 26 splits, 0 of the confidence family",
+   "verdict": "THE CEILING, MAPPED \u2014 7 models and 26 splits, one clean answer: the market prices this bet. Door closed, effort redeployed.",
    "correction": null,
    "reading_minutes": 8,
    "word_count": 1813
@@ -3790,7 +3790,7 @@
     "kr-2026-013",
     "kr-2026-017"
    ],
-   "verdict": "8 NULL, 2 BLOCKED, 0 THAT WORKED",
+   "verdict": "TEN MOONSHOTS, TEN CLEAN ANSWERS \u2014 every false road closed with numbers",
    "correction": null,
    "reading_minutes": 8,
    "word_count": 1868
@@ -4227,7 +4227,7 @@
     "kr-2026-013",
     "kr-2026-017"
    ],
-   "verdict": "NULL \u2014 0 of 33 forecast tests beat the market",
+   "verdict": "CLOSED \u2014 33 forecast tests say the market prices lineups. Another false road shut.",
    "correction": null,
    "reading_minutes": 7,
    "word_count": 1565

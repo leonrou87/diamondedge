@@ -68,12 +68,19 @@ trap 'rm -f "$TMP" "$RESP"' EXIT
 # "when was this index last rebuilt" actually means.
 python3 - "$FILE" "$TMP" <<'PY'
 import datetime,json,os,sys
+# ═══ THE WRITE GATE ═══ every row on slate_snapshots is readable by anyone
+# holding the anon JWT in the site's JS bundle, so this upload is a
+# publication. The gate redacts by schema and REFUSES a key nobody has
+# registered; `set -e` turns a leak into a failed sync rather than a published
+# board. See ~/Desktop/sports-betting-platform/v4/serve/snapshot_gate.py.
+sys.path.insert(0,"/Users/leonrou/Desktop/sports-betting-platform")
+from v4.serve import snapshot_gate as _GATE
 src=sys.argv[1]
 payload=json.load(open(src))
 mtime=datetime.datetime.fromtimestamp(os.path.getmtime(src),datetime.timezone.utc)
 payload["generated_utc"]=mtime.isoformat()
 now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-json.dump([{"key":"research_roadmap","payload":payload,"updated_at":now}],
+json.dump(_GATE.gate_rows([{"key":"research_roadmap","payload":payload,"updated_at":now}],verbose=False),
           open(sys.argv[2],"w"))
 PY
 HTTP=$(curl -s -o "$RESP" -w "%{http_code}" \

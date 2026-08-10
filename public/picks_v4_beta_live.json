@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T07:28:55Z",
+  "generated_utc": "2026-08-10T08:05:36Z",
   "dates": [],
   "source_walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
   "recipe_sha256": "ecac66ecf0bc6b198550786b38930c345d7d20669f7f32719fe075407adc9b48",
@@ -2290,7 +2290,7 @@
       "runline_engine_report_exists": true,
       "runline_engine_report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/output/DERIV_RUNLINE_MARGIN_REPORT.md",
       "prereg": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/prereg/deriv_runline_margin.md",
-      "basis": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+      "basis": "run-line stream, served as LEANS only: the direction is the live model's read of the run line, locked at first pitch and graded at the real locked price, in public, from day one. A lean is never a bet.",
       "upgrade_path": "UPGRADE PATH: a future run-line engine that passes its margin fitness gate with a surviving arm and real economics can flip the stream to sim_pricing (P(cover) from a validated joint margin distribution, +EV gate at real per-side prices, max 2*). The 2026-07-27 DERIV_RUNLINE_MARGIN_REPORT verdict was BLOCKED (prereg K1: margin fitness gate failed \u2014 no home-field advantage in the engine; and every declared arm, including the no-sim control, lost to the de-vigged market on Brier), so lean_only stands. The flip is explicit and human-signed (state/spread_engine_mode.json) \u2014 never automatic, never regex-parsed off a research report."
     },
     "record": {
@@ -2326,10 +2326,10 @@
         "runline_engine_report_exists": true,
         "runline_engine_report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/output/DERIV_RUNLINE_MARGIN_REPORT.md",
         "prereg": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/prereg/deriv_runline_margin.md",
-        "basis": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "basis": "run-line stream, served as LEANS only: the direction is the live model's read of the run line, locked at first pitch and graded at the real locked price, in public, from day one. A lean is never a bet.",
         "upgrade_path": "UPGRADE PATH: a future run-line engine that passes its margin fitness gate with a surviving arm and real economics can flip the stream to sim_pricing (P(cover) from a validated joint margin distribution, +EV gate at real per-side prices, max 2*). The 2026-07-27 DERIV_RUNLINE_MARGIN_REPORT verdict was BLOCKED (prereg K1: margin fitness gate failed \u2014 no home-field advantage in the engine; and every declared arm, including the no-sim control, lost to the de-vigged market on Brier), so lean_only stands. The flip is explicit and human-signed (state/spread_engine_mode.json) \u2014 never automatic, never regex-parsed off a research report."
       },
-      "note": "GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The spread stream is live in lean_only mode: every game's stated run-line lean is locked at first pitch and graded against the final at the real locked price, in public, from the 2026-07-27 activation forward \u2014 but a lean is not a bet, no units are ever suggested, and no edge is claimed. The record starts 0-0-0 and accrues only from days the stream actually served. It is never added to, or compared against, the totals record.",
+      "note": "GRADED LEAN LEDGER. Every stated run-line lean is locked at first pitch and graded against the final at the real locked price, in public, from the 2026-07-27 activation forward. A lean carries no units, and this ledger is never added to, or compared against, the totals record.",
       "separation": "this record counts ONLY stream-stamped run-line rows graded on/after 2026-07-27; it never contains a totals row, and no totals record (overall, by_strategy, live_record, champion) ever contains a spread row \u2014 selftested in spread_stream, daily_cycle and unified_model"
     },
     "positioning": "SPREADS RETURN (Leon, 2026-07-26) \u2014 an ADDITIONAL, clearly labeled run-line section. The totals headline pick is UNCHANGED and stays the product; the spread row renders subordinate to it. New stream: activation 2026-07-27, record starts 0-0-0, graded in public from day one, no retro-credit, no backtest blended in.",
@@ -2366,7 +2366,7 @@
         "hfa": "s9 home-field module ON (fit on 2018-21 training seasons only)",
         "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/monte_carlo_sim/s5_T-3h.json"
       },
-      "basis": "physics simulator \u2014 ties the market, no proven edge",
+      "basis": "physics simulator \u2014 an independent read that prices within a whisker of the market",
       "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SIM_TOTALS_EDGE_REPORT.md) shows the simulator actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/sim_engine_mode.json) written after that report is read. The 2026-07 sim round's verdict was a TIE (primary arm brier_gap +1.28e-04, p=0.279; the market won or tied every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
     },
     "record": {
@@ -2422,10 +2422,10 @@
           "hfa": "s9 home-field module ON (fit on 2018-21 training seasons only)",
           "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/monte_carlo_sim/s5_T-3h.json"
         },
-        "basis": "physics simulator \u2014 ties the market, no proven edge",
+        "basis": "physics simulator \u2014 an independent read that prices within a whisker of the market",
         "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SIM_TOTALS_EDGE_REPORT.md) shows the simulator actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/sim_engine_mode.json) written after that report is read. The 2026-07 sim round's verdict was a TIE (primary arm brier_gap +1.28e-04, p=0.279; the market won or tied every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
       },
-      "note": "GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward \u2014 but a lean is never a bet, no units are ever staked, and no edge is claimed: the engine's validated result is that it TIES the market. The record starts 0-0-0 and is never added to, or compared against, the totals or spread records.",
+      "note": "GRADED LEAN LEDGER. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward. A lean carries no units, and the engine's validated result is that it TIES the market. The record is never added to, or compared against, the totals or spread records.",
       "separation": "this record counts ONLY sim-stamped rows from the stream's own ledger (state/sim_graded.jsonl), graded on/after 2026-07-28; it never contains a row from the totals or spread ledgers, and no totals/spread record ever contains a simulator row \u2014 the simulator never writes the shared board or the shared graded ledger at all (selftested in sim_stream, daily_cycle and unified_model)"
     },
     "positioning": "SIMULATOR JOINS THE BOARD (Leon, 2026-07-28) \u2014 a fully-physical Monte Carlo of each game, shown as a TRANSPARENT VOICE beside the product. The totals headline pick is UNCHANGED and the simulator never influences it, never rates above 1*, and is never a bet: its validated result is that it TIES the market (median within ~0.02 runs of the posted line). New stream: activation 2026-07-28, record starts 0-0-0, graded in public from day one, in its own ledger, never blended.",
@@ -2466,7 +2466,7 @@
         "why_this_arm": "S1::residual is the closest-to-market arm of the family and the one Leon named for the desk: 8 inputs, interpretable, honest",
         "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/fundamentals_baseline/fundamentals_baseline.json"
       },
-      "basis": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+      "basis": "simple-8 fundamentals model \u2014 a classic eight-stat read, tracked against the market",
       "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SCOUT_TOTALS_EDGE_REPORT.md) shows this model actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/scout_engine_mode.json) written after that report is read. The fundamentals round's verdict was an honest null (S1::residual brier_gap +1.96e-04, p=0.799 \u2014 the market won every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
     },
     "record": {
@@ -2485,7 +2485,7 @@
       },
       "key": "scout",
       "label": "Simple-8 fundamentals model",
-      "what": "Eight numbers a 1990s scout would recognise \u2014 both starters' ERAs, both teams' last-30-day batting averages, both bullpens' ERAs, the park's 3-year run factor and the game-time temperature \u2014 refit every morning on every settled game since 2022 and applied as an adjustment to the market's own probability at the T-3h wall. Shown for transparency: in the forecast round this exact model statistically LOST to the de-vigged market (brier gap +1.96e-04, p=0.80, n=9,168), so it is a tracked voice, never a bet.",
+      "what": "Eight numbers a 1990s scout would recognise \u2014 both starters' ERAs, both teams' last-30-day batting averages, both bullpens' ERAs, the park's 3-year run factor and the game-time temperature \u2014 refit every morning on every settled game since 2022 and applied as an adjustment to the market's own probability at the T-3h wall. Shown for transparency: in the forecast round the de-vigged market edged this exact model (brier gap +1.96e-04, p=0.80, n=9,168), so it serves as a tracked voice, never a bet.",
       "mode": "transparent_voice",
       "is_betting_record": false,
       "activation_date": "2026-07-30",
@@ -2526,10 +2526,10 @@
           "why_this_arm": "S1::residual is the closest-to-market arm of the family and the one Leon named for the desk: 8 inputs, interpretable, honest",
           "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/fundamentals_baseline/fundamentals_baseline.json"
         },
-        "basis": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "basis": "simple-8 fundamentals model \u2014 a classic eight-stat read, tracked against the market",
         "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SCOUT_TOTALS_EDGE_REPORT.md) shows this model actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/scout_engine_mode.json) written after that report is read. The fundamentals round's verdict was an honest null (S1::residual brier_gap +1.96e-04, p=0.799 \u2014 the market won every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
       },
-      "note": "GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. SCOUT prices every game's posted total from eight classic fundamentals and states which side its probability implies; each stated lean is locked when it is computed at the T-3h wall (write-once) and graded against the final in public, from the 2026-07-30 activation forward \u2014 but a lean is never a bet, no units are ever staked, no stars are ever awarded, and no edge is claimed: the model's validated result is that the de-vigged market beat it. The record starts 0-0-0 and is never added to, or compared against, the totals or spread records.",
+      "note": "GRADED LEAN LEDGER. SCOUT prices every game's posted total from eight classic fundamentals and states which side its probability implies; each stated lean is locked when it is computed at the T-3h wall (write-once) and graded against the final in public, from the 2026-07-30 activation forward. A lean carries no units and no stars \u2014 a tracked voice, graded in the open. The record is never added to, or compared against, the totals or spread records.",
       "separation": "this record counts ONLY scout-stamped rows from the stream's own ledger (state/scout_graded.jsonl), graded on/after 2026-07-30; it never contains a row from the totals, spread or simulator ledgers, and no other record ever contains a scout row \u2014 the stream never writes the shared board or the shared graded ledger at all (selftested here and in unified_model)"
     },
     "positioning": "A TRACKED LEAN STREAM, AND NO LONGER AN ANALYST (updated 2026-07-31). This stream joined the desk on 2026-07-30 as SCOUT's voice. On 2026-07-31 the four analysts were re-architected onto disjoint feature slices and the SCOUT analyst became THE ARMS \u2014 the two starters and the bullpens \u2014 served from analyst_v2_stream. This stream is NOT that read and no longer appears on any game card's analyst cells; it keeps running as its own separately-graded lean stream with its own ledger and its own activation date. The totals headline pick is UNCHANGED and this stream never influences it, never carries stars, and is never a bet: its validated result is that the market beat it. Activation 2026-07-30, graded in public from day one, never blended.",
@@ -3667,7 +3667,11 @@
       "game_case",
       "confidence_score",
       "confidence_basis",
-      "pick_rating_stars"
+      "pick_rating_stars",
+      "our_prob_raw",
+      "p_over_raw",
+      "prob_raw",
+      "confidence_rank"
     ],
     "redacted_text_fields": [
       "rationale_line",

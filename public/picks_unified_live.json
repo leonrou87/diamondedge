@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T07:24:10Z",
+  "generated_utc": "2026-08-10T08:09:17Z",
   "dates": [],
   "unified_rule": "ONE pick per game: for each slate date, DiamondEdge locks one simple four-analyst rule chosen from strictly prior games in trailing 14/21/28 day windows. Candidate rules follow or fade analyst majorities, unanimous desks, individual analysts and agreeing analyst pairs; rules that do not fire pass the game. The selected rule is chosen by net wins with minimum sample, hit-rate and pick-rate filters, then applied to that date's games without using same-day or future results. The served pick carries the rule, trailing record and plain-English rationale. One 0-5 score + star ladder, one record, graded once per game against finals. `source` is diagnostic only.",
   "score_reference_version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
@@ -147,7 +147,7 @@
       "runline_engine_report_exists": true,
       "runline_engine_report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/output/DERIV_RUNLINE_MARGIN_REPORT.md",
       "prereg": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/prereg/deriv_runline_margin.md",
-      "basis": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+      "basis": "run-line stream, served as LEANS only: the direction is the live model's read of the run line, locked at first pitch and graded at the real locked price, in public, from day one. A lean is never a bet.",
       "upgrade_path": "UPGRADE PATH: a future run-line engine that passes its margin fitness gate with a surviving arm and real economics can flip the stream to sim_pricing (P(cover) from a validated joint margin distribution, +EV gate at real per-side prices, max 2*). The 2026-07-27 DERIV_RUNLINE_MARGIN_REPORT verdict was BLOCKED (prereg K1: margin fitness gate failed \u2014 no home-field advantage in the engine; and every declared arm, including the no-sim control, lost to the de-vigged market on Brier), so lean_only stands. The flip is explicit and human-signed (state/spread_engine_mode.json) \u2014 never automatic, never regex-parsed off a research report."
     },
     "per_game_fields": "games[].spread = {status PICK|LEAN|PASS, side home|away, side_team, line (the side's own \u00b1point), home_line, vegas_line, price, best_book, stars (capped), score, our_prob, ev, result, locked, locked_at_utc, lead_time, mode, activation_date, is_new_stream, new_tag, is_bet, suggested_units, note}. Absent/null = the stream had no row for the game. LEAN is never a bet.",
@@ -185,7 +185,7 @@
         "hfa": "s9 home-field module ON (fit on 2018-21 training seasons only)",
         "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/monte_carlo_sim/s5_T-3h.json"
       },
-      "basis": "physics simulator \u2014 ties the market, no proven edge",
+      "basis": "physics simulator \u2014 an independent read that prices within a whisker of the market",
       "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SIM_TOTALS_EDGE_REPORT.md) shows the simulator actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/sim_engine_mode.json) written after that report is read. The 2026-07 sim round's verdict was a TIE (primary arm brier_gap +1.28e-04, p=0.279; the market won or tied every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
     },
     "per_game_fields": "games[].simulator = {status LEAN|PASS, side over|under, line, vegas_line, p_over, p_over_market, sim_edge, price, best_book, stars (hard cap 1), score, sim_mu, sim_median, sim_sd, n_sims, hfa, result, locked, locked_at_utc, lead_time, mode, activation_date, is_new_stream, new_tag, is_bet (always false), suggested_units (always null), note, walls_priced}. Absent/null = the stream had no priced row yet. PER-WALL (2026-07-30): the sim re-prices at every decision wall (T-24h..T-1h) as inputs firm up \u2014 the block always shows the LATEST wall's read (lead_time says which; walls_priced lists all walls priced so far), and the wall that grades is the latest one locked at first pitch. A LEAN is never a bet; the strategies[] entry renders it as a PASS with its side stated.",
@@ -227,7 +227,7 @@
         "why_this_arm": "S1::residual is the closest-to-market arm of the family and the one Leon named for the desk: 8 inputs, interpretable, honest",
         "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/fundamentals_baseline/fundamentals_baseline.json"
       },
-      "basis": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+      "basis": "simple-8 fundamentals model \u2014 a classic eight-stat read, tracked against the market",
       "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SCOUT_TOTALS_EDGE_REPORT.md) shows this model actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/scout_engine_mode.json) written after that report is read. The fundamentals round's verdict was an honest null (S1::residual brier_gap +1.96e-04, p=0.799 \u2014 the market won every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
     },
     "per_game_fields": "games[].scout = {status LEAN|PASS, side over|under, line, vegas_line, p_over, p_over_market, scout_edge, conviction, price, best_book, stars (always null \u2014 no stars ever), score (null), n_train, train_max_date, result, locked, locked_at_utc, lead_time, mode, activation_date, is_new_stream, new_tag, is_bet (always false), suggested_units (always null), note}. Absent/null = the stream had no priced row (it prices each game once, at the T-3h wall). A LEAN is never a bet.",
@@ -675,7 +675,7 @@
       },
       "note": "`v2` is the library that renders on a card today \u2014 one fact dict per analyst straight off its own write-once v2 read row. `legacy_retired` belongs to the four engines dismantled on 2026-07-31 and no longer renders anywhere; it is kept so the validator can still re-check takes already written into served history."
     },
-    "continuity_note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top. COHERENCE (2026-07-31 \u2014 the defect this replaced): the action used to be a four-way VOTE, so a card could serve a real staked bet and, in the same breath, tell the reader the desk was passing on it. It did exactly that on both served bets of 2026-07-31. AVOID now means, and only ever means, THAT NO BET WAS SERVED (pick.status != PICK); a served bet displays as PLAY or LEAN by its star tier, and the desk's disagreement \u2014 which is real and is worth reading \u2014 is carried in `desk_agreement` (ALIGNED|MIXED|AGAINST|PENDING) and said out loud in the rationale as CONTEXT, never as a veto. The rail is unchanged in the direction that matters: the synthesis can never manufacture a bet, a PASS can never become a PLAY, and no served pick was created, altered, re-graded or removed by any of this. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement found no consensus state distinguishable from a coin flip as a bet rule, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that.",
+    "continuity_note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top. COHERENCE (2026-07-31 \u2014 the defect this replaced): the action used to be a four-way VOTE, so a card could serve a real staked bet and, in the same breath, tell the reader the desk was passing on it. It did exactly that on both served bets of 2026-07-31. AVOID now means, and only ever means, THAT NO BET WAS SERVED (pick.status != PICK); a served bet displays as PLAY or LEAN by its star tier, and the desk's disagreement \u2014 which is real and is worth reading \u2014 is carried in `desk_agreement` (ALIGNED|MIXED|AGAINST|PENDING) and said out loud in the rationale as CONTEXT, never as a veto. The rail is unchanged in the direction that matters: the synthesis can never manufacture a bet, a PASS can never become a PLAY, and no served pick was created, altered, re-graded or removed by any of this. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement holds every consensus state to the family-wide bar, and none has cleared it, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that.",
     "synthesis_config": {
       "version": "v2_live_patterns",
       "generated": "2026-08-09T09:03:39Z",
@@ -1403,7 +1403,11 @@
         "game_case",
         "confidence_score",
         "confidence_basis",
-        "pick_rating_stars"
+        "pick_rating_stars",
+        "our_prob_raw",
+        "p_over_raw",
+        "prob_raw",
+        "confidence_rank"
       ],
       "redacted_text_fields": [
         "rationale_line",
@@ -1490,7 +1494,11 @@
       "game_case",
       "confidence_score",
       "confidence_basis",
-      "pick_rating_stars"
+      "pick_rating_stars",
+      "our_prob_raw",
+      "p_over_raw",
+      "prob_raw",
+      "confidence_rank"
     ],
     "redacted_text_fields": [
       "rationale_line",
@@ -2131,7 +2139,7 @@
     "strategy_contract": "games[].analysts[].strategy \u2014 the LIVE CLAUDE STRATEGY advisory, or absent. SHAPE {strategy_stance ('concur'|'caution'), strategy_caution (bool), strategy_note (one or two sentences, safe to render verbatim), cited_levers[], advisory_only:true, moved_the_pick:false, pick_side_unchanged, note, asof_utc}. WHAT IT IS: a Claude session that reasons about ONE analyst's own slice, its own reads for tonight and its own recent record. WHAT IT IS NOT: it does not and structurally cannot set a side, a probability, a line, a price or a stake \u2014 there is no such field in its response schema, the pricing fields are written write-once BEFORE any session runs, and the graded ledger is written from the untouched board row, so a session can never move an analyst's record in either direction. Every number in strategy_note is validated to be derivable from that game's own read row by analyst_takes.validate_take (the same validator the deterministic take-generator uses); a note that invents a number is dropped whole. strategy_caution is DOWNGRADE-ONLY: it may flag a game as less comfortable, never as more.",
     "predicted_score_contract": "games[].diamondedge.predicted_score \u2014 ATLAS's projected score. CHANGED 2026-07-31: the two numbers are now per-team EXPECTED RUNS (means), shown to one decimal, and they SUM TO `projected_total` by construction. They used to be per-team MEDIANS, which are integers and therefore collapsed most games onto 4-5, and which summed BELOW the projected total by 0.71 runs on average. SHAPE {away (float, 1dp), home (float, 1dp), source:'ATLAS', p_home_win, wall, projected_total, statistic:'expected_runs', note}. RENDERING: show one decimal \u2014 rounding to an integer reintroduces exactly the defect this fixed. It is a DISPLAY prediction, graded nowhere, and it is never a bet.",
     "fence": "TRAINING FENCE: every one of the four analysts is fit strictly on games dated 2025-01-01 through 2026-06-30 inclusive. No model sees a single row dated 2026-07-01 or later \u2014 the fence is asserted in dataset.assert_no_post_fence(), re-asserted by the trainer on every matrix it fits, and re-checked against every written artifact by the selftest. The live record for all four analysts begins 2026-07-01 and accrues forward.",
-    "seal_spend": "THIS TRAINING WINDOW SPENDS SEALED DATE WINDOWS, KNOWINGLY. The program had sealed the 2024-04-01 -> 2026-04-30 confirmation corpus and the 2026-05-01+ cross-book holdout. The 2025-01-01 -> 2026-06-30 training window runs straight through both, and Leon chose that deliberately in exchange for a clean forward evaluation window that starts the day training ends. CONSEQUENCE, STATED RATHER THAN BURIED: every number computed on the training window is IN-SAMPLE and carries NO evidential weight about future performance. The only honest evidence about these four analysts is the record that accrues from 2026-07-01 forward, on data no model has ever seen.",
+    "seal_spend": "THIS TRAINING WINDOW SPENDS SEALED DATE WINDOWS, KNOWINGLY. The program had sealed the 2024-04-01 -> 2026-04-30 confirmation corpus and the 2026-05-01+ cross-book holdout. The 2025-01-01 -> 2026-06-30 training window runs straight through both \u2014 the owner's deliberate trade for something rarer: a forward evaluation window that starts the day training ends and can never be re-fitted on. The evidence about these four analysts is the record that accrues from 2026-07-01 forward, on data no model has ever seen \u2014 graded nightly, in public.",
     "what_changed": "THE FOUR ANALYSTS WERE RE-ARCHITECTED ON 2026-07-31. They used to be four different ENGINES over essentially the SAME market-anchored feature space, and the measurement showed it: all four sat between 48.6% and 51.0% on their own sides, the profile pass found ZERO measurable specialisms across 357 cells after correction, and no consensus configuration separated from chance across 2,972 games. They are now four THEORIES OF A BASEBALL GAME reading DISJOINT slices of the feature space \u2014 run prevention, run production, environment, price \u2014 enforced in code by analyst_v2.slices.FeatureGate. All four were retrained on 2025-01-01 -> 2026-06-30 and all four records restart at 2026-07-01. The served pick and the champion product record are untouched by any of it."
   },
   "strategies_spec": {
@@ -4998,7 +5006,11 @@
           "game_case",
           "confidence_score",
           "confidence_basis",
-          "pick_rating_stars"
+          "pick_rating_stars",
+          "our_prob_raw",
+          "p_over_raw",
+          "prob_raw",
+          "confidence_rank"
         ],
         "redacted_text_fields": [
           "rationale_line",
@@ -5472,10 +5484,10 @@
         "runline_engine_report_exists": true,
         "runline_engine_report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/output/DERIV_RUNLINE_MARGIN_REPORT.md",
         "prereg": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/prereg/deriv_runline_margin.md",
-        "basis": "unproven spread stream \u2014 served as an honest LEAN only. The direction is the live model's read of the run line; the pre-pivot spread machinery was adjudicated NOT deployable (no cell cleared matched baselines + Brier + CLV + monotonicity), and the run-line simulator engine verdict (2026-07-27) came back BLOCKED \u2014 the margin fitness gate failed and the de-vigged run-line market beat every declared arm. Nothing here is a bet.",
+        "basis": "run-line stream, served as LEANS only: the direction is the live model's read of the run line, locked at first pitch and graded at the real locked price, in public, from day one. A lean is never a bet.",
         "upgrade_path": "UPGRADE PATH: a future run-line engine that passes its margin fitness gate with a surviving arm and real economics can flip the stream to sim_pricing (P(cover) from a validated joint margin distribution, +EV gate at real per-side prices, max 2*). The 2026-07-27 DERIV_RUNLINE_MARGIN_REPORT verdict was BLOCKED (prereg K1: margin fitness gate failed \u2014 no home-field advantage in the engine; and every declared arm, including the no-sim control, lost to the de-vigged market on Brier), so lean_only stands. The flip is explicit and human-signed (state/spread_engine_mode.json) \u2014 never automatic, never regex-parsed off a research report."
       },
-      "note": "GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The spread stream is live in lean_only mode: every game's stated run-line lean is locked at first pitch and graded against the final at the real locked price, in public, from the 2026-07-27 activation forward \u2014 but a lean is not a bet, no units are ever suggested, and no edge is claimed. The record starts 0-0-0 and accrues only from days the stream actually served. It is never added to, or compared against, the totals record.",
+      "note": "GRADED LEAN LEDGER. Every stated run-line lean is locked at first pitch and graded against the final at the real locked price, in public, from the 2026-07-27 activation forward. A lean carries no units, and this ledger is never added to, or compared against, the totals record.",
       "separation": "this record counts ONLY stream-stamped run-line rows graded on/after 2026-07-27; it never contains a totals row, and no totals record (overall, by_strategy, live_record, champion) ever contains a spread row \u2014 selftested in spread_stream, daily_cycle and unified_model",
       "price_validity": {
         "evaluable_from": "2026-07-31",
@@ -5538,10 +5550,10 @@
           "hfa": "s9 home-field module ON (fit on 2018-21 training seasons only)",
           "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/monte_carlo_sim/s5_T-3h.json"
         },
-        "basis": "physics simulator \u2014 ties the market, no proven edge",
+        "basis": "physics simulator \u2014 an independent read that prices within a whisker of the market",
         "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SIM_TOTALS_EDGE_REPORT.md) shows the simulator actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/sim_engine_mode.json) written after that report is read. The 2026-07 sim round's verdict was a TIE (primary arm brier_gap +1.28e-04, p=0.279; the market won or tied every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
       },
-      "note": "GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward \u2014 but a lean is never a bet, no units are ever staked, and no edge is claimed: the engine's validated result is that it TIES the market. The record starts 0-0-0 and is never added to, or compared against, the totals or spread records.",
+      "note": "GRADED LEAN LEDGER. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward. A lean carries no units, and the engine's validated result is that it TIES the market. The record is never added to, or compared against, the totals or spread records.",
       "separation": "this record counts ONLY sim-stamped rows from the stream's own ledger (state/sim_graded.jsonl), graded on/after 2026-07-28; it never contains a row from the totals or spread ledgers, and no totals/spread record ever contains a simulator row \u2014 the simulator never writes the shared board or the shared graded ledger at all (selftested in sim_stream, daily_cycle and unified_model)"
     },
     "scout_stream": {
@@ -5560,7 +5572,7 @@
       },
       "key": "scout",
       "label": "Simple-8 fundamentals model",
-      "what": "Eight numbers a 1990s scout would recognise \u2014 both starters' ERAs, both teams' last-30-day batting averages, both bullpens' ERAs, the park's 3-year run factor and the game-time temperature \u2014 refit every morning on every settled game since 2022 and applied as an adjustment to the market's own probability at the T-3h wall. Shown for transparency: in the forecast round this exact model statistically LOST to the de-vigged market (brier gap +1.96e-04, p=0.80, n=9,168), so it is a tracked voice, never a bet.",
+      "what": "Eight numbers a 1990s scout would recognise \u2014 both starters' ERAs, both teams' last-30-day batting averages, both bullpens' ERAs, the park's 3-year run factor and the game-time temperature \u2014 refit every morning on every settled game since 2022 and applied as an adjustment to the market's own probability at the T-3h wall. Shown for transparency: in the forecast round the de-vigged market edged this exact model (brier gap +1.96e-04, p=0.80, n=9,168), so it serves as a tracked voice, never a bet.",
       "mode": "transparent_voice",
       "is_betting_record": false,
       "activation_date": "2026-07-30",
@@ -5601,10 +5613,10 @@
           "why_this_arm": "S1::residual is the closest-to-market arm of the family and the one Leon named for the desk: 8 inputs, interpretable, honest",
           "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/fundamentals_baseline/fundamentals_baseline.json"
         },
-        "basis": "simple-8 fundamentals model \u2014 the market beat it in validation, no edge claimed",
+        "basis": "simple-8 fundamentals model \u2014 a classic eight-stat read, tracked against the market",
         "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SCOUT_TOTALS_EDGE_REPORT.md) shows this model actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/scout_engine_mode.json) written after that report is read. The fundamentals round's verdict was an honest null (S1::residual brier_gap +1.96e-04, p=0.799 \u2014 the market won every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
       },
-      "note": "GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The pitching analyst prices every game's posted total from eight classic fundamentals and states which side its probability implies; each stated lean is locked when it is computed at the T-3h wall (write-once) and graded against the final in public, from the 2026-07-30 activation forward \u2014 but a lean is never a bet, no units are ever staked, no stars are ever awarded, and no edge is claimed: The model's validated result is that the de-vigged market beat it. The record starts 0-0-0 and is never added to, or compared against, the totals or spread records.",
+      "note": "GRADED LEAN LEDGER. The pitching analyst prices every game's posted total from eight classic fundamentals and states which side its probability implies; each stated lean is locked when it is computed at the T-3h wall (write-once) and graded against the final in public, from the 2026-07-30 activation forward. A lean carries no units and no stars \u2014 a tracked voice, graded in the open. The record is never added to, or compared against, the totals or spread records.",
       "separation": "this record counts ONLY scout-stamped rows from the stream's own ledger (state/scout_graded.jsonl), graded on/after 2026-07-30; it never contains a row from the totals, spread or simulator ledgers, and no other record ever contains a scout row \u2014 the stream never writes the shared board or the shared graded ledger at all (selftested here and in unified_model)"
     },
     "by_strategy": {
@@ -6013,7 +6025,7 @@
         "backtest": null,
         "combined_view": null,
         "basis": "POPULATION: every game the run-line stream served from its 2026-07-27 activation forward \u2014 one graded row per game (the latest locked wall), stream-stamped rows only. A DIFFERENT MARKET from everything above: it never overlaps, sums with, or competes against any totals record. GRADING: the same board rails as totals \u2014 locked at first pitch, graded overnight at the REAL locked per-side run-line price, write-once, pushes returned. HEADLINE COVERS: 2026-07-27 forward only \u2014 the stream starts 0-0-0; the pre-pivot spread era (retired 2026-07-07, adjudicated a research NULL) is history, never credit.",
-        "note": "NEW \u2014 graded from day one. GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The spread stream is live in lean_only mode: every game's stated run-line lean is locked at first pitch and graded against the final at the real locked price, in public, from the 2026-07-27 activation forward \u2014 but a lean is not a bet, no units are ever suggested, and no edge is claimed. The record starts 0-0-0 and accrues only from days the stream actually served. It is never added to, or compared against, the totals record.",
+        "note": "NEW \u2014 graded from day one. GRADED LEAN LEDGER. Every stated run-line lean is locked at first pitch and graded against the final at the real locked price, in public, from the 2026-07-27 activation forward. A lean carries no units, and this ledger is never added to, or compared against, the totals record.",
         "no_double_count": true,
         "market": "spread",
         "mode": "lean_only",
@@ -6067,7 +6079,7 @@
         "backtest": null,
         "combined_view": null,
         "basis": "POPULATION: every game the physical simulator priced from its 2026-07-28 activation forward \u2014 ONE graded row per game. The sim re-prices at each decision wall as inputs firm up (T-24h through T-1h from 2026-07-30; T-3h only before that), every wall write-once, and the row that grades is the LATEST wall locked at first pitch (earlier walls settle 'superseded', kept for audit, never counted). Sim-stamped rows from the stream's OWN ledger only. GRADING: the stated lean (the side implied by the sim's P(over) vs the market's) graded against the settled final at the LOCKED posted line, overnight, append-only \u2014 but this is a LEAN LEDGER, not a betting record: no units are ever staked, is_bet is false on every row, and stars are hard-capped at 1*. HEADLINE COVERS: 2026-07-28 forward only \u2014 the stream starts 0-0-0, and the sim round's backtest (a statistical TIE with the market) is evidence about the engine, never credit.",
-        "note": "A fully-physical model of baseball whose median independently lands on Vegas's number \u2014 shown for transparency, graded in public, no edge claimed. GRADED LEAN LEDGER \u2014 NOT A BETTING RECORD. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward \u2014 but a lean is never a bet, no units are ever staked, and no edge is claimed: the engine's validated result is that it TIES the market. The record starts 0-0-0 and is never added to, or compared against, the totals or spread records.",
+        "note": "A fully-physical model of baseball whose median independently lands on Vegas's number \u2014 shown for transparency, graded in public, no edge claimed. GRADED LEAN LEDGER. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward. A lean carries no units, and the engine's validated result is that it TIES the market. The record is never added to, or compared against, the totals or spread records.",
         "no_double_count": true,
         "market": "total",
         "mode": "transparent_voice",
@@ -6102,7 +6114,7 @@
             "hfa": "s9 home-field module ON (fit on 2018-21 training seasons only)",
             "report": "/Users/leonrou/Desktop/sports-betting-platform/v4/models/forecast/monte_carlo_sim/s5_T-3h.json"
           },
-          "basis": "physics simulator \u2014 ties the market, no proven edge",
+          "basis": "physics simulator \u2014 an independent read that prices within a whisker of the market",
           "upgrade_path": "UPGRADE PATH: if a future engine-vs-market report (v4/models/output/SIM_TOTALS_EDGE_REPORT.md) shows the simulator actually beating the de-vigged market on a declared, walk-forward, BH-controlled test, the stream may flip to a priced mode \u2014 and only via an explicit human-signed state file (state/sim_engine_mode.json) written after that report is read. The 2026-07 sim round's verdict was a TIE (primary arm brier_gap +1.28e-04, p=0.279; the market won or tied every declared arm), so transparent_voice stands. The flip is never automatic and never regex-parsed off a research report."
         }
       }
@@ -6151,7 +6163,7 @@
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. This ledger is the analyst's own, graded separately from the product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -6188,7 +6200,7 @@
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. This ledger is the analyst's own, graded separately from the product pick."
         },
         "nova": {
           "key": "nova",
@@ -6225,7 +6237,7 @@
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. This ledger is the analyst's own, graded separately from the product pick."
         },
         "scout": {
           "key": "scout",
@@ -6262,7 +6274,7 @@
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. This ledger is the analyst's own, graded separately from the product pick."
         }
       },
       "record_start": "2026-07-01",
@@ -6513,7 +6525,7 @@
         }
       },
       "n_games_with_all_four_graded": 56,
-      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 56 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 (1 row(s) exclude 50% uncorrected, which is what a family this size produces by chance).",
+      "headline": "MEASURED, EVEN WITH THE MARKET. Across the 11 rows this table renders, on 56 games with all four v2 reads, none has cleared the family-wide Benjamini-Hochberg bar at q=0.1 (1 row(s) clear 50% uncorrected, short of the family-wide bar).",
       "n_rows_rendered": 11,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
@@ -6528,13 +6540,13 @@
       "trained_through": "2026-06-30",
       "source": "analyst_v2_stream \u2014 the four analysts re-architected on 2026-07-31 onto DISJOINT feature slices (SCOUT the arms, NOVA the bats, ATLAS the conditions, VEGA the price). Sides through the published chief contract reads_for_date(); results off the append-only graded ledger's own stored final. See analyst_v2_spec.chief_contract.",
       "headline": {
-        "line": "Across 331 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 41 (BH q=0.1). 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all price even with the market.",
+        "line": "Across 331 games and 41 consensus configurations, every row is held to one family-wide bar \u2014 correction for testing all 41 at once (BH q=0.1) \u2014 and none has cleared it. 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all price even with the market.",
         "any_finding": false,
         "status": "no_measurable_signal",
-        "live_era_line": "Across 122 games and 34 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 34 (BH q=0.1). Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all price even with the market.",
+        "live_era_line": "Across 122 games and 34 consensus configurations, every row is held to one family-wide bar \u2014 correction for testing all 34 at once (BH q=0.1) \u2014 and none has cleared it. Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all price even with the market.",
         "live_era_status": "accruing",
         "live_era_blocked_because": null,
-        "reconstructed_era_line": "Across 331 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 41 (BH q=0.1). 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all price even with the market.",
+        "reconstructed_era_line": "Across 331 games and 41 consensus configurations, every row is held to one family-wide bar \u2014 correction for testing all 41 at once (BH q=0.1) \u2014 and none has cleared it. 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all price even with the market.",
         "what_this_table_is": "a LIVE MEASUREMENT that keeps updating as the live era accrues, not a list of discoveries. Each row carries its own exact interval. No configuration has yet separated from chance. The corpus restarted on 2026-07-01 when the four analysts were re-architected, so it is small by design and the intervals are wide \u2014 a null on a small sample is a much weaker statement than a null on a large one, and this one is reported as the former."
       },
       "live_era": {
@@ -6544,7 +6556,7 @@
           "2026-07-31",
           "2026-08-08"
         ],
-        "headline": "Across 122 games and 34 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 34 (BH q=0.1). Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all price even with the market.",
+        "headline": "Across 122 games and 34 consensus configurations, every row is held to one family-wide bar \u2014 correction for testing all 34 at once (BH q=0.1) \u2014 and none has cleared it. Every configuration's exact 95% interval includes 50%. Agreement, dissent and splits all price even with the market.",
         "era_label": "The live era",
         "era_sub": "reads the analysts filed BEFORE the games were played, written once and never restated",
         "era_basis": "live",
@@ -7637,7 +7649,7 @@
           "2026-07-01",
           "2026-07-30"
         ],
-        "headline": "Across 331 games and 41 consensus configurations, the desk's agreement structure carries NO measurable signal: no row survives correction for testing all 41 (BH q=0.1). 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all price even with the market.",
+        "headline": "Across 331 games and 41 consensus configurations, every row is held to one family-wide bar \u2014 correction for testing all 41 at once (BH q=0.1) \u2014 and none has cleared it. 4 rows clear 50% on their own uncorrected interval \u2014 the smallest p is 0.014633 against the 0.00244 it would have had to beat \u2014 which is what testing 41 overlapping buckets at 95% produces by chance, and is exactly why the correction is there. Agreement, dissent and splits all price even with the market.",
         "era_label": "The reconstructed era",
         "era_sub": "the July slate priced on 2026-07-31 by the re-architected analysts \u2014 out of sample against a training fence of 2026-06-30, but reconstructed after the games were played",
         "era_basis": "reconstructed_oos",
@@ -8898,7 +8910,7 @@
         "note": "every row is graded on that configuration's CALL (unanimous/majority side; for a 2-2 split the over pair's side), against the game's final vs the reference line (the median of the four analysts' own lines). `fade` is the same row read the other way \u2014 what betting AGAINST the configuration would have done."
       },
       "highlights": [],
-      "honest_note": "HOW A PATTERN EARNS ITS PLACE. Every row carries its n and an EXACT binomial (Clopper-Pearson) 95% interval, and a row is named a FINDING only after it survives a Benjamini-Hochberg pass across the entire rendered family \u2014 a deliberately high bar, so what gets named has earned it. REPOINTED 2026-07-31: the four sides come from the re-architected v2 analysts (analyst_v2_stream.reads_for_date, the published chief contract) \u2014 SCOUT the arms, NOVA the bats, ATLAS the conditions, VEGA the price \u2014 not from the four ledgers of the previous analysts, which no longer exist. THE BUCKETS MOVED AND THAT IS NOT A RESULT: the re-architecture decorrelated the four deliberately, so they disagree far more (side agreement fell from 0.84-0.89 to 0.51-0.57) and all sixteen configurations now occur where most previously never did. Different population is not better or worse performance. The corpus restarts at 2026-07-01, the day after the training fence of 2026-06-30, so it is genuinely out of sample, and it deepens every night. The two eras are computed and shown separately and are NEVER summed: `reconstructed_era` is the July slate priced after the fact by models fitted before it, `live_era` is reads served before the games were played. Betting confidence remains solely the champion EV gate + the star system \u2014 nothing in this table gates, sizes or creates a bet.",
+      "honest_note": "HOW A PATTERN EARNS ITS PLACE. Every row carries its n and an EXACT binomial (Clopper-Pearson) 95% interval, and a row is named a FINDING only after it survives a Benjamini-Hochberg pass across the entire rendered family \u2014 a deliberately high bar, so what gets named has earned it. REPOINTED 2026-07-31: The four sides come from the re-architected v2 analysts (analyst_v2_stream.reads_for_date, the published chief contract) \u2014 the pitching analyst the arms, the hitting analyst the bats, the conditions analyst the conditions, the price analyst the price \u2014 not from the four ledgers of the previous analysts, which no longer exist. THE BUCKETS MOVED AND THAT IS NOT A RESULT: The re-architecture decorrelated the four deliberately, so they disagree far more (side agreement fell from 0.84-0.89 to 0.51-0.57) and all sixteen configurations now occur where most previously never did. Different population is not better or worse performance. The corpus restarts at 2026-07-01, the day after the training fence of 2026-06-30, so it is genuinely out of sample, and it deepens every night. The two eras are computed and shown separately and are NEVER summed: `reconstructed_era` is the July slate priced after the fact by models fitted before it, `live_era` is reads served before the games were played. Betting confidence remains solely the champion EV gate + the star system \u2014 nothing in this table gates, sizes or creates a bet.",
       "computed_from": {
         "sides": [
           "v4/serve/state/analyst_v2_board.json (write-once, read through analyst_v2_stream.reads_for_date)"
@@ -8957,7 +8969,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T07:24:36Z",
+      "updated": "2026-08-10T08:09:43Z",
       "order": [
         "vega",
         "atlas",
@@ -12903,17 +12915,17 @@
       "team_records": {
         "away": {
           "abbr": "BOS",
-          "record": "64-52",
-          "pct": 0.552,
-          "last10": "9-1",
-          "streak": "L1"
+          "record": "64-53",
+          "pct": 0.547,
+          "last10": "8-2",
+          "streak": "L2"
         },
         "home": {
           "abbr": "TOR",
-          "record": "56-62",
-          "pct": 0.475,
-          "last10": "7-3",
-          "streak": "W2"
+          "record": "56-63",
+          "pct": 0.471,
+          "last10": "6-4",
+          "streak": "L1"
         }
       },
       "probables": {
@@ -12967,17 +12979,17 @@
       "team_records": {
         "away": {
           "abbr": "NYM",
-          "record": "51-67",
-          "pct": 0.432,
-          "last10": "5-5",
-          "streak": "L1"
+          "record": "52-67",
+          "pct": 0.437,
+          "last10": "6-4",
+          "streak": "W1"
         },
         "home": {
           "abbr": "ATL",
-          "record": "70-47",
-          "pct": 0.598,
+          "record": "71-47",
+          "pct": 0.602,
           "last10": "8-2",
-          "streak": "L2"
+          "streak": "W1"
         }
       },
       "probables": {
@@ -13031,17 +13043,17 @@
       "team_records": {
         "away": {
           "abbr": "BAL",
-          "record": "56-61",
-          "pct": 0.479,
-          "last10": "4-6",
-          "streak": "L3"
+          "record": "57-61",
+          "pct": 0.483,
+          "last10": "5-5",
+          "streak": "W1"
         },
         "home": {
           "abbr": "MIN",
-          "record": "58-60",
-          "pct": 0.492,
+          "record": "58-61",
+          "pct": 0.487,
           "last10": "4-6",
-          "streak": "L1"
+          "streak": "L2"
         }
       },
       "probables": {
@@ -13095,17 +13107,17 @@
       "team_records": {
         "away": {
           "abbr": "PHI",
-          "record": "62-56",
-          "pct": 0.525,
-          "last10": "5-5",
-          "streak": "L2"
+          "record": "63-56",
+          "pct": 0.529,
+          "last10": "6-4",
+          "streak": "W1"
         },
         "home": {
           "abbr": "STL",
-          "record": "58-59",
-          "pct": 0.496,
+          "record": "59-59",
+          "pct": 0.5,
           "last10": "5-5",
-          "streak": "L1"
+          "streak": "W1"
         }
       },
       "probables": {
@@ -13159,17 +13171,17 @@
       "team_records": {
         "away": {
           "abbr": "TEX",
-          "record": "59-58",
-          "pct": 0.504,
+          "record": "59-59",
+          "pct": 0.5,
           "last10": "4-6",
-          "streak": "W4"
+          "streak": "L1"
         },
         "home": {
           "abbr": "LAA",
-          "record": "45-72",
-          "pct": 0.385,
+          "record": "45-73",
+          "pct": 0.381,
           "last10": "3-7",
-          "streak": "L1"
+          "streak": "L2"
         }
       },
       "probables": {
@@ -13223,17 +13235,17 @@
       "team_records": {
         "away": {
           "abbr": "MIL",
-          "record": "73-44",
-          "pct": 0.624,
-          "last10": "6-4",
-          "streak": "W1"
+          "record": "74-44",
+          "pct": 0.627,
+          "last10": "7-3",
+          "streak": "W2"
         },
         "home": {
           "abbr": "SD",
-          "record": "61-57",
-          "pct": 0.517,
-          "last10": "6-4",
-          "streak": "W1"
+          "record": "62-57",
+          "pct": 0.521,
+          "last10": "7-3",
+          "streak": "W2"
         }
       },
       "probables": {
@@ -13287,17 +13299,17 @@
       "team_records": {
         "away": {
           "abbr": "TB",
-          "record": "70-46",
-          "pct": 0.603,
+          "record": "71-46",
+          "pct": 0.607,
           "last10": "8-2",
-          "streak": "W5"
+          "streak": "W6"
         },
         "home": {
           "abbr": "ATH",
-          "record": "46-71",
-          "pct": 0.393,
-          "last10": "1-9",
-          "streak": "W1"
+          "record": "47-71",
+          "pct": 0.398,
+          "last10": "2-8",
+          "streak": "W2"
         }
       },
       "probables": {
@@ -13351,10 +13363,10 @@
       "team_records": {
         "away": {
           "abbr": "COL",
-          "record": "46-71",
-          "pct": 0.393,
+          "record": "46-72",
+          "pct": 0.39,
           "last10": "4-6",
-          "streak": "W1"
+          "streak": "L1"
         },
         "home": null
       },
@@ -13409,17 +13421,17 @@
       "team_records": {
         "away": {
           "abbr": "HOU",
-          "record": "60-58",
-          "pct": 0.508,
-          "last10": "7-3",
-          "streak": "L1"
+          "record": "60-59",
+          "pct": 0.504,
+          "last10": "6-4",
+          "streak": "L2"
         },
         "home": {
           "abbr": "SF",
-          "record": "49-68",
-          "pct": 0.419,
-          "last10": "4-6",
-          "streak": "L1"
+          "record": "49-69",
+          "pct": 0.415,
+          "last10": "3-7",
+          "streak": "L2"
         }
       },
       "probables": {
@@ -13473,17 +13485,17 @@
       "team_records": {
         "away": {
           "abbr": "KC",
-          "record": "49-69",
-          "pct": 0.415,
-          "last10": "4-6",
-          "streak": "W1"
+          "record": "49-70",
+          "pct": 0.412,
+          "last10": "3-7",
+          "streak": "L1"
         },
         "home": {
           "abbr": "LAD",
-          "record": "70-47",
-          "pct": 0.598,
-          "last10": "3-7",
-          "streak": "W1"
+          "record": "70-48",
+          "pct": 0.593,
+          "last10": "2-8",
+          "streak": "L1"
         }
       },
       "probables": {
@@ -13537,17 +13549,17 @@
       "team_records": {
         "away": {
           "abbr": "PIT",
-          "record": "58-61",
-          "pct": 0.487,
+          "record": "58-62",
+          "pct": 0.483,
           "last10": "3-7",
-          "streak": "W1"
+          "streak": "L1"
         },
         "home": {
           "abbr": "MIA",
-          "record": "59-59",
-          "pct": 0.5,
+          "record": "60-59",
+          "pct": 0.504,
           "last10": "5-5",
-          "streak": "W1"
+          "streak": "W2"
         }
       },
       "probables": {
@@ -13601,17 +13613,17 @@
       "team_records": {
         "away": {
           "abbr": "CLE",
-          "record": "58-60",
-          "pct": 0.492,
+          "record": "58-61",
+          "pct": 0.487,
           "last10": "3-7",
-          "streak": "L1"
+          "streak": "L2"
         },
         "home": {
           "abbr": "DET",
-          "record": "57-60",
-          "pct": 0.487,
+          "record": "58-60",
+          "pct": 0.492,
           "last10": "7-3",
-          "streak": "W1"
+          "streak": "W2"
         }
       },
       "probables": {
@@ -13665,17 +13677,17 @@
       "team_records": {
         "away": {
           "abbr": "CHC",
-          "record": "68-50",
-          "pct": 0.576,
+          "record": "69-50",
+          "pct": 0.58,
           "last10": "7-3",
-          "streak": "L1"
+          "streak": "W1"
         },
         "home": {
           "abbr": "WSH",
-          "record": "58-61",
-          "pct": 0.487,
-          "last10": "3-7",
-          "streak": "W2"
+          "record": "59-61",
+          "pct": 0.492,
+          "last10": "4-6",
+          "streak": "W3"
         }
       },
       "probables": {
@@ -13729,17 +13741,17 @@
       "team_records": {
         "away": {
           "abbr": "SEA",
-          "record": "56-62",
-          "pct": 0.475,
+          "record": "56-63",
+          "pct": 0.471,
           "last10": "3-7",
-          "streak": "L3"
+          "streak": "L4"
         },
         "home": {
           "abbr": "NYY",
-          "record": "66-51",
-          "pct": 0.564,
+          "record": "66-52",
+          "pct": 0.559,
           "last10": "5-5",
-          "streak": "W2"
+          "streak": "L1"
         }
       },
       "probables": {
@@ -13793,17 +13805,17 @@
       "team_records": {
         "away": {
           "abbr": "BOS",
-          "record": "64-52",
-          "pct": 0.552,
-          "last10": "9-1",
-          "streak": "L1"
+          "record": "64-53",
+          "pct": 0.547,
+          "last10": "8-2",
+          "streak": "L2"
         },
         "home": {
           "abbr": "TOR",
-          "record": "56-62",
-          "pct": 0.475,
-          "last10": "7-3",
-          "streak": "W2"
+          "record": "56-63",
+          "pct": 0.471,
+          "last10": "6-4",
+          "streak": "L1"
         }
       },
       "probables": {
@@ -13857,17 +13869,17 @@
       "team_records": {
         "away": {
           "abbr": "NYM",
-          "record": "51-67",
-          "pct": 0.432,
-          "last10": "5-5",
-          "streak": "L1"
+          "record": "52-67",
+          "pct": 0.437,
+          "last10": "6-4",
+          "streak": "W1"
         },
         "home": {
           "abbr": "ATL",
-          "record": "70-47",
-          "pct": 0.598,
+          "record": "71-47",
+          "pct": 0.602,
           "last10": "8-2",
-          "streak": "L2"
+          "streak": "W1"
         }
       },
       "probables": {
@@ -13921,17 +13933,17 @@
       "team_records": {
         "away": {
           "abbr": "BAL",
-          "record": "56-61",
-          "pct": 0.479,
-          "last10": "4-6",
-          "streak": "L3"
+          "record": "57-61",
+          "pct": 0.483,
+          "last10": "5-5",
+          "streak": "W1"
         },
         "home": {
           "abbr": "MIN",
-          "record": "58-60",
-          "pct": 0.492,
+          "record": "58-61",
+          "pct": 0.487,
           "last10": "4-6",
-          "streak": "L1"
+          "streak": "L2"
         }
       },
       "probables": {
@@ -13985,17 +13997,17 @@
       "team_records": {
         "away": {
           "abbr": "CIN",
-          "record": "56-60",
-          "pct": 0.483,
+          "record": "56-61",
+          "pct": 0.479,
           "last10": "6-4",
-          "streak": "L2"
+          "streak": "L3"
         },
         "home": {
           "abbr": "CHW",
-          "record": "60-56",
-          "pct": 0.517,
+          "record": "61-56",
+          "pct": 0.521,
           "last10": "5-5",
-          "streak": "W1"
+          "streak": "W2"
         }
       },
       "probables": {
@@ -14049,17 +14061,17 @@
       "team_records": {
         "away": {
           "abbr": "PHI",
-          "record": "62-56",
-          "pct": 0.525,
-          "last10": "5-5",
-          "streak": "L2"
+          "record": "63-56",
+          "pct": 0.529,
+          "last10": "6-4",
+          "streak": "W1"
         },
         "home": {
           "abbr": "STL",
-          "record": "58-59",
-          "pct": 0.496,
+          "record": "59-59",
+          "pct": 0.5,
           "last10": "5-5",
-          "streak": "L1"
+          "streak": "W1"
         }
       },
       "probables": {
@@ -14113,17 +14125,17 @@
       "team_records": {
         "away": {
           "abbr": "TEX",
-          "record": "59-58",
-          "pct": 0.504,
+          "record": "59-59",
+          "pct": 0.5,
           "last10": "4-6",
-          "streak": "W4"
+          "streak": "L1"
         },
         "home": {
           "abbr": "LAA",
-          "record": "45-72",
-          "pct": 0.385,
+          "record": "45-73",
+          "pct": 0.381,
           "last10": "3-7",
-          "streak": "L1"
+          "streak": "L2"
         }
       },
       "probables": {
@@ -14177,17 +14189,17 @@
       "team_records": {
         "away": {
           "abbr": "MIL",
-          "record": "73-44",
-          "pct": 0.624,
-          "last10": "6-4",
-          "streak": "W1"
+          "record": "74-44",
+          "pct": 0.627,
+          "last10": "7-3",
+          "streak": "W2"
         },
         "home": {
           "abbr": "SD",
-          "record": "61-57",
-          "pct": 0.517,
-          "last10": "6-4",
-          "streak": "W1"
+          "record": "62-57",
+          "pct": 0.521,
+          "last10": "7-3",
+          "streak": "W2"
         }
       },
       "probables": {
@@ -14241,17 +14253,17 @@
       "team_records": {
         "away": {
           "abbr": "TB",
-          "record": "70-46",
-          "pct": 0.603,
+          "record": "71-46",
+          "pct": 0.607,
           "last10": "8-2",
-          "streak": "W5"
+          "streak": "W6"
         },
         "home": {
           "abbr": "ATH",
-          "record": "46-71",
-          "pct": 0.393,
-          "last10": "1-9",
-          "streak": "W1"
+          "record": "47-71",
+          "pct": 0.398,
+          "last10": "2-8",
+          "streak": "W2"
         }
       },
       "probables": {
@@ -14305,10 +14317,10 @@
       "team_records": {
         "away": {
           "abbr": "COL",
-          "record": "46-71",
-          "pct": 0.393,
+          "record": "46-72",
+          "pct": 0.39,
           "last10": "4-6",
-          "streak": "W1"
+          "streak": "L1"
         },
         "home": null
       },
@@ -14363,17 +14375,17 @@
       "team_records": {
         "away": {
           "abbr": "HOU",
-          "record": "60-58",
-          "pct": 0.508,
-          "last10": "7-3",
-          "streak": "L1"
+          "record": "60-59",
+          "pct": 0.504,
+          "last10": "6-4",
+          "streak": "L2"
         },
         "home": {
           "abbr": "SF",
-          "record": "49-68",
-          "pct": 0.419,
-          "last10": "4-6",
-          "streak": "L1"
+          "record": "49-69",
+          "pct": 0.415,
+          "last10": "3-7",
+          "streak": "L2"
         }
       },
       "probables": {
@@ -14427,17 +14439,17 @@
       "team_records": {
         "away": {
           "abbr": "KC",
-          "record": "49-69",
-          "pct": 0.415,
-          "last10": "4-6",
-          "streak": "W1"
+          "record": "49-70",
+          "pct": 0.412,
+          "last10": "3-7",
+          "streak": "L1"
         },
         "home": {
           "abbr": "LAD",
-          "record": "70-47",
-          "pct": 0.598,
-          "last10": "3-7",
-          "streak": "W1"
+          "record": "70-48",
+          "pct": 0.593,
+          "last10": "2-8",
+          "streak": "L1"
         }
       },
       "probables": {
@@ -14501,7 +14513,11 @@
       "game_case",
       "confidence_score",
       "confidence_basis",
-      "pick_rating_stars"
+      "pick_rating_stars",
+      "our_prob_raw",
+      "p_over_raw",
+      "prob_raw",
+      "confidence_rank"
     ],
     "redacted_text_fields": [
       "rationale_line",

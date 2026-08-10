@@ -50,9 +50,16 @@ fi
 # outage on a key that is always stale. See RUNBOOK "Watchdog" gotcha.
 python3 - "$FILE" "$TMP" <<'PY'
 import datetime,json,sys
+# ═══ THE WRITE GATE ═══ every row on slate_snapshots is readable by
+# anyone holding the anon JWT in the site's JS bundle, so this upload is
+# a publication. The gate redacts by schema and REFUSES a key nobody has
+# registered; `set -e` turns a leak into a failed sync rather than a
+# published board. See /Users/leonrou/Desktop/sports-betting-platform/v4/serve/snapshot_gate.py.
+sys.path.insert(0,"/Users/leonrou/Desktop/sports-betting-platform")
+from v4.serve import snapshot_gate as _GATE
 payload=json.load(open(sys.argv[1]))
 now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-json.dump([{"key":"picks_unified","payload":payload,"updated_at":now}],
+json.dump(_GATE.gate_rows([{"key":"picks_unified","payload":payload,"updated_at":now}],verbose=False),
           open(sys.argv[2],"w"))
 PY
 # RETRY WITH BACKOFF (2026-07-31). The upsert began returning 500 / 57014
