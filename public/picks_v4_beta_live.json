@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T03:12:36Z",
+  "generated_utc": "2026-08-10T03:51:59Z",
   "dates": [
     "2026-08-09"
   ],
@@ -3745,7 +3745,7 @@
       },
       "key": "simulator",
       "label": "Physical run simulator",
-      "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on, 20,000 games simulated \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
+      "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
       "mode": "transparent_voice",
       "is_betting_record": false,
       "activation_date": "2026-07-28",

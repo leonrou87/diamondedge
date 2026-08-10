@@ -368,6 +368,47 @@
   --t-slow:.36s;    /* a surface arriving */
   --press:.972;     /* the one pressed scale in the app */
 
+  /* ── HOW LONG A SURFACE TAKES TO ARRIVE, AND WHY IT IS THIS NUMBER ──
+     Leon, 2026-08-09: "on a few transitions it's a bit delayed / laggy."
+
+     PROFILED FIRST, on the live board at 375px, before a number was touched. Every
+     transition a reader makes was timed end to end — the JavaScript on one side, the
+     CSS choreography on the other:
+
+       tab → tab          0.3 ms of JS   (one 2.2 KB rewrite of the dock, nothing else:
+                                          all five views are resident and the switch is a
+                                          visibility toggle — the board is NOT rebuilt)
+       open a game        9–15 ms of JS  (7 writes, 50 KB of HTML, 3.7 ms to parse)
+       game pane switch   0–1.9 ms of JS (no writes at all)
+       open a player      0.8 ms of JS   (one 2 KB write)
+       scroll the board   0.25 ms/step, ZERO getBoundingClientRect calls, zero writes
+
+     So the render path was already clean, and nothing in it was worth optimising. What a
+     reader was waiting for was THIS FILE: 240–506 ms of entry animation sitting on top of
+     work that had finished in single-digit milliseconds. Opening a game was 15 ms of doing
+     and 400 ms of waiting.
+
+     The scale four lines up already said a surface arrives in .36s. Thirty-five entry
+     animations ignored it and hardcoded .3s to .5s — LONGER than the scale's own slowest
+     rung, which is how the drift went unnoticed. They now share one token, so the answer
+     to "how long does this app take to show you something" is in one place.
+
+     .24s is not a guess: it is one frame under the .26s the scale already spends on a
+     control changing state, because a surface that is merely being revealed has less to
+     say than a control that is changing meaning. The motion is unchanged — same keyframes,
+     same curve, same order — it is only the waiting that is gone.
+
+     THE LADDER WAS THE OTHER HALF, and it is worse than the duration because it compounds.
+     A staggered list pays its step ONCE PER ITEM: the news deck stepped 60 ms a card, so
+     the tenth card began at 540 ms and finished at 940 ms — nearly a second after the tap,
+     on a tab whose HTML had been parsed in 3.1 ms. The steps are halved (18/40/45/50/55/60/
+     70 ms → 10/20/22/24/26/28/32), which keeps the rhythm the design intended and its
+     relative ordering between surfaces, and takes the tail off. The board's own tiles were
+     already exempt — `#slate-body.still` kills their stagger on every repaint after the
+     first, which is the fix that came out of the earlier scroll-jank pass and still holds. */
+  --t-enter:.24s;   /* a surface arriving — the entry choreography, all of it */
+  --t-exit:.18s;    /* a surface leaving, and every scrim either way */
+
   /* ── TYPE ── */
   --mono:var(--font-mono),'JetBrains Mono',ui-monospace,monospace;
   --disp:var(--font-disp),'Outfit',system-ui,sans-serif;
@@ -1075,7 +1116,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .calwrap input[type=date]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 
 /* ---- history (range) panel ---- */
-.histpanel{display:flex;align-items:center;gap:10px;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-md);padding:12px 16px;margin-bottom:14px;box-shadow:var(--glass-shadow);flex-wrap:wrap;animation:rise .35s var(--ease) both}
+.histpanel{display:flex;align-items:center;gap:10px;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-md);padding:12px 16px;margin-bottom:14px;box-shadow:var(--glass-shadow);flex-wrap:wrap;animation:rise var(--t-enter) var(--ease) both}
 .histpanel .rlab{font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
 .histpanel .rlab.lite{letter-spacing:0;text-transform:none;font-weight:500}
 .histpanel input[type=date]{font-family:var(--disp);font-weight:600;font-size:14px;border:1px solid var(--line2);border-radius:9px;padding:8px 9px;background:rgba(var(--rimc),.11);color:var(--ink)}
@@ -1092,7 +1133,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .qdia i.e{color:rgba(var(--tintc),.2)}
 
 /* ============ FEATURED HERO (highest-conviction game) ============ */
-.feat{position:relative;overflow:hidden;margin:2px 0 12px;padding:12px 16px 12px;border-radius:var(--r-lg);cursor:pointer;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--glass-shadow);transition:box-shadow .3s ease,transform .25s var(--spring);animation:cardIn .45s var(--ease) both}
+.feat{position:relative;overflow:hidden;margin:2px 0 12px;padding:12px 16px 12px;border-radius:var(--r-lg);cursor:pointer;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);box-shadow:var(--glass-shadow);transition:box-shadow .3s ease,transform .25s var(--spring);animation:cardIn var(--t-enter) var(--ease) both}
 .feat::before{content:"";position:absolute;left:50%;top:-90px;width:520px;height:240px;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(var(--bluec),.13),transparent 65%);pointer-events:none}
 .feat.q-strong{box-shadow:var(--glass-shadow),0 14px 44px rgba(var(--goldc),.20)}
 .feat.q-strong::before{background:radial-gradient(ellipse,rgba(var(--goldc),.22),transparent 65%)}
@@ -1181,7 +1222,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
   background:var(--paper);border-radius:var(--r-md);box-shadow:var(--e0);
   padding:11px 12px 12px;cursor:pointer;position:relative;overflow:hidden;
   transition:box-shadow .24s var(--ease),transform .18s var(--ease);
-  animation:cardIn .38s var(--ease) both;animation-delay:calc(var(--i,0)*18ms)}
+  animation:cardIn var(--t-enter) var(--ease) both;animation-delay:calc(var(--i,0)*10ms)}
 @media(hover:hover){.tile:hover{transform:translateY(-1px);box-shadow:var(--e1)}}
 .tile:active{transform:translateY(0) scale(.994)}
 .tile:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -1565,7 +1606,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 @keyframes chkdraw{to{stroke-dashoffset:0}}
 
 /* ============ SKELETON LOADING ============ */
-.skcard{min-width:0;background:var(--glass-hi);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:10px 12px;animation:cardIn .4s var(--ease) both;animation-delay:calc(var(--i,0)*40ms)}
+.skcard{min-width:0;background:var(--glass-hi);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:10px 12px;animation:cardIn var(--t-enter) var(--ease) both;animation-delay:calc(var(--i,0)*20ms)}
 .sk-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .sk-row.mt{margin-top:10px;margin-bottom:2px;gap:8px}
 .sk{position:relative;overflow:hidden;background:rgba(var(--tintc),.06);border-radius:7px}
@@ -1583,7 +1624,7 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .dayhdr .dh-rr{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:13px;font-weight:600;color:var(--ink2)}
 
 /* empty / loading states */
-.state{padding:70px 20px;text-align:center;color:var(--ink2);background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);animation:rise .4s var(--ease) both}
+.state{padding:70px 20px;text-align:center;color:var(--ink2);background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);animation:rise var(--t-enter) var(--ease) both}
 .state .st-ico{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);background:rgba(var(--rimc),.11);display:inline-block;border-radius:9px;padding:5px 12px;margin-bottom:12px;box-shadow:0 1px 4px var(--sh3)}
 .state .spinner{width:30px;height:30px;border:3px solid var(--line2);border-top-color:var(--acc);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1619,13 +1660,13 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
    `both` reproduces the exact bug it was meant to fix. With `forwards` the element shows
    its own (visible) style until the animation actually runs, animates, then holds the end
    frame. Verified with `* { animation: none !important }`: the sheet still lands on screen. */
-.sheet-bg{position:fixed;inset:0;background:var(--mat-scrim);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);z-index:90;opacity:1;animation:fade .28s ease forwards}
-.sheet-bg.closing{animation:fadeout .28s ease forwards}
+.sheet-bg{position:fixed;inset:0;background:var(--mat-scrim);-webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);z-index:90;opacity:1;animation:fade var(--t-exit) ease forwards}
+.sheet-bg.closing{animation:fadeout var(--t-exit) ease forwards}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes fadeout{from{opacity:1}to{opacity:0}}
-.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:min(680px,100vw);max-height:calc(100dvh - 42px - var(--sat));background:var(--bg);z-index:91;box-shadow:0 -12px 44px var(--sh4);border:0;border-top-left-radius:28px;border-top-right-radius:28px;display:flex;flex-direction:column;overflow:hidden;transform:none;animation:sheetin .42s var(--ease) forwards;will-change:transform}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:min(680px,100vw);max-height:calc(100dvh - 42px - var(--sat));background:var(--bg);z-index:91;box-shadow:0 -12px 44px var(--sh4);border:0;border-top-left-radius:28px;border-top-right-radius:28px;display:flex;flex-direction:column;overflow:hidden;transform:none;animation:sheetin var(--t-enter) var(--ease) forwards;will-change:transform}
 @keyframes sheetin{from{transform:translateY(100%)}to{transform:none}}
-.sheet.closing{animation:sheetout .3s var(--ease) forwards}
+.sheet.closing{animation:sheetout var(--t-exit) var(--ease) forwards}
 @keyframes sheetout{from{transform:translateY(0)}to{transform:translateY(102%)}}
 .sh-grab{padding:9px 0 5px;display:grid;place-items:center;cursor:grab;touch-action:none;flex-shrink:0}
 .sh-grab span{width:40px;height:5px;border-radius:3px;background:rgba(var(--tintc),.18)}
@@ -1655,13 +1696,13 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .sh-score .shs-tot{font-family:var(--disp);font-weight:700;font-size:23px;color:var(--ink)}
 
 /* ---- (1) THE CALL ---- */
-.callcard{background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:14px 16px;margin-bottom:12px;animation:rise .35s var(--ease) both}
+.callcard{background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:14px 16px;margin-bottom:12px;animation:rise var(--t-enter) var(--ease) both}
 .callcard.gold{background:linear-gradient(130deg,rgba(var(--goldc),.2),rgba(var(--rimc),.11) 60%);box-shadow:var(--glass-shadow),0 10px 30px rgba(var(--goldc),.16)}
 .cc-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
 .callcard.gold .cc-k{color:var(--golddeep)}
 
 /* ---- (2) WHY ---- */
-.whycard{background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:14px 16px;margin-bottom:12px;animation:rise .35s .05s var(--ease) both}
+.whycard{background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:14px 16px;margin-bottom:12px;animation:rise var(--t-enter) .04s var(--ease) both}
 .wc-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
 .whycard p{font-size:15px;line-height:1.6;color:var(--ink);margin:0 0 9px}
 .whycard p:last-child{margin-bottom:0}
@@ -1795,7 +1836,7 @@ details.more .more-body{padding-top:12px}
 .rcp p b{color:var(--golddeep)}
 
 /* ============ RESULTS ============ */
-#results-view{animation:rise .4s var(--ease) both}
+#results-view{animation:rise var(--t-enter) var(--ease) both}
 .edge{padding:11px 0;border-bottom:1px solid var(--line3)}
 .edge:last-child{border-bottom:0}
 .edge p{font-size:14px;line-height:1.55;color:var(--ink2);margin:7px 0 0}
@@ -1805,9 +1846,9 @@ details.more .more-body{padding-top:12px}
    Masthead → big lead headline → lead story → picks carousel →
    storylines rail → game-preview grid → record strip.
    ============================================================ */
-#today-view{animation:rise .4s var(--ease) both;padding-top:0}
+#today-view{animation:rise var(--t-enter) var(--ease) both;padding-top:0}
 /* the big lead headline — pure editorial type on the daylight background */
-.lead-head{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.13;letter-spacing:.004em;color:var(--ink);margin:0 2px 16px;max-width:900px;text-wrap:balance;animation:rise .45s var(--ease) both}
+.lead-head{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.13;letter-spacing:.004em;color:var(--ink);margin:0 2px 16px;max-width:900px;text-wrap:balance;animation:rise var(--t-enter) var(--ease) both}
 @media(min-width:900px){.lead-head{font-size:46px}}
 /* section headers with a rule */
 .sec-h{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink2);margin:0 2px 10px}
@@ -1962,7 +2003,7 @@ details.more .more-body{padding-top:12px}
 .ls-figure:has(.hlb) .heroimg .hi-mu {padding-top:26%}
 
 /* ---- LEAD STORY (front-page article: big hero image, headline, byline, pick) ---- */
-.leadstory{position:relative;overflow:hidden;display:block;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);cursor:pointer;transition:box-shadow .3s ease,transform .25s var(--spring);animation:cardIn .45s var(--ease) both}
+.leadstory{position:relative;overflow:hidden;display:block;background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);cursor:pointer;transition:box-shadow .3s ease,transform .25s var(--spring);animation:cardIn var(--t-enter) var(--ease) both}
 .leadstory:hover{transform:translateY(-2px);box-shadow:var(--glass-shadow-hi)}
 .leadstory:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .leadstory.q-strong{box-shadow:var(--glass-shadow),0 16px 46px rgba(var(--goldc),.20)}
@@ -2085,7 +2126,7 @@ details.more .more-body{padding-top:12px}
 .proof .eic svg{width:12px;height:12px}
 /* ---- STORYLINES (rail of article cards) ---- */
 .stories{display:flex;flex-direction:column;gap:10px}
-.story{display:flex;align-items:flex-start;gap:11px;text-align:left;background:var(--glass-hi);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:13px 14px;cursor:pointer;transition:box-shadow .25s ease,transform .22s var(--spring);animation:cardIn .4s var(--ease) both;animation-delay:calc(var(--i,0)*60ms)}
+.story{display:flex;align-items:flex-start;gap:11px;text-align:left;background:var(--glass-hi);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:13px 14px;cursor:pointer;transition:box-shadow .25s ease,transform .22s var(--spring);animation:cardIn var(--t-enter) var(--ease) both;animation-delay:calc(var(--i,0)*28ms)}
 .story:hover{transform:translateY(-1px);box-shadow:var(--glass-shadow-hi)}
 .story:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .st-ic{flex-shrink:0;display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:linear-gradient(140deg,rgba(var(--bluec),.14),rgba(var(--rimc),.09));color:var(--pick);box-shadow:inset 0 1px 0 rgba(var(--rimc),.11)}
@@ -2104,7 +2145,7 @@ details.more .more-body{padding-top:12px}
 /* ---- FEATURED PICKS CAROUSEL (fixed physics: mandatory snap, uniform cards, dots) ---- */
 .tdy-picks{display:flex;align-items:stretch;gap:11px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x mandatory;padding:4px 2px 10px;margin:0 -2px}
 .tdy-picks::-webkit-scrollbar{display:none}
-.hero{position:relative;overflow:hidden;display:flex;flex-direction:column;flex:0 0 calc(100% - 52px);max-width:320px;scroll-snap-align:center;scroll-snap-stop:always;text-align:left;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);cursor:pointer;transition:box-shadow .3s ease,transform .25s var(--spring);animation:cardIn .45s var(--ease) both;animation-delay:calc(var(--i,0)*70ms)}
+.hero{position:relative;overflow:hidden;display:flex;flex-direction:column;flex:0 0 calc(100% - 52px);max-width:320px;scroll-snap-align:center;scroll-snap-stop:always;text-align:left;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border-radius:var(--r-lg);box-shadow:var(--glass-shadow);cursor:pointer;transition:box-shadow .3s ease,transform .25s var(--spring);animation:cardIn var(--t-enter) var(--ease) both;animation-delay:calc(var(--i,0)*32ms)}
 @media(min-width:760px){.hero{flex-basis:320px}}
 .hero:hover{transform:translateY(-2px);box-shadow:var(--glass-shadow-hi)}
 .hero.q-strong{box-shadow:var(--glass-shadow),0 12px 36px rgba(var(--goldc),.18)}
@@ -2116,7 +2157,7 @@ details.more .more-body{padding-top:12px}
 .tp-dots{display:flex;justify-content:center;gap:7px;padding:2px 0 4px}
 .tp-dot{width:7px;height:7px;border-radius:50%;border:0;padding:0;background:rgba(var(--tintc),.18);cursor:pointer;transition:transform .25s var(--spring),background .25s ease,width .25s var(--spring)}
 .tp-dot.on{width:20px;border-radius:4px;background:linear-gradient(135deg,var(--b2),var(--b2))}
-.prev{display:flex;flex-direction:column;min-width:0;text-align:left;background:var(--glass-hi);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);overflow:hidden;cursor:pointer;transition:box-shadow .25s ease,transform .22s var(--spring);animation:cardIn .4s var(--ease) both;animation-delay:calc(var(--i,0)*45ms)}
+.prev{display:flex;flex-direction:column;min-width:0;text-align:left;background:var(--glass-hi);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);overflow:hidden;cursor:pointer;transition:box-shadow .25s ease,transform .22s var(--spring);animation:cardIn var(--t-enter) var(--ease) both;animation-delay:calc(var(--i,0)*22ms)}
 .prev:hover{transform:translateY(-1px);box-shadow:var(--glass-shadow-hi)}
 .prev:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 /* record strip footer */
@@ -2129,7 +2170,7 @@ details.more .more-body{padding-top:12px}
 .lockchip .lk-badge svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2}
 
 /* ============ SETTINGS ============ */
-#settings-view{animation:rise .4s var(--ease) both;padding-top:12px;max-width:640px;margin:0 auto}
+#settings-view{animation:rise var(--t-enter) var(--ease) both;padding-top:12px;max-width:640px;margin:0 auto}
 .set-h{font-family:var(--disp);font-weight:700;font-size:23px;letter-spacing:.02em;margin:2px 2px 14px;color:var(--ink)}
 .set-card{background:var(--glass-hi);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--glass-shadow);padding:15px 16px;margin-bottom:12px}
 .set-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
@@ -2153,7 +2194,7 @@ details.more .more-body{padding-top:12px}
 .set-about b{color:var(--ink)}
 
 /* ============ UPGRADE ============ */
-#upgrade-view{animation:rise .4s var(--ease) both;padding-top:12px;max-width:560px;margin:0 auto}
+#upgrade-view{animation:rise var(--t-enter) var(--ease) both;padding-top:12px;max-width:560px;margin:0 auto}
 .up-hero{text-align:center;padding:26px 18px 20px;background:linear-gradient(160deg,rgba(var(--goldc),.2),rgba(var(--rimc),.11) 60%);border:1px solid var(--glass-brd);border-radius:var(--r-lg);box-shadow:var(--glass-shadow),0 14px 40px rgba(var(--goldc),.14);position:relative;overflow:hidden}
 .up-hero::before{content:"";position:absolute;left:50%;top:-90px;width:420px;height:230px;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(var(--goldc),.25),transparent 65%);pointer-events:none}
 .up-dia{width:44px;height:44px;margin:0 auto 14px;transform:rotate(45deg);border-radius:12px;background:linear-gradient(135deg,var(--n3),var(--n3));position:relative;box-shadow:inset 0 1px 0 rgba(var(--rimc),.13),0 8px 20px var(--sh4),0 0 26px rgba(var(--goldc),.3)}
@@ -2181,7 +2222,7 @@ details.more .more-body{padding-top:12px}
 .up-back:hover{color:var(--ink)}
 .up-honest{font-size:13px;line-height:1.6;color:var(--ink3);border-top:1px solid var(--line3);padding:12px 4px 0;margin-top:4px}
 /* success animation overlay */
-.up-done{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:rgba(var(--panec),.82);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);animation:fade .3s ease forwards}
+.up-done{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:rgba(var(--panec),.82);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);animation:fade var(--t-exit) ease forwards}
 .up-done .ud-inner{text-align:center;animation:udpop .55s var(--spring) both}
 @keyframes udpop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
 .up-done .ud-dia{width:64px;height:64px;margin:0 auto 18px;transform:rotate(45deg);border-radius:16px;background:linear-gradient(135deg,var(--a4),var(--a3));box-shadow:0 0 60px rgba(var(--goldc),.55);position:relative;animation:udspin .8s var(--ease) both}
@@ -2204,7 +2245,7 @@ details.more .more-body{padding-top:12px}
 .acctbtn .acct-av.prem{background:linear-gradient(135deg,var(--a4),var(--a3));color:var(--a0)}
 .acctbtn .acct-star{position:absolute;right:-2px;bottom:-2px;font-size:12px;color:var(--golddeep);background:var(--bg);border-radius:50%;width:14px;height:14px;display:grid;place-items:center;box-shadow:0 1px 3px var(--sh5)}
 /* the shared account page shell */
-.acct-page{max-width:520px;margin:0 auto;padding:8px 2px 30px;animation:rise .45s var(--ease) both;position:relative}
+.acct-page{max-width:520px;margin:0 auto;padding:8px 2px 30px;animation:rise var(--t-enter) var(--ease) both;position:relative}
 .acct-x{position:absolute;right:2px;top:2px;z-index:2;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;box-shadow:var(--e0)}
 .acct-x:active{transform:scale(.92)}
 /* account hub */
@@ -2430,7 +2471,7 @@ details.more .more-body{padding-top:12px}
 .mh-dek{font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--ink2);margin:6px 2px 0;max-width:640px}
 .mh-rule{height:2px;background:linear-gradient(90deg,rgba(var(--tintc),.16),rgba(var(--tintc),.04));border-radius:2px;margin:0 2px 16px}
 /* the headline — tight, punchy, clamped to 2 lines on phone (font from the system layer) */
-.lead-head{font-size:25px;line-height:1.12;color:var(--ink);margin:0 2px;max-width:900px;text-wrap:balance;animation:rise .4s var(--ease) both;
+.lead-head{font-size:25px;line-height:1.12;color:var(--ink);margin:0 2px;max-width:900px;text-wrap:balance;animation:rise var(--t-enter) var(--ease) both;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media(min-width:900px){.lead-head{font-size:36px;-webkit-line-clamp:2}}
 .st-ic.sm{width:30px;height:30px;border-radius:10px}
@@ -2574,7 +2615,7 @@ details.more .more-body{padding-top:12px}
 @media(min-width:900px){.gp-body{background:var(--bg)}}
 /* FUSED HERO HEADER */
 .gp-hero{position:relative;overflow:hidden;border-radius:var(--r-lg);padding:18px 16px 16px;margin-bottom:12px;
-  background:var(--paper);border:0;box-shadow:var(--e1);animation:cardIn .4s var(--ease-out) both}
+  background:var(--paper);border:0;box-shadow:var(--e1);animation:cardIn var(--t-enter) var(--ease-out) both}
 /* the team-tinted wash is retired — on white it muddies the crests it sits behind */
 .gp-hero-wash{display:none}
 .gp-hero>*{position:relative;z-index:1}
@@ -2624,7 +2665,7 @@ details.more .more-body{padding-top:12px}
 .gp-tab-ink{position:absolute;z-index:0;top:4px;bottom:4px;left:0;width:0;border-radius:11px;
   background:linear-gradient(135deg,rgba(var(--bluec),.24),rgba(var(--bluec),.14));box-shadow:inset 0 1px 0 rgba(var(--rimc),.11),0 4px 12px rgba(var(--bluec),.18);
   transition:transform .38s var(--spring),width .38s var(--spring);will-change:transform}
-.gp-pane{animation:rise .3s var(--ease-out) both}
+.gp-pane{animation:rise var(--t-enter) var(--ease-out) both}
 /* PREVIEW AFTER THE FACT. The pregame read stays on a live or finished game — it is the most
    testable thing the product publishes. This kicker frames it as the pregame view; it is a
    label, never an apology, so it states what the pane is and stops. */
@@ -3589,6 +3630,16 @@ details.more .more-body{padding-top:12px}
 #sheet-layer{position:fixed;inset:0;z-index:470;pointer-events:none}  /* ABOVE the tab bar (460) — a presented sheet owns the screen; see the layering note by .dockwrap */
 #sheet-layer>*{pointer-events:auto}
 #sheet-layer:empty{display:none}
+/* ══ SWIPE BACK — the two states the gesture owns (see bindSwipeBack) ══
+   `!important` is load-bearing here, not laziness. Every one of these surfaces arrives on
+   an ANIMATION with `forwards` fill (.sheet's `sheetin`, the dock's `dockIn` family) or on
+   a class-set transform (.gamepage.in), and a filled animation outranks an inline style —
+   so without switching the animation off the drag would write a transform per frame that
+   the compositor is entitled to ignore. `swipeback` is "the finger owns this, nothing else
+   may move it"; `swipeback-settle` is the one eased return (or exit) after the finger has
+   gone. Both are removed the moment the gesture ends. */
+.swipeback{animation:none!important;transition:none!important;will-change:transform}
+.swipeback-settle{animation:none!important;transition:transform .26s var(--ease-out),opacity .26s ease!important}
 .de-toast{z-index:900}
 /* the dock is always on screen now, so every scrolling modal body must clear it */
 #sheet-layer .sh-body,#sheet-layer .gp-body{padding-bottom:calc(var(--sab) + 34px)}  /* the bar is hidden under a sheet, so only the safe area needs clearing */
@@ -3966,7 +4017,7 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* — Masthead: confident nameplate + action row — */
-.ix-masthead{padding:6px 4px 4px;margin-bottom:20px;animation:rise .5s var(--ease) both}
+.ix-masthead{padding:6px 4px 4px;margin-bottom:20px;animation:rise var(--t-enter) var(--ease) both}
 .ix-eyebrow{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc2)}
 .ix-mast-h{font-family:var(--disp)!important;font-weight:700;font-size:clamp(30px,5.6vw,52px);line-height:1.02;letter-spacing:-.028em;color:var(--ink);margin-top:8px}
 .ix-mast-sub{font-size:16px;line-height:1.55;color:var(--ink2);max-width:660px;margin-top:12px}
@@ -4417,7 +4468,7 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
   -webkit-backdrop-filter:var(--mat-filter);backdrop-filter:var(--mat-filter);
   border:0;
   box-shadow:var(--mat-spec),var(--mat-hair),var(--mat-spec-lo),var(--mat-drop-float);
-  animation:dockIn var(--t-slow) var(--ease-out) both}
+  animation:dockIn var(--t-enter) var(--ease-out) both}
 /* the specular sweep — the detail that separates "liquid glass" from "translucent box" */
 .dock::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
   background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 52%);
@@ -4623,7 +4674,7 @@ body.sheet-open .dock{pointer-events:none}
   background-image:linear-gradient(180deg,rgba(var(--panec),.6),rgba(var(--panec),0) 62%);
   -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);
   box-shadow:0 14px 32px -12px rgba(var(--panec),.5),inset 0 1px 0 rgba(var(--rimc),.08);
-  transition:transform .22s var(--spring),box-shadow .25s ease;animation:cardIn .4s var(--ease) both;animation-delay:calc(var(--i,0)*50ms)}
+  transition:transform .22s var(--spring),box-shadow .25s ease;animation:cardIn var(--t-enter) var(--ease) both;animation-delay:calc(var(--i,0)*24ms)}
 .tpk:hover{transform:translateY(-2px);box-shadow:0 18px 40px -12px rgba(var(--panec),.6),inset 0 1px 0 rgba(var(--rimc),.1)}
 .tpk:active{transform:scale(.97)}
 .tpk:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
@@ -5460,7 +5511,7 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
 .lab-card.grave .lab-track i{background:rgba(var(--slatec),.4)}
 /* the expanded detail */
 .lab-detail{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--ink2);padding:11px 14px 13px;border-top:1px solid var(--line3);
-  background:rgba(var(--panec),.32);animation:rise .3s var(--ease) both}
+  background:rgba(var(--panec),.32);animation:rise var(--t-enter) var(--ease) both}
 .lab-detail.dim{color:var(--ink4)}
 @media(prefers-reduced-motion:reduce){.lab-detail{animation:none}}
 /* the narrowest phones: the bar is full-bleed and self-distributing, so only the label and
@@ -6917,7 +6968,7 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   min-width:0;background:var(--paper);border-radius:var(--r-md);box-shadow:var(--e0);
   padding:14px 13px 13px;
   transition:box-shadow .24s var(--ease),transform .18s var(--ease);
-  animation:cardIn .42s var(--ease-out) both;animation-delay:calc(var(--i,0)*55ms)}
+  animation:cardIn var(--t-enter) var(--ease-out) both;animation-delay:calc(var(--i,0)*26ms)}
 .rostcard::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--anc)}
 .rostcard:nth-child(2){--i:1}.rostcard:nth-child(3){--i:2}.rostcard:nth-child(4){--i:3}
 @media(hover:hover){.rostcard:hover{transform:translateY(-2px);box-shadow:var(--e2)}}
@@ -9033,14 +9084,14 @@ main.swiping{transition:none !important;will-change:transform}
    the sheet layer it covers, not against the page's ordinary chrome. */
 #pcard-layer{position:fixed;inset:0;z-index:520}
 #pcard-layer.closing .pcard{animation:pcardout .26s var(--ease) forwards}
-#pcard-layer.closing .pcard-bg{animation:fadeout .26s ease forwards}
+#pcard-layer.closing .pcard-bg{animation:fadeout var(--t-exit) ease forwards}
 .pcard-bg{position:absolute;inset:0;background:var(--mat-scrim);
   -webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);
-  animation:fade .24s ease forwards}
+  animation:fade var(--t-exit) ease forwards}
 .pcard{position:absolute;left:0;right:0;bottom:0;margin:0 auto;width:min(560px,100vw);
   max-height:calc(100dvh - 64px - var(--sat));background:var(--bg);
   border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -12px 44px var(--sh4);
-  display:flex;flex-direction:column;overflow:hidden;animation:pcardin .34s var(--ease) forwards}
+  display:flex;flex-direction:column;overflow:hidden;animation:pcardin var(--t-enter) var(--ease) forwards}
 @keyframes pcardin{from{transform:translateY(101%)}to{transform:translateY(0)}}
 @keyframes pcardout{from{transform:translateY(0)}to{transform:translateY(101%)}}
 .pcard-grab{display:grid;place-items:center;padding:9px 0 3px;flex-shrink:0}
@@ -9314,7 +9365,7 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
   padding:calc(40px + var(--sat)) max(20px,var(--sal)) calc(40px + var(--sab)) max(20px,var(--sar))}
 .nf-card{max-width:420px;display:flex;flex-direction:column;align-items:flex-start;gap:0;
   background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--e1);padding:30px 28px 28px;
-  animation:cardIn .42s var(--ease-out) both}
+  animation:cardIn var(--t-enter) var(--ease-out) both}
 @supports (corner-shape: superellipse(1.8)){.nf-card{corner-shape:superellipse(1.8)}}
 .nf-mark{color:var(--gold);margin-bottom:18px}
 .nf-k{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:12px;
@@ -10053,7 +10104,7 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
    animation is on the PANE (which persists through the live pollers' innerHTML repaints),
    so nothing replays while the reader holds still. */
 @keyframes paneIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.gp-pane{animation:paneIn .24s var(--ease-out) both}
+.gp-pane{animation:paneIn var(--t-enter) var(--ease-out) both}
 @media(prefers-reduced-motion:reduce){.gp-pane{animation:none}}
 
 /* THE CLINCH METER — the chance-to-cash rides inside the cushion pill: a tinted fill

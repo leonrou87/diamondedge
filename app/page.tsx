@@ -8683,14 +8683,38 @@ export default function Home() {
     const RESULT_STAMP: any = {
       won: { w: "CASHED", k: "won", g: "check" },
       lost: { w: "MISSED", k: "lost", g: "cross" },
-      pushed: { w: "PUSH", k: "pushed", g: "dash" },
+      pushed: { w: "PUSH", k: "pushed", g: "returned" },
     };
     const STAMP_GLYPH: any = {
       check: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
       cross: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>`,
-      // "even" is two bars, not one — a single dash in a disc read as nothing at all
-      // (Leon: "the push logo isn't clear enough").
-      dash: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5h11M6.5 14.5h11"/></svg>`,
+      /* THE PUSH SAYS "THE STAKE CAME BACK", BECAUSE THAT IS THE OUTCOME.
+         Leon, 2026-08-09: "the = push, I think let's find a better icon."
+
+         It was two bars — an equals sign. That states a RELATION between two numbers
+         (the runs and the line), which is a fact about the game, not a fact about the
+         bet; and it sits between a tick and a cross that both state what happened to
+         the reader's money. A maths operator in that row is the odd one out, and it is
+         the only one of the three that needs its word to be understood.
+
+         The mark is now a RETURN ARROW: the stake goes out and comes back, nothing is
+         won and nothing is lost. Chosen against three constraints this slot imposes,
+         not on taste:
+
+         · IT MUST SURVIVE AS A BARE STROKE. `.restamp .rs-g svg` renders at 9–16px with
+           stroke-width 3–4 and no fill, so the mark gets two strokes and no interior
+           detail. A shaft and a chevron head is exactly that, and it spans the box on
+           the same 5→19 diagonal budget the check and the cross already use, so the
+           three stamps have one weight.
+         · IT MUST NOT BORROW THE DIRECTION LANGUAGE. A pick is a triangle, and the two
+           it can be are UP and DOWN. This arrow is HORIZONTAL, so it cannot be misread
+           as a side — the separation between a result and a pick is deliberate and this
+           mark stays on the result's side of it.
+         · IT MUST NOT COLLIDE WITH THE CORRECTION MARK. `rs-corr` is ↻, a CLOSED
+           circular arrow, and it can appear on a pushed row. This one is straight and
+           open, so a corrected push reads as two different marks rather than two
+           spins of the same one. */
+      returned: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H6.5M12 6.5L6.5 12l5.5 5.5"/></svg>`,
     };
     /* THREE SIZES, AND THE SMALLEST ONE DROPS THE WORD.
        Leon: "the RIGHT/✓ treatment is wrapping onto multiple lines and looks odd… make it a
@@ -8728,8 +8752,10 @@ export default function Home() {
           + `and the settled final made it a ${String(corrected.to).toUpperCase()}`
         : "";
       const aria = `This pick ${verb}${cx}`;
-      // mini drops the word — EXCEPT for a push: ✓ and ✗ are self-evident, "=" is not,
-      // and PUSH is short enough to keep at any size.
+      // mini drops the word — EXCEPT for a push. A tick and a cross are self-evident and a
+      // return arrow is only NEARLY so: it says the stake came back, but "came back from
+      // what" is the one thing the word supplies. PUSH is four characters, it fits at every
+      // size, and the belt-and-braces costs nothing on the rarest of the three outcomes.
       const word = size === "mini" && r.k !== "pushed" ? "" : `<b>${r.w}</b>`;
       const mark = corrected
         ? `<i class="rs-corr" aria-hidden="true" title="${esc(`Corrected from ${String(corrected.from).toUpperCase()} by the settled final`)}">↻</i>`
@@ -11357,6 +11383,12 @@ export default function Home() {
       if (bg) bg.addEventListener("click", () => closePlayerCard());
       const x = document.getElementById("pcard-x");
       if (x) x.addEventListener("click", () => closePlayerCard());
+      /* AND IT SWIPES BACK LIKE EVERY OTHER LAYER. It is the one surface a reader can open
+         that is NOT a `#sheet-layer` page, so it was the one the shared gesture never
+         reached — it closes through `closePlayerCard`, which pops its own history entry,
+         and that is what the gesture is handed rather than the default `closeDetail`
+         (which would have closed the GAME underneath it). */
+      bindSwipeBack(l.querySelector(".pcard"), () => closePlayerCard());
       pcardOpen = false;
       try { history.pushState({ layer: "player" }, "", location.href); pcardOpen = true; } catch {}
       return true;
@@ -13399,24 +13431,141 @@ export default function Home() {
         window.addEventListener("mousemove", mm); window.addEventListener("mouseup", mu);
       });
     }
-    function bindSwipeBack(surface: any) {
+    /* ══════════════ SWIPE BACK — ONE GESTURE, EVERY LAYER ══════════════
+       Leon: "support swiping left to right to go back seamlessly."
+
+       WHY THE OLD ONE NEVER FIRED ON A PHONE. It was built on POINTER events, and a
+       pointer stream does not survive a scroll. Measured on a real touch device (Chrome,
+       CDP touch input, game page open): the browser hands us `pointerdown` at x=6, ONE
+       `pointermove` at x=28 — and then `pointercancel`, because the scroll container under
+       the finger (`.gp-body`) has claimed the gesture. `pointerup` never arrives, so the
+       only place the old code could decide anything was never reached. The touch stream
+       kept flowing the whole time (thirteen more `touchmove`s and a `touchend`); we were
+       listening on the one channel the browser switches off. Every layer failed the same
+       way — game page, analyst, paper, terms, the article reader, the player card — which
+       is why "swipe back" read as unimplemented rather than as a broken threshold.
+
+       `touch-action` cannot rescue the pointer stream either: the walk that decides a
+       gesture stops at the element that will handle the scroll, so `pan-y` on the LAYER is
+       never consulted — verified by injecting exactly that rule and watching the same
+       `pointercancel` arrive at the same place.
+
+       SO IT IS BUILT ON TOUCH EVENTS, and it never fights the browser for the gesture:
+        · It begins only in a ~40px strip at the surface's own leading edge, so ordinary
+          reading is untouched.
+        · It commits to being a back gesture only once the drag is decidedly horizontal
+          (12px of travel and at least 1.3× the vertical), and abandons the moment the
+          finger has gone 14px down — a scroll can never turn into a dismissal.
+        · Any horizontally scrollable ancestor wins inside its own bounds (`hScrollOwner`,
+          the same rule the tab pan uses): a box-score grid or a chart still scrolls, and
+          only yields once it is already at the edge it is being dragged away from.
+        · While it is live the surface follows the finger and the scrim thins with it, so
+          the reader can see the gesture and can change their mind — under 30% of the
+          width (or a flick) it settles back, past it the layer leaves.
+       Every listener is passive: nothing is preventDefault-ed, so a vertical drag inside
+       the strip still scrolls the page exactly as it always did.
+
+       `close` is how the layer goes back. It defaults to `closeDetail()` — which already
+       knows about the ?g= history entry, the pitcher sheet's own entry and `_backToGame`
+       — and the surfaces that restore something else on the way out (the terms page, the
+       player card) pass their own, so the swipe and the back arrow are one door. */
+    const SWIPE_BACK_EDGE = 40;   // how far in from the surface's leading edge a back gesture may start
+    // form controls and the sheets' own vertical grab handles own their drags outright
+    const SWIPE_BACK_SKIP = ".sh-grab,.pcard-grab,input,select,textarea,[data-no-swipe]";
+    function bindSwipeBack(surface: any, close?: any) {
       if (!surface) return;
-      let sx = 0, sy = 0, tracking = false;
-      const ignored = ".stories,#st-stage,.lp-scroll,.bgrid-scroll,.sporttabs,.datestrip,.tp-rail,a,button,input,select,textarea,[data-no-swipe]";
-      surface.addEventListener("pointerdown", (e: any) => {
-        if (e.pointerType === "mouse") return;
-        if (!detail || document.body.classList.contains("stories-on")) return;
-        if (e.target && e.target.closest && e.target.closest(ignored)) return;
-        if (e.clientX > 34) return;
-        sx = e.clientX; sy = e.clientY; tracking = true;
+      // Listen on the LAYER, not the surface: the scrim beside a bottom sheet is part of
+      // the same layer and a swipe that begins on it is the same gesture.
+      const root = surface.parentElement || surface;
+      const done = typeof close === "function" ? close : () => closeDetail();
+      let sx = 0, sy = 0, t0 = 0, tid: any = null, live = false, dx = 0, gone = false;
+      const scrim = () => root.querySelector(".sheet-bg,.pcard-bg") as any;
+      const width = () => surface.getBoundingClientRect().width || window.innerWidth || 320;
+      // The scrim fades in on a `forwards`-filled animation of its own, so it needs the
+      // same class treatment as the surface before an inline opacity can reach the screen.
+      const mark = (cls: string, on: boolean) => {
+        const s = scrim();
+        surface.classList.toggle(cls, on);
+        if (s) s.classList.toggle(cls, on);
+      };
+      const paint = (v: number) => {
+        surface.style.transform = v > 0 ? `translate3d(${v.toFixed(1)}px,0,0)` : "";
+        const s = scrim();
+        if (s) s.style.opacity = v > 0 ? String(Math.max(0, 1 - (v / width()) * 0.9)) : "";
+      };
+      const stop = () => { tid = null; live = false; dx = 0; };
+      const settle = () => {
+        mark("swipeback", false);
+        if (!REDUCE) {
+          mark("swipeback-settle", true);
+          window.setTimeout(() => mark("swipeback-settle", false), 300);
+        }
+        paint(0);
+        stop();
+      };
+      const touchOf = (e: any) => {
+        const list = e.changedTouches || e.touches || [];
+        for (let i = 0; i < list.length; i++) if (list[i].identifier === tid) return list[i];
+        return null;
+      };
+      root.addEventListener("touchstart", (e: any) => {
+        if (gone) return;
+        stop();
+        if (!e.touches || e.touches.length !== 1) return;
+        if (!detail && !close) return;                      // no layer of ours is open
+        /* THERE IS NO `stories-on` GUARD. There used to be, and it was the whole reason the
+           article reader — the layer readers open more than any other, by tapping a card in
+           the briefing — could not be swiped away: `body.stories-on` stays set while the
+           deck sits underneath the sheet, so the guard fired on exactly the case it was
+           meant to protect. It was protecting nothing: this listener is on the ARTICLE's
+           own layer, which is above the deck and receives the touch instead of it. */
+        const t = e.touches[0];
+        if (t.clientX - surface.getBoundingClientRect().left > SWIPE_BACK_EDGE) return;
+        if (e.target && e.target.closest && e.target.closest(SWIPE_BACK_SKIP)) return;
+        sx = t.clientX; sy = t.clientY; t0 = performance.now(); tid = t.identifier;
       }, { passive: true });
-      surface.addEventListener("pointerup", (e: any) => {
-        if (!tracking) return;
-        tracking = false;
-        const dx = e.clientX - sx, dy = e.clientY - sy;
-        if (dx > 72 && dx > Math.abs(dy) * 1.45) closeDetail();
+      root.addEventListener("touchmove", (e: any) => {
+        if (tid == null || gone) return;
+        const t = touchOf(e); if (!t) return;
+        const ddx = t.clientX - sx, ddy = t.clientY - sy;
+        if (!live) {
+          if (ddx < 12 || ddx < Math.abs(ddy) * 1.3) {
+            if (Math.abs(ddy) > 14) stop();                 // it is a scroll — let it go
+            return;
+          }
+          // a horizontal scroller with somewhere left to go owns this drag, not us
+          if (e.target && hScrollOwner(e.target, ddx)) { stop(); return; }
+          live = true;
+          if (!REDUCE) mark("swipeback", true);
+        }
+        dx = Math.max(0, ddx);
+        if (!REDUCE) paint(dx);
       }, { passive: true });
-      surface.addEventListener("pointercancel", () => { tracking = false; }, { passive: true });
+      root.addEventListener("touchend", () => {
+        if (tid == null || gone) return;
+        if (!live) { stop(); return; }
+        const v = dx / Math.max(1, performance.now() - t0);          // px per ms
+        if (dx > Math.min(width() * 0.3, 110) || (v > 0.4 && dx > 26)) {
+          gone = true;
+          stop();
+          /* LEAVE ALONG THE LINE OF THE FINGER. The inline transform is deliberately NOT
+             cleared: `.gamepage.out` and `.sheet.closing` both re-enter from near the
+             middle of the screen, and snapping back there to fade out is a flash. The
+             surface is torn down by the close path a moment later regardless. */
+          if (!REDUCE) {
+            mark("swipeback", false);
+            mark("swipeback-settle", true);
+            // far enough to clear the VIEWPORT, not just its own width — a sheet that is
+            // centred on a tablet is narrower than the screen it has to leave
+            const l = surface.getBoundingClientRect().left;
+            paint(Math.max(width(), (window.innerWidth || width()) - l) + 24);
+          }
+          window.setTimeout(() => { try { done(); } catch {} }, REDUCE ? 0 : 150);
+          return;
+        }
+        settle();
+      }, { passive: true });
+      root.addEventListener("touchcancel", () => { if (!gone) settle(); }, { passive: true });
     }
 
     // ===================== "HOW PICKS WORK" SHEET (the ⓘ link) =====================
@@ -15304,16 +15453,42 @@ export default function Home() {
         if (!storyHold) { storyAcc += performance.now() - storyT0; storyHold = true; }
       };
       const release = () => { if (storyHold) { storyHold = false; storyT0 = performance.now(); } };
-      stage.addEventListener("pointerdown", (e: any) => { pdX = e.clientX; pdAt = Date.now(); hold(); }, { passive: true });
-      stage.addEventListener("pointerup", (e: any) => {
-        release();
-        const dx = e.clientX - pdX, dt = Date.now() - pdAt;
+      /* THE DECK'S SWIPE READS THE TOUCH STREAM, NOT THE POINTER STREAM.
+         Going back a card is this surface's back gesture, and it did not work on a phone
+         for exactly the reason the layers' swipe-back did not (see `bindSwipeBack`): a
+         browser that decides a drag is a scroll issues `pointercancel` and never sends
+         `pointerup`, so the branch below was unreachable on the one input it was written
+         for. Measured: dragging left-to-right across the stage left the deck on the same
+         card. Touch events keep arriving through the whole drag, so touch drives the
+         gesture and the pointer pair is kept for a mouse, which is never cancelled. */
+      const endGesture = (x: number, dt: number, target: any) => {
+        const dx = x - pdX;
         if (Math.abs(dx) > 44) { if (dx < 0) nextStory(); else prevStory(); return; }   // swipe
         if (dt >= 420) return;                                                          // hold-release: no advance
-        if (e.target && e.target.closest && e.target.closest(".st-cta,[data-go],[data-gid],[data-an],[data-up],a,button")) return;
+        if (target && target.closest && target.closest(".st-cta,[data-go],[data-gid],[data-an],[data-up],a,button")) return;
         const rect = stage.getBoundingClientRect();
-        if (e.clientX - rect.left < rect.width * 0.34) prevStory(); else nextStory();    // tap zones
+        if (x - rect.left < rect.width * 0.34) prevStory(); else nextStory();            // tap zones
+      };
+      stage.addEventListener("pointerdown", (e: any) => {
+        if (e.pointerType && e.pointerType !== "mouse") return;   // touch is handled below
+        pdX = e.clientX; pdAt = Date.now(); hold();
+      }, { passive: true });
+      stage.addEventListener("pointerup", (e: any) => {
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        release();
+        endGesture(e.clientX, Date.now() - pdAt, e.target);
       });
+      stage.addEventListener("touchstart", (e: any) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        pdX = e.touches[0].clientX; pdAt = Date.now(); hold();
+      }, { passive: true });
+      stage.addEventListener("touchend", (e: any) => {
+        release();
+        const t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+        endGesture(t.clientX, Date.now() - pdAt, e.target);
+      }, { passive: true });
+      stage.addEventListener("touchcancel", release, { passive: true });
       stage.addEventListener("pointercancel", release);
       stage.addEventListener("pointerleave", release);
       if (wrap) wrap.onkeydown = (e: any) => {
@@ -15607,8 +15782,11 @@ export default function Home() {
         </div>`;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
-      bindClick("gp-back", () => { detail = prev; closeDetail(); });
-      bindSwipeBack($("gamepage"));
+      // the swipe and the arrow are ONE door: both restore whatever `detail` the terms page
+      // was opened on top of before closing, or the reader lands back on the wrong surface
+      const leaveTerms = () => { detail = prev; closeDetail(); };
+      bindClick("gp-back", leaveTerms);
+      bindSwipeBack($("gamepage"), leaveTerms);
       if (mustAccept) {
         const box = $("terms-box"), go = $("terms-go");
         if (box && go) box.onchange = () => { go.disabled = !box.checked; };
@@ -18781,15 +18959,24 @@ export default function Home() {
         if (m) { m.classList.remove("swiping"); m.style.transform = ""; }
         tracking = false; active = false; dx = 0;
       };
-      window.addEventListener("pointerdown", (e: any) => {
-        if (e.pointerType === "mouse") return;
+      /* AND IT READS THE TOUCH STREAM. Every rule below is unchanged; the only thing that
+         changed is which events carry them. On a phone the browser cancels the POINTER
+         stream the instant it decides a drag belongs to a scroller — one `pointermove`,
+         then `pointercancel`, and no `pointerup` ever — so the pan committed exactly never
+         on the one input it was written for (measured: a 160px horizontal drag on the Desk
+         left the reader on the Desk). Touch events keep arriving for the whole drag. */
+      window.addEventListener("touchstart", (e: any) => {
+        reset();
+        if (!e.touches || e.touches.length !== 1) return;
         if (detail || document.body.classList.contains("sheet-open") || document.body.classList.contains("stories-on")) return;
         if (e.target && e.target.closest && e.target.closest(SWIPE_OWNERS)) return;
-        sx = e.clientX; sy = e.clientY; t0 = performance.now(); tracking = true; active = false; dx = 0;
+        const t = e.touches[0];
+        sx = t.clientX; sy = t.clientY; t0 = performance.now(); tracking = true; active = false; dx = 0;
       }, { passive: true });
-      window.addEventListener("pointermove", (e: any) => {
+      window.addEventListener("touchmove", (e: any) => {
         if (!tracking) return;
-        const ddx = e.clientX - sx, ddy = e.clientY - sy;
+        const t = e.touches && e.touches[0]; if (!t) return;
+        const ddx = t.clientX - sx, ddy = t.clientY - sy;
         if (!active) {
           if (Math.abs(ddx) < 12 || Math.abs(ddx) < Math.abs(ddy) * 1.3) {
             if (Math.abs(ddy) > 14) tracking = false;   // it's a scroll — let it go
@@ -18808,7 +18995,7 @@ export default function Home() {
         const m = mainEl();
         if (m) m.style.transform = `translate3d(${dx.toFixed(1)}px,0,0)`;
       }, { passive: true });
-      const end = (e: any) => {
+      const end = () => {
         if (!tracking) return;
         if (!active) { reset(); return; }
         const dt = Math.max(1, performance.now() - t0);
@@ -18821,8 +19008,8 @@ export default function Home() {
         tracking = false; active = false; dx = 0;
         if (commit && to >= 0 && to < DOCK_TABS.length) switchTab(DOCK_TABS[to]);
       };
-      window.addEventListener("pointerup", end, { passive: true });
-      window.addEventListener("pointercancel", () => reset(), { passive: true });
+      window.addEventListener("touchend", end, { passive: true });
+      window.addEventListener("touchcancel", () => reset(), { passive: true });
     }
 
     /* ════════════════════ TAB NAVIGATION IS A PAN ════════════════════

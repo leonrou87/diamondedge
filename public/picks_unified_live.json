@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T03:16:17Z",
+  "generated_utc": "2026-08-10T03:55:37Z",
   "dates": [
     "2026-08-09"
   ],
@@ -2158,21 +2158,21 @@
         "label": "Champion engine",
         "what": "The champion engine's own totals play \u2014 its frozen pipeline plus the +EV gate at the real per-side price. It only speaks on games where its trigger fires; on every other game it has no view at all.",
         "activation_date": "2026-07-02",
-        "basis": "POPULATION: every game the champion engine itself rated PLAYABLE and that settled \u2014 one row per game (its highest-score playable wall). This is NOT the champion's published headline, which counts one row per game x STREAM at the last decision wall; the two populations are reconciled to a zero residual by champion_headline_residual(). GRADING: champion_v2's own graded ledger, untouched \u2014 gate at the median de-vig price, priced and settled at the best executable price at the same line. HEADLINE COVERS: forward paper ledger + live board from 2026-07-02 forward. The 2026-03-27..06-10 rolling-origin rows are a WALK-FORWARD BACKTEST and are reported separately."
+        "basis": "POPULATION: every game the champion engine itself rated PLAYABLE and that settled \u2014 one row per game (its highest-score playable wall). This is NOT the champion's published headline, which counts one row per game x STREAM at the last decision wall; the two populations are reconciled to a zero residual, and the reconciliation is checked on every build. GRADING: champion_v2's own graded ledger, untouched \u2014 gate at the median de-vig price, priced and settled at the best executable price at the same line. HEADLINE COVERS: forward paper ledger + live board from 2026-07-02 forward. The 2026-03-27..06-10 rolling-origin rows are a WALK-FORWARD BACKTEST and are reported separately."
       },
       {
         "key": "model_v4",
         "label": "V4 model grid",
-        "what": "The v4 model grid's best playable totals lean on the game (+EV gate at the real price AND at least 1 point of model-vs-market disagreement).",
+        "what": "The v4 model grid's best playable totals lean on the game (the price gate at the real price, and a clear margin between our number and the market's).",
         "activation_date": "2026-07-06",
         "basis": "POPULATION: every game where the v4 model grid had a playable totals row that settled \u2014 one row per game (core playable preferred over an expanded-band row, then highest score). This DELIBERATELY INCLUDES games the champion also played, which record.by_source.model does NOT: by_source counts only the games the model FILLED after the champion passed, so the two numbers differ and neither is wrong. GRADING: the grid's own graded rows \u2014 as-of-wall archive where a day has one, else the live graded ledger \u2014 at each row's real executable per-side price. HEADLINE COVERS: 2026-07-06 forward (the first day the grid's live ledger graded anything)."
       },
       {
         "key": "expanded_band",
         "label": "Expanded band",
-        "what": "The narrow near-miss band: full +EV gate cleared but the model/market disagreement is only 0.75-1.0 points. Live from 2026-07-24, stakes 0.5u, graded on its own.",
+        "what": "The narrow near-miss band: the full price gate cleared but our number and the market's are only narrowly apart. Live from 2026-07-24, stakes 0.5u, graded on its own.",
         "activation_date": "2026-07-24",
-        "basis": "POPULATION: v4 model-grid rows that cleared the FULL +EV gate with model-vs-market disagreement of 0.0075-0.010, on games from the 2026-07-24 activation forward \u2014 one row per game. A strict SUBSET of model_v4: every expanded pick is also a model_v4 pick. GRADING: same rows, same real prices; staked 0.5u on the weighted line. HEADLINE COVERS: served picks from 2026-07-24 only \u2014 the band is never applied retroactively."
+        "basis": "POPULATION: v4 model-grid rows that cleared the FULL price gate with a model-versus-market disagreement inside the narrow band, on games from the 2026-07-24 activation forward \u2014 one row per game. A strict SUBSET of model_v4: every expanded pick is also a model_v4 pick. GRADING: same rows, same real prices; staked 0.5u on the weighted line. HEADLINE COVERS: served picks from 2026-07-24 only \u2014 the band is never applied retroactively."
       },
       {
         "key": "spread_stream",
@@ -2184,7 +2184,7 @@
       {
         "key": "simulator",
         "label": "Physical run simulator",
-        "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on, 20,000 games simulated \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
+        "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
         "activation_date": "2026-07-28",
         "basis": "POPULATION: every game the physical simulator priced from its 2026-07-28 activation forward \u2014 ONE graded row per game. The sim re-prices at each decision wall as inputs firm up (T-24h through T-1h from 2026-07-30; T-3h only before that), every wall write-once, and the row that grades is the LATEST wall locked at first pitch (earlier walls settle 'superseded', kept for audit, never counted). Sim-stamped rows from the stream's OWN ledger only. GRADING: the stated lean (the side implied by the sim's P(over) vs the market's) graded against the settled final at the LOCKED posted line, overnight, append-only \u2014 but this is a LEAN LEDGER, not a betting record: no units are ever staked, is_bet is false on every row, and stars are hard-capped at 1*. HEADLINE COVERS: 2026-07-28 forward only \u2014 the stream starts 0-0-0, and the sim round's backtest (a statistical TIE with the market) is evidence about the engine, never credit."
       }
@@ -3606,7 +3606,7 @@
           "window_days": 17,
           "status": "ACTIVE",
           "selector": "strategy_forge:hunt",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 125-46-3.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 125-46-3.",
           "full_block_at": "adaptive_strategy_by_date.2026-08-08"
         },
         "selector_version": "strategy_forge:hunt/k3+2clause",
@@ -3640,7 +3640,7 @@
           "window_days": 17,
           "status": "ACTIVE",
           "selector": "strategy_forge",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
           "full_block_at": "adaptive_strategy_by_date.2026-08-09"
         },
         "selector_version": "forge_selector_v1",
@@ -5467,7 +5467,7 @@
       },
       "key": "simulator",
       "label": "Physical run simulator",
-      "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on, 20,000 games simulated \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
+      "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
       "mode": "transparent_voice",
       "is_betting_record": false,
       "activation_date": "2026-07-28",
@@ -5782,14 +5782,14 @@
           "label": "PUBLISHED COMBINED (live + reconstructed/backtest) \u2014 shown only because the older blocks report it. This is NOT a live record; do not quote it as one.",
           "published_as": "record.by_source.champion (and the champion's own headline)"
         },
-        "basis": "POPULATION: every game the champion engine itself rated PLAYABLE and that settled \u2014 one row per game (its highest-score playable wall). This is NOT the champion's published headline, which counts one row per game x STREAM at the last decision wall; the two populations are reconciled to a zero residual by champion_headline_residual(). GRADING: champion_v2's own graded ledger, untouched \u2014 gate at the median de-vig price, priced and settled at the best executable price at the same line. HEADLINE COVERS: forward paper ledger + live board from 2026-07-02 forward. The 2026-03-27..06-10 rolling-origin rows are a WALK-FORWARD BACKTEST and are reported separately.",
-        "note": "The champion only speaks when its trigger fires; on most games it has no view at all (status NO_VIEW), which is not a PASS. Read the live number and the backtest number separately \u2014 they are far apart, and the live sample is small.",
+        "basis": "POPULATION: every game the champion engine itself rated PLAYABLE and that settled \u2014 one row per game (its highest-score playable wall). This is NOT the champion's published headline, which counts one row per game x STREAM at the last decision wall; the two populations are reconciled to a zero residual, and the reconciliation is checked on every build. GRADING: champion_v2's own graded ledger, untouched \u2014 gate at the median de-vig price, priced and settled at the best executable price at the same line. HEADLINE COVERS: forward paper ledger + live board from 2026-07-02 forward. The 2026-03-27..06-10 rolling-origin rows are a WALK-FORWARD BACKTEST and are reported separately.",
+        "note": "The champion only speaks when its trigger fires; on most games it has no view at all, which is not a PASS. Read the live number and the backtest number separately \u2014 they are far apart, and the live sample is small.",
         "no_double_count": true
       },
       "model_v4": {
         "key": "model_v4",
         "label": "V4 model grid",
-        "what": "The v4 model grid's best playable totals lean on the game (+EV gate at the real price AND at least 1 point of model-vs-market disagreement).",
+        "what": "The v4 model grid's best playable totals lean on the game (the price gate at the real price, and a clear margin between our number and the market's).",
         "is_headline": false,
         "activation_date": "2026-07-06",
         "n": 112,
@@ -5856,7 +5856,7 @@
       "expanded_band": {
         "key": "expanded_band",
         "label": "Expanded band",
-        "what": "The narrow near-miss band: full +EV gate cleared but the model/market disagreement is only 0.75-1.0 points. Live from 2026-07-24, stakes 0.5u, graded on its own.",
+        "what": "The narrow near-miss band: the full price gate cleared but our number and the market's are only narrowly apart. Live from 2026-07-24, stakes 0.5u, graded on its own.",
         "is_headline": false,
         "activation_date": "2026-07-24",
         "n": 8,
@@ -5930,7 +5930,7 @@
           }
         ],
         "combined_view": null,
-        "basis": "POPULATION: v4 model-grid rows that cleared the FULL +EV gate with model-vs-market disagreement of 0.0075-0.010, on games from the 2026-07-24 activation forward \u2014 one row per game. A strict SUBSET of model_v4: every expanded pick is also a model_v4 pick. GRADING: same rows, same real prices; staked 0.5u on the weighted line. HEADLINE COVERS: served picks from 2026-07-24 only \u2014 the band is never applied retroactively.",
+        "basis": "POPULATION: v4 model-grid rows that cleared the FULL price gate with a model-versus-market disagreement inside the narrow band, on games from the 2026-07-24 activation forward \u2014 one row per game. A strict SUBSET of model_v4: every expanded pick is also a model_v4 pick. GRADING: same rows, same real prices; staked 0.5u on the weighted line. HEADLINE COVERS: served picks from 2026-07-24 only \u2014 the band is never applied retroactively.",
         "note": "One or two live picks is not a record. The band was activated on a measured backtest and is being watched, not proven. It is a subset of the model grid \u2014 never add it to model_v4.",
         "no_double_count": true
       },
@@ -5991,7 +5991,7 @@
       "simulator": {
         "key": "simulator",
         "label": "Physical run simulator",
-        "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on, 20,000 games simulated \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
+        "what": "A fully-physical Monte Carlo of the game \u2014 every plate appearance drawn from empirical base-out transition tables tilted to the two lineups, starters, bullpens, park, weather and umpire as of each decision wall (T-24h through T-1h, re-priced as inputs firm up, each wall written once), with home-field advantage on \u2014 priced into P(over the posted total). The lean that grades is the latest wall locked at first pitch. Shown for transparency: on full-game totals it statistically TIES the market (its median lands within ~0.02 runs of the posted line; blend-vs-market p=0.28), so it is a tracked voice, never a bet.",
         "is_headline": false,
         "activation_date": "2026-07-28",
         "n": 147,
@@ -8923,7 +8923,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T03:16:33Z",
+      "updated": "2026-08-10T03:55:52Z",
       "order": [
         "vega",
         "atlas",
@@ -11368,7 +11368,6 @@
           "2026-08-07"
         ],
         "window_games": 221,
-        "n_predicates_in_language": 683,
         "locked": true,
         "selected_at_utc": null,
         "record": "125-46-3",
@@ -11383,8 +11382,8 @@
           "wl": 79
         },
         "evidence_label": "lookback evidence",
-        "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 125-46-3.",
-        "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+        "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 125-46-3.",
+        "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
         "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
         "grading_policy": "A game becomes an official DiamondEdge Pick only when the rule calls a side and the price gate clears; passes stay out of the record.",
         "why_this_selector": "this date's served board was re-picked to strategy_forge:hunt through the owner channel",
@@ -11488,7 +11487,6 @@
         ],
         "window_games": 221,
         "window_gap_days": 2,
-        "n_predicates_in_language": 873,
         "record": "129-50-3",
         "record_label": "lookback evidence",
         "record_over_window": {
@@ -11513,9 +11511,9 @@
           "train_rows_max_date": "2026-08-07",
           "window_last_night_games": 15
         },
-        "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-        "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-        "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+        "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+        "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+        "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
         "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
         "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
         "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -12378,7 +12376,6 @@
         "2026-08-07"
       ],
       "window_games": 221,
-      "n_predicates_in_language": 683,
       "locked": true,
       "selected_at_utc": null,
       "record": "125-46-3",
@@ -12393,8 +12390,8 @@
         "wl": 79
       },
       "evidence_label": "lookback evidence",
-      "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 125-46-3.",
-      "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+      "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 125-46-3.",
+      "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
       "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
       "grading_policy": "A game becomes an official DiamondEdge Pick only when the rule calls a side and the price gate clears; passes stay out of the record.",
       "why_this_selector": "this date's served board was re-picked to strategy_forge:hunt through the owner channel",
@@ -12498,7 +12495,6 @@
       ],
       "window_games": 221,
       "window_gap_days": 2,
-      "n_predicates_in_language": 873,
       "record": "129-50-3",
       "record_label": "lookback evidence",
       "record_over_window": {
@@ -12523,9 +12519,9 @@
         "train_rows_max_date": "2026-08-07",
         "window_last_night_games": 15
       },
-      "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-      "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-      "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+      "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+      "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+      "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
       "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
       "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
       "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -13071,7 +13067,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -13096,9 +13091,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -13240,11 +13235,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 10.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 11.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 10.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 11.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -13901,7 +13896,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -14241,7 +14236,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:38Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -14907,7 +14902,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -14932,9 +14926,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -15076,11 +15070,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -15762,7 +15756,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -16102,7 +16096,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:38Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16806,7 +16800,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -16831,9 +16824,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -16973,11 +16966,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -17631,7 +17624,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -17971,7 +17964,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18677,7 +18670,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -18702,9 +18694,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -18845,11 +18837,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -19509,7 +19501,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -19849,7 +19841,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -20556,7 +20548,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -20581,9 +20572,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -20725,11 +20716,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -21297,7 +21288,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -21632,7 +21623,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -22339,7 +22330,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -22364,9 +22354,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -22507,11 +22497,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.6h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.6h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -23165,7 +23155,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -23505,7 +23495,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:38Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -24192,7 +24182,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -24217,9 +24206,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -24361,11 +24350,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -25045,7 +25034,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -25381,7 +25370,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -26068,7 +26057,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -26093,9 +26081,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -26237,11 +26225,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -26917,7 +26905,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -27253,7 +27241,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -27961,7 +27949,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -27986,9 +27973,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -28130,11 +28117,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 9.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -28814,7 +28801,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -29150,7 +29137,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:38Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -29744,7 +29731,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -29769,9 +29755,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -30024,7 +30010,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -30359,7 +30345,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:38Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -31020,7 +31006,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -31045,9 +31030,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -31188,11 +31173,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 8.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 8.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -31858,7 +31843,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -32199,7 +32184,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -32734,7 +32719,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -32759,9 +32743,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -33018,7 +33002,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -33354,7 +33338,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -34055,7 +34039,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -34080,9 +34063,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -34224,11 +34207,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -34916,7 +34899,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -35255,7 +35238,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:37Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "STRONG",
@@ -35934,7 +35917,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -35959,9 +35941,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -36102,11 +36084,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -36772,7 +36754,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -37113,7 +37095,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:38Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -37800,7 +37782,6 @@
           ],
           "window_games": 221,
           "window_gap_days": 2,
-          "n_predicates_in_language": 873,
           "record": "129-50-3",
           "record_label": "lookback evidence",
           "record_over_window": {
@@ -37825,9 +37806,9 @@
             "train_rows_max_date": "2026-08-07",
             "window_last_night_games": 15
           },
-          "search_scope": "Every one-, two- and three-condition rule the language can express was scored, all of them. Two-part rules \u2014 one side when this happens, the other side when that happens \u2014 were then built by pairing the strongest one-sided candidates on each side and scoring every pairing in both orders. The winner is the best of those.",
-          "summary_line": "Today's board is one rule. Every one-, two- and three-condition rule the language can express was scored over the last 17 nights, two-part rules were built from the strongest candidates on each side, and the best win-minus-loss record was kept. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
-          "selected_reason": "Every one-, two- and three-condition rule the search language can express was applied, unchanged, to every game on every night of the lookback window. Two-part rules were built by pairing the strongest one-sided candidates from each side and scoring every pairing in both clause orders. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-22 to 2026-08-07), this rule went 129-50-3.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "record_is_about_the_past_only": "The record above is what this rule would have done on the games in its own lookback window \u2014 the same games that chose it. It is an in-sample count and a statement about the past. It is not a forecast, not an expected win rate, and not a claim about tonight's games.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
@@ -37969,11 +37950,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 2.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 2.9h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 2.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T03:16:34Z, 2.9h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -38649,7 +38630,7 @@
           "locked": null,
           "expanded_band": false,
           "pass_why": null,
-          "reason": "Outside the band \u2014 the disagreement was not 0.75-1.0 points"
+          "reason": "Outside the band \u2014 the disagreement did not fall inside it"
         },
         {
           "key": "spread_stream",
@@ -38984,7 +38965,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T03:12:38Z",
+          "asof_utc": "2026-08-10T03:52:01Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
