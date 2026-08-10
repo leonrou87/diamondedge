@@ -2615,7 +2615,13 @@ details.more .more-body{padding-top:12px}
 @media(min-width:900px){.gp-body{background:var(--bg)}}
 /* FUSED HERO HEADER */
 .gp-hero{position:relative;overflow:hidden;border-radius:var(--r-lg);padding:18px 16px 16px;margin-bottom:12px;
-  background:var(--paper);border:0;box-shadow:var(--e1);animation:cardIn var(--t-enter) var(--ease-out) both}
+  /* A SOFT HIGH-KEY WASH, NOT A FLAT CARD (Leon, 2026-08-10 ref: light pastel behind the
+     teams). A whisper of the two team tints on paper — the airy base for parkless games,
+     and the colour that reads through the park's white scrim when there is one. */
+  background:
+    linear-gradient(152deg, var(--t1,rgba(47,111,224,.16)) 0%, transparent 46%, var(--t2,rgba(11,158,109,.12)) 100%),
+    var(--paper);
+  border:0;box-shadow:var(--e1);animation:cardIn var(--t-enter) var(--ease-out) both}
 /* THE PICK IS THE PAYOFF (brief #4). When the game page mounts, the DiamondEdge-pick banner
    settles in a beat AFTER the hero — a single spring gesture that gives the call and its stars
    their moment. It plays when the banner is CREATED (opening a game, or a live→final rebuild
@@ -2637,15 +2643,24 @@ details.more .more-body{padding-top:12px}
    trap. So the size is not inherited from a parent at all: the element is pinned to the hero
    and given a floor tall enough to cover it, clipped by the hero's own overflow:hidden. */
 .gp-hero-park{position:absolute;left:0;right:0;top:0;bottom:0;min-height:100%;height:180px;
-  z-index:0;background-size:cover;background-position:center;
-  opacity:.5;pointer-events:none;border-radius:inherit}
+  z-index:0;background-size:cover;background-position:center;background-repeat:no-repeat;
+  opacity:1;pointer-events:none;border-radius:inherit}
+/* ════════ HIGH-KEY, NOT DARK (Leon, 2026-08-10 ref) ════════
+   The park used to be a dimmed photo band at half opacity. Now a bright, top-lit white
+   scrim (::before) floats it back to a faint whisper, and a soft team-tinted diagonal
+   (::after) lays the airy pastel of the reference over it. The image is present enough to
+   feel the place, never enough to fight the dark type that sits above at z-index 1. */
+.gp-hero-park::before{content:"";position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(168deg,rgba(255,255,255,.87),rgba(255,255,255,.62) 46%,rgba(255,255,255,.89))}
+.gp-hero-park::after{content:"";position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(152deg,var(--t1,rgba(47,111,224,.16)),transparent 48%,var(--t2,rgba(11,158,109,.12)))}
 /* the tint gradient and the wash must never sit ON TOP of the park — the park is the
    backmost layer, full stop. Both are pinned behind z-index 0 regardless of nesting. */
 .gp-hero::before,.gp-hero::after{z-index:0}
 /* the hero's children sit above it — the wash is the only thing at z-index 0 */
 .gp-hero > *:not(.gp-hero-park):not(.gp-hero-wash){position:relative;z-index:1}
-/* a reader who asked for less motion and less decoration gets the flat card */
-@media (prefers-reduced-transparency:reduce){.gp-hero-park{opacity:.18}}
+/* a reader who asked for less decoration gets the clean pastel card, no photo */
+@media (prefers-reduced-transparency:reduce){.gp-hero-park{display:none}}
 .gp-hero>*{position:relative;z-index:1}
 .gp-mu{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
 .gp-team{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}

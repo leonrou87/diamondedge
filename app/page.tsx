@@ -2928,7 +2928,6 @@ export default function Home() {
       return `<div class="dp-locked-rule" data-up="1" role="button" tabindex="0">
         <div class="dlr-k">${lockSvg} The rule itself is Premium</div>
         <p class="dlr-ev">${ev}</p>
-        <p class="dlr-why">The exact sentence — the conditions it takes the over on, the ones it takes the under on, and where it passes — is the pick, on every game at once. It unlocks with Premium, and it becomes free the morning after the night it played.</p>
         <button class="dlr-cta" data-up="1">${lockSvg} ${esc(unlockCtaTxt())} tonight's rule</button>
         ${opts.foot ? `<p class="dlr-foot">${esc(opts.foot)}</p>` : ""}
       </div>`;
@@ -14824,7 +14823,6 @@ export default function Home() {
        `where` labels the row for the surface it is on so the same builder can serve the
        reader's foot and the deck card's foot without either inventing its own. */
     function newsCtaRow(s: any, g: any, gid: any, where = "art") {
-      const su = newsSourceUrl(s), sn = newsSourceName(s);
       const parts: string[] = [];
       if (gid != null) {
         const crests = g ? `${gCrest(g, "away", `${where}-cta-crest`)}${gCrest(g, "home", `${where}-cta-crest`)}` : "";
@@ -14845,12 +14843,11 @@ export default function Home() {
           <span class="${where}-cta-go" aria-hidden="true">→</span>
         </button>`);
       }
-      if (su) {
-        parts.push(`<a class="${where}-cta-b is-src" href="${esc(su)}" target="_blank" rel="noopener noreferrer">
-          <span class="${where}-cta-t"><b>Read the report</b><i>${esc(sn || "the source")}</i></span>
-          <span class="${where}-cta-go" aria-hidden="true">↗</span>
-        </a>`);
-      }
+      /* THE OUTBOUND SOURCE LINK IS GONE (Leon, 2026-08-10: "link in news to another
+         company media, remove all of these"). We do not send readers to ESPN/MLB/The
+         Athletic et al. A wire story keeps only its internal destination — "Our full
+         pick" when it maps to a game — and otherwise renders no row, per the standing
+         "no empty affordance" rule below. */
       /* THE ONE STORY THAT HAD NO ROW AT ALL. Our own desk recap — "Sunday Around MLB: 15
          Finals, 135 Runs" — maps to no single game and has no wire behind it, so it fell out
          of both branches and ended with nothing at its foot. It is the one story type where
@@ -14859,12 +14856,12 @@ export default function Home() {
 
          It is not a missing field, though, and nothing is invented to fill it: a recap of
          fifteen finals HAS a destination and it is the board those fifteen finals are on.
-         Restricted to our own desk stories on purpose — a wire story with neither a game
-         nor a link still renders nothing, because for that one there genuinely is nowhere
-         to go and a button to somewhere unrelated would be worse than none. */
+         ONCE the outbound source link was the fallback for a gameless wire story; with it
+         removed (2026-08-10) that story would reach here empty and render a dead card. So
+         the board — always a real DiamondEdge destination and always on-topic for an MLB
+         story — is the fallback for ANY story with nowhere else to go, house or wire. A
+         card with a foot beats a card that only looks tappable. */
       if (!parts.length) {
-        const house = s && (s.house === true || String(s.provider || "") === "diamondedge_desk");
-        if (!house) return "";
         parts.push(`<button class="${where}-cta-b is-pick" data-cta-board="1">
           <span class="${where}-cta-t"><b>The full board</b><i>Every game and pick</i></span>
           <span class="${where}-cta-go" aria-hidden="true">→</span>
