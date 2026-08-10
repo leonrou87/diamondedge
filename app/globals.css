@@ -6010,6 +6010,25 @@ body.stories-on{background:#060912}
 .sts-voice-id b{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--anc,var(--ink2))}
 .sts-voice p{margin:4px 0 0;font-family:var(--sans);font-weight:500;font-style:italic;font-size:13px;line-height:1.5;color:var(--ink2)}
 
+/* ---- WHY IT'S INTERESTING: the served blurb on a highlighted pick ----
+   Sits between the call and the analyst voices on a story-deck pick card, and
+   carries the article reader's "our take" as well. Set to be READ and to be
+   SCREENSHOT: a short measure, generous leading, and the rule's record demoted
+   to a footnote so the eye lands on the fact about the game rather than on a
+   win-loss line that is identical on every pick the rule made tonight. */
+.sts-blurb{width:100%;max-width:340px;margin:11px auto 0;text-align:left;
+  border-radius:var(--r-sm);padding:11px 13px 10px;
+  background:linear-gradient(180deg,var(--glass-hi),var(--glass));
+  box-shadow:var(--e0),inset 0 1.5px 0 rgba(var(--rimc),.09)}
+.sts-blurb-k{display:block;font-family:var(--disp);font-weight:800;font-size:11px;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink3)}
+.sts-blurb p{margin:5px 0 0;font-family:var(--sans);font-weight:500;font-size:13.5px;
+  line-height:1.55;color:var(--ink)}
+.sts-blurb-rec{display:block;margin-top:7px;font-family:var(--sans);font-style:normal;
+  font-weight:500;font-size:11.5px;line-height:1.45;color:var(--ink3)}
+.article-story .sts-blurb{max-width:none;margin:0}
+.article-story .sts-blurb-k{color:rgba(var(--goldc),.95)}
+
 /* ---- INSIGHTS: desk rivalries (versus-cards) ---- */
 .vsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:9px;margin-top:10px;min-width:0}
 .vscard{border-radius:var(--r-sm,12px);padding:11px 12px 10px;min-width:0;

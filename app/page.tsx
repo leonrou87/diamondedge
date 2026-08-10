@@ -12926,7 +12926,19 @@ export default function Home() {
          reader still gets the whole story — the trade, the form, the matchup, the race —
          and the one sentence that is the paid product stays paid. */
       const takeTxt = s.take ? hedgeFree(String(s.take)) : "";
-      const takeHtml = takeTxt && entitled()
+      /* THE READER'S "OUR TAKE" IS THE GAME'S OWN BLURB WHERE THERE IS ONE.
+         `s.take` is the news pipeline's sentence about the pick, written on the news feed's
+         own ~20-minute cycle from its own copy of the side — the same split-source problem
+         `newsAngle` was rewritten to close. `pick.game_case.blurb` is served with the game
+         and is a selection from the very paragraphs this reader's own "see our full pick"
+         opens, so where the story maps to a game on a loaded board, THAT is what runs, and
+         the feed's sentence is the fallback for a game we can no longer resolve. One source,
+         one voice; the deck card and this sheet cannot disagree. */
+      const artPl = g ? displayPick(g) : null;
+      const artBlurb = g && artPl ? pickBlurb(g, artPl, pickLocked(artPl, playState(g, artPl))) : "";
+      const takeHtml = artBlurb
+        ? `<div class="art-take">${artBlurb}</div>`
+        : takeTxt && entitled()
         ? `<div class="art-take"><span class="art-take-k">◆ Our take</span><p>${mdBold(takeTxt)}</p></div>`
         : "";
       const angleChip = newsAngle(s.angle);
@@ -13305,6 +13317,40 @@ export default function Home() {
     // THE VOICES on a pick slide: the strongest agreeing analyst gets quoted under the call;
     // a lone dissenter gets their dissent quoted out loud ("NOVA disagrees: …"). Nothing
     // renders while the pick is locked (a quote argues the side) or before takes are served.
+    /* ═══ WHY THIS PICK IS WORTH READING ABOUT (Leon, 2026-08-09) ═══
+       "For the news feature, when we're highlighting some DiamondEdge picks, let's be sure
+       to take a little blurb on why that pick is compelling — to really make it social-media
+       newsworthy — as well as other interesting data points."
+
+       THE BLURB IS NOT WRITTEN HERE, AND THAT IS THE WHOLE DESIGN. It is served on
+       `pick.game_case.blurb`, assembled by v4/serve/rule_voice.news_blurb out of the SAME
+       registered claims the four-paragraph preview on the game page is built from — one
+       generator, one voice. A second writer in the browser is precisely how the deck and the
+       game page end up telling different stories about the same pick, so there isn't one:
+       this function selects a served string and never composes.
+
+       WHAT IT MAY SAY IS FIXED UPSTREAM. Every figure comes from that game's own served row
+       through the same audit as the narrative; it states what is INTERESTING and never what
+       is likely (the backend refuses the whole hype register outright); and the rule's record
+       travels separately, past tense, as `record_line`.
+
+       GATED LIKE EVERY OTHER TAKE. The blurb ends by naming the side, so it lives inside
+       `game_case` — already in the backend's PREMIUM_FIELDS — and is dropped from the payload
+       for a reader who has not paid. `locked` is belt and braces on top of that: a locked
+       slide shows the reason to care and not the call. */
+    function pickBlurb(g: any, pl: any, locked: boolean) {
+      if (locked || !entitled()) return "";
+      const gc = pl && typeof pl.game_case === "object" ? pl.game_case : null;
+      const bl = gc && typeof gc.blurb === "object" ? gc.blurb : null;
+      const txt = bl && typeof bl.text === "string" ? bl.text.trim() : "";
+      if (!txt) return "";
+      const rec = bl && typeof bl.record_line === "string" ? bl.record_line.trim() : "";
+      return `<div class="sts-blurb">
+        <span class="sts-blurb-k">Why it's interesting</span>
+        <p>${esc(txt)}</p>
+        ${rec ? `<i class="sts-blurb-rec">${esc(rec)}</i>` : ""}
+      </div>`;
+    }
     function storyVoiceQuote(g: any, pl: any, locked: boolean) {
       if (locked || !pl || pl.action !== "TAKE") return "";
       const ans = deskAnalysts(g);
@@ -13394,8 +13440,21 @@ export default function Home() {
       const gs = gameState(g);
       const st = playState(g, pl);
       const locked = pickLocked(pl, st);
-      const stars = pl.stars != null ? Math.max(0, Math.min(5, Math.round(Number(pl.stars)))) : 0;
-      const tier = stars >= 4 ? "gold" : stars === 3 ? "green" : "blue";
+      /* THE CARD'S TIER FOLLOWS THE SERVED LADDER, NOT A LADDER SPELLED HERE.
+         This read `pl.stars` and cut at `>= 4 ? gold : === 3 ? green : blue` — a
+         five-rung map, hardcoded, on a different field from the one the star row
+         above it draws (`pick_rating`, whose ladder became THREE rungs on
+         2026-08-09). On today's board that map colours the top pick in the app
+         "green" and never reaches gold at all, because no rating can be 4 any
+         more: the flagship card and its own star row would disagree about how
+         good the pick is. So the band is read off the rating's OWN `of`, and a
+         top-band pick is gold whether the ladder has three rungs or five. */
+      const _r = servedRating(pl);
+      const stars = _r ? _r.stars : (pl.stars != null ? Math.max(0, Math.min(5, Math.round(Number(pl.stars)))) : 0);
+      const _of = _r ? _r.of : 5;
+      const tier = !stars ? "blue"
+        : stars >= _of ? "gold"
+        : stars >= _of - 1 ? "green" : "blue";
       const over = /(^|\s)over/i.test(String(pl.side || ""));
       const under = /(^|\s)under/i.test(String(pl.side || ""));
       const dir = over ? "ou-over" : under ? "ou-under" : "";
@@ -13428,7 +13487,7 @@ export default function Home() {
          matchup used to be the same visual weight as the call, which is why the flagship
          slide had no focal point at all. */
       return `<div class="sts sts-pick tier-${tier}">
-        ${storyField(stars >= 4 ? "pickgold" : stars === 3 ? "pickgreen" : "pick")}
+        ${storyField(tier === "gold" ? "pickgold" : tier === "green" ? "pickgreen" : "pick")}
         ${storyEyebrow(sl.rank === 1 ? "Flagship Pick" : `Top Pick #${sl.rank}`, when)}
         <div class="sts-core">
           <div class="sts-open" ${locked ? `data-go="unlock"` : `data-go="pick" data-gid="${esc(g.game_id)}"`} role="button" tabindex="0" aria-label="${locked ? "Unlock this pick" : "Open the full pick"}">
@@ -13436,6 +13495,7 @@ export default function Home() {
             <div class="sts-callwrap">${call}</div>
             ${locked ? "" : `<span class="sts-openchip" aria-hidden="true">The full pick <i>↗</i></span>`}
           </div>
+          ${pickBlurb(g, pl, locked)}
           ${storyVoiceQuote(g, pl, locked)}
         </div>
       </div>`;
