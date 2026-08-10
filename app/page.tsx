@@ -15824,7 +15824,9 @@ export default function Home() {
              <span class="nws-pteam">${gCrest(nG, "home", "nws-pcrest")}<b>${esc(nG.home_abbr || "")}</b></span>
            </span>`
         : "";
-      const src = String(s.source || "").trim();
+      /* THE OUTLET NAME IS GONE FROM THE FOOT TOO (Leon, 2026-08-10: "strip the text
+         too"). The card credited the wire with a "· ESPN" chip beside "Read the story";
+         we no longer name another company's media anywhere on the card. */
       /* ═══ A CARD ONLY CLAIMS TO OPEN WHAT IT CAN OPEN (Leon, 2026-08-10) ═══
          See `newsCarriesReport`. Where the wire handed us a headline and no reporting, our
          reader has nothing to add to that headline — so this card does not promise one.
@@ -15868,7 +15870,7 @@ export default function Home() {
       const cardHead = out ? (s.title || s.headline || "") : (s.headline || s.title || "");
       const foot = out
         ? newsCtaRow(s, nG, nGid, "art")
-        : `<span class="nws-foot"><span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span>${src ? `<span class="nws-src">${esc(src)}</span>` : ""}</span>`;
+        : `<span class="nws-foot"><span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span></span>`;
       return `<div class="sts sts-news">
         ${storyField("news")}
         <div class="sts-core">
