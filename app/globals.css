@@ -2934,14 +2934,11 @@ details.more .more-body{padding-top:12px}
 .art-take-h{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:22px}
 .art-take-call{margin-top:9px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
 .art-take-call .nf-angle{font-size:16px;padding:7px 14px;letter-spacing:.02em}
-.art-take-k{display:block;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:11px;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--golddeep);margin-bottom:6px}
 .art-take p,.art-take .art-take-p{margin:11px 0 0;font-size:15px;line-height:1.55;font-weight:600;color:var(--ink)}
 .art-take .sts-blurb{margin:11px 0 0;padding:0;border:0;background:none}
 .art-take .sts-blurb-k{margin-bottom:5px}
 .article-story .art-take{background:rgba(var(--goldc),.14);border-color:rgba(var(--goldc),.4)}
 .article-story .art-take p{color:#fff}
-.article-story .art-take-k{color:rgba(var(--goldc),.95)}
 
 /* --- News freshness: muted "Updated" when not live-fresh --- */
 .nf-upd{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
@@ -3714,7 +3711,7 @@ details.more .more-body{padding-top:12px}
 .sheet.article-story .sh-body{flex:1 1 auto;min-height:0;max-height:none;overflow:auto}
 .article-story .art-body p{color:rgba(248,251,255,.88)}
 .article-story .sh-meta,.article-story .art-byline{color:rgba(235,244,255,.78)}
-.article-story .art-mu img,.article-story .art-hero-crest img{background:rgba(255,255,255,.9);border-radius:16px;padding:5px}
+.article-story .art-hero-crest img{background:rgba(255,255,255,.9);border-radius:16px;padding:5px}
 
 /* ══════════════════════ THE END CARD — a completion, then a door ══════════════════════
    Leon's spec: "at the end of the feed, a big satisfying end-card; tapping it (or anything
