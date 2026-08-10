@@ -2616,6 +2616,13 @@ details.more .more-body{padding-top:12px}
 /* FUSED HERO HEADER */
 .gp-hero{position:relative;overflow:hidden;border-radius:var(--r-lg);padding:18px 16px 16px;margin-bottom:12px;
   background:var(--paper);border:0;box-shadow:var(--e1);animation:cardIn var(--t-enter) var(--ease-out) both}
+/* THE PICK IS THE PAYOFF (brief #4). When the game page mounts, the DiamondEdge-pick banner
+   settles in a beat AFTER the hero — a single spring gesture that gives the call and its stars
+   their moment. It plays when the banner is CREATED (opening a game, or a live→final rebuild
+   that re-grades the call), not on a poll, because the banner element is only built then.
+   transform+opacity only; the global reduced-motion guard collapses it to a static reveal. */
+.gp-heroblk .decall{animation:pickSettle var(--t-slow) var(--spring) .05s both}
+@keyframes pickSettle{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:none}}
 /* the team-tinted wash is retired — on white it muddies the crests it sits behind */
 .gp-hero-wash{display:none}
 /* ════════ THE BALLPARK BEHIND THE SCORE ════════
@@ -2871,7 +2878,6 @@ details.more .more-body{padding-top:12px}
 .nf-vs-row .crest{display:grid;place-items:center;border-radius:50%;background:rgba(var(--rimc),.16);color:#fff;font-family:var(--disp);font-weight:800;font-size:15px}
 .nf-vs-x{font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.12em;color:rgba(var(--rimc),.7);text-transform:uppercase}
 .nf-list .nf-vs-row{gap:7px}.nf-list .nf-vs-row img,.nf-list .nf-vs-row .crest{width:26px;height:26px;font-size:11px}.nf-list .nf-vs-x{font-size:11px}
-@keyframes goldpulse{0%,100%{box-shadow:0 0 0 1px rgba(var(--goldc),.4),0 3px 12px rgba(var(--goldc),.18)}50%{box-shadow:0 0 0 1px rgba(var(--goldc),.6),0 4px 18px rgba(var(--goldc),.34)}}
 .mh-kicker{flex-wrap:wrap;gap:8px}
 
 /* --- Settings: league reorder --- */
@@ -3345,6 +3351,12 @@ details.more .more-body{padding-top:12px}
 .de-mini-pick.dmp-tile.nopick .restamp.rs-mini{margin-left:0}
 .de-mini-pick.dmp-tile .restamp.rs-mini .rs-g{width:24px;height:24px}
 .de-mini-pick.dmp-tile .restamp.rs-mini .rs-g svg{width:16px;height:16px;stroke-width:4}
+/* A PICK GRADING ON THE BOARD IS A MOMENT (brief #2). The tile's result seal springs in with
+   the SAME pop the featured card and the top-picks list already use (respop) — but only when
+   flashGraded() adds .rs-pop, i.e. ONCE on the repaint that resolves the pick, never on a
+   quiet poller tick. Compositor-only (transform+opacity); the global reduced-motion guard
+   collapses it to a static appearance. */
+.de-mini-pick.dmp-tile .restamp.rs-mini.rs-pop{animation:respop .5s var(--spring) both}
 @media(max-width:400px){
   .de-mini-pick.dmp-tile .de-mini-word{font-size:11.5px}
   .de-mini-pick.dmp-tile .de-mini-ou b{font-size:13px}
@@ -3414,10 +3426,18 @@ details.more .more-body{padding-top:12px}
 .de-mini-pick.dmp-tile .dmp-res.has-meter .ipm-fill{
   width:max(calc((100% - 10px) * var(--p,0) / 100),calc(2px * min(var(--p,0),1)))}
 /* 3. the CTA rides the row, shrinks last, and never wraps mid-word */
-.tl-verdict .tv-callrow .tv-unlock.inrow{margin-left:auto;margin-top:0;flex:0 1 auto;
-  min-width:0;gap:3px;font-size:9px;letter-spacing:.06em;white-space:nowrap;overflow:hidden}
-.tl-verdict .tv-callrow .tv-unlock.inrow i{font-style:normal;min-width:0;overflow:hidden;
-  text-overflow:ellipsis}
+/* …AND IT MUST NOT SHRINK PAST ITS OWN WORD (2026-08-10). Measured signed out at
+   375px: `.tv-unlock i` had scrollWidth 41px inside clientWidth 31px, so every
+   locked tile on the board rendered "UNL…". The most-repeated upsell in the app
+   was truncated on the phone width most of its readers use. `flex:0 1 auto` with
+   `min-width:0` told it to be the thing that gives way; it is the thing that must
+   not. The pick unit beside it already shrinks (`flex:1 1 auto; min-width:0`
+   below), so making this one rigid costs nothing and the ellipsis rule stays as
+   the last resort for a locale whose word is longer. */
+.tl-verdict .tv-callrow .tv-unlock.inrow{margin-left:auto;margin-top:0;flex:0 0 auto;
+  min-width:max-content;gap:3px;font-size:9px;letter-spacing:.06em;white-space:nowrap}
+.tl-verdict .tv-callrow .tv-unlock.inrow i{font-style:normal;min-width:max-content;
+  overflow:visible}
 .tl-verdict .tv-callrow .tv-unlock.inrow svg{flex:0 0 auto;width:9px;height:9px}
 /* `.de-mini-pick` is `width:100%` by default — correct when it owns the row, fatal the
    moment it has to share one. On a locked tile it becomes a flexible child so the CTA has
@@ -3984,29 +4004,27 @@ details.more .more-body{padding-top:12px}
 }
 
 /* ══ TAB NAVIGATION IS A PAN, AND THE DOCK NEVER MOVES ══
-   `main` is the only element that travels. Phase 1 accelerates it off-stage in the
-   direction of travel; the views swap while it is invisible; phase 2 decelerates it back in
-   from the opposite edge. The header and .dockwrap are fixed SIBLINGS of main, so the
-   bottom bar is rock-still throughout — which is the point (Leon: "let's actually leave the
-   bottom bar there all the time"). One transform + one opacity, both compositor-only. */
-/* the LEAVE phase is a keyframe animation, not a transition: a transition declared in the
-   same style recalculation that sets its end value never runs (there is no before-change
-   style that had one), which is exactly how the outgoing view used to teleport. */
-body.tab-leaving.pan-fwd main{animation:tabPanOutFwd .15s cubic-bezier(.42,0,1,1) both}
-body.tab-leaving.pan-back main{animation:tabPanOutBack .15s cubic-bezier(.42,0,1,1) both}
-@keyframes tabPanOutFwd{from{opacity:1;transform:none}to{opacity:0;transform:translate3d(-9%,0,0)}}
-@keyframes tabPanOutBack{from{opacity:1;transform:none}to{opacity:0;transform:translate3d(9%,0,0)}}
-body.tab-pan-right main{animation:tabPanRight .34s var(--ease-out) both}
-body.tab-pan-left main{animation:tabPanLeft .34s var(--ease-out) both}
-@keyframes tabPanRight{from{opacity:0;transform:translate3d(11%,0,0)}to{opacity:1;transform:none}}
-@keyframes tabPanLeft{from{opacity:0;transform:translate3d(-11%,0,0)}to{opacity:1;transform:none}}
+   `main` is the only element that travels, and it travels ONCE. The destination view is
+   swapped in IMMEDIATELY (interactive on the next frame — motion never gates a tap) and
+   decelerates in from the direction of travel. There is no separate leave phase: the old
+   two-phase flow held the destination behind a 152ms leave animation, which is exactly the
+   dead-time that read as "laggy". The header and .dockwrap are fixed SIBLINGS of main, so
+   the bottom bar is rock-still throughout — which is the point (Leon: "let's actually leave
+   the bottom bar there all the time"). One transform + one opacity, both compositor-only,
+   on the ladder's "a surface arrives" rung (--t-slow) so the tab pan belongs to the same
+   timing family as every other surface that arrives. The arrival is a keyframe, not a
+   transition: a transition declared in the same style recalc that sets its end value never
+   runs, which is how the view used to teleport. */
+body.tab-pan-right main{animation:tabPanRight var(--t-slow) var(--ease-out) both}
+body.tab-pan-left main{animation:tabPanLeft var(--t-slow) var(--ease-out) both}
+@keyframes tabPanRight{from{opacity:0;transform:translate3d(9%,0,0)}to{opacity:1;transform:none}}
+@keyframes tabPanLeft{from{opacity:0;transform:translate3d(-9%,0,0)}to{opacity:1;transform:none}}
 /* the pan must never become a horizontal scrollbar at any width */
-html:has(body.tab-leaving),html:has(body.tab-pan-left),html:has(body.tab-pan-right),
-body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
+html:has(body.tab-pan-left),html:has(body.tab-pan-right),
+body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 @media(prefers-reduced-motion:reduce){
   .stories .sts-crest,.stories .sts-drow,.stories .sts-strow,.stories .sts-voice,.stories .caughtup .sts-bg::before,
-  body.tab-pan-right main,body.tab-pan-left main,
-  body.tab-leaving.pan-fwd main,body.tab-leaving.pan-back main{animation:none!important;transform:none!important;opacity:1!important}
+  body.tab-pan-right main,body.tab-pan-left main{animation:none!important;transform:none!important;opacity:1!important}
 }
 
 /* --- "How it went": graded pick outcome for final games --- */
@@ -10549,3 +10567,69 @@ table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
 .gp-when.void,.gp-when.delayed{display:flex;flex-direction:column;align-items:center;gap:2px;white-space:normal}
 .gp-when .gp-statebig{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--ink2)}
 .gp-when .gp-wassched{font-family:var(--sans);font-weight:500;font-size:11px;letter-spacing:.02em;color:var(--ink4)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE PAYWALL'S OWN SURFACES (2026-08-10)
+   A withheld pick is the product's best advertisement if it is framed as one.
+   Everything below is the framing: what is behind the lock, what it is worth,
+   and the way in. Nothing here reveals a band, a tint or a direction — that is
+   the point of the first block.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. THE NEUTRAL BAND. `q-strong|q-good|q-lean` and `tier-gold|green|blue` are
+      the pick's STAR BAND rendered as colour, which is a premium field escaping
+      through the one channel a redaction bar cannot cover. A locked card gets
+      `q-locked` / `tier-locked`, which is deliberately the SAME on every locked
+      card: the gold here says "there is something behind this", never "there is
+      something GOOD behind this". */
+.sts-pick.tier-locked .sts-bg::before{background:var(--gold);opacity:.55}
+.tile.q-locked{box-shadow:var(--glass-shadow)}
+.str-pill.q-locked{background:linear-gradient(135deg,var(--ink3),var(--ink2));color:var(--paper)}
+
+/* 2. THE RULE, WITHHELD — the upsell that replaces the day's decision procedure
+      on the board strip, the Desk and the Research surface. It leads with the
+      EVIDENCE the server deliberately keeps public (the rule's record over the
+      window it was chosen on), because that is the argument; the sentence
+      itself is the thing being sold. */
+.dp-locked-rule{margin:10px 0 2px;padding:13px 14px 12px;border-radius:var(--r-md);
+  background:linear-gradient(150deg,rgba(var(--goldc,212,175,55),.10),transparent 72%),var(--glass-hi);
+  box-shadow:inset 0 0 0 1px var(--glass-brd);cursor:pointer}
+.dp-locked-rule .dlr-k{display:flex;align-items:center;gap:6px;font-family:var(--disp);
+  font-weight:800;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--gold)}
+.dp-locked-rule .dlr-k svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2}
+.dp-locked-rule .dlr-ev{margin:7px 0 0;font-family:var(--sans);font-size:13.5px;
+  line-height:1.5;color:var(--ink2)}
+.dp-locked-rule .dlr-ev b{font-family:var(--disp);font-weight:800;color:var(--ink)}
+.dp-locked-rule .dlr-why{margin:6px 0 0;font-family:var(--sans);font-size:12.5px;
+  line-height:1.5;color:var(--ink4)}
+.dp-locked-rule .dlr-cta{margin-top:11px;width:100%;display:inline-flex;align-items:center;
+  justify-content:center;gap:7px;padding:10px 14px;border:0;border-radius:var(--r-sm);
+  background:var(--ink);color:var(--paper);font-family:var(--disp);font-weight:800;
+  font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+.dp-locked-rule .dlr-cta svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2}
+.dp-locked-rule .dlr-foot{margin:9px 0 0;font-family:var(--sans);font-size:11.5px;
+  line-height:1.45;color:var(--ink4)}
+
+/* 3. A PASS IS A DECISION. A passed game used to render a bare market total
+      between a column of gold UNLOCK chips — nothing withheld, nothing claimed,
+      and to the eye a tile whose pick failed to load. No upsell (nothing is
+      being sold), just the mark that says the desk read it and did not bet it. */
+.tv-nobet{margin-left:auto;flex:0 0 auto;font-family:var(--disp);font-weight:700;
+  font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4);
+  white-space:nowrap}
+
+/* 4. THE ACCESS CODE. The only control on the checkout screen that does
+      anything, and it says so in its own copy rather than in a comment. */
+.sub-code{margin-top:14px;padding:13px 14px;border-radius:var(--r-md);
+  background:var(--glass-hi);box-shadow:inset 0 0 0 1px var(--glass-brd)}
+.sub-code-k{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3)}
+.sub-code-p{margin:6px 0 10px;font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink4)}
+.sub-code-row{display:flex;gap:8px}
+.sub-code-in{flex:1 1 auto;min-width:0;padding:10px 12px;border:0;border-radius:var(--r-sm);
+  background:var(--paper);box-shadow:inset 0 0 0 1px var(--glass-brd);
+  font-family:var(--sans);font-size:14px;color:var(--ink)}
+.sub-code-btn{flex:0 0 auto;padding:10px 16px;border:0;border-radius:var(--r-sm);
+  background:var(--ink);color:var(--paper);font-family:var(--disp);font-weight:800;
+  font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+.sub-code-note{margin:8px 0 0;min-height:1em;font-family:var(--sans);font-size:12px;color:var(--ink4)}

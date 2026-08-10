@@ -814,10 +814,62 @@ export default function Home() {
        front of the first payload keeps first paint where it was. */
     try { manifest(); } catch {}
 
+    /* ═══ MEMBERS READ A DIFFERENT PAYLOAD, NOT A DIFFERENT VIEW OF ONE ═══
+       2026-08-10. `/api/snap` is public, unauthenticated and CDN-cached: one
+       response is shared by every reader, which is the property the whole
+       egress design rests on and the reason this project is not paying for its
+       Supabase bill twice. A cache like that cannot be auth-aware without the
+       auth state entering the cache key, which is per-reader caching, which is
+       the access pattern that caused the bill in the first place.
+
+       So the split is in the DATA, not in the route. Everyone — members
+       included — reads the public redacted board through the shared, pinned,
+       immutable cache. A member additionally asks /api/premium for the same
+       surface, which is uncached, session-gated and served `private, no-store`;
+       it opens a sealed row that is meaningless to anyone without the key.
+
+       PREMIUM FIRST, PUBLIC ALWAYS. If the premium read 402s (no session), 503s
+       (unconfigured) or fails for any other reason, this falls through to the
+       public board and the reader gets the locked surfaces and the upsell —
+       which is the correct behaviour for a paywall whose gate is unavailable.
+       It never fails the other way. */
+    const PREMIUM_SHAPES = new Set(["picks_unified_live", "picks_unified",
+      "pregame_picks", "picks_v4_beta_live", "picks_v4_beta"]);
+    let premiumOk = true;
+    let premiumRetryAt = 0;
+    async function snapPremium(k: string, ac: AbortController | null, opts: any) {
+      if (!isPremium() || !PREMIUM_SHAPES.has(k)) return null;
+      /* `?lite=1` and `?game=` are projections the PUBLIC route performs; the
+         premium board is served whole, so a caller asking for a projection gets
+         the public one and the full board separately rather than a half-premium
+         shape nobody has specified. */
+      if (opts && (opts.lite || opts.game)) return null;
+      if (!premiumOk && Date.now() < premiumRetryAt) return null;
+      premiumOk = true;
+      try {
+        const r = await fetch(`/api/premium/${encodeURIComponent(k)}`,
+          { cache: "no-store", ...(ac ? { signal: ac.signal } : {}) });
+        if (r.ok) return await r.json();
+        /* A 402 is an ANSWER, not a failure: this reader is not entitled, and
+           asking again every poll would be a request per poll for a fact that
+           does not change. Believe it and stop asking for a while. */
+        if (r.status === 402 || r.status === 503) {
+          serverPremium = false; setPremium(false);
+        }
+        premiumOk = false; premiumRetryAt = Date.now() + 120_000;
+      } catch (e) {
+        if (ac && ac.signal.aborted) throw e;
+        premiumOk = false; premiumRetryAt = Date.now() + 60_000;
+      }
+      return null;
+    }
+
     async function snap(k: string, ms = SNAP_MS, opts: any = {}) {
       const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
       const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
       try {
+        const prem = await snapPremium(k, ac, opts);
+        if (prem) return prem;
         if (snapProxyUsable()) {
           try {
             /* PIN THE READ TO A VERSION WHEN WE KNOW ONE. Dated archive keys
@@ -1647,13 +1699,22 @@ export default function Home() {
     // Percentages and tier jargon stay off the primary surfaces.
     function qualityOf(pl: any) {
       if (!pl || pl.action !== "TAKE") return null;
+      /* A WITHHELD PICK HAS NO PUBLIC QUALITY BAND (2026-08-10). The band is
+         `stars`, which is a premium field, and it reaches the DOM as
+         `q-strong|q-good|q-lean` on the tile, `tier-gold|…` on the story slide
+         and an inline `--t1` on the game hero — three tints on surfaces whose
+         text says the pick is locked. `v4ToPlay` sets `q` to "locked" on a
+         redacted pick; returning it here (rather than falling through to the
+         legacy `value_tier` guesses, which would land on "lean" and tint it
+         anyway) is what makes every locked card look identical. */
+      if (pl.q === "locked" || servedRedacted(pl)) return "locked";
       if (pl.q === "strong" || pl.q === "good" || pl.q === "lean") return pl.q; // served quality wins
       if (pl.value_tier === "value-a" || pl.tier === "featured") return "strong";
       if (pl.value_tier === "value-b" || pl.tier === "high") return "good";
       return "lean";
     }
-    const Q_LABEL: any = { strong: "Strong", good: "Good", lean: "Lean" };
-    const Q_RANK: any = { strong: 0, good: 1, lean: 2 };
+    const Q_LABEL: any = { strong: "Strong", good: "Good", lean: "Lean", locked: "Premium" };
+    const Q_RANK: any = { strong: 0, good: 1, lean: 2, locked: 3 };
     const qDiamonds = (q: any) => {
       return "";
     };
@@ -1713,8 +1774,58 @@ export default function Home() {
     // STRIPE WIRE-IN POINT: a real flow replaces setPremium(true) in the Upgrade page's
     // Subscribe handler with: POST /api/checkout → Stripe Checkout Session → redirect →
     // webhook confirms the subscription → entitlement served with the payload/session.
-    const isPremium = () => { try { return localStorage.getItem("de_premium") === "1"; } catch { return false; } };
+    /* ═══════════ ENTITLEMENT IS THE SERVER'S ANSWER NOW ═══════════
+       2026-08-10. `de_premium` is a localStorage flag: the browser writes it,
+       anyone with a devtools console can write it, and nothing on the server
+       has ever read it. That was survivable only because there was nothing to
+       protect — the payload was identical for every reader, so the flag merely
+       decided whether the client drew a blur over bytes it already had.
+
+       Now there are two payloads. The public board is what /api/snap serves and
+       what this flag can never unlock, because the picks are not in it. The
+       premium board comes from /api/premium behind an HMAC-signed HttpOnly
+       cookie that JS cannot read or forge. So this flag stops being the gate
+       and becomes what it always actually was: a local cache of the answer, for
+       first paint, refreshed from the server on boot.
+
+       `serverPremium` is the truth. It starts null (unknown) and `entitled()`
+       falls back to the cached flag only until the first /api/session answer
+       lands — which affects nothing but a few hundred milliseconds of styling,
+       because the bytes are already gone from the public payload either way. */
+    let serverPremium: boolean | null = null;
+    let sessionConfigured = false;
+    const isPremium = () => (serverPremium != null ? serverPremium : (() => { try { return localStorage.getItem("de_premium") === "1"; } catch { return false; } })());
     const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
+    async function refreshSession() {
+      try {
+        const r = await fetch("/api/session", { cache: "no-store" });
+        if (!r.ok) return;
+        const j = await r.json();
+        const was = serverPremium;
+        serverPremium = !!j.premium;
+        sessionConfigured = !!j.configured;
+        setPremium(serverPremium);
+        /* A CHANGE OF ENTITLEMENT CHANGES WHICH PAYLOAD WE SHOULD BE HOLDING,
+           not merely how it is drawn — so it is a reload of the data, never a
+           re-render of what we have. */
+        if (was !== null && was !== serverPremium) { try { location.reload(); } catch {} }
+      } catch { /* unknown stays unknown; the public board renders either way */ }
+    }
+    async function redeemAccessCode(code: string): Promise<{ ok: boolean; reason?: string }> {
+      try {
+        const r = await fetch("/api/session", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); return { ok: true }; }
+        return { ok: false, reason: String((j && j.reason) || `http_${r.status}`) };
+      } catch { return { ok: false, reason: "network" }; }
+    }
+    async function endSession() {
+      try { await fetch("/api/session", { method: "DELETE" }); } catch {}
+      serverPremium = false; setPremium(false);
+    }
     // ===================== ACCOUNT / AUTH (stubbed session — no real OAuth/signup) =====================
     // The signed-in user is one localStorage record `de_account`:
     //   { provider:"google"|"apple"|"facebook"|"x"|"email", name, email, since }
@@ -1737,7 +1848,13 @@ export default function Home() {
       setAccount(acct);
       return acct;
     }
-    function signOut() { setAccount(null); }
+    function signOut() {
+      setAccount(null);
+      /* THE SERVER SESSION IS THE ENTITLEMENT NOW, so signing out has to reach
+         it. Clearing localStorage alone would leave the HttpOnly cookie in
+         place and the next /api/session would put the reader straight back. */
+      endSession();
+    }
     // Initials for the header avatar (from the account name/email, or a generic glyph).
     function accountInitials() {
       const a = getAccount();
@@ -2031,12 +2148,49 @@ export default function Home() {
     function v4ToPlay(g: any, pk: any) {
       if (!pk) return null;
       const mk = "total";
-      const ln = pk.line != null ? pk.line : pk.vegas_line;
       const take = String(pk.status || "").toUpperCase() === "PICK";
-      const side = take ? `${/over/i.test(String(pk.side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim() : null;
+      /* ═══ THE SERVER'S LOCK FLAGS TRAVEL, AND AN ABSENT SIDE IS NOT "UNDER" ═══
+         2026-08-10, two defects in one line, and they compounded.
+
+         (1) This normaliser builds a fresh object and — by its own comment, four
+             times over — "silently drops every served block it does not name".
+             It did not name `premium` or `premium_locked`, so `servedRedacted()`
+             could never fire on the board or a game page: the server could say
+             "this copy is the redacted one" and the client would not hear it.
+
+         (2) The side was reconstructed as
+                 /over/i.test(String(pk.side)) ? "OVER" : "UNDER"
+             With `side` ABSENT — which is exactly what the public payload does,
+             deliberately, "not null, not masked, absent" — `String(undefined)`
+             fails the test and this rendered a confident "UNDER <line>" on every
+             locked tile. A fabricated pick, at the exact moment the server had
+             just done the right thing, and `servedRedacted` could not catch it
+             because `pl.side` was now a non-null string.
+
+         So: no side unless the server sent one, and the flags come along. */
+      const hasSide = pk.side != null && String(pk.side).trim() !== "";
+      const redacted = pk.premium_locked === true || (pk.premium === true && !hasSide);
+      /* THE LINE IS PART OF THE PICK (Leon's list, 2026-08-10). `line` is in
+         PREMIUM_FIELDS and the locked tile printed it anyway — and on the 13-pick
+         board measured that day, 2 picks sat at a DIFFERENT number from the market
+         (9.5 against a market 9; 8 against a market 8.5). Accepting the higher
+         total is an under tell. A locked surface shows the MARKET number, which is
+         free at every book, and never ours. */
+      const ln = redacted
+        ? (pk.vegas_line != null ? pk.vegas_line : null)
+        : (pk.line != null ? pk.line : pk.vegas_line);
+      const side = take && hasSide
+        ? `${/over/i.test(String(pk.side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim()
+        : null;
       const res = gradeOf(pk) === "win" ? { status: "hit" } : gradeOf(pk) === "loss" ? { status: "miss" } : gradeOf(pk) === "push" ? { status: "push" } : null;
       const stars = pk.stars != null ? Number(pk.stars) : 0;
-      const q = stars >= 4 ? "strong" : stars === 3 ? "good" : "lean";
+      /* THE QUALITY CLASS IS A TINT, AND A TINT IS A DISCLOSURE. `q` becomes
+         `q-strong|q-good|q-lean` on the tile and drives the hero's colour and the
+         story slide's `tier-gold|tier-green|tier-blue`. On a locked card that is
+         the star band shown in the one channel a redaction bar cannot cover —
+         and `stars` is in PREMIUM_FIELDS. A withheld pick gets the neutral class,
+         so every locked tile looks identical to every other locked tile. */
+      const q = redacted ? "locked" : stars >= 4 ? "strong" : stars === 3 ? "good" : "lean";
       const be = pk.price != null ? beFromAmerican(pk.price) : null;
       const why: string[] = [];
       if (take && pk.our_prob != null && be != null && pk.price != null)
@@ -2055,20 +2209,31 @@ export default function Home() {
       return {
         market: mk, action: take ? "TAKE" : "PASS",
         side: take ? side : null,
-        line: ln, price: pk.price != null ? pk.price : null,
-        p: pk.our_prob != null ? pk.our_prob : null,
-        q, stars, star_tier: pk.star_tier, ev: pk.ev, grade,
+        line: ln, price: redacted ? null : (pk.price != null ? pk.price : null),
+        p: redacted ? null : (pk.our_prob != null ? pk.our_prob : null),
+        /* THE TWO FLAGS THE SERVER SENDS TO SAY "THIS COPY IS THE REDACTED ONE".
+           They were the one thing this normaliser had to carry and the one thing
+           it did not, which made `servedRedacted()` unreachable from the board
+           and the game page — the server's authority was dead code. */
+        premium: pk.premium === true, premium_locked: redacted,
+        premium_note: pk.premium_note || null,
+        q, stars: redacted ? null : stars,
+        star_tier: redacted ? null : pk.star_tier,
+        ev: redacted ? null : pk.ev, grade: redacted ? null : grade,
         why, result: res, src: "v4",
         // "WHAT'S LIGHTING UP" context chips (served pick.signals) — carried through
         // defensively; may not be in the payload yet, every renderer degrades to nothing.
-        signals: Array.isArray(pk.signals) ? pk.signals : null,
-        v4pass: passShim,
+        signals: redacted ? null : (Array.isArray(pk.signals) ? pk.signals : null),
+        v4pass: redacted ? null : passShim,
         // provenance for the "vs Vegas + when" strip: the exact Vegas line judged + when
         vegas_line: pk.vegas_line != null ? pk.vegas_line : ln,
+        /* THE PASS SHIM AND THE SIGNALS carry model numbers too; on a redacted
+           card the server sent none, but the local recomputation would happily
+           print a break-even from a price that is no longer there. */
         lead_time: pk.lead_time || null,
         fp_utc: g.first_pitch_utc || null,
         locked: !!pk.locked, locked_at_utc: pk.locked_at_utc || null,
-        suggested_units: pk.suggested_units != null ? pk.suggested_units : null,
+        suggested_units: redacted ? null : (pk.suggested_units != null ? pk.suggested_units : null),
         /* PICK STRENGTH — carried forward, never recomputed. This normaliser builds a fresh
            object and therefore silently drops every served block it does not name, which is
            why the tier was invisible on the board while sitting in the payload. Only the
@@ -2085,7 +2250,7 @@ export default function Home() {
           const c = blk("engine_strategy") || blk("owner_strategy");
           const s = c && typeof c === "object" && c.strength && typeof c.strength === "object"
             ? c.strength : null;
-          return take && s && s.tier ? s : null;
+          return take && !redacted && s && s.tier ? s : null;
         })(),
         /* THE 0–100 CONFIDENCE — carried, never rebuilt. Same trap as `strength` above: this
            normaliser names its fields, so anything it does not name is dropped on the floor,
@@ -2093,16 +2258,16 @@ export default function Home() {
            while sitting in the payload. The three keys travel TOGETHER (the backend's own
            contract: `confidence`, `confidence_score`, `confidence_basis`) or not at all, so
            they are copied together and only onto a pick that was actually taken. */
-        confidence: take && pk.confidence && typeof pk.confidence === "object" ? pk.confidence : null,
-        confidence_score: take && pk.confidence_score != null ? pk.confidence_score : null,
-        confidence_basis: take && pk.confidence_basis != null ? pk.confidence_basis : null,
+        confidence: take && !redacted && pk.confidence && typeof pk.confidence === "object" ? pk.confidence : null,
+        confidence_score: take && !redacted && pk.confidence_score != null ? pk.confidence_score : null,
+        confidence_basis: take && !redacted && pk.confidence_basis != null ? pk.confidence_basis : null,
         /* THE STAR RATING — carried, never rebuilt, same trap as the two blocks above.
            The backend decides how many stars a pick has and what they mean (see
            v4/serve/rule_fit.py); the app has stopped mapping a score onto stars locally,
            because the two bases are on different scales and only the producer knows which
            map belongs to which. Both keys travel together or not at all. */
-        pick_rating: take && pk.pick_rating && typeof pk.pick_rating === "object" ? pk.pick_rating : null,
-        pick_rating_stars: take && pk.pick_rating_stars != null ? pk.pick_rating_stars : null,
+        pick_rating: take && !redacted && pk.pick_rating && typeof pk.pick_rating === "object" ? pk.pick_rating : null,
+        pick_rating_stars: take && !redacted && pk.pick_rating_stars != null ? pk.pick_rating_stars : null,
       };
     }
     // ═══════════ SPREAD STREAM — run lines RETURN (Leon, 2026-07-26; live 2026-07-27) ═══════════
@@ -2623,6 +2788,63 @@ export default function Home() {
         if (s2 && typeof s2 === "object") return s2;
       }
       return null;
+    }
+    /* ═══════════ THE DAY'S RULE IS THE DAY'S PICKS ═══════════
+       Leon, 2026-08-10: "show nothing that can let them derive the picks."
+
+       THE LARGEST HOLE IN THE PAYWALL WAS NEVER A `side` FIELD. Captured signed
+       out, one tap, on the live board:
+
+         "Bet OVER when the park suppresses runs and the arms the away bullpen
+          used yesterday is below 5 and both starters are known and the two
+          starters' gap in days of rest (home minus away) is below 1. Otherwise
+          bet UNDER when the conditions analyst's read was driven by the park
+          and the desk's edge measured against how much the desk disagrees with
+          itself is at least -1. Otherwise pass."
+
+       The whole board is decided by ONE rule and every input that rule names is
+       free on the same site — the park, both starters, days of rest and bullpen
+       usage are on each game's Preview tab. So this is not a description of the
+       method, it IS the method, and a reader who can evaluate it does not need
+       a single card's `side`. Redacting fifteen cards and publishing the
+       function that produced them is not a paywall.
+
+       THE SAME GATE AS EVERY CARD: settlement. A rule for a finished night is
+       the record and is the strongest thing this product has to say, because it
+       shows the actual sentence behind an actual result. A rule for a night
+       still being bet is the product.
+
+       The SERVER decides (`premium_locked` on the day block, set by
+       desk_policy.redact_day_strategy). This reads that flag first and falls
+       back to "is it today, and is anything on today's board still open" for
+       payloads built before the contract and for locally cached ones. */
+    function dayRuleLocked(s: any, dateISO?: string): boolean {
+      if (!s || typeof s !== "object") return false;
+      if (entitled()) return false;
+      if (s.premium_locked === true) return true;
+      const d = String(dateISO || s.date || "");
+      if (!d || d < todayISO()) return false;
+      return true;
+    }
+    /* What the reader gets instead — the upsell, in the rule's own place. It
+       sells what is behind it (the sentence, and the commentary on it) using
+       the evidence the server deliberately keeps public: the rule exists, it is
+       frozen, and here is its record over the window it was chosen on. */
+    function dayRuleUpsellHtml(s: any, opts: any = {}): string {
+      const rec = s && (s.record || (s.record_over_window &&
+        `${s.record_over_window.wins}-${s.record_over_window.losses}${
+          s.record_over_window.pushes ? `-${s.record_over_window.pushes}` : ""}`));
+      const win = s && s.window_days ? `${s.window_days} nights` : null;
+      const ev = rec
+        ? `Tonight's rule went <b>${esc(String(rec))}</b>${win ? ` over the ${esc(win)} it was chosen on` : ""}, and it was frozen before the first pitch.`
+        : `Tonight's rule was frozen before the first pitch and every pick on this board comes from it.`;
+      return `<div class="dp-locked-rule" data-up="1" role="button" tabindex="0">
+        <div class="dlr-k">${lockSvg} The rule itself is Premium</div>
+        <p class="dlr-ev">${ev}</p>
+        <p class="dlr-why">The exact sentence — the conditions it takes the over on, the ones it takes the under on, and where it passes — is the pick, on every game at once. It unlocks with Premium, and it becomes free the morning after the night it played.</p>
+        <button class="dlr-cta" data-up="1">${lockSvg} ${esc(unlockCtaTxt())} tonight's rule</button>
+        ${opts.foot ? `<p class="dlr-foot">${esc(opts.foot)}</p>` : ""}
+      </div>`;
     }
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
     // ═══════════════════ THE ANALYST DESK — four named models on every game ═══════════════════
@@ -5781,7 +6003,11 @@ export default function Home() {
       return "";
     }
     function pickStrengthPill(pl: any, compact = false) {
-      const n = pl && pl.stars != null && isFinite(Number(pl.stars))
+      /* THE PILL READS `pl.stars` DIRECTLY, so it must ask about the lock first
+         — otherwise a redacted pick whose `q` is "locked" still gets banded
+         here off a star count that should not have travelled. On a redacted
+         card `v4ToPlay` nulls `stars`, so this is belt to that brace. */
+      const n = pl && !servedRedacted(pl) && pl.stars != null && isFinite(Number(pl.stars))
         ? Math.max(1, Math.min(5, Math.round(Number(pl.stars)))) : null;
       const q = n == null ? qualityOf(pl) : n >= 4 ? "strong" : n === 3 ? "good" : "lean";
       const txt = q === "lean" ? "Line" : (compact ? "Pick" : "DiamondEdge Pick");
@@ -5972,7 +6198,15 @@ export default function Home() {
     // for live games; degrades to "" otherwise. Uses live_scores + display_pick.live_status.
     // Choose the tint that fits a story: pick quality first, then theme keywords.
     function heroTintFor(g: any, pl: any) {
-      if (pl && pl.action === "TAKE") {
+      /* THE HERO'S COLOUR WAS THE PICK'S STAR BAND, AND IT RAN BEFORE ANY LOCK
+         TEST (2026-08-10). `--t1:rgba(224,172,32,.34)` on a strong pick,
+         `rgba(11,158,109,.28)` on a good one, the theme tint on a pass. Swept
+         across all 15 games signed out: every picked game green, both PASS
+         games neutral — so the wash disclosed BOTH that there is a bet here and
+         which band it is in, in an inline style, on a page whose pick strip
+         said "Sign in to unlock". A withheld pick tints from the article like
+         any other game. */
+      if (pl && pl.action === "TAKE" && !servedRedacted(pl) && qualityOf(pl) !== "locked") {
         const q = qualityOf(pl);
         if (q === "strong") return "gold";
         if (q === "good") return "green";
@@ -6778,6 +7012,30 @@ export default function Home() {
         }, 2400);
       });
     }
+    // game_id -> {at} — recorded by overlayInto the instant a game flips to FINAL (which is
+    // when its pick becomes gradeable via provisionalResult), consumed by flashGraded after
+    // the repaint that draws the resolved seal. THE POINT is that the seal's spring-pop fires
+    // ONCE, on the tile that just graded, and never on every board repaint: a poller tick
+    // rebuilds all ~15 tiles ~every 25s, and an ungated `animation:respop` on the seal would
+    // blink the whole board on each tick — the aggregate flash the wall-clock anchors exist to
+    // prevent. Same event-gated shape as runFlash above.
+    const gradeFlash: any = {};
+    function flashGraded() {
+      if (REDUCE) { Object.keys(gradeFlash).forEach((k) => delete gradeFlash[k]); return; }
+      const now = Date.now();
+      Object.keys(gradeFlash).forEach((gid) => {
+        const ev = gradeFlash[gid];
+        if (!ev || now - ev.at > 20000) { delete gradeFlash[gid]; return; }
+        const tile = root.querySelector(`.tile[data-gid="${CSS.escape(gid)}"]`) as any;
+        if (!tile) return;   // not on this board — keep the event for the surface that is
+        delete gradeFlash[gid];
+        // a PASS game finalizes with no seal to pop; consuming the event above is the whole job.
+        const seal = tile.querySelector(".de-mini-pick.dmp-tile .restamp.rs-mini") as any;
+        if (!seal) return;
+        seal.classList.add("rs-pop");
+        setTimeout(() => { try { seal.classList.remove("rs-pop"); } catch {} }, 700);
+      });
+    }
     function overlayInto(games: any[]) {
       if (!liveScores || !liveScores.games || !Array.isArray(games)) return false;
       let changed = false;
@@ -6785,7 +7043,13 @@ export default function Home() {
         const ls = liveScores.games[String(g.game_id)] || (g.game_pk != null ? liveScores.games[String(g.game_pk)] : null);
         if (!ls) return;
         const st = String(ls.status || "").toLowerCase();
-        if ((st === "pre" || st === "live" || st === "final") && st !== String(g.status || "pre").toLowerCase()) { g.status = st; changed = true; }
+        if ((st === "pre" || st === "live" || st === "final") && st !== String(g.status || "pre").toLowerCase()) {
+          // A game crossing into FINAL is the grade moment: provisionalResult can now resolve
+          // the pick from the settled score, so the seal will draw on the next repaint. Record
+          // it for flashGraded to pop that one seal once (see gradeFlash).
+          if (st === "final") gradeFlash[String(g.game_id)] = { at: Date.now() };
+          g.status = st; changed = true;
+        }
         /* ═══════════ A DELAY IS A STATE, NOT AN INNING ═══════════
            `live_scores` learned to carry it on 2026-08-09 (picks_engine/live_scores.py,
            commit a6dcdfe): MLB's own detailedState says "Delayed" / "Delayed Start" with a
@@ -6972,8 +7236,9 @@ export default function Home() {
       if (tab === "today") repaintToday();
       else { todayFresh = false; if (tab === "games") renderSlate(true); }
       if (detail && detail.game_id != null) refreshSheetScore(detail);
-      // after the fresh scores have painted: celebrate any runs that just landed
-      requestAnimationFrame(() => { try { flashRunScored(); } catch {} });
+      // after the fresh scores have painted: celebrate any runs that just landed, and pop the
+      // seal on any pick that just graded (both event-gated — nothing fires on a quiet tick).
+      requestAnimationFrame(() => { try { flashRunScored(); } catch {} try { flashGraded(); } catch {} });
     }
     /* ---- BANDWIDTH-SMART big-payload refresh: the pregame_picks payload changes ~every
        30 min. Re-fetch infrequently and ONLY apply when generated_at advanced (no wasteful
@@ -8151,7 +8416,15 @@ export default function Home() {
       return `${side}${line}${price}`.trim();
     }
     function ouLineForPick(g: any, pl: any) {
-      if (pl && pl.line != null) return lineStr(pl.line);
+      /* THE PICK'S LINE IS PART OF THE PICK (Leon's list, 2026-08-10). `line`
+         is in PREMIUM_FIELDS, and every locked surface — tile, game strip,
+         story slide — printed it here as "O/U 9.5". Most nights our number IS
+         the market number and the disclosure is nil; on the 13-pick board
+         measured that day, TWO were not (9.5 against a market 9, and 8 against
+         a market 8.5), and accepting the higher total is an under tell.
+         A locked card falls through to the MARKET line below, which is free at
+         every book and is the frame the upsell needs. */
+      if (pl && pl.line != null && !servedRedacted(pl)) return lineStr(pl.line);
       const pg = pregameLine(g);
       if (pg && pg.total && pg.total.line != null) return lineStr(pg.total.line);
       const v = vegasLine(g, "total");
@@ -9238,9 +9511,18 @@ export default function Home() {
          pips' exact slot on the tag). The row is `nowrap` at tile size now, so
          it cannot silently wrap again — if something ever does not fit, the CTA is the one
          element allowed to give. */
+      /* A PASS IS A DECISION, AND IT SHOULD READ AS ONE (2026-08-10). A passed
+         game rendered a bare market total between a column of gold UNLOCK chips
+         — nothing withheld, nothing claimed, and to the eye a tile whose pick
+         failed to load. Nothing is being sold on a PASS, so it gets no upsell;
+         it gets a mark that says the desk read the game and did not bet it,
+         which is the discipline this product is proudest of. */
+      const passMark = vd && vd.kind === "pass"
+        ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
+        : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-callrow${locked ? " haslock" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>Unlock</i></span>` : ""}</div>
+             <div class="tv-callrow${locked ? " haslock" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>Unlock</i></span>` : passMark}</div>
              ${liveCash}
            </div>`
         : incoming
@@ -10178,7 +10460,17 @@ export default function Home() {
                  ours to write — the eyebrow already says "Thursday's strategy", and the
                  heading over the prose now says the same thing, so the paragraph reads as a
                  description of what was on the card that day rather than as an offer. */""}
-            ${voiceHtml || (rule ? `<p class="stgy-rule"><span>${isPast ? "How it read that day's games" : "How it reads a game"}</span>${esc(rule)}</p>` : "")}
+            ${/* THE STRIP'S FOLD IS THE SAME LEAK ONE SURFACE OVER (2026-08-10).
+                 `stgy-rule` is `strategySentence(s)`, which reads
+                 `plain_english_rule` — the whole decision procedure — and
+                 `stgy-lead` is the first sentence of the commentary that
+                 explains which conditions take which side. On a night still
+                 being bet both are the board's every pick. See
+                 `dayRuleLocked`; the upsell replaces them, and everything
+                 around it (the name, the record, the "so far" stat) stays. */""}
+            ${dayRuleLocked(s, dateISO)
+              ? dayRuleUpsellHtml(s)
+              : (voiceHtml || (rule ? `<p class="stgy-rule"><span>${isPast ? "How it read that day's games" : "How it reads a game"}</span>${esc(rule)}</p>` : ""))}
             ${/* THE "NOT RUNNING NOW" LINE BELONGS ON EVERY SETTLED DAY, not only on the days
                   whose prose came from the forge. Its first half is a statement about SERVED
                   prose — true of the generated voice, which is reproduced verbatim, and NOT
@@ -15307,7 +15599,14 @@ export default function Home() {
       const _r = servedRating(pl);
       const stars = _r ? _r.stars : (pl.stars != null ? Math.max(0, Math.min(5, Math.round(Number(pl.stars)))) : 0);
       const _of = _r ? _r.of : 5;
-      const tier = !stars ? "blue"
+      /* …AND THE TIER IS COMPUTED BEFORE THE LOCK BRANCH, SO IT TINTED A LOCKED
+         CARD BY ITS STAR BAND (2026-08-10). Observed live on three signed-out
+         slides: `tier-gold`, `tier-green`, `tier-blue`. `stars` is in
+         PREMIUM_FIELDS, and this is it, rendered as the card's colour — the one
+         channel a "●●●● ●" placeholder cannot cover. A locked slide gets the
+         neutral band, so every locked slide looks like every other one. */
+      const tier = locked ? "locked"
+        : !stars ? "blue"
         : stars >= _of ? "gold"
         : stars >= _of - 1 ? "green" : "blue";
       const over = /(^|\s)over/i.test(String(pl.side || ""));
@@ -15700,7 +15999,25 @@ export default function Home() {
       const c = sl.c || deskConsensus(g);
       const ans = deskAnalysts(g);
       const pl = displayPick(g);
-      const locked = pl ? pickLocked(pl, playState(g, pl)) : false;
+      /* ═══ A PASS IS NOT A FREE PASS (Leon's list, 2026-08-10) ═══
+         `pickLocked` returns false early for a PASS — "a PASS has no side to
+         hide" — which is true of the TICKET and false of this card, because
+         this card is not the ticket. Captured signed out on an unstarted game:
+         "All four say OVER", four `sts-dcall ou-over` chips reading "▲ OVER
+         52%", and a chief verdict explaining that all four lean over. No bet
+         was sold on that game and the brief still names analyst leans and the
+         desk's direction as leaks: it is a same-day directional read on a game
+         a reader can still bet, with `ou-over` in the DOM for anyone who looks
+         past the pixels.
+
+         So this slide asks its own question — is the GAME still open — rather
+         than borrowing the ticket's. Settled games are untouched: the desk's
+         read on a finished game is the record and is the interesting half. */
+      const _gs = gameState(g);
+      const _settled = _gs.kind === "final" || _gs.kind === "void";
+      const locked = entitled() || _settled
+        ? (pl ? pickLocked(pl, playState(g, pl)) : false)
+        : true;
       const chief = deskChief(g);
       const state = (c && c.state) || "PENDING";
       const sideWord = locked ? "" : String((c && c.side) || "").toUpperCase();
@@ -16686,6 +17003,15 @@ export default function Home() {
           </div>
           ${detail}
           <button class="sub-cta" id="sub-go">${payMethod === "apple" ? " Pay — Subscribe" : payMethod === "gpay" ? "Subscribe with Google Pay" : payMethod === "paypal" ? "Subscribe with PayPal" : "Subscribe — $9.99/mo"}</button>
+          <div class="sub-code">
+            <div class="sub-code-k">Already a member?</div>
+            <p class="sub-code-p">Card payments are not switched on yet. Members have an access code — it unlocks every pick on this device.</p>
+            <div class="sub-code-row">
+              <input id="sub-code" class="sub-code-in" type="text" inputmode="text" autocomplete="one-time-code" spellcheck="false" placeholder="Access code" aria-label="Member access code">
+              <button class="sub-code-btn" id="sub-code-go">Unlock</button>
+            </div>
+            <p class="sub-code-note" id="sub-code-note" role="status"></p>
+          </div>
           <button class="sub-skip" id="sub-skip">Not now</button>
           <div class="sub-honest">Premium unlocks the pick side, line, price and the full reasoning on every game.</div>
           ${termsMini("sub-terms")}
@@ -16696,9 +17022,38 @@ export default function Home() {
       bindClick("sub-terms", () => openTermsSheet());
       // THE PURCHASE STEP REQUIRES THE ACKNOWLEDGMENT. If it is not already on file the full
       // text opens with the accept box, and the charge only proceeds after it is ticked.
+      /* ═══ THE ACCESS CODE — THE ONLY THING ON THIS SCREEN THAT REALLY WORKS ═══
+         2026-08-10. The checkout above is a documented stub and stays one; what
+         changed is that `setPremium(true)` no longer unlocks anything, because
+         the picks are not in the payload a free reader is served. Entitlement is
+         an HttpOnly cookie minted by /api/session against a secret the browser
+         never sees, and this is the field that asks for it. When Stripe lands,
+         its webhook mints the same cookie and this field can go. */
+      bindClick("sub-code-go", async () => {
+        const el: any = $("sub-code");
+        const code = el && el.value ? String(el.value).trim() : "";
+        const note = $("sub-code-note");
+        if (!code) { if (note) note.textContent = "Enter the code from your welcome email."; return; }
+        if (note) note.textContent = "Checking…";
+        const r = await redeemAccessCode(code);
+        if (!r.ok) {
+          if (note) note.textContent = r.reason === "unconfigured"
+            ? "Member access is not switched on yet. The record stays free in the meantime."
+            : "That code was not recognised.";
+          return;
+        }
+        refreshAccountButton();
+        toast("Premium unlocked");
+        /* THE BOARD IS DIFFERENT BYTES NOW, not a different rendering of the
+           same ones — the picks were never in what this session downloaded. So
+           the feeds are re-read rather than the surfaces repainted. */
+        try { location.reload(); } catch { renderToday(); }
+      }, { optional: "only on the subscribe screen" });
       bindClick("sub-go", () => requireTerms(() => {
         // STRIPE / APPLE PAY / PAYPAL WIRE-IN POINT: run the selected gateway here. On a
-        // confirmed charge (webhook/callback), set the entitlement — mirror server-side.
+        // confirmed charge (webhook/callback), it must mint the /api/session cookie —
+        // setPremium() alone unlocks NOTHING now, by design: a free reader's payload does
+        // not contain the picks, so a local flag has nothing left to reveal.
         setPremium(true);
         refreshAccountButton();
         const d = document.createElement("div");
@@ -17840,10 +18195,14 @@ export default function Home() {
       const rule = strategySentence(s);
       if (!label && !rule) return "";
       const dateTxt = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      return `<section class="lab-today">
+      /* THE THIRD PLACE THE SAME SENTENCE IS PRINTED (2026-08-10). The Research
+         surface names today's play too, and a rule leaked on a research page is
+         leaked exactly as hard as one leaked on the board. Same gate. */
+      const rLocked = dayRuleLocked(s, todayISO());
+      return `<section class="lab-today${rLocked ? " locked" : ""}">
         <div class="lab-today-k"><span class="lab-today-mk">${strategyMark()}</span>Today's strategy<i>${esc(dateTxt)}</i></div>
         ${label ? `<h3 class="lab-today-h">${esc(label)}</h3>` : ""}
-        ${rule ? `<p class="lab-today-p">${esc(rule)}</p>` : ""}
+        ${rLocked ? dayRuleUpsellHtml(s) : (rule ? `<p class="lab-today-p">${esc(rule)}</p>` : "")}
         <p class="lab-today-w">Chosen by last night's run from the finished games of the past few weeks, and locked before the first pitch. What it did over that window, and the conditions it is written in, are on the Desk.</p>
       </section>`;
     }
@@ -19320,12 +19679,25 @@ export default function Home() {
       const caveat = humanNote(s.record_is_about_the_past_only);
       const exact = humanNote(s.plain_english_rule);
       const dateTxt = stratDateTxt(dateISO) || dateISO;
-      return `<section class="dp-today">
+      /* ═══ THE DESK HAD NO GATE OF ANY KIND ═══ (see `dayRuleLocked`)
+         This section published "The exact rule, as the search wrote it" —
+         both branches of tonight's decision procedure, in plain English,
+         behind one tap, signed out. The three paragraphs above it restate the
+         same thing ("It takes the OVER when… the UNDER when…"), so gating the
+         <details> alone would have left the leak in prose. Both go, and the
+         upsell takes their place. Everything else on this card — the rule's
+         NAME, its dated frame, its window and its record — stays, because that
+         is the evidence the lock is selling against. */
+      const locked = dayRuleLocked(s, dateISO);
+      return `<section class="dp-today${locked ? " locked" : ""}">
         <div class="dp-today-k"><span class="dp-today-mk">${strategyMark()}</span>${isToday ? "Today's strategy" : "The last strategy we played"}<i>${esc(dateTxt)}</i></div>
         ${name ? `<h3 class="dp-today-h">${esc(name)}</h3>` : ""}
-        ${paras.map((p: string) => `<p class="dp-today-p">${esc(p)}</p>`).join("")}
+        ${locked ? "" : paras.map((p: string) => `<p class="dp-today-p">${esc(p)}</p>`).join("")}
         ${summary ? `<p class="dp-today-w">${esc(summary)}</p>` : ""}
-        ${exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p>${
+        ${locked ? dayRuleUpsellHtml(s, {
+          foot: "The record above is real and free — it is the same record we grade ourselves on, win or lose.",
+        }) : ""}
+        ${!locked && exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p>${
           caveat ? `<p class="dp-today-cav">${esc(caveat)}</p>` : ""}</details>` : ""}
       </section>`;
     }
@@ -19784,7 +20156,7 @@ export default function Home() {
       const oldIdx = navOrder.indexOf(oldTab), newIdx = navOrder.indexOf(t);
       const dir = oldIdx >= 0 && newIdx >= 0 && newIdx < oldIdx ? "left" : "right";
       const body = document.body;
-      const clearPan = () => body.classList.remove("tab-pan-left", "tab-pan-right", "tab-leaving", "pan-fwd", "pan-back");
+      const clearPan = () => body.classList.remove("tab-pan-left", "tab-pan-right");
       window.clearTimeout(tabPanT1); window.clearTimeout(tabPanT2);
       clearPan();
       // THE SWAP — everything that changes which surface is on screen. It runs only while
@@ -19830,15 +20202,18 @@ export default function Home() {
         setTimeout(renderDeferred, 120);
       };
       if (REDUCE) { commit(); return; }
-      // phase 1 — the surface you are on leaves in the direction of travel
-      body.classList.add("tab-leaving", dir === "left" ? "pan-back" : "pan-fwd");
-      tabPanT1 = window.setTimeout(() => {
-        commit();
-        // phase 2 — the destination arrives from the opposite edge
-        body.classList.remove("tab-leaving", "pan-fwd", "pan-back");
-        body.classList.add(dir === "left" ? "tab-pan-left" : "tab-pan-right");
-        tabPanT2 = window.setTimeout(clearPan, 360);
-      }, 152);
+      // ONE GESTURE, NOT TWO. The old flow played a 152ms LEAVE animation to completion and
+      // only THEN swapped the destination in — so the new surface could not paint until 152ms
+      // after the tap (the "laggy tab" Leon flagged). There is no leave phase now: the swap
+      // happens IMMEDIATELY, so the destination is on screen and interactive on the very next
+      // frame, and the only motion is its arrival decelerating in from the direction of travel.
+      // Perceived speed is the easing and the absence of dead-time — the work was always
+      // sub-millisecond, so removing the wait is the whole fix. (`main` is a single element
+      // carrying all five resident views, so a true cross-fade of two surfaces is impossible;
+      // the incoming pan from opacity 0 gives the cross-fade read against the fixed dock.)
+      commit();
+      body.classList.add(dir === "left" ? "tab-pan-left" : "tab-pan-right");
+      tabPanT2 = window.setTimeout(clearPan, 420);
     }
 
     // ===================== INIT =====================
@@ -19848,6 +20223,18 @@ export default function Home() {
       // web-only chrome via body.native (CSS).
       const NATIVE = /DiamondEdgeNative/i.test(navigator.userAgent) || !!(window as any).Capacitor || /[?&]native=1/.test(location.search);
       if (NATIVE) document.body.classList.add("native");
+      /* ASK THE SERVER WHETHER THIS READER IS ENTITLED, BEFORE THE FEEDS. The
+         answer decides WHICH PAYLOAD the loads below should fetch — public or
+         premium — so it has to land first or a member's first board is the
+         public one and every surface has to be repainted when the truth
+         arrives. It is a ~200-byte same-origin request with a short deadline;
+         if it does not answer, entitlement stays "unknown", the public board
+         renders, and nothing is blocked. The failure mode is a locked board,
+         which is the correct default for a paywall. */
+      await Promise.race([
+        refreshSession(),
+        new Promise((r) => setTimeout(r, 1200)),
+      ]);
       bindDeskTaps(); // one capture-phase delegate: any [data-an] tap opens the analyst card
       bindShellSwipeBack();
       renderShell();
@@ -19990,7 +20377,7 @@ export default function Home() {
         const ptrArmed = () => {
           // never mid-flight: the tab pan and the swipe-back gesture own the drag while they run
           const bc = document.body.classList;
-          if (bc.contains("tab-leaving") || bc.contains("tab-pan-left") || bc.contains("tab-pan-right") || bc.contains("swiping-back")) return false;
+          if (bc.contains("tab-pan-left") || bc.contains("tab-pan-right") || bc.contains("swiping-back")) return false;
           const layer = $("sheet-layer");
           if (layer && layer.childElementCount > 1) return false;             // something is stacked above
           const p = $("gamepage");

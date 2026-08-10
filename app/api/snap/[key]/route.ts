@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { brotliCompressSync, brotliDecompressSync, constants } from "node:zlib";
 import { snapTag } from "../../cache-tags";
-import { currentVersion } from "../../manifest-source";
+import { currentVersion, KEYS as MANIFEST_KEYS } from "../../manifest-source";
 import { deriveLite } from "./lite";
 import { topLevelStamp } from "./stamp";
 
@@ -177,6 +177,44 @@ function ttlFor(key: string, mode: Mode) {
    the only user-controlled value that reaches a Supabase URL, so it is
    validated rather than escaped. Anything else is a 400, not a proxied read. */
 const KEY_OK = /^[a-z0-9_]+(:[0-9-]{4,10})?$/i;
+
+/* ═══ …AND A CHARSET CHECK IS NOT AN AUTHORIZATION CHECK ═══
+   2026-08-10. The comment above says "a closed set of identifiers" and the
+   regex says "any lowercase word". Those are not the same claim, and the gap
+   made this route a GENERIC OPEN PROXY over the whole `slate_snapshots` table:
+   it happily served every key the app has never heard of. Verified anonymously
+   against production — `props` (337 KB), `midgame_picks`, `today`, `analytics`,
+   `nba` (1.3 MB), `nhl` (1.6 MB), `nfl` (673 KB), `soccer:2026-08-01`,
+   `picks:<date>` — none of them advertised anywhere, several of them other
+   products' pick boards with their own unmodelled schemas, and all of them
+   reachable because the regex liked the letters.
+
+   THE LIST IS NOW THE AUTHORIZATION. A key this app does not serve is a 404,
+   not a proxied read, so adding a surface to the site is a deliberate act and
+   an unrelated board on the same Supabase project is not one request away.
+   Dated variants of the archive families are allowed by prefix, because
+   `pregame_picks:2026-07-21` is the same surface as `pregame_picks` and
+   enumerating a year of dates here would be a list nobody maintains.
+
+   THIS DOES NOT, ON ITS OWN, PROTECT ANYTHING. `slate_snapshots` is readable
+   with the anon key that ships in the JS bundle, so anyone can still ask
+   PostgREST directly. That is exactly why the fix for the paywall is at the
+   SOURCE — what is written to those rows is the redacted variant — and this
+   list is the narrower thing it is: it stops this app's own front door from
+   being a convenient index of every other app on the project. */
+const SERVED_KEYS = new Set<string>([
+  ...MANIFEST_KEYS,
+  // read by the client but not versioned in the manifest
+  "pregame_picks_index",
+]);
+const DATED_FAMILIES = ["pregame_picks", "picks_unified", "picks_unified_live",
+  "news_feed", "history"];
+function keyIsServed(key: string): boolean {
+  if (SERVED_KEYS.has(key)) return true;
+  const i = key.indexOf(":");
+  if (i < 0) return false;
+  return DATED_FAMILIES.includes(key.slice(0, i));
+}
 
 type Mode = "full" | "lite" | "version" | "game";
 
@@ -520,6 +558,12 @@ export async function GET(
   const { key } = await ctx.params;
   if (!KEY_OK.test(key)) {
     return NextResponse.json({ error: "bad key" }, { status: 400 });
+  }
+  /* See SERVED_KEYS: the charset check above says the key is well formed, this
+     says the app actually serves it. Without the second one this route proxies
+     any row in the table. */
+  if (!keyIsServed(key)) {
+    return NextResponse.json({ error: "unknown key" }, { status: 404 });
   }
   if (!SUPA || !KEY) {
     return NextResponse.json({ error: "unconfigured" }, { status: 503 });

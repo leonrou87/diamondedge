@@ -90,6 +90,14 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
     -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
     | python3 -c 'import json,sys; r=json.load(sys.stdin); print(r[0]["updated_at"] if r else "MISSING")' 2>/dev/null || echo "READBACK_FAILED")
   echo "$SHA" > "$STAMP"; echo "$(date '+%F %T') synced unified history ($HTTP) updated_at=$BACK"
+  # THE PREMIUM HALF (2026-08-10) — see sync_unified_live.sh. $FILE is the
+  # PUBLIC variant now; this seals the private full twin for /api/premium.
+  # Non-fatal by design: a failed seal must never take the public publish down.
+  FULLH="$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json"
+  if [ -f "$FULLH" ]; then
+    node "$DIR/scripts/seal_premium.mjs" "$FULLH" picks_unified \
+      || echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
+  fi
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
   # heartbeat branch above is the "nothing changed" case and must stay free.
   "$DIR/scripts/revalidate_edge.sh" picks_unified || true
