@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T11:48:51Z",
+  "generated_utc": "2026-08-10T13:40:00Z",
   "dates": [
     "2026-08-10"
   ],
@@ -1019,17 +1019,91 @@
     },
     "slate_status": {
       "date": "2026-08-10",
-      "available": false,
-      "frozen_at": null,
-      "n_slate": null,
-      "n_tier_a": null,
-      "n_tier_b": null,
-      "n_plays_today": 0,
-      "n_suppressed_by_champion_gates": 0,
+      "available": true,
+      "frozen_at": "2026-08-10T12:13:43.312526+00:00",
+      "n_slate": 10,
+      "n_tier_a": 0,
+      "n_tier_b": 1,
+      "n_plays_today": 1,
+      "n_suppressed_by_champion_gates": 2,
       "note": "0 plays = the champion's own frozen policy found no qualifying totals divergence today (or its internal gates suppressed the candidates) \u2014 an empty board is honest, not broken"
     },
-    "picks": [],
-    "n_picks_on_board": 0,
+    "picks": [
+      {
+        "model": "champion_v2",
+        "source": "live",
+        "scope": "full_game",
+        "bet_type": "total",
+        "lead_time": "T-12h",
+        "date": "2026-08-10",
+        "game_pk": 823675,
+        "game_id": "2026-08-10-BAL-MIN",
+        "matchup": "BAL @ MIN",
+        "away": null,
+        "home": null,
+        "first_pitch_utc": "2026-08-10T23:40:00Z",
+        "market_line": 8.5,
+        "pick_side": null,
+        "pick_line": 8.5,
+        "lean": {
+          "side": "over",
+          "line": 8.5
+        },
+        "our_prob": 0.5106,
+        "per_side_price": 102,
+        "best_book": "onexbet",
+        "median_price": -105,
+        "p_breakeven": 0.495,
+        "ev": 0.0314,
+        "ev_min": 0.015,
+        "take": false,
+        "playable": false,
+        "gate_price": -105,
+        "gate_ev": -0.0031,
+        "gate_p_breakeven": 0.5122,
+        "tier": "PASS",
+        "stars": 1,
+        "star_tier": "Pass (fails the +EV gate at the real latest per-side price)",
+        "score": 1.93,
+        "gate_reason": "negative_ev",
+        "champion": {
+          "tier": "B",
+          "edge": 0.0214,
+          "signed_edge": 0.0214,
+          "side": "over",
+          "frozen_at": "2026-08-10T12:13:43.312404+00:00",
+          "morning_price": -105,
+          "nlines": 2
+        },
+        "evidence": {
+          "basis": "champion_live_engine",
+          "cell_cleared_baselines": false,
+          "bh_significant": false,
+          "cell_n": 886,
+          "one_sided": false,
+          "champion_tier": "B",
+          "champion_edge": 0.0214,
+          "note": "stars = STAR SYSTEM v3 over the MEASURED 2022-2026 bucket win-rates of the champion's own graded history (4-star ceiling: live record, not BH-certified; the >=0.065 tail is a rated 1-star PASS; every row keeps its lean + a continuous 0-5 score); playable boundary = +EV at the real latest per-side price"
+        },
+        "certified": false,
+        "price": {
+          "basis": "served/graded at the BEST executable per-side price across books quoting the pick's line at the latest pregame snapshot (v4 odds store); the +EV GATE evaluates at the MEDIAN-in-decimal price at the same line (EXECUTION LAYER, Leon 2026-07-09 \u2014 gate at MEDIAN, price/grade at BEST: the proven config)",
+          "snapshot_ts": "2026-08-10T12:25:40Z",
+          "n_books_at_line": 20,
+          "best_price": 102,
+          "best_book": "onexbet",
+          "median_price": -105,
+          "nearest_line": null,
+          "nearest_line_price": null,
+          "stale_hours": 0.0
+        },
+        "informational_lean": "over",
+        "pass_why": "ev_gate",
+        "pass_reason": "champion pick priced out at the MEDIAN gate: model 51.1% vs median break-even 51.2% at -105 (median ev -0.31% < +1.5% min); +EV at best 102 but gate-expansion picks measured -25% ROI \u2014 not a bet",
+        "asof_utc": "2026-08-10T12:25:41Z"
+      }
+    ],
+    "n_picks_on_board": 1,
     "n_voided": 0
   },
   "board_notice": null,
@@ -1046,7 +1120,7 @@
     "premium_locked": true,
     "premium_note": "Premium \u2014 unlock to see the desk's call."
   },
-  "featured_game_id": "2026-08-10-Boston Red Sox-Toronto Blue Jays-822780",
+  "featured_game_id": "2026-08-10-BAL-MIN",
   "star_basis": {
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
     "version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
@@ -2290,17 +2364,17 @@
   },
   "board_census": {
     "n_games": 10,
-    "n_rows": 14,
+    "n_rows": 15,
     "n_voided": 0,
     "n_playable": 0,
     "n_takes": 0,
-    "n_passes": 14,
+    "n_passes": 15,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 0,
       "2": 0,
-      "1": 14
+      "1": 15
     }
   },
   "spread_stream": {
@@ -2473,16 +2547,16 @@
         "line": -1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": 145,
+        "price": 150,
         "best_book": null,
         "stars": 1,
-        "score": 1.49,
-        "our_prob": 0.586,
-        "ev": 0.0144,
+        "score": 0.7,
+        "our_prob": 0.599,
+        "ev": 0.0026,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2935,24 +3009,24 @@
       "823998": {
         "status": "LEAN",
         "side": "over",
-        "line": 8.5,
-        "vegas_line": 8.5,
-        "p_over": 0.5219,
-        "p_over_market": 0.5108,
-        "sim_edge": 0.0111,
-        "price": -104.0,
-        "best_book": "onexbet",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5594,
+        "p_over_market": 0.5,
+        "sim_edge": 0.0594,
+        "price": -106.0,
+        "best_book": "pinnacle",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.182,
+        "sim_mu": 9.121,
         "sim_median": 9,
-        "sim_sd": 4.423,
+        "sim_sd": 4.426,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2963,7 +3037,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Texas Rangers-Los Angeles Angels-823998",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "824887": {
@@ -3431,15 +3506,15 @@
       },
       "823998": {
         "status": "LEAN",
-        "side": "under",
-        "line": 8.5,
-        "vegas_line": 8.5,
-        "p_over": 0.5101,
-        "p_over_market": 0.5108,
-        "scout_edge": -0.0007,
-        "conviction": 0.4899,
-        "price": -102.0,
-        "best_book": "lowvig",
+        "side": "over",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.5009,
+        "p_over_market": 0.5,
+        "scout_edge": 0.0009,
+        "conviction": 0.5009,
+        "price": -106.0,
+        "best_book": "pinnacle",
         "stars": null,
         "score": null,
         "n_train": 11192,
@@ -3452,12 +3527,12 @@
           "pen_home_era_std": 4.86,
           "pen_away_era_std": 3.2565,
           "enr_park_run_factor_3y": 1.037,
-          "wx_temp_f": 73.4
+          "wx_temp_f": 74.66
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3468,7 +3543,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Texas Rangers-Los Angeles Angels-823998",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "824887": {
@@ -4956,7 +5032,8 @@
       "home": "Los Angeles Angels",
       "first_pitch_utc": "2026-08-11T01:38:00+00:00",
       "walls_populated": [
-        "T-24h"
+        "T-24h",
+        "T-12h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -4977,6 +5054,28 @@
             "one_sided": false
           },
           "best_book": "lowvig",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
           "premium_locked": true,

@@ -43,6 +43,16 @@ const SECRET = process.env.DE_SESSION_SECRET || "";
    in a log line, not in an error. */
 const CODES = (process.env.DE_PREMIUM_CODES || "")
   .split(",").map((s) => s.trim()).filter(Boolean);
+/* THE MOCK CHECKOUT, OWNER-GATED (2026-08-10). Payment is a documented stub —
+   there is no real card flow and Leon's standing rule is that it stays mocked.
+   But "tap Subscribe → the board unlocks" is the thing a member sees, and with
+   no gateway wired that success has to come from somewhere real or it is a lie.
+   So the mock "Subscribe" mints THIS cookie — the same one Stripe's webhook will
+   — but ONLY when the owner turns it on with DE_ALLOW_MOCK_CHECKOUT=1. Off (the
+   default) it fails closed and the card button honestly points at the access
+   code, so the picks are never handed to anyone who merely taps a stub. It still
+   needs DE_SESSION_SECRET to sign anything: no secret, nothing is entitled. */
+const ALLOW_MOCK = process.env.DE_ALLOW_MOCK_CHECKOUT === "1";
 
 export const COOKIE = "de_session";
 const MAX_AGE_S = 60 * 60 * 24 * 30;      // 30 days
@@ -111,33 +121,55 @@ export async function GET() {
          instead of silently behaving as though every reader is a free one for
          a reason nobody can see. */
       configured: !!SECRET && CODES.length > 0,
+      /* Whether the owner-gated mock checkout is live — the card "Subscribe"
+         button only promises an unlock when this is true; otherwise it points
+         at the access code and says card payments are not switched on yet. */
+      mock: !!SECRET && ALLOW_MOCK,
       since: s ? new Date((s.exp - MAX_AGE_S) * 1000).toISOString() : null,
     },
     { headers: { "Cache-Control": "private, no-store" } },
   );
 }
 
-/** POST {code} — redeem an access code for a session. DELETE — sign out. */
+/** POST {code} — redeem an access code. POST {mock:true} — the owner-gated mock
+    checkout. DELETE — sign out. */
 export async function POST(req: Request) {
+  const noStore = { "Cache-Control": "private, no-store" };
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch {
+    /* fall through — a malformed body and a wrong code get the same answer,
+       because telling them apart is free information about the credential. */
+  }
+  // ── THE MOCK CHECKOUT ──────────────────────────────────────────────────
+  // Fails closed twice: needs a secret to sign, and needs the owner to have
+  // explicitly enabled it. Either missing ⇒ nothing is entitled.
+  if (body && body.mock === true) {
+    if (!SECRET || !ALLOW_MOCK) {
+      return NextResponse.json(
+        { ok: false, reason: "mock_disabled" },
+        { status: 403, headers: noStore },
+      );
+    }
+    const exp = Math.floor(Date.now() / 1000) + MAX_AGE_S;
+    const c = await cookies();
+    c.set(COOKIE, mint({ sub: randomUUID(), tier: "premium", exp }), {
+      httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: MAX_AGE_S,
+    });
+    return NextResponse.json({ ok: true, premium: true }, { headers: noStore });
+  }
   if (!SECRET || !CODES.length) {
     return NextResponse.json(
       { ok: false, reason: "unconfigured" },
-      { status: 503, headers: { "Cache-Control": "private, no-store" } },
+      { status: 503, headers: noStore },
     );
   }
-  let code = "";
-  try {
-    const body = await req.json();
-    code = String((body && body.code) || "").trim().slice(0, 128);
-  } catch {
-    /* fall through to the same generic refusal — a malformed body and a wrong
-       code get the same answer, because telling them apart is free information
-       about the shape of the credential. */
-  }
+  const code = String((body && body.code) || "").trim().slice(0, 128);
   if (!code || !verifyCode(code)) {
     return NextResponse.json(
       { ok: false, reason: "invalid" },
-      { status: 401, headers: { "Cache-Control": "private, no-store" } },
+      { status: 401, headers: noStore },
     );
   }
   const exp = Math.floor(Date.now() / 1000) + MAX_AGE_S;

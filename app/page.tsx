@@ -581,6 +581,11 @@ export default function Home() {
         if (!x || String(x.date || "").slice(0, 10) !== dateISO) continue;
         const pk = (x.pick && typeof x.pick === "object") ? x.pick : null;
         if (pk && (String(pk.status || "").toUpperCase() === "UPCOMING" || pk.is_upcoming === true)) return true;
+        // NOT-DECIDABLE IS PENDING, NOT A PASS. The frozen rule could not read this game yet
+        // (its inputs have not all landed) — there is no call, so this date has picks still to
+        // publish exactly as an UPCOMING game does. `pass_why` is a stable machine code that
+        // survives redaction, so it reads the same for a free reader as a paid one.
+        if (pk && String(pk.pass_why || "").toLowerCase() === "forge_not_decidable") return true;
         if (String(x.desk_status || "").toUpperCase() === "PENDING") return true;
         if (String(x.status || "").toLowerCase() === "upcoming" || x.is_upcoming === true) return true;
       }
@@ -625,6 +630,14 @@ export default function Home() {
          and all three survive: pick.status, pick.is_upcoming, desk_status. */
       const pk = (g.pick && typeof g.pick === "object") ? g.pick : null;
       if (pk && (String(pk.status || "").toUpperCase() === "UPCOMING" || pk.is_upcoming === true)) return true;
+      /* NOT-DECIDABLE IS "PICK COMING", NEVER "WE PASSED". The frozen rule has not been able to
+         read this game yet — its inputs have not all landed — so there is no side, no call and
+         nothing sold: it is a game we have not looked at, which is the exact fact an UPCOMING
+         card states. Emitting it as `status: "PASS"` made the board leave the slot empty (a
+         verdict we never reached) and made the redactor dress it as a locked premium pick
+         (a call we never made). `pass_why` is the stable machine code and it survives the
+         public redaction, so this reads identically for a signed-out and an entitled reader. */
+      if (pk && String(pk.pass_why || "").toLowerCase() === "forge_not_decidable") return true;
       if (String(g.desk_status || "").toUpperCase() === "PENDING") return true;
       if (String(g.status || "").toLowerCase() === "upcoming" || g.is_upcoming === true) return true;
       if (isFutureGame(g)) return true;
@@ -1798,6 +1811,7 @@ export default function Home() {
        because the bytes are already gone from the public payload either way. */
     let serverPremium: boolean | null = null;
     let sessionConfigured = false;
+    let sessionMockCheckout = false;   // is the owner-gated mock checkout live server-side?
     const isPremium = () => (serverPremium != null ? serverPremium : (() => { try { return localStorage.getItem("de_premium") === "1"; } catch { return false; } })());
     const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
     async function refreshSession() {
@@ -1808,6 +1822,7 @@ export default function Home() {
         const was = serverPremium;
         serverPremium = !!j.premium;
         sessionConfigured = !!j.configured;
+        sessionMockCheckout = !!j.mock;
         setPremium(serverPremium);
         /* A CHANGE OF ENTITLEMENT CHANGES WHICH PAYLOAD WE SHOULD BE HOLDING,
            not merely how it is drawn — so it is a reload of the data, never a
@@ -1829,6 +1844,48 @@ export default function Home() {
     async function endSession() {
       try { await fetch("/api/session", { method: "DELETE" }); } catch {}
       serverPremium = false; setPremium(false);
+    }
+    /* THE MOCK CHECKOUT. Payment stays a stub — this mints the SAME server session
+       Stripe's webhook will, but only when the owner has switched it on
+       (DE_ALLOW_MOCK_CHECKOUT=1). Off ⇒ 403 mock_disabled, and the button says so
+       honestly. Never sets a local flag on its own: entitlement is the cookie. */
+    async function mockCheckout(): Promise<{ ok: boolean; reason?: string }> {
+      try {
+        const r = await fetch("/api/session", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mock: true }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); return { ok: true }; }
+        return { ok: false, reason: String((j && j.reason) || `http_${r.status}`) };
+      } catch { return { ok: false, reason: "network" }; }
+    }
+    /* ENTITLEMENT JUST CHANGED, SO THE BOARD IS DIFFERENT BYTES — the picks are
+       not in the public payload, only in the premium one (and vice-versa on
+       sign-out). Rather than a full-page reload, drop every cached feed, clear
+       the premium-route backoff, and re-pull the feeds — `snap()` routes to
+       /api/premium or /api/snap purely off `isPremium()`, so the SAME call
+       fetches the locked board when entitled and the public one when not. Then
+       repaint the board, the open game page and the header together, in place:
+       every surface flips at once, unlocking OR re-locking. */
+    async function entitlementRefresh() {
+      premiumOk = true; premiumRetryAt = 0;                 // the 402 backoff must not gate the first read either way
+      try {
+        betaLiveData = null; betaLiveAt = 0;                // live board (today/tomorrow)
+        betaData = null; betaFull = false;                  // history / record spine
+        livePayload = null;                                 // past-day merge cache
+      } catch {}
+      try { refreshAccountButton(); } catch {}
+      try { await Promise.all([loadBetaLive(), loadBeta(true).catch(() => {})]); } catch {}
+      try {
+        renderToday();
+        if ($("slate-body")) renderSlate();
+        if (typeof detailRerender === "function" && detail) detailRerender();
+      } catch {}
+    }
+    async function unlockRefresh() {
+      serverPremium = true; setPremium(true);
+      await entitlementRefresh();
     }
     // ===================== ACCOUNT / AUTH (stubbed session — no real OAuth/signup) =====================
     // The signed-in user is one localStorage record `de_account`:
@@ -1852,12 +1909,17 @@ export default function Home() {
       setAccount(acct);
       return acct;
     }
-    function signOut() {
+    async function signOut() {
       setAccount(null);
       /* THE SERVER SESSION IS THE ENTITLEMENT NOW, so signing out has to reach
          it. Clearing localStorage alone would leave the HttpOnly cookie in
          place and the next /api/session would put the reader straight back. */
-      endSession();
+      await endSession();                 // sets serverPremium = false
+      /* AND THE BOARD RE-LOCKS IN PLACE. The cached feeds still hold the premium
+         board this session unlocked; without this, a signed-out reader keeps
+         seeing sides until a reload. Re-pull (now public) and repaint — the same
+         path unlock uses, in reverse. */
+      await entitlementRefresh();
     }
     // Initials for the header avatar (from the account name/email, or a generic glyph).
     function accountInitials() {
@@ -2173,7 +2235,13 @@ export default function Home() {
 
          So: no side unless the server sent one, and the flags come along. */
       const hasSide = pk.side != null && String(pk.side).trim() !== "";
-      const redacted = pk.premium_locked === true || (pk.premium === true && !hasSide);
+      /* A NOT-DECIDABLE GAME CARRIES NO PICK, SO IT IS NEVER "LOCKED". The frozen rule could not
+         read it yet; there is no side, no stars and no call to withhold. An older payload may
+         still stamp it `premium_locked` (the redactor used to treat its rule-record block as a
+         direction) — ignore that here so no surface dresses a game-we-have-not-run as a premium
+         tile a reader could pay to reveal. `picksPending()` routes it to the "pick coming" copy. */
+      const notDecidable = String(pk.pass_why || "").toLowerCase() === "forge_not_decidable";
+      const redacted = !notDecidable && (pk.premium_locked === true || (pk.premium === true && !hasSide));
       /* THE LINE IS PART OF THE PICK (Leon's list, 2026-08-10). `line` is in
          PREMIUM_FIELDS and the locked tile printed it anyway — and on the 13-pick
          board measured that day, 2 picks sat at a DIFFERENT number from the market
@@ -9404,7 +9472,14 @@ export default function Home() {
          failed to load. Nothing is being sold on a PASS, so it gets no upsell;
          it gets a mark that says the desk read the game and did not bet it,
          which is the discipline this product is proudest of. */
-      const passMark = vd && vd.kind === "pass"
+      /* …BUT A GAME WHOSE PICK HAS NOT PUBLISHED YET IS NOT A "NO BET". `tileVerdict`
+         returns kind "pass" for any game with no served ticket, which includes a
+         not-decidable / upcoming game — and `callHtml` already draws the "PICKS SOON"
+         incoming tag for those. Without this guard the tile said both at once: the
+         incoming tag AND "No bet", the exact contradiction the incoming state exists
+         to prevent. A pass mark only belongs on a game the desk actually read and
+         declined, so it is suppressed whenever the picks are still pending. */
+      const passMark = vd && vd.kind === "pass" && !picksPending(g)
         ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
         : "";
       const verdictBlk = vd
@@ -16726,15 +16801,9 @@ export default function Home() {
           <section class="acct-card">
             <div class="acct-card-k">Preferences</div>
             <details class="acct-fold" id="acct-prefs-fold">
-              <summary class="acct-link as-summary">Leagues &amp; display<span class="al-sub">Order the league tabs, preview the free view</span><em>→</em></summary>
+              <summary class="acct-link as-summary">Leagues &amp; display<span class="al-sub">Order the league tabs</span><em>→</em></summary>
               <div class="acct-foldbody">
-                <div class="set-row">
-                  <div class="sr-txt"><b>Premium preview <span class="set-badge ${prem ? "prem" : "free"}">${prem ? "Active" : "Free"}</span></b>
-                  <span>${prem ? "Every pick unlocked — sides, lines, and the plain-English why." : "Strong and Good picks are locked. Leans, results and the full record stay open."}</span></div>
-                  <button class="switch ${prem ? "on" : ""}" id="prem-switch" role="switch" aria-checked="${prem}" aria-label="Premium preview"></button>
-                </div>
-                <div class="set-note">Flip this off any time to see what free members see — the record stays open to everyone.</div>
-                <div class="set-about" style="margin:12px 0 9px">League tabs are ordered by how many games are on — busiest first. Reorder them to your taste and your order sticks.</div>
+                <div class="set-about" style="margin:2px 0 9px">League tabs are ordered by how many games are on — busiest first. Reorder them to your taste and your order sticks.</div>
                 <div class="lg-order" id="lg-order">${orderedLeagues(livePayload || payload).map((lg, i, arr) => `<div class="lg-item"><span class="lg-name">${SPORT_LABEL[lg] || lg.toUpperCase()}</span><span class="lg-btns"><button class="lg-up" data-lg="${lg}" ${i === 0 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} up">↑</button><button class="lg-dn" data-lg="${lg}" ${i === arr.length - 1 ? "disabled" : ""} aria-label="Move ${SPORT_LABEL[lg] || lg} down">↓</button></span></div>`).join("")}</div>
                 ${leagueOrderPref() ? `<button class="set-link" id="lg-reset">↺ Reset to auto (by games)<em>→</em></button>` : ""}
                 <div class="set-about" style="margin-top:12px"><b>Light liquid glass</b> is the DiamondEdge identity — airy daylight surfaces, frosted white cards, emerald and red for results, gold for the mark.</div>
@@ -16767,12 +16836,6 @@ export default function Home() {
          re-render reopens the fold, because a toggle that closes the panel it lives in
          reads as the page throwing the reader out. */
       const prefsOpen = () => { const d: any = $("acct-prefs-fold"); if (d) d.open = true; };
-      bindClick("prem-switch", () => {
-        setPremium(!isPremium());
-        renderAccount(); prefsOpen();
-        renderToday();
-        if ($("slate-body")) renderSlate();
-      }, { optional: "only inside the Leagues & display fold" });
       const moveLeague = (lg: string, dir: number) => {
         const cur = orderedLeagues(livePayload || payload);
         const i = cur.indexOf(lg), j = i + dir;
@@ -16834,16 +16897,16 @@ export default function Home() {
       // BILLING-PORTAL WIRE-IN POINT: both of these become a Stripe Billing Portal session.
       bindClick("mg-method", () => { accountMode = "subscribe"; renderSubscribe(); });
       bindClick("mg-receipts", () => toast("Receipts arrive by email at the address on this account"));
-      // CANCEL WIRE-IN POINT: DELETE the subscription through the gateway, then mirror the
-      // entitlement server-side. Locally this only drops the client flag, which is exactly
-      // what the flag is — a preview of the two states, not a billing system.
-      bindClick("mg-cancel", () => {
-        setPremium(false);
-        refreshAccountButton();
-        toast("Premium turned off on this device");
+      // CANCEL WIRE-IN POINT: DELETE the subscription through the gateway. It must reach the
+      // SERVER SESSION — dropping the local flag alone leaves the HttpOnly cookie in place and
+      // the board stays unlocked, because entitlement is the cookie now, not the flag. So this
+      // ends the session (DELETE /api/session) and re-locks every surface in place.
+      bindClick("mg-cancel", async () => {
+        await endSession();               // clears the server cookie + serverPremium
+        toast("Premium turned off — the record stays free either way");
         accountMode = "menu";
         renderAccount();
-        if ($("slate-body")) renderSlate();
+        await entitlementRefresh();        // re-pull the now-public board and repaint every surface
       });
     }
     // SIGN-IN gateway: social buttons (Google/Apple/Facebook/X) + email — all functional
@@ -17051,30 +17114,45 @@ export default function Home() {
             : "That code was not recognised.";
           return;
         }
-        refreshAccountButton();
+        if (note) note.textContent = "Unlocking…";
         toast("Premium unlocked");
-        /* THE BOARD IS DIFFERENT BYTES NOW, not a different rendering of the
-           same ones — the picks were never in what this session downloaded. So
-           the feeds are re-read rather than the surfaces repainted. */
-        try { location.reload(); } catch { renderToday(); }
+        /* THE BOARD IS DIFFERENT BYTES NOW, not a different rendering of the same
+           ones — the picks were never in what this session downloaded. The feeds
+           are re-pulled (now through /api/premium) and every surface repaints in
+           place: no full-page reload. */
+        await unlockRefresh();
+        accountMode = "menu"; renderAccount();
       }, { optional: "only on the subscribe screen" });
-      bindClick("sub-go", () => requireTerms(() => {
-        // STRIPE / APPLE PAY / PAYPAL WIRE-IN POINT: run the selected gateway here. On a
-        // confirmed charge (webhook/callback), it must mint the /api/session cookie —
-        // setPremium() alone unlocks NOTHING now, by design: a free reader's payload does
-        // not contain the picks, so a local flag has nothing left to reveal.
-        setPremium(true);
+      bindClick("sub-go", () => requireTerms(async () => {
+        /* STRIPE / APPLE PAY / PAYPAL WIRE-IN POINT: run the selected gateway here. On a
+           confirmed charge (webhook/callback), mint the /api/session cookie — a LOCAL flag
+           unlocks NOTHING now, by design: a free reader's payload does not contain the picks.
+           2026-08-10: until a gateway is wired the "Subscribe" success is the owner-gated MOCK
+           CHECKOUT — it mints the real session server-side (DE_ALLOW_MOCK_CHECKOUT=1) so the
+           board genuinely unlocks. When the owner has NOT switched it on it fails closed, and
+           this button says so honestly instead of claiming an unlock it cannot deliver. */
+        const note = $("sub-code-note");
+        const r = await mockCheckout();
+        if (!r.ok) {
+          if (note) note.textContent =
+            "Card payments are not switched on yet — use your member access code below to unlock.";
+          const codeWrap = view.querySelector(".sub-code");
+          if (codeWrap) { codeWrap.classList.add("flash"); setTimeout(() => codeWrap.classList.remove("flash"), 1400); }
+          const codeEl: any = $("sub-code"); if (codeEl) { try { codeEl.focus(); } catch {} }
+          return;
+        }
         refreshAccountButton();
         const d = document.createElement("div");
         d.className = "up-done";
         d.setAttribute("role", "status");
         d.innerHTML = `<div class="ud-inner"><div class="ud-dia"></div><h3>You're in.</h3><p>Premium unlocked — every pick, every why.</p></div>`;
         document.body.appendChild(d);
+        // THE BOARD UNLOCKS FOR REAL, IN PLACE — the session is minted, the feeds re-pull
+        // through /api/premium, every surface flips. No full-page reload.
+        await unlockRefresh();
         setTimeout(() => {
           d.remove();
           accountMode = "menu";
-          if ($("slate-body")) renderSlate();
-          renderToday();
           renderAccount();
         }, REDUCE ? 300 : 1600);
       }));

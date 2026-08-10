@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T11:52:16Z",
+  "generated_utc": "2026-08-10T13:43:26Z",
   "dates": [
     "2026-08-10"
   ],
@@ -8987,7 +8987,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T11:52:41Z",
+      "updated": "2026-08-10T13:43:51Z",
       "order": [
         "vega",
         "atlas",
@@ -13063,20 +13063,20 @@
     },
     "by_wall": {
       "vega": {
-        "T-12h": 4,
-        "T-24h": 6
+        "T-12h": 5,
+        "T-24h": 5
       },
       "atlas": {
-        "T-12h": 4,
-        "T-24h": 6
+        "T-12h": 5,
+        "T-24h": 5
       },
       "nova": {
-        "T-12h": 4,
-        "T-24h": 6
+        "T-12h": 5,
+        "T-24h": 5
       },
       "scout": {
-        "T-12h": 4,
-        "T-24h": 6
+        "T-12h": 5,
+        "T-24h": 5
       }
     },
     "first_wall_with_a_read": {
@@ -13471,7 +13471,7 @@
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "timestamp": null,
+        "timestamp": "2026-08-10T12:25:41Z",
         "lead_time": "T-3h",
         "source": "strategy_forge",
         "our_prob_basis": "reference_side",
@@ -13892,28 +13892,28 @@
         {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "wall": "T-24h",
+          "wall": "T-12h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
@@ -13924,7 +13924,7 @@
         "locked": false,
         "lead_time": "T-3h",
         "source": "strategy_forge",
-        "consensus_state": "MAJORITY",
+        "consensus_state": "SPLIT",
         "action": "AVOID",
         "action_before_pattern": "AVOID",
         "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
