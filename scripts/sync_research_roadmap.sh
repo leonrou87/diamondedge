@@ -28,8 +28,10 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
     --data-binary "{\"updated_at\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\"}" || true
   exit 0
 fi
-TMP=$(mktemp /tmp/research_roadmap_body.XXXXXX.json)
-trap 'rm -f "$TMP"' EXIT
+# BSD mktemp substitutes only TRAILING X's — see sync_history.sh.
+TMP=$(mktemp "${TMPDIR:-/tmp}/research_roadmap_body.XXXXXX")
+RESP=$(mktemp "${TMPDIR:-/tmp}/research_roadmap_resp.XXXXXX")
+trap 'rm -f "$TMP" "$RESP"' EXIT
 # updated_at IS SET EXPLICITLY (2026-07-31). PostgREST's
 # `Prefer: resolution=merge-duplicates` upsert only writes the columns present
 # in the request body, so omitting updated_at left this key advertising its
@@ -44,7 +46,7 @@ now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 json.dump([{"key":"research_roadmap","payload":payload,"updated_at":now}],
           open(sys.argv[2],"w"))
 PY
-HTTP=$(curl -s -o /tmp/research_roadmap_sync_resp.txt -w "%{http_code}" \
+HTTP=$(curl -s -o "$RESP" -w "%{http_code}" \
   -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
   -H "apikey: $SUPABASE_SERVICE_KEY" \
   -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
@@ -63,6 +65,6 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
     | python3 -c 'import json,sys; r=json.load(sys.stdin); print(r[0]["updated_at"] if r else "MISSING")' 2>/dev/null || echo "READBACK_FAILED")
   echo "$(date '+%F %T') synced research roadmap ($HTTP) updated_at=$BACK"
 else
-  echo "$(date '+%F %T') RESEARCH ROADMAP SYNC FAILED http=$HTTP $(head -c 200 /tmp/research_roadmap_sync_resp.txt)" >&2
+  echo "$(date '+%F %T') RESEARCH ROADMAP SYNC FAILED http=$HTTP $(head -c 200 "$RESP")" >&2
   exit 1
 fi

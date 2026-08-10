@@ -49,8 +49,10 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
     --data-binary "{\"updated_at\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\"}" || true
   exit 0
 fi
-TMP=$(mktemp /tmp/research_papers_body.XXXXXX.json)
-trap 'rm -f "$TMP"' EXIT
+# BSD mktemp substitutes only TRAILING X's — see sync_history.sh.
+TMP=$(mktemp "${TMPDIR:-/tmp}/research_papers_body.XXXXXX")
+RESP=$(mktemp "${TMPDIR:-/tmp}/research_papers_resp.XXXXXX")
+trap 'rm -f "$TMP" "$RESP"' EXIT
 # updated_at IS SET EXPLICITLY. PostgREST's merge-duplicates upsert only writes
 # columns present in the body, so omitting it would leave this key advertising
 # its original INSERT time forever. A freshness signal that lies is worse than
@@ -62,7 +64,7 @@ now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 json.dump([{"key":"research_papers","payload":payload,"updated_at":now}],
           open(sys.argv[2],"w"))
 PY
-HTTP=$(curl -s -o /tmp/research_papers_sync_resp.txt -w "%{http_code}" \
+HTTP=$(curl -s -o "$RESP" -w "%{http_code}" \
   -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
   -H "apikey: $SUPABASE_SERVICE_KEY" \
   -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
@@ -82,6 +84,6 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   N=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["summary"]["n_papers"])' "$FILE" 2>/dev/null || echo "?")
   echo "$(date '+%F %T') synced research papers ($HTTP) n=$N updated_at=$BACK"
 else
-  echo "$(date '+%F %T') RESEARCH PAPERS SYNC FAILED http=$HTTP $(head -c 200 /tmp/research_papers_sync_resp.txt)" >&2
+  echo "$(date '+%F %T') RESEARCH PAPERS SYNC FAILED http=$HTTP $(head -c 200 "$RESP")" >&2
   exit 1
 fi

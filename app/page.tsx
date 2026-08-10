@@ -15698,7 +15698,48 @@ export default function Home() {
        Scales by viewBox (width:100%), so 375px and 900px are the same drawing. Colour comes
        entirely from CSS classes on tokens, so both themes are handled by the stylesheet and
        nothing here hard-codes a hex. */
-    function searchFunnelSvg(poolTxt: string, windowTxt: string, gamesTxt: string) {
+    /* THE MIDDLE BAND IS THE MECHANISM, AND THE MECHANISM CHANGED (2026-08-10).
+       Leon, 2026-08-09 20:31: "Tell me more about forge pics and no committees at
+       all just so I understand." Since 2026-08-08 the served board is chosen by the
+       strategy forge — one frozen rule, scored on wins minus losses — and NOTHING
+       votes. This page was still drawing the retired nightly engine's top-21
+       committee, on the same screen where the Games tab and the Desk both say "One
+       rule chose every pick on this board." Two mechanism stories on one product is
+       the honesty failure this whole surface exists to avoid.
+       So the middle band is now READ from the served day block rather than authored:
+       a forge date states the objective the search actually optimised, a committee
+       date keeps the committee. Neither is a constant any more. */
+    function searchMiddleBand(s: any) {
+      const sel = String((s && (s.selector || s.engine)) || "");
+      if (!/forge/i.test(sel)) {
+        return {
+          isForge: false,
+          n: String(SEARCH_SPEC.committee),
+          label: "MAKE THE COMMITTEE",
+          cap: [`the best ${SEARCH_SPEC.committee} vote on tonight's side`,
+                `a tie is a pass, not a coin flip`],
+          aria: `the top ${SEARCH_SPEC.committee} vote`,
+          step: ["Vote", `The top ${SEARCH_SPEC.committee} get a ballot on tonight's side. Split the room and there is no bet.`] as [string, string],
+          lede: `It ranks them on what they would actually have paid. The best ${SEARCH_SPEC.committee} vote. One recipe comes out the other side, and that is the one on your card before the first pitch.`,
+        };
+      }
+      /* The forge's objective, quoted from the block that froze the rule rather
+         than paraphrased: "W - L (win +1, loss -1, push 0, no vig)". Nothing else
+         is scored, and there is no second stage between the search and the card. */
+      const obj = String(s?.objective || "");
+      const noVig = /no\s*vig/i.test(obj);
+      return {
+        isForge: true,
+        n: "W − L",
+        label: "THE ONLY SCORE",
+        cap: [`a win is +1, a loss is −1, a push is 0`,
+              noVig ? `no vig, no hit rate, no tie-breaks` : `no hit rate, no tie-breaks`],
+        aria: `every candidate is scored on wins minus losses`,
+        step: ["Rank", "Every rule is scored on wins minus losses over the window — not on hit rate, and not on price. The single best score is the one that plays."] as [string, string],
+        lede: `It ranks them on one number and one number only: wins minus losses${noVig ? `, with the vig ignored` : ``}. One rule comes out the other side — no vote, no committee — and that is the one on your card before the first pitch.`,
+      };
+    }
+    function searchFunnelSvg(poolTxt: string, windowTxt: string, gamesTxt: string, mid: ReturnType<typeof searchMiddleBand>) {
       const cx = 186;
       const comb = Array.from({ length: 45 }, (_, i) => {
         const x = 48 + i * 6.3;
@@ -15708,9 +15749,9 @@ export default function Home() {
         windowTxt && gamesTxt ? `every one replayed over the last ${windowTxt},` : `every one replayed over the trailing window,`,
         windowTxt && gamesTxt ? `${gamesTxt} — graded at the real number` : `graded at the real number`,
       ];
-      const capB = [`the best ${SEARCH_SPEC.committee} vote on tonight's side`, `a tie is a pass, not a coin flip`];
+      const capB = mid.cap;
       return `<svg class="nsfunnel" viewBox="0 0 340 338" role="img"
-        aria-label="${esc(`${poolTxt} candidate strategies are replayed against the trailing window; the top ${SEARCH_SPEC.committee} vote; one strategy is locked onto today's card, then discarded.`)}">
+        aria-label="${esc(`${poolTxt} candidate strategies are replayed against the trailing window; ${mid.aria}; one strategy is locked onto today's card, then discarded.`)}">
         <g class="nsf-walls" aria-hidden="true">
           <path class="nsf-wall" d="M40 86 L332 86 L280 124 L92 124 Z"/>
           <path class="nsf-wall" d="M92 194 L280 194 L240 232 L132 232 Z"/>
@@ -15719,14 +15760,14 @@ export default function Home() {
           <rect x="40" y="10" width="292" height="76" rx="12"/>
           ${comb}
           <text class="nsf-n" x="${cx}" y="66" text-anchor="middle">${esc(poolTxt)}</text>
-          <text class="nsf-l" x="${cx}" y="80" text-anchor="middle">WAYS TO PLAY THE FOUR ANALYSTS</text>
+          <text class="nsf-l" x="${cx}" y="80" text-anchor="middle">${mid.isForge ? "READINGS OF A GAME, COMBINED EVERY WAY" : "WAYS TO PLAY THE FOUR ANALYSTS"}</text>
         </g>
         <text class="nsf-cap" x="${cx}" y="101" text-anchor="middle">${esc(capA[0])}</text>
         <text class="nsf-cap" x="${cx}" y="114" text-anchor="middle">${esc(capA[1])}</text>
         <g class="nsf-band b2">
           <rect x="92" y="124" width="188" height="70" rx="12"/>
-          <text class="nsf-n" x="${cx}" y="166" text-anchor="middle">${SEARCH_SPEC.committee}</text>
-          <text class="nsf-l" x="${cx}" y="182" text-anchor="middle">MAKE THE COMMITTEE</text>
+          <text class="nsf-n" x="${cx}" y="166" text-anchor="middle">${esc(mid.n)}</text>
+          <text class="nsf-l" x="${cx}" y="182" text-anchor="middle">${esc(mid.label)}</text>
         </g>
         <text class="nsf-cap" x="${cx}" y="209" text-anchor="middle">${esc(capB[0])}</text>
         <text class="nsf-cap" x="${cx}" y="222" text-anchor="middle">${esc(capB[1])}</text>
@@ -15756,23 +15797,38 @@ export default function Home() {
       const pool = searchPoolFigure();
       const wd = s && Number(s.window_days) > 0 ? Number(s.window_days) : 0;
       const windowTxt = wd ? (wd % 7 === 0 ? `${wd / 7} weeks` : `${wd} nights`) : "";
-      const games = s && Number(s.training_games) > 0 ? Number(s.training_games) : 0;
-      const gamesTxt = games ? `${games.toLocaleString("en-US")} finished games` : "";
+      /* `window_games` is what the forge writes; `training_games` is what the retired
+         nightly engine wrote. Reading only the second is why this figure has been
+         missing from the caption since the forge took over — read both. */
+      const games = s ? Number(s.window_games ?? s.training_games) : 0;
+      const gamesTxt = games > 0 ? `${games.toLocaleString("en-US")} finished games` : "";
+      const mid = searchMiddleBand(s);
       // The control the library already published: what this costs you if you skip the search
       // and just grab a strategy. Quoted verbatim from the served figure, never paraphrased.
       const ctl = searchPaperFigure(/control that matters|at random/i);
+      /* WHAT WAS SEARCHED. The pool figure below is the recipe library's own count, and
+         it describes the retired engine's pool of analyst recipes. The forge does not
+         search recipes — it searches RULES, over a predicate language whose size the
+         served block states (`n_predicates_in_language`). Print whichever one actually
+         chose today, never both. */
+      const preds = s ? Number(s.n_predicates_in_language) : 0;
+      const poolSentence = mid.isForge
+        ? `Every night, while the league sleeps, DiamondEdge writes out every rule it can express${preds > 0 ? ` from <b>${esc(preds.toLocaleString("en-US"))}</b> readings of a game` : ``} — one condition, two, three — and replays every single one of them against the games that just finished${windowTxt ? ` — the last <b>${esc(windowTxt)}</b>${gamesTxt ? `, <b>${esc(gamesTxt)}</b>` : ""}` : ""}.`
+        : `Every night, while the league sleeps, DiamondEdge takes <b>${esc(pool.txt)}</b> different ways of playing its four analysts and replays every single one of them against the games that just finished${windowTxt ? ` — the last <b>${esc(windowTxt)}</b>${gamesTxt ? `, <b>${esc(gamesTxt)}</b>` : ""}` : ""}.`;
       const lede = [
         `There is no house system here.`,
-        `Every night, while the league sleeps, DiamondEdge takes <b>${esc(pool.txt)}</b> different ways of playing its four analysts and replays every single one of them against the games that just finished${windowTxt ? ` — the last <b>${esc(windowTxt)}</b>${gamesTxt ? `, <b>${esc(gamesTxt)}</b>` : ""}` : ""}.`,
-        `It ranks them on what they would actually have paid. The best ${SEARCH_SPEC.committee} vote. One recipe comes out the other side, and that is the one on your card before the first pitch.`,
+        poolSentence,
+        mid.lede,
         `Then it gets thrown away — win or lose — and tomorrow the whole search runs again from nothing.`,
       ].join(" ");
-      const steps = [
-        ["Replay", "Every recipe in the pool re-plays the trailing window, game by game, against results it never got to see coming."],
+      const steps = ([
+        ["Replay", mid.isForge
+          ? "Every rule the language can write re-plays the trailing window, game by game, against results it never got to see coming."
+          : "Every recipe in the pool re-plays the trailing window, game by game, against results it never got to see coming."],
         ["Score", "Each one is marked on a slice of that window it was held back from — so a recipe cannot pass by memorising the same nights it was built on."],
-        ["Vote", `The top ${SEARCH_SPEC.committee} get a ballot on tonight's side. Split the room and there is no bet.`],
+        mid.step,
         ["Lock", "One strategy goes on the card and is frozen before first pitch. At midnight it is deleted."],
-      ].map(([k, v], i) => `<li class="nss-step"><span class="nss-num">${i + 1}</span><span class="nss-sw"><b>${esc(k)}</b><i>${esc(v)}</i></span></li>`).join("");
+      ] as [string, string][]).map(([k, v], i) => `<li class="nss-step"><span class="nss-num">${i + 1}</span><span class="nss-sw"><b>${esc(k)}</b><i>${esc(v)}</i></span></li>`).join("");
       const stats = st ? [
         [String(st.nights), st.nights === 1 ? "night searched" : "nights searched", "one search, one night, every night"],
         [String(st.recipes), "different recipes", "have held the slot since the search went live"],
@@ -15787,10 +15843,15 @@ export default function Home() {
         </header>
         <p class="nss-lede">${lede}</p>
         <figure class="nss-fig">
-          ${searchFunnelSvg(pool.txt, windowTxt, gamesTxt)}
+          ${searchFunnelSvg(mid.isForge && preds > 0 ? preds.toLocaleString("en-US") : pool.txt, windowTxt, gamesTxt, mid)}
           <figcaption>Tonight it runs again from zero, and yesterday's winner has to win the job back.</figcaption>
         </figure>
-        ${pool.note ? `<p class="nss-poolnote">What is in that pool: ${esc(pool.note)}</p>` : ""}
+        ${/* WHAT WAS SEARCHED, IN THE SEARCH'S OWN WORDS. On a forge date the recipe
+              library's note describes a pool that did not run, so the served block's
+              own `search_scope` replaces it. Absent ⇒ the line does not render. */""}
+        ${mid.isForge
+          ? (s?.search_scope ? `<p class="nss-poolnote">What was searched: ${esc(String(s.search_scope))}</p>` : "")
+          : (pool.note ? `<p class="nss-poolnote">What is in that pool: ${esc(pool.note)}</p>` : "")}
         <ol class="nss-steps">${steps}</ol>
         ${stats ? `<div class="nss-statsk">Nothing here is permanent</div><div class="nss-stats">${stats}</div>` : ""}
         ${/* THE CONTROL, QUOTED — never paraphrased, and the served figure's own `note` is
