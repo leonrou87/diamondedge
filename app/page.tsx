@@ -2959,6 +2959,11 @@ export default function Home() {
        in the tooltip, where it is a fact rather than an identity. */
     // A PREDICTED FINAL SCORE IS A DIRECTION. "SIM SAYS 5–3" beside a market total of 8.5
     // is the under, spelled out — in the text AND in the title attribute. Locked ⇒ absent.
+    /* THE SIMULATOR CHIP IS RETIRED (Leon, 2026-08-09: "we can ignore the sim setting now
+       that sims out the runs, let's remove that"). It projected a run total from the
+       simulator and sat beside the pick — a second number about the same game, from an
+       engine that no longer decides anything. Definition kept for the dead-surface sweep;
+       every call site is gone. */
     function simSaysChip(g: any, size = "tile", locked = false) {
       if (locked) return "";
       const chief = deskChief(g);
@@ -3444,7 +3449,7 @@ export default function Home() {
       // the card's conclusion now, not a row inside the desk's reads. This block is purely
       // "what the four analysts said"; the conclusion renders after it.
       return `<div class="deskblk">
-        <div class="dsk-toprow"><span class="dsk-lab">The desk reads it</span>${consensusBanner(g, locked)}${simSaysChip(g, "tile", locked)}</div>
+        <div class="dsk-toprow"><span class="dsk-lab">The desk reads it</span>${consensusBanner(g, locked)}</div>
         ${deskChipRow(g, locked)}
         ${deskVoicesFold(g, locked)}
       </div>`;
@@ -8859,7 +8864,11 @@ export default function Home() {
       const needTot = !vd && !incoming;
       const footBits = [
         needTot && lockedTot ? `<span class="tl-tot" title="the pregame total this game is graded against">O/U <b>${esc(lockedTot)}</b></span>` : "",
-        tileDeskRow(g, locked),
+        ""/* tileDeskRow — the four analyst glyphs and their over/under triangles — is
+              gone from the board card (Leon: "remove icons and over under from main page").
+              Same reasoning as the game page: under one frozen rule the four are inputs,
+              not the argument, and a row of tiny triangles on every card was the committee
+              era's signature. */,
       ].filter(Boolean).join("");
       return `<article class="tile ${gs.kind}${gs.delayed && gs.kind !== "delayed" ? " delayed" : ""}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
         aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (locked && vd.kind !== "pass" ? " — the desk's call is locked" : vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
@@ -12200,7 +12209,7 @@ export default function Home() {
         <h2 class="sh-mast-h">${mastHead}</h2>
         ${mastDek ? `<p class="sh-mast-dek">${mastDek}</p>` : ""}
         <div class="sh-mast-byline">DiamondEdge Preview${dispDate ? ` · ${esc(dispDate)}` : ""}${startTxt ? ` · ${esc(startTxt)}` : ""}</div>
-        ${(consensusBanner(g, leadLocked) || simSaysChip(g, "big", leadLocked)) ? `<div class="sh-desk">${consensusBanner(g, leadLocked)}${simSaysChip(g, "big", leadLocked)}</div>` : ""}
+        ${consensusBanner(g, leadLocked) ? `<div class="sh-desk">${consensusBanner(g, leadLocked)}</div>` : ""}
       </div>`;
       // PASS games get an explicit no-bet block that NAMES the lines we judged — a pass is
       // a priced decision, and it reads like one.
@@ -12567,13 +12576,22 @@ export default function Home() {
                 read" disclosure above the sentence explaining there is no bet reads as an
                 answer offered before the question. */ ""}
            ${passBlock}
-           ${fullRead ? `<details class="fullread"><summary><span>The full DiamondEdge read</span><span class="sgc-caret" aria-hidden="true">›</span></summary>${fullRead}</details>` : ""}`;
+           ${""/* "THE FULL DIAMONDEDGE READ" IS GONE (Leon, 2026-08-09): "we can remove the
+                 full DiamondEdge read, and even the 'how we saw it before first pitch'
+                 sections — they can all be weaved into the narrative in the preview."
+                 It was a disclosure holding every strategy's opinion on the game, from the
+                 era when a committee argued and the reader could inspect the argument. One
+                 rule decides now, and the four-paragraph narrative already says what it saw
+                 and why — so this fold offered a second, machine-shaped account of the same
+                 game, one tap below a better one. */}`;
       /* PREVIEW. Pregame it is the whole read: why we are on it, then the game. Once the
          game has started it reverts to being the PREGAME read, kept for the record and
          labelled as such — the reference sections have moved to Stats by then, so what is
          left is exactly "how we saw it before first pitch". */
       const previewPane = `<div class="gp-pane" data-pane="preview" style="display:${detailTab === "preview" ? "block" : "none"}">
-        ${showLive ? `<div class="gp-prekick">How we saw it before first pitch</div>` : ""}
+        ${""/* the "How we saw it before first pitch" label is gone too (Leon, same
+             message). The narrative is the preview; a banner explaining that the preview
+             is a preview was furniture. */}
         ${whySection}
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
@@ -14512,7 +14530,7 @@ export default function Home() {
             ${verdict}
             <span class="sts-openchip" aria-hidden="true">The desk's full read <i>↗</i></span>
           </div>
-          ${simSaysChip(g, "big", locked)}
+          ${""/* the simulator chip is retired — see the note at simSaysChip */}
         </div>
       </div>`;
     }
