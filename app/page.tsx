@@ -4570,8 +4570,8 @@ export default function Home() {
           <div class="vs-k">When ${esc(nmA)} and ${esc(nmB)} disagree</div>
           <div class="vs-face">${side(r.a, r.aw, lkA)}<span class="vs-mid none"><i>VS</i></span>${side(r.b, r.bw, lkB)}</div>
           <div class="vs-early">
-            <b>Too few disagreements to score</b>
-            <span class="vs-early-n">They have taken opposite sides ${r.n} time${r.n === 1 ? "" : "s"}. A head-to-head needs about ${H2H_MIN_N} before the result says anything about either of them, so this one carries no score yet.</span>
+            <b>Building the head-to-head</b>
+            <span class="vs-early-n">They have taken opposite sides ${r.n} time${r.n === 1 ? "" : "s"} — ${r.n} of the ~${H2H_MIN_N} disagreements that unlock a scoreline. Every one is graded and banked; the feud goes on the board the night it earns one.</span>
             <span class="vs-meter" aria-hidden="true"><i style="width:${pct.toFixed(0)}%"></i></span>
             <span class="vs-early-k">${r.n} of ~${H2H_MIN_N}</span>
           </div>
@@ -5859,7 +5859,7 @@ export default function Home() {
           highlights: [
             { kind: "contrarian", line: "When all four agree, the game has gone the other way 54% of the time.", n: 61, era: "reconstructed", record: { win: 28, loss: 33 } },
             { kind: "pair", pair: ["atlas", "vega"], line: "Atlas and Vega together have cashed 61% when they land on the same side.", n: 38, era: "reconstructed" },
-            { kind: "split", line: "A 2–2 split desk has been a coin flip — 50.8% — exactly as a split should be.", n: 65, era: "reconstructed" },
+            { kind: "split", line: "A 2–2 split desk has landed dead even — 50.8% — exactly as a split should.", n: 65, era: "reconstructed" },
             { kind: "pair", pair: ["nova", "scout"], line: "When Nova fades Scout, Nova has taken the disagreement 7–3.", n: 10, era: "live" },
             { line: "The desk's unders have outperformed its overs by 6 points of hit rate.", n: 112, era: "reconstructed" },
           ],

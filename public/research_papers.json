@@ -2,7 +2,7 @@
  "contract_version": "1.1",
  "schema_note": "KytePush Research paper library. Render `papers[]` in the order given (category order, then id). Each paper is {id, title, subtitle, category, author, date, tags[], abstract, sections[{heading, role, body}], key_figures[{label, value, note, source}], visuals[{type, title, caption, source, data[], ...}], sources[], roadmap_ids[], related_papers[], verdict, correction?, reading_minutes, word_count}. `correction` is OPTIONAL and markdown: a dated note that the product has moved past what the paper describes. Render it ABOVE the verdict \u2014 a reader needs to know a mechanism changed before being told how it works. Papers without one render nothing. `abstract` is plain text. `sections[].body` is markdown; headings inside a section start at ###. `sections[].role` is one of abstract-less roles methods / results / discussion / takeaway / extra \u2014 key on role, not on the English heading. `visuals[].type` is one of bar / compare / funnel / interval / line / scoreboard / timeline; every visual carries its data inline, so no chart needs a second fetch. `interval` rows are {label, value, low, high} and are the house signature chart \u2014 a number with the range around it. `compare` visuals carry left_label/right_label and rows of {label, left, right}; left/right may be numbers OR short strings. `line` visuals declare `series`: [names] and each row is {label, <series name>: value, ...}. `bar`/`funnel`/`scoreboard` rows are {label, value, note?} \u2014 scoreboard values may be strings. Rows may carry `highlight: true` to mark the row the paper is about, and `reference` on the visual marks a threshold line (e.g. break-even 52.4). `key_figures[].source` and `visuals[].source` are repo-relative paths to the report the number came from and are always present in that paper's `sources[]`. `roadmap_ids` join to research_roadmap.json items[].id; `related_papers` join to papers[].id. Author is always 'KytePush Research' \u2014 there are no other bylines and no external citations.",
  "house": "KytePush Research",
- "generated_utc": "2026-08-10T07:31:41.793875+00:00",
+ "generated_utc": "2026-08-10T09:51:59.515467+00:00",
  "categories": [
   {
    "name": "Start Here",
@@ -60,7 +60,7 @@
     "honest records",
     "AI"
    ],
-   "abstract": "Most sports models are sold to you as a number: 60% winners, look at the backtest. This paper is the opposite of that. It explains exactly how DiamondEdge is built, what it has actually done, and \u2014 the part almost nobody publishes \u2014 what we have proven it *cannot* do.\n\nThe system is four analysts who genuinely disagree because they are looking at genuinely different things, a strategy layer that picks a fresh playbook every single night from about 2,800 candidates, a training rule that means no model is ever graded on a game it was allowed to study first, and a set of rails that will refuse to grade a game at all if two independent sources disagree about the final score.\n\nThe honest headline: that nightly process has won 54.8% on 997 picks across 205 nights, +45.4 units at standard juice, against a 52.4% break-even. The honest asterisk, which we print in the same size: the error bars on that still reach below zero, so it is a process that has been winning rather than a proven edge \u2014 and we serve it that way.\n\nWe also measured the ceiling. Across five seasons and 8,412 games, the best hit rate achievable by *any* rule, including free ones, is 52.1%, and it belongs to the market. That is why we do not promise you 60%.",
+   "abstract": "Most sports models are sold to you as a number: 60% winners, look at the backtest. This paper is the opposite of that. It explains exactly how DiamondEdge is built, what it has actually done, and \u2014 the part almost nobody publishes \u2014 the ceiling we measured on this market, mapped with numbers.\n\nThe system is four analysts who genuinely disagree because they are looking at genuinely different things, a strategy layer that picks a fresh playbook every single night from about 2,800 candidates, a training rule that means no model is ever graded on a game it was allowed to study first, and a set of rails that will refuse to grade a game at all if two independent sources disagree about the final score.\n\nThe honest headline: that nightly process has won 54.8% on 997 picks across 205 nights, +45.4 units at standard juice, against a 52.4% break-even. The range, printed in the same size: the error bars on that still reach below zero \u2014 they ride the page beside the number, and the code that serves the record fails its own test if the number ever publishes without them.\n\nWe also measured the ceiling. Across five seasons and 8,412 games, the best hit rate achievable by *any* rule, including free ones, is 52.1%, and it belongs to the market. That is why we do not promise you 60%.",
    "sections": [
     {
      "heading": "How We Tested It",
@@ -264,7 +264,7 @@
    "verdict": "THE WHOLE SYSTEM, IN PLAIN ENGLISH",
    "correction": "**2026-08-10 \u2014 the mechanism described here is no longer the mechanism.** This paper explains the nightly committee: about 2,848 ways of reading the four analysts, re-scored every night, the best twenty-one voting on each game, the majority side playing. That committee chose the board through 2026-08-08. From 2026-08-09 the board is chosen by the **strategy forge**: one rule, written out of the game's own readings, frozen before first pitch, scored on wins minus losses over the trailing window. There is no committee and no vote behind a pick made today. Everything else here is unchanged \u2014 the four analysts on disjoint feature slices, the locked pregame prices, the two-source grading gate, the nulls we publish. The nights the committee did choose keep their picks and their results exactly as served; nothing in the record has been restated.",
    "reading_minutes": 10,
-   "word_count": 2149
+   "word_count": 2154
   },
   {
    "id": "kr-2026-002",
@@ -280,7 +280,7 @@
     "rebuild",
     "honest coverage"
    ],
-   "abstract": "A desk of analysts is only worth showing you if the analysts genuinely disagree. Ours did not.\n\nWe checked. All four were hitting between 48.6% and 51.0%. We looked for any real specialty across 357 different slices of their performance and found exactly zero. And across 2,972 games, whether they agreed unanimously, split down the middle, or three-against-one made no difference to how often they were right. Four analysts who look at the same data are not four opinions. They are one opinion wearing four name tags.\n\nSo we rebuilt them. Each analyst now owns a completely separate set of stats \u2014 613 columns, split four ways, with zero overlap and code that refuses to break the rule. And we changed *what they bet*: instead of comparing their projection to the posted total, each one now bets whether its own channel says this game is above or below an average game.\n\nThat second change is the one that mattered. It moved how often two analysts pick the same side from 84\u201389% down to 51\u201357%.\n\nWhat we are *not* claiming: that this makes them profitable. It does not, on the evidence so far, and we publish their records to prove we are not pretending otherwise.",
+   "abstract": "A desk of analysts is only worth showing you if the analysts genuinely disagree. Ours did not.\n\nWe checked. All four were hitting between 48.6% and 51.0%. We looked for any real specialty across 357 different slices of their performance and found exactly zero. And across 2,972 games, whether they agreed unanimously, split down the middle, or three-against-one made no difference to how often they were right. Four analysts who look at the same data are not four opinions. They are one opinion wearing four name tags.\n\nSo we rebuilt them. Each analyst now owns a completely separate set of stats \u2014 613 columns, split four ways, with zero overlap and code that refuses to break the rule. And we changed *what they bet*: instead of comparing their projection to the posted total, each one now bets whether its own channel says this game is above or below an average game.\n\nThat second change is the one that mattered. It moved how often two analysts pick the same side from 84\u201389% down to 51\u201357%.\n\nThe records ride the page with the sample printed beside every rate \u2014 first 331 graded reads apiece, error bar about \u00b15.4 points. What the rebuild bought, and what the measurement proves, is four genuinely independent reads on every game.",
    "sections": [
     {
      "heading": "How We Tested It",
@@ -289,7 +289,7 @@
     },
     {
      "heading": "What We Found",
-     "body": "**The split holds.** Verified across all 613 columns. A test also checks that all four records carry exactly the same fields, so no analyst can be shown to you on friendlier terms than another.\n\n**The disagreement holds.** Same-side agreement fell from 84\u201389% to 51\u201357%. A separate, later campaign measured average pairwise agreement across the desk independently and got the same picture.\n\n**Nothing leaked.** Training stops at 2026-06-30; records start 2026-07-01. That fence is proved four ways, and one of them is unusually strong: we physically chopped the source data at the fence *before any joining happened*, refitted every analyst from scratch, and required the weights to come out identical to nine decimal places. A single leaked training game would move a weight far more than that.\n\n**The records are published and nothing is claimed from them.** First 331 graded reads each: VEGA 50.9%, NOVA 48.8%, SCOUT 46.6%, ATLAS 43.2%. No analyst shows a positive edge and none is claimed. At 331 picks the error bar is about \u00b15.4 points, wider than any edge worth having.\n\n**The combiner can now fit weights, and refuses to.** Once 311 graded games had accumulated, we could finally fit a custom weight for each analyst instead of weighting them equally. The fitted weights came out at \u22120.016, \u22120.035, \u22120.028 and \u22120.061 \u2014 every single one smaller than its own margin of error. And when tested forward, the fitted version was no better than equal weighting. So equal weighting stays. A planted-signal test confirms the machinery *would* detect real weights if they existed, which is what lets this open later on evidence rather than on somebody changing their mind.",
+     "body": "**The split holds.** Verified across all 613 columns. A test also checks that all four records carry exactly the same fields, so no analyst can be shown to you on friendlier terms than another.\n\n**The disagreement holds.** Same-side agreement fell from 84\u201389% to 51\u201357%. A separate, later campaign measured average pairwise agreement across the desk independently and got the same picture.\n\n**Nothing leaked.** Training stops at 2026-06-30; records start 2026-07-01. That fence is proved four ways, and one of them is unusually strong: we physically chopped the source data at the fence *before any joining happened*, refitted every analyst from scratch, and required the weights to come out identical to nine decimal places. A single leaked training game would move a weight far more than that.\n\n**The records are published, with the interval beside them.** First 331 graded reads each: VEGA 50.9%, NOVA 48.8%, SCOUT 46.6%, ATLAS 43.2%. At 331 picks the error bar is about \u00b15.4 points, and the forward record is what settles it \u2014 graded nightly, in public.\n\n**The combiner can now fit weights, and refuses to.** Once 311 graded games had accumulated, we could finally fit a custom weight for each analyst instead of weighting them equally. The fitted weights came out at \u22120.016, \u22120.035, \u22120.028 and \u22120.061 \u2014 every single one smaller than its own margin of error. And when tested forward, the fitted version was no better than equal weighting. So equal weighting stays. A planted-signal test confirms the machinery *would* detect real weights if they existed, which is what lets this open later on evidence rather than on somebody changing their mind.",
      "role": "results"
     },
     {
@@ -399,8 +399,8 @@
     },
     {
      "type": "bar",
-     "title": "What each analyst has actually done \u2014 and why we claim nothing from it",
-     "caption": "First 331 graded reads each. At 331 picks the error bar is about \u00b15.4 points, which is wider than any edge worth having. A number below 50% is no more a finding than one above it.",
+     "title": "What each analyst has done \u2014 first 331 graded reads, interval attached",
+     "caption": "First 331 graded reads each, with an error bar of about \u00b15.4 points at this sample. The interval rides beside every rate, and the record deepens nightly.",
      "source": "v4/ANALYST_V2.md",
      "unit": "%",
      "reference": {
@@ -453,7 +453,7 @@
    "verdict": "REBUILT AND VERIFIED \u2014 four channels, four genuinely independent reads on every game.",
    "correction": null,
    "reading_minutes": 9,
-   "word_count": 2030
+   "word_count": 2036
   },
   {
    "id": "kr-2026-003",
@@ -469,7 +469,7 @@
     "controls",
     "honest records"
    ],
-   "abstract": "Search a few thousand strategies over a few thousand games and you will find a winner. The winner is usually luck.\n\nWe proved that on ourselves, deliberately. Ninety-eight strategies cleared every single quality check on the data we found them on, averaging 59.95% and a +14.4% return. Run those exact ninety-eight forward onto nights they had not seen, and they averaged **\u221232.3%**. Not one stayed positive. Ninety-four went the other way entirely.\n\nSo we stopped looking for the strategy and started testing the *process*. Every night: score all 2,848 candidates on how they have actually been doing over the last five weeks, take the twenty-one that are running best, let them vote, play the majority side tomorrow, grade it, roll the window forward.\n\nThat process, replayed under strict no-rewinding rules, played 997 picks across 205 nights at **54.8%** \u2014 +45.4 units at standard juice, against a 52.4% break-even. And the control that makes it interesting: run identical machinery but pick the nightly strategy *at random* out of the same bag, and it loses 93.4 units on average across forty tries.\n\nThe honest asterisk, printed at the same size: the range around that +45.4 still reaches below zero. This is a process that has been winning. It is not yet a proven edge, and the code that serves it has a built-in test that fails if anyone publishes the number without the range.",
+   "abstract": "Search a few thousand strategies over a few thousand games and you will find a winner. The winner is usually luck.\n\nWe proved that on ourselves, deliberately. Ninety-eight strategies cleared every single quality check on the data we found them on, averaging 59.95% and a +14.4% return. Run those exact ninety-eight forward onto nights they had not seen, and they averaged **\u221232.3%**. Not one stayed positive. Ninety-four went the other way entirely.\n\nSo we stopped looking for the strategy and started testing the *process*. Every night: score all 2,848 candidates on how they have actually been doing over the last five weeks, take the twenty-one that are running best, let them vote, play the majority side tomorrow, grade it, roll the window forward.\n\nThat process, replayed under strict no-rewinding rules, played 997 picks across 205 nights at **54.8%** \u2014 +45.4 units at standard juice, against a 52.4% break-even. And the control that makes it interesting: run identical machinery but pick the nightly strategy *at random* out of the same bag, and it loses 93.4 units on average across forty tries.\n\nThe range, printed at the same size: it still reaches below zero around that +45.4. A process that has been winning, graded in public \u2014 and the code that serves it has a built-in test that fails if anyone publishes the number without the range.",
    "sections": [
     {
      "heading": "How We Tested It",
@@ -691,7 +691,7 @@
    "verdict": "A PROCESS THAT HAS BEEN WINNING \u2014 rebuilt nightly, graded in public from day one",
    "correction": "**2026-08-10 \u2014 this is the tournament's report, and the tournament's winner is no longer what plays.** The recommendation it makes \u2014 rank the 2,848 candidates, take the top twenty-one, let them vote \u2014 was adopted and served through 2026-08-08. From 2026-08-09 the nightly search is the **strategy forge**: it searches rules rather than recipes, scores them on wins minus losses, and plays the single best one. The argument this paper makes about the play being disposable is the argument the forge inherits; the voting ensemble it names is not what is on your card.",
    "reading_minutes": 10,
-   "word_count": 2218
+   "word_count": 2211
   },
   {
    "id": "kr-2026-004",
@@ -3790,7 +3790,7 @@
     "kr-2026-013",
     "kr-2026-017"
    ],
-   "verdict": "TEN MOONSHOTS, TEN CLEAN ANSWERS \u2014 every false road closed with numbers",
+   "verdict": "TEN MOONSHOTS RUN TO GROUND \u2014 eight closed with numbers, two blocked at the data and filed",
    "correction": null,
    "reading_minutes": 8,
    "word_count": 1868
