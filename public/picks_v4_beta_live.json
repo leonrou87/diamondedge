@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T02:33:15Z",
+  "generated_utc": "2026-08-10T03:12:36Z",
   "dates": [
     "2026-08-09"
   ],
@@ -26,35 +26,35 @@
     ],
     "record": {
       "headline": {
-        "n": 99,
-        "win": 50,
-        "loss": 46,
+        "n": 101,
+        "win": 51,
+        "loss": 47,
         "push": 3,
-        "record": "50-46-3",
-        "hit_rate": 0.5208,
-        "roi": 0.0003,
-        "units": 0.032,
+        "record": "51-47-3",
+        "hit_rate": 0.5204,
+        "roi": -0.0009,
+        "units": -0.091,
         "units_weighted": {
-          "units": 0.458,
-          "staked": 176.5,
-          "roi": 0.0026,
+          "units": -0.665,
+          "staked": 179.5,
+          "roi": -0.0037,
           "n_offladder_flat_1u": 0
         }
       },
       "by_star_tier": {
         "5": {
-          "n": 39,
+          "n": 40,
           "win": 19,
-          "loss": 20,
+          "loss": 21,
           "push": 0,
-          "record": "19-20-0",
-          "hit_rate": 0.4872,
-          "roi": -0.0591,
-          "units": -2.303,
+          "record": "19-21-0",
+          "hit_rate": 0.475,
+          "roi": -0.0826,
+          "units": -3.303,
           "units_weighted": {
-            "units": -4.607,
-            "staked": 78.0,
-            "roi": -0.0591,
+            "units": -6.607,
+            "staked": 80.0,
+            "roi": -0.0826,
             "n_offladder_flat_1u": 0
           }
         },
@@ -75,18 +75,18 @@
           }
         },
         "3": {
-          "n": 14,
-          "win": 8,
+          "n": 15,
+          "win": 9,
           "loss": 6,
           "push": 0,
-          "record": "8-6-0",
-          "hit_rate": 0.5714,
-          "roi": 0.079,
-          "units": 1.106,
+          "record": "9-6-0",
+          "hit_rate": 0.6,
+          "roi": 0.1322,
+          "units": 1.983,
           "units_weighted": {
-            "units": 1.106,
-            "staked": 14.0,
-            "roi": 0.079,
+            "units": 1.983,
+            "staked": 15.0,
+            "roi": 0.1322,
             "n_offladder_flat_1u": 0
           }
         },
@@ -107,36 +107,36 @@
           }
         },
         "1_pass_leans_informational": {
-          "n": 87,
-          "win": 41,
-          "loss": 39,
+          "n": 89,
+          "win": 42,
+          "loss": 40,
           "push": 7,
-          "record": "41-39-7",
-          "hit_rate": 0.5125,
-          "roi": -0.0198,
-          "units": -1.586,
+          "record": "42-40-7",
+          "hit_rate": 0.5122,
+          "roi": -0.0211,
+          "units": -1.731,
           "units_weighted": {
-            "units": -1.586,
-            "staked": 80.0,
-            "roi": -0.0198,
-            "n_offladder_flat_1u": 80
+            "units": -1.731,
+            "staked": 82.0,
+            "roi": -0.0211,
+            "n_offladder_flat_1u": 82
           }
         }
       },
       "by_source": {
         "forward_paper_ledger": {
-          "n": 13,
-          "win": 5,
-          "loss": 7,
+          "n": 15,
+          "win": 6,
+          "loss": 8,
           "push": 1,
-          "record": "5-7-1",
-          "hit_rate": 0.4167,
-          "roi": -0.1922,
-          "units": -2.306,
+          "record": "6-8-1",
+          "hit_rate": 0.4286,
+          "roi": -0.1735,
+          "units": -2.429,
           "units_weighted": {
-            "units": -4.498,
-            "staked": 20.0,
-            "roi": -0.2249,
+            "units": -5.62,
+            "staked": 23.0,
+            "roi": -0.2444,
             "n_offladder_flat_1u": 0
           }
         },
@@ -191,18 +191,18 @@
       },
       "by_lead_time": {
         "T-12h": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0249,
-          "units": 2.138,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0229,
+          "units": 2.016,
           "units_weighted": {
-            "units": 2.171,
-            "staked": 159.0,
-            "roi": 0.0137,
+            "units": 1.048,
+            "staked": 162.0,
+            "roi": 0.0065,
             "n_offladder_flat_1u": 0
           }
         },
@@ -305,24 +305,24 @@
           }
         },
         "2026-08": {
-          "n": 8,
-          "win": 3,
-          "loss": 4,
+          "n": 10,
+          "win": 4,
+          "loss": 5,
           "push": 1,
-          "record": "3-4-1",
-          "hit_rate": 0.4286,
-          "roi": -0.1516,
-          "units": -1.061,
+          "record": "4-5-1",
+          "hit_rate": 0.4444,
+          "roi": -0.1315,
+          "units": -1.184,
           "units_weighted": {
-            "units": -2.122,
-            "staked": 14.0,
-            "roi": -0.1516,
+            "units": -3.245,
+            "staked": 17.0,
+            "roi": -0.1909,
             "n_offladder_flat_1u": 0
           }
         }
       },
-      "n_takes": 100,
-      "n_playable": 100,
+      "n_takes": 102,
+      "n_playable": 102,
       "n_pending": 1,
       "headline_dedup": {
         "n_rows_dropped": 109,
@@ -333,52 +333,52 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 92,
-        "n_graded": 87,
+        "n": 94,
+        "n_graded": 89,
         "n_pending_or_no_result": 5,
         "by_reason": {
-          "ev_gate": 88,
+          "ev_gate": 90,
           "price_only": 0,
           "toxic_tail": 4
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 87,
-          "win": 41,
-          "loss": 39,
+          "n": 89,
+          "win": 42,
+          "loss": 40,
           "push": 7,
-          "record": "41-39-7",
-          "hit_rate": 0.5125,
-          "roi": -0.0198,
-          "units": -1.586,
+          "record": "42-40-7",
+          "hit_rate": 0.5122,
+          "roi": -0.0211,
+          "units": -1.731,
           "units_weighted": {
-            "units": -1.586,
-            "staked": 80.0,
-            "roi": -0.0198,
-            "n_offladder_flat_1u": 80
+            "units": -1.731,
+            "staked": 82.0,
+            "roi": -0.0211,
+            "n_offladder_flat_1u": 82
           }
         }
       },
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate AND outside the measured >=0.065 anti-signal tail. EXECUTION LAYER (Leon, 2026-07-09 \u2014 the proven config): the +EV GATE evaluates at the MEDIAN de-vig per-side price at the pick's line (strict entry), while the served/graded per-side price is the BEST EXECUTABLE price at that same line (payout gain; the median is carried per row as median_price + gate_price/gate_ev diagnostics). A row playable only on best-book juice (fails the median gate) is NOT a pick: the median-gated set repriced at best ran +3.2% ROI (41-35-1) on the 2026 backfill, the 21 gate-expansion picks ran -25% and are EXCLUDED. record.best_vs_median_2026 carries the exact 3-way same-pick-set comparison (median / median_gate_best / best). HEADLINE DEDUP: the headline + per-tier + per-lead + per-source + per-month rollups count ONE result per (game x stream) \u2014 a game that emits multiple per-wall graded rows (reconstructed/live) counts once (the locked/latest-wall canonical); n_rows_dropped is disclosed in record.headline_dedup. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, morning shopped/median per-side prices) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot best-book price they were served at (gated at the median). Every record block also carries units_weighted \u2014 the same picks staked by the star-tier ladder (see UNITS_BASIS) \u2014 next to the flat 1u record.",
       "best_vs_median_2026": {
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
-        "n_rows_each": 149,
+        "n_rows_each": 153,
         "median": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0093,
-          "units": 0.8,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0076,
+          "units": 0.67,
           "units_weighted": {
-            "units": -0.953,
-            "staked": 137.0,
-            "roi": -0.007,
+            "units": -2.083,
+            "staked": 140.0,
+            "roi": -0.0149,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 89,
+          "n_playable": 91,
           "by_star_tier": {
             "4": {
               "n": 35,
@@ -397,18 +397,18 @@
               }
             },
             "3": {
-              "n": 37,
-              "win": 20,
+              "n": 38,
+              "win": 21,
               "loss": 15,
               "push": 2,
-              "record": "20-15-2",
-              "hit_rate": 0.5714,
-              "roi": 0.0729,
-              "units": 2.553,
+              "record": "21-15-2",
+              "hit_rate": 0.5833,
+              "roi": 0.0951,
+              "units": 3.422,
               "units_weighted": {
-                "units": 2.553,
-                "staked": 35.0,
-                "roi": 0.0729,
+                "units": 3.422,
+                "staked": 36.0,
+                "roi": 0.0951,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -431,21 +431,21 @@
           }
         },
         "median_gate_best": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0249,
-          "units": 2.138,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0229,
+          "units": 2.016,
           "units_weighted": {
-            "units": 2.171,
-            "staked": 159.0,
-            "roi": 0.0137,
+            "units": 1.048,
+            "staked": 162.0,
+            "roi": 0.0065,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 89,
+          "n_playable": 91,
           "by_star_tier": {
             "4": {
               "n": 38,
@@ -464,18 +464,18 @@
               }
             },
             "3": {
-              "n": 13,
-              "win": 8,
+              "n": 14,
+              "win": 9,
               "loss": 5,
               "push": 0,
-              "record": "8-5-0",
-              "hit_rate": 0.6154,
-              "roi": 0.162,
-              "units": 2.106,
+              "record": "9-5-0",
+              "hit_rate": 0.6429,
+              "roi": 0.2131,
+              "units": 2.983,
               "units_weighted": {
-                "units": 2.106,
-                "staked": 13.0,
-                "roi": 0.162,
+                "units": 2.983,
+                "staked": 14.0,
+                "roi": 0.2131,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -498,51 +498,51 @@
           }
         },
         "best": {
-          "n": 118,
-          "win": 59,
-          "loss": 55,
+          "n": 121,
+          "win": 60,
+          "loss": 57,
           "push": 4,
-          "record": "59-55-4",
-          "hit_rate": 0.5175,
-          "roi": -0.0049,
-          "units": -0.56,
+          "record": "60-57-4",
+          "hit_rate": 0.5128,
+          "roi": -0.0144,
+          "units": -1.683,
           "units_weighted": {
-            "units": 0.537,
-            "staked": 199.5,
-            "roi": 0.0027,
+            "units": -2.586,
+            "staked": 204.5,
+            "roi": -0.0126,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 123,
+          "n_playable": 126,
           "by_star_tier": {
             "4": {
-              "n": 52,
+              "n": 53,
               "win": 27,
-              "loss": 22,
+              "loss": 23,
               "push": 3,
-              "record": "27-22-3",
-              "hit_rate": 0.551,
-              "roi": 0.0592,
-              "units": 2.9,
+              "record": "27-23-3",
+              "hit_rate": 0.54,
+              "roi": 0.038,
+              "units": 1.9,
               "units_weighted": {
-                "units": 5.8,
-                "staked": 98.0,
-                "roi": 0.0592,
+                "units": 3.8,
+                "staked": 100.0,
+                "roi": 0.038,
                 "n_offladder_flat_1u": 0
               }
             },
             "3": {
-              "n": 28,
-              "win": 14,
+              "n": 29,
+              "win": 15,
               "loss": 13,
               "push": 1,
-              "record": "14-13-1",
-              "hit_rate": 0.5185,
-              "roi": -0.0058,
-              "units": -0.156,
+              "record": "15-13-1",
+              "hit_rate": 0.5357,
+              "roi": 0.0257,
+              "units": 0.721,
               "units_weighted": {
-                "units": -0.156,
-                "staked": 27.0,
-                "roi": -0.0058,
+                "units": 0.721,
+                "staked": 28.0,
+                "roi": 0.0257,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -565,41 +565,41 @@
           }
         },
         "same_pick_set_at_best": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0249,
-          "units": 2.138,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0229,
+          "units": 2.016,
           "units_weighted": {
-            "units": 2.171,
-            "staked": 159.0,
-            "roi": 0.0137,
+            "units": 1.048,
+            "staked": 162.0,
+            "roi": 0.0065,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 89,
+          "n_playable": 91,
           "note": "the MEDIAN-gated playable set, priced + graded at the best executable price \u2014 THE PROVEN CONFIG (median_gate_best). Pure price improvement of the median set, no gate expansion"
         },
         "newly_playable_record": {
-          "n": 30,
+          "n": 31,
           "win": 13,
-          "loss": 15,
+          "loss": 16,
           "push": 2,
-          "record": "13-15-2",
-          "hit_rate": 0.4643,
-          "roi": -0.0964,
-          "units": -2.698,
+          "record": "13-16-2",
+          "hit_rate": 0.4483,
+          "roi": -0.1275,
+          "units": -3.698,
           "units_weighted": {
-            "units": -1.635,
-            "staked": 40.5,
-            "roi": -0.0404,
+            "units": -3.635,
+            "staked": 42.5,
+            "roi": -0.0855,
             "n_offladder_flat_1u": 0
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
         },
-        "n_newly_playable_at_best": 34,
+        "n_newly_playable_at_best": 35,
         "newly_playable_at_best": [
           {
             "date": "2026-03-28",
@@ -974,6 +974,17 @@
             "best_book": "lowvig",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min)",
             "result": "win"
+          },
+          {
+            "date": "2026-08-09",
+            "matchup": "NYM @ PIT",
+            "side": "under",
+            "line": 8.0,
+            "median_price": -110,
+            "best_price": -104,
+            "best_book": "fanduel",
+            "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 53.1% vs median break-even 52.4% at -110 (median ev +1.35% < +1.5% min)",
+            "result": "loss"
           }
         ],
         "n_dropped_at_best": 0,
@@ -983,9 +994,9 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-08-09T09:14:20Z",
+    "record_generated_utc": "2026-08-10T02:39:42Z",
     "backfill": {
-      "n_rows": 149,
+      "n_rows": 153,
       "sources": {
         "rolling_origin_2026": {
           "n": 96,
@@ -996,10 +1007,10 @@
           "what": "champion's own rolling-origin (expanding, 14-day retrain) 2026 stream, Tier A trigger, stored median morning per-side prices \u2014 bets_expanding.parquet"
         },
         "forward_paper_ledger": {
-          "n": 53,
+          "n": 57,
           "date_range": [
             "2026-07-02",
-            "2026-08-08"
+            "2026-08-09"
           ],
           "what": "the live value-plays paper track (value_plays_ledger.json), Tier A + Tier B, stored frozen morning price"
         }
@@ -1988,12 +1999,12 @@
       "4": 0.25,
       "3": 0.35
     },
-    "n_playable_scores": 537,
+    "n_playable_scores": 539,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-09T09:14:20Z",
+    "generated_utc": "2026-08-10T02:39:42Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
-    "n_nonplayable_scores": 6119
+    "n_nonplayable_scores": 6121
   },
   "score_reference": {
     "version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
@@ -2001,13 +2012,13 @@
       "w_edge": 0.5,
       "w_ev": 0.5
     },
-    "n_playable": 537,
-    "n_nonplayable": 6119,
+    "n_playable": 539,
+    "n_nonplayable": 6121,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-09T09:14:20Z",
+    "generated_utc": "2026-08-10T02:39:42Z",
     "basis": "v3.2 frozen season reference: percentile ranks of |model divergence| and EV (0.5/0.5 blend) over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill); non-playable rows rank in their own frozen distribution (tail-inverted edge measure + pass EV position). Frozen for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: no score promotes a non-playable row.",
     "playable": {
-      "n": 537,
+      "n": 539,
       "edge_percentiles": {
         "0": 0.01,
         "5": 0.0105,
@@ -2017,13 +2028,13 @@
         "25": 0.0132,
         "30": 0.014,
         "35": 0.0146,
-        "40": 0.0153,
-        "45": 0.0162,
-        "50": 0.0169,
+        "40": 0.0154,
+        "45": 0.0163,
+        "50": 0.017,
         "55": 0.0177,
-        "60": 0.0185,
-        "65": 0.0199,
-        "70": 0.0231,
+        "60": 0.0186,
+        "65": 0.0201,
+        "70": 0.0234,
         "75": 0.0263,
         "80": 0.032,
         "85": 0.0342,
@@ -2037,49 +2048,49 @@
         "10": 0.0191,
         "15": 0.0206,
         "20": 0.0234,
-        "25": 0.0255,
-        "30": 0.0274,
+        "25": 0.0254,
+        "30": 0.0273,
         "35": 0.0298,
         "40": 0.0319,
         "45": 0.0342,
         "50": 0.0367,
         "55": 0.0393,
-        "60": 0.042,
+        "60": 0.0418,
         "65": 0.0444,
         "70": 0.0469,
         "75": 0.0501,
-        "80": 0.0537,
-        "85": 0.0584,
+        "80": 0.0533,
+        "85": 0.0583,
         "90": 0.0642,
         "95": 0.0751,
         "100": 0.1224
       },
       "strength_percentiles": {
-        "0": 0.014,
-        "5": 0.1015,
-        "10": 0.1755,
-        "15": 0.2374,
-        "20": 0.277,
-        "25": 0.3152,
-        "30": 0.3487,
-        "35": 0.3836,
-        "40": 0.4078,
-        "45": 0.4302,
-        "50": 0.4679,
-        "55": 0.5163,
-        "60": 0.5596,
-        "65": 0.5954,
-        "70": 0.6378,
-        "75": 0.6974,
-        "80": 0.7379,
-        "85": 0.7998,
-        "90": 0.8529,
-        "95": 0.9339,
-        "100": 0.9953
+        "0": 0.0139,
+        "5": 0.1011,
+        "10": 0.1758,
+        "15": 0.2389,
+        "20": 0.276,
+        "25": 0.314,
+        "30": 0.3474,
+        "35": 0.3831,
+        "40": 0.4119,
+        "45": 0.4295,
+        "50": 0.4689,
+        "55": 0.5181,
+        "60": 0.5594,
+        "65": 0.6016,
+        "70": 0.6373,
+        "75": 0.6976,
+        "80": 0.7338,
+        "85": 0.7973,
+        "90": 0.852,
+        "95": 0.9341,
+        "100": 0.9954
       }
     },
     "nonplayable": {
-      "n": 6119,
+      "n": 6121,
       "edge_percentiles": {
         "0": 0.0,
         "5": 0.0092,
@@ -2100,7 +2111,7 @@
         "80": 0.2015,
         "85": 0.2277,
         "90": 0.2569,
-        "95": 0.3046,
+        "95": 0.3062,
         "100": 0.96
       },
       "ev_percentiles": {
@@ -2112,7 +2123,7 @@
         "25": 0.7539,
         "30": 0.7765,
         "35": 0.7983,
-        "40": 0.82,
+        "40": 0.8209,
         "45": 0.8435,
         "50": 0.8678,
         "55": 0.8939,
@@ -2129,24 +2140,24 @@
       "strength_percentiles": {
         "0": 0.0014,
         "5": 0.0867,
-        "10": 0.1428,
+        "10": 0.1427,
         "15": 0.2008,
-        "20": 0.2578,
-        "25": 0.306,
+        "20": 0.2577,
+        "25": 0.3059,
         "30": 0.3472,
-        "35": 0.3921,
+        "35": 0.392,
         "40": 0.4337,
-        "45": 0.4771,
-        "50": 0.5135,
-        "55": 0.5505,
-        "60": 0.5896,
-        "65": 0.6234,
+        "45": 0.477,
+        "50": 0.5137,
+        "55": 0.5511,
+        "60": 0.5894,
+        "65": 0.6235,
         "70": 0.6625,
         "75": 0.6973,
-        "80": 0.7382,
-        "85": 0.7814,
-        "90": 0.8288,
-        "95": 0.8959,
+        "80": 0.7384,
+        "85": 0.7813,
+        "90": 0.8289,
+        "95": 0.8957,
         "100": 0.9345
       }
     },
@@ -2386,7 +2397,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 10,
         "champion_unsettled": 0,
-        "checked_at_utc": "2026-08-09T09:14:19Z"
+        "checked_at_utc": "2026-08-10T02:39:39Z"
       },
       "2026-08-07": {
         "final_games": 15,
@@ -2399,7 +2410,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 12,
         "champion_unsettled": 1,
-        "checked_at_utc": "2026-08-09T09:14:03Z"
+        "checked_at_utc": "2026-08-10T02:39:24Z"
       },
       "2026-08-08": {
         "final_games": 15,
@@ -2412,7 +2423,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 12,
         "champion_unsettled": 1,
-        "checked_at_utc": "2026-08-09T09:13:48Z"
+        "checked_at_utc": "2026-08-10T02:39:09Z"
       }
     },
     "totals": {
@@ -5266,35 +5277,35 @@
   "record": {
     "headline_champion_v2": {
       "headline": {
-        "n": 99,
-        "win": 50,
-        "loss": 46,
+        "n": 101,
+        "win": 51,
+        "loss": 47,
         "push": 3,
-        "record": "50-46-3",
-        "hit_rate": 0.5208,
-        "roi": 0.0003,
-        "units": 0.032,
+        "record": "51-47-3",
+        "hit_rate": 0.5204,
+        "roi": -0.0009,
+        "units": -0.091,
         "units_weighted": {
-          "units": 0.458,
-          "staked": 176.5,
-          "roi": 0.0026,
+          "units": -0.665,
+          "staked": 179.5,
+          "roi": -0.0037,
           "n_offladder_flat_1u": 0
         }
       },
       "by_star_tier": {
         "5": {
-          "n": 39,
+          "n": 40,
           "win": 19,
-          "loss": 20,
+          "loss": 21,
           "push": 0,
-          "record": "19-20-0",
-          "hit_rate": 0.4872,
-          "roi": -0.0591,
-          "units": -2.303,
+          "record": "19-21-0",
+          "hit_rate": 0.475,
+          "roi": -0.0826,
+          "units": -3.303,
           "units_weighted": {
-            "units": -4.607,
-            "staked": 78.0,
-            "roi": -0.0591,
+            "units": -6.607,
+            "staked": 80.0,
+            "roi": -0.0826,
             "n_offladder_flat_1u": 0
           }
         },
@@ -5315,18 +5326,18 @@
           }
         },
         "3": {
-          "n": 14,
-          "win": 8,
+          "n": 15,
+          "win": 9,
           "loss": 6,
           "push": 0,
-          "record": "8-6-0",
-          "hit_rate": 0.5714,
-          "roi": 0.079,
-          "units": 1.106,
+          "record": "9-6-0",
+          "hit_rate": 0.6,
+          "roi": 0.1322,
+          "units": 1.983,
           "units_weighted": {
-            "units": 1.106,
-            "staked": 14.0,
-            "roi": 0.079,
+            "units": 1.983,
+            "staked": 15.0,
+            "roi": 0.1322,
             "n_offladder_flat_1u": 0
           }
         },
@@ -5347,36 +5358,36 @@
           }
         },
         "1_pass_leans_informational": {
-          "n": 87,
-          "win": 41,
-          "loss": 39,
+          "n": 89,
+          "win": 42,
+          "loss": 40,
           "push": 7,
-          "record": "41-39-7",
-          "hit_rate": 0.5125,
-          "roi": -0.0198,
-          "units": -1.586,
+          "record": "42-40-7",
+          "hit_rate": 0.5122,
+          "roi": -0.0211,
+          "units": -1.731,
           "units_weighted": {
-            "units": -1.586,
-            "staked": 80.0,
-            "roi": -0.0198,
-            "n_offladder_flat_1u": 80
+            "units": -1.731,
+            "staked": 82.0,
+            "roi": -0.0211,
+            "n_offladder_flat_1u": 82
           }
         }
       },
       "by_source": {
         "forward_paper_ledger": {
-          "n": 13,
-          "win": 5,
-          "loss": 7,
+          "n": 15,
+          "win": 6,
+          "loss": 8,
           "push": 1,
-          "record": "5-7-1",
-          "hit_rate": 0.4167,
-          "roi": -0.1922,
-          "units": -2.306,
+          "record": "6-8-1",
+          "hit_rate": 0.4286,
+          "roi": -0.1735,
+          "units": -2.429,
           "units_weighted": {
-            "units": -4.498,
-            "staked": 20.0,
-            "roi": -0.2249,
+            "units": -5.62,
+            "staked": 23.0,
+            "roi": -0.2444,
             "n_offladder_flat_1u": 0
           }
         },
@@ -5431,18 +5442,18 @@
       },
       "by_lead_time": {
         "T-12h": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0249,
-          "units": 2.138,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0229,
+          "units": 2.016,
           "units_weighted": {
-            "units": 2.171,
-            "staked": 159.0,
-            "roi": 0.0137,
+            "units": 1.048,
+            "staked": 162.0,
+            "roi": 0.0065,
             "n_offladder_flat_1u": 0
           }
         },
@@ -5545,24 +5556,24 @@
           }
         },
         "2026-08": {
-          "n": 8,
-          "win": 3,
-          "loss": 4,
+          "n": 10,
+          "win": 4,
+          "loss": 5,
           "push": 1,
-          "record": "3-4-1",
-          "hit_rate": 0.4286,
-          "roi": -0.1516,
-          "units": -1.061,
+          "record": "4-5-1",
+          "hit_rate": 0.4444,
+          "roi": -0.1315,
+          "units": -1.184,
           "units_weighted": {
-            "units": -2.122,
-            "staked": 14.0,
-            "roi": -0.1516,
+            "units": -3.245,
+            "staked": 17.0,
+            "roi": -0.1909,
             "n_offladder_flat_1u": 0
           }
         }
       },
-      "n_takes": 100,
-      "n_playable": 100,
+      "n_takes": 102,
+      "n_playable": 102,
       "n_pending": 1,
       "headline_dedup": {
         "n_rows_dropped": 109,
@@ -5573,52 +5584,52 @@
         "note": "rows voided (serving-bug day, 2026-07-08: board instability before the write-once lock + conviction floor \u2014 no single pick was stably served). NO-ACTION: no W/L/push, zero contribution to every rollup here."
       },
       "gated_out": {
-        "n": 92,
-        "n_graded": 87,
+        "n": 94,
+        "n_graded": 89,
         "n_pending_or_no_result": 5,
         "by_reason": {
-          "ev_gate": 88,
+          "ev_gate": 90,
           "price_only": 0,
           "toxic_tail": 4
         },
         "note": "rows rated 1-star PASS under star v3 (fail the +EV gate at the real per-side price, sit below the 0.01 model-divergence conviction floor, or sit in the measured >=0.065 anti-signal tail). Shown on the board with their lean, never bet; their would-have record is informational only. would_have_record covers ONLY the n_graded rows with a win/loss/push result; n_pending_or_no_result rows are counted here explicitly and excluded from the counterfactual record \u2014 never silently dropped.",
         "would_have_record": {
-          "n": 87,
-          "win": 41,
-          "loss": 39,
+          "n": 89,
+          "win": 42,
+          "loss": 40,
           "push": 7,
-          "record": "41-39-7",
-          "hit_rate": 0.5125,
-          "roi": -0.0198,
-          "units": -1.586,
+          "record": "42-40-7",
+          "hit_rate": 0.5122,
+          "roi": -0.0211,
+          "units": -1.731,
           "units_weighted": {
-            "units": -1.586,
-            "staked": 80.0,
-            "roi": -0.0198,
-            "n_offladder_flat_1u": 80
+            "units": -1.731,
+            "staked": 82.0,
+            "roi": -0.0211,
+            "n_offladder_flat_1u": 82
           }
         }
       },
       "basis": "Headline record = the CHAMPION V2 stream exactly: the PLAYABLE (2-4 star, star v3) champion picks \u2014 passed the +EV gate AND outside the measured >=0.065 anti-signal tail. EXECUTION LAYER (Leon, 2026-07-09 \u2014 the proven config): the +EV GATE evaluates at the MEDIAN de-vig per-side price at the pick's line (strict entry), while the served/graded per-side price is the BEST EXECUTABLE price at that same line (payout gain; the median is carried per row as median_price + gate_price/gate_ev diagnostics). A row playable only on best-book juice (fails the median gate) is NOT a pick: the median-gated set repriced at best ran +3.2% ROI (41-35-1) on the 2026 backfill, the 21 gate-expansion picks ran -25% and are EXCLUDED. record.best_vs_median_2026 carries the exact 3-way same-pick-set comparison (median / median_gate_best / best). HEADLINE DEDUP: the headline + per-tier + per-lead + per-source + per-month rollups count ONE result per (game x stream) \u2014 a game that emits multiple per-wall graded rows (reconstructed/live) counts once (the locked/latest-wall canonical); n_rows_dropped is disclosed in record.headline_dedup. 2026 backfill = rolling-origin stream (2026-03-27..06-10, Tier A, morning shopped/median per-side prices) + the live forward paper track (2026-07-02 onward, frozen morning price); gap 2026-06-11..07-01 not reconstructable (game DB frozen 06-13; forward track started 07-02) and is simply absent \u2014 nothing is interpolated. Live picks accrue nightly at the latest-snapshot best-book price they were served at (gated at the median). Every record block also carries units_weighted \u2014 the same picks staked by the star-tier ladder (see UNITS_BASIS) \u2014 next to the flat 1u record.",
       "best_vs_median_2026": {
         "what": "the SAME champion 2026 candidate set (rolling-origin stream + forward paper ledger; identical sides/lines/outcomes) under three price conventions. THE PRODUCT is median_gate_best: the +EV gate evaluates at the MEDIAN de-vig price (strict entry), the pick is priced + graded at the BEST executable price at its own line. `best` (gate-at-best) is shown only to expose the gate-expansion set it over-admits (~-25% ROI), which is excluded from the product.",
-        "n_rows_each": 149,
+        "n_rows_each": 153,
         "median": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0093,
-          "units": 0.8,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0076,
+          "units": 0.67,
           "units_weighted": {
-            "units": -0.953,
-            "staked": 137.0,
-            "roi": -0.007,
+            "units": -2.083,
+            "staked": 140.0,
+            "roi": -0.0149,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 89,
+          "n_playable": 91,
           "by_star_tier": {
             "4": {
               "n": 35,
@@ -5637,18 +5648,18 @@
               }
             },
             "3": {
-              "n": 37,
-              "win": 20,
+              "n": 38,
+              "win": 21,
               "loss": 15,
               "push": 2,
-              "record": "20-15-2",
-              "hit_rate": 0.5714,
-              "roi": 0.0729,
-              "units": 2.553,
+              "record": "21-15-2",
+              "hit_rate": 0.5833,
+              "roi": 0.0951,
+              "units": 3.422,
               "units_weighted": {
-                "units": 2.553,
-                "staked": 35.0,
-                "roi": 0.0729,
+                "units": 3.422,
+                "staked": 36.0,
+                "roi": 0.0951,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -5671,21 +5682,21 @@
           }
         },
         "median_gate_best": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0249,
-          "units": 2.138,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0229,
+          "units": 2.016,
           "units_weighted": {
-            "units": 2.171,
-            "staked": 159.0,
-            "roi": 0.0137,
+            "units": 1.048,
+            "staked": 162.0,
+            "roi": 0.0065,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 89,
+          "n_playable": 91,
           "by_star_tier": {
             "4": {
               "n": 38,
@@ -5704,18 +5715,18 @@
               }
             },
             "3": {
-              "n": 13,
-              "win": 8,
+              "n": 14,
+              "win": 9,
               "loss": 5,
               "push": 0,
-              "record": "8-5-0",
-              "hit_rate": 0.6154,
-              "roi": 0.162,
-              "units": 2.106,
+              "record": "9-5-0",
+              "hit_rate": 0.6429,
+              "roi": 0.2131,
+              "units": 2.983,
               "units_weighted": {
-                "units": 2.106,
-                "staked": 13.0,
-                "roi": 0.162,
+                "units": 2.983,
+                "staked": 14.0,
+                "roi": 0.2131,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -5738,51 +5749,51 @@
           }
         },
         "best": {
-          "n": 118,
-          "win": 59,
-          "loss": 55,
+          "n": 121,
+          "win": 60,
+          "loss": 57,
           "push": 4,
-          "record": "59-55-4",
-          "hit_rate": 0.5175,
-          "roi": -0.0049,
-          "units": -0.56,
+          "record": "60-57-4",
+          "hit_rate": 0.5128,
+          "roi": -0.0144,
+          "units": -1.683,
           "units_weighted": {
-            "units": 0.537,
-            "staked": 199.5,
-            "roi": 0.0027,
+            "units": -2.586,
+            "staked": 204.5,
+            "roi": -0.0126,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 123,
+          "n_playable": 126,
           "by_star_tier": {
             "4": {
-              "n": 52,
+              "n": 53,
               "win": 27,
-              "loss": 22,
+              "loss": 23,
               "push": 3,
-              "record": "27-22-3",
-              "hit_rate": 0.551,
-              "roi": 0.0592,
-              "units": 2.9,
+              "record": "27-23-3",
+              "hit_rate": 0.54,
+              "roi": 0.038,
+              "units": 1.9,
               "units_weighted": {
-                "units": 5.8,
-                "staked": 98.0,
-                "roi": 0.0592,
+                "units": 3.8,
+                "staked": 100.0,
+                "roi": 0.038,
                 "n_offladder_flat_1u": 0
               }
             },
             "3": {
-              "n": 28,
-              "win": 14,
+              "n": 29,
+              "win": 15,
               "loss": 13,
               "push": 1,
-              "record": "14-13-1",
-              "hit_rate": 0.5185,
-              "roi": -0.0058,
-              "units": -0.156,
+              "record": "15-13-1",
+              "hit_rate": 0.5357,
+              "roi": 0.0257,
+              "units": 0.721,
               "units_weighted": {
-                "units": -0.156,
-                "staked": 27.0,
-                "roi": -0.0058,
+                "units": 0.721,
+                "staked": 28.0,
+                "roi": 0.0257,
                 "n_offladder_flat_1u": 0
               }
             },
@@ -5805,41 +5816,41 @@
           }
         },
         "same_pick_set_at_best": {
-          "n": 88,
-          "win": 46,
-          "loss": 40,
+          "n": 90,
+          "win": 47,
+          "loss": 41,
           "push": 2,
-          "record": "46-40-2",
-          "hit_rate": 0.5349,
-          "roi": 0.0249,
-          "units": 2.138,
+          "record": "47-41-2",
+          "hit_rate": 0.5341,
+          "roi": 0.0229,
+          "units": 2.016,
           "units_weighted": {
-            "units": 2.171,
-            "staked": 159.0,
-            "roi": 0.0137,
+            "units": 1.048,
+            "staked": 162.0,
+            "roi": 0.0065,
             "n_offladder_flat_1u": 0
           },
-          "n_playable": 89,
+          "n_playable": 91,
           "note": "the MEDIAN-gated playable set, priced + graded at the best executable price \u2014 THE PROVEN CONFIG (median_gate_best). Pure price improvement of the median set, no gate expansion"
         },
         "newly_playable_record": {
-          "n": 30,
+          "n": 31,
           "win": 13,
-          "loss": 15,
+          "loss": 16,
           "push": 2,
-          "record": "13-15-2",
-          "hit_rate": 0.4643,
-          "roi": -0.0964,
-          "units": -2.698,
+          "record": "13-16-2",
+          "hit_rate": 0.4483,
+          "roi": -0.1275,
+          "units": -3.698,
           "units_weighted": {
-            "units": -1.635,
-            "staked": 40.5,
-            "roi": -0.0404,
+            "units": -3.635,
+            "staked": 42.5,
+            "roi": -0.0855,
             "n_offladder_flat_1u": 0
           },
           "note": "the gate-expansion set: picks that clear the +EV gate ONLY at the best price (marginal edges via juice) \u2014 EXCLUDED from the product (median gate rejects them); measured here so the exclusion keeps proving itself (~-25% ROI on the backfill)"
         },
-        "n_newly_playable_at_best": 34,
+        "n_newly_playable_at_best": 35,
         "newly_playable_at_best": [
           {
             "date": "2026-03-28",
@@ -6214,6 +6225,17 @@
             "best_book": "lowvig",
             "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 49.5% vs median break-even 49.0% at 104 (median ev +1.06% < +1.5% min)",
             "result": "win"
+          },
+          {
+            "date": "2026-08-09",
+            "matchup": "NYM @ PIT",
+            "side": "under",
+            "line": 8.0,
+            "median_price": -110,
+            "best_price": -104,
+            "best_book": "fanduel",
+            "median_pass_reason": "champion pick priced out at the MEDIAN gate: model 53.1% vs median break-even 52.4% at -110 (median ev +1.35% < +1.5% min)",
+            "result": "loss"
           }
         ],
         "n_dropped_at_best": 0,

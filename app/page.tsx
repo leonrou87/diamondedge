@@ -394,7 +394,7 @@ export default function Home() {
     }
     /* ═══════════════ LAZY FOLDS — the fix for "the full UX has lags at times" ═══════════════
        MEASURED, NOT GUESSED. Rendering every tab and reading back innerHTML:
-         Research  228,953 chars   (66 study cards, 32 of them inside a CLOSED fold)
+         Research  228,953 chars   (93 study cards, 91 of them inside a CLOSED fold)
          Desk      203,463 chars   (three closed folds: ledgers, rivalries, pattern tables)
          Games      92,768 · News  48,245 · Account 2,921
        and 7,150 DOM nodes once you had visited every tab, because every view stays mounted.
@@ -2182,6 +2182,8 @@ export default function Home() {
     function deIdent(t: any) {
       return String(t == null ? "" : t)
         .replace(/\brecord\.analysts\b/g, "the season ledgers")
+        .replace(/\brecord\.by_source\.model\b/g, "the by-source model ledger")
+        .replace(/\brecord\.by_source\b/g, "the by-source ledger")
         .replace(/\banalyst_of_the_week\b/g, "the Analyst of the Week")
         .replace(/\bis_betting_record\b/g, "the staked-or-lean flag")
         .replace(/`([^`]+)`/g, "$1")
@@ -2210,6 +2212,12 @@ export default function Home() {
         .replace(/\bLineups are not posted yet[^.]*\.\s*/gi, "")
         .replace(/\b(?:I'?ll take the plate umpire when they post one|The umpire can still move it|When the umpire is posted[^.]*)\.\s*/gi, "")
         .replace(/\b(?:without the lineup|with the lineup still out|pending the lineup|projected card)[^.]*\.\s*/gi, "")
+        /* "+EV GATE" IS THE ENGINE'S NAME FOR IT, NOT A READER'S. Expected value is a
+           term of art; the app already calls the same thing the PRICE GATE everywhere a
+           person reads it ("Priced out — no value at the real price", and the library's
+           own "The price gate stays"). One name for one thing, and it is the English one.
+           This is a translation, not a redaction — the gate itself stays fully public. */
+        .replace(/\+EV gate\b/g, "price gate")
         .replace(/\bthat is where the price edge is\./gi,
           "that is where the number and price are worth a bet.")
         .replace(/\bon the price edge\b/gi,
@@ -2221,14 +2229,124 @@ export default function Home() {
         .replace(/\bThe split is context,\s*not a veto\./gi,
           "Plain English: a split desk does not cancel a bet when the number and price are still worth playing.");
     }
+    /* ═════════════ THE RECIPE LINE, DRAWN IN ONE PLACE (2026-08-09) ═════════════
+       Leon: "make it seem super sophisticated but not completely give away our magic."
+
+       The line the whole app is now held to:
+         PUBLIC   — the PROCESS. What the machine does, in plain terms, at a level a
+                    competitor cannot act on: a search runs every night, it replays
+                    candidates against finished games, the best win-minus-loss record is
+                    the one that plays, it is thrown away at midnight.
+         PUBLIC   — the RECORD, untouched, forever. Every graded pick, every losing day.
+         PRIVATE  — the RECIPE. Tuning constants, gate thresholds, conviction bands,
+                    simulation counts, the search's enumeration depth and pairing
+                    procedure, and the internal function and field names behind them.
+                    These are the durable asset: unlike a rule that expires at midnight,
+                    a threshold is worth the same to a copier tomorrow.
+
+       WHY IT LIVES HERE AND NOT AT EVERY CALL SITE. Most of this text is SERVED — the
+       strategy ledgers' `what`/`basis`/`note`, the forge block's `summary_line` and
+       `search_scope`, a stream's PASS reason. Every one of those already passes through
+       humanNote() on its way to the DOM (that is the existing single-source rule for
+       payload prose), so the line gets drawn once, beside the document-note guard that
+       is the same kind of rule. The backends are being corrected in parallel; these
+       survive whatever is already cached or still in flight, and go quiet on their own
+       once the served strings no longer carry the dials.
+
+       TWO KINDS OF EDIT, AND NEITHER INVENTS ANYTHING:
+         · SENTENCE DROPS, for a sentence whose whole subject is the search procedure.
+           Removed entire — there is no reader-facing summary of an algorithm.
+         · WEAKENINGS, where a threshold sits inside a sentence that still has a claim in
+           it. "0.75-1.0 points" becomes "a narrow margin". The claim gets STRICTLY LESS
+           precise, never more confident, which is the whole test: a reader can no longer
+           check the number, so the sentence stops offering one. */
+    function redactRecipe(t: any) {
+      let s = String(t == null ? "" : t);
+      // ── 1. THE SEARCH PROCEDURE, DROPPED WHOLE ──────────────────────────────
+      // The forge's served prose states its enumeration depth and its pairing
+      // procedure in as many words — a competitor can implement the search from
+      // those two sentences. They are cut at sentence granularity so nothing is
+      // left half-said; the window and the record around them survive untouched,
+      // because those are the evidence a reader replays the rule against.
+      const PROCEDURE = [
+        /every one-,?\s*two-?\s*and three-condition rule/i,
+        /two-part rules (?:—|were|are)/i,
+        /pairing the strongest one-sided candidates/i,
+        /in both (?:clause )?orders/i,
+        /the winner is the best of those/i,
+      ];
+      if (PROCEDURE.some((r) => r.test(s))) {
+        const kept = s.split(/(?<=[.!?])\s+/).filter((sent) => !PROCEDURE.some((r) => r.test(sent)));
+        s = kept.join(" ").trim();
+      }
+      return s
+        // ── 2. CONVICTION BANDS AND GATE THRESHOLDS ───────────────────────────
+        // Each of these is a tuned dial with a number on it. What survives says
+        // that a bar exists and that the row cleared or missed it — which is the
+        // fact a reader needs — without stating where the bar is.
+        .replace(/\bmodel[-\/ ]vs[-\/ ]market disagreement of [\d.]+\s*[–-]\s*[\d.]+/gi,
+          "a model-versus-market disagreement inside a narrow band")
+        .replace(/\bat least [\d.]+ points? of model[-\/ ]vs[-\/ ]market disagreement\b/gi,
+          "a clear margin between our number and the market's")
+        .replace(/\bthe model\/market disagreement is only [\d.]+\s*[–-]\s*[\d.]+ points?\b/gi,
+          "our number and the market's are only narrowly apart")
+        .replace(/\bthe disagreement was not [\d.]+\s*[–-]\s*[\d.]+ points?\b/gi,
+          "the disagreement did not fall in it")
+        .replace(/\bwith the FULL price gate \(ev >= [\d.]+[^)]*\)/gi, "with the full price gate cleared")
+        .replace(/\bthe [\d.]+[–-][\d.]+ conviction band\b/gi, "the near-miss conviction band")
+        /* THE RETIRED SELECTOR'S SETTINGS, WRITTEN OUT AS A LIST. The research index's own
+           card for the recipe tournament closes its result line with the recommendation as
+           a comma-separated spec — window length, ranking statistic, sample floor,
+           consistency requirement, ballot size, stickiness. Six dials in one clause, on the
+           summary line of a card, under a heading about published research. What follows it
+           in the same string is the FINDING (units, nights, hit rate, drawdown, the interval
+           that still contains zero) and every word of that survives untouched: the result is
+           the evidence, the settings are the machine. */
+        .replace(/\b\d+-night window, rank by trailing return[^.]*\./gi,
+          "the settings that came out of it are recorded in our own files rather than here.")
+        .replace(/\bplay the majority vote of the top \d+\b/gi, "play the majority side of the leaders")
+        .replace(/\bplay the best \w+ of them\b/gi, "play the ones that have been running best")
+        /* HOW MANY CONDITIONS TONIGHT'S RULE HAS. The generated commentary opens by naming
+           the rule's conjunction depth ("It is a 5-condition read"), which is a property of
+           the search's output rather than of the game — it tells a competitor how deep the
+           enumeration goes, from the front page, every night, for free. What the sentence is
+           actually there to say survives whole and is the interesting half: the rule is a
+           conjunction, so every condition has to hold or it says nothing. */
+        // the joint form first — "every one of THEM" loses its antecedent the moment the
+        // count goes, so the pronoun is replaced in the same edit rather than left dangling
+        .replace(/\bIt is an? \d+-condition read, and it wants every one of them\b/gi,
+          "It is an all-or-nothing read, and it wants every one of its conditions")
+        .replace(/\bIt is an? \d+-condition read\b/gi, "It is an all-or-nothing read")
+        .replace(/\ban? \d+-condition read\b/gi, "an all-or-nothing read")
+        .replace(/\ba (?:conjunction|rule) of \d+ conditions\b/gi, "a rule that needs every one of its conditions")
+        // ── 3. THE SIMULATOR'S ITERATION COUNT ────────────────────────────────
+        // How many games the Monte Carlo runs is a build parameter. That it runs a
+        // full simulation of every plate appearance is the claim, and it survives.
+        .replace(/,?\s*\b[\d,]+ games simulated\b/gi, "")
+        .replace(/\b[\d,]+ (?:sims|simulations|simulated games|runs) a game\b/gi, "a full simulation of the game")
+        .replace(/\bfrom [\d,]+ simulations\b/gi, "from a full simulation of the game")
+        .replace(/\bthe [\d,]+-run physical simulator\b/gi, "the physical simulator")
+        // ── 4. INTERNAL NAMES A READER WAS NEVER MEANT TO SEE ─────────────────
+        // deIdent() already speaks underscores as words, which turns a function
+        // name into a phrase that reads like English and is not. These are the
+        // ones that survive it.
+        .replace(/\s*by champion[ _]headline[ _]residual\(\)/gi, "")
+        .replace(/\s*\(status NO[ _]VIEW\)/gi, "")
+        .replace(/\bis bet is false on every row\b/gi, "no row here is a staked bet")
+        .replace(/\bstars are hard-capped at 1\*/gi, "every row carries the same display tier")
+        .replace(/\s{2,}/g, " ")
+        .replace(/\s+([.,;:])/g, "$1")
+        .trim();
+    }
     // Machine codes ("ev_gate", "junk_cell") never reach a reader; contract notes are dropped
-    // whole; real phrases ("Strong", "Priced out — no value at the real price") pass through.
+    // whole; the recipe is redacted; real phrases ("Strong", "Priced out — no value at the
+    // real price") pass through.
     function humanNote(raw: any) {
       const t = String(raw == null ? "" : raw).trim();
       if (!t) return "";
       if (/^[a-z0-9]+(_[a-z0-9]+)+$/.test(t)) return "";
       if (isDocText(t)) return "";
-      return readerCopy(deIdent(t));
+      return redactRecipe(readerCopy(deIdent(t)));
     }
     // The spec block, from whichever loaded feed carries it.
     function strategiesSpec() {
@@ -4009,8 +4127,10 @@ export default function Home() {
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
       bindClick("gp-back", () => closeDetail());
       bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
-      bindClick("anl-insights", () => { closeDetail(false, true); switchTab("desk"); goDeskResults(); });
-      bindClick("anl-pat-all", () => { closeDetail(false, true); switchTab("desk"); goDeskResults(); });
+      // goDeskResults() switches the tab itself; calling switchTab first as well started a
+      // second pan on top of the first and left the two scrolls racing each other.
+      bindClick("anl-insights", () => { closeDetail(false, true); goDeskResults(); });
+      bindClick("anl-pat-all", () => { closeDetail(false, true); goDeskResults(); });
       bindSwipeBack($("gamepage"));
     }
     // ONE capture-phase delegate wires every [data-an] tap on every surface to the analyst
@@ -4939,7 +5059,10 @@ export default function Home() {
       const items = patternHighlights();
       if (items.length) {
         const pick0 = items.find((x) => x.kind === "contrarian") || items[0];
-        const more = items.length > 1 ? `<div class="sts-substat">${items.length - 1} more pattern${items.length === 2 ? "" : "s"} on Insights</div>` : "";
+        // "on Insights" named a tab that no longer exists, and its CTA landed on the Desk's
+        // record — which is not where the pattern tables live. Both now say Research, which
+        // is where they moved to (Research → what we measured about the desk).
+        const more = items.length > 1 ? `<div class="sts-substat">${items.length - 1} more pattern${items.length === 2 ? "" : "s"} on Research</div>` : "";
         return `<div class="sts sts-patterns">
           ${storyField("patterns")}
           ${storyEyebrow("The Patterns")}
@@ -4949,7 +5072,7 @@ export default function Home() {
             <div class="pat-meta center">${pick0.n ? `<span class="pat-n">n = ${pick0.n} games</span>` : ""}${pick0.era === "live" ? `<span class="pat-era live">${esc(patEraChipTxt("live"))}</span>` : pick0.era === "reconstructed" ? `<span class="pat-era recon">${esc(patEraChipTxt("reconstructed"))}</span>` : ""}${pick0.n > 0 && pick0.n < PATTERN_MIN_N ? `<span class="pat-smalln">emerging signal</span>` : ""}</div>
             ${more}
           </div>
-          <div class="sts-foot"><button class="st-cta" data-go="results">Every pattern, graded →</button></div>
+          <div class="sts-foot"><button class="st-cta" data-go="research">Every pattern, graded →</button></div>
         </div>`;
       }
       /* ═══ THE "THE ANSWER IS NO" SLIDE IS GONE FROM THE DECK ═══
@@ -5806,6 +5929,80 @@ export default function Home() {
       return `<div class="pvz"><div class="pvz-h">${icon("h2h", "sm")}Season series</div>
         <div class="h2-strip"><span class="h2-side away" style="flex:${aw || 0.001}">${aw ? `${esc(g.away_abbr)} ${aw}` : ""}</span><span class="h2-side home" style="flex:${hw || 0.001}">${hw ? `${esc(g.home_abbr)} ${hw}` : ""}</span></div>
         <div class="pvz-foot">${esc(h.record || `${aw}-${hw}`)} across ${h.games || tot} meetings this year</div></div>`;
+    }
+
+    /* ═══════════ CONDITIONS AT FIRST PITCH — the weather, finally on a screen ═══════════
+       Leon asked for weather back because "it can help bets", and it has been collected,
+       leakage-checked and wired into the rule language for weeks while rendering NOWHERE. A
+       reader could read a rule that conditions on the wind along the plate-to-centre axis and
+       never see a single wind reading. This block is the surface that was missing.
+
+       WHAT IT SHOWS IS WHAT THE PICK COULD SEE — not what the evening turned out to be. The
+       served block is the T-3h forecast, admitted only when it was RETRIEVED before the T-3h
+       wall (`v4/models/strategy_forge/weather_wall.py`, via `v4/serve/game_weather.py`). On a
+       settled game that is still the right number: the question a reader has on a past game is
+       "what was the read made on", and the wind that actually blew during the fourth inning is
+       not that. The provenance line says which of the two it is, on every game, always.
+
+       THE TWO SILENCES ARE DELIBERATE AND THEY LOOK THE SAME.
+         · A DOME publishes nothing. The pipeline substitutes 72F / 0 mph indoors, and those
+           constants were never measured at any ballpark — printing them as "the temperature"
+           would be inventing a measurement. There is nothing honest to put here, so nothing
+           goes here.
+         · A GAME WITH NO WALL-LEGAL READING publishes nothing, for the same reason one rung
+           down: the only stored value is the game-hour actual, which nobody could have read
+           three hours before first pitch.
+       Both gates live backend-side and a card simply arrives with or without `weather` — this
+       function adds no gate of its own to get wrong, and cannot disagree with the one the
+       rule language enforces.
+
+       AND IT WRITES NO PROSE. `wind_phrase` and every string in `notes` are the rule
+       language's OWN idioms for the exact cut they describe (predicates.py), emitted backend
+       side only when a served number clears that cut's own threshold. What this function adds
+       is a capital, a full stop, and the labels on three stat cells. */
+    const WX_WIND_LABEL: Record<string, string> = {
+      out: "Blowing out", in: "Blowing in", cross: "Across the field", calm: "Calm",
+    };
+    function vizWeather(g: any) {
+      /* THE BLOCK RIDES THE UNIFIED ROW, NOT THE DAY SNAPSHOT. `g` here is a game off the
+         DAY payload — the feed the board renders — and the weather is produced by the
+         unified serving model, so it arrives on the unified row like `pick`, `analysts` and
+         everything else the game page reads. `v4GameFor` is the one reconciler for that
+         (live board first, history behind it, ids matched across both spaces); going
+         straight to `g.weather` silently rendered nothing on every game. */
+      const vg = v4GameFor(g);
+      const w = (vg && vg.weather) || (g && g.weather);
+      if (!w || typeof w !== "object" || w.status !== "ACTIVE") return "";
+      const n = (v: any) => { const x = v == null ? NaN : Number(v); return isFinite(x) ? x : null; };
+      const temp = n(w.temp_f), wind = n(w.wind_mph), rain = n(w.precip_prob);
+      const cells: string[] = [];
+      if (temp != null) cells.push(`<div class="wx-c"><b>${Math.round(temp)}°</b><i>Air temp</i></div>`);
+      if (wind != null) cells.push(`<div class="wx-c"><b>${Math.round(wind)}<em>mph</em></b><i>${esc(WX_WIND_LABEL[String(w.wind_class || "")] || "Wind")}</i></div>`);
+      if (rain != null) cells.push(`<div class="wx-c"><b>${Math.round(rain)}%</b><i>Rain chance</i></div>`);
+      if (!cells.length) return "";
+      /* THE SENTENCE, WITHOUT SAYING THE WIND TWICE. `wind_phrase` is the class in words
+         ("the wind is cutting across the field"); `notes` carries the language's threshold
+         idioms, one of which may ALSO be about the wind ("the wind is blowing out to centre
+         field") when the out-to-centre component clears its cut. When a note already speaks
+         for the wind, the class phrase stands down — it is the weaker statement of the two. */
+      const notes = (Array.isArray(w.notes) ? w.notes : [])
+        .map((x: any) => String(x == null ? "" : x).trim()).filter(Boolean);
+      const windSpoken = notes.some((x: string) => /^the wind\b/i.test(x));
+      const parts = (windSpoken || !w.wind_phrase ? notes : [String(w.wind_phrase).trim(), ...notes])
+        .filter(Boolean).slice(0, 3);
+      const joined = parts.length > 1
+        ? parts.slice(0, -1).join(", ") + ", and " + parts[parts.length - 1]
+        : (parts[0] || "");
+      const said = joined ? joined.replace(/^(.)/, (c: string) => c.toUpperCase()) + "." : "";
+      /* PROVENANCE, IN THE READER'S WORDS, WITH THE SERVED SENTENCE BEHIND IT. "T-3h" is the
+         served enum and it is engineering shorthand; the line renders it as the English it
+         means. The full served basis — which says in as many words that this is never an
+         observation from during the game — rides in the title, one hover away, unedited. */
+      const basis = String(w.as_of_basis || "").trim();
+      return `<div class="pvz wx-card"><div class="pvz-h">${icon("weather", "sm")}Conditions at first pitch</div>
+        <div class="wx-grid${cells.length === 2 ? " two" : ""}">${cells.join("")}</div>
+        ${said ? `<div class="pvz-foot">${esc(said)}</div>` : ""}
+        <div class="wx-src"${basis ? ` title="${esc(basis)}"` : ""}>Forecast, as it stood three hours before first pitch</div></div>`;
     }
 
     // ── PITCHERS FEED: season ERA + last-starts game log for both probables ──
@@ -9326,24 +9523,65 @@ export default function Home() {
        WHY THIS FUNCTION READS RATHER THAN WRITES. Every table below this branch is a
        hand-written translation of a strategy FAMILY the engine ships. That works because
        there are eight families. It cannot work for the forge, whose rule is a fresh
-       conjunction out of an 835-predicate language every night — there is no family to key
+       conjunction out of a large predicate language every night — there is no family to key
        on. The voice therefore has to be generated where the rule and its data live, and this
        surface's job is to render it. The served block is checked for shape, and anything
-       malformed falls straight through to the existing tables. */
+       malformed falls straight through to the existing tables.
+
+       AND IT GOES THROUGH humanNote() LIKE EVERYTHING ELSE THE PAYLOAD WRITES (2026-08-09).
+       These paragraphs were the app's most-read served prose — the board strip, the Desk and
+       Research all render them — and the only ones bypassing the one guard every other
+       served string passes. The cost showed up immediately: the commentary opens by naming
+       the winning rule's conjunction depth ("It is a 5-condition read"), which is a property
+       of the SEARCH rather than of the game, published on the front page every night. The
+       name is left alone (it is a title, and the redactor has nothing to say about titles);
+       the prose is filtered. */
     function forgeVoice(s: any) {
       const v = s && s.voice;
       if (!v || typeof v !== "object" || v.status !== "ACTIVE") return null;
       const name = String(v.name || "").trim();
       const paras = (Array.isArray(v.paragraphs) ? v.paragraphs : [])
-        .map((p: any) => String(p || "").trim()).filter(Boolean);
+        .map((p: any) => humanNote(p)).filter(Boolean);
       if (!name || !paras.length) return null;
       return { name, paras };
     }
-    function strategyFriendly(s: any) {
+    /* ═══════ A SETTLED DAY IS A RECORD, NOT A PITCH (Leon, 2026-08-09) ═══════
+       Games → Aug 4 was rendering "The Split-Room Fade" with its full sales copy, in the
+       PRESENT TENSE, on a day whose games had all been final for five days: "When exactly 2
+       of our four analysts like the over, DiamondEdge takes the under — a half-convinced
+       room has been a tell." Two taps from the board, a finished Tuesday was selling a play.
+
+       WHAT MUST NOT HAPPEN HERE, AND WHY THIS IS NOT THAT. Aug 4 genuinely was served by
+       that rule. That fact is written once and it stays — the strip still names the rule,
+       still shows what it did, and Research still lists it where the record puts it. Erasing
+       a served day would be the one thing this product can never do, and none of this
+       touches the served block: `label`, `plain_english_rule`, `record` and `window_days`
+       are read exactly as they arrive.
+
+       WHAT CHANGES IS TENSE AND FRAMING, WHICH ARE DISPLAY. Three things separate:
+         · the FACT of what a day was served by — served, immutable, untouched;
+         · the NAME it is called — display vocabulary, and the naming ban that is landing
+           alongside this covers past days too. Not touched here;
+         · the present-tense PITCH — neither of those. A day in the past has no business
+           arguing that a strategy is a good idea, because the reader is not choosing it:
+           it already ran, and the record underneath says how it went.
+       So each family carries a second sentence, written in the past tense with every
+       persuasive clause removed ("a half-convinced room has been a tell", "the winning bet
+       has been against that read"), and a settled board renders that one. The mechanics are
+       identical in both; what is gone from the past-tense form is the argument.
+
+       THE SERVED PROSE IS NOT REWRITTEN. On a forge day the sentence is generated backend
+       side and it stays verbatim — a settled forge board reframes it with a past-tense
+       label instead ("How it read a game"), which is chrome, not editing. Rewriting served
+       prose into the past tense would be exactly the kind of quiet re-authoring of a
+       finished day that the fact-preservation rule exists to prevent. */
+    function strategyFriendly(s: any, settled = false) {
       const fv = forgeVoice(s);
       // The first paragraph is the "what is this looking at" one, which is exactly the
       // single-line blurb every caller of strategySentence() wants. The full commentary is
       // rendered by the strip, which asks for it by name.
+      // A forge day's prose is SERVED, so `settled` does not touch it — the strip reframes
+      // it with a past-tense label instead of re-tensing someone else's sentence.
       if (fv) return { name: fv.name, blurb: fv.paras[0] };
       const lab = String((s && s.label) || "");
       const rule = String((s && (s.plain_english_rule || s.summary_line || s.reason)) || "");
@@ -9356,9 +9594,13 @@ export default function Home() {
         const names = who.length > 1 ? who.slice(0, -1).join(", ") + " and " + who[who.length - 1] : who[0] || "";
         return {
           name: who.length ? `The ${who.join(" + ")} Fade` : "The Room Fade",
-          blurb: who.length
-            ? `When ${names} ${who.length > 1 ? "agree on a side" : "takes a side"}, DiamondEdge plays the other way — over the last few weeks the winning bet has been against that read.`
-            : `When this group of analysts agrees on a side, DiamondEdge plays the other way.`,
+          blurb: settled
+            ? (who.length
+              ? `On this day, when ${names} ${who.length > 1 ? "agreed on a side" : "took a side"}, DiamondEdge played the other way.`
+              : `On this day, when this group of analysts agreed on a side, DiamondEdge played the other way.`)
+            : (who.length
+              ? `When ${names} ${who.length > 1 ? "agree on a side" : "takes a side"}, DiamondEdge plays the other way — over the last few weeks the winning bet has been against that read.`
+              : `When this group of analysts agrees on a side, DiamondEdge plays the other way.`),
         };
       }
       /* THE NIGHTLY ENGINE'S COMMITTEE (2026-08-07). The engine names its winner by id
@@ -9370,42 +9612,65 @@ export default function Home() {
         const n = (rule.match(/\b(\d+)\s+strategies\b/i) || lab.match(/\b(\d+)\s+strategies\b/i) || [])[1];
         return {
           name: "The Full Committee",
-          blurb: n
-            ? `The ${n} approaches that have held up best over the last few weeks each get a vote on every game — DiamondEdge plays the side the majority lands on, and passes when they split.`
-            : `The approaches that have held up best over the last few weeks each get a vote on every game — DiamondEdge plays the side the majority lands on, and passes when they split.`,
+          blurb: settled
+            ? `On this day, the ${n ? `${n} ` : ""}approaches that had held up best each got a vote on every game — DiamondEdge played the side the majority landed on, and passed when they split.`
+            : (n
+              ? `The ${n} approaches that have held up best over the last few weeks each get a vote on every game — DiamondEdge plays the side the majority lands on, and passes when they split.`
+              : `The approaches that have held up best over the last few weeks each get a vote on every game — DiamondEdge plays the side the majority lands on, and passes when they split.`),
         };
       }
       if (/room-shape/i.test(lab)) {
         const m = rule.match(/exactly (\w+) of the four analysts say (\w+), take (\w+)/i);
+        /* THE ONE THE OWNER KEEPS FINDING. The present-tense form ends "— a half-convinced
+           room has been a tell", which is the sales case; the settled form states the same
+           mechanic in the past tense and stops there. Aug 4 still says it was served by
+           this rule, and Research still shows what the rule did. */
         return {
           name: "The Split-Room Fade",
-          blurb: m
-            ? `When exactly ${m[1]} of our four analysts like the ${m[2].toLowerCase()}, DiamondEdge takes the ${m[3].toLowerCase()} — a half-convinced room has been a tell.`
-            : `When the four analysts split a particular way, DiamondEdge takes the side that split has favored.`,
+          blurb: settled
+            ? (m
+              ? `On this day, when exactly ${m[1]} of the four analysts liked the ${m[2].toLowerCase()}, DiamondEdge took the ${m[3].toLowerCase()}.`
+              : `On this day, when the four analysts split a particular way, DiamondEdge took the side that split had favored.`)
+            : (m
+              ? `When exactly ${m[1]} of our four analysts like the ${m[2].toLowerCase()}, DiamondEdge takes the ${m[3].toLowerCase()} — a half-convinced room has been a tell.`
+              : `When the four analysts split a particular way, DiamondEdge takes the side that split has favored.`),
         };
       }
       if (/probabilistic/i.test(lab)) return {
         name: "The Weighted Ballot",
-        blurb: "Each of our four analysts gets a vote, sized by how right they've been lately — analysts running backwards get faded, and coin-flip games get passed.",
+        blurb: settled
+          ? "On this day, each of the four analysts got a vote sized by how right they had been lately; analysts running backwards were faded, and coin-flip games were passed."
+          : "Each of our four analysts gets a vote, sized by how right they've been lately — analysts running backwards get faded, and coin-flip games get passed.",
       };
       if (/form blend/i.test(lab)) return {
         name: "The Hot Hand",
-        blurb: "The analysts in the best recent form carry the most weight, cold ones get faded, and when the vote is close DiamondEdge passes.",
+        blurb: settled
+          ? "On this day, the analysts in the best recent form carried the most weight, cold ones were faded, and a close vote was passed."
+          : "The analysts in the best recent form carry the most weight, cold ones get faded, and when the vote is close DiamondEdge passes.",
       };
       if (/regularized|meta-model/i.test(lab)) return {
         name: "The Full-Board Read",
-        blurb: "The engine looks at how all four analysts line up on a game — who's in, how confident, who agrees with whom — and only bets when that read is clear.",
+        blurb: settled
+          ? "On this day, the engine read how all four analysts lined up on a game — who was in, how confident, who agreed with whom — and bet only where that read was clear."
+          : "The engine looks at how all four analysts line up on a game — who's in, how confident, who agrees with whom — and only bets when that read is clear.",
       };
       if (/stacked/i.test(lab)) return {
         name: "The Angle Stack",
-        blurb: "Several angles that have each been winning lately vote together — and a bet needs more than one of them pointing the same way.",
+        blurb: settled
+          ? "On this day, several angles that had each been winning voted together, and a bet needed more than one of them pointing the same way."
+          : "Several angles that have each been winning lately vote together — and a bet needs more than one of them pointing the same way.",
       };
       if (/neural|ensemble/i.test(lab)) return {
         name: "The Chemistry Read",
-        blurb: "The engine studies how the four analysts' votes and confidence play off each other — the chemistry between reads — and only bets when the pattern is strong.",
+        blurb: settled
+          ? "On this day, the engine read how the four analysts' votes and confidence played off each other — the chemistry between reads — and bet only where the pattern was strong."
+          : "The engine studies how the four analysts' votes and confidence play off each other — the chemistry between reads — and only bets when the pattern is strong.",
       };
       return null;
     }
+    /* THE NAME IS NOT TENSED AND IS NOT TOUCHED HERE. What a served day is CALLED is display
+       vocabulary and it is being changed by the naming pass landing alongside this one, past
+       days included. This function keeps reading whatever that pass leaves it. */
     function strategyLabelPublic(s: any) {
       const f = strategyFriendly(s);
       if (f) return f.name;
@@ -9415,8 +9680,10 @@ export default function Home() {
     // The served rule reads as a clause ("run a small ensemble over the four analysts…")
     // because it is written to follow a colon. It is a SENTENCE on both surfaces here, so it
     // gets a capital and a full stop — punctuation, not editing. The words are untouched.
-    function strategySentence(s: any) {
-      const f = strategyFriendly(s);
+    // `settled` asks for the past-tense, no-pitch form of a hand-written family blurb; it
+    // defaults false, so every existing caller keeps exactly the sentence it had.
+    function strategySentence(s: any, settled = false) {
+      const f = strategyFriendly(s, settled);
       if (f && f.blurb) return f.blurb;
       const raw = humanNote((s && (s.plain_english_rule || s.summary_line || s.reason)) || "").trim();
       if (!raw) return "";
@@ -9534,7 +9801,11 @@ export default function Home() {
           </div></div>`;
       }
       const label = strategyLabelPublic(s) || "Chosen overnight from the last three weeks";
-      const rule = strategySentence(s);
+      /* PAST BOARD ⇒ PAST TENSE, AND NO PITCH. `isPast` is already the strip's own test for
+         "this day is settled" (it drives the eyebrow and the record's "final"), so the
+         sentence follows the same flag rather than inventing a second notion of a finished
+         day that could drift out of step with the one above it. */
+      const rule = strategySentence(s, isPast);
       /* ════════ THE COMMENTARY, AND THE EXACT RULE UNDERNEATH IT ════════
          The strip's fold used to carry one line: the served rule sentence, which on a forge
          board is the raw serialisation. It now carries the full generated commentary — three
@@ -9572,6 +9843,12 @@ export default function Home() {
         const one = m ? m[0].trim() : p0;
         return one.length >= 24 ? one : p0;
       })();
+      /* A SETTLED FORGE DAY IS REFRAMED, NEVER REWRITTEN. This lead sentence is SERVED prose,
+         generated backend-side from that day's own rule, and it is in the present tense
+         because it was written for the morning it was served. Re-tensing it here would be
+         re-authoring a finished day. The frame around it does that work instead — the
+         past-tense heading and the "not running now" line in the fold below. Nothing in this
+         expression changes for a past board, and that is deliberate. */
       const voiceHtml = leadLine
         ? `<div class="stgy-voice"><p class="stgy-lead">${esc(leadLine)}</p></div>`
         : "";
@@ -9605,21 +9882,37 @@ export default function Home() {
       /* THE SECOND BEAT: WHAT IT DID, AND THEREFORE WHY IT IS TODAY'S. Leon: "this strategy
          had been done for the last however many days would've produced this record hence why
          we're going with it."
-         Both halves are served facts, not editorial. The record and the window are fields on
-         the block; "the best record of any strategy we tested" is what the selector IS — it
-         takes the argmax by wins-minus-losses over everything the search can express, which
-         the block states in its own `objective` and `summary_line`. The clause is gated on
-         that objective actually being present, so a day served by some other selector cannot
-         inherit the claim. Past tense throughout: this is what it DID, never what it will do. */
+         The record and the window are served fields, not editorial.
+
+         ═══ THE SUPERLATIVE HAD TO GO WITH THE NUMBERS (2026-08-09) ═══
+         This clause read: "— the best record of any strategy we tested, which is why it is
+         today's." It is the product's central claim and it sits on the busiest surface in
+         the app, and it was never checkable: verifying a superlative requires enumerating
+         the comparison set, and no reader has ever been given a runner-up, a distribution,
+         or a second-place score. What made it FEEL checkable was the machinery published
+         around it — the size of the search language, the enumeration depth, the procedure.
+         Tonight that machinery came off the Research page, because it is the one part of
+         this product a competitor could rebuild from.
+         Removing the support and leaving the superlative would be the exact move this whole
+         pass exists to prevent: a claim getting vaguer and more confident in the same edit.
+         So the claim gets more careful instead. It still states the mechanism — this rule
+         had the best record over the window, and that is the ONLY reason it is on the card —
+         and it no longer implies a comparison the reader can audit. Same fact, no borrowed
+         authority.
+
+         THE WINDOW LENGTH STAYS HERE, and only here (with the Desk). It is the denominator
+         of the record in the same sentence: strip it and "it went 129-50-3" is a number
+         without a period, which is less honest, not more discreet. What the process copy on
+         Research now says is "a few weeks" — the constant is disclosed where it is evidence
+         and not published where it is a setting.
+
+         AND IT KNOWS WHICH DAY IT IS TALKING ABOUT. The strip renders on past boards too,
+         and "…which is why it is today's" is false on Thursday's board read on Saturday. */
       const isWL = /w\s*-\s*l/i.test(String((s as any).objective || ""));
       const recTxt = humanNote(s.record);
-      /* AND IT KNOWS WHICH DAY IT IS TALKING ABOUT. The strip renders on past boards too, and
-         "the 35 nights before today … which is why it is today's" is false on Thursday's
-         board read on Saturday: the window ran to the night before THAT day, and it was that
-         day's strategy, not this one's. */
       const whyTxt = recTxt && days
         ? `Over the ${days} nights before ${isPast ? "that day" : "today"} it went ${recTxt}${
-            isWL ? ` — the best record of any strategy we tested, which is why it ${isPast ? "was that day's" : "is today's"}` : ""}.`
+            isWL ? ` — the best the overnight search came back with, which is the only reason it ${isPast ? "was on that card" : "is on today's"}` : ""}. That is a count of what it did on the games that chose it, not a forecast.`
         : "";
       /* ═══ THE NUMBER ON THE CLOSED BAR IS THE DAY'S RECORD, LIVE ═══
          Leon: "the record of DiamondEdge picks should always be shown in real time on a
@@ -9675,7 +9968,27 @@ export default function Home() {
         </button>
         <div class="stgy-more" id="stgy-more">
           <div class="stgy-more-in">
-            ${voiceHtml || (rule ? `<p class="stgy-rule"><span>How it reads a game</span>${esc(rule)}</p>` : "")}
+            ${/* ═══ A PAST BOARD IS NOT A PITCH (2026-08-09) ═══
+                 The strategy prose is written in the present — "DiamondEdge takes the under,
+                 a half-convinced room has been a tell" — because it is generated (or, for
+                 the legacy families, hand-written) for the day it is on. On a board a reader
+                 has scrolled back to, that same sentence sells a play that stopped running
+                 weeks ago, in the present tense, as if it were tonight's.
+                 The sentence itself is NOT rewritten: it is served or table copy, and
+                 rewriting served prose by regex to change its tense is how a claim quietly
+                 stops matching its source. What changes is the frame around it, which is
+                 ours to write — the eyebrow already says "Thursday's strategy", and the
+                 heading over the prose now says the same thing, so the paragraph reads as a
+                 description of what was on the card that day rather than as an offer. */""}
+            ${voiceHtml || (rule ? `<p class="stgy-rule"><span>${isPast ? "How it read that day's games" : "How it reads a game"}</span>${esc(rule)}</p>` : "")}
+            ${/* THE "NOT RUNNING NOW" LINE BELONGS ON EVERY SETTLED DAY, not only on the days
+                  whose prose came from the forge. Its first half is a statement about SERVED
+                  prose — true of the generated voice, which is reproduced verbatim, and NOT
+                  true of the hand-written families, whose settled sentence is display copy
+                  written in the past tense rather than a quote from that morning. So the
+                  first half is gated on the branch it describes and the second half, which
+                  is a fact about the machine on any finished day, is not. */""}
+            ${isPast && (voiceHtml || rule) ? `<p class="stgy-past">${voiceHtml ? "This is how that day's strategy was described on the day it played. " : ""}It is not running now — the search picks again every night.</p>` : ""}
             ${whyTxt ? `<p class="stgy-why">${esc(whyTxt)}</p>` : ""}
             <!-- THE LABEL KEEPS ITS NAME AND GAINS ITS DESTINATION. It is the phrase Leon
                  refers to this link by, so it stays; what follows the dash is where it now
@@ -9685,40 +9998,50 @@ export default function Home() {
         </div>
       </div>`;
     }
-    /* ════════ LANDING ON THE DESK'S RESULTS — not at the top of a long tab ════════
-       Leon: "when you click on how the strategy works take us to the Desk page and really
-       highlight the DiamondEdge results and all the stats on performance."
+    /* ════════ "THE FULL RECORD" IS NOW SIMPLY: OPEN THE DESK ════════
+       This used to be an ANCHOR SCROLL WITH A HIGHLIGHT — switch the tab, poll until the
+       Desk had rendered, scroll to #desk-results past the sticky header, and ring the region
+       for 2.6s so the reader could see where they had been sent. That was correct while the
+       record lived mid-page on a long tab. The page collapse (2026-08-09) put the record
+       hero FIRST: #desk-results now begins 9px below the masthead, so the measured anchor
+       resolved to the top of the page anyway and the whole apparatus bought nothing.
 
-       THREE THINGS HAVE TO HAPPEN, IN ORDER, AND THE THIRD IS THE ONE THAT IS USUALLY
-       MISSED. switch the tab; make sure the Desk has actually RENDERED (it is cached and
-       invalidated by the pick poller, so on a stale cache the region does not exist yet at
-       the moment the click is handled); then scroll to the record region and ring it.
+       WHAT IT COST (Leon, 2026-08-09: "the scroll is off when loading and there's an odd box
+       over the calendar widget"):
 
-       WHY IT POLLS RATHER THAN SLEEPS. switchTab defers its render behind
-       requestAnimationFrame — which is SUSPENDED in a background tab — with a 120ms timeout
-       as the fallback, and its pan phase adds another 152ms. A single fixed setTimeout is a
-       race against all three. This retries on a short interval until the element exists and
-       gives up after ~1.6s rather than scrolling a page that is not there.
+       · THE ODD BOX. The ring is drawn around the whole region — record hero, units curve,
+         14-day calendar, scopes: about 1250px at 375px wide. Both of its horizontal edges
+         are off-screen, so it does not read as a highlight on anything; it reads as two gold
+         rules running down the sides of the phone, framing whatever happens to be on screen
+         — which, at the scroll position the anchor leaves you at, is the calendar.
 
-       THE SCROLL IS OFFSET BY THE STICKY HEADER, measured off the element rather than
-       assumed — it differs between web and the native shell, and between date-strip states. */
+       · THE SCROLL. `land` ran off a fixed 300ms timer while switchTab's own
+         `window.scrollTo(0, 0)` runs behind requestAnimationFrame (SUSPENDED in a background
+         tab) with a 120ms fallback, after a 152ms pan. Measured on a throttled tab the two
+         land in the wrong order — anchor scroll at 1.0s, the tab's reset at 2.0s — so the
+         destination was whichever fired last. Worse, if `land` measured while `desk-view`
+         was still `display:none` its rect is all zeros and the offset became
+         `scrollY − headerHeight − 14`, i.e. a fragment of the PREVIOUS tab's scroll.
+
+       So there is no second scroll and no highlight any more. switchTab already lands every
+       tab at the top, which is exactly where the record is; the only case it cannot serve is
+       a reader who is already ON the Desk and scrolled away (the analyst sheet's two links
+       open from here), and that one is a plain scroll to the top of the page. */
     function goDeskResults() {
-      let tries = 0;
-      const land = () => {
-        if (tab !== "desk") return;               // the reader navigated away mid-flight
-        const el = $("desk-results");
-        if (!el) { if (++tries < 14) setTimeout(land, 120); return; }
-        const hdr = $("app-header");
-        const hh = hdr ? hdr.getBoundingClientRect().height : 0;
-        const top = el.getBoundingClientRect().top + window.scrollY - hh - 14;
-        try { window.scrollTo({ top: Math.max(0, top), behavior: REDUCE ? "auto" : "smooth" }); }
-        catch { window.scrollTo(0, Math.max(0, top)); }
-        // restart the ring even if the reader lands here twice in a row
-        el.classList.remove("dp-spot"); void (el as any).offsetWidth; el.classList.add("dp-spot");
-        window.setTimeout(() => el.classList.remove("dp-spot"), 2600);
-      };
-      if (tab === "desk") { if (deskStale || !($("desk-view") || {} as any).innerHTML.trim()) { renderDesk(); deskStale = false; } setTimeout(land, 40); }
-      else { switchTab("desk"); setTimeout(land, 300); }
+      if (tab !== "desk") { switchTab("desk"); return; }   // switchTab lands it at the top
+      // already here: the record is the top of this page, so that is the whole journey
+      if (deskStale || !($("desk-view") || {} as any).innerHTML.trim()) { renderDesk(); deskStale = false; }
+      const y0 = window.scrollY;
+      if (y0 <= 0) return;
+      try { window.scrollTo({ top: 0, behavior: REDUCE ? "auto" : "smooth" }); }
+      catch { window.scrollTo(0, 0); }
+      /* THE DESTINATION IS ASSERTED, NOT HOPED FOR. A smooth scroll is an ANIMATION, and an
+         animation only runs where frames are being produced: in a backgrounded tab, in a
+         throttled WebView, or in a headless browser, `behavior:"smooth"` is silently a no-op
+         and the reader stays exactly where they were. Byte-identical position a beat later
+         means no animation ever started — and it also means the reader has not scrolled
+         themselves, so snapping cannot yank the page out from under anyone. */
+      window.setTimeout(() => { if (window.scrollY === y0) window.scrollTo(0, 0); }, 400);
     }
     // The bar's two bindings. Expansion is in place (no navigation, no sheet); the link is the
     // one place the reader leaves, and it lands on the Desk's record — the proof — rather than
@@ -11698,8 +12021,14 @@ export default function Home() {
         : isPickRow
           ? `<span class="sgr-side ${dirCls}">${stratArrow(s)} <b>${esc(stratCall(s))}</b></span>${s.price != null ? `<i class="sgr-px">${fmtOdds(s.price)}</i>` : ""}`
           : `<span class="sgr-side is-pass"><b>Pass</b></span>${s.lean ? `<i class="sgr-lean-side ${dirCls}">${stratArrow(s)} ${esc(stratCall(s))}${s.price != null ? ` ${fmtOdds(s.price)}` : ""}</i>` : (s.line != null ? `<i class="sgr-px">judged at ${esc(lineStr(s.line))}</i>` : "")}`;
-      const conf = !noView && (s.stars != null || s.score != null)
-        ? `<span class="sgr-q">${s.stars != null ? bStars(s.stars) : ""}${s.score != null ? `<i class="pgrade${isPickRow ? "" : " muted"}">${s.score.toFixed(2)}</i>` : ""}</span>`
+      /* THE RAW SCORE IS GONE (2026-08-09). Beside the stars this printed the stream's own
+         conviction number to two decimals — "3.00", "0.33", "0.84". It is an internal scale
+         with no published units, no range a reader is told, and no way to tell a good one
+         from a bad one; what it actually communicates is that there IS a hidden number,
+         which is the opposite of what a transparency panel is for. The stars are the same
+         quantity, on a scale the app defines everywhere else. */
+      const conf = !noView && s.stars != null
+        ? `<span class="sgr-q">${bStars(s.stars)}</span>`
         : "";
       // Only a PICK gets a W/L badge. A PASS may be graded in the payload, but we did not
       // bet it — a green WON on a pass is exactly the hindsight bait this panel prevents.
@@ -12522,6 +12851,12 @@ export default function Home() {
          free; this section is the call. */
       const referenceSections = `
         ${vizPitchers(g) ? `<section class="st-sec"><h3 class="st-h">Starting pitchers</h3>${vizPitchers(g)}</section>` : ""}
+        ${/* WEATHER SITS SECOND, DIRECTLY UNDER THE ARMS, because on a totals board those are
+              the two inputs that move the same number — who is throwing, and what the ball is
+              flying through. It is its own headless section (the card names itself) and it
+              renders NOTHING on a dome or on a game with no wall-legal reading, so this line
+              adds no heading to a page that has no weather to put under it. */ ""}
+        ${vizWeather(g)}
         ${vizTeamRecords(g) || vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Team performance</h3>${vizTeamRecords(g)}${vizFormStrip(g)}</section>` : ""}
         ${!leadLocked && (vizPredScore(g) || vizWinProb(g)) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
         ${vizH2H(g) ? `<section class="st-sec"><h3 class="st-h">Head to head</h3>${vizH2H(g)}</section>` : ""}
@@ -13372,14 +13707,28 @@ export default function Home() {
       // served_record in backticks — a contract note to the engine's author, not something a
       // reader should ever be handed "unedited". Every point it makes is already stated in
       // .stgyrec-warn below, in English, above the fold rather than folded away.
+      /* ═══ TWO STALE SENTENCES CAME OUT OF THE PREAMBLE (2026-08-09) ═══
+         · "Research ledgers show what the engine is learning and why the daily selector
+           changes over time" — present tense, over ledgers whose newest activation dates
+           are weeks old. These are records of runs, not a live feed, and the activation
+           date on every card below already says so.
+         · "A rule needs recent evidence and clear pricing value before it becomes the
+           day's strategy" — this describes a promotion mechanism that does not exist. The
+           nightly search takes the best win-minus-loss record over its window and nothing
+           else; there is no pricing-value criterion in it. A sentence inventing a second,
+           more reassuring gate is exactly the kind of claim this page cannot make.
+         AND THE FRAME AGREES WITH ITS CONTAINER NOW. Research wraps this block as "none of
+         them is the product" while the block opened "The official strategy leads" and
+         "Listed with the official product first" — a leaderboard framing for a list whose
+         whole point is that it is not one. The order is unchanged (the payload's spec
+         order, deliberately not by return); only the sentence describing it is. */
       return `<div class="ixc stgyrec" id="strategy-record">
         <div class="ixc-h">Strategy research ledgers</div>
-        <div class="ixc-sub">These show how each rule family is performing and which ideas are earning more trust.</div>
+        <div class="ixc-sub">One card per model we have run, each with the record it earned on real served slates.</div>
         <div class="stgyrec-warn">
-          <p><b>The official strategy leads.</b> Research ledgers show what the engine is learning and why the daily selector changes over time.</p>
-          <p>A rule needs recent evidence and clear pricing value before it becomes the day's strategy.</p>
+          <p><b>None of these is the product.</b> The product is the one pick DiamondEdge publishes per game, and its record is the headline on the Desk. These are the other models we have run beside it, kept so their outcomes are on the record too.</p>
+          <p>They are not ranked. The order is fixed, the product's own row comes first, and a losing ledger is shown at the same size as a winning one.</p>
         </div>
-        <div class="stgyrec-order">Listed with the official product first, then the active research tracks.</div>
         <div class="stgyrec-list">${rows.map(strategyCard).join("")}</div>
       </div>`;
       /* THE BUTTON THAT PROMISED A PAGE NOBODY BUILT ANY MORE (2026-08-09).
@@ -13547,20 +13896,27 @@ export default function Home() {
        uses, and the two cannot disagree. The story's own copy is a fallback for a game that
        is no longer on any loaded board — and even then it goes through the one gate rather
        than the bare entitled() this used, which ignored servedRedacted() entirely. */
+    /* AND WHERE THE BOARD CANNOT CONFIRM IT, THE CHIP DOES NOT RUN (2026-08-09).
+       The fallback this had used the feed's OWN `a.side` whenever the game was not on a
+       loaded board. Those two stores do not merely drift a half-point apart between
+       cycles: the news angle is assembled from `pregame_picks.total_pick` — the raw model
+       lane — while the board serves the UNIFIED pick, and on the 2026-08-09 slate they
+       disagreed on the SIDE. The feed's copy read UNDER 7.5 on MIN @ MIL; the board, and
+       the graded record, say OVER 7. An unconfirmable call is not a fainter version of
+       the call, it is a different one, so it is not published at all. */
     function newsAngle(a: any) {
-      if (!a || typeof a !== "object" || !a.side) return "";           // headline angles can be stale strings — skip
-      const g = a.game_id != null ? gameAnywhere(a.game_id) : null;
+      if (!a || typeof a !== "object" || a.game_id == null) return "";  // headline angles can be stale strings — skip
+      const g = gameAnywhere(a.game_id);
       const pl = g ? displayPick(g) : null;
-      const locked = pl ? pickLocked(pl, playState(g, pl)) : sideLocked(a, false);
-      let side = String(a.side), line = a.line;
-      if (pl && isBet(pl)) {                                           // the board's answer wins
-        side = String(pl.side || side);
-        line = pl.line != null ? pl.line : line;
-      }
-      // Keep the chip SHORT (side + line only) — matchup lives in the headline, so no wrap/cut-off.
-      const lineTxt = line != null && line !== "" ? " " + esc(String(line)) : "";
-      const pick = locked ? `<span class="nf-lock">${lockSvg} pick inside</span>` : `${esc(side)}${lineTxt}`;
-      return `<span class="nf-angle ${a.quality === "lean" ? "lean" : "edge"}">◆ ${pick}</span>`;
+      if (!pl || !isBet(pl)) return "";
+      const locked = pickLocked(pl, playState(g, pl));
+      // Keep the chip SHORT (side + line only) — matchup lives in the headline, so no
+      // wrap/cut-off. The board's side usually already carries its number ("UNDER 8.5"),
+      // so the line is appended only when it doesn't, never twice.
+      const side = String(pl.side || "");
+      const lineTxt = !/\d/.test(side) && pl.line != null ? " " + lineStr(pl.line) : "";
+      const pick = locked ? `<span class="nf-lock">${lockSvg} pick inside</span>` : `${esc(side)}${esc(String(lineTxt))}`;
+      return `<span class="nf-angle ${pl.q === "lean" || a.quality === "lean" ? "lean" : "edge"}">◆ ${pick}</span>`;
     }
     // Humanize a story timestamp — raw ISO / "SAT, 04 JUL 2026 16:40:00 GMT" → "2h ago" / "Jul 4".
     function niceTime(iso?: any, disp?: any) {
@@ -13589,13 +13945,40 @@ export default function Home() {
        inside buildStorySlides — and the reader's "Next story ->" depends on the two agreeing
        exactly. Nothing enforced that; a change to the dedupe on one side would have silently
        sent the reader to the wrong story, or to none. One list, built once. */
+    /* ════════ WHAT EARNS A SLIDE (Leon, 2026-08-09) ════════
+       "There's a bunch of news in the stories section with no image… there's also a few
+       sections with a blank article."
+
+       Measured on the live feed those were not two cosmetic faults but ONE: five of nine
+       items had no image AND no summary, and all five were a single source class —
+       syndicated "MLB Gameday: Dodgers 2, D-backs 4 Final Score (08/09/2026)" rows off
+       Google News, plus a book's "prediction, odds, time … picks by proven model" sheet.
+
+       They arrive with a headline and nothing else because there IS nothing else. A
+       Gameday row is the score, and this app already shows that game in full — line, box
+       score, our own graded pick — one tab away. The board says it better. A tout sheet
+       is a rival's product with a rival's number in the headline. Neither is worth a
+       full screen of a reader's briefing.
+
+       serve_news drops both at the source now, but the deck does not get to assume that:
+       the feed is a live wire on its own refresh cycle and this is the surface that has
+       to be right. So the gate runs here too, and it is a gate on the SOURCE CLASS, never
+       on the holes — a story with no photograph but real reporting behind it still runs,
+       and storyNewsSlide has a treatment written for exactly that. Fewer, better. */
+    const NEWS_SCOREBOARD_RE = /\bgameday\b|\bfinal score\b|\bbox ?score\b|\bline ?score\b|^recap:|\bscoreboard\b/i;
+    const NEWS_TOUT_RE = /\bprediction[s]?,|\bodds,\s*(?:time|line|spread)|\bbest bets?\b|\bexpert picks?\b|\bpicks?,\s*prediction|\bpredictions?\s+and\s+picks?\b|\bproven (?:model|computer|system)\b|\bparlay\b/i;
+    function newsWorthASlide(s: any) {
+      const h = String((s && (s.headline || s.title)) || "").trim();
+      if (!h) return false;
+      return !NEWS_SCOREBOARD_RE.test(h) && !NEWS_TOUT_RE.test(h);
+    }
     function newsDisplayStories(): { s: any; key: string }[] {
       if (!newsFeed || !newsFeed.lead) return [];
       const orig = (newsFeed.headlines || []) as any[];
       return [
         { s: newsFeed.lead, key: "L" },
         ...newsDedupedHeadlines().map((s: any) => ({ s, key: String(orig.indexOf(s)) })),
-      ];
+      ].filter((x) => newsWorthASlide(x.s));
     }
     function newsDisplayKeys(): string[] {
       return newsDisplayStories().map((x) => x.key);
@@ -13685,11 +14068,37 @@ export default function Home() {
          one voice; the deck card and this sheet cannot disagree. */
       const artPl = g ? displayPick(g) : null;
       const artBlurb = g && artPl ? pickBlurb(g, artPl, pickLocked(artPl, playState(g, artPl))) : "";
+      /* AND THE FALLBACK ONLY RUNS WHEN THE BOARD AGREES WITH IT (2026-08-09).
+         `s.take` names a SIDE, and the side it names comes from `pregame_picks.total_pick`
+         while the board serves the unified pick — two lanes that disagreed outright on
+         the 2026-08-09 slate (the feed said UNDER 7.5 on MIN @ MIL; the board and the
+         graded record say OVER 7). So the feed's sentence is published only where the
+         resolved game's own pick states the same side and the same number. Where nothing
+         can confirm it, the section does not render — an unconfirmable call is worse than
+         no call, and an empty "Our take" heading is worse than both. */
+      const takeConfirmed = (() => {
+        const a: any = s.angle;
+        if (!takeTxt || !a || typeof a !== "object" || !a.side) return false;
+        const bp = g ? displayPick(g) : null;
+        if (!bp || !isBet(bp)) return false;
+        const dir = (x: any) => (/over/i.test(String(x)) ? "o" : /under/i.test(String(x)) ? "u" : "");
+        const d = dir(bp.side);
+        if (!d || d !== dir(a.side)) return false;
+        const bl = bp.line != null ? Number(bp.line) : (String(bp.side).match(/[\d.]+/) || [])[0];
+        return bl == null || a.line == null || Number(bl) === Number(a.line);
+      })();
       const takeHtml = artBlurb
         ? `<div class="art-take">${artBlurb}</div>`
-        : takeTxt && entitled()
+        : takeConfirmed && entitled()
         ? `<div class="art-take"><span class="art-take-k">◆ Our take</span><p>${mdBold(takeTxt)}</p></div>`
         : "";
+      /* A MATCHUP HERO SHOWS THE SCORE ONCE THERE IS ONE. "vs" between two crests is the
+         right word before first pitch and a dead one after it — the reader has come in
+         from a card that already said 2–1. */
+      const artGs = g ? gameState(g) : null;
+      const artMid = artGs && artGs.score && artGs.score.split && artGs.score.home != null
+        ? `${num(artGs.score.away, 0)}–${num(artGs.score.home, 0)}`
+        : "vs";
       const angleChip = newsAngle(s.angle);
       // If the mapped game already finished, say — honestly — whether our pick hit.
       const gpick = g ? displayPick(g) : null;
@@ -13712,14 +14121,23 @@ export default function Home() {
                   already painted, so it is warm in cache and lands with no flash; it enters by
                   continuing the card's crop (1.05 → 1) rather than fading in as a new picture,
                   and the headline settles in behind it. That is the "carry through". */""}
-            <div class="art-hero${s.image_url ? "" : g ? " art-vs" : " is-fallback"}">
+            ${/* AND WITH NO PICTURE AND NO GAME, THE TYPE IS THE HERO (2026-08-09).
+                  `is-fallback` kept the full 230–340px hero frame and put a ghosted house
+                  mark in it, so a story with neither a photograph nor a resolvable game
+                  opened on a third of a screen of empty box above its own headline — the
+                  "blank article" Leon reported. The frame is what was empty, so the frame
+                  goes: `art-type` collapses the hero to its own type, sets a struck gold
+                  rule above the kicker, and lets the headline and standfirst BE the
+                  header. An image or a matchup still gets the full picture treatment. */""}
+            <div class="art-hero${s.image_url ? "" : g ? " art-vs" : " art-type"}">
               ${s.image_url
                 ? `<span class="art-hero-shotwrap"><img class="art-hero-shot" src="${esc(String(s.image_url))}" alt="" decoding="async" onload="if(!this.naturalWidth||this.naturalWidth<260){this.closest('.art-hero').classList.add('is-fallback')}" onerror="this.closest('.art-hero').classList.add('is-fallback')"></span>`
                 : g
-                  ? `<span class="art-hero-crests">${gCrest(g, "away", "art-hero-crest")}<em>vs</em>${gCrest(g, "home", "art-hero-crest")}</span>`
-                  : `<span class="art-hero-mark" aria-hidden="true"></span>`}
+                  ? `<span class="art-hero-crests">${gCrest(g, "away", "art-hero-crest")}<em class="${artMid === "vs" ? "" : "art-hero-score"}">${esc(artMid)}</em>${gCrest(g, "home", "art-hero-crest")}</span>`
+                  : ""}
               <span class="art-hero-scrim"></span>
               <span class="art-hero-body">
+                <span class="art-rule" aria-hidden="true"><i>◆</i></span>
                 <span class="sh-sport">${lab} · DiamondEdge</span>
                 <span class="art-title">${esc(s.headline || s.title)}</span>
                 ${newsDek(s) ? `<span class="sh-meta">${esc(newsDek(s))}</span>` : ""}
@@ -14289,18 +14707,55 @@ export default function Home() {
          and the affordance is a chevron text-link — the same thing Apple ships. */
       const img = s.image_url ? `<img class="nws-shot" data-src="${esc(String(s.image_url))}" alt="" decoding="async" onload="var p=this.closest('.nws-card');var r=this.naturalWidth/this.naturalHeight;if(!p)return;if(!this.naturalWidth||this.naturalWidth<300||r>2.6){this.remove();return}p.style.setProperty('--shot-ar',r.toFixed(3));p.classList.remove('nofoto');p.classList.add(r>=1.24?'foto-band':'foto-bleed')" onerror="this.remove()">` : "";
       const dek = newsDek(s);
+      /* ═══ AND NO PHOTOGRAPH IS A COMPOSITION, NOT A GAP (Leon, 2026-08-09) ═══
+         "Find a creative layout that doesn't highlight that… a grey rectangle is an
+         absence." It was: the card kept its full-height frame, hung the league word
+         across the middle as a ghosted outline, and left the top 60% of a 812px screen
+         empty above the headline. Nothing about that reads as intended — an outlined
+         watermark floating in a void is the visual grammar of a failed image load.
+
+         The imageless card is TYPESET instead, and it is the only card in the deck that
+         does not stretch: it shrink-wraps to its own content and floats centred on the
+         field, exactly as a wide photo's band card already does, so there is no hole left
+         to fill. Above the kicker runs a struck gold rule with the house diamond set into
+         it — a masthead, the same mark the article hero carries. The headline is the art
+         and takes the extra size it can now afford. Beneath it, where the story maps to a
+         game we still hold, the crests and the SCORE are set as a plate: two badges and
+         "2–1" is a designed object and it is the truest thing on the card. The wire's
+         name closes it, because an imageless story's remaining claim on the reader is
+         who reported it.
+
+         Every one of those pieces is conditional. A story with no resolvable game gets no
+         plate; no source gets no source line. Nothing renders an empty frame waiting for
+         something that is not coming — which is the same rule the rest of this app
+         follows, and the rule the old ghosted watermark broke. */
+      const nGid = s.angle && typeof s.angle === "object" && s.angle.game_id != null ? s.angle.game_id : null;
+      const nG = nGid != null ? gameAnywhere(nGid) : null;
+      const nGs = nG ? gameState(nG) : null;
+      const nScore = nGs && nGs.score && nGs.score.split && nGs.score.home != null
+        ? `<i class="nws-pscore${nGs.kind === "final" ? " fin" : ""}">${num(nGs.score.away, 0)}–${num(nGs.score.home, 0)}</i>`
+        : `<i class="nws-pat">@</i>`;
+      const plate = nG
+        ? `<span class="nws-plate" aria-hidden="true">
+             <span class="nws-pteam">${gCrest(nG, "away", "nws-pcrest")}<b>${esc(nG.away_abbr || "")}</b></span>
+             ${nScore}
+             <span class="nws-pteam">${gCrest(nG, "home", "nws-pcrest")}<b>${esc(nG.home_abbr || "")}</b></span>
+           </span>`
+        : "";
+      const src = String(s.source || "").trim();
       return `<div class="sts sts-news">
         ${storyField("news")}
         <div class="sts-core">
           <article class="nws-card sts-open nofoto" data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Read this story">
             <span class="nws-shotwrap" aria-hidden="true">${img}</span>
-            <span class="nws-league" aria-hidden="true">${lab || "DIAMONDEDGE"}</span>
             <span class="nws-scrim" aria-hidden="true"></span>
             <div class="nws-body">
+              <span class="nws-rule" aria-hidden="true"><i>◆</i></span>
               <div class="nws-kick"><b>${lab || "AROUND THE LEAGUE"}</b>${when ? `<em>${esc(when)}</em>` : ""}</div>
               <h3 class="sts-head">${esc(s.headline || s.title || "")}</h3>
               ${dek ? `<p class="sts-dek">${esc(dek)}</p>` : ""}
-              <span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span>
+              ${plate}
+              <span class="nws-foot"><span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span>${src ? `<span class="nws-src">${esc(src)}</span>` : ""}</span>
             </div>
           </article>
         </div>
@@ -14726,7 +15181,8 @@ export default function Home() {
           if (go === "unlock") { openUnlock(); return; }
           if (go === "pick") { const g = findGameLive(b.dataset.gid) || findGame(b.dataset.gid); if (g) openDetail(g); else jumpToGames([b.dataset.gid]); return; }
           if (go === "news") { openArticleSheet(newsStoryByKey(b.dataset.nf), b.dataset.nf); return; }
-          if (go === "results") { switchTab("desk"); goDeskResults(); }
+          if (go === "results") { goDeskResults(); }
+          else if (go === "research") switchTab("research");
           else if (go === "games") switchTab("games");
         };
       });
@@ -15189,7 +15645,7 @@ export default function Home() {
       view.querySelectorAll(".lg-dn").forEach((b: any) => (b.onclick = () => moveLeague(b.dataset.lg, 1)));
       bindClick("lg-reset", () => { try { localStorage.removeItem("de_league_order"); } catch {} renderAccount(); prefsOpen(); },
         { optional: "only shown once a custom league order exists" });
-      bindClick("acct-record", () => { switchTab("desk"); goDeskResults(); });
+      bindClick("acct-record", () => goDeskResults());
       bindClick("acct-how", () => openRecipeSheet());
       bindClick("acct-billing", () => { location.href = "mailto:support@diamondedge.app?subject=DiamondEdge%20billing"; });
       bindClick("acct-terms", () => openTermsSheet());
@@ -15776,16 +16232,44 @@ export default function Home() {
     function verdictTone(v: string) {
       const s = String(v || "").toUpperCase();
       if (/\bNULL\b|DIDN'T WORK|DID NOT WORK|THAT WORKED/.test(s)) return "null";
-      if (/\bRETIRED\b|\bCLOSED\b|\bKILLED\b/.test(s)) return "retired";
+      /* "CLOSED" ONLY TOMBSTONES A PAPER WHEN IT IS THE PAPER THAT WAS CLOSED.
+         The nulls ledger's own verdict — "about 70 ideas closed, published in full" — is
+         a paper ABOUT closures, and it was tripping this branch and wearing the retired
+         chip: the library's single strongest credibility asset, filed under a headstone.
+         A verdict that counts closures is reporting, not an epitaph, so a CLOSED that
+         follows a count is not a status. */
+      const reportsClosures = /\b\d+\s+(?:\w+\s+){0,2}(?:IDEAS?|HYPOTHES\w+|STUD\w+|ITEMS?)\s+CLOSED\b|\bCLOSED,\s*PUBLISHED\b/.test(s);
+      if (!reportsClosures && /\bRETIRED\b|\bCLOSED\b|\bKILLED\b/.test(s)) return "retired";
       if (/\bIN PROGRESS\b/.test(s)) return "progress";
       if (/SHIPPED|\bLIVE\b|FIXED|REBUILT|ENFORCED|IN PRODUCTION|VERIFIED/.test(s)) return "shipped";
       if (/HOUSE RULE|STANDING|A PROCESS|WHOLE SYSTEM/.test(s)) return "rule";
       return "plain";
     }
+    /* ═══ THE CARD USED TO MAKE EVERY VERDICT SHORTER AND MORE CONFIDENT AT ONCE ═══
+       (fixed 2026-08-09) This cut the verdict at the first ". " or " — " and printed the
+       head. The corpus, without exception, puts the CLAIM first and the HEDGE second — so
+       the truncation was systematically deleting the honesty and keeping the boast:
+
+         "A PROCESS THAT HAS BEEN WINNING — not a proven edge, and served that way"
+         "ARCHITECTURE FIXED, DECISIVELY — ACCURACY DID NOT IMPROVE, with error bars"
+         "REBUILT AND VERIFIED — we are not claiming that makes them profitable"
+         "AI RUNS THE RESEARCH FLOOR — IT NEVER TOUCHES A PICK"
+
+       The last one inverts the paper's entire point on the card that introduces it. This
+       is the one prohibition the whole tidy-up is held to — no claim gets vaguer and more
+       confident in the same edit — instantiated by a helper, five times, in the library
+       whose job is credibility.
+
+       IT NOW TRUNCATES ON LENGTH, NOT ON PUNCTUATION, and the budget is generous enough
+       that every verdict in the corpus arrives whole. If one ever does need cutting, the
+       break is at a word and the ellipsis says so — a reader can tell there is more. What
+       it will never again do is stop at the em dash and call that the verdict. */
     function verdictShort(v: string) {
-      let s = String(v || "").split(" — ")[0].split(" – ")[0].split(". ")[0];
-      s = s.replace(/[.,;:]\s*$/, "").trim();
-      return s.length > 42 ? s.slice(0, 40).trim() + "…" : s;
+      const s = String(v || "").replace(/[.,;:]\s*$/, "").trim();
+      if (s.length <= 120) return s;
+      const cut = s.slice(0, 118);
+      const sp = cut.lastIndexOf(" ");
+      return (sp > 70 ? cut.slice(0, sp) : cut).replace(/[\s—–,;:]+$/, "") + "…";
     }
 
     /* ═══════════════════════ THE FIGURE RENDERER ═══════════════════════
@@ -16123,6 +16607,23 @@ export default function Home() {
        corpus exists to argue against), what it is about, the numbers that carry it, then the
        argument, with the figures set into the sections they belong to and the takeaway pulled
        out at the end. Sections are keyed on ROLE, never on the English heading. */
+    /* A SOURCE PATH, RENDERED AS THE REPORT IT NAMES. "v4/models/prereg/
+       rolling_walkforward_v2_4season.prereg.md" → "Rolling walkforward v2 4season
+       (pre-registration)". The leaf is the citation; the directories are our filesystem.
+       Nothing is invented — the words all come out of the filename — and an unrecognised
+       shape falls through to the leaf unchanged rather than to a guess. */
+    function sourceName(raw: any) {
+      const leaf = String(raw || "").trim().split("/").filter(Boolean).pop() || String(raw || "");
+      const kind = /\.prereg\.md$/i.test(leaf) ? " (pre-registration)"
+        : /\.(py|mjs|js|ts)$/i.test(leaf) ? " (module)"
+        : /\.(json|jsonl|csv|parquet)$/i.test(leaf) ? " (data file)" : "";
+      const stem = leaf.replace(/\.prereg\.md$/i, "").replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim();
+      if (!stem) return leaf;
+      // ALL-CAPS report names (EV_GATE, TOURNAMENT_REPORT) are how they are actually filed;
+      // lower-cased they stop looking like the documents they are.
+      const t = /^[A-Z0-9 ]+$/.test(stem) ? stem : stem.charAt(0).toUpperCase() + stem.slice(1);
+      return t + kind;
+    }
     function paperDateTxt(d: string) {
       const m = String(d || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (!m) return "";
@@ -16196,8 +16697,19 @@ export default function Home() {
               </div>` : ""}
               ${secHtml}${tail}
               ${pp.tags.length ? `<div class="rp-tags">${pp.tags.map((t: string) => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+              ${/* ═══ THE CITATION IS THE REPORT, NOT THE DIRECTORY (2026-08-09) ═══
+                     Every paper lists its sources as literal repository paths. Nobody
+                     outside can open them, so the path adds nothing a reader can use — but
+                     it does publish our internal layout, and several of the leaves name
+                     gates and modules by their engine names. The report's own NAME is the
+                     whole citation: it is what makes the claim traceable ("this figure
+                     comes from a specific, named report we hold"), and it is the only part
+                     of the string that was ever doing that work.
+                     The audit trail is not weakened — the same number of sources, the same
+                     reports, the same fold — and the sub-line no longer implies the reader
+                     can go and read them, which it always did and never could. */""}
               ${pp.sources.length ? lazyFold("rp-srcs", `<span class="rp-extra-k">Sources · ${pp.sources.length}</span><span class="sgc-caret" aria-hidden="true">›</span>`,
-                () => `<p class="rp-srcs-sub">Every figure above is traceable to one of these reports in the research repository.</p><ul data-devtext="the sources of a research paper are the report files the numbers came from — the paths are the citation">${pp.sources.map((s: string) => `<li>${esc(s)}</li>`).join("")}</ul>`) : ""}
+                () => `<p class="rp-srcs-sub">Every figure above traces to one of these reports in our own files. They are named so a claim can be asked for by name.</p><ul>${pp.sources.map((s: string) => `<li>${esc(sourceName(s))}</li>`).join("")}</ul>`) : ""}
               ${related.length ? `<div class="rp-rel">
                 <div class="rp-seck">Read next</div>
                 ${related.map((r: any) => `<button class="rp-relcard" data-paper="${esc(r.id)}">
@@ -16265,31 +16777,80 @@ export default function Home() {
       }
       return roadmapData;
     }
-    // status → group. Unknowns land in "queued" so a new backend status can never crash the page.
-    const LAB_GROUP: any = { live_testing: "fire", building: "fire", piloting: "fire", shipped: "shipped", accruing: "accruing", queued: "queued", closed_null: "grave" };
-    const LAB_STATUS_LABEL: any = { live_testing: "Under evaluation", building: "In development", piloting: "Pilot", shipped: "In production", accruing: "Collecting data", queued: "Pre-registered", closed_null: "Null result" };
+    /* status → group. Unknowns land in "queued" so a new backend status can never crash the
+       page — but an unknown that the backend has been shipping for weeks is not a graceful
+       fallback, it is a mislabel.
+
+       `testing` HAD NO KEY (fixed 2026-08-09). The roadmap ships two items with that status
+       and both fell through to "queued", i.e. into the section headed "Pre-registered —
+       Designed and queued. The hypothesis and the evaluation are fixed before the data is
+       touched." Both are at 85% and 100% with their results already written; one of them is
+       the recipe tournament, whose result line is a partial settings list. So the page was
+       filing finished work under a heading that says the data has not been touched, and
+       counting it on that heading's chip.
+       With `testing` mapped where it belongs, the roadmap has ZERO genuinely queued items —
+       labSection returns "" on an empty group, so the mislabelled section and its count chip
+       simply stop existing rather than standing empty. */
+    const LAB_GROUP: any = { live_testing: "fire", testing: "fire", building: "fire", piloting: "fire", shipped: "shipped", accruing: "accruing", queued: "queued", closed_null: "grave" };
+    const LAB_STATUS_LABEL: any = { live_testing: "Under evaluation", testing: "Under evaluation", building: "In development", piloting: "Pilot", shipped: "In production", accruing: "Collecting data", queued: "Pre-registered", closed_null: "Null result" };
     const labDate = (s: any) => {
       const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (!m) return String(s || "");
       const d = new Date(`${m[0]}T12:00:00`);
       return isNaN(d.getTime()) ? String(s) : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     };
-    const labEta = (e: any) => {
+    /* ═══ A RELATIVE ETA GOES STALE THE MOMENT IT IS WRITTEN (2026-08-09) ═══
+       The roadmap writes ETAs as durations — "~hours", "~1 week", "first graded results
+       tonight". Rendered flat they are read against TODAY, so a card written thirteen days
+       ago promises tonight, and one written a fortnight back says the answer is hours away.
+       "Tonight" on a settled day is not a stale label; it is a present-tense sales pitch for
+       something that already happened, which is the thing this whole pass is cleaning up.
+
+       So a relative ETA has to earn its place by being recent. `ref` is the newest date the
+       card itself carries (its own Latest line, else its start): inside the freshness window
+       the duration still means what it says and renders unchanged; past it the ETA renders
+       as NOTHING rather than as a guess. An absolute date ("2026-09-14", "candidates fenced
+       at 2026-06-30") is not relative to anything and always renders. The card loses a line
+       and keeps its honesty — it still has its status chip, its progress bar and its dated
+       Latest note, which is where a reader should be reading recency from anyway. */
+    const LAB_ETA_FRESH_DAYS = 7;
+    const labEtaRef = (it: any) => {
+      const m = String((it && (it.latest || "")) || "").match(/(\d{4})-(\d{2})-(\d{2})/)
+        || String((it && it.started) || "").match(/(\d{4})-(\d{2})-(\d{2})/);
+      return m ? m[0] : "";
+    };
+    const labEta = (e: any, it?: any) => {
       const s = String(e || "").trim();
       if (!s || s === "done" || s === "closed") return "";
+      const relative = !/\d{4}-\d{2}-\d{2}/.test(s);
+      if (relative && it) {
+        const ref = labEtaRef(it);
+        if (ref) {
+          const age = Math.round((new Date(todayISO() + "T12:00:00").getTime() - new Date(ref + "T12:00:00").getTime()) / 86400000);
+          if (isFinite(age) && age > LAB_ETA_FRESH_DAYS) return "";
+        }
+      }
       return /^eta/i.test(s) ? s : `ETA ${s}`;
     };
     const labPct = (v: any) => { const n = Number(v); return isFinite(n) ? Math.max(0, Math.min(100, n)) : null; };
-    // ---- Masthead freshness line: "Live status · updated Xm ago" from payload.generated_utc
-    // (NOT slate_snapshots.updated_at — that column is unreliable). Ticks client-side every
-    // 60s; past 2h it flips to hours in a muted warn tone (.stale).
+    /* ---- Masthead freshness line, off the roadmap payload's own generated_utc (NOT
+       slate_snapshots.updated_at — that column is unreliable). Ticks client-side every 60s.
+
+       IT NO LONGER CALLS ITSELF "LIVE STATUS" WHEN IT IS DAYS OLD. The study index is
+       rebuilt on its own cadence, which is measured in days, and a dot labelled "Live
+       status · updated 154h ago" under a masthead claiming a nightly programme was the page
+       contradicting itself in one line. Fresh it says live, because it is; stale it says
+       what it actually is — a study index, last rebuilt N days ago — in the muted warn tone
+       the `.stale` class already carried. Naming the thing correctly costs nothing and the
+       age was never hidden. */
     const labAgoMin = (iso: any) => { const t = new Date(String(iso || "")).getTime(); return isFinite(t) ? Math.max(0, Math.round((Date.now() - t) / 60000)) : null; };
     function labFreshText(iso: any) {
       const m = labAgoMin(iso);
-      if (m == null) return "Live status";
+      if (m == null) return "Study index";
       if (m < 1) return "Live status · updated just now";
       if (m < 120) return `Live status · updated ${m}m ago`;
-      return `Live status · updated ${Math.round(m / 60)}h ago`;
+      if (m < 2880) return `Study index · rebuilt ${Math.round(m / 60)}h ago`;
+      return `Study index · rebuilt ${Math.round(m / 1440)} days ago`;
     }
     let labFreshTimer: any = null;
     function tickLabFresh() {
@@ -16301,12 +16862,24 @@ export default function Home() {
       const tx = el.querySelector(".lab-fresh-tx");
       if (tx) tx.textContent = labFreshText(iso);
     }
-    // one expandable card — the face carries status/tagline/progress/latest; `detail` opens on tap
+    /* one expandable card — the face carries status/tagline/progress/latest; `detail` opens
+       on tap.
+
+       ITS PROSE NOW GOES THROUGH humanNote() LIKE EVERY OTHER SERVED STRING (2026-08-09).
+       These four fields used to be esc()'d straight into the DOM, which made this the one
+       surface in the app where payload text reached a reader unfiltered — and the roadmap is
+       exactly where that costs something: one card's result line is the retired selector's
+       settings, written out as a list ("N-night window, rank by trailing return, … play the
+       majority vote of the top N, nudge toward yesterday"). A recipe, on a research index,
+       in the summary line of a closed card.
+       Routing them through the one helper draws the disclosure line HERE the same way it is
+       drawn everywhere else, rather than adding a second, card-shaped version of it. What
+       the guard does not touch is the engineering vocabulary itself — see below. */
     function labCard(it: any) {
       const st = String(it.status || "queued");
       const grp = LAB_GROUP[st] || "queued";
       const pct = labPct(it.progress_pct);
-      const eta = labEta(it.eta);
+      const eta = labEta(it.eta, it);
       const started = it.started ? labDate(it.started) : "";
       const endLab = grp === "shipped" ? (it.eta === "done" ? "in production" : labDate(it.eta) || "in production")
         : grp === "grave" ? "concluded"
@@ -16323,11 +16896,14 @@ export default function Home() {
           <span class="lab-track"><i style="width:${pct != null ? pct : (grp === "shipped" || grp === "grave" ? 100 : 8)}%"></i></span>
           <span class="lab-t1">${esc(endLab)}</span>
         </div>` : "";
-      const latest = it.latest ? `<div class="lab-latest"><b class="lab-latest-k">Latest</b> <span class="lab-latest-tx">${esc(it.latest)}</span></div>` : "";
+      const latestTx = humanNote(it.latest);
+      const resultTx = humanNote(it.result);
+      const detailTx = humanNote(it.detail);
+      const latest = latestTx ? `<div class="lab-latest"><b class="lab-latest-k">Latest</b> <span class="lab-latest-tx">${esc(latestTx)}</span></div>` : "";
       // shipped's earned line / the graveyard's killing number — the honest one-liner up front
-      const result = it.result && (grp === "shipped" || grp === "grave")
-        ? `<div class="lab-result ${grp}">${esc(it.result)}</div>` : "";
-      const detail = it.detail ? `<div class="lab-detail">${esc(it.detail)}</div>` : `<div class="lab-detail dim">Protocol notes are published as the study progresses.</div>`;
+      const result = resultTx && (grp === "shipped" || grp === "grave")
+        ? `<div class="lab-result ${grp}">${esc(resultTx)}</div>` : "";
+      const detail = detailTx ? `<div class="lab-detail">${esc(detailTx)}</div>` : `<div class="lab-detail dim">Protocol notes are published as the study progresses.</div>`;
       // THE ONE PLACE ENGINEERING VOCABULARY IS THE POINT. The Lab publishes the build log
       // itself — "every idea we test, in public" — so a card's prose names the modules,
       // columns and scripts a piece of work touched. That is the subject matter, not a
@@ -16335,10 +16911,10 @@ export default function Home() {
       // guard is told so explicitly here and nowhere else on the site.
       /* THE FACE OF A STUDY IS THREE THINGS: what it is, what it found, and where it
          stands. It used to be six — chip, ETA, category, title, tagline, result line, latest
-         line and a timeline bar — stacked, 89 times, which is what made the index a wall.
+         line and a timeline bar — stacked, 93 times, which is what made the index a wall.
          The finding prefers the RESULT (a concluded study's actual outcome) and falls back to
          the tagline; everything else moved inside the disclosure. */
-      const finding = it.result || it.tagline || "";
+      const finding = resultTx || humanNote(it.tagline) || "";
       return `<details class="lab-card ${grp}" data-devtext="the research log's subject is the engineering work; module and column names are its content">
         <summary>
           <div class="lab-row">
@@ -16360,12 +16936,12 @@ export default function Home() {
       </details>`;
     }
     /* A LAB SECTION, OPEN OR FOLDED.
-       The roadmap is 66 experiments, each with a title, a tagline, a progress bar, dates and
+       The roadmap is 93 experiments, each with a title, a tagline, a progress bar, dates and
        a detail paragraph. Rendered flat in five open groups it ran to 43,000px — the longest
-       surface in the app by a factor of four, and 32 of those cards are the graveyard.
+       surface in the app by a factor of four, and 33 of those cards are the graveyard.
        Publishing the nulls is the point and NOT ONE CARD IS DROPPED; but only the two groups
        that are about what is happening NOW stay open. The rest carry their count on the
-       summary, so "32 closed honest" is still the first thing you read about the graveyard —
+       summary, so "33 nulls published" is still the first thing you read about the graveyard —
        you just don't have to scroll through it to reach anything else. */
     /* `items` is the RAW study list, not rendered cards — labCard() is only called for the
        group that is open, and for a closed group only when it is opened. Passing built HTML
@@ -16387,24 +16963,37 @@ export default function Home() {
         `<div class="lab-sect-head">${head}</div><span class="sgc-caret" aria-hidden="true">›</span>`,
         () => `${sub ? `<p class="lab-sect-sub">${esc(sub)}</p>` : ""}<div class="lab-grid">${cards().join("")}</div>`);
     }
-    /* THE LINK FROM THE BOARD HAS TO LAND SOMEWHERE. The strategy bar's "How our nightly
-       engine works →" opens the paper, but a reader who taps Research directly should find
-       the same fact stated in the lab's own register — otherwise the bar is telling them
-       about a thing this page does not admit exists. Same served fields, same depth: the
-       label, the plain-English sentence, the window. No rule keys here either. */
+    /* THE BOARD NAMES THE PLAY; THIS PAGE NAMES IT TOO, in the lab's own register, so a
+       reader who lands on Research first is not told about a thing the page does not admit
+       exists. Same served fields, same depth: the label and the plain-English sentence.
+       No rule key, no thresholds, no family.
+
+       WHY THE WINDOW IS NO LONGER A NUMBER HERE (2026-08-09). This line used to print the
+       served `window_days` — "the last 17 days" — two hundred pixels above the same constant
+       printed again as "the last 17 nights". A lookback length is a tuning constant of the
+       search: it is the kind of thing someone rebuilds from, and it buys a reader nothing
+       here, because there is no record on this line for it to be the denominator of. It is
+       PROCESS COPY, so it says what the process is — a few weeks — and nothing more precise.
+       WHERE THE EXACT WINDOW SURVIVES, and it must: on the Desk, beside the rule's own
+       lookback record, where a reader who wants to replay the rule needs the dates to replay
+       it over. Disclosed as evidence, not published as a constant.
+
+       AND IT NO LONGER POINTS AT "THE PAPER BELOW". It closed on "The paper below is the
+       long version", which meant kr-2026-003 — a report on the retired recipe tournament
+       that now carries a correction saying so. Pointing today's play at it was true this
+       morning and is not true tonight. */
     function researchStrategyHtml() {
       const s = dayStrategyBlock(todayISO());
       if (!s) return "";
       const label = strategyLabelPublic(s);
       const rule = strategySentence(s);
       if (!label && !rule) return "";
-      const days = s.window_days ? Number(s.window_days) : 0;
       const dateTxt = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
       return `<section class="lab-today">
         <div class="lab-today-k"><span class="lab-today-mk">${strategyMark()}</span>Today's strategy<i>${esc(dateTxt)}</i></div>
         ${label ? `<h3 class="lab-today-h">${esc(label)}</h3>` : ""}
         ${rule ? `<p class="lab-today-p">${esc(rule)}</p>` : ""}
-        <p class="lab-today-w">Selected by the nightly run from the last ${days ? esc(days === 21 ? "three weeks" : `${days} days`) : "three weeks"} of finished games, and locked before the first pitch. The paper below is the long version.</p>
+        <p class="lab-today-w">Chosen by last night's run from the finished games of the past few weeks, and locked before the first pitch. What it did over that window, and the conditions it is written in, are on the Desk.</p>
       </section>`;
     }
     /* ══════════════════ THE NIGHTLY SEARCH — "How we chose today's strategy" ══════════════════
@@ -16417,43 +17006,36 @@ export default function Home() {
        at midnight whether it won or lost. Front a favourite rule here and you have sold a
        system, which is the exact opposite of what the engine does.
 
-       EVERY NUMBER ON THIS SURFACE IS READ, NEVER AUTHORED:
-         · the pool size          → the library's own paper publishes it as a key figure
-                                    (searchPoolFigure); the fallback is a labelled spec constant
-         · the window and its games → the served day block's window_days / training_games
-         · nights, recipes, families, handovers → counted off the served adaptive map
-         · the random-control unit figure → the same paper's key figure, quoted verbatim
+       ══ WHAT THIS SECTION MAY AND MAY NOT SAY (the disclosure line, 2026-08-09) ══
+       Leon: "make it seem super sophisticated but not completely give away our magic."
+
+       PUBLIC, because it is what the machine actually does and a competitor cannot act on
+       any of it: that a search runs every night while the league sleeps; that it writes out
+       far more candidate rules than a person could read and replays every one of them
+       against every finished game of the last few weeks; that they are ranked on one thing —
+       how many more times a rule won than it lost — and that the single best one plays; that
+       it is thrown away at midnight and rebuilt from nothing.
+
+       PRIVATE, because these are the machine rather than the method, and unlike a rule that
+       expires at midnight they are worth exactly as much to a copier tomorrow: the size of
+       the predicate language, how deep the enumeration goes, how two-part rules are paired,
+       the scoring encoding, and the lookback's exact number of nights. Every one of those
+       used to be on this screen, several of them in the largest type in the figure.
+
+       THE TEST THE REMOVALS HAD TO PASS. A number may only leave if the sentence around it
+       gets MORE careful. Nothing here now claims a comparison a reader cannot make: the
+       superlative that used to rest on "873 predicates" is gone with it, and what is left
+       states the mechanism and points at the record, which is the one thing on this product
+       that is checkable forever.
+
+       EVERY NUMBER THAT SURVIVES IS READ, NEVER AUTHORED:
+         · the scale of the replayed window → the served day block's window_games, rounded
+           DOWN to its order of magnitude ("hundreds of finished games") so it reads as scale
+           rather than as a constant the window length can be divided out of
+         · nights, plays, handovers → counted off the served adaptive map
+         · the random-control unit figure → a library paper's key figure, quoted verbatim,
+           and now attributed to the search it actually controlled
        Anything the payload does not carry is simply not said. */
-    /* THE ONE CONSTANT ON THIS SURFACE, and it is a documented engine setting rather than a
-       claim: the nightly winner is not crowned alone — the trailing top-N candidates vote and
-       a tie abstains. N = 21.
-       SOURCE: v4/serve/ENGINE_EXPANSION.md §2 ("Top-21 committee vote, tie abstains") and
-       v4/models/characteristic_lab/SELECTOR_OPTIMIZATION.md knob 4. If the engine re-tunes it,
-       this is the single line to change. */
-    const SEARCH_SPEC = {
-      committee: 21,
-      // Fallback pool size only — used when the served library has no figure to read.
-      // 2,848 tournament specs + 882 added by the expanded families = 3,730
-      // (v4/serve/ENGINE_EXPANSION.md §1, table total).
-      poolFallback: 3730,
-    };
-    /* THE SIZE OF THE POOL, SERVED FIRST. The library sitting six inches below this section
-       publishes "Strategies in the pool" as a key figure on its own paper, and two different
-       counts on one screen is worse than no count at all — so the served figure wins and the
-       spec constant is only the floor under it. Returns the figure's own formatted string, so
-       the page prints exactly what the paper prints. */
-    function searchPoolFigure() {
-      const want = /strateg\w*\s+in\s+the\s+pool|pool\s+of\s+strateg/i;
-      const papers = allPapers();
-      for (const p of papers) {
-        for (const f of (p.figures || [])) {
-          if (!want.test(f.label || "")) continue;
-          const n = Number(String(f.value).replace(/[^\d]/g, ""));
-          if (n > 1) return { txt: String(f.value).trim(), note: f.note || "", paper: p.id };
-        }
-      }
-      return { txt: SEARCH_SPEC.poolFallback.toLocaleString("en-US"), note: "", paper: "" };
-    }
     // One served key figure, by label, wherever in the library it lives. Used for the control
     // result at the foot of the section; absent ⇒ that line simply does not render.
     function searchPaperFigure(re: RegExp) {
@@ -16481,19 +17063,32 @@ export default function Home() {
       });
       return out;
     }
-    /* WHAT THE LEDGER PROVES ABOUT THE SEARCH — four counts, all arithmetic on served rows:
-       how many nights it has run, how many DIFFERENT recipes have held the slot, how many
-       families have won at least one of those nights, and how often the play actually changed
-       hands from one night to the next. Together they are the evidence for the claim the copy
-       makes, which is that nothing here is permanent. */
+    /* WHAT THE LEDGER PROVES ABOUT THE SEARCH — three counts, all arithmetic on served rows:
+       how many nights a strategy has been published for, how many DIFFERENT plays have held
+       the slot, and how often the play actually changed hands from one night to the next.
+       Together they are the evidence for the claim the copy makes, which is that nothing
+       here is permanent.
+
+       WHAT THE FOURTH COUNT WAS AND WHY IT WENT (2026-08-09). It was "N families of
+       strategy have won at least one of those nights", counted off `rule_family`. Two
+       problems, and either one is enough. It publishes that there IS a family taxonomy and
+       how big it is, which is a shape of the search rather than a fact about the record;
+       and `rule_family` is the retired recipe tournament's own vocabulary, so on a ledger
+       that now spans more than one selector the number counts engines and families
+       together and calls the total one thing.
+
+       AND THE THREE THAT SURVIVE SAY WHAT THEY ARE. These rows span every night the
+       product has published a strategy for — which includes nights chosen by an earlier
+       search, because the ledger is the ledger. The copy therefore says "nights we have
+       published a strategy for" and never "since this search went live": the handovers
+       are real either way, and claiming they were all handovers WITHIN one mechanism
+       would be counting a rebuild as a routine change of play. */
     function nightlySearchStats() {
       const map = adaptiveStrategyMap();
       const days = Object.keys(map).sort();
       if (!days.length) return null;
       const keyOf = (s: any) => String((s && (s.rule_key || s.label)) || "").trim();
-      const famOf = (s: any) => String((s && s.rule_family) || "").trim();
       const keys = days.map((d) => keyOf(map[d])).filter(Boolean);
-      const fams = days.map((d) => famOf(map[d])).filter(Boolean);
       let flips = 0, handovers = 0;
       for (let i = 1; i < days.length; i++) {
         const a = keyOf(map[days[i - 1]]), b = keyOf(map[days[i]]);
@@ -16503,13 +17098,12 @@ export default function Home() {
       }
       return {
         nights: days.length,
-        recipes: new Set(keys).size,
-        families: new Set(fams).size,
+        plays: new Set(keys).size,
         flips, handovers,
         first: days[0], last: days[days.length - 1],
       };
     }
-    /* ═══════════ THE FUNNEL — thousands in, twenty-one voting, one on the card ═══════════
+    /* ═══════════ THE FUNNEL — a mass in, one score, one card ═══════════
        Drawn, not photographed: three bands whose WIDTH is the argument, the funnel walls
        between them, the mechanism written on each step down, and a dashed return line from
        the bottom back up to the top — because the loop is the whole point. The top band opens
@@ -16518,56 +17112,68 @@ export default function Home() {
        Scales by viewBox (width:100%), so 375px and 900px are the same drawing. Colour comes
        entirely from CSS classes on tokens, so both themes are handled by the stylesheet and
        nothing here hard-codes a hex. */
-    /* THE MIDDLE BAND IS THE MECHANISM, AND THE MECHANISM CHANGED (2026-08-10).
-       Leon, 2026-08-09 20:31: "Tell me more about forge pics and no committees at
-       all just so I understand." Since 2026-08-08 the served board is chosen by the
-       strategy forge — one frozen rule, scored on wins minus losses — and NOTHING
-       votes. This page was still drawing the retired nightly engine's top-21
-       committee, on the same screen where the Games tab and the Desk both say "One
-       rule chose every pick on this board." Two mechanism stories on one product is
-       the honesty failure this whole surface exists to avoid.
-       So the middle band is now READ from the served day block rather than authored:
-       a forge date states the objective the search actually optimised, a committee
-       date keeps the committee. Neither is a constant any more. */
+    /* THE TOP BAND USED TO PRINT THE PREDICATE-LANGUAGE SIZE, in the largest type in the
+       figure, over the caption "READINGS OF A GAME, COMBINED EVERY WAY" (2026-08-09). That
+       number is the size of the machine that writes a new rule every night — the one part
+       of this product that does NOT expire at midnight — and it sat one line above a lede
+       that also published the enumeration depth. It is now the honest floor instead:
+       THOUSANDS, which is what the Desk has always said and is true by a wide margin of any
+       language that combines hundreds of conditions two and three at a time.
+       Note what did NOT change: the band is still a mass, the walls still narrow, and the
+       loop still says DISCARDED AT MIDNIGHT. The argument was never the integer. */
+    /* THE MIDDLE BAND IS THE MECHANISM, AND THE MECHANISM CHANGED (2026-08-08).
+       Leon: "Tell me more about forge pics and no committees at all just so I understand."
+       The served board is chosen by one frozen rule, scored on wins minus losses, and
+       NOTHING votes. This page was still drawing the retired engine's committee, on the same
+       screen where the Games tab and the Desk both say "One rule chose every pick on this
+       board." Two mechanism stories on one product is the honesty failure this whole surface
+       exists to avoid.
+
+       THE COMMITTEE BRANCH IS DELETED RATHER THAN GATED. It carried the retired engine's
+       ballot size as a live authored constant — a tuning parameter, hard-coded, waiting for
+       any date the forge does not own to render it again. What replaces it makes no claim
+       about a mechanism it cannot read: a block that does not name itself as the forge gets
+       copy true of ANY night this product has run — a search ran, one strategy came out, it
+       is on the card. Under-claiming on an unknown selector is the only safe default.
+
+       WHAT THE SCORE BAND MAY SAY. "Wins minus losses" is PUBLIC and always was — it is the
+       sentence that makes the product legible, and Leon's own brief lists it as public. What
+       came off it is the operational encoding (+1 / −1 / 0) and "no vig, no tie-breaks",
+       which is the objective function written out well enough to implement. */
     function searchMiddleBand(s: any) {
       const sel = String((s && (s.selector || s.engine)) || "");
       if (!/forge/i.test(sel)) {
         return {
           isForge: false,
-          n: String(SEARCH_SPEC.committee),
-          label: "MAKE THE COMMITTEE",
-          cap: [`the best ${SEARCH_SPEC.committee} vote on tonight's side`,
-                `a tie is a pass, not a coin flip`],
-          aria: `the top ${SEARCH_SPEC.committee} vote`,
-          step: ["Vote", `The top ${SEARCH_SPEC.committee} get a ballot on tonight's side. Split the room and there is no bet.`] as [string, string],
-          lede: `It ranks them on what they would actually have paid. The best ${SEARCH_SPEC.committee} vote. One recipe comes out the other side, and that is the one on your card before the first pitch.`,
+          n: "1",
+          label: "COMES OUT",
+          cap: [`whatever held up best over the window`,
+                `is what goes on the card`],
+          aria: `one strategy comes out of the search`,
+          step: ["Rank", "The candidates are ranked on what they returned over the window, and one comes out the other side."] as [string, string],
+          lede: `One strategy comes out the other side, and that is the one on your card before the first pitch.`,
         };
       }
-      /* The forge's objective, quoted from the block that froze the rule rather
-         than paraphrased: "W - L (win +1, loss -1, push 0, no vig)". Nothing else
-         is scored, and there is no second stage between the search and the card. */
-      const obj = String(s?.objective || "");
-      const noVig = /no\s*vig/i.test(obj);
       return {
         isForge: true,
-        n: "W − L",
+        n: "WINS − LOSSES",
         label: "THE ONLY SCORE",
-        cap: [`a win is +1, a loss is −1, a push is 0`,
-              noVig ? `no vig, no hit rate, no tie-breaks` : `no hit rate, no tie-breaks`],
+        cap: [`not the hit rate, not the price,`,
+              `not how good the reasoning sounds`],
         aria: `every candidate is scored on wins minus losses`,
-        step: ["Rank", "Every rule is scored on wins minus losses over the window — not on hit rate, and not on price. The single best score is the one that plays."] as [string, string],
-        lede: `It ranks them on one number and one number only: wins minus losses${noVig ? `, with the vig ignored` : ``}. One rule comes out the other side — no vote, no committee — and that is the one on your card before the first pitch.`,
+        step: ["Rank", "Every rule is scored on one thing: how many more times it won than it lost over the window. The single best score is the one that plays."] as [string, string],
+        lede: `It ranks them on one number and one number only: how many more times a rule won than it lost. One rule comes out the other side — no vote, no committee — and that is the one on your card before the first pitch.`,
       };
     }
-    function searchFunnelSvg(poolTxt: string, windowTxt: string, gamesTxt: string, mid: ReturnType<typeof searchMiddleBand>) {
+    function searchFunnelSvg(poolTxt: string, scaleTxt: string, mid: ReturnType<typeof searchMiddleBand>) {
       const cx = 186;
       const comb = Array.from({ length: 45 }, (_, i) => {
         const x = 48 + i * 6.3;
         return `<line class="nsf-tick" x1="${x.toFixed(1)}" y1="18" x2="${x.toFixed(1)}" y2="${(28 + (i % 3) * 3).toFixed(1)}"/>`;
       }).join("");
       const capA = [
-        windowTxt && gamesTxt ? `every one replayed over the last ${windowTxt},` : `every one replayed over the trailing window,`,
-        windowTxt && gamesTxt ? `${gamesTxt} — graded at the real number` : `graded at the real number`,
+        `every one replayed over the last few weeks,`,
+        scaleTxt ? `${scaleTxt} — graded at the real number` : `graded at the real number`,
       ];
       const capB = mid.cap;
       return `<svg class="nsfunnel" viewBox="0 0 340 338" role="img"
@@ -16580,13 +17186,17 @@ export default function Home() {
           <rect x="40" y="10" width="292" height="76" rx="12"/>
           ${comb}
           <text class="nsf-n" x="${cx}" y="66" text-anchor="middle">${esc(poolTxt)}</text>
-          <text class="nsf-l" x="${cx}" y="80" text-anchor="middle">${mid.isForge ? "READINGS OF A GAME, COMBINED EVERY WAY" : "WAYS TO PLAY THE FOUR ANALYSTS"}</text>
+          <text class="nsf-l" x="${cx}" y="80" text-anchor="middle">${mid.isForge ? "RULES, WRITTEN OUT AND SCORED" : "WAYS TO PLAY THE FOUR ANALYSTS"}</text>
         </g>
         <text class="nsf-cap" x="${cx}" y="101" text-anchor="middle">${esc(capA[0])}</text>
         <text class="nsf-cap" x="${cx}" y="114" text-anchor="middle">${esc(capA[1])}</text>
         <g class="nsf-band b2">
           <rect x="92" y="124" width="188" height="70" rx="12"/>
-          <text class="nsf-n" x="${cx}" y="166" text-anchor="middle">${esc(mid.n)}</text>
+          ${/* The score band's text is words now, not a symbol, and words do not fit the
+                numeral size. `.wide` steps it down so "WINS − LOSSES" sits inside the band
+                at 375px — the band is 188 units of a 340 viewBox and there is no reflow in
+                SVG, so this has to be handled by the type scale rather than by wrapping. */""}
+          <text class="nsf-n${mid.n.length > 4 ? " wide" : ""}" x="${cx}" y="166" text-anchor="middle">${esc(mid.n)}</text>
           <text class="nsf-l" x="${cx}" y="182" text-anchor="middle">${esc(mid.label)}</text>
         </g>
         <text class="nsf-cap" x="${cx}" y="209" text-anchor="middle">${esc(capB[0])}</text>
@@ -16614,45 +17224,53 @@ export default function Home() {
       const s = dayStrategyBlock(todayISO());
       const st = nightlySearchStats();
       if (!s && !st) return "";
-      const pool = searchPoolFigure();
-      const wd = s && Number(s.window_days) > 0 ? Number(s.window_days) : 0;
-      const windowTxt = wd ? (wd % 7 === 0 ? `${wd / 7} weeks` : `${wd} nights`) : "";
-      /* `window_games` is what the forge writes; `training_games` is what the retired
-         nightly engine wrote. Reading only the second is why this figure has been
-         missing from the caption since the forge took over — read both. */
-      const games = s ? Number(s.window_games ?? s.training_games) : 0;
-      const gamesTxt = games > 0 ? `${games.toLocaleString("en-US")} finished games` : "";
       const mid = searchMiddleBand(s);
-      // The control the library already published: what this costs you if you skip the search
-      // and just grab a strategy. Quoted verbatim from the served figure, never paraphrased.
+      /* THE SCALE OF THE WINDOW, WITHOUT ITS LENGTH. `window_games` is what the forge
+         writes, `training_games` what the retired engine wrote — read both. It is then
+         rounded DOWN to its order of magnitude, and that rounding is the point rather
+         than a nicety: a game count printed exactly, beside "a few weeks", lets a reader
+         divide out the lookback to within a night or two, which is the constant the rest
+         of this section just stopped publishing. "Hundreds of finished games" is the
+         honest scale of the evidence and recovers nothing. */
+      const games = s ? Number(s.window_games ?? s.training_games) : 0;
+      const scaleTxt = games >= 1000 ? "thousands of finished games"
+        : games >= 100 ? "hundreds of finished games"
+        : games > 0 ? "every finished game in it" : "";
+      // The control the library already published: what it costs you to skip the search and
+      // just grab a strategy. Quoted verbatim from the served figure, never paraphrased.
       const ctl = searchPaperFigure(/control that matters|at random/i);
-      /* WHAT WAS SEARCHED. The pool figure below is the recipe library's own count, and
-         it describes the retired engine's pool of analyst recipes. The forge does not
-         search recipes — it searches RULES, over a predicate language whose size the
-         served block states (`n_predicates_in_language`). Print whichever one actually
-         chose today, never both. */
-      const preds = s ? Number(s.n_predicates_in_language) : 0;
+      const ctlPaper = ctl ? allPapers().find((p: any) => p.id === (ctl as any).paper) : null;
       const poolSentence = mid.isForge
-        ? `Every night, while the league sleeps, DiamondEdge writes out every rule it can express${preds > 0 ? ` from <b>${esc(preds.toLocaleString("en-US"))}</b> readings of a game` : ``} — one condition, two, three — and replays every single one of them against the games that just finished${windowTxt ? ` — the last <b>${esc(windowTxt)}</b>${gamesTxt ? `, <b>${esc(gamesTxt)}</b>` : ""}` : ""}.`
-        : `Every night, while the league sleeps, DiamondEdge takes <b>${esc(pool.txt)}</b> different ways of playing its four analysts and replays every single one of them against the games that just finished${windowTxt ? ` — the last <b>${esc(windowTxt)}</b>${gamesTxt ? `, <b>${esc(gamesTxt)}</b>` : ""}` : ""}.`;
+        ? `Every night, while the league sleeps, DiamondEdge writes out far more candidate rules than a person could read in a lifetime, and replays every single one of them against the games that just finished — the last few weeks${scaleTxt ? `, <b>${esc(scaleTxt)}</b>` : ""}.`
+        : `Every night, while the league sleeps, DiamondEdge replays every strategy it can build against the games that just finished — the last few weeks${scaleTxt ? `, <b>${esc(scaleTxt)}</b>` : ""}.`;
       const lede = [
         `There is no house system here.`,
         poolSentence,
         mid.lede,
         `Then it gets thrown away — win or lose — and tomorrow the whole search runs again from nothing.`,
       ].join(" ");
+      /* ═══ STEP 2 WAS A FALSE CLAIM ABOUT OUR OWN METHOD (fixed 2026-08-09) ═══
+         It read: "Each one is marked on a slice of that window it was held back from — so
+         a recipe cannot pass by memorising the same nights it was built on." There is no
+         held-back slice. The search scores every candidate on the same nights that choose
+         it, and the backend says so in as many words in the caveat the Desk prints under
+         the rule ("It is an in-sample count and a statement about the past"). So this page
+         was asserting a holdout the Desk was simultaneously disclaiming, two taps apart —
+         and asserting it in OUR words, not the payload's, which is the worse direction.
+
+         What replaces it is the truth, and the truth is a better sentence: the lookback
+         record is in-sample and we publish it as in-sample, the honest test is the next
+         day's card, and the next day's card is the record at the foot of this page. That
+         turns the page's weakest claim into its strongest pointer. */
       const steps = ([
-        ["Replay", mid.isForge
-          ? "Every rule the language can write re-plays the trailing window, game by game, against results it never got to see coming."
-          : "Every recipe in the pool re-plays the trailing window, game by game, against results it never got to see coming."],
-        ["Score", "Each one is marked on a slice of that window it was held back from — so a recipe cannot pass by memorising the same nights it was built on."],
+        ["Replay", "Every candidate re-plays the window, game by game, against results it never got to see coming."],
+        ["Score", "Each one is marked on the same nights that chose it. That is an in-sample count and we publish it as one — the honest test is the next day's card, which is what the record below is."],
         mid.step,
         ["Lock", "One strategy goes on the card and is frozen before first pitch. At midnight it is deleted."],
       ] as [string, string][]).map(([k, v], i) => `<li class="nss-step"><span class="nss-num">${i + 1}</span><span class="nss-sw"><b>${esc(k)}</b><i>${esc(v)}</i></span></li>`).join("");
       const stats = st ? [
-        [String(st.nights), st.nights === 1 ? "night searched" : "nights searched", "one search, one night, every night"],
-        [String(st.recipes), "different recipes", "have held the slot since the search went live"],
-        [String(st.families), "families of strategy", "have won at least one of those nights"],
+        [String(st.nights), st.nights === 1 ? "night with a published strategy" : "nights with a published strategy", "one search, one night, every night"],
+        [String(st.plays), st.plays === 1 ? "play has held the slot" : "different plays have held the slot", "across every one of those nights"],
         [st.handovers ? `${st.flips}/${st.handovers}` : "", "nights it changed hands", "the play was replaced overnight this often"],
       ].filter((r) => r[0]).map((r) => `<div class="nss-stat"><b>${esc(r[0])}</b><i>${esc(r[1])}</i><em>${esc(r[2])}</em></div>`).join("") : "";
       return `<section class="nss">
@@ -16663,25 +17281,32 @@ export default function Home() {
         </header>
         <p class="nss-lede">${lede}</p>
         <figure class="nss-fig">
-          ${searchFunnelSvg(mid.isForge && preds > 0 ? preds.toLocaleString("en-US") : pool.txt, windowTxt, gamesTxt, mid)}
+          ${searchFunnelSvg(mid.isForge ? "THOUSANDS" : "EVERY ONE", scaleTxt, mid)}
           <figcaption>Tonight it runs again from zero, and yesterday's winner has to win the job back.</figcaption>
         </figure>
-        ${/* WHAT WAS SEARCHED, IN THE SEARCH'S OWN WORDS. On a forge date the recipe
-              library's note describes a pool that did not run, so the served block's
-              own `search_scope` replaces it. Absent ⇒ the line does not render. */""}
-        ${mid.isForge
-          ? (s?.search_scope ? `<p class="nss-poolnote">What was searched: ${esc(String(s.search_scope))}</p>` : "")
-          : (pool.note ? `<p class="nss-poolnote">What is in that pool: ${esc(pool.note)}</p>` : "")}
+        ${/* "WHAT WAS SEARCHED" IS GONE (2026-08-09). It printed the served `search_scope`,
+              which states the enumeration depth and the exact procedure by which two-part
+              rules are assembled — the search algorithm, in prose, well enough to
+              implement. It was also the third rendering of that same paragraph in the app.
+              Nothing replaces it: the four steps below already say what the search does,
+              and there is no reader-facing summary of an algorithm that is not also a
+              specification of one. */""}
         <ol class="nss-steps">${steps}</ol>
         ${stats ? `<div class="nss-statsk">Nothing here is permanent</div><div class="nss-stats">${stats}</div>` : ""}
-        ${/* THE CONTROL, QUOTED — never paraphrased, and the served figure's own `note` is
-              left in the paper rather than repeated here: it closes on "3.4 standard
-              deviations", which is the exact register this surface is written to avoid.
-              The line under it is ours; the number above it is theirs. */""}
+        ${/* THE CONTROL, QUOTED — AND ATTRIBUTED TO THE SEARCH IT ACTUALLY RAN AGAINST.
+              This figure comes from the recipe tournament's report, and it controlled THAT
+              search: pick from that pool at random instead of ranking it, and here is what
+              it costs. The number is real and it is quoted verbatim. What was wrong was the
+              sentence under it — "That is what the search is worth. Everything else on this
+              page sits downstream of it." — sitting beneath a section describing a search
+              that did not exist when the control was run. A control on one mechanism cannot
+              be the justification for another, so it now names its own subject and claims
+              only what it measured. The served figure's `note` still stays in the paper: it
+              closes on "3.4 standard deviations", which is the register this page avoids. */""}
         ${ctl ? `<div class="nss-ctl">
-          <span class="nss-ctl-k">Why bother searching</span>
+          <span class="nss-ctl-k">Why bother searching at all</span>
           <p><b>${esc(ctl.label)}:</b> ${esc(String(ctl.value).replace(/\.\s*$/, ""))}.</p>
-          <p class="nss-ctl-x">That is what the search is worth. Everything else on this page sits downstream of it.</p>
+          <p class="nss-ctl-x">That was measured on an earlier search of ours${ctlPaper && ctlPaper.title ? `, the one written up in ${esc(String(ctlPaper.title).replace(/[.:,].*$/, ""))}` : ""}, not on the one running tonight — the two rank different things. What it establishes is the thing both have in common: the choosing is where the value is, and picking without it is expensive.</p>
           ${ctl.paper ? `<button class="nss-ctl-go" data-paper="${esc(ctl.paper)}">Read the paper<span aria-hidden="true"> →</span></button>` : ""}
         </div>` : ""}
       </section>`;
@@ -16748,7 +17373,15 @@ export default function Home() {
       const bsrc: any = blk.src || {};
       const nTier = numOr(bsrc.n_tiered);
       const nUntier = numOr(bsrc.n_untiered);
-      const mechLede = `These tiers are a measurement of the committee era. On the nights a voting committee chose the board we counted how much of it actually backed each side — abstentions counted against it — and filed the pick as <b>Strong</b>, <b>Standard</b> or a <b>Lean</b>. The cuts were fixed in advance: half the room or more is Strong, a quarter or more is Standard. <b>The board is not chosen that way any more.</b> One rule decides now, and a rule has no room to count, so a pick it makes carries no vote and falls outside this cut — while counting in the record exactly like every other pick.`;
+      /* THE CUT-POINTS CAME OFF THE SENTENCE (2026-08-09). It used to close the mechanism
+         with "The cuts were fixed in advance: half the room or more is Strong, a quarter
+         or more is Standard." Those two fractions are tuned thresholds — the same class of
+         thing as a gate level or a lookback length — and they are the only part of this
+         paragraph a competitor could act on. What the reader actually needs from that
+         sentence is the DISCIPLINE, not the dial: that the boundaries were set before the
+         picks were graded rather than drawn afterwards around a good-looking split. That
+         claim survives whole, and it is the falsifiable half. */
+      const mechLede = `These tiers are a measurement of the committee era. On the nights a voting committee chose the board we counted how much of it actually backed each side — abstentions counted against it — and filed the pick as <b>Strong</b>, <b>Standard</b> or a <b>Lean</b>. Where the boundaries sat was fixed before any of these picks were graded, so no cut here was drawn around a result. <b>The board is not chosen that way any more.</b> One rule decides now, and a rule has no room to count, so a pick it makes carries no vote and falls outside this cut — while counting in the record exactly like every other pick.`;
       const censusLine = (blk.own && nTier != null && nUntier != null && nTier + nUntier > 0)
         ? `<p class="rstr-note">${nTier.toLocaleString("en-US")} of the ${(nTier + nUntier).toLocaleString("en-US")} graded picks in the record carry a committee vote. The other ${nUntier.toLocaleString("en-US")} were chosen without one — they are in the record and they are not in these rows.</p>`
         : "";
@@ -17009,14 +17642,19 @@ export default function Home() {
         : "";
       // Every chart the Record screen used to carry now lives here, where a calibration
       // plot is evidence about the method rather than clutter on a scoreboard.
-      const charts = betaData ? lazyFold("lab-sect lab-fold charts",
-        `<div class="lab-sect-head"><span class="lab-sect-k">Evaluation charts</span><span class="lab-sect-n">4</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
-        () => `<div class="lab-charts">
-          ${chartCard("Cumulative return", "Net units, day by day, at the prices we were actually served.", equityCurveSvg(betaData))}
-          ${chartCard("Calibration", "Predicted win rate against realized win rate. The diagonal is perfect calibration.", calibrationSvg(betaData))}
-          ${chartCard("Month by month", "Net units by month.", monthlySvg(betaData))}
-          ${streaksBlock(betaData)}
-        </div>`) : "";
+      /* THE COUNT ON THE FOLD IS COUNTED (2026-08-09). It was the literal "4", while three
+         of the four are chartCards that return "" on empty data — so a payload short of
+         calibration rows shipped a chip promising four charts over a fold containing two.
+         A count that can outlive its contents is worse than no count. */
+      const chartHtml = betaData ? [
+        chartCard("Cumulative return", "Net units, day by day, at the prices we were actually served.", equityCurveSvg(betaData)),
+        chartCard("Calibration", "Predicted win rate against realized win rate. The diagonal is perfect calibration.", calibrationSvg(betaData)),
+        chartCard("Month by month", "Net units by month.", monthlySvg(betaData)),
+        streaksBlock(betaData),
+      ].filter(Boolean) : [];
+      const charts = chartHtml.length ? lazyFold("lab-sect lab-fold charts",
+        `<div class="lab-sect-head"><span class="lab-sect-k">Evaluation charts</span><span class="lab-sect-n">${chartHtml.length}</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
+        () => `<div class="lab-charts">${chartHtml.join("")}</div>`) : "";
       view.innerHTML = `
         <div class="lab-wrap">
           <!-- ═══════════════ RESEARCH READS AS A LAB, NOT AS A ROADMAP ═══════════════
@@ -17048,7 +17686,20 @@ export default function Home() {
           <header class="labmast">
             <div class="labmast-id">KytePush Research</div>
             <h2 class="labmast-h">The lab behind DiamondEdge</h2>
-            <p class="labmast-sub">A working research group applying cutting-edge machine learning to the prediction of live sporting events. We publish our methods, our architecture and our failures — because a programme that reports only its successes has produced no evidence at all.</p>
+            <!-- ═══ THE MASTHEAD STOPPED SELLING AND STARTED SAYING (2026-08-09) ═══
+                 It opened: "A working research group applying CUTTING-EDGE MACHINE LEARNING
+                 to the prediction of live sporting events." Three problems, and the third is
+                 the one that matters. It was authored and sourced to nothing. It is jargon
+                 doing the work that evidence is supposed to do, on the one page whose whole
+                 argument is that we show the evidence. And the corpus directly below it
+                 contains two of the programme's strongest findings — kr-2026-012 and
+                 kr-2026-018 — which are, precisely, that the machine-learning models did NOT
+                 beat the posted number. The masthead was contradicted by its own library,
+                 eight inches down.
+                 What replaces it claims less and is checkable: a count of studies, the fact
+                 that the failures are published, and why that is the credential. Every noun
+                 in it points at something on this page. -->
+            <p class="labmast-sub">We test ideas about baseball and betting markets, publish what each one actually returned, and keep the ones that survive. The failures are published in the same detail as the findings — because a programme that reports only its successes has produced no evidence at all.</p>
             <div class="labmast-rule" aria-hidden="true"></div>
             ${chips ? `<div class="lab-counts">${chips}</div>` : ""}
             ${fresh}
@@ -17081,40 +17732,75 @@ export default function Home() {
               <div class="lib-grid">${c.items.map((x: any) => paperCard(x)).join("")}</div>
             </div>`).join("")}
           </section>` : ""}
-          <!-- THE CREDIBILITY WEAPON, GIVEN ITS OWN BLOCK RATHER THAN A FOLD LABEL -->
-          <section class="lab-nulls">
-            <div class="lab-nulls-k">We publish our null results</div>
-            <p>${nGrave ? `<b>${nGrave}</b> of the hypotheses below were rejected by our own evaluation and are published in full, with the numbers that killed them.` : `Every hypothesis this programme rejects is published in full, with the numbers that killed it.`} Anyone can show you their winners. The nulls are what tell you what the winners are worth.</p>
-          </section>
-          <!-- THE INDEX PAGE IS AN INDEX. Leon: "a short mission statement, then the
-               studies as a scannable list… no walls of methodology on the index page; depth
-               lives one tap in." The four-point protocol and the full methods paragraph are
-               behind the fold below; what stays on the page is the one sentence that says
-               what kind of thing this is. -->
-          ${lazyFold("lab-thesis lab-fold", `<span class="lab-thesis-k">Protocol</span><span class="sgc-caret" aria-hidden="true">›</span>`,
-            () => `<p>The programme tests a stack of independent signal families — market microstructure, lineup reaction, pitcher-state priors, weather and park context, model disagreement, probability calibration, and price validity — under one protocol. Every candidate is fit on data that existed before the games it is judged on, evaluated on slates it has never seen, and measured on the served decision rather than on a fitted curve. A module enters production only when it moves that decision.</p>
+          <!-- ═══ THE PROTOCOL CAME OUT FROM BEHIND ITS FOLD (2026-08-09) ═══
+               It was the only closed thing on the top half of the page, under five open
+               paragraphs of framing. That is backwards: everything above it is CLAIM, and
+               the protocol is the falsifier — the statement of what would have to be true
+               for any of it to mean anything. A page that opens its claims and folds its
+               method has its priorities the wrong way round, and this page is supposed to be
+               the argument against exactly that.
+
+               AND IT USED TO ASSERT A HOLDOUT THE NIGHTLY SEARCH DOES NOT HAVE. The sentence
+               read "Every candidate is fit on data that existed before the games it is
+               judged on, evaluated on slates it has never seen" — true of the research
+               modules, which are walk-forward and pre-registered, and NOT true of the
+               nightly play, which is scored on the same nights that choose it. The backend
+               says so itself in the caveat the Desk prints under the rule. So the protocol
+               now separates the two rather than letting the stronger claim cover both: the
+               modules get their holdout sentence, the nightly play gets the in-sample
+               statement and the forward grading that is its actual test. Naming the weaker
+               discipline out loud is the whole reason a reader should believe the stronger
+               one. -->
+          <section class="lab-thesis open">
+            <div class="lab-thesis-k">Protocol</div>
+            <p>The programme tests a stack of independent signal families — market microstructure, lineup reaction, pitcher-state priors, weather and park context, model disagreement, probability calibration, and price validity. A module is fit on data that existed before the games it is judged on, evaluated on slates it has never seen, and measured on the served decision rather than on a fitted curve. It enters production only when it moves that decision.</p>
+            <p>The nightly play is held to a different and plainly weaker standard, and we state it rather than blur it: the search scores every candidate on the same recent nights that choose it, so its lookback record is in-sample and is published as in-sample. Its real test is the next day's card, graded in public at the prices we were given, which is the record on this page.</p>
             <div class="lab-principles">
               <span><b>Hypothesis</b><i>The signal family under test, and what would falsify it.</i></span>
               <span><b>Identification</b><i>Why the effect should be causal, and tradable at a real price.</i></span>
               <span><b>Holdout</b><i>Time-ordered evaluation on slates the fit never saw.</i></span>
               <span><b>Publication</b><i>Every result reported — confirmations and nulls alike.</i></span>
-            </div>`)}
+            </div>
+          </section>
           ${items.length ? "" : `<div class="state"><div class="big">No studies indexed yet</div><div class="sm">The index fills in as studies open.</div></div>`}
           <div class="lab-sect-head lab-notes-k"><span class="lab-sect-k">Working notes &amp; ongoing studies</span></div>
           ${labSection("Studies in progress", "Under active construction or evaluation — each with its protocol, its window and its current read.", fire, "fire")}
           ${labSection("In production", "Passed holdout evaluation and now serving live decisions, each with the result that earned it.", shipped, "shipped", false)}
           ${labSection("Data collection", "Awaiting sample. These are accumulating the observations their design requires before any test is meaningful.", accruing, "accruing", false)}
           ${labSection("Pre-registered", "Designed and queued. The hypothesis and the evaluation are fixed before the data is touched.", queued, "queued", false)}
-          ${labSection("Published null results", "Hypotheses our own evaluation rejected. Publishing them is the point: a programme that only reports its winners has no evidence at all, and these are the studies that tell you what the confirmations are worth.", grave, "grave", false)}
+          <!-- ═══ THE NULLS BANNER MOVED TO THE NULLS (2026-08-09) ═══
+               It sat four sections and one fold above the studies it referred to, saying "N
+               of the hypotheses BELOW" about cards nobody could see from there — and the
+               same argument was then made again, in nearly the same words, on the fold
+               summary underneath it. Five renderings of one idea on one page ("we publish
+               what failed") is not emphasis; past about two it starts to read as protesting.
+               It is now stated ONCE, immediately above the fold it is about, so the count and
+               the cards are the same object. The fold's own subtitle drops the repeated
+               argument and keeps only what it alone can say: what kind of study is in it. -->
+          <section class="lab-nulls">
+            <div class="lab-nulls-k">We publish our null results</div>
+            <p>${nGrave ? `<b>${nGrave}</b> of the hypotheses in this programme were rejected by our own evaluation. Every one of them is below, in full, with the numbers that killed it.` : `Every hypothesis this programme rejects is published below, in full, with the numbers that killed it.`} Anyone can show you their winners. The nulls are what tell you what the winners are worth.</p>
+          </section>
+          ${labSection("Published null results", "Each card carries the hypothesis, the window it was tested over, and the measurement that rejected it.", grave, "grave", false)}
           ${charts}
           <!-- WHERE THE OTHER MODELS LIVE NOW. Leon: "we no longer need all the other
                models we have tested before, though they can be deep in the research tab as
                other variants." Every alternative selector we have run — champion, the v4
                grid, the simulator, the expanded band, the spread stream — with its graded
                outcome, framed as what it is: variants we evaluated and did not ship. -->
-          ${betaData ? lazyFold("lab-sect lab-fold", `<div class="lab-sect-head"><span class="lab-sect-k">Model variants evaluated</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
-            () => `<p class="lab-sect-sub">Alternative selectors run against the same slates as the production engine. Each is reported with the record it earned; none of them is the product.</p>${strategyRecordSection(betaData)}`) : ""}
-          ${lazyFold("lab-sect lab-fold", `<div class="lab-sect-head"><span class="lab-sect-k">Measurement notes</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
+          <!-- ═══ A CLOSED FOLD HAS TO SAY WHAT IS IN IT (2026-08-09) ═══
+               These two hold the most damaging material on the site — every alternative
+               selector's real record including the ones deep underwater, and a fully
+               published 41-configuration null — behind labels ("Model variants evaluated",
+               "Measurement notes") that read like the appendices of a document rather than
+               like evidence. A reader who does not open them learns nothing, and what they
+               would have learned is the strongest thing we have to say. Folding them is
+               still right (they are long, and they are for the reader who asks), but the
+               summary now carries the fact, so the claim is made whether or not the fold is
+               opened. Nothing new is asserted: both lines are counts of what is inside. -->
+          ${betaData ? lazyFold("lab-sect lab-fold", `<div class="lab-sect-head"><span class="lab-sect-k">Every other model we ran, and what it returned</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
+            () => `<p class="lab-sect-sub">Alternative selectors run against the same slates as the production engine, each with the record it actually earned — the ones underwater included, at the same size as the ones that are not. None of them is the product.</p>${strategyRecordSection(betaData)}`) : ""}
+          ${lazyFold("lab-sect lab-fold", `<div class="lab-sect-head"><span class="lab-sect-k">What we measured about the desk — including what came back null</span></div><span class="sgc-caret" aria-hidden="true">›</span>`,
             () => `<div class="lab-measure">${deskProfileBlock()}${patternsSection()}</div>`)}
           ${upd ? `<div class="refnote">Index updated ${esc(upd)} · study status changes as evaluations complete.</div>` : ""}
         </div>`;
@@ -17691,16 +18377,16 @@ export default function Home() {
                science for the reader who wants it. -->
           <header class="dp-mast">
             <span class="dp-k">The Desk</span>
-            <!-- ═══ THE RESULTS REGION, WHICH IS ALSO A LANDING TARGET ═══
+            <!-- ═══ THE RESULTS REGION ═══
                  Leon: "when you click on how the strategy works take us to the Desk page and
                  really highlight the DiamondEdge results and all the stats on performance."
-                 That link used to open a research paper. It now lands HERE, and "here" has to
-                 be a real place — so the four things a reader came to check (the headline
-                 record, the cumulative curve, the fortnight calendar, and the way through to
-                 every graded pick) are one addressable region with one id, rather than four
-                 siblings the scroll has to guess between. goDeskResults() scrolls to this
-                 element and rings it; nothing else about it changes. -->
-            <div class="dp-results" id="desk-results" tabindex="-1">
+                 The four things a reader came to check — the headline record, the cumulative
+                 curve, the fortnight calendar, every graded pick — are one region rather than
+                 four loose siblings. It is FIRST on the page, which is what makes the answer
+                 to "take us to the results" simply "open the Desk": there is no anchor to
+                 scroll to and nothing to highlight, because opening the tab already lands the
+                 reader on it. It was both, until 2026-08-09 — see goDeskResults(). -->
+            <div class="dp-results" id="desk-results">
               ${deskRecordHero()}
               <p class="dp-pitch">Every night our system replays ${paperLink(DESK_PAPERS.SEARCH, "thousands of strategy combinations")} across our four analysts, and plays only the best one the next day.</p>
               ${deskLast14Widget(betaData)}
@@ -17770,13 +18456,20 @@ export default function Home() {
                  203KB, rendered on every visit for content behind a closed disclosure. -->
             ${lazyFold("dp-more", `<span>The competition between them</span><span class="sgc-caret" aria-hidden="true">›</span>`,
               () => `<div class="dp-more-body">${deskRecapSection()}${weeklyRaceSection()}${rivalriesSection()}</div>`)}
-            <!-- PICK STRENGTH, AS AN INSIGHT AND NOT AS A RECORD. It sits inside a closed
-                 fold at the foot of the page, three folds below the headline number, because
-                 that is what it is: a cut, on a sample far too small to conclude from. The
-                 headline hero at the top of this page is the record and stays the record.
-                 The fold does not render at all when there are no tiered picks. -->
-            ${strengthRecordBlock() ? lazyFold("dp-strength", `<span>Strong picks vs thin ones</span><span class="sgc-caret" aria-hidden="true">›</span>`,
-              () => `<div class="dp-more-body">${researchStrengthHtml()}</div>`) : ""}
+            <!-- ═══ "STRONG PICKS VS THIN ONES" IS GONE FROM THE DESK (2026-08-09) ═══
+                 It rendered researchStrengthHtml() — the whole section, same prose, same
+                 rows, same headline question — while Research renders it open, at the top
+                 of the page, as one of its four figures. One component, two tabs, and the
+                 evidence for how badly that ages is that when the committee retired, the
+                 lede was corrected on Research and MISSED here: for a day this fold told
+                 Desk readers a vote decides every pick, on a board no vote had touched.
+                 That is the exact failure mode the site-wide 18→13 consolidation was run
+                 against, and it is the argument for cutting rather than re-syncing.
+                 IT LEAVES BY THE RIGHT DOOR: a cut of the record belongs on Research, next
+                 to the fortnight ledger and the evaluation charts, and the "How we test it"
+                 button three lines below lands there. Nothing is lost and nothing is
+                 duplicated. -->
+            ${""}
             <p class="dp-note"><b>How the records work.</b> Each analyst is measured on the calls they filed. DiamondEdge is measured on the picks it published, at ${paperLink(DESK_PAPERS.PRICES, "prices that were really on the board")} and against ${paperLink(DESK_PAPERS.GRADING, "finals two sources agree on")}. We publish ${paperLink(DESK_PAPERS.NULLS, "everything that didn't work")} too. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
           </div>
 
@@ -17793,9 +18486,9 @@ export default function Home() {
         el.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openAnalystSheet(el.dataset.an); } };
       });
       /* THE RECORD IS A REGION OF THIS PAGE, NOT A PLACE TO GO. Every door that used to
-         open the Record view — this button, the 14-day widget, Account's "Our full record",
-         Settings' copy of it, and the story CTAs — now calls goDeskResults(), which scrolls
-         to #desk-results and rings it. One component, one place, four links. */
+         open the Record view — Account's "Our full record", Settings' copy of it, the
+         analyst sheet's two links and the story CTAs — now calls goDeskResults(), which is
+         just "open the Desk", because the record is the first thing on it. */
       bindClick("dp-share", () => shareRecord());
       bindClick("pp-more", () => {
         ppShown += 14;
@@ -17813,14 +18506,13 @@ export default function Home() {
         b.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") go(e); };
       });
       bindClick("dp-premium", () => openUnlock(), { optional: "hidden for premium members" });
-      const w14 = v.querySelector(".dp-14") as any;
-      if (w14) {
-        w14.setAttribute("role", "button");
-        w14.setAttribute("tabindex", "0");
-        // the widget IS the thing now — pressing it rings the record region it sits in
-        w14.onclick = () => goDeskResults();
-        w14.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goDeskResults(); } };
-      }
+      /* THE 14-DAY WIDGET IS CONTENT, NOT A CONTROL (2026-08-09). It was a role=button
+         bound to goDeskResults() back when that opened the separate Record view. The page
+         collapse put the record ON this page — and the widget INSIDE the very region the
+         link scrolls to — so the button pointed at itself: touching a 430px block of chart
+         and calendar, in the middle of the first screen, jumped the scroll and painted a
+         highlight around the thing you had just touched. Nothing replaces it, because there
+         is nowhere further to go: the calendar is already the proof, in place. */
     }
     function renderShell() {
       // ONE unified STICKY header. Primary nav is the floating glass dock; Account now lives

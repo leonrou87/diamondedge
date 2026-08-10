@@ -2036,6 +2036,21 @@ details.more .more-body{padding-top:12px}
 .h2-side{display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:12px;color:#fff;min-width:0;white-space:nowrap}
 .h2-side.away{background:linear-gradient(135deg,var(--b1),var(--b1))}
 .h2-side.home{background:linear-gradient(135deg,var(--n2),var(--ink2))}
+/* CONDITIONS AT FIRST PITCH — the weather block on a game page. Three stat
+   cells that stay on ONE row at 320px (auto-fit would drop the third to its own
+   line at the narrow end and make the card look broken), the served phrase
+   under them, and the provenance line last and quietest. */
+/* the weather card stands between two sections rather than inside one (it names
+   itself), so it carries the vertical rhythm .pvz-grid gives the cards that sit
+   inside a section — otherwise it butts straight against the pitchers above it */
+.pvz.wx-card{margin:13px 0 4px}
+.wx-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.wx-grid.two{grid-template-columns:repeat(2,1fr)}
+.wx-c{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:0;padding:7px 2px 6px;border-radius:9px;background:rgba(var(--tintc),.05)}
+.wx-c b{font-family:var(--mono);font-weight:700;font-size:19px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wx-c b em{font-style:normal;font-size:11px;font-weight:600;color:var(--ink3);margin-left:1px}
+.wx-c i{font-style:normal;font-family:var(--disp);font-weight:600;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);text-align:center;line-height:1.25}
+.wx-src{margin-top:7px;font-size:11px;line-height:1.4;color:var(--ink4)}
 .pit-row{display:flex;flex-direction:column;gap:7px}
 .pit-chip{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 7px;font-size:13px;color:var(--ink)}
 .pit-ab{font-family:var(--disp);font-weight:700;font-size:12px;color:var(--ink3);width:34px;flex-shrink:0}
@@ -3793,8 +3808,10 @@ details.more .more-body{padding-top:12px}
 .dp-14{margin:14px 0 0;padding:14px 13px 11px;border-radius:20px;
   background:rgba(255,255,255,.66);border:1px solid rgba(var(--rimc),.11);box-shadow:var(--e0);
   -webkit-backdrop-filter:var(--mat-filter-lite);backdrop-filter:var(--mat-filter-lite);
-  cursor:pointer;-webkit-tap-highlight-color:transparent}
-.dp-14:active{background:rgba(255,255,255,.8)}
+  -webkit-tap-highlight-color:transparent}
+/* NO cursor:pointer AND NO :active STATE. The block stopped being a button on 2026-08-09
+   (it was a link to the Record view, and the Record view is now this page, one screen up);
+   a pressable-looking panel that does nothing is worse than the dead link it replaced. */
 .dp-14h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 11px}
 .dp-14k{font-family:var(--disp);font-weight:850;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
 .dp-14sum{display:inline-flex;align-items:baseline;gap:8px;flex-shrink:0}
@@ -5125,18 +5142,65 @@ body.stories-on{background:#060912}
     linear-gradient(66deg,rgba(6,9,18,.42),transparent 62%)}
 .nws-card.foto-band .nws-scrim{background:
   linear-gradient(180deg,rgba(6,9,18,.5) 0,transparent 20%,rgba(6,9,18,.5) 46%,rgba(6,9,18,.9) 62%,rgba(6,9,18,.97) 100%)}
-/* NO PHOTOGRAPH IS ALSO A DESIGN. The card fills with the brand field, the league is set
-   as a ghosted masthead across it, and the house diamond is struck through the corner. */
-.nws-card.nofoto{background:
-  radial-gradient(90% 52% at 8% 4%,rgba(var(--fldc,125,220,255),.30),transparent 66%),
-  radial-gradient(80% 50% at 98% 96%,rgba(var(--fld2,167,139,250),.24),transparent 70%),
-  linear-gradient(168deg,#141b27,#060912)}
-.nws-league{position:absolute;left:0;right:0;top:16%;z-index:0;display:none;
-  font-family:var(--disp);font-weight:800;font-size:clamp(56px,19vw,132px);line-height:.78;
-  letter-spacing:-.055em;text-align:center;white-space:nowrap;pointer-events:none;
-  color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.16);
-  text-shadow:0 0 70px rgba(var(--fldc,125,220,255),.2)}
-.nws-card.nofoto .nws-league{display:block}
+/* ════════ NO PHOTOGRAPH IS A COMPOSITION, NOT A GAP (2026-08-09) ════════
+   Leon: "find a creative layout that doesn't highlight that… a grey rectangle is an
+   absence." What was here did highlight it. The card kept its full-height frame and hung
+   the league word across the middle as a 132px outlined watermark, so five of nine cards
+   opened on 60% of an empty screen with a ghost letterform floating in it — the exact
+   visual grammar of a failed image load, applied on purpose.
+
+   THE TYPESET CARD replaces it, and the first move is the one that removes the hole
+   rather than decorating it: this card DOES NOT STRETCH. Like the wide-photo band card
+   it shrink-wraps to its own content and centres on the field, so there is no void left
+   to fill and no watermark needed to fill it. Then:
+     · a struck GOLD RULE with the house diamond set into it runs above the kicker — the
+       masthead of a printed page, and the same mark the article hero carries;
+     · the HEADLINE is the art, and takes the size the picture is not using;
+     · where the story maps to a game we still hold, the crests and the SCORE are set as
+       a plate. Two badges and "2–1" is a designed object, and on a story about that game
+       it is the truest thing on the card;
+     · the wire's name closes it, because who reported it is what an imageless story has
+       left to offer.
+   Every piece is conditional in the markup: no game, no plate; no source, no source
+   line. Nothing here renders a frame waiting for something that isn't coming. */
+.nws-card.nofoto{flex:0 0 auto;justify-content:flex-start;background:
+  radial-gradient(120% 62% at 6% 0%,rgba(var(--fldc,125,220,255),.26),transparent 62%),
+  radial-gradient(96% 56% at 100% 100%,rgba(var(--fld2,167,139,250),.22),transparent 68%),
+  linear-gradient(168deg,#161d2a,#080c16)}
+/* the masthead rule: a gold hairline that fades out to the right, with the house diamond
+   struck into its left end. Only the imageless card wears it — over a photograph the
+   scrim is already doing this job. */
+.nws-rule{display:none;align-items:center;gap:9px;margin-bottom:14px}
+.nws-rule i{flex:0 0 auto;font-style:normal;font-size:11px;line-height:1;
+  color:rgba(var(--goldbrightc),.96);filter:drop-shadow(0 0 8px rgba(var(--goldbrightc),.45))}
+.nws-rule::after{content:"";flex:1 1 auto;height:1px;
+  background:linear-gradient(90deg,rgba(var(--goldbrightc),.8),rgba(var(--goldbrightc),.2) 48%,transparent)}
+.nws-card.nofoto .nws-rule{display:flex}
+/* THE PLATE — crests and the score, set as an object. Never a bare grey box: it renders
+   only when a game actually resolved, and it carries real badges and a real number. */
+.nws-plate{display:none;align-items:center;justify-content:flex-start;gap:14px;
+  margin-top:4px;padding:12px 15px;border-radius:18px;
+  background:linear-gradient(168deg,rgba(255,255,255,.07),rgba(255,255,255,.03));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 26px -14px rgba(0,0,0,.8)}
+.nws-card.nofoto .nws-plate{display:flex}
+.nws-pteam{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:800;
+  font-size:15px;letter-spacing:.01em;color:#f2f7ff}
+.nws-pcrest img,.nws-pcrest.crest{width:30px;height:30px;object-fit:contain;border-radius:9px}
+.nws-pcrest.crest{display:grid;place-items:center;background:rgba(255,255,255,.12);
+  font-family:var(--disp);font-weight:800;font-size:10.5px;color:#fff}
+.nws-pscore,.nws-pat{font-style:normal;font-family:var(--disp);font-weight:800;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.nws-pscore{font-size:19px;color:#fff}
+.nws-pscore.fin{color:rgba(var(--goldbrightc),.96)}
+.nws-pat{font-size:13px;color:rgba(235,244,255,.46)}
+/* the foot: the affordance, and — on an imageless card only — who reported it */
+.nws-foot{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:2px}
+.nws-src{display:none;font-family:var(--disp);font-weight:700;font-size:10.5px;
+  letter-spacing:.16em;text-transform:uppercase;color:rgba(235,244,255,.5)}
+.nws-card.nofoto .nws-src{display:inline-block}
+/* with the picture gone, the headline is the only voice on the card — so it speaks up */
+.stories .nws-card.nofoto .sts-head{font-size:clamp(32px,9.2vw,54px)}
+.nws-card.nofoto .nws-scrim{display:none}
 .nws-body{position:relative;z-index:2;display:flex;flex-direction:column;gap:10px;
   padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px) * 0)}
 /* quiet small caps, then the one dominant element, then a whisper */
@@ -5538,8 +5602,10 @@ body.stories-on{background:#060912}
 .stgyrec-warn p{font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--ink2);margin:0}
 .stgyrec-warn p + p{margin-top:8px}
 .stgyrec-warn b{color:var(--ink)}
-.stgyrec-order{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink3);margin-top:10px}
-.stgyrec-order b{color:var(--ink2)}
+/* .stgyrec-order removed with its element (2026-08-09): "Listed with the official product
+   first, then the active research tracks" was a leaderboard frame on a list whose point is
+   that it is not one. What it said that was true — the order is fixed, the product leads —
+   moved into .stgyrec-warn, which already had the reader's attention. */
 .stgyrec-list{display:flex;flex-direction:column;gap:11px;margin-top:12px}
 .stgyrec-list>.sgc{flex:0 0 auto}
 .sgc{min-width:0;padding:13px 14px;border-radius:14px;border:1px solid var(--line3);background:rgba(var(--tintc),.035)}
@@ -6756,31 +6822,15 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
    ══════════════════════════════════════════════════════════════════════════════ */
 .deskpage{padding:8px 0 20px;max-width:900px;margin:0 auto}
 .dp-mast{margin:0 0 16px;max-width:760px}
-/* ══ THE RESULTS REGION, AND THE RING THAT SAYS "THIS IS WHY YOU'RE HERE" ══
-   The strategy strip's "How our nightly engine works" lands on the Desk (it used to open a
-   research paper). A tab switch alone is not an answer to "where did I just go", so the
-   region the reader was sent to identifies itself for a beat: a gold ring and a soft lift
-   that fade out on their own. It is a POINTER, not a state — nothing about the record
-   changes, the class removes itself, and prefers-reduced-motion gets the ring without the
-   pulse rather than nothing at all (the pointer is the point). */
-.dp-results{border-radius:26px;outline:0;padding:10px;margin:-10px;
-  transition:box-shadow .55s ease,background-color .55s ease,transform .55s ease}
-/* the resting form of the pointer — what a reduced-motion reader gets, and what the animation
-   settles through. The ring is the DEEP gold, not the light one: the record hero inside this
-   region is itself gold-tinted, and a pale ring around a pale card is not a pointer. */
-.dp-results.dp-spot{background:rgba(var(--goldc),.09);
-  box-shadow:0 0 0 2.5px var(--golddeep),0 18px 44px -16px rgba(var(--goldc),.65)}
-@media (prefers-reduced-motion:no-preference){
-  .dp-results.dp-spot{animation:dpSpot 2.6s cubic-bezier(.22,1,.36,1) 1}
-}
-/* held, not flashed: full strength by ~250ms and still unmistakable past a second, so the ring
-   is on screen for the whole time it takes a reader to look up after the tab change. */
-@keyframes dpSpot{
-  0%{box-shadow:0 0 0 0 rgba(var(--goldc),0);background:rgba(var(--goldc),0);transform:scale(.985)}
-  10%{box-shadow:0 0 0 3px var(--golddeep),0 20px 50px -14px rgba(var(--goldc),.7);background:rgba(var(--goldc),.13);transform:scale(1)}
-  55%{box-shadow:0 0 0 2.5px var(--golddeep),0 18px 44px -16px rgba(var(--goldc),.55);background:rgba(var(--goldc),.10);transform:scale(1)}
-  100%{box-shadow:0 0 0 0 rgba(var(--goldc),0);background:rgba(var(--goldc),0);transform:scale(1)}
-}
+/* ══ THE RESULTS REGION — AND THE RING THAT IS GONE (2026-08-09) ══
+   This region used to answer "where did I just go" with a gold ring and a soft lift that
+   faded out on their own, because "the full record" landed the reader MID-PAGE on a long
+   tab. The page collapse made the region the FIRST thing on the Desk, and a pointer at a
+   region taller than the phone is not a pointer: at 375px both of its horizontal edges sit
+   off-screen, so all a reader saw were two gold rules running down the sides of the screen
+   — Leon: "an odd box over the calendar widget". Opening the tab lands on the record now;
+   that is the whole answer, so there is nothing left to highlight. */
+.dp-results{border-radius:26px}
 .dp-k{display:inline-block;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.2em;
   text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
 .dp-h{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.04;letter-spacing:-.035em;
@@ -9591,6 +9641,13 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
    the opposite of the intended emphasis. It is the quieter of the two lines. */
 .stgy-why{font-family:var(--sans);font-size:12.5px;line-height:1.55;color:var(--ink3);margin:0}
 .stgy-voice + .stgy-why{margin-top:7px}
+/* the past-board frame: quieter than the prose it qualifies, so it reads as a dateline
+   rather than as a second claim */
+.stgy-past{font-family:var(--sans);font-size:12px;line-height:1.5;color:var(--ink4);margin:7px 0 0;font-style:italic}
+/* the "not running now" line now also appears on a settled day whose prose came from a
+   hand-written family (no .stgy-voice above it), where the record sentence follows
+   immediately after — without this the two run together as one grey block */
+.stgy-past + .stgy-why{margin-top:7px}
 .stgy-link{display:inline-flex;align-items:center;gap:7px;margin-top:11px;
   padding:7px 13px;border:0;border-radius:999px;cursor:pointer;
   font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.01em;
@@ -9706,6 +9763,11 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
   font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .nsf-band.b2 .nsf-n{font-size:26px}
 .nsf-band.b3 .nsf-n{font-size:26px;fill:var(--golddeep)}
+/* The middle band says WINS − LOSSES in words rather than a two-character symbol; SVG text
+   does not reflow, so the fit is made by the type scale. Display face + normal tracking:
+   at this size the mono numeral face reads as a serial number rather than as a phrase. */
+.nsf-n.wide{font-family:var(--disp);font-weight:850;letter-spacing:.01em}
+.nsf-band.b2 .nsf-n.wide{font-size:19px}
 .nsf-l{font-family:var(--disp);font-weight:800;font-size:8.4px;letter-spacing:.13em;fill:var(--ink3)}
 .nsf-band.b3 .nsf-l{fill:var(--golddeep)}
 .nsf-l.loop{font-size:7.8px;letter-spacing:.16em;fill:var(--ink4)}

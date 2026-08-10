@@ -190823,6 +190823,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 81,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -3.7,
+        "humidity_pct": 37,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-25T19:05:00Z",
+        "forecast_retrieved_utc": "2026-07-25T18:44:46Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -192010,6 +192027,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 1.8,
+        "humidity_pct": 35,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-25T19:40:00Z",
+        "forecast_retrieved_utc": "2026-07-25T19:19:09Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -192602,6 +192636,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -0.3,
+        "humidity_pct": 47,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-25T20:05:00Z",
+        "forecast_retrieved_utc": "2026-07-25T19:53:34Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -193174,6 +193225,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 87,
+        "wind_mph": 5,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -0.7,
+        "humidity_pct": 65,
+        "precip_prob": 1,
+        "carry_index": 1.1,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-25T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-25T19:53:35Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -194367,6 +194438,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 10,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 1.2,
+        "humidity_pct": 58,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-25T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-25T19:53:36Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -194957,6 +195045,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 92,
+        "wind_mph": 1,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 1.1,
+        "humidity_pct": 52,
+        "precip_prob": 1,
+        "carry_index": 1.09,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-25T20:15:00Z",
+        "forecast_retrieved_utc": "2026-07-25T19:53:39Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -195554,6 +195661,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 77,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 0.0,
+        "humidity_pct": 43,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-25T20:15:00Z",
+        "forecast_retrieved_utc": "2026-07-25T19:53:38Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -197336,6 +197460,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 85,
+        "wind_mph": 3,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 2.6,
+        "humidity_pct": 52,
+        "precip_prob": 2,
+        "carry_index": 1.06,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T14:35:00Z",
+        "forecast_retrieved_utc": "2026-07-26T14:34:07Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -197928,6 +198071,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -0.5,
+        "humidity_pct": 46,
+        "precip_prob": 1,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T14:35:00Z",
+        "forecast_retrieved_utc": "2026-07-26T14:34:10Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -198525,6 +198685,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 4.3,
+        "humidity_pct": 47,
+        "precip_prob": 1,
+        "carry_index": 1.08,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T14:35:00Z",
+        "forecast_retrieved_utc": "2026-07-26T14:34:08Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -199122,6 +199299,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 74,
+        "wind_mph": 10,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -10.1,
+        "humidity_pct": 43,
+        "precip_prob": 0,
+        "carry_index": 1.03,
+        "notes": [
+          "the wind is blowing hard in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T14:35:00Z",
+        "forecast_retrieved_utc": "2026-07-26T14:34:09Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -199692,6 +199888,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -3.0,
+        "humidity_pct": 58,
+        "precip_prob": 6,
+        "carry_index": 1.08,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T14:40:00Z",
+        "forecast_retrieved_utc": "2026-07-26T14:34:11Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -200287,6 +200500,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 5,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -5.2,
+        "humidity_pct": 34,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T14:40:00Z",
+        "forecast_retrieved_utc": "2026-07-26T14:34:12Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -201454,6 +201686,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 95,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.1,
+        "humidity_pct": 45,
+        "precip_prob": 1,
+        "carry_index": 1.12,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T15:10:00Z",
+        "forecast_retrieved_utc": "2026-07-26T15:07:44Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -202645,6 +202897,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 7,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -5.3,
+        "humidity_pct": 69,
+        "precip_prob": 0,
+        "carry_index": 1.09,
+        "notes": [
+          "the wind is blowing in from centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T15:10:00Z",
+        "forecast_retrieved_utc": "2026-07-26T15:07:45Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -203242,6 +203514,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 97,
+        "wind_mph": 4,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 3.6,
+        "humidity_pct": 55,
+        "precip_prob": 4,
+        "carry_index": 1.11,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T15:15:00Z",
+        "forecast_retrieved_utc": "2026-07-26T15:07:47Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -204436,6 +204728,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 68,
+        "wind_mph": 16,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 15.3,
+        "humidity_pct": 69,
+        "precip_prob": 1,
+        "carry_index": 1.02,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T17:05:00Z",
+        "forecast_retrieved_utc": "2026-07-26T16:49:24Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -205035,6 +205346,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 81,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.2,
+        "humidity_pct": 46,
+        "precip_prob": 1,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-26T20:20:00Z",
+        "forecast_retrieved_utc": "2026-07-26T20:12:02Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -206263,6 +206593,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 9,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.3,
+        "humidity_pct": 47,
+        "precip_prob": 7,
+        "carry_index": 1.09,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T19:40:00Z",
+        "forecast_retrieved_utc": "2026-07-27T19:16:07Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -206894,6 +207243,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 12,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -6.3,
+        "humidity_pct": 66,
+        "precip_prob": 28,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T19:40:00Z",
+        "forecast_retrieved_utc": "2026-07-27T19:16:06Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -208172,6 +208540,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 85,
+        "wind_mph": 9,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 4.3,
+        "humidity_pct": 59,
+        "precip_prob": 9,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T19:45:00Z",
+        "forecast_retrieved_utc": "2026-07-27T19:16:10Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -208788,6 +209173,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 12,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 7.6,
+        "humidity_pct": 68,
+        "precip_prob": 8,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-27T20:02:12Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -209597,6 +210001,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 7,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -4.7,
+        "humidity_pct": 89,
+        "precip_prob": 22,
+        "carry_index": 1.07,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T20:40:00Z",
+        "forecast_retrieved_utc": "2026-07-27T20:24:29Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -210217,6 +210638,27 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 98,
+        "wind_mph": 8,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.9,
+        "humidity_pct": 38,
+        "precip_prob": 3,
+        "carry_index": 1.11,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T20:45:00Z",
+        "forecast_retrieved_utc": "2026-07-27T20:24:30Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -210850,6 +211292,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 77,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.3,
+        "humidity_pct": 67,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T22:38:00Z",
+        "forecast_retrieved_utc": "2026-07-27T22:08:37Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -211470,6 +211931,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 79,
+        "wind_mph": 6,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 5.5,
+        "humidity_pct": 86,
+        "precip_prob": 8,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T22:40:00Z",
+        "forecast_retrieved_utc": "2026-07-27T22:08:39Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -212108,6 +212588,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 64,
+        "wind_mph": 18,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 17.5,
+        "humidity_pct": 65,
+        "precip_prob": 0,
+        "carry_index": 1.01,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-27T22:45:00Z",
+        "forecast_retrieved_utc": "2026-07-27T22:42:45Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -212746,6 +213245,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 77,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 6.2,
+        "humidity_pct": 72,
+        "precip_prob": 3,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T19:40:00Z",
+        "forecast_retrieved_utc": "2026-07-28T19:33:13Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -213382,6 +213900,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 12,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.3,
+        "humidity_pct": 47,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T19:40:00Z",
+        "forecast_retrieved_utc": "2026-07-28T19:33:12Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -215295,6 +215832,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 74,
+        "wind_mph": 11,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 8.0,
+        "humidity_pct": 90,
+        "precip_prob": 57,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T19:45:00Z",
+        "forecast_retrieved_utc": "2026-07-28T19:33:17Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -216112,6 +216668,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 9,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -6.8,
+        "humidity_pct": 49,
+        "precip_prob": 0,
+        "carry_index": 1.09,
+        "notes": [
+          "the wind is blowing in from centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-28T20:07:20Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -216723,6 +217299,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 89,
+        "wind_mph": 4,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -3.5,
+        "humidity_pct": 41,
+        "precip_prob": 2,
+        "carry_index": 1.1,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T20:40:00Z",
+        "forecast_retrieved_utc": "2026-07-28T20:07:29Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -217361,6 +217956,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 67,
+        "wind_mph": 10,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.6,
+        "humidity_pct": 80,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T20:40:00Z",
+        "forecast_retrieved_utc": "2026-07-28T20:07:30Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -217994,6 +218608,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 8,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -7.4,
+        "humidity_pct": 54,
+        "precip_prob": 2,
+        "carry_index": 1.09,
+        "notes": [
+          "the wind is blowing in from centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T20:45:00Z",
+        "forecast_retrieved_utc": "2026-07-28T20:42:06Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -218634,6 +219268,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.1,
+        "humidity_pct": 71,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T22:38:00Z",
+        "forecast_retrieved_utc": "2026-07-28T22:26:15Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -219269,6 +219922,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 81,
+        "wind_mph": 5,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 3.9,
+        "humidity_pct": 84,
+        "precip_prob": 4,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T22:40:00Z",
+        "forecast_retrieved_utc": "2026-07-28T22:26:16Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -219907,6 +220577,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 72,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 0.4,
+        "humidity_pct": 82,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T22:40:00Z",
+        "forecast_retrieved_utc": "2026-07-28T22:26:17Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -220551,6 +221238,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 65,
+        "wind_mph": 17,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 15.7,
+        "humidity_pct": 76,
+        "precip_prob": 0,
+        "carry_index": 1.02,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T22:45:00Z",
+        "forecast_retrieved_utc": "2026-07-28T22:26:18Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -221184,6 +221890,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 4.9,
+        "humidity_pct": 72,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-28T23:10:00Z",
+        "forecast_retrieved_utc": "2026-07-28T23:00:51Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -222546,6 +223269,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 13,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.6,
+        "humidity_pct": 52,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T13:35:00Z",
+        "forecast_retrieved_utc": "2026-07-29T13:14:40Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -223224,6 +223966,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 13,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -4.2,
+        "humidity_pct": 50,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T14:05:00Z",
+        "forecast_retrieved_utc": "2026-07-29T13:48:21Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -223902,6 +224663,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 76,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 0.5,
+        "humidity_pct": 82,
+        "precip_prob": 9,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T14:10:00Z",
+        "forecast_retrieved_utc": "2026-07-29T13:48:23Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -224578,6 +225356,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 81,
+        "wind_mph": 12,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 10.5,
+        "humidity_pct": 36,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T14:10:00Z",
+        "forecast_retrieved_utc": "2026-07-29T13:48:22Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -225251,6 +226048,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 71,
+        "wind_mph": 12,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.6,
+        "humidity_pct": 67,
+        "precip_prob": 0,
+        "carry_index": 1.03,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T16:45:00Z",
+        "forecast_retrieved_utc": "2026-07-29T16:35:21Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -225927,6 +226743,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 9,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 3.3,
+        "humidity_pct": 65,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T17:10:00Z",
+        "forecast_retrieved_utc": "2026-07-29T16:35:22Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -227282,6 +228115,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 10,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -7.7,
+        "humidity_pct": 43,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-29T19:58:09Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -227938,6 +228790,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 92,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.4,
+        "humidity_pct": 36,
+        "precip_prob": 4,
+        "carry_index": 1.1,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T20:40:00Z",
+        "forecast_retrieved_utc": "2026-07-29T20:32:30Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -228618,6 +229490,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 70,
+        "wind_mph": 5,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.6,
+        "humidity_pct": 78,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T20:40:00Z",
+        "forecast_retrieved_utc": "2026-07-29T20:32:31Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -229289,6 +230178,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 7,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -5.8,
+        "humidity_pct": 41,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing in from centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T20:45:00Z",
+        "forecast_retrieved_utc": "2026-07-29T20:32:32Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -229967,6 +230876,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.2,
+        "humidity_pct": 59,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T22:38:00Z",
+        "forecast_retrieved_utc": "2026-07-29T22:14:58Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -230623,6 +231551,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 4,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 3.2,
+        "humidity_pct": 88,
+        "precip_prob": 9,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T22:40:00Z",
+        "forecast_retrieved_utc": "2026-07-29T22:14:59Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -231296,6 +232241,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 76,
+        "wind_mph": 8,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 6.0,
+        "humidity_pct": 69,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-29T23:10:00Z",
+        "forecast_retrieved_utc": "2026-07-29T22:48:54Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -232771,6 +233735,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 88,
+        "wind_mph": 10,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -0.9,
+        "humidity_pct": 40,
+        "precip_prob": 0,
+        "carry_index": 1.09,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T14:40:00Z",
+        "forecast_retrieved_utc": "2026-07-30T14:35:41Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -233532,6 +234515,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 79,
+        "wind_mph": 7,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -5.0,
+        "humidity_pct": 73,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T15:10:00Z",
+        "forecast_retrieved_utc": "2026-07-30T15:08:36Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -234237,6 +235237,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 88,
+        "wind_mph": 3,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -0.1,
+        "humidity_pct": 41,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T15:15:00Z",
+        "forecast_retrieved_utc": "2026-07-30T15:08:37Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -235045,6 +236064,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 73,
+        "wind_mph": 3,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 2.4,
+        "humidity_pct": 84,
+        "precip_prob": 27,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-30T19:36:45Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -235826,6 +236862,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 6,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -4.4,
+        "humidity_pct": 38,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-30T19:36:44Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -236598,6 +237653,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 87,
+        "wind_mph": 9,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.5,
+        "humidity_pct": 34,
+        "precip_prob": 0,
+        "carry_index": 1.1,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T20:15:00Z",
+        "forecast_retrieved_utc": "2026-07-30T20:14:44Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -237403,6 +238477,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 79,
+        "wind_mph": 4,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 4.1,
+        "humidity_pct": 91,
+        "precip_prob": 9,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T22:40:00Z",
+        "forecast_retrieved_utc": "2026-07-30T22:25:02Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -238207,6 +239298,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 73,
+        "wind_mph": 5,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -0.6,
+        "humidity_pct": 71,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T22:40:00Z",
+        "forecast_retrieved_utc": "2026-07-30T22:25:03Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -239004,6 +240112,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 74,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 5.0,
+        "humidity_pct": 72,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-30T23:10:00Z",
+        "forecast_retrieved_utc": "2026-07-30T22:59:05Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -239840,6 +240965,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 12,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -0.8,
+        "humidity_pct": 69,
+        "precip_prob": 4,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T15:20:00Z",
+        "forecast_retrieved_utc": "2026-07-31T15:18:57Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -240659,6 +241803,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 89,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -2.0,
+        "humidity_pct": 35,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T19:10:00Z",
+        "forecast_retrieved_utc": "2026-07-31T18:41:05Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -241423,6 +242586,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 0.4,
+        "humidity_pct": 56,
+        "precip_prob": 2,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T20:05:00Z",
+        "forecast_retrieved_utc": "2026-07-31T19:49:03Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -243094,6 +244274,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 7,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -6.8,
+        "humidity_pct": 50,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-31T19:49:05Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -244751,6 +245950,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 4.7,
+        "humidity_pct": 74,
+        "precip_prob": 2,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T20:10:00Z",
+        "forecast_retrieved_utc": "2026-07-31T19:49:07Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -245557,6 +246773,27 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 89,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 6.3,
+        "humidity_pct": 31,
+        "precip_prob": 0,
+        "carry_index": 1.1,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T20:15:00Z",
+        "forecast_retrieved_utc": "2026-07-31T19:49:08Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -247169,6 +248406,27 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 88,
+        "wind_mph": 11,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -2.4,
+        "humidity_pct": 20,
+        "precip_prob": 8,
+        "carry_index": 1.26,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch",
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T21:40:00Z",
+        "forecast_retrieved_utc": "2026-07-31T21:32:59Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -247993,6 +249251,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 6,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 6.3,
+        "humidity_pct": 54,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T22:38:00Z",
+        "forecast_retrieved_utc": "2026-07-31T22:07:32Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -248793,6 +250070,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 81,
+        "wind_mph": 3,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 2.6,
+        "humidity_pct": 88,
+        "precip_prob": 3,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T22:40:00Z",
+        "forecast_retrieved_utc": "2026-07-31T22:07:33Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -249607,6 +250901,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 5,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -3.8,
+        "humidity_pct": 73,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T22:45:00Z",
+        "forecast_retrieved_utc": "2026-07-31T22:41:56Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -250377,6 +251688,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 76,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 4.7,
+        "humidity_pct": 67,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-07-31T23:10:00Z",
+        "forecast_retrieved_utc": "2026-07-31T22:41:57Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -253616,6 +254944,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 85,
+        "wind_mph": 13,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 9.8,
+        "humidity_pct": 54,
+        "precip_prob": 1,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T17:10:00Z",
+        "forecast_retrieved_utc": "2026-08-01T16:58:15Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -255239,6 +256587,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 13,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 6.3,
+        "humidity_pct": 81,
+        "precip_prob": 45,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-01T19:14:20Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -256057,6 +257425,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 10,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 4.2,
+        "humidity_pct": 49,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T20:05:00Z",
+        "forecast_retrieved_utc": "2026-08-01T19:48:22Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -257705,6 +259092,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 8,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -7.5,
+        "humidity_pct": 68,
+        "precip_prob": 10,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-01T19:48:24Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -258529,6 +259935,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 71,
+        "wind_mph": 15,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -15.1,
+        "humidity_pct": 85,
+        "precip_prob": 36,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing hard in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-01T19:48:26Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -259328,6 +260753,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 6,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 4.8,
+        "humidity_pct": 66,
+        "precip_prob": 16,
+        "carry_index": 1.1,
+        "notes": [
+          "the air is thin and the ball carries"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-01T19:48:25Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -260092,6 +261536,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 94,
+        "wind_mph": 9,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -4.2,
+        "humidity_pct": 10,
+        "precip_prob": 1,
+        "carry_index": 1.28,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T21:10:00Z",
+        "forecast_retrieved_utc": "2026-08-01T20:57:39Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -260920,6 +262384,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -2.0,
+        "humidity_pct": 73,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T21:40:00Z",
+        "forecast_retrieved_utc": "2026-08-01T21:35:14Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -261706,6 +263187,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 4.9,
+        "humidity_pct": 53,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T22:10:00Z",
+        "forecast_retrieved_utc": "2026-08-01T21:35:15Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -262523,6 +264021,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 6,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 5.2,
+        "humidity_pct": 69,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T22:38:00Z",
+        "forecast_retrieved_utc": "2026-08-01T22:13:19Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -263326,6 +264843,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 79,
+        "wind_mph": 1,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 1.0,
+        "humidity_pct": 82,
+        "precip_prob": 12,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-01T22:40:00Z",
+        "forecast_retrieved_utc": "2026-08-01T22:13:20Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -264094,7 +265628,27 @@
           "is_final_wall": true
         }
       ],
-      "live_progress": null
+      "live_progress": null,
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 89,
+        "wind_mph": 13,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 3.5,
+        "humidity_pct": 48,
+        "precip_prob": 12,
+        "carry_index": 1.07,
+        "notes": [
+          "it is hot at first pitch",
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T14:35:00Z",
+        "forecast_retrieved_utc": "2026-08-02T14:06:10Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
+      }
     },
     {
       "game_id": "2026-08-02-Washington Nationals-Atlanta Braves-824891",
@@ -264880,6 +266434,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 77,
+        "wind_mph": 9,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.6,
+        "humidity_pct": 84,
+        "precip_prob": 8,
+        "carry_index": 1.09,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T14:35:00Z",
+        "forecast_retrieved_utc": "2026-08-02T14:06:11Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -266477,6 +268050,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 8,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 8.2,
+        "humidity_pct": 67,
+        "precip_prob": 20,
+        "carry_index": 1.09,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T14:40:00Z",
+        "forecast_retrieved_utc": "2026-08-02T14:39:38Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -268133,6 +269725,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 15,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 9.6,
+        "humidity_pct": 67,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T14:40:00Z",
+        "forecast_retrieved_utc": "2026-08-02T14:39:42Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -268945,6 +270557,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 71,
+        "wind_mph": 2,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 0.2,
+        "humidity_pct": 90,
+        "precip_prob": 13,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T14:40:00Z",
+        "forecast_retrieved_utc": "2026-08-02T14:39:39Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -270584,6 +272213,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 72,
+        "wind_mph": 15,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -11.6,
+        "humidity_pct": 91,
+        "precip_prob": 1,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing hard in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T15:20:00Z",
+        "forecast_retrieved_utc": "2026-08-02T15:13:17Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -271388,6 +273036,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 101,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -2.3,
+        "humidity_pct": 7,
+        "precip_prob": 0,
+        "carry_index": 1.3,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T16:10:00Z",
+        "forecast_retrieved_utc": "2026-08-02T15:46:51Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -272219,6 +273887,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 88,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.1,
+        "humidity_pct": 50,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T16:15:00Z",
+        "forecast_retrieved_utc": "2026-08-02T15:46:53Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -273010,6 +274698,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.5,
+        "humidity_pct": 75,
+        "precip_prob": 31,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T17:05:00Z",
+        "forecast_retrieved_utc": "2026-08-02T16:54:31Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -274656,6 +276363,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 5.1,
+        "humidity_pct": 74,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T17:10:00Z",
+        "forecast_retrieved_utc": "2026-08-02T16:54:32Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -275485,6 +277211,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 5.8,
+        "humidity_pct": 50,
+        "precip_prob": 0,
+        "carry_index": 1.09,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-02T20:20:00Z",
+        "forecast_retrieved_utc": "2026-08-02T19:52:37Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -276307,6 +278053,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -2.9,
+        "humidity_pct": 72,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-03T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-03T19:14:01Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -277134,6 +278897,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 76,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -3.9,
+        "humidity_pct": 75,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-03T20:05:00Z",
+        "forecast_retrieved_utc": "2026-08-03T19:49:32Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -278795,6 +280575,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 72,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -3.2,
+        "humidity_pct": 83,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-03T21:05:00Z",
+        "forecast_retrieved_utc": "2026-08-03T21:00:47Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -281252,6 +283049,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 94,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -1.5,
+        "humidity_pct": 13,
+        "precip_prob": 11,
+        "carry_index": 1.29,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-03T21:40:00Z",
+        "forecast_retrieved_utc": "2026-08-03T21:37:02Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -282898,6 +284715,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 85,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -1.4,
+        "humidity_pct": 49,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T19:35:00Z",
+        "forecast_retrieved_utc": "2026-08-04T19:19:18Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -283716,6 +285552,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 87,
+        "wind_mph": 1,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -0.2,
+        "humidity_pct": 35,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-04T19:19:20Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -284537,6 +286392,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 8,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -7.6,
+        "humidity_pct": 44,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-04T19:19:19Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -285335,6 +287209,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 5,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 0.0,
+        "humidity_pct": 47,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-04T19:19:21Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -286154,6 +288045,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 79,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 5.6,
+        "humidity_pct": 65,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T20:05:00Z",
+        "forecast_retrieved_utc": "2026-08-04T19:56:31Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -286971,6 +288881,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 4.6,
+        "humidity_pct": 42,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T20:10:00Z",
+        "forecast_retrieved_utc": "2026-08-04T19:56:32Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -287784,6 +289711,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -0.1,
+        "humidity_pct": 78,
+        "precip_prob": 14,
+        "carry_index": 1.08,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-04T19:56:34Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -288581,6 +290525,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 91,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -0.4,
+        "humidity_pct": 41,
+        "precip_prob": 1,
+        "carry_index": 1.1,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T20:40:00Z",
+        "forecast_retrieved_utc": "2026-08-04T20:33:16Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -290242,6 +292206,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 73,
+        "wind_mph": 9,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 1.8,
+        "humidity_pct": 71,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T21:05:00Z",
+        "forecast_retrieved_utc": "2026-08-04T20:33:18Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -292681,6 +294662,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -3.6,
+        "humidity_pct": 34,
+        "precip_prob": 2,
+        "carry_index": 1.24,
+        "notes": [
+          "the air is thin and the ball carries"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-04T21:40:00Z",
+        "forecast_retrieved_utc": "2026-08-04T21:10:13Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -295945,6 +297945,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 9,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 9.0,
+        "humidity_pct": 78,
+        "precip_prob": 14,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T15:20:00Z",
+        "forecast_retrieved_utc": "2026-08-05T15:03:10Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -297508,6 +299527,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 77,
+        "wind_mph": 7,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -5.2,
+        "humidity_pct": 37,
+        "precip_prob": 0,
+        "carry_index": 1.25,
+        "notes": [
+          "the wind is blowing in from centre field",
+          "the air is thin and the ball carries"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T16:10:00Z",
+        "forecast_retrieved_utc": "2026-08-05T15:39:30Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -298329,6 +300368,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 4,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 1.6,
+        "humidity_pct": 81,
+        "precip_prob": 7,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T19:35:00Z",
+        "forecast_retrieved_utc": "2026-08-05T19:21:03Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -299147,6 +301203,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 89,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 4.0,
+        "humidity_pct": 45,
+        "precip_prob": 3,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-05T19:21:05Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -299974,6 +302049,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 6,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -5.6,
+        "humidity_pct": 49,
+        "precip_prob": 8,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-05T19:21:04Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -300777,6 +302871,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 4.5,
+        "humidity_pct": 85,
+        "precip_prob": 17,
+        "carry_index": 1.05,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-05T19:21:06Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -301595,6 +303706,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 6.3,
+        "humidity_pct": 77,
+        "precip_prob": 14,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T20:05:00Z",
+        "forecast_retrieved_utc": "2026-08-05T19:57:50Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -302370,6 +304500,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.1,
+        "humidity_pct": 41,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T20:10:00Z",
+        "forecast_retrieved_utc": "2026-08-05T19:57:51Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -303188,6 +305337,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 4.5,
+        "humidity_pct": 54,
+        "precip_prob": 14,
+        "carry_index": 1.09,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-05T19:57:52Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -304009,6 +306177,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 2,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -0.8,
+        "humidity_pct": 73,
+        "precip_prob": 15,
+        "carry_index": 1.09,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-05T20:40:00Z",
+        "forecast_retrieved_utc": "2026-08-05T20:35:04Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -307320,6 +309505,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 87,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 6.8,
+        "humidity_pct": 72,
+        "precip_prob": 1,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-06T13:35:00Z",
+        "forecast_retrieved_utc": "2026-08-06T13:16:24Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -308141,6 +310346,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 88,
+        "wind_mph": 5,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 5.4,
+        "humidity_pct": 50,
+        "precip_prob": 1,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-06T13:40:00Z",
+        "forecast_retrieved_utc": "2026-08-06T13:16:25Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -308926,6 +311151,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 87,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 3.7,
+        "humidity_pct": 44,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-06T14:10:00Z",
+        "forecast_retrieved_utc": "2026-08-06T13:53:00Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -311362,6 +313606,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 8,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 8.1,
+        "humidity_pct": 72,
+        "precip_prob": 6,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-06T19:05:00Z",
+        "forecast_retrieved_utc": "2026-08-06T18:47:15Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -312179,6 +314443,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 85,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 6.3,
+        "humidity_pct": 75,
+        "precip_prob": 10,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-06T20:10:00Z",
+        "forecast_retrieved_utc": "2026-08-06T20:01:49Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -312992,6 +315275,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 85,
+        "wind_mph": 1,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -1.1,
+        "humidity_pct": 57,
+        "precip_prob": 22,
+        "carry_index": 1.09,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-06T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-06T20:01:51Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -313769,6 +316069,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 5,
+        "wind_class": "in",
+        "wind_phrase": "the wind is blowing in from centre field",
+        "wind_out_mph": -5.4,
+        "humidity_pct": 81,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-06T20:40:00Z",
+        "forecast_retrieved_utc": "2026-08-06T20:39:02Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -315389,6 +317708,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 79,
+        "wind_mph": 2,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -0.8,
+        "humidity_pct": 85,
+        "precip_prob": 23,
+        "carry_index": 1.07,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-07T19:21:45Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -316257,6 +318593,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 10,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -1.7,
+        "humidity_pct": 64,
+        "precip_prob": 17,
+        "carry_index": 1.06,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-07T19:21:46Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -317132,6 +319487,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 91,
+        "wind_mph": 11,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 8.4,
+        "humidity_pct": 50,
+        "precip_prob": 24,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T19:45:00Z",
+        "forecast_retrieved_utc": "2026-08-07T19:21:47Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -317952,6 +320327,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 85,
+        "wind_mph": 12,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.9,
+        "humidity_pct": 67,
+        "precip_prob": 45,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing hard out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T20:05:00Z",
+        "forecast_retrieved_utc": "2026-08-07T19:59:06Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -318780,6 +321175,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 5.5,
+        "humidity_pct": 39,
+        "precip_prob": 3,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T20:10:00Z",
+        "forecast_retrieved_utc": "2026-08-07T19:59:07Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -320468,6 +322883,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 80,
+        "wind_mph": 2,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": -1.6,
+        "humidity_pct": 73,
+        "precip_prob": 1,
+        "carry_index": 1.07,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T20:40:00Z",
+        "forecast_retrieved_utc": "2026-08-07T20:36:23Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -322119,6 +324551,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 86,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.7,
+        "humidity_pct": 58,
+        "precip_prob": 1,
+        "carry_index": 1.09,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T21:10:00Z",
+        "forecast_retrieved_utc": "2026-08-07T20:36:25Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -323732,6 +326183,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 89,
+        "wind_mph": 4,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 3.9,
+        "humidity_pct": 57,
+        "precip_prob": 2,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T21:15:00Z",
+        "forecast_retrieved_utc": "2026-08-07T21:13:52Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -324546,6 +327016,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -4.0,
+        "humidity_pct": 75,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T22:40:00Z",
+        "forecast_retrieved_utc": "2026-08-07T22:29:06Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -327020,6 +329507,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 60,
+        "wind_mph": 12,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.3,
+        "humidity_pct": 92,
+        "precip_prob": 1,
+        "carry_index": 1.01,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-07T23:15:00Z",
+        "forecast_retrieved_utc": "2026-08-07T23:07:42Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -327910,6 +330416,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 11,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 8.5,
+        "humidity_pct": 56,
+        "precip_prob": 3,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T16:05:00Z",
+        "forecast_retrieved_utc": "2026-08-08T15:58:09Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -328666,6 +331192,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 11,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.2,
+        "humidity_pct": 46,
+        "precip_prob": 2,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing hard out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T17:10:00Z",
+        "forecast_retrieved_utc": "2026-08-08T16:35:31Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -330448,6 +332994,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 82,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 5.4,
+        "humidity_pct": 69,
+        "precip_prob": 14,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T19:05:00Z",
+        "forecast_retrieved_utc": "2026-08-08T18:28:30Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -331236,6 +333801,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 81,
+        "wind_mph": 8,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 1.1,
+        "humidity_pct": 67,
+        "precip_prob": 2,
+        "carry_index": 1.08,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T19:40:00Z",
+        "forecast_retrieved_utc": "2026-08-08T19:06:42Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -332127,6 +334709,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 88,
+        "wind_mph": 11,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -5.0,
+        "humidity_pct": 60,
+        "precip_prob": 15,
+        "carry_index": 1.06,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T19:45:00Z",
+        "forecast_retrieved_utc": "2026-08-08T19:06:43Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -332908,6 +335509,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 92,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -1.6,
+        "humidity_pct": 41,
+        "precip_prob": 0,
+        "carry_index": 1.1,
+        "notes": [
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T20:10:00Z",
+        "forecast_retrieved_utc": "2026-08-08T19:45:14Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -335321,6 +337942,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 6,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -3.2,
+        "humidity_pct": 81,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-08T19:45:21Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -336120,6 +338758,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 5,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.9,
+        "humidity_pct": 50,
+        "precip_prob": 1,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-08T19:45:18Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -337015,6 +339672,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 65,
+        "wind_mph": 15,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 14.9,
+        "humidity_pct": 80,
+        "precip_prob": 1,
+        "carry_index": 1.02,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-08T19:45:17Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -337791,6 +340467,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 10,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -5.8,
+        "humidity_pct": 55,
+        "precip_prob": 0,
+        "carry_index": 1.06,
+        "notes": [
+          "the wind is blowing in from centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-08T20:15:00Z",
+        "forecast_retrieved_utc": "2026-08-08T19:45:16Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -340758,6 +343453,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 2.6,
+        "humidity_pct": 56,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T13:15:00Z",
+        "forecast_retrieved_utc": "2026-08-09T13:06:40Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -342137,6 +344851,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 90,
+        "wind_mph": 12,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.7,
+        "humidity_pct": 49,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "the wind is blowing hard out to centre field",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T14:35:00Z",
+        "forecast_retrieved_utc": "2026-08-09T14:31:06Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -343614,6 +346348,26 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 91,
+        "wind_mph": 10,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -2.5,
+        "humidity_pct": 46,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "it is hot at first pitch",
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T14:35:00Z",
+        "forecast_retrieved_utc": "2026-08-09T14:31:09Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -345112,6 +347866,23 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 83,
+        "wind_mph": 5,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 0.4,
+        "humidity_pct": 55,
+        "precip_prob": 0,
+        "carry_index": 1.08,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T14:35:00Z",
+        "forecast_retrieved_utc": "2026-08-09T14:31:07Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -346582,6 +349353,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 92,
+        "wind_mph": 7,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 3.2,
+        "humidity_pct": 45,
+        "precip_prob": 0,
+        "carry_index": 1.07,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T14:35:00Z",
+        "forecast_retrieved_utc": "2026-08-09T14:31:08Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -349543,6 +352333,27 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 95,
+        "wind_mph": 14,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 11.9,
+        "humidity_pct": 40,
+        "precip_prob": 4,
+        "carry_index": 1.11,
+        "notes": [
+          "the wind is blowing hard out to centre field",
+          "the air is thin and the ball carries",
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T15:10:00Z",
+        "forecast_retrieved_utc": "2026-08-09T15:09:13Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -351037,6 +353848,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 84,
+        "wind_mph": 11,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": -3.1,
+        "humidity_pct": 69,
+        "precip_prob": 10,
+        "carry_index": 1.08,
+        "notes": [
+          "the wind is cutting hard across the field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T15:10:00Z",
+        "forecast_retrieved_utc": "2026-08-09T15:09:14Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -353361,6 +356191,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 89,
+        "wind_mph": 10,
+        "wind_class": "cross",
+        "wind_phrase": "the wind is cutting across the field",
+        "wind_out_mph": 4.7,
+        "humidity_pct": 50,
+        "precip_prob": 2,
+        "carry_index": 1.08,
+        "notes": [
+          "it is hot at first pitch"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T15:15:00Z",
+        "forecast_retrieved_utc": "2026-08-09T15:09:16Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -355658,6 +358507,25 @@
         "status": "Final",
         "f5_home_runs": null,
         "f5_away_runs": null
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 74,
+        "wind_mph": 10,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 9.6,
+        "humidity_pct": 61,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-09T17:05:00Z",
+        "forecast_retrieved_utc": "2026-08-09T17:03:11Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -358643,5 +361511,12 @@
         "f5_away_runs": null
       }
     }
-  ]
+  ],
+  "weather_serve": {
+    "n_cards": 527,
+    "n_with_weather": 154,
+    "n_without": 373,
+    "status": "ok",
+    "note": "A card carries weather only when the park is open air AND the T-3h forecast was retrieved before the wall. Domes and games with no wall-legal reading carry none \u2014 the indoor constants are not a measurement."
+  }
 }

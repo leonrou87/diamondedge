@@ -1221,7 +1221,7 @@
   ],
   "papers_index": {
     "contract_version": "1.1",
-    "generated_utc": "2026-08-10T02:35:59.492333+00:00",
+    "generated_utc": "2026-08-10T03:11:29.499562+00:00",
     "n_papers": 19,
     "payload_key": "research_papers",
     "static_fallback": "/research_papers.json",
@@ -1266,7 +1266,7 @@
         "title": "We Don't Have a System. We Have 2,848 of Them, and We Pick a New One Every Night",
         "category": "How It Works",
         "date": "2026-08-03",
-        "one_liner": "Stop hunting for the strategy that always works \u2014 there isn't one. Score every strategy on the last five weeks, play the twenty-one that are running hottest, grade them, do it again tomorrow.",
+        "one_liner": "Stop hunting for the strategy that always works \u2014 there isn't one. This is the tournament that established it, and the process it argued for: score every strategy on its recent record, play the ones running hottest, grade them, do it again tomorrow.",
         "reading_minutes": 10,
         "roadmap_ids": [
           "strategy_tournament",

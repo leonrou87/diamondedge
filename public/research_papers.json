@@ -2,7 +2,7 @@
  "contract_version": "1.1",
  "schema_note": "KytePush Research paper library. Render `papers[]` in the order given (category order, then id). Each paper is {id, title, subtitle, category, author, date, tags[], abstract, sections[{heading, role, body}], key_figures[{label, value, note, source}], visuals[{type, title, caption, source, data[], ...}], sources[], roadmap_ids[], related_papers[], verdict, correction?, reading_minutes, word_count}. `correction` is OPTIONAL and markdown: a dated note that the product has moved past what the paper describes. Render it ABOVE the verdict \u2014 a reader needs to know a mechanism changed before being told how it works. Papers without one render nothing. `abstract` is plain text. `sections[].body` is markdown; headings inside a section start at ###. `sections[].role` is one of abstract-less roles methods / results / discussion / takeaway / extra \u2014 key on role, not on the English heading. `visuals[].type` is one of bar / compare / funnel / interval / line / scoreboard / timeline; every visual carries its data inline, so no chart needs a second fetch. `interval` rows are {label, value, low, high} and are the house signature chart \u2014 a number with the range around it. `compare` visuals carry left_label/right_label and rows of {label, left, right}; left/right may be numbers OR short strings. `line` visuals declare `series`: [names] and each row is {label, <series name>: value, ...}. `bar`/`funnel`/`scoreboard` rows are {label, value, note?} \u2014 scoreboard values may be strings. Rows may carry `highlight: true` to mark the row the paper is about, and `reference` on the visual marks a threshold line (e.g. break-even 52.4). `key_figures[].source` and `visuals[].source` are repo-relative paths to the report the number came from and are always present in that paper's `sources[]`. `roadmap_ids` join to research_roadmap.json items[].id; `related_papers` join to papers[].id. Author is always 'KytePush Research' \u2014 there are no other bylines and no external citations.",
  "house": "KytePush Research",
- "generated_utc": "2026-08-10T02:35:59.492333+00:00",
+ "generated_utc": "2026-08-10T03:11:29.499562+00:00",
  "categories": [
   {
    "name": "Start Here",
@@ -458,7 +458,7 @@
   {
    "id": "kr-2026-003",
    "title": "We Don't Have a System. We Have 2,848 of Them, and We Pick a New One Every Night",
-   "subtitle": "Stop hunting for the strategy that always works \u2014 there isn't one. Score every strategy on the last five weeks, play the twenty-one that are running hottest, grade them, do it again tomorrow.",
+   "subtitle": "Stop hunting for the strategy that always works \u2014 there isn't one. This is the tournament that established it, and the process it argued for: score every strategy on its recent record, play the ones running hottest, grade them, do it again tomorrow.",
    "category": "How It Works",
    "author": "KytePush Research",
    "date": "2026-08-03",
@@ -478,7 +478,7 @@
     },
     {
      "heading": "What We Found",
-     "body": "### The settings, and what they teach\n\n| setting | best | worst |\n|---|---|---|\n| how far back to look | **35 nights** (+13.5) | 14 nights (\u221250.2) |\n| minimum sample | **30 decided picks** (+16.4) | 250 picks (\u221267) |\n| how many to play | **top 21** (+17.6) | top 1 (\u22124.6) |\n| nudge toward yesterday | on (+11.7 to +20.3) | off (\u22122.8) |\n| require consistency | on (+5.5) | off (\u22129.3) |\n| size of the pool | wide (\u22123 to \u22124) | narrow (\u221248 to \u221256) |\n\nTwo of these are real lessons rather than dial settings.\n\n**Look back about five weeks, not one.** Long windows beat short ones by fifty units of median, and a two-week window is among the worst settings we measured. Whatever it is that makes some strategies run better than others has staying power measured in weeks, not days.\n\n**Keep the pool huge.** The narrow pools \u2014 \"just the four analysts,\" \"just the simple rules\" \u2014 median **\u221248 and \u221256 units**, far worse than the wide ones. A narrow pool has nothing to choose between. Richness is what gives the selection something to do.\n\n### The recommendation, in full\n\n```\npool         every strategy we built  (2,848)\nlookback     35 nights, always ending before the night being played\nranking      average profit per decided pick at standard juice\nminimum      at least 30 decided picks inside that window\nconsistency  also profitable over the recent half AND the earlier half\nplay         the top 21 vote; majority side plays; a tie sits out\nstickiness   a small bonus to yesterday's choice, to stop pointless churn\nstake        flat, one unit per game\n```\n\n### The record\n\n| stretch | nights | picks | hit | units | return | worst stretch | 90% range |\n|---|---|---|---|---|---|---|---|\n| Jul 2025 \u2013 Mar 2026 *(chosen on)* | 92 | 478 | 54.8% | +22.2 | +4.6% | 11.3 | \u22123.2% to +12.3% |\n| Apr \u2013 Jun 2026 *(never seen)* | 85 | 383 | 55.4% | +21.7 | +5.7% | 7.6 | \u22121.0% to +12.7% |\n| Jul \u2013 Aug 2026 *(never seen)* | 28 | 136 | 52.9% | +1.5 | +1.1% | 5.0 | \u221211.6% to +14.0% |\n| **all played nights** | **205 of 235** | **997** | **54.8%** | **+45.4** | **+4.6%** | **11.3** | **\u22120.4% to +9.5%** |\n\nIt uses 461 different strategies across the replay and changes its mind on 91% of nights. About five picks a night, on roughly 87% of available nights.\n\n### The controls\n\n| what | units |\n|---|---|\n| the nightly selection | **+43.9** |\n| same machinery, strategy picked at random (40 seeds) | mean **\u221293.4**, best seed still \u22125.8 |\n| one fixed strategy every night | \u221234.4 |\n| bet the under / over every game | \u2212126.0 / \u221289.7 |\n\nThe random control does about 130 units worse. That gap is 3.4 standard deviations.\n\nAnd the selection genuinely transfers rather than just fitting: across all 2,089 configurations, the correlation between how they did on the first stretch and the second is +0.33 \u2014 and the 25 configurations chosen on the first stretch averaged **+15.8 units** on the second, against +9.5 for the field.\n\n### There is no hidden star in the pool\n\nWorth being blunt about. Every one of the 29 signals, taken on its own over 2,373 games, hits between **48.2% and 51.3%**. Every single one of them loses money at standard juice. On forecast accuracy, the desk's plain equal-weight blend scores marginally *worse* than the de-vigged market and marginally worse than just saying 50% every time.\n\nThe value, if there is any, is entirely in the choosing.",
+     "body": "### The settings, and what they teach\n\n| setting | best | worst |\n|---|---|---|\n| how far back to look | **35 nights** (+13.5) | 14 nights (\u221250.2) |\n| minimum sample | **30 decided picks** (+16.4) | 250 picks (\u221267) |\n| how many to play | **top 21** (+17.6) | top 1 (\u22124.6) |\n| nudge toward yesterday | on (+11.7 to +20.3) | off (\u22122.8) |\n| require consistency | on (+5.5) | off (\u22129.3) |\n| size of the pool | wide (\u22123 to \u22124) | narrow (\u221248 to \u221256) |\n\nTwo of these are real lessons rather than dial settings.\n\n**Look back about five weeks, not one.** Long windows beat short ones by fifty units of median, and a two-week window is among the worst settings we measured. Whatever it is that makes some strategies run better than others has staying power measured in weeks, not days.\n\n**Keep the pool huge.** The narrow pools \u2014 \"just the four analysts,\" \"just the simple rules\" \u2014 median **\u221248 and \u221256 units**, far worse than the wide ones. A narrow pool has nothing to choose between. Richness is what gives the selection something to do.\n\n### The recommendation\n\nThe settings this produced, written out as a configuration, are in the tournament report in our own files. What is worth carrying out of them is not the numbers \u2014 it is the two findings above: look back weeks rather than days, and keep the pool as wide as you can build it. Those hold whatever the dials are set to. The dials were tuned to this pool, on this panel, for a selector we have since replaced.\n\n### The record\n\n| stretch | nights | picks | hit | units | return | worst stretch | 90% range |\n|---|---|---|---|---|---|---|---|\n| Jul 2025 \u2013 Mar 2026 *(chosen on)* | 92 | 478 | 54.8% | +22.2 | +4.6% | 11.3 | \u22123.2% to +12.3% |\n| Apr \u2013 Jun 2026 *(never seen)* | 85 | 383 | 55.4% | +21.7 | +5.7% | 7.6 | \u22121.0% to +12.7% |\n| Jul \u2013 Aug 2026 *(never seen)* | 28 | 136 | 52.9% | +1.5 | +1.1% | 5.0 | \u221211.6% to +14.0% |\n| **all played nights** | **205 of 235** | **997** | **54.8%** | **+45.4** | **+4.6%** | **11.3** | **\u22120.4% to +9.5%** |\n\nIt uses 461 different strategies across the replay and changes its mind on 91% of nights. About five picks a night, on roughly 87% of available nights.\n\n### The controls\n\n| what | units |\n|---|---|\n| the nightly selection | **+43.9** |\n| same machinery, strategy picked at random (40 seeds) | mean **\u221293.4**, best seed still \u22125.8 |\n| one fixed strategy every night | \u221234.4 |\n| bet the under / over every game | \u2212126.0 / \u221289.7 |\n\nThe random control does about 130 units worse. That gap is 3.4 standard deviations.\n\nAnd the selection genuinely transfers rather than just fitting: across all 2,089 configurations, the correlation between how they did on the first stretch and the second is +0.33 \u2014 and the 25 configurations chosen on the first stretch averaged **+15.8 units** on the second, against +9.5 for the field.\n\n### There is no hidden star in the pool\n\nWorth being blunt about. Every one of the 29 signals, taken on its own over 2,373 games, hits between **48.2% and 51.3%**. Every single one of them loses money at standard juice. On forecast accuracy, the desk's plain equal-weight blend scores marginally *worse* than the de-vigged market and marginally worse than just saying 50% every time.\n\nThe value, if there is any, is entirely in the choosing.",
      "role": "results"
     },
     {
@@ -488,7 +488,7 @@
     },
     {
      "heading": "What This Means For Your Picks",
-     "body": "This is the machinery behind the board. Each morning one voting ensemble is chosen from the full pool using only nights that have already been graded, and only the games it fires on become picks.\n\nTwo things you will notice, both deliberate.\n\n**The board and the archive disagree every day, on purpose.** The board shows what today's chosen strategy fires on. The archive holds every pick ever served \u2014 never deleted, never edited, fingerprinted day by day. They are different objects and they are checked by different rails. The board is checked against the desk's own ledger, which is *stricter* than the old check because it catches a pick shown on the **wrong side**, something a count-only check could never see.\n\n**The claim is sized to the evidence.** +45.4 units over 205 nights is a process that has been winning. The range still reaches below zero, so it is served activation-dated, graded in public from day one, with the price gate untouched \u2014 and the module ships with a test that *fails* if the published range's lower bound is ever positive. Nobody can quietly round the uncertainty away.\n\n---\n\n*KytePush Research. Every number in this paper comes from a real report in our own files. All returns here are flat-juice conventions and are not estimates of what you would have made.*",
+     "body": "This was the machinery behind the board through 2026-08-08, and its shape is what the current search inherited. Each morning one voting ensemble was chosen from the full pool using only nights that had already been graded, and only the games it fired on became picks. The engine doing the choosing has been replaced since. The two things below have not.\n\nTwo things you will notice, both deliberate.\n\n**The board and the archive disagree every day, on purpose.** The board shows what today's chosen strategy fires on. The archive holds every pick ever served \u2014 never deleted, never edited, fingerprinted day by day. They are different objects and they are checked by different rails. The board is checked against the desk's own ledger, which is *stricter* than the old check because it catches a pick shown on the **wrong side**, something a count-only check could never see.\n\n**The claim is sized to the evidence.** +45.4 units over 205 nights is a process that has been winning. The range still reaches below zero, so it is served activation-dated, graded in public from day one, with the price gate untouched \u2014 and the module ships with a test that *fails* if the published range's lower bound is ever positive. Nobody can quietly round the uncertainty away.\n\n---\n\n*KytePush Research. Every number in this paper comes from a real report in our own files. All returns here are flat-juice conventions and are not estimates of what you would have made.*",
      "role": "takeaway"
     }
    ],
@@ -533,8 +533,8 @@
    "visuals": [
     {
      "type": "timeline",
-     "title": "What happens every night",
-     "caption": "The strategy that gets played is disposable. It lives one day and is judged on a day it never saw.",
+     "title": "What the tournament did on each replayed night",
+     "caption": "The strategy played was disposable: it lived one day and was judged on a day it never saw. That argument is the one the current search inherits \u2014 the procedure below is not.",
      "source": "v4/models/strategy_tournament/TOURNAMENT_REPORT.md",
      "data": [
       {
@@ -565,7 +565,7 @@
       {
        "step": "6",
        "label": "Play it, grade it, roll forward",
-       "note": "Tomorrow it happens again with fresh numbers. 461 different strategies got used across the replay."
+       "note": "The next night it ran again with fresh numbers. 461 different strategies were used across the replay."
       }
      ]
     },
@@ -691,7 +691,7 @@
    "verdict": "A PROCESS THAT HAS BEEN WINNING \u2014 not a proven edge, and served that way",
    "correction": "**2026-08-10 \u2014 this is the tournament's report, and the tournament's winner is no longer what plays.** The recommendation it makes \u2014 rank the 2,848 candidates, take the top twenty-one, let them vote \u2014 was adopted and served through 2026-08-08. From 2026-08-09 the nightly search is the **strategy forge**: it searches rules rather than recipes, scores them on wins minus losses, and plays the single best one. The argument this paper makes about the play being disposable is the argument the forge inherits; the voting ensemble it names is not what is on your card.",
    "reading_minutes": 10,
-   "word_count": 2192
+   "word_count": 2218
   },
   {
    "id": "kr-2026-004",
@@ -1102,7 +1102,7 @@
     "kr-2026-017"
    ],
    "verdict": "AI RUNS THE RESEARCH FLOOR. IT NEVER TOUCHES A PICK \u2014 proven by test, not by promise.",
-   "correction": null,
+   "correction": "**2026-08-09 \u2014 one sentence in this paper describes a selector that has been replaced.** Where it says the nightly loop re-scores the recipe pool and picks tomorrow's ensemble from it, that was true through 2026-08-08. The board is now chosen by the **strategy forge**, which searches rules rather than recipes and plays the single best win-minus-loss record over its trailing window. The paper's actual subject is unaffected and unchanged: no model, and no automated process of any kind, has ever chosen a side on a game. The pick path is the same one it describes.",
    "reading_minutes": 9,
    "word_count": 2047
   },
@@ -3813,7 +3813,7 @@
    "sections": [
     {
      "heading": "How We Tested It",
-     "body": "Every entry here meets the same standard a positive result would: written down before the data was read, evaluated with no rewinding the tape, graded at real prices through the economic gate or explicitly labelled as a flat-juice convention, measured by resampling whole nights, and corrected for how many things we tested.\n\nA dead end only earns a place in this ledger if it is **informative** \u2014 meaning the design had enough power to have found the effect if it existed. Dead ends that fail that test get recorded as **BLOCKED** rather than closed, and several are.\n\nThe ledger is public. Of 89 tracked research items on our roadmap, **32 carry a closed-dead-end status**.",
+     "body": "Every entry here meets the same standard a positive result would: written down before the data was read, evaluated with no rewinding the tape, graded at real prices through the economic gate or explicitly labelled as a flat-juice convention, measured by resampling whole nights, and corrected for how many things we tested.\n\nA dead end only earns a place in this ledger if it is **informative** \u2014 meaning the design had enough power to have found the effect if it existed. Dead ends that fail that test get recorded as **BLOCKED** rather than closed, and several are.\n\nThe ledger is public. Of 93 tracked research items on our roadmap, **33 carry a closed-dead-end status**.",
      "role": "methods"
     },
     {
@@ -3871,7 +3871,7 @@
     },
     {
      "label": "Published on the roadmap, not hidden",
-     "value": "32 of 89 tracked research items carry a closed-dead-end status",
+     "value": "33 of 93 tracked research items carry a closed-dead-end status",
      "note": "Closed doors are a visible category on the product.",
      "source": "v4/models/research_roadmap.json"
     }
