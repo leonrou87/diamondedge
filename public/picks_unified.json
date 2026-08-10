@@ -4,7 +4,7 @@
   "status": "production",
   "board": "history",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T09:28:15Z",
+  "generated_utc": "2026-08-10T10:02:44Z",
   "dates": [
     "2026-03-27",
     "2026-03-28",
@@ -1514,7 +1514,7 @@
         "THE CORPUS RESTARTED ON 2026-07-01 AND THAT IS THE POINT. This block used to be computed over ~11,800 games of a pre-re-architecture reconstruction of four DIFFERENT models. Those weights could never have been applied honestly to these analysts, so the history was dropped rather than carried forward. What is here now is a few hundred games and it says so; a thin honest window beats a deep irrelevant one.",
         "Almost every frame is `reconstructed_oos` basis: the four models were built on 2026-07-31 and priced July after the fact. Every read is genuinely out of sample against a 2026-06-30 training fence, but it was not SERVED before the game. The live share grows by one slate a night and nothing is ever restated.",
         "THE EVIDENCE FLOOR IS MET AND THE WALK-FORWARD IS NOT. The trailing window now clears both floors, so four weights CAN be fitted \u2014 but the walk-forward that decides whether to USE them only starts once 150 games of history exist, which on a corpus this young costs the first half of it. So the contrast is scored on a handful of slates and its interval is wide enough to contain both a real improvement and a real regression. Adopting weights on it would be adopting noise; the gate stays shut and the interval is printed rather than described.",
-        "No analyst shows a positive edge on its own side and none is claimed (the four sit between 43% and 51% at n=332, an interval of about +/-5.4 points). What the re-architecture bought is DECORRELATION \u2014 disjoint feature slices, side agreement down from 0.84-0.89 to 0.51-0.57 \u2014 which is the property a combiner would need in order to have anything to combine. Whether it carries edge is a question only the forward record answers."
+        "The four sides sit between 43% and 51% at n=332, an interval of about +/-5.4 points, printed beside each rate. What the re-architecture bought is DECORRELATION \u2014 disjoint feature slices, side agreement down from 0.84-0.89 to 0.51-0.57 \u2014 which is the property a combiner would need in order to have anything to combine. What each side earns from here is the forward record's to say, nightly and in public."
       ],
       "honest_note": "THE ROLLING DESK FIT, HELD TO A HARD BAR. Every night it re-fits, over the trailing 30 days, how each analyst's disagreement with the price has related to results \u2014 scored strictly WALK-FORWARD, fitted only on days before the day it is scored on \u2014 and holds the fit to two baselines at once: equal weighting and the price itself. Fitted weights are adopted only when the walk-forward improvement over equal weighting is strictly clear of zero and the window carries enough reads to fit four weights; until they earn that, the desk weights its analysts equally and prints the numbers. The +EV gate and the star system remain the only things that make a bet.",
       "presentation_only": true
@@ -9199,7 +9199,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T09:28:40Z",
+      "updated": "2026-08-10T10:03:10Z",
       "order": [
         "vega",
         "atlas",
