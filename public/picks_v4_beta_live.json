@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T09:57:11Z",
+  "generated_utc": "2026-08-10T10:13:02Z",
   "dates": [
     "2026-08-10"
   ],
@@ -994,7 +994,7 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-08-10T09:15:40Z",
+    "record_generated_utc": "2026-08-10T10:13:02Z",
     "backfill": {
       "n_rows": 153,
       "sources": {
@@ -1466,7 +1466,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 12,
         "champion_unsettled": 1,
-        "checked_at_utc": "2026-08-10T09:15:39Z"
+        "checked_at_utc": "2026-08-10T10:13:01Z"
       },
       "2026-08-08": {
         "final_games": 15,
@@ -1479,7 +1479,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 12,
         "champion_unsettled": 1,
-        "checked_at_utc": "2026-08-10T09:15:37Z"
+        "checked_at_utc": "2026-08-10T10:13:01Z"
       },
       "2026-08-09": {
         "final_games": 15,
@@ -1492,7 +1492,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 11,
         "champion_unsettled": 0,
-        "checked_at_utc": "2026-08-10T09:15:37Z"
+        "checked_at_utc": "2026-08-10T10:12:59Z"
       }
     },
     "totals": {
