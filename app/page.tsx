@@ -6594,6 +6594,40 @@ export default function Home() {
       if (ta !== tb) return ta < tb ? -1 : 1;
       return String(a.game_id || "").localeCompare(String(b.game_id || ""));
     }
+    /* HOW OLD IS THE FRESHEST THING WE HOLD FOR THIS LEAGUE?
+       Returns null when the feed is current (or when the question does not apply), and the
+       newest date we have when it is not. Read only by the empty-state branch, to keep an
+       empty date from being reported as an empty schedule — see the note there.
+
+       The threshold is generous on purpose. A league can legitimately go a few days without a
+       fixture (an All-Star break, a Monday in the NHL), so a couple of quiet days must never
+       read as an outage; three weeks of nothing is not a quiet patch. And it is only ever
+       consulted when the date being viewed has NO games, so a healthy league never reaches it.
+       `all` is excluded: a combined view with nothing on it is a real empty day. */
+    const FEED_STALE_DAYS = 6;
+    function leagueFeedStale(lg: string) {
+      if (!lg || lg === "all") return null;
+      let newest = "";
+      const scan = (src: any) => {
+        (((src && src.games) || []) as any[]).forEach((g: any) => {
+          if (!g) return;
+          const s = String(g.sport || (g.game_pk != null ? "mlb" : "")).toLowerCase();
+          if (s !== lg) return;
+          const d = String(g.date || "").slice(0, 10);
+          if (d && d > newest) newest = d;
+        });
+      };
+      scan(payload); scan(livePayload);
+      if (!newest) return null;      // we hold nothing at all — not evidence of staleness
+      const days = Math.round((Date.parse(curDate + "T00:00:00Z") - Date.parse(newest + "T00:00:00Z")) / 86400000);
+      if (!isFinite(days) || days <= FEED_STALE_DAYS) return null;
+      const dt = new Date(newest + "T12:00:00Z");
+      return {
+        last: newest, days,
+        lastLabel: isNaN(dt.getTime()) ? newest
+          : dt.toLocaleDateString(undefined, { month: "long", day: "numeric", timeZone: "UTC" }),
+      };
+    }
     function gamesForLeague(p: any, lg: string, dateISO?: string) {
       const forDate = dateISO || curDate;
       /* ═══ THE SLATE EXISTS BEFORE THE PICKS DO ═══
@@ -9479,10 +9513,31 @@ export default function Home() {
     }
     // A network/Supabase failure at boot must not leave an eternal skeleton — show a graceful,
     // on-brand error with a retry (the auto-pollers keep trying and self-heal on recovery).
+    /* THE MARKUP, SEPARATED FROM THE PLACES IT GOES. `renderLoadError` paints two whole panes
+       and tears the story deck down with it, which is right at BOOT and much too heavy for a
+       failed date change — there the rest of the app is alive and only the slate is empty. So
+       the state itself is a function now and has two callers with different blast radii.
+       The retry is a real button rather than `location.reload()` for the same reason: on a
+       date change there is nothing to reload, only the day to fetch again. */
+    function loadErrorHtml() {
+      return `<div class="state loaderr"><div class="st-ico">◆</div><div class="big">Couldn't reach the board</div><div class="sm">Check your connection — DiamondEdge will keep trying in the background, or retry now. Every past pick stays graded once you're back.</div><button class="ld-retry" data-ldretry="1">Retry</button></div>`;
+    }
+    /* AT BOOT, RELOAD. The boot failure may be `loadIndex` rather than the day, and half the
+       app never initialised — re-fetching one date would leave a page assembled around data
+       that was never there. On a date change the app is fully alive and only the slate is
+       empty, so re-running the day is both sufficient and much less destructive than throwing
+       away a session (and a reload re-downloads every payload, which is the thing the whole
+       egress rework exists to avoid). */
+    function bindLoadRetry(mode: "day" | "boot" = "day") {
+      root.querySelectorAll("[data-ldretry]").forEach((b: any) => {
+        b.onclick = () => { if (mode === "boot") location.reload(); else selectDate(); };
+      });
+    }
     function renderLoadError() {
-      const html = `<div class="state loaderr"><div class="st-ico">◆</div><div class="big">Couldn't reach the board</div><div class="sm">Check your connection — DiamondEdge will keep trying in the background, or retry now. Every past pick stays graded once you're back.</div><button class="ld-retry" onclick="location.reload()">Retry</button></div>`;
+      const html = loadErrorHtml();
       const t = $("today-view"); if (t) t.innerHTML = html;
       const b = $("slate-body"); if (b) b.innerHTML = html;
+      bindLoadRetry("boot");
       // this replaces the briefing's markup, so the deck is gone — put the chrome back
       stopStories(); storyDeckReal = false; chromeGuard();
     }
@@ -9728,9 +9783,31 @@ export default function Home() {
           // Early-return states still need their chrome bound (record chip / All picks /
           // How-picks-work went DEAD on future+empty dates before this).
           if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); bindMeta(); return; }
+          /* COULD NOT LOAD ≠ NOTHING TO SHOW. These two branches were one branch, and the one
+             sentence it printed — "Nothing's loaded for Tuesday, August 4" — blamed the date
+             for a database outage. The reader's next move is completely different in the two
+             cases (try another date vs. retry), so they are two states. */
+          if (!payload && dayLoadFailed) { body.innerHTML = loadErrorHtml(); bindMeta(); bindLoadRetry(); return; }
           if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Record tab.</div></div>`; bindMeta(); return; }
+          /* ═══ "NOTHING SCHEDULED" IS A CLAIM ABOUT THE WORLD ═══
+             The soccer tab said "NO SOCCER ON THE BOARD · Nothing scheduled for Sunday, August
+             9". There were fixtures that day. What was true is that our provider had been
+             answering 403 for five days and the newest soccer fixture in the payload was
+             2026-07-19 — three weeks old. The app stated a fact about the SPORT when the fact
+             was about our feed. Same sentence on NBA (newest fixture: 2022), NFL (2025-02) and
+             NHL (2025-06), where the truth is that those leagues are not covered yet at all.
+
+             Nothing new has to be fetched to tell these apart. The payload already carries
+             every game it holds for a league, so the newest one dates the FEED: if we hold a
+             fixture from the last few days, an empty date really is an empty date; if the
+             freshest thing we have is weeks old, the silence is ours and it is named as ours.
+             Self-healing in both directions — the day soccer starts flowing again this reverts
+             on its own, with no flag to remember to clear. */
+          const stale = leagueFeedStale(league);
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
-          body.innerHTML = `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`;
+          body.innerHTML = stale
+            ? `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">${esc(SPORT_LABEL[league])} isn't updating</div><div class="sm">We're not receiving ${esc(SPORT_LABEL[league])} right now — the most recent fixture we hold is from ${esc(stale.lastLabel)}, so we can't say what's on today. This isn't a claim that nothing is scheduled. MLB is unaffected, and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`
+            : `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`;
         } else {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
           const allPending = games.length > 0 && games.every((g: any) => picksPending(g));

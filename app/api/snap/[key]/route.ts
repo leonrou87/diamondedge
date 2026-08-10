@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { snapTag } from "../../cache-tags";
+import { topLevelStamp } from "./stamp";
 
 /* ════════════════════════════════════════════════════════════════════════════
    /api/snap/<key> — ONE Supabase read serves EVERY viewer.
@@ -382,8 +383,6 @@ async function rawBody(key: string, mode: string, gameId: string): Promise<strin
   return JSON.stringify(payload ?? null);
 }
 
-import { topLevelStamp } from "./stamp";
-
 export async function GET(
   req: Request,
   ctx: { params: Promise<{ key: string }> },
@@ -426,10 +425,10 @@ export async function GET(
        for a few seconds after every publish. It gets the correct current bytes
        under the ordinary short TTL, and its next manifest poll moves it onto
        the new pin. Never `immutable`, because the URL would then be lying about
-       which generation it holds. */
-    /* PINNING IS OFFERED ONLY WHERE IT CAN BE PROVEN.
+       which generation it holds.
 
-       `?game=` returns a single game object, which carries no feed-level stamp
+       AND PINNING IS OFFERED ONLY WHERE IT CAN BE PROVEN. `?game=` returns a
+       single game object, which carries no feed-level stamp
        of its own — so there is nothing in those bytes to check a pin against,
        and the only alternative is the second-request race described above. It
        is therefore left on its ordinary TTL rather than given an immutability
