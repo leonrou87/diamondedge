@@ -14336,8 +14336,14 @@ export default function Home() {
       const u = String((s && s.url) || "").trim();
       return /^https?:\/\//i.test(u) ? u : "";
     }
+    /* THE PUBLISHER, NOT THE SYNDICATION STRING. Google News hands the outlet back with its
+       own routing suffix attached — "ClickOnDetroit | WDIV Local 4", "Sports Illustrated |
+       SI.com" — and in the two-column CTA row at 375px that field is 103px wide, so it
+       ellipsised to "ClickOnDetroit …". Measured on the live deck: scrollWidth 189 into a
+       103px box. The leading segment IS the publisher's name as they gave it to us, so the
+       button takes that and nothing is invented or renamed. */
     function newsSourceName(s: any) {
-      const n = String((s && s.source) || "").trim();
+      const n = String((s && s.source) || "").trim().split(/\s+[|·—–]\s+/)[0].trim();
       return n && !/^diamondedge$/i.test(n) ? n : "";
     }
     // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
@@ -14378,10 +14384,31 @@ export default function Home() {
        and storyNewsSlide has a treatment written for exactly that. Fewer, better. */
     const NEWS_SCOREBOARD_RE = /\bgameday\b|\bfinal score\b|\bbox ?score\b|\bline ?score\b|^recap:|\bscoreboard\b/i;
     const NEWS_TOUT_RE = /\bprediction[s]?,|\bodds,\s*(?:time|line|spread)|\bbest bets?\b|\bexpert picks?\b|\bpicks?,\s*prediction|\bpredictions?\s+and\s+picks?\b|\bproven (?:model|computer|system)\b|\bparlay\b/i;
+    /* ONE ANSWER TO "WHICH GAME IS THIS STORY ABOUT". The deck card read it off the angle
+       only and the reader read the angle OR a top-level `game_id`, so the two surfaces could
+       in principle disagree about whether a story had a game at all — and the card's CTA and
+       the reader's CTA are now the same component, which makes a disagreement visible. */
+    function newsGameId(s: any) {
+      if (!s) return null;
+      const a = s.angle;
+      if (a && typeof a === "object" && a.game_id != null) return a.game_id;
+      return s.game_id != null ? s.game_id : null;
+    }
     function newsWorthASlide(s: any) {
       const h = String((s && (s.headline || s.title)) || "").trim();
       if (!h) return false;
-      return !NEWS_SCOREBOARD_RE.test(h) && !NEWS_TOUT_RE.test(h);
+      if (NEWS_SCOREBOARD_RE.test(h) || NEWS_TOUT_RE.test(h)) return false;
+      /* AND A STORY WE CANNOT CARRY MUST HAVE SOMEWHERE TO SEND THE READER. Everything
+         below this line depends on it: a card that fails `newsCarriesReport` does not open
+         our reader, so if it also has no wire link and no game it is a headline with no
+         destination at all — and worse, the old gate (`!carries && url`) quietly let it
+         fall back to opening a reader that, being absent from `newsReaderKeys`, rendered
+         with NO prev/next bar. That was the one way left to reach a dead-end reader. It
+         cannot arise now: past this filter, `!newsCarriesReport(s)` implies a destination,
+         so `out` is exactly `!carries` and every card that opens a reader is in the
+         reader's own running order. */
+      if (!newsCarriesReport(s) && !newsSourceUrl(s) && newsGameId(s) == null) return false;
+      return true;
     }
     function newsDisplayStories(): { s: any; key: string }[] {
       if (!newsFeed || !newsFeed.lead) return [];
@@ -14455,7 +14482,25 @@ export default function Home() {
           <span class="${where}-cta-go" aria-hidden="true">↗</span>
         </a>`);
       }
-      if (!parts.length) return "";
+      /* THE ONE STORY THAT HAD NO ROW AT ALL. Our own desk recap — "Sunday Around MLB: 15
+         Finals, 135 Runs" — maps to no single game and has no wire behind it, so it fell out
+         of both branches and ended with nothing at its foot. It is the one story type where
+         a reader reached the last word and was handed no destination, which is the same
+         inconsistency the row exists to remove.
+
+         It is not a missing field, though, and nothing is invented to fill it: a recap of
+         fifteen finals HAS a destination and it is the board those fifteen finals are on.
+         Restricted to our own desk stories on purpose — a wire story with neither a game
+         nor a link still renders nothing, because for that one there genuinely is nowhere
+         to go and a button to somewhere unrelated would be worse than none. */
+      if (!parts.length) {
+        const house = s && (s.house === true || String(s.provider || "") === "diamondedge_desk");
+        if (!house) return "";
+        parts.push(`<button class="${where}-cta-b is-pick" data-cta-board="1">
+          <span class="${where}-cta-t"><b>The full board</b><i>Every game and pick</i></span>
+          <span class="${where}-cta-go" aria-hidden="true">→</span>
+        </button>`);
+      }
       return `<nav class="${where}-cta${parts.length > 1 ? " two" : ""}" aria-label="Where to next">${parts.join("")}</nav>`;
     }
     /* The game button resolves its game at CLICK time (state may have loaded since render),
@@ -14474,6 +14519,16 @@ export default function Home() {
           closeDetail(false, true);
           if (gg) setTimeout(() => openDetail(gg), wait);
           else setTimeout(() => jumpToGames([id]), wait);
+        };
+      });
+      // The desk recap's destination is the board itself — same teardown order as the game
+      // button, so a reader closing the sheet and the tab switch never race each other.
+      root.querySelectorAll("[data-cta-board]").forEach((b: any) => {
+        b.onclick = (e: any) => {
+          e.stopPropagation();
+          const wait = $("sheet-layer") && $("sheet-layer").firstChild ? 360 : 0;
+          closeDetail(false, true);
+          setTimeout(() => switchTab("games"), wait);
         };
       });
       // an outbound link is a link — it only needs to stop the card underneath it opening
@@ -14561,7 +14616,7 @@ export default function Home() {
       const prevKey = ci > 0 ? navKeys[ci - 1] : null;
       const nextKey = ci >= 0 && ci < navKeys.length - 1 ? navKeys[ci + 1] : null;
       const lab = esc((SPORT_LABEL[s.sport] || s.sport || "").toUpperCase());
-      const gid = s.angle && typeof s.angle === "object" && s.angle.game_id != null ? s.angle.game_id : (s.game_id != null ? s.game_id : null);
+      const gid = newsGameId(s);   // one answer, shared with the deck card — see newsGameId
       // Resolve the mapped game across the WHOLE slate, not just the live set: live/today first
       // (findGameLive), then the loaded slate (findGame / gameById) so finished games and games
       // viewed on other dates still resolve. If it's genuinely not loaded we keep the affordance
@@ -15378,7 +15433,7 @@ export default function Home() {
          plate; no source gets no source line. Nothing renders an empty frame waiting for
          something that is not coming — which is the same rule the rest of this app
          follows, and the rule the old ghosted watermark broke. */
-      const nGid = s.angle && typeof s.angle === "object" && s.angle.game_id != null ? s.angle.game_id : null;
+      const nGid = newsGameId(s);
       const nG = nGid != null ? gameAnywhere(nGid) : null;
       const nGs = nG ? gameState(nG) : null;
       const nScore = nGs && nGs.score && nGs.score.split && nGs.score.home != null
@@ -15405,10 +15460,34 @@ export default function Home() {
          score is the truest thing on an imageless card and it is still a fact we hold. */
       const carries = newsCarriesReport(s);
       const su = newsSourceUrl(s);
-      const out = !carries && su;
+      // `newsWorthASlide` guarantees a destination for every non-carrying story, so this is
+      // the whole test — and a card that opens no reader is never absent from the reader's
+      // running order for the reader to then have no way out of.
+      const out = !carries;
       const open = out
         ? ""
         : ` data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Read this story"`;
+      /* ═══ AND IT CARRIES THE WIRE'S HEADLINE, NOT OURS (2026-08-10) ═══
+         The rule this card was built to serve says it "stays a card under the WIRE'S OWN
+         headline, credited to the wire, whose CTA goes to the wire". It was not. It kept
+         `s.headline` — the desk's composition — and the desk appends its own promise to
+         every wire title it takes:
+
+           "Athletics shortstop Jacob Wilson sets MLB record by… — Where the Athletics Stand"
+
+         Two failures in one string, and both are the exact failure this whole change
+         exists to end. It promises "Where the Athletics Stand" — a DiamondEdge read — on
+         the one card that has no DiamondEdge read behind it and cannot be opened to reach
+         one. And to make room for that promise it ELIDES the news: the fact is "going 111
+         straight games without an error", the feed hands it to us in full in `title`, and
+         the card replaced it with "…". We were hiding a fact we had in order to advertise
+         one we did not.
+
+         `s.title` is the wire's headline verbatim. On a card that routes to the wire, that
+         is the only honest thing to set. Three of the eight stories on the 2026-08-10 deck
+         were in this state. Cards that still open our reader are unaffected — there the
+         desk headline is a promise the body keeps. */
+      const cardHead = out ? (s.title || s.headline || "") : (s.headline || s.title || "");
       const foot = out
         ? newsCtaRow(s, nG, nGid, "art")
         : `<span class="nws-foot"><span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span>${src ? `<span class="nws-src">${esc(src)}</span>` : ""}</span>`;
@@ -15421,7 +15500,7 @@ export default function Home() {
             <div class="nws-body">
               <span class="nws-rule" aria-hidden="true"><i>◆</i></span>
               <div class="nws-kick"><b>${lab || "AROUND THE LEAGUE"}</b>${when ? `<em>${esc(when)}</em>` : ""}</div>
-              <h3 class="sts-head">${esc(s.headline || s.title || "")}</h3>
+              <h3 class="sts-head">${esc(cardHead)}</h3>
               ${dek ? `<p class="sts-dek">${esc(dek)}</p>` : ""}
               ${plate}
               ${foot}
