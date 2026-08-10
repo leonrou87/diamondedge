@@ -3307,7 +3307,9 @@ details.more .more-body{padding-top:12px}
       which is the trade that should have been made the first time. */
 /* 2. the live pill keeps its percent and loses its word — colour, fill, title and
       aria-label all still carry the state */
-.de-mini-pick.dmp-tile .dmp-res.has-meter{margin-left:4px;padding:3px 5px}
+/* the tile keeps the shared floor under the rule (see "THE RULE NEEDS ITS OWN ROOM"); only
+   the side padding tightens here, because the row's budget is horizontal */
+.de-mini-pick.dmp-tile .dmp-res.has-meter{margin-left:4px;padding:3px 5px 6px}
 .de-mini-pick.dmp-tile .dmp-res.has-meter .ipm-txt,
 .de-mini-pick.dmp-tile .dmp-res.has-word .ipm-txt{display:none}
 /* CLINCHED / NOT LANDING keep their mark on a tile and give up their word to the label —
@@ -3410,11 +3412,6 @@ details.more .more-body{padding-top:12px}
 .de-side .de-stars i{color:var(--ink3);font-size:8px}
 .de-side .de-stars i.off{color:var(--line)}
 .de-side .de-stars.is-high i{color:var(--golddeep)}
-.strchip .de-conf{color:var(--ink2);display:inline-flex;align-items:baseline;gap:2px}
-/* the chip is the one place the number says its own name, so the caption rides with it */
-.strchip .de-conf i{font-family:var(--disp);font-style:normal;font-weight:700;font-size:8.5px;
-  letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
-.strchip.is-high .de-conf,.strchip.is-high .de-conf i{color:var(--golddeep)}
 
 /* ══════════════ THE CONFIDENCE BLOCK — the number with its evidence ══════════════
    The tag prints the bare percent because a board tile has 139px and no room to explain.
@@ -3487,16 +3484,9 @@ details.more .more-body{padding-top:12px}
 .de-pips.s3 i:nth-child(-n+3){opacity:1}
 /* (the tag's own pip rules retired with the pips — the pick tag and the game page's call
    block both carry `.de-conf` now; see THE CONFIDENCE PERCENT above) */
-/* ── THE CHIP: the same pips, named, on the one surface with room to teach them ── */
-.strchip{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;
-  padding:4px 9px 4px 8px;border-radius:999px;
-  background:rgba(var(--tintc),.06);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.16)}
-.strchip b{font-family:var(--disp);font-weight:800;font-size:10.5px;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--ink2)}
-.strchip .de-pips{color:var(--ink3)}
-.strchip.q-strong .de-pips{color:var(--gold)}
-.strchip.q-strong b{color:var(--golddeep)}
-.strchip .de-pips i{width:4.5px;height:4.5px}
+/* (the named-tier CHIP retired with `strengthChip`, 2026-08-10 — it was the only producer
+   of `.strchip`, and it was the last element in the app that printed the confidence as a
+   percent. See the note at strengthChip in page.tsx.) */
 
 /* ══════════════ THE RECORD, CUT BY STRENGTH — a research plate, never a scoreboard ══════
    Deliberately quieter than every record surface in the app: no hero figure, no colour
@@ -4964,6 +4954,25 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .sts-meta .bstars i.f{color:var(--gold);text-shadow:none}
 .sts-meta .bstars i.e{color:rgba(var(--rimc),.16)}
 .sts-meta .pgrade{color:var(--ink2);background:var(--sunken)}
+/* ── THE BRIEFING CARD'S RATING AND ITS LIVE PILL (2026-08-10) ──
+   This row used to hold a named tier chip carrying "44 % CONFIDENCE" and a bare word for
+   the live state. It now holds the two things the rest of the app holds — the served STARS
+   for how much we liked the bet, and the board's own live pill for how the bet is doing —
+   so the card carries one percent and it is the live one. Both objects are drawn at the
+   deck's scale rather than the tile's: this is a full-screen story, not a 163px column, and
+   a 6.5px star or a 9.5px figure would be unreadable on it. */
+.sts-meta .de-stars{gap:2px}
+.sts-meta .de-stars i{font-size:15px;color:var(--gold)}
+.sts-meta .de-stars i.off{color:rgba(var(--rimc),.22)}
+.sts-meta .de-stars.is-high i{color:var(--gold)}
+.sts-meta .dmp-res{margin-left:0;font-size:11px;letter-spacing:.09em}
+.sts-meta .dmp-res.inplay[class*="ip-"]{gap:5px;padding:4px 10px 7px 8px}
+/* the deck is the one surface with room for the live tell, so the pulsing dot comes back */
+.sts-meta .dmp-res.inplay[class*="ip-"]::before{display:inline-block}
+.sts-meta .dmp-res.has-meter .ipm-pct{margin-left:6px;font-size:11px}
+.sts-meta .dmp-res.has-meter::after,.sts-meta .dmp-res.has-meter .ipm-fill{left:8px}
+.sts-meta .dmp-res.has-meter::after{right:8px}
+.sts-meta .dmp-res.has-meter .ipm-fill{width:calc((100% - 16px) * var(--p,0) / 100)}
 .sts-res{display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.05em;border-radius:999px;padding:3px 10px}
 .sts-res.won{color:#fff;background:var(--green)}
 .sts-res.lost{color:#fff;background:var(--red)}
@@ -6765,20 +6774,30 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .plvl-stars i{font-style:normal;font-size:9px;line-height:1;color:var(--golddeep)}
 .plvl-stars i.off{color:var(--line)}
 /* ═══ RED AND GREEN MEAN ONLY LOST AND WON ═══
-   The app's one colour system, and the reason there are FOUR tints here rather than the
-   three `LIVE_DIR` carries. A pick trending against us is still a live bet, so it may not
+   The app's one colour system. A pick trending against us is still a live bet, so it may not
    wear the settled red of a graded loss — that is the same rule that tints the in-play
    cushion chip's CHASE amber and its TIGHT slate. Green arrives only when the runs have won
-   the bet; red only when they have killed it. In between: amber against us, quiet slate on a
-   coin flip, quiet green ahead. */
-.plvl.dir-ahead{background:var(--dirgoodbg);border-color:var(--dirgoodline)}
-.plvl.dir-ahead .plvl-fill{background:var(--dirgood)}
-.plvl.dir-ahead .plvl-pct b{color:var(--dirgood)}
-.plvl.dir-close .plvl-fill{background:var(--ink3)}
-.plvl.dir-close .plvl-pct b{color:var(--ink2)}
-.plvl.dir-against{background:var(--amberbg);border-color:rgba(var(--goldc),.28)}
-.plvl.dir-against .plvl-fill{background:var(--amber)}
-.plvl.dir-against .plvl-pct b{color:var(--a3)}
+   the bet; red only when they have killed it. In between: amber chasing, quiet slate on the
+   line, quiet green our way.
+   THE RUNG NAMES ARE THE CHIP'S NAMES NOW (2026-08-10). These were `ahead / close / against`
+   — a third vocabulary for the same reading, on top of the board chip's good/hold/tight/chase
+   and `LIVE_DIR`'s three-way direction. One ladder (`LIVE_RUNGS`) picks the word and the ink
+   for both surfaces, so this line and the tile it came from cannot describe one probability
+   two different ways. HOLD earns its own tint here for the first time: it used to fall into
+   `close`'s grey, which is why a 61% bet read as a coin flip on the game page and as HOLDING
+   on the board. */
+.plvl.dir-good{background:var(--dirgoodbg);border-color:var(--dirgoodline)}
+.plvl.dir-good .plvl-fill{background:var(--dirgood)}
+.plvl.dir-good .plvl-pct b{color:var(--dirgood)}
+/* HOLDING is the quiet version of OUR WAY, not a second loud one: the pill keeps the
+   neutral ground and only the fill carries the tint, held under the base .18 so a 56% and
+   an 88% are never mistaken for each other at a glance. */
+.plvl.dir-hold .plvl-fill{background:var(--dirgood);opacity:.11}
+.plvl.dir-tight .plvl-fill{background:var(--ink3)}
+.plvl.dir-tight .plvl-pct b{color:var(--ink2)}
+.plvl.dir-chase{background:var(--amberbg);border-color:rgba(var(--goldc),.28)}
+.plvl.dir-chase .plvl-fill{background:var(--amber)}
+.plvl.dir-chase .plvl-pct b{color:var(--a3)}
 /* the two SETTLED-BY-ARITHMETIC states — the only two that may use the result colours */
 .plvl.dir-hit{background:var(--dirgoodbg);border-color:var(--dirgoodline)}
 .plvl.dir-hit .plvl-fill{background:var(--dirgood)}
@@ -10211,7 +10230,22 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
    to clip and it cannot look cut off at any width. It carries more contrast than the tint
    could (a thin rule can, a wash behind text cannot), the text above it is now untinted, and
    the track makes the REMAINING distance visible — which the fill alone never showed. */
-.dmp-res.has-meter{position:relative;overflow:hidden}
+/* ═══ THE RULE NEEDS ITS OWN ROOM, OR IT EATS THE NUMBER (Leon, 2026-08-10: "the % gets
+   cut off") ═══
+   MEASURED on the running board at 375, before this change: the pill's padding was 3px all
+   round, the figure is 9.5px on a 9.5px line box, and the rule sits 2px off the pill's floor
+   and is 2.5px tall — so the rule's top edge was 4.5px above the floor while the figure's
+   baseline sat 4.9px above it. Four tenths of a pixel of daylight, which at 2× DPR is one
+   device pixel and at 1× is none: "31%" rendered with the bottom of the 3 fused into the
+   bar, "61%" with the 6 and the 1 both welded to it. Nothing was truncated — the meter was
+   drawn THROUGH the digits, which is what "cut off" looks like from the outside.
+   Two things fix it and both are needed. The pill gives the rule a floor of its own
+   (padding-bottom 6px, so there is 3px of clear air under the baseline — the rule reads as a
+   rule and the figure reads as a figure), and the figure is lifted above the fill in the
+   stacking order, because the fill carries z-index:1 and would otherwise paint over type it
+   merely sits beside. Cost: 3px of pill height, in a row whose only hard constraint is
+   horizontal (`flex-wrap:nowrap`) and whose tallest element is the pick tag, not this. */
+.dmp-res.has-meter{position:relative;overflow:hidden;padding-bottom:6px}
 .dmp-res.has-meter::after{content:"";position:absolute;left:5px;right:5px;bottom:2px;height:2.5px;
   border-radius:999px;background:currentColor;opacity:.14;pointer-events:none}
 /* THE FILL IS MEASURED AGAINST THE TRACK, NOT AGAINST THE PILL (2026-08-09, second pass).
@@ -10230,8 +10264,8 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
 .dmp-res.has-meter .ipm-fill{position:absolute;left:5px;bottom:2px;height:2.5px;
   width:calc((100% - 10px) * var(--p,0) / 100);border-radius:999px;background:currentColor;
   opacity:.85;pointer-events:none;z-index:1;transition:width .6s var(--ease)}
-.dmp-res.has-meter .ipm-txt{position:relative}
-.dmp-res.has-meter .ipm-pct{position:relative;font-style:normal;font-weight:800;
+.dmp-res.has-meter .ipm-txt{position:relative;z-index:2}
+.dmp-res.has-meter .ipm-pct{position:relative;z-index:2;font-style:normal;font-weight:800;
   margin-left:5px;font-size:9px;letter-spacing:.02em;opacity:.85;
   font-variant-numeric:tabular-nums}
 @media(prefers-reduced-motion:reduce){.dmp-res.has-meter .ipm-fill{transition:none}}

@@ -1471,6 +1471,40 @@ export default function Home() {
       too_close: { cls: "close", word: "still a coin flip", short: "coin flip" },
       trending_miss: { cls: "miss", word: "trending against us", short: "against us" },
     };
+    /* ═══════ ONE LADDER FOR THE LIVE READ — the number names itself, everywhere ═══════
+       Leon, 2026-08-10: an 88% chip rendered in the amber "chasing" ink while a 44% chip
+       rendered green. The cause was two ladders and two signals for one fact:
+
+         · the board tile (`pickStateTxt`) cut the model's live probability at .75/.55/.35
+           into OUR WAY / HOLDING / TIGHT / CHASING and tinted from that;
+         · the game page's line (`pickLiveLine`) took its WORD from `liveStatusOf().dir` —
+           which is the backend's own `direction` string when one is served, and only falls
+           back to a probability cut (at .62/.42) when it is not — while taking its NUMBER
+           from `prob_hit`. Two independent inputs, so the word could contradict the figure
+           printed 4px to its right, and the ink followed the word.
+
+       Even with both derived from the probability the two surfaces disagreed by
+       construction: 61% is HOLDING on a tile and "still a coin flip" on the game page, for
+       the same bet, one tap apart. A reader has no way to know those are the same reading.
+
+       So there is ONE ladder now. It takes the probability and returns the rung: the tile's
+       caps word, the page's phrase, and the ink key both surfaces set their class from. The
+       word, the number, the bar and the colour are four renderings of one number and cannot
+       disagree. `direction` off the feed is no longer read for display when a probability
+       exists — it is a second opinion about a number we already have, and the number wins.
+       When there is NO probability, nothing here fires: the runs-cushion fallback keeps its
+       own word and prints no percentage at all, which is the same rule as before. */
+    const LIVE_RUNGS: any[] = [
+      { min: 0.75, key: "good", tile: "OUR WAY", page: "our way" },
+      { min: 0.55, key: "hold", tile: "HOLDING", page: "holding" },
+      { min: 0.35, key: "tight", tile: "TIGHT", page: "on the line" },
+      { min: -1, key: "chase", tile: "CHASING", page: "chasing" },
+    ];
+    function liveRung(p: any) {
+      const v = Number(p);
+      if (p == null || !isFinite(v)) return null;
+      return LIVE_RUNGS.find((r) => v >= r.min) || LIVE_RUNGS[LIVE_RUNGS.length - 1];
+    }
     // The prominent live hit-odds indicator: "68% to cash · trending your way" + a meter
     // toward the line. size: "tile" (compact, on game boxes) | "full" (detail sheet).
     function liveCashChip(g: any, pl: any) {
@@ -3416,16 +3450,27 @@ export default function Home() {
       const clinched = hard === "win" || (!decidable && prob != null && prob >= 0.985);
       const cooked = hard === "loss" || (!decidable && prob != null && prob <= 0.015);
       const decided = clinched || cooked;
+      /* THE NUMBER NAMES ITSELF (see LIVE_RUNGS). The word used to come from
+         `liveStatusOf().dir` — the feed's own `direction` when one is served — while the
+         figure beside it came from `prob_hit`, so the two could contradict each other on
+         one line, and the tint followed the word rather than the number. The rung is the
+         one source now: same ladder the board tile reads, so 61% is "holding" here and
+         HOLDING there instead of "still a coin flip" here and HOLDING there.
+         `meta` survives for the one case the rung cannot cover — a served direction with
+         NO probability at all, where a word is all there is to say. */
       const meta = LIVE_DIR[(ls && ls.dir) || "too_close"] || LIVE_DIR.too_close;
-      const word = clinched ? "cashed" : cooked ? "not landing" : meta.short;
+      const rung = liveRung(prob);
+      const word = clinched ? "cashed" : cooked ? "not landing" : rung ? rung.page : meta.short;
       /* RED AND GREEN MEAN ONLY LOST AND WON — the app's one colour system, and the reason
-         this does not reuse `LIVE_DIR.cls` verbatim. `trending_miss` is a live, still-winnable
-         bet; painting it the settled red of a graded loss is the exact conflation that system
-         exists to prevent (it is why the in-play cushion chip tints chase AMBER and tight
-         SLATE). So: green only once the runs have won it, red only once they have killed it,
-         amber while it is going against us, quiet slate while it is a coin flip. */
+         this does not reuse `LIVE_DIR.cls` verbatim. A bet trending against us is live and
+         still winnable; painting it the settled red of a graded loss is the exact conflation
+         that system exists to prevent (it is why the in-play cushion chip tints chase AMBER
+         and tight SLATE). So: green only once the runs have won it, red only once they have
+         killed it, amber while it is going against us, quiet slate while it is on the line —
+         and the rung that picks the word picks the ink, from the same number. */
       const cls = clinched ? "hit" : cooked ? "cooked"
-        : meta.cls === "miss" ? "against" : meta.cls === "hit" ? "ahead" : "close";
+        : rung ? rung.key
+        : meta.cls === "miss" ? "chase" : meta.cls === "hit" ? "good" : "tight";
       const pct = decided ? null : prob;
       const fill = clinched ? 100 : cooked ? 100 : pct != null ? Math.round(pct * 100) : null;
       // ── how much we liked it: the served rating, never a local map ──
@@ -3433,7 +3478,7 @@ export default function Home() {
       const lab = [
         `Our bet: ${side}`,
         decided ? (clinched ? "this pick has cashed" : "this pick can no longer cash")
-          : pct != null ? `${Math.round(pct * 100)}% chance it cashes, live estimate — ${meta.word}`
+          : pct != null ? `${Math.round(pct * 100)}% chance it cashes, live estimate — ${word}`
             : meta.word,
         r ? `rated ${r.stars} of ${r.of} stars` : "",
       ].filter(Boolean).join(" · ");
@@ -7620,14 +7665,15 @@ export default function Home() {
                number are three renderings of one number and can never disagree. When there
                is no probability the runs cushion decides the word — and then no percentage
                is shown at all, because a number from a different signal is what caused
-               this. `over`/`under` differ only in how the cushion reads without a model. */
+               this. `over`/`under` differ only in how the cushion reads without a model.
+               The cuts themselves moved out to LIVE_RUNGS on 2026-08-10: this chip and the
+               game page's pick line were each spelling their own ladder, so one bet read
+               HOLDING on the board and "still a coin flip" one tap later. */
             const lp = (liveStatusOf(g, pl) || {}).prob;
             const pcv = lp != null ? Math.max(0.01, Math.min(0.99, Number(lp))) : null;
-            if (pcv != null) {
-              return pcv >= .75 ? { txt: "OUR WAY", cls: "inplay ip-good", pct: pcv }
-                : pcv >= .55 ? { txt: "HOLDING", cls: "inplay ip-hold", pct: pcv }
-                : pcv >= .35 ? { txt: "TIGHT", cls: "inplay ip-tight", pct: pcv }
-                : { txt: "CHASING", cls: "inplay ip-chase", pct: pcv };
+            const rung = liveRung(pcv);
+            if (pcv != null && rung) {
+              return { txt: rung.tile, cls: `inplay ip-${rung.key}`, pct: pcv };
             }
             if (over) {
               const need = Math.floor(Number(line)) + 1 - total;
@@ -8410,16 +8456,16 @@ export default function Home() {
        "confidence" actually said. By the time a reader reaches the board, "75%" on a black tag
        needs no caption. A pick with a score and no tier still gets the chip — the number is
        the subject, the pips are the optional part. */
-    function strengthChip(pl: any, reveal: boolean) {
-      if (!reveal) return "";
-      const s = committeeStrength(pl);
-      const c = servedConfidence(pl);
-      if (!s && !c) return "";
-      return `<span class="strchip${s ? ` q-${esc(s.tier)}` : ""}${c && c.high ? " is-high" : ""}" title="${esc(confidenceTitle(pl) || (s && s.blurb) || "")}">
-        ${s ? `<span class="de-pips s${s.rank}" aria-hidden="true"><i></i><i></i><i></i></span><b>${esc(s.label)}</b>` : ""}${
-        c ? `<span class="de-conf">${c.score}<i>% confidence</i></span>` : ""}
-      </span>`;
-    }
+    /* (strengthChip RETIRED, 2026-08-10. It was the last renderer in the app that printed
+       the served confidence as a bare percent — "44 % CONFIDENCE" — and its one caller was
+       the briefing's pick card, where it sat beside the live state chip. The rationale
+       written above it was that the story deck is where the percent gets TAUGHT before a
+       reader meets it on the board; the board stopped showing a percent when confidence
+       became stars, so there was nothing left to teach and only the second number left to
+       misread. The measure itself is not gone: the stars are it, and `confidenceBlock`
+       still prints the full 0–100 object with its evidence on every surface where a reader
+       has stopped on one pick. Deleted rather than left unreachable, so it cannot quietly
+       come back the next time a card wants a figure.) */
     /* ════════ THE CONFIDENCE BLOCK — the number with its evidence, on a pick surface ════════
        The tag carries the bare percent because a board tile has 139px and no room to explain
        anything. Every surface where the reader has stopped ON one pick gets the full object:
@@ -14184,6 +14230,62 @@ export default function Home() {
       if (diff < 172800) return "yesterday";
       return new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
     }
+    /* ════════ THE HEADLINE MAY NOT PROMISE WHAT THE BODY CANNOT DELIVER (Leon, 2026-08-10)
+       "The headline reads 'Former Red Sox All-Star, 36, announces retirement from MLB'…
+        IT NEVER SAYS WHO RETIRED."
+
+       Reproduced on the live feed and it is not a writing slip, it is a source-class fact.
+       A story arrives from one of two lanes:
+
+         · `espn_rss` hands us a real SUMMARY — "Marlins first baseman Kyle Stowers will
+           undergo further evaluation after tweaking his left hamstring…" — and the desk
+           writer opens on that. The reported fact is in our hands and we can carry it.
+         · `google_news_rss` hands us a headline and NOTHING ELSE. No summary, no body.
+           `news_desk._lede` then has one string to open with, so it opens with the
+           headline, verbatim, plus the credit line — and everything after it is our own
+           standings-and-totals read. The reader is promised a name and never gets one.
+
+       We cannot fix that by writing the missing fact; we do not have it and will not
+       invent it. So the rule is the second of Leon's two: A STORY WHOSE SUBSTANCE WE
+       CANNOT CARRY DOES NOT BECOME A FULL READER. It stays a card, under the wire's own
+       headline, credited to the wire, and its one CTA goes to the wire — where the name
+       actually is. Nothing is promised that is not delivered, because we stop making the
+       promise. What we DO hold about that game is not lost either: the card still routes
+       to the game, and the game page is a better telling of "where Boston stands" than a
+       paragraph of it wearing someone else's headline.
+
+       serve_news now ships `carries_report` so this is a served fact rather than a guess,
+       but the deck does not get to assume it — the feed is a live wire on its own refresh
+       cycle and older payloads have no such field. So the test is run here too, on the
+       text itself: strip the desk's credit clause off the opening paragraph and see
+       whether what is left is anything more than the wire's headline read back. */
+    const NEWS_ATTRIB_RE = /\s*(?:that['’]s per\b|the report comes via\b|reporting:|[A-Z][^.]{0,40}\bhas the details\b)[^.]*\.?\s*$/i;
+    function newsNorm(x: any) {
+      return String(x || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    }
+    function newsCarriesReport(s: any) {
+      if (!s) return false;
+      if (s.carries_report === false) return false;          // served verdict, when the feed has one
+      if (s.carries_report === true) return true;
+      if (s.house === true || String(s.provider || "") === "diamondedge_desk") return true;  // ours end to end
+      const body = String(s.article || s.summary || "").trim();
+      if (!body) return false;
+      const lede = newsNorm(body.split(/\n+/)[0].replace(NEWS_ATTRIB_RE, ""));
+      const wire = newsNorm(s.title || s.headline || "");
+      if (!lede) return false;
+      if (!wire) return true;
+      // The lede adds reporting only if it says something the headline did not.
+      return lede !== wire && !(wire.indexOf(lede) === 0) && lede.length > wire.length + 12;
+    }
+    // The wire's own page — the only place the missing fact actually lives. http(s) only.
+    function newsSourceUrl(s: any) {
+      const u = String((s && s.url) || "").trim();
+      return /^https?:\/\//i.test(u) ? u : "";
+    }
+    function newsSourceName(s: any) {
+      const n = String((s && s.source) || "").trim();
+      return n && !/^diamondedge$/i.test(n) ? n : "";
+    }
     // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
     // render and the article reader's prev/next nav so keys/order always agree.
     function newsDedupedHeadlines(): any[] {
@@ -14238,6 +14340,81 @@ export default function Home() {
     function newsDisplayKeys(): string[] {
       return newsDisplayStories().map((x) => x.key);
     }
+    /* THE READER'S RUNNING ORDER. The deck's order, filtered to the stories that actually
+       open — a story we route to the wire has no reader page to walk to, so "next" must
+       not stop on it. Deck order is preserved exactly; nothing is re-sorted. */
+    function newsReaderStories(): { s: any; key: string }[] {
+      return newsDisplayStories().filter((x) => newsCarriesReport(x.s));
+    }
+    function newsReaderKeys(): string[] {
+      return newsReaderStories().map((x) => x.key);
+    }
+    /* ════════ ONE CTA PATTERN, EVERY STORY (Leon, 2026-08-10) ════════
+       "The 'ATH @ BOS' bar and 'See our full pick →' both open the same game page, stacked
+        directly on top of each other… let's have a consistent clear CTA to read more on all
+        stories that point to news or a game — multiple clear CTAs if needed."
+
+       There were three routes to two places and no rule about any of them: a matchup bar
+       that looked like a heading and behaved like a button, a gold "See our full pick"
+       pill wedged into the take row pointing at the SAME game page, and — for a story
+       whose actual reporting lives on someone else's site — no route to the source at all.
+       A reader learned the layout again on every story.
+
+       One row, one shape, one position — the foot of the story, after the last word of it,
+       which is where a reader is when they want somewhere to go. It holds at most two
+       buttons and each says where it goes:
+         · THE GAME we hold a call on — crests, the matchup, "our full pick". Opens the
+           game page in-app.
+         · THE SOURCE that reported it — named, with the outbound mark. Opens their page.
+       A story with both gets both, side by side, visually distinct. A story with one gets
+       one, in the same place, at the same size. A story with neither (our own desk recap,
+       which IS the destination) gets no row rather than an empty frame — the standing rule
+       everywhere else in this app.
+
+       `where` labels the row for the surface it is on so the same builder can serve the
+       reader's foot and the deck card's foot without either inventing its own. */
+    function newsCtaRow(s: any, g: any, gid: any, where = "art") {
+      const su = newsSourceUrl(s), sn = newsSourceName(s);
+      const parts: string[] = [];
+      if (gid != null) {
+        const crests = g ? `${gCrest(g, "away", `${where}-cta-crest`)}${gCrest(g, "home", `${where}-cta-crest`)}` : "";
+        const mu = g && g.away_abbr && g.home_abbr ? `${esc(g.away_abbr)} @ ${esc(g.home_abbr)}` : "This game";
+        parts.push(`<button class="${where}-cta-b is-pick" data-cta-gid="${esc(String(gid))}">
+          ${crests ? `<span class="${where}-cta-crests" aria-hidden="true">${crests}</span>` : ""}
+          <span class="${where}-cta-t"><b>Our full pick</b><i>${mu}</i></span>
+          <span class="${where}-cta-go" aria-hidden="true">→</span>
+        </button>`);
+      }
+      if (su) {
+        parts.push(`<a class="${where}-cta-b is-src" href="${esc(su)}" target="_blank" rel="noopener noreferrer">
+          <span class="${where}-cta-t"><b>Read the report</b><i>${esc(sn || "the source")}</i></span>
+          <span class="${where}-cta-go" aria-hidden="true">↗</span>
+        </a>`);
+      }
+      if (!parts.length) return "";
+      return `<nav class="${where}-cta${parts.length > 1 ? " two" : ""}" aria-label="Where to next">${parts.join("")}</nav>`;
+    }
+    /* The game button resolves its game at CLICK time (state may have loaded since render),
+       mirroring every other pick affordance on the page. `closeDetail` wipes #sheet-layer
+       after its 320ms exit animation and openDetail renders into that same layer, so the
+       open has to run after the teardown — 360ms clears it. */
+    function bindNewsCta(root: any) {
+      if (!root) return;
+      root.querySelectorAll("[data-cta-gid]").forEach((b: any) => {
+        b.onclick = (e: any) => {
+          e.stopPropagation();
+          const id = b.dataset.ctaGid;
+          const gg = findGameLive(id) || findGame(id) || gameById(id);
+          closeDetail(false, true);
+          if (gg) setTimeout(() => openDetail(gg), 360);
+          else setTimeout(() => jumpToGames([id]), 360);
+        };
+      });
+      // an outbound link is a link — it only needs to stop the card underneath it opening
+      root.querySelectorAll("a[target=_blank]").forEach((a: any) => {
+        a.onclick = (e: any) => e.stopPropagation();
+      });
+    }
     /* ONE DEK. The deck fell back to `summary` when a story had no dek; the reader did not —
        so a story could carry a standfirst on the card and none in the article, which reads as
        the reader having lost something on the way in. */
@@ -14285,7 +14462,33 @@ export default function Home() {
     function openArticleSheetInner(s: any, key = "") {
       detail = detailWithGameReturn({ _article: true });
       try { const h = String(s.headline || s.title || ""); document.title = /diamondedge/i.test(h) ? h : `${h} — DiamondEdge`; } catch {}  // avoid double-branding; closeDetail restores base
-      const navKeys = newsDisplayKeys();
+      /* ════════ THE READER WALKS THE DECK (Leon, 2026-08-10) ════════
+         "If I click next story in the news it should move the story along."
+
+         It did move — programmatically the handler resolved the right story and rendered
+         it — and it was still broken in all four of the ways that matter on a phone:
+
+          1. THE CONTROL WAS UNREACHABLE. `.art-nav` sat at the very bottom of `.sh-body`,
+             below the last paragraph and below the ad slot. Measured at 375px on the live
+             feed: the scroller runs 973px inside a 466px window, so "Next story →" is two
+             full screens down. A reader who opens a story and reads it never sees a
+             next-story control at all — which is exactly what "does not advance" looks
+             like from the outside.
+          2. IT TORE THE SURFACE DOWN. Advancing rewrote the whole `#sheet-layer`, so the
+             new sheet replayed `sheetin` — a full slide-up from the bottom of the screen.
+             Leon named this one himself: "a next-story control that closes and reopens the
+             surface is not the same thing."
+          3. THE ENDS WERE SILENT. First and last story rendered `<span></span>` where the
+             button would be. Nothing said you were at either end.
+          4. THE DECK DID NOT FOLLOW. Read three stories forward, close, and the briefing
+             underneath is still sitting on the one you opened.
+
+         All four are fixed together: the bar is a PERSISTENT footer of the sheet (a
+         sibling of the scroller, so it cannot scroll away), it carries its position in
+         the deck so the ends are stated rather than implied, only the CONTENTS of the
+         sheet are swapped so the surface never leaves the screen, and `gotoStory` keeps
+         the deck underneath on the story being read. */
+      const navKeys = newsReaderKeys();
       const ci = key ? navKeys.indexOf(key) : -1;
       const prevKey = ci > 0 ? navKeys[ci - 1] : null;
       const nextKey = ci >= 0 && ci < navKeys.length - 1 ? navKeys[ci + 1] : null;
@@ -14935,8 +15138,24 @@ export default function Home() {
       const call = locked
         ? `${lockHead ? `<h3 class="sts-head sm">${esc(lockHead)}</h3>` : ""}
            <div class="sts-lockwrap"><span class="sts-dots" aria-hidden="true">●●●● ●</span>${pickStars(pl)}<button class="st-cta lock" data-go="unlock">${lockSvg} ${esc(unlockPitchTxt())}</button></div>`
+        /* ═══ ONE PERCENT ON A CARD, AND IT IS THE LIVE ONE (Leon, 2026-08-10: "why is
+           there 2 percents now that we have stars?") ═══
+           This card was the last pick surface in the app still printing the served
+           confidence as a PERCENT — "44 % CONFIDENCE" — which is the exact figure that
+           became stars everywhere else on 2026-08-09, and it sat inches from the live state
+           chip. Two numbers on one card answering "how much do we like this bet" and "how is
+           the bet doing", in the same units, is the ambiguity the stars were adopted to end;
+           the board tile ended it and this card did not, which is why the app looked like it
+           had two of them.
+           So the rating renders as the served STARS here too (`strengthPct`, gated on the
+           same reveal flag the side is), and the live chip renders through `stateChipHtml`
+           — the same pill the board draws, with its meter and its percent — instead of the
+           bare word this card was throwing `state.pct` away to show. The card now carries
+           exactly one percent and it is the live one.
+           (`pickStars` and `pickGrade` were retired stubs returning "" — dropped with the
+           call rather than left as furniture.) */
         : `<div class="sts-call ${dir}">${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</div>
-           <div class="sts-meta">${strengthChip(pl, !locked)}${pickStars(pl)}${pickGrade(pl)}${state ? `<span class="sts-res ${state.cls}">${state.txt}</span>` : (gs.kind === "pre" ? countdownChip(g, gs) : "")}</div>
+           <div class="sts-meta">${strengthPct(pl, !locked)}${state ? stateChipHtml(state) : (gs.kind === "pre" ? countdownChip(g, gs) : "")}</div>
            ${signalRow(pl)}
            ${pickMadeMeta(pl)}`;
       /* COMPOSITION: eyebrow, then ONE dominant element (the call, set at up to 72px), with
