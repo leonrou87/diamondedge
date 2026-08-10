@@ -413,6 +413,23 @@ async function rawBody(key: string, mode: string, gameId: string): Promise<strin
   return JSON.stringify(payload ?? null);
 }
 
+/* THE ROUTE HAD NO TIME LIMIT OF ITS OWN, AND THE DEFAULT WAS NOT ENOUGH.
+   2026-08-09: Vercel raised an error anomaly — 502s on /api/snap/[key], 88.9%
+   error rate. The route LOOKED healthy from outside because the edge was
+   serving cached copies; every request that actually MISSED the cache failed.
+   Measured against production: a cold miss on `picks_unified` (8.27 MB) ran
+   24.1 s and returned 502, while `?lite=1` came back in 2.6 s on a good run and
+   8.7 s on a bad one — right on the edge of the platform default. The small
+   keys never failed. So this is not Supabase being down (a direct read answered
+   in 0.19 s throughout) — it is one 8 MB payload not fitting in the time a
+   serverless function is given by default.
+
+   `maxDuration` is the floor under it, not the fix. The fix is that no request
+   should ever move 8 MB through this function — that is what the payload split
+   is for. Until that lands, a slow answer beats a 502: a reader on a cold cache
+   currently gets nothing at all. */
+export const maxDuration = 60;
+
 export async function GET(
   req: Request,
   ctx: { params: Promise<{ key: string }> },
