@@ -365304,5 +365304,57 @@
         }
       ]
     }
-  ]
+  ],
+  "premium_variant": "public",
+  "premium_contract": {
+    "shape": "field_level_single_payload",
+    "flag": "pick.premium",
+    "locked_flag": "pick.premium_locked",
+    "redacted_fields": [
+      "side",
+      "line",
+      "vegas_line",
+      "price",
+      "suggested_units",
+      "stars",
+      "score",
+      "star_tier",
+      "our_prob",
+      "p_over",
+      "ev",
+      "expanded_band",
+      "certified",
+      "signals",
+      "game_case",
+      "confidence_score",
+      "confidence_basis",
+      "pick_rating_stars"
+    ],
+    "redacted_text_fields": [
+      "rationale_line",
+      "summary_line",
+      "plain_english_rule",
+      "label",
+      "pass_reason",
+      "star_tier",
+      "reason",
+      "take",
+      "headline",
+      "body",
+      "note_line",
+      "pattern_line",
+      "rule_key"
+    ],
+    "public": [
+      "record",
+      "desk_call_count",
+      "analyst_personality",
+      "matchup",
+      "date",
+      "first_pitch_utc",
+      "final",
+      "status"
+    ],
+    "note": "Non-premium clients read the PUBLIC payload variant, where every premium field is ABSENT (not null, not masked) on any game carrying a live pick, and every free-text field that could name a side is replaced with the teaser. The record, the number of calls the desk made, and the analysts' personality content stay fully public. Nothing in the public variant contains the pick in any recoverable field \u2014 desk_policy.leak_scan() is the rail that proves it."
+  }
 }
