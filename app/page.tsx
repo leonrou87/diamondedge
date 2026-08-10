@@ -12437,7 +12437,7 @@ export default function Home() {
          The banner that remains answers the only question the page is opened to ask. A pass
          renders NOTHING: an empty slot above the tabs is the honest shape of "we are not on
          this game", and it costs zero pixels. */
-      const gpDesk = deskBlockTile(g, leadLocked);
+      /* gpDesk retired with the two Stats sections that rendered it (2026-08-09). */
       /* A GAME THAT WILL NOT BE PLAYED HAS NO BET TO REMIND ANYBODY OF.
          The strip renders the served ticket — "O/U 8 ◆DE OVER −105" — which on a
          postponed game is a live-looking recommendation on a wager that will
@@ -12578,7 +12578,15 @@ export default function Home() {
         ${leadLocked ? "" : previewMasthead}
         ${previewBlock}
         ${!showLive ? referenceSections : ""}
-        ${!showLive && gpDesk ? `<section class="st-sec"><h3 class="st-h">What the four measured</h3>${gpDesk}</section>` : ""}
+        ${""/* THE FOUR ANALYSTS NO LONGER SPEAK ON A GAME PAGE (Leon, 2026-08-09: "the analyst
+             take on a game means less so let's remove them from the main game page too").
+             He is describing what the product became. Under the committee, four reads voting
+             WAS the pick, and showing them was showing the reasoning. Under the forge one
+             frozen rule decides, and the four are inputs it may or may not have consulted —
+             so a page that leads with "what the four measured" is explaining a mechanism that
+             no longer makes the call. The analysts keep the surfaces where they are the
+             SUBJECT (their own pages, their records on the Desk); they lose the surface where
+             they used to be the ARGUMENT. */}
         ${lead && !leadLocked ? signalBlock(lead) : ""}
       </div>`;
       /* ═══════════ STATS — THE SPORTS-REFERENCE TAB, AND THE BOX SCORE'S DEPTH ═══════════
@@ -12594,7 +12602,8 @@ export default function Home() {
                 no slot content and therefore no heading, which is the app's standing rule. */""}
           <div id="gl-slot">${glSection(g)}</div>
           ${referenceSections}
-          ${gpDesk ? `<section class="st-sec"><h3 class="st-h">What the four measured</h3>${gpDesk}</section>` : ""}
+          ${""/* the four analysts are gone from here too — see the note on the other Stats
+                render above; this was the same block on the other branch */}
         </div>
       </div>` : "";
       // Box score pane also carries the recap for a final game (folded in — no separate tab).
