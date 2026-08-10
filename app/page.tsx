@@ -19189,6 +19189,35 @@ export default function Home() {
        transform on one element, and nothing reads layout inside the move handler. */
     let shellSwipeBound = false;
     const SWIPE_OWNERS = ".stories,#st-stage,.sheet,.gamepage,input,select,textarea,[data-no-swipe]";
+    /* IS THE FINGER ON A SCRUBBING CONTROL? — direction- and position-BLIND, unlike
+       hScrollOwner below, and that difference is the whole point (2026-08-10).
+
+       hScrollOwner implements nested scrolling: a scroller that still has somewhere to
+       go keeps the drag, and one already at the end it is being dragged away from yields
+       to the gesture behind it. That is the right contract for the LAYER swipe-back,
+       because that gesture is EDGE-ANCHORED — it only arms inside a 40px strip at the
+       screen's leading edge, so a reader whose drag reaches the handoff deliberately
+       started at the bezel.
+
+       The shell TAB PAN has no such anchor: it arms anywhere on the tab. So the same
+       rule produced this, measured on the live board — drag the date strip left to right
+       while it sits at its left end and you are thrown from Games to the Desk. Same for
+       the league rail. Both are scrubbing controls in the header, both rest at an end,
+       and reaching the end of a strip you are dragging is how you discover it HAS an
+       end. The reader is choosing a day, not asking to leave the board.
+
+       So the tab pan declines any gesture that BEGINS inside a horizontal scroller, at
+       whatever position. The ends of a date strip are not a doorway to another tab. A
+       pan from anywhere else on the board — which is every other pixel of the tab — is
+       untouched, and the layer gesture is a different function and keeps its handoff. */
+    function inHScroller(el: any) {
+      for (let n = el; n && n !== document.body; n = n.parentElement) {
+        if (!n.scrollWidth || n.scrollWidth <= n.clientWidth + 2) continue;
+        const ov = getComputedStyle(n).overflowX;
+        if (ov === "auto" || ov === "scroll") return true;
+      }
+      return false;
+    }
     function hScrollOwner(el: any, dir: number) {
       for (let n = el; n && n !== document.body; n = n.parentElement) {
         if (!n.scrollWidth || n.scrollWidth <= n.clientWidth + 2) continue;
@@ -19221,6 +19250,9 @@ export default function Home() {
         if (!e.touches || e.touches.length !== 1) return;
         if (detail || document.body.classList.contains("sheet-open") || document.body.classList.contains("stories-on")) return;
         if (e.target && e.target.closest && e.target.closest(SWIPE_OWNERS)) return;
+        // a drag that starts on the date strip or the league rail belongs to that strip,
+        // at either end of it — see inHScroller
+        if (e.target && inHScroller(e.target)) return;
         const t = e.touches[0];
         sx = t.clientX; sy = t.clientY; t0 = performance.now(); tracking = true; active = false; dx = 0;
       }, { passive: true });

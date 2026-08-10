@@ -384,8 +384,44 @@ const textOf = (bl: Blob): Uint8Array<ArrayBuffer> => {
    Supabase reads of the same row. Now the row is read once and projected here,
    which is both cheaper on the meter and the reason the lite path no longer
    depends on a query that times out. */
+/* ═══ THE ORIGIN CANNOT SERVE THESE CONCURRENTLY, SO RETRY THE 5xx ═══
+
+   Measured 2026-08-10, straight at Supabase with no Vercel in the path:
+
+       15 simultaneous reads of pregame_picks  (1.1 MB)   1 of 15 -> HTTP 500
+       10 simultaneous reads of picks_unified  (9.5 MB)  10 of 10 -> HTTP 500
+
+   A single sequential read of either answers 200 every time. So this is not a
+   query problem and not a Vercel problem — it is a free-tier Postgres detoasting
+   a 9.5 MB jsonb ten times at once and giving up. It is also the true source of
+   the `x-snap-err: snap 500` seen in a 15-way burst through the route: the 502
+   was faithfully passing along the origin's own 500.
+
+   That reframes the cache. It is not only a cost optimisation any more — it is
+   what keeps readers away from an origin that cannot take them. And it is why a
+   retry belongs here rather than nowhere: a 502 out of this route is not a
+   neutral failure, it demotes that reader to `snapDirect` for 60 seconds, which
+   sends them STRAIGHT AT the thing that just failed, uncached, at full price.
+
+   Two attempts, jittered. The jitter is the active ingredient: the failures are
+   simultaneous by construction, so retrying them all at the same instant simply
+   reproduces the burst. Spreading them over a few hundred milliseconds is what
+   lets the origin serve them one at a time, which it can. Bounded at 2 so a
+   genuinely down origin fails fast instead of tripling the load on it, and 5xx
+   only — a 4xx is an answer, and retrying an answer is just noise. */
+async function supaRetry(path: string, attempts = 2): Promise<Response> {
+  let last: Response | null = null;
+  for (let i = 0; i < attempts; i++) {
+    if (i) await new Promise((r) => setTimeout(r, 150 + Math.random() * 450));
+    const r = await supa(path);
+    if (r.ok || r.status < 500) return r;
+    last = r;
+  }
+  return last as Response;
+}
+
 async function fetchUnit(key: string): Promise<Unit> {
-  const r = await supa(
+  const r = await supaRetry(
     `/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(key)}&select=payload`,
   );
   if (!r.ok) throw new Error(`snap ${r.status}`);
