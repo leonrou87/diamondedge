@@ -2939,6 +2939,28 @@ export default function Home() {
       out.sort((a, b) => idx(a.key) - idx(b.key));
       return out;
     }
+    /* ══════════ WHAT AN ANALYST IS CALLED WHERE HE IS NOT INTRODUCED ══════════
+       An analyst has two names. `a.name` is the CODENAME — ATLAS, NOVA, SCOUT, VEGA — and
+       `a.title` is the ROLE — The Conditions, The Bats, The Arms, The Price. The served
+       label is the pair ("ATLAS · The Conditions") and `normAnalystRow` splits it.
+
+       The standing rule (2026-08-08) is that a codename may only appear on a surface that
+       explicitly labels AND explains the analysts: the analyst card, the spotlight slide,
+       the standings. It reads as a machine identifier everywhere else, because that is what
+       it is — a reader who meets "VEGA" beside a quote on a pick card has been handed an
+       identifier for a thing nobody introduced.
+
+       THE ROLE IS NOT A REDACTION, IT IS THE BETTER LABEL. "The Price" says what that voice
+       grades; "VEGA" says nothing at all to someone meeting it. This is the same branch the
+       backend's rule naming took (v4/serve/rule_voice.py): where there is a role, say the
+       role; where there is not, say nothing and let the sentence carry itself.
+
+       Returns "" rather than falling back to the codename — a fallback to the banned form
+       is not a fallback, it is the bug with an extra step. Every call site already drops the
+       label when it is empty. */
+    function analystRole(a: any) {
+      return String((a && a.title) || "").trim();
+    }
     function analystMotionVars(a: any) {
       const raw = a && a.conv != null ? Number(a.conv) : null;
       const c = raw != null && isFinite(raw) ? Math.max(0.5, Math.min(0.72, raw)) : 0.5;
@@ -4548,10 +4570,23 @@ export default function Home() {
       const rec = wl && wl.wl ? wlTxt(wl.wl) : "";
       return w ? `${w} takes the night${rec ? ` at ${rec}` : ""}` : "";
     }
+    /* THE BEST AND WORST CALL ROWS NAME THE ROLE, and they used to name the codename.
+       Measured on production 2026-08-09: this row rendered a bare "Scout" directly above
+       the served quote "The pitching analyst said 55% over at 9.5 — it landed 12". Two
+       problems in 40 pixels — a codename on a slide that introduces nobody (the recap's
+       header introduces the NIGHT'S WINNER, which is a different analyst from the one in
+       these rows), and the same voice named twice in two vocabularies.
+
+       Naming the role fixes both at once: the label and the sentence beneath it now say the
+       same thing the same way, and the sigil and the tap-through to the full card are
+       untouched, so identity is still one tap away where it is actually explained.
+
+       The no-cast fallback said "The desk", which is the machinery noun this ban exists to
+       remove; an unattributable call is now simply "The call". */
     function recapCallRow(c: any, kind: "best" | "worst") {
       if (!c) return "";
       const cast = c.key && DESK_CAST[c.key] ? DESK_CAST[c.key] : null;
-      const who = cast ? cast.name : "The desk";
+      const who = (cast && String(cast.title || "").trim()) || "The call";
       const lab = kind === "best" ? "Best call" : "Worst call";
       const resTxt = gradeOf(c) === "win" ? "cashed" : gradeOf(c) === "loss" ? "missed" : gradeOf(c) === "push" ? "pushed" : "";
       return `<div class="rcap-call ${kind}${c.key ? ` an-${esc(c.key)}` : ""}"${c.key ? ` data-an="${esc(c.key)}" role="button" tabindex="0"` : ""}>
@@ -7755,12 +7790,37 @@ export default function Home() {
       const named = [on1 ? "first" : "", on2 ? "second" : "", on3 ? "third" : ""].filter(Boolean);
       return { svg, said: named.length ? `runners on ${named.join(", ")}` : "bases empty" };
     }
+    /* ═══════ THE CARD REFUSES AN IMPOSSIBLE SITUATION, IT DOES NOT DRAW ONE ═══════
+       The game page has dropped a resolved count since '4-2' was seen live on 825050
+       (`liveSituation`). This row never learned the same lesson, and it is the surface
+       fifteen games wide: it CLAMPED the outs — `Math.min(3, …)`, which is the app writing
+       a plausible number over an implausible one, the one thing the rest of this file
+       refuses to do — and printed `${b}-${s}` completely unchecked.
+
+       MEASURED, not guessed (2026-08-09). Replaying every timecode four finished games
+       emitted through the shipped code (statsapi `feed/live?timecode=…`; 2,096 samples on
+       823425 / 823751 / 823190 / 825050), MLB's linescore reports a state that cannot exist
+       while STILL saying "Top" or "Bottom" in 218 of them — 150 with balls > 3 or
+       strikes > 2, three with `outs: 3` under a named batter. The game page dropped every
+       one; this row would have drawn them, so the same instant read '1-3' on the board and
+       nothing on the game page 40px later.
+
+       A count is 0-3 balls and 0-2 strikes and a live half has 0-2 out. Anything else means
+       the half or the plate appearance is OVER and the number is its result, so the row is
+       ABSENT — the same nothing it already draws between innings. Nothing is clamped and
+       nothing is corrected.
+
+       `live_situation_keys` in picks_engine/live_scores.py now refuses to publish these at
+       source, so in steady state this guard never fires. It stays because this row also
+       renders `current_actuals` written by `adoptMlbLive` straight from MLB's own document,
+       which no backend gate sits in front of. */
     function tileSituation(g: any) {
       const ca = (g && g.current_actuals) || {};
       if (ca.outs == null || ca.balls == null || ca.strikes == null) return "";
-      const outs = Math.max(0, Math.min(3, Number(ca.outs)));
+      const outs = Number(ca.outs);
       const b = Number(ca.balls), s = Number(ca.strikes);
       if (!isFinite(outs) || !isFinite(b) || !isFinite(s)) return "";
+      if (outs < 0 || outs > 2 || b < 0 || b > 3 || s < 0 || s > 2) return "";
       const pips = [0, 1, 2].map((i) => `<i class="${i < outs ? "on" : ""}"></i>`).join("");
       const bases = tileBases(ca);
       const word = [bases.said, `${outs} out${outs === 1 ? "" : "s"}`, `${b}-${s} count`].filter(Boolean).join(", ");
@@ -11749,8 +11809,28 @@ export default function Home() {
             }
             : null;
       if (!src) return null;
-      const between = /^(middle|end)/i.test(src.half);
+      /* ═══════ A HALF-INNING ALSO ENDS WHEN THE THIRD OUT IS RECORDED ═══════
+         `inningState` was the only thing consulted here, and MLB does not always flip it
+         at the instant it publishes the third out. Measured 2026-08-09 by replaying every
+         timecode four finished games emitted (statsapi `feed/live?timecode=…`, 2,096
+         samples across 823425 / 823751 / 823190 / 825050): three of them report `outs: 3`
+         while `inningState` still says "Top" or "Bottom", with a batter still named in
+         `offense`. 823190 is the plainest — bottom of the 10th, the last out of the game —
+         and the strip drew three lit out pips under "Tyler Holton pitching to Bryce
+         Eldridge", which is not a state baseball has.
+
+         Three out retires the side. It is a BREAK, and the break path already does
+         everything right: bases forced empty, count dropped, no matchup, "Between innings".
+         So the third out enters through it rather than through a fourth special case.
+
+         This is the same ruling as the count guard below, one level up — the number is the
+         RESULT of the half that just ended, not the state of one in progress — and it is
+         the frontend half of `live_situation_keys` in picks_engine/live_scores.py, which
+         now refuses to publish the same states at source. Two surfaces, one rule; this
+         side keeps its own guard because it also reads MLB's document directly. */
       const outs = src.outs, balls = src.balls, strikes = src.strikes;
+      const retired = outs != null && Number(outs) >= 3;
+      const between = /^(middle|end)/i.test(src.half) || retired;
       return {
         between,
         // a runner between innings is a leftover, never a fact — forced empty, not trusted
@@ -14087,10 +14167,14 @@ export default function Home() {
         const bl = bp.line != null ? Number(bp.line) : (String(bp.side).match(/[\d.]+/) || [])[0];
         return bl == null || a.line == null || Number(bl) === Number(a.line);
       })();
+      // ONE "Our take" ON THE PAGE. The chip row above already carries that label, so the
+      // paragraph under the story repeated it verbatim four inches lower — invisible while
+      // the feed served no takes at all, unmissable now that it does.
+      const angleChip = newsAngle(s.angle);
       const takeHtml = artBlurb
         ? `<div class="art-take">${artBlurb}</div>`
         : takeConfirmed && entitled()
-        ? `<div class="art-take"><span class="art-take-k">◆ Our take</span><p>${mdBold(takeTxt)}</p></div>`
+        ? `<div class="art-take">${angleChip ? "" : `<span class="art-take-k">◆ Our take</span>`}<p>${mdBold(takeTxt)}</p></div>`
         : "";
       /* A MATCHUP HERO SHOWS THE SCORE ONCE THERE IS ONE. "vs" between two crests is the
          right word before first pitch and a dead one after it — the reader has come in
@@ -14099,7 +14183,6 @@ export default function Home() {
       const artMid = artGs && artGs.score && artGs.score.split && artGs.score.home != null
         ? `${num(artGs.score.away, 0)}–${num(artGs.score.home, 0)}`
         : "vs";
-      const angleChip = newsAngle(s.angle);
       // If the mapped game already finished, say — honestly — whether our pick hit.
       const gpick = g ? displayPick(g) : null;
       const gres = g && gameState(g).kind === "final" && gpick && gpick.action === "TAKE" ? pickResult(g, gpick) : null;
@@ -14527,18 +14610,27 @@ export default function Home() {
       const agree = ans.filter((a: any) => a.dir === dir && a.take)
         .sort((x: any, y: any) => ((y.conv != null ? y.conv : 0) - (x.conv != null ? x.conv : 0)));
       const dissenters = ans.filter((a: any) => a.dir && a.dir !== dir);
+      /* THE VOICE IS NAMED BY ITS ROLE HERE, NOT BY ITS CODENAME (see `analystRole`).
+         This is a PICK card — the flagship slide and the top-pick slides — and it carries
+         no roster and no introduction, so "VEGA" beside a quote was an identifier for
+         someone the slide never named. "The Price" is what that voice grades, which is the
+         thing the quote is asking the reader to weigh. The sigil, the accent and the tap
+         target are unchanged: identity is still there to be opened, it is simply no longer
+         spelled in machine. */
       let out = "";
       if (agree[0]) {
         const a = agree[0];
+        const role = analystRole(a);
         out += `<div class="sts-voice an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
-          <span class="sts-voice-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span>
+          <span class="sts-voice-id">${deskGlyph(a.key, 12)}${role ? `<b>${esc(role)}</b>` : ""}</span>
           <p>“${esc(a.take)}”</p>
         </div>`;
       }
       if (dissenters.length === 1 && dissenters[0].take) {
         const d0 = dissenters[0];
+        const role = analystRole(d0);
         out += `<div class="sts-voice dissent an-${esc(d0.key)}" data-an="${esc(d0.key)}" role="button" tabindex="0">
-          <span class="sts-voice-id">${deskGlyph(d0.key, 12)}<b>${esc(d0.name)} disagrees</b></span>
+          <span class="sts-voice-id">${deskGlyph(d0.key, 12)}<b>${role ? `${esc(role)} disagrees` : "One read disagrees"}</b></span>
           <p>“${esc(d0.take)}”</p>
         </div>`;
       }
@@ -15003,7 +15095,14 @@ export default function Home() {
           return `<button class="sts-strow an-${esc(r.key)} ${ledgerCls(r)}${grp.ranked && grp.ordinals && i === 0 ? " lead" : ""}${grp.ranked ? "" : " early"}" data-an="${esc(r.key)}">
             <span class="sts-strank">${grp.ranked ? (grp.ordinals ? ordinal(i) : "◆") : `<i>${ledgerMark(r)}</i>`}</span>
             <span class="sts-stbody">
-              <span class="sts-strow1">${deskGlyph(r.key, 15)}<b class="sts-stnm">${esc(r.name)}</b><span class="sts-strec"><b>${graded ? wlTxt(r) : "—"}</b></span></span>
+              ${/* THE STANDINGS NAME THE ROLE TOO. This row printed "NOVA" and a record and
+                    nothing else — a leaderboard of four identifiers, on a slide whose own
+                    headline ("Four analysts. Not one league table.") never says what any of
+                    them grades. Naming the role makes the ranking legible on its own terms:
+                    "The Arms 223-230-14" is a claim a reader can weigh, "SCOUT 223-230-14"
+                    is a claim about a stranger. The codename survives one tap away on the
+                    analyst card, which is the surface that introduces it. */""}
+              <span class="sts-strow1">${deskGlyph(r.key, 15)}<b class="sts-stnm">${esc(((DESK_CAST[r.key] || {}).title || r.name))}</b><span class="sts-strec"><b>${graded ? wlTxt(r) : "—"}</b></span></span>
               <span class="sts-strow2"><i>${esc(graded ? `${r.n} graded · ${ledgerShort(r)}` : `no graded calls · ${ledgerShort(r)}`)}</i>${r.roi != null ? ledgerRoi(r, "sts-stroi") : ""}${deskL10Dots(r.last10.slice(-5))}</span>
             </span>
           </button>`;
