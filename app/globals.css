@@ -2865,23 +2865,61 @@ details.more .more-body{padding-top:12px}
 .art-navbtn:active{transform:scale(.96)}
 
 /* ══════════ THE STORY POP-UP ══════════
-   Leon: "it should open the story in a pop-up/overlay view with a clear close affordance."
-   It stops 64px short of the top so the deck is visibly still behind it — the single cue
-   that says overlay rather than page — carries a real card rim, and wears a 40px X that
-   never scrolls away (the head is fixed; only .sh-body scrolls). */
+   Leon originally: "it should open the story in a pop-up/overlay view with a clear close
+   affordance", and it became a card that stopped 64px short of the top so the deck stayed
+   visible behind it. Leon, 2026-08-09: "when you click on a news article, let's have it fill
+   up the entire page with an X button when you're done reading, so it takes you back to
+   where you clicked it from."
+
+   SO IT IS A PAGE NOW, NOT A CARD. Full viewport, no rim, no radius, no gap — the peek at
+   the deck behind it was the whole point of the old geometry and is exactly what has been
+   asked for the other way round. On a phone this also buys back the 64px of headroom and
+   the 18px of side gutter, which is real reading width for a column of body copy.
+
+   WHAT DOES NOT CHANGE, AND MUST NOT. Nothing about the RETURN path: this is still the same
+   #sheet-layer, still opened through openArticleSheet and closed through closeDetail, so the
+   tab, the deck's slide and the board's scroll position behind it are preserved exactly as
+   before — body.sheet-open freezes the page with overflow:hidden rather than position:fixed,
+   which is what keeps scrollTop intact, and storyTick already refuses to advance the deck
+   while a sheet is open. Full-screen is a geometry change and nothing else.
+
+   AND IT DOES NOT TOUCH THE PAINT WINDOW. The news deck behind this is the surface that
+   killed the page on iOS by painting 24 slides at once; the three-slide window and the
+   deferred image hydration (storyPaintWindow) live on the deck, not on this sheet, and are
+   untouched. This sheet paints ONE article either way — going full-bleed adds no layers, no
+   filters and no images. The backdrop keeps its blur but now sits under an opaque page, so
+   on the phone it is composited against nothing. */
 .article-bg{background:rgba(6,9,18,.68);-webkit-backdrop-filter:var(--mat-filter);backdrop-filter:var(--mat-filter)}
-.sheet.article-story{width:min(720px,calc(100vw - 18px));max-height:calc(100dvh - 64px - var(--sat));bottom:8px;
-  border-radius:28px;background:linear-gradient(180deg,rgba(13,20,32,.96),rgba(6,9,18,.98));
-  color:#f8fbff;border:1px solid rgba(255,255,255,.13);box-shadow:0 28px 80px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.16)}
+.sheet.article-story{left:0;right:0;top:0;bottom:0;width:100%;max-width:none;
+  max-height:none;height:100dvh;margin:0;border:0;border-radius:0;
+  background:linear-gradient(180deg,rgba(13,20,32,.99),rgba(6,9,18,1) 42%);
+  color:#f8fbff;box-shadow:none}
+/* The grab handle was the sheet's "drag me down" affordance and a full page has no such
+   gesture to advertise — the X is the close, and it is the only close. bindSheetDrag is
+   still wired to it, so the swipe keeps working for anyone who reaches for it; the bar
+   simply stops claiming a card edge that is no longer there. */
+.sheet.article-story .sh-grab{padding:0;height:calc(6px + var(--sat))}
+.sheet.article-story .sh-grab span{display:none}
+/* Above a phone the reader stays a centred column — a 38px line length on a desktop monitor
+   is not a reading experience — but it is still the whole page: the column is centred inside
+   a full-bleed dark field rather than floated as a card on the board. */
+@media(min-width:768px){
+  .sheet.article-story .sh-head{max-width:760px;margin-left:auto;margin-right:auto}
+  .sheet.article-story .sh-body{max-width:760px;margin:0 auto;width:100%}
+}
 .article-story .sh-head{position:relative}
 .article-story .sh-head .close{width:40px;height:40px;font-size:17px;
   background:rgba(6,9,18,.72);border:1px solid rgba(255,255,255,.22);color:#fff;
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .article-story .sh-head .close:hover{background:rgba(20,31,46,.9)}
 .article-story .sh-grab span{background:rgba(255,255,255,.34)}
-.article-story .sh-head{margin:8px 8px 0;padding:12px 12px 16px;border-radius:22px;
-  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.045));
-  color:#f8fbff;border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+/* FULL-BLEED HEAD. The 8px inset and the 22px radius drew the card edge that the sheet no
+   longer has; on a full page they left a hairline gutter down both sides of the hero and a
+   rounded corner floating against nothing. The hero now runs to the viewport edge, which is
+   what "fills up the entire page" looks like at the top of a story. */
+.article-story .sh-head{margin:0;padding:0 0 14px;border-radius:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));
+  color:#f8fbff;border:0;box-shadow:none}
 .article-story .sh-head .close{top:20px;right:20px;z-index:4;border-radius:50%;background:rgba(6,9,18,.6);color:#fff;
   border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .article-story .sh-head .close:hover{background:rgba(255,255,255,.16)}
@@ -2914,7 +2952,10 @@ details.more .more-body{padding-top:12px}
 .article-story .art-body p{font-size:17px;line-height:1.66;color:rgba(235,244,255,.8)}
 .article-story .art-nav{border-top-color:rgba(255,255,255,.12)}
 .article-story .art-navbtn.next{background:linear-gradient(135deg,#f8fbff,#bfe8ff);border-color:transparent;color:#0d1420}
-@media(max-width:520px){.sheet.article-story{width:100vw;bottom:0;border-radius:24px 24px 0 0}.article-story .art-visual{height:168px}.article-story .art-byline{flex-direction:column}.article-story .art-share{align-self:flex-start}}
+/* The phone rule kept the two top corners rounded, which is the last thing still drawing a
+   sheet edge across the top of a full-bleed page. Squared off; the width/bottom it also set
+   are now what the base rule says anyway. */
+@media(max-width:520px){.sheet.article-story{width:100vw;bottom:0;border-radius:0}.article-story .art-visual{height:168px}.article-story .art-byline{flex-direction:column}.article-story .art-share{align-self:flex-start}}
 @media(prefers-reduced-motion:reduce){.article-story .art-visual.is-fallback span{animation:none!important}}
 
 /* Production polish overrides: compact DE calls, story layering, and record widgets. */
@@ -3099,6 +3140,22 @@ details.more .more-body{padding-top:12px}
 .de-mini-pick.dmp-tile .de-mini-ou{gap:2px}
 .de-mini-pick.dmp-tile .de-mini-ou i{font-size:8px;letter-spacing:.07em}
 .de-mini-pick.dmp-tile .de-mini-ou b{font-size:13px}
+/* THE "O/U" LABEL COMES OFF ONCE THE ROW CARRIES A TRAILING STAMP, and this is a fix, not
+   a trim. Both children of this row are `flex:0 0 auto`, so nothing in it can give — and
+   because it is `nowrap` it does not wrap when it runs out of room, it OVERFLOWS, silently,
+   into the tile's right padding, where the tile's `overflow:hidden` is waiting. Measured at
+   375px before this rule, with the seal still at its previous 20px: a tile whose total is
+   two digits and a half — "O/U 10.5" at 48.3px — already ran 2px past the row, and the PUSH
+   stamp (58px, because a push keeps its word where ✓ and ✗ do not need one) ran 5.5px past.
+   Taking the seal to 24px would have made those 6px and 9.5px.
+   `has-seal` is set for ANY trailing stamp, not only a settled one — the live percent chip
+   gets it too — and that is the correct scope rather than an accident of the name: a
+   trailing chip is exactly the condition under which this row is tight, live or final. The
+   label is the right thing to give up in that condition, on the rule this row already
+   follows elsewhere: where a call is present, the number's POSITION says what it is. A tile
+   with no pick keeps its label, because there the number stands alone and needs one.
+   ~14px back, which clears the widest real total and the push stamp together. */
+.de-mini-pick.dmp-tile.has-seal .de-mini-ou i{display:none}
 .de-mini-pick.dmp-tile .de-mini-logo{width:10px;height:10px}
 .de-mini-pick.dmp-tile .de-mini-logo{width:11px;height:11px}
 .de-mini-pick.dmp-tile .de-mini-mark{padding:0;gap:3px;background:none;box-shadow:none}
@@ -3510,8 +3567,14 @@ details.more .more-body{padding-top:12px}
 .de-toast{z-index:900}
 /* the dock is always on screen now, so every scrolling modal body must clear it */
 #sheet-layer .sh-body,#sheet-layer .gp-body{padding-bottom:calc(var(--sab) + 34px)}  /* the bar is hidden under a sheet, so only the safe area needs clearing */
-.sheet.article-story{background:#060912;color:#f8fbff;box-shadow:0 -18px 70px rgba(0,0,0,.55)}
-.sheet.article-story .sh-body{max-height:calc(100dvh - 250px);overflow:auto}
+.sheet.article-story{background:#060912;color:#f8fbff;box-shadow:none}
+/* THE BODY TAKES WHAT IS LEFT, it is not given a guess. `max-height:calc(100dvh - 250px)`
+   was a hand-fitted number for the old floating card, where the sheet sized to its content;
+   the sheet is a fixed-height flex column now, so the body is exactly the page minus the
+   head and can be told to fill it. At the old value a story with the short fallback hero
+   (230px) left a strip of dead page under the scroller, and any change to the hero's height
+   silently moved the seam. flex:1 has no such number in it to go stale. */
+.sheet.article-story .sh-body{flex:1 1 auto;min-height:0;max-height:none;overflow:auto}
 .article-story .art-body p{color:rgba(248,251,255,.88)}
 .article-story .sh-meta,.article-story .art-byline{color:rgba(235,244,255,.78)}
 .article-story .art-mu img,.article-story .art-hero-crest img{background:rgba(255,255,255,.9);border-radius:16px;padding:5px}
@@ -9237,9 +9300,16 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
    the headline arrives after the picture has stopped moving, which is what makes it read as
    ONE object arriving rather than three things animating.
    ════════════════════════════════════════════════════════════════════════════════ */
-.article-story .sh-head{margin:8px 8px 0;padding:0;border-radius:26px;overflow:hidden;
+/* FULL-BLEED (2026-08-09, "fill up the entire page"). This rule is the one that actually
+   won on the head — it is 6,300 lines below the other .article-story .sh-head declaration
+   and re-stated the inset that block had just dropped. The 8px margin and the 26px corner
+   were the card edge; on a full page they left a gutter down both sides of the hero and a
+   rounded corner floating against nothing. Both come off HERE so there is one winning
+   declaration rather than two that disagree.
+   The superellipse @supports goes with them: it existed to soften a corner that no longer
+   exists, and on a square edge it is a no-op that reads as a live rule. */
+.article-story .sh-head{margin:0;padding:0;border-radius:0;overflow:hidden;
   background:linear-gradient(168deg,#141b27,#0a0e18);box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}
-@supports (corner-shape: superellipse(1.8)){.article-story .sh-head{corner-shape:superellipse(1.8)}}
 .art-hero{position:relative;display:flex;flex-direction:column;justify-content:flex-end;
   isolation:isolate;min-height:clamp(230px,42dvh,340px);overflow:hidden}
 /* NO PHOTOGRAPH IS ALSO A DESIGN — the same rule the card follows: the brand field, and the
