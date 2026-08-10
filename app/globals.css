@@ -4594,10 +4594,25 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 
    The STRIPS still span the width; only the sentences inside them are given a measure. It
    is capped in `ch` so the cap tracks the type rather than a pixel guess, and it only
-   applies where there is width to give away — a phone is already at its natural measure. */
+   applies where there is width to give away — a phone is already at its natural measure.
+
+   ═══ AND THE NUMBER WAS 74ch, WHICH IS NOT 74 CHARACTERS (corrected 2026-08-10) ═══
+   `ch` is the advance width of the "0" GLYPH, not of an average character, and in a
+   proportional face those are very different things. Measured in Figtree on the live
+   board: the zero is 8.00px at 12.5px type, while real running prose averages 5.63px a
+   character — the zero is 1.42x the mean. So `max-width:74ch` resolved to 593px, and
+   593px of Figtree holds ~105 characters, not 74.
+
+   That is why this rule looked applied and changed almost nothing: `.stgy-why` was 107
+   characters to the line before it and 105 after — still past the ~90 where the eye
+   starts losing the line return, which is the whole failure this block exists to fix.
+   The cap was measured again by counting characters in the rendered box rather than
+   trusting the unit: 50ch lands `.stgy-why` at ~71 and `.stgy-lead` at ~70, inside the
+   45-75 band. Still expressed in `ch` so it tracks the type size — only the constant is
+   honest now. If the typeface ever changes, re-measure; do not re-derive from the unit. */
 @media(min-width:760px){
   .stgy-lead,.stgy-why,.stgy-exact p,.dp-today-p,.dp-today-w,.dp-today-cav,
-  .lab-today-p,.lab-today-w,.lab-t1,.nss-ctl-x,.rstr-lede,.rstr-note,.rstr-foot{max-width:74ch}
+  .lab-today-p,.lab-today-w,.lab-t1,.nss-ctl-x,.rstr-lede,.rstr-note,.rstr-foot{max-width:50ch}
 }
 /* NO APP CHROME WHILE IMMERSED — the Instagram rule.
    Leon, with an IG story as the explicit reference: "the two instructions on the story are
