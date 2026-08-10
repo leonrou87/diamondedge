@@ -5046,7 +5046,12 @@ body.stories-on #today-view{animation:none!important;transform:none!important}
 .sts-score{font-family:var(--mono);font-weight:700;font-size:30px;color:var(--ink);text-align:center;font-variant-numeric:tabular-nums}
 .sts-callwrap{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .sts-call{font-family:var(--disp);font-weight:800;font-size:44px;line-height:1;letter-spacing:-.03em;color:var(--ink)}
-.sts-call i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:16px;color:var(--ink3);margin-left:10px;letter-spacing:-.02em}
+/* A PRICE IS ONE TOKEN. At 375px the briefing's flagship pick card rendered
+   "▼ UNDER 8.5 -" with "106" alone on the next line — the minus sign is a legal
+   break opportunity to the line-breaker and a lie to a reader, who sees a call
+   ending in a dash. The number never wraps; if the line is too long the CALL
+   above it is what shrinks (see the 380px rule below). */
+.sts-call i{font-style:normal;font-family:var(--mono);font-weight:600;font-size:16px;color:var(--ink3);margin-left:10px;letter-spacing:-.02em;white-space:nowrap}
 .sts-call.ou-over{color:var(--over)}
 .sts-call.ou-under{color:var(--under)}
 @media(max-width:380px){.sts-call{font-size:34px}}

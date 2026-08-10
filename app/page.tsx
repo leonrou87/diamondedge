@@ -1557,17 +1557,14 @@ export default function Home() {
       if (p == null || !isFinite(v)) return null;
       return LIVE_RUNGS.find((r) => v >= r.min) || LIVE_RUNGS[LIVE_RUNGS.length - 1];
     }
-    // The prominent live hit-odds indicator: "68% to cash · trending your way" + a meter
-    // toward the line. size: "tile" (compact, on game boxes) | "full" (detail sheet).
-    function liveCashChip(g: any, pl: any) {
-      const ls = liveStatusOf(g, pl);
-      if (!ls) return "";
-      const meta = LIVE_DIR[ls.dir] || LIVE_DIR.too_close;
-      const prob = ls.prob != null ? `${Math.round(ls.prob * 100)}%` : "Live";
-      return `<div class="tv-livecash dir-${meta.cls}" title="Live chance for the DiamondEdge pick to cash">
-        <span>${esc(prob)} to cash</span><i>${esc(meta.short)}</i>
-      </div>`;
-    }
+    /* (liveCashChip DELETED, 2026-08-10. "68% to cash · trending your way" — a second live
+       percentage for the same bet, from `LIVE_DIR` rather than from the rung, so its word
+       and the tile's could disagree by construction. Its last call site went when the clinch
+       meter took the number inside the cushion pill (`stateChipHtml`), and it has had none
+       since; the note at `gameCard` records the retirement. A renderer with no callers is
+       not inert here — it is a percentage one edit away from being on a card again, and the
+       whole point of the ladder is that a card carries ONE. Deleted rather than left. Same
+       ruling as `strengthChip`, same day.) */
 
     // ===================== LIVE TRACKING READ (honest, from real live fields ONLY) =====================
     // "Is our pick on course to cash?" — computed from live score/inning fields the payload
@@ -4357,59 +4354,17 @@ export default function Home() {
     // be served yet — absent/malformed ⇒ null/[] and every surface degrades to today's
     // layout, byte for byte.
 
-    // ---- ATLAS LIVE: the physicist re-prices the total mid-game ----
-    // Tolerated shapes: live fields riding the atlas analysts row (flat or nested under
-    // .live), a game-level atlas / atlas_live block, or the simulator block itself.
-    function atlasLiveOf(g: any) {
-      if (!g || gameState(g).kind !== "live") return null;
-      const src = Array.isArray(g.analysts) ? g : (v4GameFor(g) || g);
-      const cands: any[] = [];
-      const push = (o: any) => { if (o && typeof o === "object") { cands.push(o); if (o.live && typeof o.live === "object") cands.push(o.live); } };
-      (Array.isArray(src && src.analysts) ? src.analysts : []).forEach((a: any) => { if (a && String(a.key || "").toLowerCase() === "atlas") push(a); });
-      push(src && src.atlas); push(g.atlas); push(src && src.atlas_live); push(g.atlas_live);
-      push((src && src.simulator) || g.simulator);
-      for (const c of cands) {
-        const p = _fin(c.live_p_over);
-        const note = humanNote(c.live_state_note);
-        if (p == null && !note) continue;
-        return { p: p != null ? Math.max(0, Math.min(1, p)) : null, note, asOf: String(c.as_of == null ? "" : c.as_of).trim() };
-      }
-      return null;
-    }
-    const atlasAsOfTxt = (iso: any) => {
-      const t = new Date(String(iso || "")).getTime();
-      return isFinite(t) ? new Date(t).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
-    };
-    // The pulsing live chip: "ATLAS LIVE · 61% over · Top 5th" — the sim's live read on the
-    // total, updating with each refresh. With only a state note it's the honest "watching"
-    // state. It is an observation, never a bet prompt — no side is ever recommended here.
-    function atlasLiveChip(g: any, size = "tile") {
-      const al = atlasLiveOf(g);
-      if (!al) return "";
-      /* NO PERIOD BADGE. This chip used to stamp itself with `gameState(g).label` — the
-         CURRENT half-inning — which was wrong twice over. It duplicated the hero, which sits
-         directly above the chip's only two render sites and already says "BOTTOM 2ND"; and it
-         stamped the current inning onto a note that is not from the current inning, so a read
-         whose own text opens "Top 1st — this state sits outside my certified range" was
-         labelled "Bottom 2nd" beside it. ATLAS's note names the state it is about, in its own
-         words, which is the honest stamp; the as-of stays on the title for anyone hovering. */
-      const upd = atlasAsOfTxt(al.asOf);
-      const glyph = `<span class="atl-g" aria-hidden="true">${deskGlyph("atlas", size === "full" ? 13 : 11)}</span>`;
-      if (al.p == null) {
-        return `<div class="atlive watch atl-${size}" title="ATLAS re-runs the simulation as the game unfolds${upd ? ` · updated ${upd}` : ""}">
-          ${glyph}<b class="atl-k">ATLAS<i class="atl-livew"><em class="atl-dot" aria-hidden="true"></em>LIVE</i></b>
-          <span class="atl-tx">${esc(al.note || "watching the game")}</span>
-        </div>`;
-      }
-      const over = al.p >= 0.5;
-      const pct = Math.round((over ? al.p : 1 - al.p) * 100);
-      return `<div class="atlive atl-${size} ${over ? "ou-o" : "ou-u"}" title="ATLAS's in-game simulation${upd ? ` · updated ${upd}` : ""}">
-        ${glyph}<b class="atl-k">ATLAS<i class="atl-livew"><em class="atl-dot" aria-hidden="true"></em>LIVE</i></b>
-        <span class="atl-p"><b>${pct}%</b> ${over ? "over" : "under"}</span>
-        <span class="atl-meter" aria-hidden="true"><i style="width:${Math.max(4, Math.min(100, al.p * 100)).toFixed(0)}%"></i></span>
-        ${al.note ? `<span class="atl-tx note">${esc(al.note)}</span>` : ""}
-      </div>`;
-    }
+    /* (ATLAS LIVE DELETED, 2026-08-10 — `atlasLiveChip` and the two readers only it used,
+       `atlasLiveOf` and `atlasAsOfTxt`. It printed a SECOND live percentage about the same
+       game — "61% over", the simulator's own in-game re-price — beside the clinch meter's
+       chance-to-cash, two numbers about one total from two models, and nothing said which
+       one to believe. Its render sites went with the committee era (see the note in the
+       game page's live section); it has had none since, and a percentage renderer with no
+       callers is not inert, it is one edit away from being on a card again. Nothing is lost
+       from the served payload — the sim's live block is still published and still read by
+       the surfaces where the SIMULATOR is the subject; what goes is the renderer that put
+       its number beside the bet. Same ruling as `liveCashChip` and `strengthChip`, same
+       day: a card carries ONE percent.) */
 
     // ---- NIGHTLY DESK RECAP (record.desk_recap + record.desk_recaps[]) ----
     const wlParse = (r: any) => {
