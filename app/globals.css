@@ -3289,7 +3289,13 @@ details.more .more-body{padding-top:12px}
    follows elsewhere: where a call is present, the number's POSITION says what it is. A tile
    with no pick keeps its label, because there the number stands alone and needs one.
    ~14px back, which clears the widest real total and the push stamp together. */
-.de-mini-pick.dmp-tile.has-seal .de-mini-ou i{display:none}
+/* THE LABEL STAYS ON A SEALED TILE TOO (Leon, twice now). The rule that used to live here
+   hid "O/U" on any tile carrying a result stamp, to buy ~14px on a tight row. That is the
+   same trade already reversed once, made again for a narrower case — and it produces the
+   same defect: a finished card reading a bare "9.5" beside a card reading "O/U 9", which
+   reads as two different quantities. The row is nowrap with a designated yielder; if it is
+   genuinely tight with a seal present, something else gives, not the word that says what
+   the number IS. */
 .de-mini-pick.dmp-tile .de-mini-logo{width:10px;height:10px}
 .de-mini-pick.dmp-tile .de-mini-logo{width:11px;height:11px}
 .de-mini-pick.dmp-tile .de-mini-mark{padding:0;gap:3px;background:none;box-shadow:none}
