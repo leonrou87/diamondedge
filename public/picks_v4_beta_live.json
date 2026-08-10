@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T03:51:59Z",
+  "generated_utc": "2026-08-10T04:26:09Z",
   "dates": [
     "2026-08-09"
   ],
@@ -994,7 +994,7 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-08-10T02:39:42Z",
+    "record_generated_utc": "2026-08-10T04:26:07Z",
     "backfill": {
       "n_rows": 153,
       "sources": {
@@ -1018,13 +1018,13 @@
       "coverage_gap": "2026-06-11 .. 2026-07-01 NOT reconstructable (game DB frozen 2026-06-13; forward track began 2026-07-02) \u2014 absent, not interpolated"
     },
     "slate_status": {
-      "date": "2026-08-09",
-      "available": true,
-      "frozen_at": "2026-08-09T12:11:20.877305+00:00",
-      "n_slate": 15,
-      "n_tier_a": 3,
-      "n_tier_b": 1,
-      "n_plays_today": 4,
+      "date": "2026-08-10",
+      "available": false,
+      "frozen_at": null,
+      "n_slate": null,
+      "n_tier_a": null,
+      "n_tier_b": null,
+      "n_plays_today": 0,
       "n_suppressed_by_champion_gates": 0,
       "note": "0 plays = the champion's own frozen policy found no qualifying totals divergence today (or its internal gates suppressed the candidates) \u2014 an empty board is honest, not broken"
     },
@@ -2397,7 +2397,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 10,
         "champion_unsettled": 0,
-        "checked_at_utc": "2026-08-10T02:39:39Z"
+        "checked_at_utc": "2026-08-10T04:26:07Z"
       },
       "2026-08-07": {
         "final_games": 15,
@@ -2410,7 +2410,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 12,
         "champion_unsettled": 1,
-        "checked_at_utc": "2026-08-10T02:39:24Z"
+        "checked_at_utc": "2026-08-10T04:25:52Z"
       },
       "2026-08-08": {
         "final_games": 15,
@@ -2423,7 +2423,7 @@
         "champion_disagree": 0,
         "champion_not_covered": 12,
         "champion_unsettled": 1,
-        "checked_at_utc": "2026-08-10T02:39:09Z"
+        "checked_at_utc": "2026-08-10T04:25:38Z"
       }
     },
     "totals": {
