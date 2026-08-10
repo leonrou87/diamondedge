@@ -2944,10 +2944,20 @@ details.more .more-body{padding-top:12px}
 .article-story .art-visual img{width:100%;height:100%;object-fit:cover;filter:saturate(1.05) contrast(1.03)}
 .article-story .art-visual.is-fallback img{opacity:0}
 .article-story .art-visual.is-fallback span{font-size:54px;color:var(--goldbright);text-shadow:0 0 22px rgba(var(--goldbrightc),.4);animation:briefingPulse 2.8s ease-in-out infinite}
-.article-story .art-vs{grid-template-columns:1fr auto 1fr;gap:18px;padding:0 34px}
-.article-story .art-vs span{position:relative;z-index:2;font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:rgba(235,244,255,.66)}
+/* ── THE LEGACY .art-vs BLOCK, RETARGETED (2026-08-09) ──────────────────────────
+   `.article-story .art-vs span` was written when `.art-vs` WAS the crest row. It is a
+   modifier on the whole hero now, so that rule caught every <span> inside it — including
+   the headline and the standfirst, which came out in tracked 13px UPPERCASE the moment a
+   story resolved to a game. Nobody saw it because the news feed had stopped attaching a
+   game to anything (angle was null on all nine items); the moment the angle index was
+   fixed upstream, every imageless story hit it. The crest row is `.art-hero-crests`,
+   which carries its own grid and its own label rule further down, so this goes.
+   The crest selectors were wrong in the same way: crestImg() puts the class on the <img>
+   ITSELF, so `.art-hero-crest img` matched nothing — the hero crests rendered at their
+   26px width attribute with no white pad, i.e. a navy Yankees mark on a navy field. */
 .article-story .art-hero-crest{position:relative;z-index:2;justify-self:center}
-.article-story .art-hero-crest img,.article-story .art-hero-crest.crest{width:74px;height:74px;object-fit:contain;filter:drop-shadow(0 12px 24px rgba(0,0,0,.35))}
+.article-story img.art-hero-crest,.article-story .art-hero-crest.crest{width:74px;height:74px;object-fit:contain;filter:drop-shadow(0 12px 24px rgba(0,0,0,.35))}
+.article-story img.art-hero-crest{background:rgba(255,255,255,.92);border-radius:20px;padding:7px}
 .article-story .art-hero-crest.crest{display:grid;place-items:center;border-radius:22px;background:rgba(255,255,255,.1);color:#fff;font-family:var(--disp);font-weight:800}
 .article-story .sh-sport{color:#7ddcff}
 .article-story .art-title{font-family:var(--disp);font-size:clamp(25px,6vw,38px);line-height:1.02;letter-spacing:0;color:#fff;text-shadow:0 14px 34px rgba(0,0,0,.38)}
@@ -9398,12 +9408,14 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
 @keyframes artHeroSettle{from{transform:scale(1.05)}to{transform:none}}
 /* (.art-hero-mark retired with the empty fallback frame it decorated — see art-type above.
    A watermark inside a 300px void is not a design; the void was the problem.) */
-.art-hero-crests{position:absolute;left:0;right:0;top:8%;z-index:0;
+/* clear of the close button and the safe area — the crests are the picture here, not a
+   decoration tucked under the bezel */
+.art-hero-crests{position:absolute;left:0;right:0;top:calc(13% + var(--sat,0px));z-index:0;
   display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:0 34px}
 .art-hero-crests em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:13px;
   letter-spacing:.16em;text-transform:uppercase;color:rgba(235,244,255,.6);text-align:center}
 .article-story .art-hero-crest{justify-self:center}
-.article-story .art-hero-crest img,.article-story .art-hero-crest.crest{width:82px;height:82px;
+.article-story img.art-hero-crest,.article-story .art-hero-crest.crest{width:82px;height:82px;
   object-fit:contain;filter:drop-shadow(0 12px 24px rgba(0,0,0,.35))}
 .article-story .art-hero-crest.crest{display:grid;place-items:center;border-radius:24px;
   background:rgba(255,255,255,.1);color:#fff;font-family:var(--disp);font-weight:800}
