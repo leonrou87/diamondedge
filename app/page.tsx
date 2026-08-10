@@ -998,7 +998,13 @@ export default function Home() {
       return sa && sa.status === "SUGGEST" ? sa : null;
     };
     const saPct = (p: any, d = 0) => (p == null || isNaN(Number(p)) ? "—" : (Number(p) * 100).toFixed(d) + "%");
-    const saRecStr = (sa: any) => (sa && sa.record_3yr) || "64.1% / 61.7% / 60.2% (2024/2025/2026)";
+    // NEVER FABRICATE A RECORD. This used to fall back to a hardcoded "64.1% / 61.7% /
+    // 60.2% (2024/2025/2026)" — an invented, uncheckable three-year win rate, the same
+    // class of literal the 2026-08-09 scrub tore out of the sell (the "58.1% / 886" one).
+    // It only ever hid here because the suggested_action fallback play is dormant on the
+    // live board. When the backend does not carry record_3yr there is no record to state,
+    // so the claim is dropped (see saWhy) rather than conjured.
+    const saRecStr = (sa: any) => (sa && sa.record_3yr) || null;
 
     // ===================== V3 RECONCILED SURFACES (shadow, additive) =====================
     // The backend serves a per-game `g.v3` block (MLB only today; absent elsewhere). It carries
@@ -1127,7 +1133,8 @@ export default function Home() {
         w.push(`Model has ${sa.side} covering ${saPct(sa.model_p_cover, 1)} of the time vs the market's implied ${saPct(sa.market_p_cover, 1)}.`);
       const p = sa.p_correct != null ? sa.p_correct : sa.meta_p;
       if (p != null) w.push(`The model gives this side a ${saPct(p, 0)} chance to win.`);
-      if (sa.price != null) w.push(`Picks like this have won ${saRecStr(sa)} the last three years — enough to stay ahead at these prices.`);
+      const rec3 = saRecStr(sa);
+      if (sa.price != null && rec3) w.push(`Picks like this have won ${rec3} the last three years — enough to stay ahead at these prices.`);
       if (sa.n_books) w.push(`Priced across ${sa.n_books} sportsbook${sa.n_books > 1 ? "s" : ""}.`);
       return w;
     }
