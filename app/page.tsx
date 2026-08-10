@@ -572,6 +572,31 @@ export default function Home() {
       // a graded or in-progress game is never pending, whatever anything else says
       const st = String(g.status || "").toLowerCase();
       if (st === "final" || st === "live") return false;
+      /* ═══ AN UNREAD STORE IS NOT A VERDICT (2026-08-09) ═══
+         Every test below reads the PICK FEEDS — `pick.status`, `desk_status`, and
+         datePicksPending(), which walks `betaLiveData.games`. Before those feeds land they
+         are all null, so every test answered "not pending", and a surface that asked "have
+         we picked this game?" was told "no" when the truthful answer was "we have not looked
+         at the answer yet". `false` here is not neutral: it is what routes the game page to
+         its PASS branch, which prints a priced, confident verdict.
+
+         MEASURED, 2026-08-09, game 823268 (HOU @ SD, a 3-star UNDER 9 in picks_unified_live):
+         ~4s after a cold load of /?g=823268 the DiamondEdge Pick slot read "We priced every
+         market — SD +1.5, O/U 8.5, HOU -110 — and none of them beat our number. The pass is
+         the pick." A fabricated no-bet call, quoting a total we did not take (8.5 against our
+         own 9), on a game we had a three-star play on — then it flipped to UNDER 9 once the
+         feed arrived. Reproduced on both a free and a premium load.
+
+         The board game's own fields cannot save it: this fixture is served with `pick: null`,
+         `plays: []`, `status: "pre"` (the live-score overlay rewrote "upcoming"), no
+         `desk_status`, and a `start` of "8:20 PM ET" — a display string, not a timestamp — so
+         isFutureGame() is date-only and today's game reads false too. Every escape hatch the
+         comment below describes depends on data that has not arrived.
+
+         So the honest state is asserted FIRST: if neither pick feed has been read, the picks
+         are pending, because we genuinely do not know. It costs a sub-second "picks are
+         still being published" on a true pass and it makes the false pass impossible. */
+      if (!betaLiveData && !betaData) return true;
       /* THE SIGNAL IS ON THE PICK, and that is the one place nothing in the render path
          rewrites. The GAME's `status` is overwritten from "upcoming" to "pre" by the
          live-score overlay the moment a snapshot mentions the fixture, and the copy the game
@@ -8261,7 +8286,24 @@ export default function Home() {
       if (!b) return a;
       const older = feedStampMs(betaData) >= feedStampMs(betaLiveData) ? b : a;
       const newer = older === a ? b : a;
-      return { ...older, ...newer };
+      /* `daily` IS MERGED PER DATE, NOT WON PER KEY (2026-08-09).
+         Every other key here is a whole answer, so newest-wins is right for them. `daily` is
+         not one answer — it is a MAP OF DAYS, and the two feeds carry different windows of
+         it: picks_unified holds the full history, picks_unified_live only the recent slate.
+         A spread takes the newer feed's map WHOLE, so the short window would silently replace
+         the long one. Measured on the live feeds, 2026-08-09: by_date_record carries 86 dates
+         and the per-date merge keeps all 86, while a wholesale key win yields 28 — a curve and
+         a calendar quietly two months shorter, with no error anywhere.
+         dayRecordMap() already merges per date via recordSourcesOldestFirst(), which is why
+         nothing on screen was wrong. But that left `recordRoot().daily` as a loaded gun for
+         the next reader, and this file's own history is a catalogue of that exact mistake. */
+      const dailyMap = (d: any) => (Array.isArray(d)
+        ? d.reduce((m: any, r: any) => { const k = String((r && r.date) || "").slice(0, 10); if (k) m[k] = r; return m; }, {})
+        : d && typeof d === "object" ? d : null);
+      const oldDaily = dailyMap(older.daily), newDaily = dailyMap(newer.daily);
+      const merged: any = { ...older, ...newer };
+      if (oldDaily && newDaily) merged.daily = { ...oldDaily, ...newDaily };
+      return merged;
     }
     /* Both feeds' record blocks, oldest first — so a per-key merge downstream ends with the
        newest answer. Either may be absent; order is by the feed's own generated_utc. */
@@ -12460,8 +12502,26 @@ export default function Home() {
         </div>
         <div class="stgyrec-order">Listed with the official product first, then the active research tracks.</div>
         <div class="stgyrec-list">${rows.map(strategyCard).join("")}</div>
-        <button class="sb-more" id="sb-more" aria-haspopup="dialog">See every graded pick by strength →</button>
       </div>`;
+      /* THE BUTTON THAT PROMISED A PAGE NOBODY BUILT ANY MORE (2026-08-09).
+         This section ended with `<button id="sb-more">See every graded pick by strength →</button>`,
+         and it opened `tierPicksList()` — deleted in the dead-symbol sweep as an unreachable
+         second renderer. The HANDLER went with it. THE BUTTON DID NOT. It rendered on
+         Research, in the reader's tab order, with a caret and an `aria-haspopup="dialog"`
+         promising a dialog, and clicking it did nothing at all: measured on 2026-08-09,
+         #sheet-layer 31,556 bytes before the click and 31,556 bytes after.
+
+         The dead-click-target guard could not see it. That guard catches a HANDLER with no
+         button; this is a BUTTON with no handler, which is the shape a consolidation
+         produces — you delete a destination, its handler goes, and the markup that pointed
+         at it is three thousand lines away. Note the guard's own doc comment above already
+         names `#sb-more` as "removed"; it was half-removed, and the half that a reader can
+         click is the half that stayed. scripts/dead_surface_check.mjs now fails on this
+         direction too, so the next one cannot ship.
+
+         It is DELETED rather than re-pointed: the by-strength cut it promised is
+         strengthTable(), which renders on THIS page, and "every graded pick" is the Desk
+         archive. Both are already reachable; the button only offered a third door. */
     }
     // ── PAST PICKS (Leon, 2026-07-25): a browsable day-by-day archive on Insights —
     // most recent first, each day's picks with side/line/stars + W/L/P chips + the
@@ -14329,8 +14389,14 @@ export default function Home() {
     function renderSubscribe() {
       const view = $("account-view");
       if (!view) return;
-      const rh = recipeHistory();
-      const fwd = forwardRecord();
+      /* `const rh = recipeHistory()` and `const fwd = forwardRecord()` used to sit here.
+         They were the checkout screen's OWN reads of the record — recipeHistory() is the
+         in-sample backtest ("58.1% across 886 graded picks since 2022"), the very figure
+         deleted from this screen and from the share card for being a number no record
+         surface could produce. The sell now quotes headlineRecordBlock() like everywhere
+         else, so both calls were left computing a second record that nothing rendered.
+         Dead reads of a rival source are how a rival source comes back: the next edit that
+         wants a number finds one already in scope. Deleted, so there is nothing to find. */
       const perk = (t: string, s: string) => `<div class="up-perk"><span class="pk-ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><b>${t}</b><span>${s}</span></div></div>`;
       const method = (id: string, label: string, mark: string) =>
         `<button class="pay-m ${payMethod === id ? "on" : ""}" data-pm="${id}"><span class="pm-mark">${mark}</span><span class="pm-l">${esc(label)}</span><span class="pm-r" aria-hidden="true"></span></button>`;

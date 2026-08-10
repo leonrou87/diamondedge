@@ -43,4 +43,38 @@ curl -s -o /dev/null --max-time 6 \
   -H "x-revalidate-secret: $SNAP_REVALIDATE_SECRET" \
   --data-binary "$BODY" 2>/dev/null || true
 
+# ── AND THEN BE THE FIRST READER, so nobody else finds the cache empty ───────
+# Invalidating alone is only half the job, and the missing half is the expensive
+# one. None of these cache layers COALESCE concurrent misses: measured
+# 2026-08-09, fifty simultaneous requests against a cold entry cost up to 59
+# Supabase reads, and an earlier pass measured 200 concurrent CDN misses costing
+# 192. So "empty the cache and walk away" converts a steady drip into a spike,
+# ~150 times a day, and at 10,000 users the spike is worse than the TTL it
+# replaced.
+#
+# One request per shape, issued now — while nobody is looking — fills the
+# region-shared cache so every reader that follows hits it warm. The herd never
+# forms because nothing cold is left for it to form around. Both shapes, because
+# the board reads the `lite` projection and a cache warm only for the shape
+# nobody asks for is not warm.
+#
+# Entirely best-effort: the payload is already published and the safety-net
+# revalidates already make the plain invalidate correct on its own.
+BASE="${ENDPOINT%/api/*}"
+MF=$(curl -s --max-time 6 "$BASE/api/manifest" 2>/dev/null || true)
+for k in "$@"; do
+  V=$(printf '%s' "$MF" | python3 -c '
+import json,sys,urllib.parse
+try:
+    v=(json.load(sys.stdin).get("v") or {}).get(sys.argv[1])
+    print(urllib.parse.quote(v) if v else "")
+except Exception:
+    print("")' "$k" 2>/dev/null || true)
+  [ -n "$V" ] || continue
+  curl -s -o /dev/null --max-time 20 -H "Accept-Encoding: gzip, br" \
+    "$BASE/api/snap/$k?cv=$V" 2>/dev/null || true
+  curl -s -o /dev/null --max-time 20 -H "Accept-Encoding: gzip, br" \
+    "$BASE/api/snap/$k?lite=1&cv=$V" 2>/dev/null || true
+done
+
 exit 0

@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-09T23:21:04Z",
+  "generated_utc": "2026-08-09T23:53:44Z",
   "dates": [
     "2026-08-09"
   ],
@@ -3210,17 +3210,17 @@
   },
   "board_census": {
     "n_games": 15,
-    "n_rows": 65,
+    "n_rows": 66,
     "n_voided": 0,
     "n_playable": 1,
     "n_takes": 1,
-    "n_passes": 64,
+    "n_passes": 65,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 1,
       "2": 0,
-      "1": 64
+      "1": 65
     }
   },
   "spread_stream": {
@@ -3636,16 +3636,16 @@
         "line": 1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": -190,
+        "price": -179,
         "best_book": null,
         "stars": 1,
-        "score": 0.24,
-        "our_prob": 0.3576,
-        "ev": -0.0195,
+        "score": 0.83,
+        "our_prob": 0.3599,
+        "ev": -0.0024,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -4273,22 +4273,22 @@
         "side": "under",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.4876,
-        "p_over_market": 0.5005,
-        "sim_edge": -0.0129,
-        "price": 105.0,
+        "p_over": 0.4758,
+        "p_over_market": 0.5,
+        "sim_edge": -0.0242,
+        "price": -105.0,
         "best_book": "williamhill_us",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.357,
+        "sim_mu": 9.302,
         "sim_median": 9,
-        "sim_sd": 4.495,
+        "sim_sd": 4.539,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -4301,7 +4301,8 @@
         "walls_priced": [
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "823104": {
@@ -5042,11 +5043,11 @@
         "side": "under",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.4992,
-        "p_over_market": 0.5005,
-        "scout_edge": -0.0014,
-        "conviction": 0.5008,
-        "price": 105.0,
+        "p_over": 0.4968,
+        "p_over_market": 0.5,
+        "scout_edge": -0.0032,
+        "conviction": 0.5032,
+        "price": -105.0,
         "best_book": "williamhill_us",
         "stars": null,
         "score": null,
@@ -5060,12 +5061,12 @@
           "pen_home_era_std": 2.9448,
           "pen_away_era_std": 3.4605,
           "enr_park_run_factor_3y": 0.9169,
-          "wx_temp_f": 80.24
+          "wx_temp_f": 78.8
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -5078,7 +5079,8 @@
         "walls_priced": [
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "823104": {
@@ -9169,7 +9171,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -9288,6 +9291,45 @@
           "pick_side": null,
           "informational_lean": "under",
           "pass_reason": "model 50.6% >= break-even 48.8% at 105 \u2014 edge below +EV min",
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "per_side_price": -105,
+          "our_prob": 0.4908,
+          "our_prob_basis": "reference_side",
+          "p_over": 0.4908,
+          "p_breakeven": 0.5122,
+          "ev": -0.0058,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "score": 0.51,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 9.0
+          },
+          "take": false,
+          "result": null,
+          "edge": -0.0032,
+          "expanded_band": false,
+          "certified": false,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "williamhill_us",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "informational_lean": "under",
+          "pass_reason": "model 49.1% < break-even 51.2% at -105 \u2014 priced out (-EV)",
           "pass_why": "ev_gate"
         }
       ],

@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-09T23:26:25Z",
+  "generated_utc": "2026-08-09T23:59:06Z",
   "dates": [
     "2026-08-09"
   ],
@@ -2224,24 +2224,24 @@
       "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "n": 173,
+      "n": 174,
       "win": 86,
-      "loss": 77,
+      "loss": 78,
       "push": 10,
-      "record": "86-77-10",
-      "decided": 163,
-      "hit_rate": 0.5276,
-      "units": 7.238,
+      "record": "86-78-10",
+      "decided": 164,
+      "hit_rate": 0.5244,
+      "units": 6.238,
       "units_weighted": {
-        "units": 16.306,
-        "staked": 300.0,
-        "roi": 0.0544,
+        "units": 15.306,
+        "staked": 301.0,
+        "roi": 0.0509,
         "n_offladder_flat_1u": 0
       },
-      "roi": 0.0444,
+      "roi": 0.038,
       "hit_rate_ci": [
-        0.4775,
-        0.5772
+        0.4744,
+        0.5739
       ],
       "hit_rate_ci_level": 0.8,
       "n_days": 28,
@@ -2262,14 +2262,14 @@
         },
         {
           "month": "2026-08",
-          "n": 59,
+          "n": 60,
           "win": 27,
-          "loss": 25,
+          "loss": 26,
           "push": 7,
-          "record": "27-25-7",
-          "hit_rate": 0.5192,
-          "units": 0.708,
-          "roi": 0.0136
+          "record": "27-26-7",
+          "hit_rate": 0.5094,
+          "units": -0.292,
+          "roi": -0.0055
         }
       ],
       "by_engine": {
@@ -2349,24 +2349,24 @@
           "through": "2026-08-08"
         },
         "nightly_engine": {
-          "n": 18,
+          "n": 19,
           "win": 9,
-          "loss": 7,
+          "loss": 8,
           "push": 2,
-          "record": "9-7-2",
-          "decided": 16,
-          "hit_rate": 0.5625,
-          "units": 1.339,
+          "record": "9-8-2",
+          "decided": 17,
+          "hit_rate": 0.5294,
+          "units": 0.339,
           "units_weighted": {
-            "units": 1.412,
-            "staked": 13.0,
-            "roi": 0.1086,
+            "units": 0.412,
+            "staked": 14.0,
+            "roi": 0.0295,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.0837,
+          "roi": 0.0199,
           "hit_rate_ci": [
-            0.4052,
-            0.7082
+            0.3786,
+            0.675
           ],
           "hit_rate_ci_level": 0.8,
           "n_days": 2,
@@ -3617,14 +3617,14 @@
       },
       {
         "date": "2026-08-09",
-        "n": 11,
+        "n": 12,
         "win": 6,
-        "loss": 4,
+        "loss": 5,
         "push": 1,
-        "record": "6-4-1",
-        "hit_rate": 0.6,
-        "units": 1.486,
-        "roi": 0.1486,
+        "record": "6-5-1",
+        "hit_rate": 0.5455,
+        "units": 0.486,
+        "roi": 0.0442,
         "strategy": {
           "rule_key": "forge:w17:46ca506354",
           "label": "The rule that won the search",
@@ -3761,24 +3761,24 @@
         }
       },
       "untiered": {
-        "n": 170,
+        "n": 171,
         "win": 84,
-        "loss": 76,
+        "loss": 77,
         "push": 10,
-        "record": "84-76-10",
-        "decided": 160,
-        "hit_rate": 0.525,
-        "units": 6.333,
+        "record": "84-77-10",
+        "decided": 161,
+        "hit_rate": 0.5217,
+        "units": 5.333,
         "units_weighted": {
-          "units": 15.401,
-          "staked": 297.0,
-          "roi": 0.0519,
+          "units": 14.401,
+          "staked": 298.0,
+          "roi": 0.0483,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0396,
+        "roi": 0.0331,
         "hit_rate_ci": [
-          0.4744,
-          0.5751
+          0.4713,
+          0.5717
         ],
         "hit_rate_ci_level": 0.8,
         "n_days": 28,
@@ -3787,9 +3787,9 @@
         "label": "No committee vote on record",
         "why": "desk-sourced and legacy picks carry no vote split, so they carry no tier. They count in record.headline exactly like every other pick."
       },
-      "n_headline": 173,
+      "n_headline": 174,
       "n_tiered": 3,
-      "n_untiered": 170,
+      "n_untiered": 171,
       "sums_to_headline": true,
       "rail": "strong + standard + lean + untiered == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "engine_shadow_ledger": {
@@ -3825,12 +3825,12 @@
           },
           "lean": {
             "win": 17,
-            "loss": 21,
+            "loss": 22,
             "push": 4,
-            "n": 42,
-            "record": "17-21-4",
-            "units_flat_-110": -5.545,
-            "hit_rate": 0.4474,
+            "n": 43,
+            "record": "17-22-4",
+            "units_flat_-110": -6.545,
+            "hit_rate": 0.4359,
             "label": "Lean",
             "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
             "rank": 1
@@ -3847,8 +3847,8 @@
           "why": "rows written before the vote counts existed on the board; they count in `record` and are never given a tier they cannot support"
         },
         "sums_to_record": true,
-        "n_graded_total": 59,
-        "n_tiered": 59,
+        "n_graded_total": 60,
+        "n_tiered": 60,
         "n_untiered": 0,
         "thresholds": {
           "policy_version": "pick_strength_v1",
@@ -4057,26 +4057,26 @@
           ],
           "label": "40-49",
           "is_high_band": false,
-          "n": 11,
+          "n": 12,
           "win": 6,
-          "loss": 4,
+          "loss": 5,
           "push": 1,
-          "record": "6-4-1",
-          "decided": 10,
-          "hit_rate": 0.6,
+          "record": "6-5-1",
+          "decided": 11,
+          "hit_rate": 0.5455,
           "hit_rate_ci": [
-            0.3127,
-            0.8318
+            0.2801,
+            0.7873
           ],
           "hit_rate_ci_level": 0.95,
-          "units": 1.486,
+          "units": 0.486,
           "units_weighted": {
-            "units": 1.486,
-            "staked": 10.0,
-            "roi": 0.1486,
+            "units": 0.486,
+            "staked": 11.0,
+            "roi": 0.0442,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.1486,
+          "roi": 0.0442,
           "n_days": 1,
           "first": "2026-08-09",
           "through": "2026-08-09"
@@ -4265,27 +4265,27 @@
         "through": "2026-08-07"
       },
       "below_high_band": {
-        "n": 20,
+        "n": 21,
         "win": 10,
-        "loss": 8,
+        "loss": 9,
         "push": 2,
-        "record": "10-8-2",
-        "decided": 18,
-        "hit_rate": 0.5556,
+        "record": "10-9-2",
+        "decided": 19,
+        "hit_rate": 0.5263,
         "hit_rate_ci": [
-          0.3372,
-          0.7544
+          0.3171,
+          0.7267
         ],
         "hit_rate_ci_level": 0.95,
         "label": "under 90",
-        "units": 1.291,
+        "units": 0.291,
         "units_weighted": {
-          "units": 1.365,
-          "staked": 15.0,
-          "roi": 0.091,
+          "units": 0.365,
+          "staked": 16.0,
+          "roi": 0.0228,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0717,
+        "roi": 0.0153,
         "n_days": 3,
         "first": "2026-08-07",
         "through": "2026-08-09"
@@ -4293,13 +4293,13 @@
       "verdict": {
         "high_band_min": 90,
         "n_decided_high": 1,
-        "n_decided_rest": 18,
+        "n_decided_rest": 19,
         "hit_rate_high": 1.0,
-        "hit_rate_rest": 0.5556,
-        "difference": 0.4444,
+        "hit_rate_rest": 0.5263,
+        "difference": 0.4737,
         "difference_ci": [
-          -0.3736,
-          0.6628
+          -0.3447,
+          0.6829
         ],
         "difference_ci_level": 0.95,
         "p_value": 1.0,
@@ -4308,7 +4308,7 @@
         "distinguishable_from_noise": false,
         "status": "open_question",
         "is_a_finding": false,
-        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 18 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.374 to +0.663 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 19 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.345 to +0.683 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
         "n_needed_per_arm_for_observed_gap": null,
         "n_needed_per_arm_for_meaningful_gap": 392,
         "meaningful_gap": [
@@ -4345,13 +4345,13 @@
         "first": "2026-07-02",
         "through": "2026-08-08"
       },
-      "n_total": 173,
-      "n_scored": 21,
+      "n_total": 174,
+      "n_scored": 22,
       "n_unscored": 152,
       "sums_to_total": true,
       "rail": "every decile + unscored == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "headline_is_the_record": true,
-      "n_headline": 173,
+      "n_headline": 174,
       "sums_to_headline": true,
       "history_limit": {
         "reconstructible_from": "2026-08-03",
@@ -4478,19 +4478,19 @@
             ],
             "label": "50-59",
             "is_high_band": false,
-            "n": 19,
+            "n": 20,
             "win": 7,
-            "loss": 10,
+            "loss": 11,
             "push": 2,
-            "record": "7-10-2",
-            "decided": 17,
-            "hit_rate": 0.4118,
+            "record": "7-11-2",
+            "decided": 18,
+            "hit_rate": 0.3889,
             "hit_rate_ci": [
-              0.2161,
-              0.6399
+              0.2031,
+              0.6138
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -3.636
+            "units_flat_-110": -4.636
           },
           {
             "band": [
@@ -4595,41 +4595,41 @@
           "units_flat_-110": 0.636
         },
         "below_high_band": {
-          "n": 52,
+          "n": 53,
           "win": 23,
-          "loss": 25,
+          "loss": 26,
           "push": 4,
-          "record": "23-25-4",
-          "decided": 48,
-          "hit_rate": 0.4792,
+          "record": "23-26-4",
+          "decided": 49,
+          "hit_rate": 0.4694,
           "hit_rate_ci": [
-            0.3447,
-            0.6167
+            0.337,
+            0.6062
           ],
           "hit_rate_ci_level": 0.95,
           "label": "under 90",
-          "units_flat_-110": -4.091
+          "units_flat_-110": -5.091
         },
         "verdict": {
           "high_band_min": 90,
           "n_decided_high": 7,
-          "n_decided_rest": 48,
+          "n_decided_rest": 49,
           "hit_rate_high": 0.5714,
-          "hit_rate_rest": 0.4792,
-          "difference": 0.0923,
+          "hit_rate_rest": 0.4694,
+          "difference": 0.102,
           "difference_ci": [
-            -0.2569,
-            0.3942
+            -0.2468,
+            0.4031
           ],
           "difference_ci_level": 0.95,
-          "p_value": 0.704873,
+          "p_value": 0.700446,
           "test": "Fisher's exact test, two-sided, on the decided picks (W/L; pushes decided nothing and are excluded from the test)",
           "alpha": 0.05,
           "distinguishable_from_noise": false,
           "status": "open_question",
           "is_a_finding": false,
-          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 48 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.704873), and the interval on the gap runs from -0.257 to +0.394 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
-          "n_needed_per_arm_for_observed_gap": 459,
+          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 49 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.700446), and the interval on the gap runs from -0.247 to +0.403 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+          "n_needed_per_arm_for_observed_gap": 376,
           "n_needed_per_arm_for_meaningful_gap": 392,
           "meaningful_gap": [
             0.55,
@@ -4714,11 +4714,11 @@
         },
         "basis": "committee_vote",
         "basis_note": "every row here is scored from the committee vote the board froze before first pitch. No engine pick is scored any other way, so the cut is one kind of evidence throughout \u2014 the two bases `pick_confidence` defines are never mixed inside one table.",
-        "n_total": 59,
-        "n_scored": 59,
+        "n_total": 60,
+        "n_scored": 60,
         "n_unscored": 0,
         "sums_to_total": true,
-        "n_graded_total": 59
+        "n_graded_total": 60
       }
     },
     "streaks": {
@@ -4730,17 +4730,17 @@
         },
         "best_win_streak": 8,
         "best_loss_streak": 8,
-        "n_decided": 163
+        "n_decided": 164
       },
       "by_analyst": {
         "vega": {
           "current": {
             "type": "loss",
-            "length": 2
+            "length": 3
           },
           "best_win_streak": 9,
           "best_loss_streak": 13,
-          "n_decided": 452
+          "n_decided": 453
         },
         "atlas": {
           "current": {
@@ -4749,25 +4749,25 @@
           },
           "best_win_streak": 8,
           "best_loss_streak": 11,
-          "n_decided": 452
+          "n_decided": 453
         },
         "nova": {
           "current": {
             "type": "win",
-            "length": 2
+            "length": 3
           },
           "best_win_streak": 9,
           "best_loss_streak": 10,
-          "n_decided": 452
+          "n_decided": 453
         },
         "scout": {
           "current": {
             "type": "win",
-            "length": 5
+            "length": 6
           },
           "best_win_streak": 7,
           "best_loss_streak": 10,
-          "n_decided": 452
+          "n_decided": 453
         }
       },
       "analyst_order": [
@@ -6088,29 +6088,29 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 466,
+          "n": 467,
           "win": 222,
-          "loss": 230,
+          "loss": 231,
           "push": 14,
-          "hit_rate": 0.4912,
-          "decided": 452,
+          "hit_rate": 0.4901,
+          "decided": 453,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4453,
-            0.5371
+            0.4443,
+            0.536
           ],
-          "last10": "L-L-W-W-L-P-W-W-L-L",
+          "last10": "L-W-W-L-P-W-W-L-L-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 135,
-          "own_side_over_rate": 0.53,
+          "n_live": 136,
+          "own_side_over_rate": 0.531,
           "mean_abs_edge_vs_market": 0.0145,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 135 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "VEGA's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -6125,29 +6125,29 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 466,
-          "win": 208,
+          "n": 467,
+          "win": 209,
           "loss": 244,
           "push": 14,
-          "hit_rate": 0.4602,
-          "decided": 452,
+          "hit_rate": 0.4614,
+          "decided": 453,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4148,
-            0.5063
+            0.416,
+            0.5074
           ],
-          "last10": "W-W-L-W-L-P-L-L-W-L",
+          "last10": "W-L-W-L-P-L-L-W-W-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 135,
-          "own_side_over_rate": 0.5064,
-          "mean_abs_edge_vs_market": 0.0313,
+          "n_live": 136,
+          "own_side_over_rate": 0.5054,
+          "mean_abs_edge_vs_market": 0.0312,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 135 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "ATLAS's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "nova": {
           "key": "nova",
@@ -6162,29 +6162,29 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 466,
-          "win": 222,
+          "n": 467,
+          "win": 223,
           "loss": 230,
           "push": 14,
-          "hit_rate": 0.4912,
-          "decided": 452,
+          "hit_rate": 0.4923,
+          "decided": 453,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4453,
-            0.5371
+            0.4465,
+            0.5382
           ],
-          "last10": "W-L-W-L-W-P-W-L-W-W",
+          "last10": "L-W-L-W-P-W-L-W-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 135,
-          "own_side_over_rate": 0.5215,
+          "n_live": 136,
+          "own_side_over_rate": 0.5203,
           "mean_abs_edge_vs_market": 0.0219,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 135 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "NOVA's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "scout": {
           "key": "scout",
@@ -6199,34 +6199,34 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 466,
-          "win": 222,
+          "n": 467,
+          "win": 223,
           "loss": 230,
           "push": 14,
-          "hit_rate": 0.4912,
-          "decided": 452,
+          "hit_rate": 0.4923,
+          "decided": 453,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4453,
-            0.5371
+            0.4465,
+            0.5382
           ],
-          "last10": "W-W-W-L-W-P-W-W-W-W",
+          "last10": "W-W-L-W-P-W-W-W-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 135,
-          "own_side_over_rate": 0.4142,
-          "mean_abs_edge_vs_market": 0.026,
+          "n_live": 136,
+          "own_side_over_rate": 0.4133,
+          "mean_abs_edge_vs_market": 0.0259,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 135 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "SCOUT's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-09T23:12:13Z",
+      "updated": "2026-08-09T23:53:42Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -8916,7 +8916,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-09T23:26:26Z",
+      "updated": "2026-08-09T23:59:07Z",
       "order": [
         "vega",
         "atlas",
@@ -10244,14 +10244,14 @@
             "VEGA \u00b7 The Price",
             "ATLAS \u00b7 The Conditions"
           ],
-          "n_disagreements": 231,
+          "n_disagreements": 232,
           "wins": {
             "vega": 120,
-            "atlas": 106
+            "atlas": 107
           },
           "pushes": 5,
-          "n_both_graded": 466,
-          "line": "When VEGA and ATLAS disagree: VEGA 120, ATLAS 106"
+          "n_both_graded": 467,
+          "line": "When VEGA and ATLAS disagree: VEGA 120, ATLAS 107"
         },
         {
           "pair": [
@@ -10262,14 +10262,14 @@
             "VEGA \u00b7 The Price",
             "NOVA \u00b7 The Bats"
           ],
-          "n_disagreements": 232,
+          "n_disagreements": 233,
           "wins": {
             "vega": 114,
-            "nova": 114
+            "nova": 115
           },
           "pushes": 4,
-          "n_both_graded": 466,
-          "line": "When VEGA and NOVA disagree: VEGA 114, NOVA 114"
+          "n_both_graded": 467,
+          "line": "When VEGA and NOVA disagree: VEGA 114, NOVA 115"
         },
         {
           "pair": [
@@ -10280,14 +10280,14 @@
             "VEGA \u00b7 The Price",
             "SCOUT \u00b7 The Arms"
           ],
-          "n_disagreements": 250,
+          "n_disagreements": 251,
           "wins": {
             "vega": 122,
-            "scout": 122
+            "scout": 123
           },
           "pushes": 6,
-          "n_both_graded": 466,
-          "line": "When VEGA and SCOUT disagree: VEGA 122, SCOUT 122"
+          "n_both_graded": 467,
+          "line": "When VEGA and SCOUT disagree: VEGA 122, SCOUT 123"
         },
         {
           "pair": [
@@ -10304,7 +10304,7 @@
             "nova": 104
           },
           "pushes": 5,
-          "n_both_graded": 466,
+          "n_both_graded": 467,
           "line": "When ATLAS and NOVA disagree: ATLAS 90, NOVA 104"
         },
         {
@@ -10322,7 +10322,7 @@
             "scout": 102
           },
           "pushes": 7,
-          "n_both_graded": 466,
+          "n_both_graded": 467,
           "line": "When ATLAS and SCOUT disagree: ATLAS 88, SCOUT 102"
         },
         {
@@ -10340,7 +10340,7 @@
             "scout": 99
           },
           "pushes": 6,
-          "n_both_graded": 466,
+          "n_both_graded": 467,
           "line": "When NOVA and SCOUT disagree: NOVA 99, SCOUT 99"
         }
       ],
@@ -10352,45 +10352,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 91,
+          "n": 92,
           "win": 38,
-          "loss": 47,
+          "loss": 48,
           "push": 6,
-          "hit_rate": 0.4471,
-          "line": "38-47-6",
+          "hit_rate": 0.4419,
+          "line": "38-48-6",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 91,
-          "win": 47,
+          "n": 92,
+          "win": 48,
           "loss": 38,
           "push": 6,
-          "hit_rate": 0.5529,
-          "line": "47-38-6",
+          "hit_rate": 0.5581,
+          "line": "48-38-6",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 91,
-          "win": 44,
+          "n": 92,
+          "win": 45,
           "loss": 41,
           "push": 6,
-          "hit_rate": 0.5176,
-          "line": "44-41-6",
+          "hit_rate": 0.5233,
+          "line": "45-41-6",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 91,
-          "win": 48,
+          "n": 92,
+          "win": 49,
           "loss": 37,
           "push": 6,
-          "hit_rate": 0.5647,
-          "line": "48-37-6",
+          "hit_rate": 0.5698,
+          "line": "49-37-6",
           "is_betting_record": false
         }
       },
@@ -11507,7 +11507,7 @@
         "voice": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
-          "name": "The Pitcher's Park and ATLAS's Read",
+          "name": "The Pitcher's Park and the Conditions Analyst's Read",
           "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
           "paragraphs": [
             "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -11550,7 +11550,7 @@
             }
           ]
         },
-        "rule_name": "The Pitcher's Park and ATLAS's Read",
+        "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
         "lock_status": "LOCKED_STRATEGY",
         "selector_channel": "strategy_forge:nightly",
         "engine": "strategy_forge",
@@ -12497,7 +12497,7 @@
       "voice": {
         "status": "ACTIVE",
         "generator": "rule_voice_v2",
-        "name": "The Pitcher's Park and ATLAS's Read",
+        "name": "The Pitcher's Park and the Conditions Analyst's Read",
         "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
         "paragraphs": [
           "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -12540,7 +12540,7 @@
           }
         ]
       },
-      "rule_name": "The Pitcher's Park and ATLAS's Read",
+      "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
       "lock_status": "LOCKED_STRATEGY",
       "selector_channel": "strategy_forge:nightly",
       "engine": "strategy_forge",
@@ -12944,26 +12944,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 4,
-          "of": 5,
+          "stars": 3,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 78,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 78,
@@ -13004,7 +13002,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 4,
+        "pick_rating_stars": 3,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -13070,7 +13068,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -13113,7 +13111,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -13153,11 +13151,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 7.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 7.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 7.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 7.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -14147,7 +14145,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -14982,26 +14980,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 2,
-          "of": 5,
+          "stars": 1,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 21,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 21,
@@ -15042,7 +15038,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 2,
+        "pick_rating_stars": 1,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -15108,7 +15104,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -15151,7 +15147,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -15191,11 +15187,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -16210,7 +16206,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -17085,26 +17081,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 3,
-          "of": 5,
+          "stars": 2,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 51,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 51,
@@ -17145,7 +17139,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 3,
+        "pick_rating_stars": 2,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -17211,7 +17205,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -17254,7 +17248,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -17292,11 +17286,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -18283,7 +18277,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -19158,26 +19152,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 2,
-          "of": 5,
+          "stars": 1,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 29,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 29,
@@ -19218,7 +19210,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 2,
+        "pick_rating_stars": 1,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -19284,7 +19276,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -19327,7 +19319,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -19366,11 +19358,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -20363,7 +20355,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -21238,26 +21230,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 4,
-          "of": 5,
+          "stars": 2,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 62,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 62,
@@ -21298,7 +21288,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 4,
+        "pick_rating_stars": 2,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -21364,7 +21354,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -21407,7 +21397,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -21447,11 +21437,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -22347,7 +22337,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -23222,26 +23212,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 3,
-          "of": 5,
+          "stars": 2,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 58,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 58,
@@ -23282,7 +23270,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 3,
+        "pick_rating_stars": 2,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -23348,7 +23336,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -23391,7 +23379,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -23430,11 +23418,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.6h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.6h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -24421,7 +24409,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -25296,26 +25284,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 3,
-          "of": 5,
+          "stars": 2,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 48,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 48,
@@ -25356,7 +25342,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 3,
+        "pick_rating_stars": 2,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -25422,7 +25408,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -25465,7 +25451,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -25505,11 +25491,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -26518,7 +26504,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -27438,26 +27424,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 4,
-          "of": 5,
+          "stars": 2,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 65,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 65,
@@ -27498,7 +27482,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 4,
+        "pick_rating_stars": 2,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -27564,7 +27548,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -27607,7 +27591,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -27647,11 +27631,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -28656,7 +28640,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -29577,25 +29561,23 @@
         "confidence_basis": "rule_lookback",
         "pick_rating": {
           "stars": 2,
-          "of": 5,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 38,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 38,
@@ -29702,7 +29684,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -29745,7 +29727,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -29755,9 +29737,9 @@
               "The Guardians and the White Sox have traded the first 2 games at Rate Field on Sunday, and the series comes down to this one. Joey Cantillo (2-4 with a 3.86 ERA over his last 7 starts) starts for the Guardians. Cantillo went 5 innings last time out, giving up 5 runs on 7 hits with 2 walks and 5 strikeouts in a 6-2 loss against the Mets on Tuesday. Davis Martin (0-3 with a 6.55 ERA over his last 7 starts) opposes him for the White Sox, and he was hit hard last time out, giving up 9 runs on 10 hits over 5 innings with 1 strikeout in a 14-2 loss at Boston on Tuesday.",
               "DiamondEdge sides with the over on this one. Nobody has moved this total off the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.",
               "There is more behind that: the two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts.",
-              "The White Sox are 60-56 and are 5-5 over their last ten; the Guardians are 58-60 and are 3-7 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season."
+              "The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season."
             ],
-            "text": "The Guardians and the White Sox have traded the first 2 games at Rate Field on Sunday, and the series comes down to this one. Joey Cantillo (2-4 with a 3.86 ERA over his last 7 starts) starts for the Guardians. Cantillo went 5 innings last time out, giving up 5 runs on 7 hits with 2 walks and 5 strikeouts in a 6-2 loss against the Mets on Tuesday. Davis Martin (0-3 with a 6.55 ERA over his last 7 starts) opposes him for the White Sox, and he was hit hard last time out, giving up 9 runs on 10 hits over 5 innings with 1 strikeout in a 14-2 loss at Boston on Tuesday.\n\nDiamondEdge sides with the over on this one. Nobody has moved this total off the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nThere is more behind that: the two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts.\n\nThe White Sox are 60-56 and are 5-5 over their last ten; the Guardians are 58-60 and are 3-7 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season.",
+            "text": "The Guardians and the White Sox have traded the first 2 games at Rate Field on Sunday, and the series comes down to this one. Joey Cantillo (2-4 with a 3.86 ERA over his last 7 starts) starts for the Guardians. Cantillo went 5 innings last time out, giving up 5 runs on 7 hits with 2 walks and 5 strikeouts in a 6-2 loss against the Mets on Tuesday. Davis Martin (0-3 with a 6.55 ERA over his last 7 starts) opposes him for the White Sox, and he was hit hard last time out, giving up 9 runs on 10 hits over 5 innings with 1 strikeout in a 14-2 loss at Boston on Tuesday.\n\nDiamondEdge sides with the over on this one. Nobody has moved this total off the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nThere is more behind that: the two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts.\n\nThe White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season.",
             "side": "over",
             "has_pick": true,
             "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
@@ -29785,32 +29767,11 @@
               },
               {
                 "fact": "away standings",
-                "value": {
-                  "record": "58-60",
-                  "streak": "L1",
-                  "last10": "3-7",
-                  "gb": 3.0,
-                  "rs_pg": 3.98,
-                  "ra_pg": 4.19,
-                  "pct": 0.492,
-                  "leads_division": false,
-                  "as_of_utc": "2026-08-09T23:16:14Z"
-                },
-                "source": "teams_v4.json generated 2026-08-09T23:16:14Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "value": {
-                  "record": "60-56",
-                  "streak": "W1",
-                  "last10": "5-5",
-                  "rs_pg": 4.76,
-                  "ra_pg": 4.46,
-                  "pct": 0.517,
-                  "leads_division": true,
-                  "as_of_utc": "2026-08-09T23:16:14Z"
-                },
-                "source": "teams_v4.json generated 2026-08-09T23:16:14Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 5.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -30056,46 +30017,6 @@
                 "rendered": "5"
               },
               {
-                "feature": "the home club's won-lost, served standings",
-                "raw": "60-56",
-                "rendered": "60-56"
-              },
-              {
-                "feature": "the home club's last ten, served standings",
-                "raw": "5",
-                "rendered": "5"
-              },
-              {
-                "feature": "the home club's last ten, served standings",
-                "raw": "5",
-                "rendered": "5"
-              },
-              {
-                "feature": "the home club's last-ten window, the served standings field 'last10'",
-                "raw": "10",
-                "rendered": "10"
-              },
-              {
-                "feature": "the away club's won-lost, served standings",
-                "raw": "58-60",
-                "rendered": "58-60"
-              },
-              {
-                "feature": "the away club's last ten, served standings",
-                "raw": "3",
-                "rendered": "3"
-              },
-              {
-                "feature": "the away club's last ten, served standings",
-                "raw": "7",
-                "rendered": "7"
-              },
-              {
-                "feature": "the away club's last-ten window, the served standings field 'last10'",
-                "raw": "10",
-                "rendered": "10"
-              },
-              {
                 "feature": "bat_home_rpg_r15",
                 "raw": 5.066666666666666,
                 "rendered": "5.1"
@@ -30268,19 +30189,6 @@
                 "allowed": []
               },
               {
-                "shape": "standings",
-                "text": "The White Sox are 60-56 and are 5-5 over their last ten; the Guardians are 58-60 and are 3-7 over their last ten.",
-                "allowed": [
-                  "10",
-                  "3",
-                  "5",
-                  "56",
-                  "58",
-                  "60",
-                  "7"
-                ]
-              },
-              {
                 "shape": "say.bat_home_rpg_r15",
                 "text": "the White Sox have scored 5.1 runs a game over their last fifteen",
                 "allowed": [
@@ -30333,7 +30241,6 @@
               "say.ump_runs_pg_delta",
               "say.wx_temp_f",
               "series_clause",
-              "standings",
               "support_open",
               "total"
             ]
@@ -30349,9 +30256,9 @@
             "The Guardians and the White Sox have traded the first 2 games at Rate Field on Sunday, and the series comes down to this one. Joey Cantillo (2-4 with a 3.86 ERA over his last 7 starts) starts for the Guardians. Cantillo went 5 innings last time out, giving up 5 runs on 7 hits with 2 walks and 5 strikeouts in a 6-2 loss against the Mets on Tuesday. Davis Martin (0-3 with a 6.55 ERA over his last 7 starts) opposes him for the White Sox, and he was hit hard last time out, giving up 9 runs on 10 hits over 5 innings with 1 strikeout in a 14-2 loss at Boston on Tuesday.",
             "DiamondEdge sides with the over on this one. Nobody has moved this total off the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.",
             "There is more behind that: the two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts.",
-            "The White Sox are 60-56 and are 5-5 over their last ten; the Guardians are 58-60 and are 3-7 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season."
+            "The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season."
           ],
-          "text": "The Guardians and the White Sox have traded the first 2 games at Rate Field on Sunday, and the series comes down to this one. Joey Cantillo (2-4 with a 3.86 ERA over his last 7 starts) starts for the Guardians. Cantillo went 5 innings last time out, giving up 5 runs on 7 hits with 2 walks and 5 strikeouts in a 6-2 loss against the Mets on Tuesday. Davis Martin (0-3 with a 6.55 ERA over his last 7 starts) opposes him for the White Sox, and he was hit hard last time out, giving up 9 runs on 10 hits over 5 innings with 1 strikeout in a 14-2 loss at Boston on Tuesday.\n\nDiamondEdge sides with the over on this one. Nobody has moved this total off the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nThere is more behind that: the two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts.\n\nThe White Sox are 60-56 and are 5-5 over their last ten; the Guardians are 58-60 and are 3-7 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season.",
+          "text": "The Guardians and the White Sox have traded the first 2 games at Rate Field on Sunday, and the series comes down to this one. Joey Cantillo (2-4 with a 3.86 ERA over his last 7 starts) starts for the Guardians. Cantillo went 5 innings last time out, giving up 5 runs on 7 hits with 2 walks and 5 strikeouts in a 6-2 loss against the Mets on Tuesday. Davis Martin (0-3 with a 6.55 ERA over his last 7 starts) opposes him for the White Sox, and he was hit hard last time out, giving up 9 runs on 10 hits over 5 innings with 1 strikeout in a 14-2 loss at Boston on Tuesday.\n\nDiamondEdge sides with the over on this one. Nobody has moved this total off the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nThere is more behind that: the two bullpens have thrown 29.3 innings between them over three days and games worked by tonight's plate umpire have averaged 0.3 runs more than the league. First pitch is at 84 degrees and Martin has struck out 15% of the hitters he has faced across his last five starts.\n\nThe White Sox have scored 5.1 runs a game over their last fifteen, the Guardians 3.9. They have split the 8 meetings between them this season.",
           "side": "over",
           "has_pick": true,
           "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
@@ -30710,13 +30617,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "I grade the place and the umpire and nothing else. On those alone: under 8.5, 53%.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Top 9th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-09T23:20:51Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -30879,7 +30780,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -31711,34 +31612,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 9,
-        "half": "top",
-        "outs": 0,
-        "away_score": 2,
-        "home_score": 5,
-        "runs_so_far": 7,
-        "pregame_total": 8.5,
-        "runs_vs_pregame_total": -1.5,
-        "runs_still_needed_for_over": 2,
-        "innings_elapsed": 8.5,
-        "pace_runs_per_inning": 0.82,
-        "projected_final_runs": 7.4,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 ATLAS is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-09T23:20:51Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      }
+      "live_progress": null
     },
     {
       "game_id": "2026-08-09-Colorado Rockies-St. Louis Cardinals-823020",
@@ -31838,7 +31712,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -31881,7 +31755,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "pass_why": "forge_no_bet"
         },
         "is_bet": false,
@@ -32409,7 +32283,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -33285,25 +33159,23 @@
         "confidence_basis": "rule_lookback",
         "pick_rating": {
           "stars": 1,
-          "of": 5,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 18,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 18,
@@ -33410,7 +33282,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -33453,7 +33325,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -33492,11 +33364,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 4.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 4.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 4.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 4.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -34496,7 +34368,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -35388,7 +35260,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -35431,7 +35303,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "pass_why": "forge_no_bet"
         },
         "is_bet": false,
@@ -35960,7 +35832,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -36876,25 +36748,23 @@
         "confidence_basis": "rule_lookback",
         "pick_rating": {
           "stars": 2,
-          "of": 5,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 38,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 38,
@@ -37001,7 +36871,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -37044,7 +36914,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -37084,11 +36954,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 3.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 3.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 3.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 3.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -38108,7 +37978,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "STRONG",
@@ -38930,26 +38800,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 4,
-          "of": 5,
+          "stars": 2,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 65,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 65,
@@ -38990,7 +38858,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 4,
+        "pick_rating_stars": 2,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -39056,7 +38924,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -39099,7 +38967,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -39138,11 +39006,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 3.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 3.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-09T23:16:14Z, 3.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-09T23:25:00Z, 3.2h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -40142,7 +40010,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -41062,26 +40930,24 @@
         "confidence_score": 44,
         "confidence_basis": "rule_lookback",
         "pick_rating": {
-          "stars": 3,
-          "of": 5,
+          "stars": 2,
+          "of": 3,
           "basis": "rule_fit",
           "basis_label": "How squarely this game fits tonight's rule",
           "score": 45,
           "score_of": 100,
           "measure": "clause_clearance_percentile",
-          "policy_version": "pick_stars_v1",
+          "policy_version": "pick_stars_v2",
           "cuts": [
-            20,
-            40,
-            60,
-            80
+            33.333333333333336,
+            66.66666666666667
           ],
-          "cuts_basis": "the quintiles of the reference the score is a percentile of \u2014 five bands that the reference population fills evenly by construction",
+          "cuts_basis": "the tertiles of the reference the score is a percentile of \u2014 three bands that the reference population fills evenly by construction",
           "is_per_game": true,
           "what_it_is": "How squarely this game sits inside the rule that picked it: the margin by which it clears the tightest of that clause's own thresholds, placed against the games the same clause fired on over the window that chose the rule. A higher number is a deeper instance of tonight's rule \u2014 not a better price and not a likelier win.",
           "summary": "How deep inside tonight's rule this game sits, against the games the same rule fired on. Not a price and not a likelier win.",
           "caveat": "This is a description of the game against the rule, not a forecast. Nothing here has been checked against outcomes, and no claim is made that a deeper instance of a rule wins more often.",
-          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a five-star pick wins.",
+          "not_a_forecast": "The stars rate the pick against the thing that chose it. They are not a probability, not an edge, and not a claim about how often a three-star pick wins.",
           "comparable_across_bases": false,
           "detail": {
             "score": 45,
@@ -41122,7 +40988,7 @@
             "frozen": false
           }
         },
-        "pick_rating_stars": 3,
+        "pick_rating_stars": 2,
         "forge_strategy": {
           "source": "strategy_forge",
           "version": "forge_selector_v1",
@@ -41188,7 +41054,7 @@
           "voice": {
             "status": "ACTIVE",
             "generator": "rule_voice_v2",
-            "name": "The Pitcher's Park and ATLAS's Read",
+            "name": "The Pitcher's Park and the Conditions Analyst's Read",
             "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
             "paragraphs": [
               "This one lives on the ballpark, the bullpens, and the shape of the matchup. It is a 5-condition read, and it wants every one of them before it says anything at all \u2014 which is why it is quiet on most of a slate.",
@@ -41231,7 +41097,7 @@
               }
             ]
           },
-          "rule_name": "The Pitcher's Park and ATLAS's Read",
+          "rule_name": "The Pitcher's Park and the Conditions Analyst's Read",
           "rationale_line": "The day's rule called this side, taken at the locked pregame line.",
           "game_case": {
             "status": "ACTIVE",
@@ -41279,9 +41145,9 @@
                   "ra_pg": 4.84,
                   "pct": 0.508,
                   "leads_division": true,
-                  "as_of_utc": "2026-08-09T23:16:14Z"
+                  "as_of_utc": "2026-08-09T23:25:00Z"
                 },
-                "source": "teams_v4.json generated 2026-08-09T23:16:14Z \u2014 before first pitch, so this game is not inside these numbers"
+                "source": "teams_v4.json generated 2026-08-09T23:25:00Z \u2014 before first pitch, so this game is not inside these numbers"
               },
               {
                 "fact": "home standings",
@@ -41294,9 +41160,9 @@
                   "ra_pg": 4.34,
                   "pct": 0.517,
                   "leads_division": false,
-                  "as_of_utc": "2026-08-09T23:16:14Z"
+                  "as_of_utc": "2026-08-09T23:25:00Z"
                 },
-                "source": "teams_v4.json generated 2026-08-09T23:16:14Z \u2014 before first pitch, so this game is not inside these numbers"
+                "source": "teams_v4.json generated 2026-08-09T23:25:00Z \u2014 before first pitch, so this game is not inside these numbers"
               },
               {
                 "fact": "starters",
@@ -41857,16 +41723,16 @@
         "line": 1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": -190,
+        "price": -179,
         "best_book": null,
         "stars": 1,
-        "score": 0.24,
-        "our_prob": 0.3576,
-        "ev": -0.0195,
+        "score": 0.83,
+        "our_prob": 0.3599,
+        "ev": -0.0024,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -41882,22 +41748,22 @@
         "side": "under",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.4876,
-        "p_over_market": 0.5005,
-        "sim_edge": -0.0129,
-        "price": 105.0,
+        "p_over": 0.4758,
+        "p_over_market": 0.5,
+        "sim_edge": -0.0242,
+        "price": -105.0,
         "best_book": "williamhill_us",
         "stars": 1,
         "score": null,
-        "sim_mu": 9.357,
+        "sim_mu": 9.302,
         "sim_median": 9,
-        "sim_sd": 4.495,
+        "sim_sd": 4.539,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -41910,7 +41776,8 @@
         "walls_priced": [
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "strategies": [
@@ -41999,11 +41866,11 @@
           "side": "away",
           "line": 1.5,
           "vegas_line": -1.5,
-          "price": -190,
+          "price": -179,
           "stars": 1,
-          "score": 0.24,
+          "score": 0.83,
           "result": null,
-          "lead_time": "T-3h",
+          "lead_time": "T-1h",
           "locked": false,
           "expanded_band": false,
           "pass_why": "unproven_stream",
@@ -42020,19 +41887,19 @@
           "side": "under",
           "line": 9.0,
           "vegas_line": 9.0,
-          "price": 105.0,
+          "price": -105.0,
           "stars": 1,
           "score": null,
           "result": null,
-          "lead_time": "T-3h",
+          "lead_time": "T-1h",
           "locked": false,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 ties the market, no proven edge. Not a bet.",
           "market": "total",
-          "sim_p_over": 0.4876,
-          "sim_p_over_market": 0.5005,
-          "sim_mu": 9.357,
+          "sim_p_over": 0.4758,
+          "sim_p_over_market": 0.5,
+          "sim_mu": 9.302,
           "sim_median": 9,
           "sim_n_sims": 20000
         }
@@ -42042,11 +41909,11 @@
         "side": "under",
         "line": 9.0,
         "vegas_line": 9.0,
-        "p_over": 0.4992,
-        "p_over_market": 0.5005,
-        "scout_edge": -0.0014,
-        "conviction": 0.5008,
-        "price": 105.0,
+        "p_over": 0.4968,
+        "p_over_market": 0.5,
+        "scout_edge": -0.0032,
+        "conviction": 0.5032,
+        "price": -105.0,
         "best_book": "williamhill_us",
         "stars": null,
         "score": null,
@@ -42060,12 +41927,12 @@
           "pen_home_era_std": 2.9448,
           "pen_away_era_std": 3.4605,
           "enr_park_run_factor_3y": 0.9169,
-          "wx_temp_f": 80.24
+          "wx_temp_f": 78.8
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -42078,7 +41945,8 @@
         "walls_priced": [
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ],
         "is_the_scout_analyst": false,
         "not_an_analyst_note": "This is the simple-8 fundamentals STREAM's own lean for this game, with its own ledger and its own activation date. It is NOT the SCOUT analyst's read. Since 2026-07-31 the SCOUT analyst reads THE ARMS \u2014 the two starters and the bullpens behind them \u2014 over a disjoint feature slice, and its read is at games[].analysts[key=scout] / games[].analysts_v2. The shared name is history: the analyst used to be this stream."
@@ -42086,13 +41954,13 @@
       "pregame_line": {
         "total": 9.0,
         "total_price_over": 100.0,
-        "total_price_under": 105.0,
+        "total_price_under": -105.0,
         "run_line": -1.5,
-        "run_line_price_home": 171.0,
-        "run_line_price_away": -190.0,
+        "run_line_price_home": 169.0,
+        "run_line_price_away": -179.0,
         "book": "betrivers",
-        "captured_at": "2026-08-09T23:20:50Z",
-        "wall": "T-3h",
+        "captured_at": "2026-08-09T23:53:23Z",
+        "wall": "T-1h",
         "locked_at": null,
         "game_pk": 823268,
         "date": "2026-08-09",
@@ -42101,7 +41969,7 @@
         "is_locked": false,
         "total_open": 8.5,
         "total_move": 0.5,
-        "p_over_devig": 0.5005448997384481,
+        "p_over_devig": 0.5,
         "n_books": 22.0,
         "first_captured_at": "2026-08-09T12:35:10Z",
         "source": "fact_serve_point_in_time",
@@ -42124,7 +41992,7 @@
           "total_price_under": -120.0
         },
         "n_books": 22,
-        "as_of": "2026-08-09T23:23:03Z",
+        "as_of": "2026-08-09T23:53:09Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -42157,7 +42025,7 @@
           "read_wall": "T-3h",
           "is_final_wall": true,
           "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 3,
+          "n_walls_read": 4,
           "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
@@ -42199,7 +42067,7 @@
           "read_wall": "T-3h",
           "is_final_wall": true,
           "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 3,
+          "n_walls_read": 4,
           "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
@@ -42242,7 +42110,7 @@
           "read_wall": "T-3h",
           "is_final_wall": true,
           "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 3,
+          "n_walls_read": 4,
           "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
@@ -42291,7 +42159,7 @@
           "read_wall": "T-3h",
           "is_final_wall": true,
           "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 3,
+          "n_walls_read": 4,
           "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
@@ -42380,7 +42248,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-09T23:26:25Z",
+          "asof_utc": "2026-08-09T23:59:06Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -42685,8 +42553,8 @@
           "desk_combined": {
             "p_over": 0.5075,
             "side": "over",
-            "p_market": 0.5005,
-            "divergence_logodds": 0.02785,
+            "p_market": 0.5,
+            "divergence_logodds": 0.03003,
             "weights_basis": "equal_weight",
             "weights": {
               "vega": 1.0,
@@ -42697,22 +42565,22 @@
             "voices_used": [
               {
                 "key": "vega",
-                "divergence_logodds": 0.07386,
+                "divergence_logodds": 0.07604,
                 "weight": 1.0
               },
               {
                 "key": "atlas",
-                "divergence_logodds": -0.1867,
+                "divergence_logodds": -0.18452,
                 "weight": 1.0
               },
               {
                 "key": "nova",
-                "divergence_logodds": -0.07461,
+                "divergence_logodds": -0.07243,
                 "weight": 1.0
               },
               {
                 "key": "scout",
-                "divergence_logodds": 0.29887,
+                "divergence_logodds": 0.30105,
                 "weight": 1.0
               }
             ],
@@ -42857,11 +42725,20 @@
                 "market_line": 9.0,
                 "n_levers_present": 8,
                 "n_levers_total": 8
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "over",
+                "p_over": 0.5452,
+                "market_line": 9.0,
+                "n_levers_present": 8,
+                "n_levers_total": 8
               }
             ],
             "first_wall_with_a_read": "T-12h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 3,
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
             "changed_side_across_walls": true,
             "no_read": null
           }
@@ -42942,11 +42819,23 @@
                 "umpire_assigned": true,
                 "n_levers_present": 7,
                 "n_levers_total": 7
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.454,
+                "delta_runs": -0.5241,
+                "conviction_runs": 0.5241,
+                "market_line": 9.0,
+                "umpire_assigned": true,
+                "n_levers_present": 7,
+                "n_levers_total": 7
               }
             ],
             "first_wall_with_a_read": "T-12h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 3,
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
             "changed_side_across_walls": false,
             "no_read": null
           }
@@ -43027,11 +42916,23 @@
                 "lineup_posted": false,
                 "n_levers_present": 6,
                 "n_levers_total": 9
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4813,
+                "delta_runs": -0.2218,
+                "conviction_runs": 0.2218,
+                "market_line": 9.0,
+                "lineup_posted": true,
+                "n_levers_present": 6,
+                "n_levers_total": 9
               }
             ],
             "first_wall_with_a_read": "T-12h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 3,
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
             "changed_side_across_walls": false,
             "no_read": null
           }
@@ -43112,11 +43013,23 @@
                 "starters_announced": true,
                 "n_levers_present": 14,
                 "n_levers_total": 14
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "over",
+                "p_over": 0.5746,
+                "delta_runs": 0.8556,
+                "conviction_runs": 0.8556,
+                "market_line": 9.0,
+                "starters_announced": true,
+                "n_levers_present": 14,
+                "n_levers_total": 14
               }
             ],
             "first_wall_with_a_read": "T-12h",
-            "latest_wall": "T-3h",
-            "n_walls_read": 3,
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
             "changed_side_across_walls": true,
             "no_read": null
           }
