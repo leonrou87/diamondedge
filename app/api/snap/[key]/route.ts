@@ -318,11 +318,41 @@ async function supa(path: string, init?: RequestInit) {
     headers: {
       apikey: KEY,
       Authorization: `Bearer ${KEY}`,
-      // ASK FOR GZIP. Server-to-server fetch does not negotiate compression on
-      // its own the way a browser does, and this is the leg that lands on the
-      // Supabase egress meter. Measured on picks_unified: 8.07 MB raw vs
-      // 2.09 MB gzipped — the single cheapest 4x in the whole system.
-      "Accept-Encoding": "gzip, br",
+      /* ASK FOR BROTLI FIRST, AND KEEP OFFERING GZIP.
+         Server-to-server fetch does not negotiate compression on its own the
+         way a browser does, and this is the leg that lands on the Supabase
+         egress meter. Asking at all was worth 4x (picks_unified: 8.07 MB raw
+         vs 2.09 MB gzipped).
+
+         Asking in the right ORDER is worth several times more again. The header
+         used to read `gzip, br`, and a server offered both with no preference
+         picks the cheaper one to produce — gzip. Measured on the origin leg
+         2026-08-09: picks_unified 2,573,924 gzipped vs 461,763 brotli (5.57x),
+         picks_unified_live 3.46x, pregame_picks 2.80x. Every one of those bytes
+         was being paid on the meter that is overdrawn, for want of a comma's
+         worth of preference.
+
+         `br` ALONE, because the polite version does not work. The obvious safe
+         formulation is `br, gzip;q=0.5` — brotli preferred, gzip still on the
+         table so the worst case is today rather than identity. Measured against
+         this project: it returns GZIP. PostgREST's front end ignores the
+         q-value and picks the first thing it likes from the list, so the only
+         header that actually yields brotli is one that does not mention gzip.
+
+         What that costs is the gzip safety net, and it is worth naming: a
+         response the server cannot brotli would come back identity —
+         uncompressed, ~4x worse than gzip. Measured on this endpoint it always
+         brotlis (teams_v4: 967 B br, 1,009 B gzip, 4,124 B identity), and the
+         blast radius is bounded by the rest of this design anyway — a miss here
+         happens about once per publish, not once per reader, so even an
+         occasional identity response is a handful of them a day rather than
+         thousands.
+
+         Decompression is transparent: Node's fetch decodes br from a manually
+         set Accept-Encoding (verified), so nothing downstream sees the
+         difference. This route runs on the Node runtime, not edge — if that
+         ever changes, re-verify that first. */
+      "Accept-Encoding": "br",
       ...(init?.headers || {}),
     },
     cache: "no-store", // the EDGE caches this response; the fetch itself must not

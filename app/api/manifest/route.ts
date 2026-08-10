@@ -96,8 +96,11 @@ async function readManifest() {
       headers: {
         apikey: KEY,
         Authorization: `Bearer ${KEY}`,
-        // the leg that lands on the Supabase egress meter — never uncompressed
-        "Accept-Encoding": "gzip, br",
+        // The leg that lands on the Supabase egress meter — never uncompressed.
+        // `br` alone, for the reason spelled out at /api/snap's `supa()`: this
+        // project's PostgREST front end ignores q-values, so a header that
+        // mentions gzip at all gets gzip.
+        "Accept-Encoding": "br",
       },
       cache: "no-store", // `unstable_cache` above is the cache; this must not double-cache
     },

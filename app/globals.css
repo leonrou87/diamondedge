@@ -581,10 +581,15 @@ header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px 
    IT IS A TRANSFORM AND NOTHING ELSE. No stroke-dashoffset (a paint property — thirteen
    marks repainting every frame), no filters, no blend modes. One composited rotation per
    mark, which is what keeps the board's scroll intact. */
+/* TURNED UP (Leon, 2026-08-09: "The white line going around the diamond in the logo… too
+   subtle. Thicker, longer streak, move faster"). All three knobs, in the three places that
+   actually control them — the lap time here, the tail length in the conic stops below, and the
+   thickness in the mask's inner radius. Nothing about the PATH changed: the 32 keyframes that
+   make it travel at constant speed around a diamond rather than a circle are untouched. */
 :root{
-  --de-orbit-dur:8.5s;      /* one lap of the masthead mark */
+  --de-orbit-dur:5s;        /* one lap of the masthead mark (was 8.5s — "move faster") */
   --de-orbit-c:255,214,120; /* the light: a gold brighter than the mark it walks on */
-  --de-orbit-a:.85;         /* peak alpha at the head */
+  --de-orbit-a:.98;         /* peak alpha at the head (was .85 — "too subtle") */
 }
 .diamond::before,.de-mini-logo::before{
   content:"";position:absolute;inset:0;pointer-events:none;
@@ -592,15 +597,23 @@ header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px 
      The first draft ramped evenly from 0 to full over 60°, which is a SHEEN sliding along
      the edge — pretty, and not what was asked for. A comet needs most of its arc spent
      nearly dark so the head reads as a point. */
+  /* THE TAIL IS NOW ~135° INSTEAD OF ~68°, and it is brighter along its whole length: the
+     old ramp spent 292°..330° at literally zero, so more than three quarters of the lap was
+     an invisible mark travelling with an invisible tail behind it. The head keeps its hard
+     leading edge (0°→9°) — that is what makes it read as a comet rather than a sheen. */
   background:conic-gradient(from 0deg at 50% 50%,
     rgba(var(--de-orbit-c),var(--de-orbit-a)) 0deg,
-    rgba(var(--de-orbit-c),0) 5deg,
-    rgba(var(--de-orbit-c),0) 292deg,
-    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .12)) 330deg,
-    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .34)) 350deg,
+    rgba(var(--de-orbit-c),0) 9deg,
+    rgba(var(--de-orbit-c),0) 225deg,
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .14)) 275deg,
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .40)) 318deg,
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .72)) 345deg,
     rgba(var(--de-orbit-c),var(--de-orbit-a)) 360deg);
-  -webkit-mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 42%,#000 55%);
-  mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 42%,#000 55%);
+  /* THICKER: the ring's inner edge moves in from 42% to 33% of the mark, so the band the
+     comet is drawn in is about two thirds wider. The outer edge comes in with it to keep the
+     ramp soft — a hard-edged band reads as a disc with a hole in it, not as a line. */
+  -webkit-mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 33%,#000 47%);
+  mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 33%,#000 47%);
   animation:de-orbit var(--de-orbit-dur) linear infinite;
 }
 @keyframes de-orbit{
@@ -2949,11 +2962,11 @@ details.more .more-body{padding-top:12px}
 /* ── THE OUTCOME, AT THE END OF THE ROW AND OVER NOTHING ── */
 /* The seal sits BESIDE the tag, never on it — the tag already carries the row's auto margin,
    so the stamp only needs its gap. A passed game has no tag, so there the seal takes the auto. */
-.de-mini-pick .restamp.rs-mini{margin-left:6px;flex-shrink:0;width:19px;height:19px;
+.de-mini-pick .restamp.rs-mini{margin-left:6px;flex-shrink:0;width:22px;height:22px;
   box-shadow:0 1px 3px var(--sh3)}
 .de-mini-pick.nopick .restamp.rs-mini{margin-left:0}
-.de-mini-pick .restamp.rs-mini .rs-g{width:19px;height:19px}
-.de-mini-pick .restamp.rs-mini .rs-g svg{width:11px;height:11px;stroke-width:3.6}
+.de-mini-pick .restamp.rs-mini .rs-g{width:22px;height:22px}
+.de-mini-pick .restamp.rs-mini .rs-g svg{width:14px;height:14px;stroke-width:3.7}
 .tl-verdict .tv-callrow{padding-top:5px}
 /* NO PICK ⇒ the market number alone, quiet, and no brand slot beside it. */
 .de-mini-pick.nopick .de-mini-ou{color:var(--ink4)}
@@ -2990,10 +3003,23 @@ details.more .more-body{padding-top:12px}
 .de-mini-pick.dmp-tile.upcoming .de-mini-word{font-size:9px;letter-spacing:.07em}
 .de-mini-pick.dmp-tile .de-mini-redact{width:30px;height:10px}
 .de-mini-pick.dmp-tile .dmp-sep{height:12px}
-.de-mini-pick.dmp-tile .restamp.rs-mini{width:14px;height:14px;margin-left:3px}
+/* THE SEAL IS THE THING YOU SCAN FOR (Leon, 2026-08-09: "the checkmarks and exes on completed
+   picks are a little too settled. It's kinda harder to glance to see what's a winner and a
+   loser").
+   It was 14x14 with a 10px glyph, sitting immediately beside a black pill carrying two words
+   and a row of stars — the loudest object on the tile was the thing you already knew, and the
+   verdict was the quietest. Three changes, all on the same idea:
+     · 14 -> 20px, glyph 10 -> 13px at a heavier stroke, so the mark reads as a MARK at arm's
+       length rather than as punctuation;
+     · a ring in the page colour separates the disc from the dark pill it abuts — at 14px the
+       two silhouettes merged into one blob, which is most of why it did not register;
+     · a real shadow, so it sits ON the card instead of in it.
+   The row is unchanged in height, so the single-line pick row (2026-08-08) still holds. */
+.de-mini-pick.dmp-tile .restamp.rs-mini{width:20px;height:20px;margin-left:5px;
+  box-shadow:0 0 0 2px var(--paper),0 1px 4px var(--sh2)}
 .de-mini-pick.dmp-tile.nopick .restamp.rs-mini{margin-left:0}
-.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g{width:16px;height:16px}
-.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g svg{width:10px;height:10px}
+.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g{width:20px;height:20px}
+.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g svg{width:13px;height:13px;stroke-width:3.7}
 @media(max-width:400px){
   .de-mini-pick.dmp-tile .de-mini-word{font-size:11.5px}
   .de-mini-pick.dmp-tile .de-mini-ou b{font-size:13px}
@@ -3049,8 +3075,11 @@ details.more .more-body{padding-top:12px}
 .de-mini-pick.dmp-tile .dmp-res.has-word{gap:0;margin-left:4px;padding:3px 5px}
 .de-mini-pick.dmp-tile .dmp-res.has-meter .ipm-pct{margin-left:0;font-size:9.5px}
 /* the fill is the meter now that the word is gone — give it a floor so a 4% chance is
-   still visibly a bar and not an empty pill */
-.de-mini-pick.dmp-tile .dmp-res.has-meter .ipm-fill{min-width:3px;opacity:.20}
+   still visibly a bar and not an empty pill. The opacity override is GONE: it existed to keep
+   a full-height tint from swamping the text it sat behind, and the rule no longer sits behind
+   anything (see "A DIFFERENT TREATMENT"). Held down at .20 the new 2.5px rule would be
+   invisible, which is the same defect in the other direction. */
+.de-mini-pick.dmp-tile .dmp-res.has-meter .ipm-fill{min-width:4px}
 /* 3. the CTA rides the row, shrinks last, and never wraps mid-word */
 .tl-verdict .tv-callrow .tv-unlock.inrow{margin-left:auto;margin-top:0;flex:0 1 auto;
   min-width:0;gap:3px;font-size:9px;letter-spacing:.06em;white-space:nowrap;overflow:hidden}
@@ -9539,9 +9568,30 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
    pill; the fill uses currentColor so every state (good/hold/chase/tight) tints its own
    meter. The bar fills toward a WIN for over and under alike, and hits full exactly when
    the state flips to the CLINCHED stamp. */
+/* ── A DIFFERENT TREATMENT (Leon, 2026-08-09: "the progress bars on the main page… it kinda
+   looks like they're cut off. Find a different treatment") ──
+   WHAT IT WAS: a square-cornered block absolutely positioned across the full height of a
+   `border-radius:999px` pill with `overflow:hidden`. At a typical fill the block's straight
+   right edge landed inside the pill's curve and the pill clipped it — measured on the live
+   board at 27px of fill inside a 28px pill, which is a hard vertical edge sliced by a round
+   end. That IS a cut-off bar; the reader was describing exactly what was on screen.
+
+   Two ways to fix it, and the wrong one is to round the block's corners: a full-height tinted
+   block is not legible as a meter in the first place — it reads as a highlight, or as a
+   selection, and it tints the text it sits behind, which is why it needed to be held down at
+   14% opacity and therefore barely readable as anything.
+
+   So the meter becomes a METER: a 2.5px rule along the bottom inside the pill, over a faint
+   track that shows the full distance. Rounded caps on both, so there is no straight edge left
+   to clip and it cannot look cut off at any width. It carries more contrast than the tint
+   could (a thin rule can, a wash behind text cannot), the text above it is now untinted, and
+   the track makes the REMAINING distance visible — which the fill alone never showed. */
 .dmp-res.has-meter{position:relative;overflow:hidden}
-.dmp-res.has-meter .ipm-fill{position:absolute;left:0;top:0;bottom:0;background:currentColor;
-  opacity:.14;pointer-events:none;transition:width .6s var(--ease)}
+.dmp-res.has-meter::after{content:"";position:absolute;left:5px;right:5px;bottom:2px;height:2.5px;
+  border-radius:999px;background:currentColor;opacity:.14;pointer-events:none}
+.dmp-res.has-meter .ipm-fill{position:absolute;left:5px;bottom:2px;height:2.5px;
+  max-width:calc(100% - 10px);border-radius:999px;background:currentColor;
+  opacity:.85;pointer-events:none;z-index:1;transition:width .6s var(--ease)}
 .dmp-res.has-meter .ipm-txt{position:relative}
 .dmp-res.has-meter .ipm-pct{position:relative;font-style:normal;font-weight:800;
   margin-left:5px;font-size:9px;letter-spacing:.02em;opacity:.85;
