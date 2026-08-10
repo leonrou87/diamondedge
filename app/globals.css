@@ -8847,6 +8847,17 @@ button:disabled:active,[aria-disabled="true"]:active,.tile.ppd:active{transform:
 .nf-btn:hover{box-shadow:var(--e2)}
 .nf-btn:active{transform:scale(var(--press))}
 .nf-btn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* …AND THE SAME BUTTON AS A <button> (app/error.tsx). The 404's door is a <Link>; the error
+   boundary's is a real button, because "Try again" re-fetches in place rather than navigating.
+   Without these three resets the UA's own border, background and font win and it renders as a
+   grey system chip in the middle of the house card. */
+button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
+/* The second door, under the primary one: quieter, and it is the one that always works —
+   if the retry keeps throwing, a full navigation to the board still gets the reader out. */
+.nf-alt{margin-top:14px;font-family:var(--sans);font-size:13.5px;font-weight:600;
+  color:var(--ink3);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:1px}
+.nf-alt:hover{color:var(--ink)}
+.nf-alt:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 
 /* ════════════════════════════════════════════════════════════════════════════════
    ROUND 5 · THE ARTICLE HEADER — THE CARD, CONTINUED

@@ -697,8 +697,36 @@ export default function Home() {
       }
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`,
         { headers: h, ...sig });
+      /* ═══ AN HTTP ERROR IS AN ERROR, NOT AN EMPTY SLATE ═══
+         This line read `await r.json()` with no status check, and it is the single most
+         consequential defect in the file. PostgREST does not answer an error with an empty
+         array — it answers with a JSON OBJECT, `{"code":"42703","message":…}`, at 400/401/402/
+         5xx. `rows[0]` on an object is `undefined`, so the function returned `null`, and
+         `null` is exactly what "this date has no games" looks like to every caller. Reproduced
+         against production by forcing the failure: the board rendered
+
+             "NO GAMES TO SHOW — Nothing's loaded for Tuesday, August 4 —
+              try another date or head back to today."
+
+         …with the strategy header above it still drawn from cache, so the page looked entirely
+         healthy and blamed the DATE. A total database outage was presented to the reader as a
+         confident fact about the world.
+
+         This is not hypothetical and it is dated: Supabase egress is projected at ~7x the free
+         allowance and the grace period ends 2026-09-04, at which point the project answers 402
+         and every reader sees an empty board with no indication anything is wrong.
+
+         Throwing is what makes the honest state reachable — `renderLoadError()` ("Couldn't
+         reach the board / Retry") already exists and callers already catch. Note the `lite`
+         branch fifteen lines up has always checked `r.ok`; only this fallback did not, which
+         is why the failure only showed up on the path taken when the projection is unavailable
+         — the degraded path, i.e. exactly when things are already going wrong. */
+      if (!r.ok) throw new Error(`snap ${k}: HTTP ${r.status}`);
       const rows = await r.json();
-      return rows && rows[0] ? rows[0].payload : null;
+      /* …and a well-formed error body at HTTP 200 is still not a row set. PostgREST shapes
+         success as an ARRAY; anything else is a message about why there is no array. */
+      if (!Array.isArray(rows)) throw new Error(`snap ${k}: not a row set`);
+      return rows[0] ? rows[0].payload : null;
     }
     /* ═══════════ ONE SMALL POLL TELLS US WHAT EVERY SURFACE IS ON ═══════════
        2026-08-09. The edge cache made N readers cost 1 Supabase read. It did not
@@ -6072,6 +6100,12 @@ export default function Home() {
     // feed is still in flight — dark shimmer skeletons hold the space until the day's
     // load actually resolves (empty OR full). True until the first loadDay settles.
     let dayLoading = true;
+    /* Did the last attempt to load this day THROW, as opposed to returning nothing? An empty
+       payload has two entirely different meanings — "no games on that date" and "we could not
+       reach the board" — and until this existed the app rendered the first for both, which
+       made a database outage read as a fact about the schedule. Set by every path that loads a
+       day; read only by the empty-state branch of `renderSlate`. */
+    let dayLoadFailed = false;
     let newsFeed: any = null;       // live sports-news feed (news_feed key, ~20-min refresh)
     /* THE NEWS FEED HAD NO LOADER OF ITS OWN — it was one un-timed `await` buried at position
        three of the boot chain (`loadIndex` → `loadDay` → `snap("news_feed")`). Two consequences,
@@ -9815,7 +9849,14 @@ export default function Home() {
       refreshStrip();
       const body = $("slate-body"); if (body) body.innerHTML = skeletonSlate();
       dayLoading = true;
-      try { payload = await loadDay(curDate); } catch { payload = null; }  // no eternal skeleton on a failed/empty load
+      /* WHY IT IS NULL IS NOT THE SAME QUESTION AS WHETHER IT IS NULL.
+         This swallowed the exception and set `payload = null`, which `renderSlate` cannot tell
+         apart from "that date genuinely has no games" — so a Supabase outage on a date change
+         rendered "No games to show", a confident claim about the schedule. The reason is kept
+         so the renderer can say the true thing; it is CLEARED on success, or a single blip
+         would make every later empty date look like an outage. */
+      try { payload = await loadDay(curDate); dayLoadFailed = false; }
+      catch { payload = null; dayLoadFailed = true; }
       dayLoading = false;
       const lg = bestLeague();
       if (lg !== league) {
