@@ -7010,12 +7010,24 @@ export default function Home() {
            Same discipline as the delay above: they ride `current_actuals`, and they are
            DELETED the moment the snapshot stops carrying them. A card still showing "2 out,
            1-2" through the seventh-inning stretch is the identical bug in a different suit. */
-        const hasSit = ls.outs != null && ls.balls != null && ls.strikes != null;
-        if (hasSit) {
-          if (cad.outs !== ls.outs || cad.balls !== ls.balls || cad.strikes !== ls.strikes) changed = true;
-          cad.outs = ls.outs; cad.balls = ls.balls; cad.strikes = ls.strikes;
-        } else if (cad.outs != null || cad.balls != null || cad.strikes != null) {
-          delete cad.outs; delete cad.balls; delete cad.strikes;
+        /* …AND THE OUTS COPY SEPARATELY FROM THE COUNT (2026-08-10).
+           This block used to require all three (`hasSit`), which mirrored a collector that
+           also bound the outs to the count — so ball four un-counted the outs on the board
+           while the game page, reading MLB's linescore directly, kept drawing the pips.
+           `live_situation_keys` now publishes three rungs that each drop only themselves
+           (bases · outs · count), and this is the frontend half of that: three gates, same
+           delete-never-leave-behind discipline on each. */
+        const hasOuts = ls.outs != null;
+        if (hasOuts) {
+          if (cad.outs !== ls.outs) changed = true;
+          cad.outs = ls.outs;
+        } else if (cad.outs != null) { delete cad.outs; changed = true; }
+        const hasCount = ls.balls != null && ls.strikes != null;
+        if (hasCount) {
+          if (cad.balls !== ls.balls || cad.strikes !== ls.strikes) changed = true;
+          cad.balls = ls.balls; cad.strikes = ls.strikes;
+        } else if (cad.balls != null || cad.strikes != null) {
+          delete cad.balls; delete cad.strikes;
           changed = true;
         }
         /* AND THE BASES, ON THE SAME TERMS (Leon, 2026-08-09: the diamond on the cards).
@@ -8106,20 +8118,49 @@ export default function Home() {
        source, so in steady state this guard never fires. It stays because this row also
        renders `current_actuals` written by `adoptMlbLive` straight from MLB's own document,
        which no backend gate sits in front of. */
+    /* ═══════ AND EACH FACT DROPS ONLY ITSELF (2026-08-10) ═══════
+       The guard above was right and its SCOPE was wrong: one illegal number took the whole
+       row down, bases included. That contradicted the contract the backend had already
+       written — `live_situation_keys`, same day, same brief: "THE BASES ARE THEIR OWN GATE,
+       one rung looser: a resolved count does not un-place the runners standing on base, so
+       the diamond survives a dropped count." The collector publishes exactly that shape —
+       `on_1b/on_2b/on_3b` with NO `outs`/`balls`/`strikes` — and this row rendered nothing
+       for it, while the game page's `liveSituation` degraded fact by fact and drew the
+       diamond and the out pips from the same instant.
+
+       MEASURED, not guessed (2026-08-10). Replaying every timecode three finished games
+       emitted (statsapi `feed/live?timecode=…`; 294 live samples across 823425 / 823513 /
+       824724): 16 of them — 5.4%, two of them at a half-inning boundary — had the game page
+       drawing a runner on first with one out while the board card 40px behind it drew
+       NOTHING. e.g. 823425 @ 20260809_190620, bottom 6th, `outs:1`, count `4-0` (ball four,
+       already resolved): header `runner on first, 1 out`, card blank.
+
+       So the row degrades the way every other live surface in this file degrades: the bases
+       when the bases are legal, the pips when the outs are legal, the count when the count
+       is legal, and nothing at all only when none of the three is. NOTHING IS CLAMPED and
+       nothing is inferred from another field — an illegal number is still simply not drawn,
+       it just no longer takes its neighbours with it. */
     function tileSituation(g: any) {
       const ca = (g && g.current_actuals) || {};
-      if (ca.outs == null || ca.balls == null || ca.strikes == null) return "";
-      const outs = Number(ca.outs);
-      const b = Number(ca.balls), s = Number(ca.strikes);
-      if (!isFinite(outs) || !isFinite(b) || !isFinite(s)) return "";
-      if (outs < 0 || outs > 2 || b < 0 || b > 3 || s < 0 || s > 2) return "";
-      const pips = [0, 1, 2].map((i) => `<i class="${i < outs ? "on" : ""}"></i>`).join("");
       const bases = tileBases(ca);
-      const word = [bases.said, `${outs} out${outs === 1 ? "" : "s"}`, `${b}-${s} count`].filter(Boolean).join(", ");
+      const outs = ca.outs == null ? null : Number(ca.outs);
+      const okOuts = outs != null && isFinite(outs) && outs >= 0 && outs <= 2;
+      const b = ca.balls == null ? null : Number(ca.balls);
+      const s = ca.strikes == null ? null : Number(ca.strikes);
+      const okCount = b != null && s != null && isFinite(b) && isFinite(s)
+        && b >= 0 && b <= 3 && s >= 0 && s <= 2;
+      if (!bases.svg && !okOuts && !okCount) return "";
+      const pips = okOuts
+        ? `<span class="ts-outs" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < (outs as number) ? "on" : ""}"></i>`).join("")}</span>`
+        : "";
+      const cnt = okCount ? `<b aria-hidden="true">${b}-${s}</b>` : "";
+      const word = [bases.said,
+        okOuts ? `${outs} out${outs === 1 ? "" : "s"}` : "",
+        okCount ? `${b}-${s} count` : ""].filter(Boolean).join(", ");
       // role="img" + aria-label, not a bare label on a span: the dots, the pips and the two
       // digits are a picture of the situation, and a reader that cannot see it should hear
       // the sentence ("runners on first, second, 2 outs, 1-2 count") rather than the digits.
-      return `<span class="t-sit" role="img" title="${esc(word)}" aria-label="${esc(word)}">${bases.svg}<span class="ts-outs" aria-hidden="true">${pips}</span><b aria-hidden="true">${b}-${s}</b></span>`;
+      return `<span class="t-sit" role="img" title="${esc(word)}" aria-label="${esc(word)}">${bases.svg}${pips}${cnt}</span>`;
     }
     function stateChip(g: any, gs: any) {
       /* THE DELAY IS THE CHIP. A card whose only state word is "Top 2nd" tells a reader the

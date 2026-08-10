@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T08:09:17Z",
+  "generated_utc": "2026-08-10T08:46:24Z",
   "dates": [],
   "unified_rule": "ONE pick per game: for each slate date, DiamondEdge locks one simple four-analyst rule chosen from strictly prior games in trailing 14/21/28 day windows. Candidate rules follow or fade analyst majorities, unanimous desks, individual analysts and agreeing analyst pairs; rules that do not fire pass the game. The selected rule is chosen by net wins with minimum sample, hit-rate and pick-rate filters, then applied to that date's games without using same-day or future results. The served pick carries the rule, trailing record and plain-English rationale. One 0-5 score + star ladder, one record, graded once per game against finals. `source` is diagnostic only.",
   "score_reference_version": "v3.3 (Leon, 2026-07-25: full 1-5 display scale \u2014 stars = frozen percentile bands of the unchanged v3.2 continuous score over playable rows: top ~10% -> 5*, next ~25% -> 4*, next ~35% -> 3*, rest playable -> 2*, non-playable -> 1*; BH certification is the separate `certified` boolean, no longer the 5* gate)",
@@ -151,7 +151,7 @@
       "upgrade_path": "UPGRADE PATH: a future run-line engine that passes its margin fitness gate with a surviving arm and real economics can flip the stream to sim_pricing (P(cover) from a validated joint margin distribution, +EV gate at real per-side prices, max 2*). The 2026-07-27 DERIV_RUNLINE_MARGIN_REPORT verdict was BLOCKED (prereg K1: margin fitness gate failed \u2014 no home-field advantage in the engine; and every declared arm, including the no-sim control, lost to the de-vigged market on Brier), so lean_only stands. The flip is explicit and human-signed (state/spread_engine_mode.json) \u2014 never automatic, never regex-parsed off a research report."
     },
     "per_game_fields": "games[].spread = {status PICK|LEAN|PASS, side home|away, side_team, line (the side's own \u00b1point), home_line, vegas_line, price, best_book, stars (capped), score, our_prob, ev, result, locked, locked_at_utc, lead_time, mode, activation_date, is_new_stream, new_tag, is_bet, suggested_units, note}. Absent/null = the stream had no row for the game. LEAN is never a bet.",
-    "positioning": "The TOTALS headline pick is UNCHANGED \u2014 the spread block is an additional, visually subordinate row. The stream is new: record starts 0-0-0 at activation, graded in public from day one, no retro-credit, no backtest blended in; unproven-stream star cap until it certifies; -EV at the real price is always a PASS."
+    "positioning": "The TOTALS headline pick is UNCHANGED \u2014 the spread block is an additional, visually subordinate row. The stream is new: record starts 0-0-0 at activation, graded in public from day one, no retro-credit, no backtest blended in; the new stream's star cap until it certifies; -EV at the real price is always a PASS."
   },
   "sim_stream_spec": {
     "activation_date": "2026-07-28",
@@ -6079,7 +6079,7 @@
         "backtest": null,
         "combined_view": null,
         "basis": "POPULATION: every game the physical simulator priced from its 2026-07-28 activation forward \u2014 ONE graded row per game. The sim re-prices at each decision wall as inputs firm up (T-24h through T-1h from 2026-07-30; T-3h only before that), every wall write-once, and the row that grades is the LATEST wall locked at first pitch (earlier walls settle 'superseded', kept for audit, never counted). Sim-stamped rows from the stream's OWN ledger only. GRADING: the stated lean (the side implied by the sim's P(over) vs the market's) graded against the settled final at the LOCKED posted line, overnight, append-only \u2014 but this is a LEAN LEDGER, not a betting record: no units are ever staked, is_bet is false on every row, and stars are hard-capped at 1*. HEADLINE COVERS: 2026-07-28 forward only \u2014 the stream starts 0-0-0, and the sim round's backtest (a statistical TIE with the market) is evidence about the engine, never credit.",
-        "note": "A fully-physical model of baseball whose median independently lands on Vegas's number \u2014 shown for transparency, graded in public, no edge claimed. GRADED LEAN LEDGER. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward. A lean carries no units, and the engine's validated result is that it TIES the market. The record is never added to, or compared against, the totals or spread records.",
+        "note": "A fully-physical model of baseball whose median independently lands on Vegas's number \u2014 shown for transparency, graded in public. GRADED LEAN LEDGER. The simulator prices every game's posted total from a full physical simulation and states which side its probability implies; it re-prices at each decision wall as inputs firm up (T-24h through T-1h, every wall write-once, never revised), and the lean that grades is the LATEST wall locked at first pitch \u2014 one graded row per game, graded against the final in public, from the 2026-07-28 activation forward. A lean carries no units, and the engine's validated result is that it TIES the market. The record is never added to, or compared against, the totals or spread records.",
         "no_double_count": true,
         "market": "total",
         "mode": "transparent_voice",
@@ -8969,7 +8969,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T08:09:43Z",
+      "updated": "2026-08-10T08:46:52Z",
       "order": [
         "vega",
         "atlas",
@@ -9437,7 +9437,7 @@
           "computed_at_utc": "2026-07-31T00:38:20Z",
           "note": "nightly desk recap \u2014 computed once per date from the SAME graded ledgers the records read (activation-dated, one row per game per analyst, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed",
           "desk_era": "previous_analysts",
-          "era_note": "THIS NIGHT BELONGS TO THE PREVIOUS DESK. It was written before the 2026-07-31 re-architecture, from the graded ledgers of four engines that no longer exist \u2014 so the names in it (the price analyst \u00b7 The Market Reader, the conditions analyst \u00b7 The Physicist, the hitting analyst \u00b7 The Quant, the pitching analyst \u00b7 The Traditionalist) refer to those engines and NOT to the analysts now carrying those names. Recaps are write-once, so it is neither rewritten nor deleted; it is labelled, and it is never served as the desk's latest."
+          "era_note": "THIS NIGHT BELONGS TO THE PREVIOUS DESK. It was written before the 2026-07-31 re-architecture, from the graded ledgers of four engines that no longer exist \u2014 so the names in it (VEGA \u00b7 The Market Reader, ATLAS \u00b7 The Physicist, NOVA \u00b7 The Quant, SCOUT \u00b7 The Traditionalist) refer to those engines and NOT to the analysts now carrying those names. Recaps are write-once, so it is neither rewritten nor deleted; it is labelled, and it is never served as the desk's latest."
         },
         {
           "date": "2026-07-30",
@@ -9521,7 +9521,7 @@
           "computed_at_utc": "2026-07-31T11:02:38Z",
           "note": "nightly desk recap \u2014 computed once per date from the SAME graded ledgers the records read (activation-dated, one row per game per analyst, nothing re-graded or restated); best/worst call lines are validator-checked against the actual graded rows + the real final total; write-once: a written date is never recomputed",
           "desk_era": "previous_analysts",
-          "era_note": "THIS NIGHT BELONGS TO THE PREVIOUS DESK. It was written before the 2026-07-31 re-architecture, from the graded ledgers of four engines that no longer exist \u2014 so the names in it (the price analyst \u00b7 The Market Reader, the conditions analyst \u00b7 The Physicist, the hitting analyst \u00b7 The Quant, the pitching analyst \u00b7 The Traditionalist) refer to those engines and NOT to the analysts now carrying those names. Recaps are write-once, so it is neither rewritten nor deleted; it is labelled, and it is never served as the desk's latest."
+          "era_note": "THIS NIGHT BELONGS TO THE PREVIOUS DESK. It was written before the 2026-07-31 re-architecture, from the graded ledgers of four engines that no longer exist \u2014 so the names in it (VEGA \u00b7 The Market Reader, ATLAS \u00b7 The Physicist, NOVA \u00b7 The Quant, SCOUT \u00b7 The Traditionalist) refer to those engines and NOT to the analysts now carrying those names. Recaps are write-once, so it is neither rewritten nor deleted; it is labelled, and it is never served as the desk's latest."
         },
         {
           "date": "2026-07-31",
