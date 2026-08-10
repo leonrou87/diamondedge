@@ -11190,6 +11190,17 @@ export default function Home() {
           if (detail && String(detail.game_id) === String(g.game_id)) paintHeroScore(g);
           repaintTileState(g);
         }
+        /* AND THE GRID DRAWN FROM THIS VERY DOCUMENT. Caught while watching 823268 through
+           the seventh: the hero read "End 7th" over a line score showing six innings for one
+           side and five for the other — because this function had just replaced `mlbBox[pk]`
+           and repainted the hero from it, while the grid still held the document it replaced.
+           Every production caller happened to call `repaintBoxPane` afterwards, so the
+           inconsistency needed a caller that did not (the debug hook) to surface; a
+           correctness that depends on every call site remembering a second step is one call
+           site from being wrong. The document lands HERE, so everything drawn from it
+           repaints here. Safe against recursion: `boxScoreTab`'s self-healing fetch only
+           fires when there is NO cache entry, and by this line there is one. */
+        if (detail && String(detail.game_id) === String(g.game_id) && $("gamepage")) repaintBoxPane();
         return mlbBox[pk];
       } catch { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
     }
@@ -16636,9 +16647,11 @@ export default function Home() {
       </section>`;
     }
     /* ═══════════════ THE RECORD, CUT BY PICK STRENGTH ═══════════════
-       The section above explains that the top strategies VOTE and the majority side plays.
-       This is the obvious next question and the payload can now answer it: when the room was
-       nearly unanimous, did the pick actually do better than when it scraped through?
+       This answers one question about ONE ERA: on the nights the top strategies voted and
+       the majority side played, did a near-unanimous room actually do better than one that
+       scraped through? The section above no longer describes that mechanism on a forge date
+       and neither does this one — since 2026-08-08 one frozen rule chooses the board and
+       nothing votes, so a forge pick has no vote to cut on and lands in `untiered`.
 
        IT IS SECONDARY BY CONSTRUCTION AND SAYS SO. The DiamondEdge record is the headline —
        every pick, at every tier, one number — and this block is a CUT of that same
@@ -16673,6 +16686,32 @@ export default function Home() {
     function researchStrengthHtml() {
       const blk = strengthRecordBlock();
       if (!blk) return "";
+      /* ═══ THE MECHANISM SENTENCE IS ABOUT A MECHANISM THAT RETIRED ═══
+         (2026-08-10) This lede opened "Every pick is decided by a vote, and the votes
+         are not always close" and went on to describe the committee counting itself.
+         Since 2026-08-08 the board is chosen by the strategy forge — ONE frozen rule,
+         scored on wins minus losses — and nothing votes. The nightly-search section
+         directly above was corrected tonight (searchMiddleBand); this fold was missed,
+         which left two mechanism stories on one page, the exact honesty failure this
+         surface exists to avoid.
+
+         The tier itself is NOT retired and is not being hidden: it is a real, pre-
+         registered measurement of the nights that DID have a committee, and those
+         nights are in the record forever. What changes is that the paragraph now says
+         WHICH nights it is about, and stops asserting that today's card was voted on.
+
+         THE CENSUS IS READ, NOT AUTHORED. `n_tiered` / `n_untiered` come off the
+         served block, so the sentence cannot drift from the population under it, and
+         when the payload omits them it makes no claim about counts at all. The
+         untiered bucket's own label ("No committee vote on record") is the backend's
+         word for the same fact — quoted rather than paraphrased where it exists. */
+      const bsrc: any = blk.src || {};
+      const nTier = numOr(bsrc.n_tiered);
+      const nUntier = numOr(bsrc.n_untiered);
+      const mechLede = `These tiers are a measurement of the committee era. On the nights a voting committee chose the board we counted how much of it actually backed each side — abstentions counted against it — and filed the pick as <b>Strong</b>, <b>Standard</b> or a <b>Lean</b>. The cuts were fixed in advance: half the room or more is Strong, a quarter or more is Standard. <b>The board is not chosen that way any more.</b> One rule decides now, and a rule has no room to count, so a pick it makes carries no vote and falls outside this cut — while counting in the record exactly like every other pick.`;
+      const censusLine = (blk.own && nTier != null && nUntier != null && nTier + nUntier > 0)
+        ? `<p class="rstr-note">${nTier.toLocaleString("en-US")} of the ${(nTier + nUntier).toLocaleString("en-US")} graded picks below carry a committee vote. The other ${nUntier.toLocaleString("en-US")} were chosen without one and are counted in the record, not in these three rows.</p>`
+        : "";
       const rank: any = { strong: 3, standard: 2, lean: 1 };
       const rows = blk.rows.map(({ t, r }: any) => {
         /* THROUGH THE SAME TWO HELPERS AS EVERY OTHER RECORD ON THIS PAGE (2026-08-09).
@@ -16705,10 +16744,11 @@ export default function Home() {
           <span class="rstr-kick">A cut of the record</span>
           <h3 class="rstr-h">Does a fuller room win more often?</h3>
         </header>
-        <p class="rstr-lede">Every pick is decided by a vote, and the votes are not always close. We count how much of the committee actually backed each side — abstentions counted against it — and file the pick as <b>Strong</b>, <b>Standard</b> or a <b>Lean</b>. The cuts were fixed in advance: half the room or more is Strong, a quarter or more is Standard.</p>
+        <p class="rstr-lede">${mechLede}</p>
+        ${censusLine}
         ${blk.own ? "" : `<p class="rstr-note">The rows below are the <b>engine's own shadow ledger</b>, not the DiamondEdge record. These are picks the engine graded against itself on nights the desk was on the card. They are evidence about the tiers; they are not a track record, and not one of them is counted anywhere else on this site.</p>`}
         <div class="rstr-rows">${rows}</div>
-        <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers${n < 40 ? " — far too few to conclude anything yet, which is exactly why the split is published rather than claimed" : ""}. <b>Every pick counts in the DiamondEdge record regardless of its tier.</b> This is the same population cut three ways, never a shortlist.</p>
+        <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers${n < 40 ? " — far too few to conclude anything yet, which is exactly why the split is published rather than claimed" : ""}. <b>Every pick counts in the DiamondEdge record regardless of its tier — including every pick with no vote to cut on.</b> This is a cut of that population, never a shortlist.</p>
       </section>`;
     }
     /* ═══════════════ FIGURE: THE FORTNIGHT LEDGER ═══════════════
@@ -16979,9 +17019,10 @@ export default function Home() {
                reader who does not care which rule won still needs, because it is the argument
                that the rule is disposable. -->
           ${researchSearchHtml()}
-          <!-- The committee votes, and the votes are not always close. This is that split,
-               graded — secondary to the headline record by construction, and rendering
-               nothing at all when there are no tiered picks to report. -->
+          <!-- On the nights a committee voted, the votes were not always close. This is that
+               split, graded — a cut of the committee era, secondary to the headline record by
+               construction, and rendering nothing at all when there are no tiered picks to
+               report. The forge does not vote, so its picks are untiered and say so. -->
           ${researchStrengthHtml()}
           <!-- THE CLAIM, THEN THE RECEIPT. The section above asserts that the play is
                disposable and has to win the job back every morning. This figure is the

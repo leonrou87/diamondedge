@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-10T01:16:46Z",
+ "generated_utc": "2026-08-10T01:57:47Z",
  "by_game": {
   "822701": {
    "away": {
@@ -3602,7 +3602,7 @@
     "name": "Emerson Hancock",
     "throws": "R",
     "era": 3.35,
-    "wl": "6-6",
+    "wl": "6-7",
     "ip": 121.0,
     "k9": 8.26,
     "whip": 1.12,
@@ -3920,11 +3920,11 @@
     "id": 664299,
     "name": "Cristian Javier",
     "throws": "R",
-    "era": 6.59,
+    "era": 6.68,
     "wl": "1-2",
-    "ip": 27.1,
-    "k9": 7.57,
-    "whip": 1.68,
+    "ip": 32.1,
+    "k9": 6.96,
+    "whip": 1.7,
     "starts": [
      {
       "date": "2026-08-03",
