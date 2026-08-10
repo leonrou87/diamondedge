@@ -9,6 +9,25 @@ export default function Home() {
     if (!root || root._init) return;
     root._init = true;
 
+    /* ═══ THE BROWSER'S SCROLL RESTORATION IS NOT THIS APP'S SCROLL (2026-08-10) ═══
+       Measured: scroll the board to 1030px, reload, and the page sits at 1030 for the
+       WHOLE of the next 3.3 seconds — it never comes back. The reader reloads and lands
+       in the middle of a board that is still booting, on a tab whose content is being
+       rebuilt underneath them.
+
+       This is `history.scrollRestoration`, which defaults to "auto": the browser saves
+       the document scroll and re-applies it on reload. That contract assumes a document
+       whose content is the same length on the way back in. This is a five-view single
+       document that rebuilds every view from served data on boot, so the offset it
+       restores is measured against a page that no longer exists — and nothing takes it
+       back, because the app only ever resets scroll inside switchTab(), and a plain
+       reload switches no tab.
+
+       "manual" hands scroll position back to the app, which already has a rule for it:
+       every view lands at the top (switchTab), and the Desk's record hero is the first
+       thing under the masthead. Set before anything else so it beats the restore. */
+    try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch {}
+
     // ===================== LOGO RESOLVERS =====================
     const TEAM_ID: any = { ARI: 109, ATL: 144, BAL: 110, BOS: 111, CHC: 112, CWS: 145, CHW: 145, CIN: 113, CLE: 114, COL: 115, DET: 116, HOU: 117, KC: 118, KCR: 118, LAA: 108, LAD: 119, MIA: 146, MIL: 158, MIN: 142, NYM: 121, NYY: 147, OAK: 133, ATH: 133, PHI: 143, PIT: 134, SD: 135, SDP: 135, SF: 137, SFG: 137, SEA: 136, STL: 138, TB: 139, TBR: 139, TEX: 140, TOR: 141, WSH: 120, WSN: 120, BRE: 158, MILW: 158 };
     const NBA_SLUG: any = { ATL: "atl", BOS: "bos", BKN: "bkn", BRK: "bkn", CHA: "cha", CHI: "chi", CLE: "cle", DAL: "dal", DEN: "den", DET: "det", GSW: "gs", GS: "gs", HOU: "hou", IND: "ind", LAC: "lac", LAL: "lal", MEM: "mem", MIA: "mia", MIL: "mil", MIN: "min", NOP: "no", NO: "no", NYK: "ny", NY: "ny", OKC: "okc", ORL: "orl", PHI: "phi", PHX: "phx", PHO: "phx", POR: "por", SAC: "sac", SAS: "sa", SA: "sa", TOR: "tor", UTA: "utah", UTAH: "utah", WAS: "wsh", WSH: "wsh" };
@@ -14660,7 +14679,30 @@ export default function Home() {
       const hype = hypeGames(pool, usedIds, 2);
       const drc = latestDeskRecap();
       const recap = yesterdayRecap();
-      const havePatterns = patternHighlights().length || (patternsHeadline() && patternsHeadline().line);
+      /* ═══ THE PATTERNS BEAT IS ADMITTED ON THE SAME TEST ITS BUILDER RENDERS ON ═══
+         (2026-08-10, walking the live deck: slide 13 of 24 was a BLANK FULL SCREEN.)
+
+         This gate used to read `patternHighlights().length || patternsHeadline().line`,
+         and the second clause is a leftover. It dates from when a null result still got
+         a card — the "THE ANSWER IS NO" slide, whose whole content WAS that headline
+         sentence. That card was abolished on purpose (see storyPatternsSlide: a
+         well-powered negative told to a customer in the voice of a disappointed
+         researcher is an argument against the product, made by the product), and the
+         builder now returns "" whenever there is no POSITIVE pattern to show. Nobody
+         moved the gate with it.
+
+         So on the served payload — `highlights: []`, `any_finding: false`, and a
+         headline sentence that is 200 characters long and entirely present — the gate
+         said yes, the builder said nothing, and the deck mounted a slide element with
+         zero children. Silent, too: an empty string is not a throw, so the per-slide
+         safeHtml boundary never fired and no console error was raised.
+
+         ONE TEST, ASKED ONCE. `highlights` is non-empty or there is no patterns beat —
+         which is exactly what storyPatternsSlide's own closing comment already claims
+         happens ("this slide simply does not enter the deck, and the deck is one card
+         shorter"). The null finding is not suppressed; it lives on Research, in full,
+         where the same fact reads as competence. It is simply not a slide. */
+      const havePatterns = patternHighlights().length > 0;
 
       // one strand per beat; the interleaver below pulls from them in a fixed rhythm
       const strand = {
@@ -15276,15 +15318,30 @@ export default function Home() {
         <div class="sts-foot"><button class="st-cta" data-go="results">See the full record →</button></div>
       </div>`;
     }
-    function storySlideHtml(sl: any, i: number) {
+    function storySlideBody(sl: any, i: number) {
       // ONE SLIDE CANNOT KILL THE DECK. Twenty-four items are concatenated into a single
       // string; before this boundary a single malformed story (a null angle, a headline the
       // feed truncated) threw inside its builder and the reader got an empty News tab.
-      const inner = safeHtml(`story slide ${i} (${sl && sl.t})`, () => storySlideInner(sl),
+      return safeHtml(`story slide ${i} (${sl && sl.t})`, () => storySlideInner(sl),
         `<div class="sts sts-skip"><div class="sts-core"><div class="sts-skip-k">This story didn't load</div><p>The rest of the briefing is fine — tap either edge to keep going.</p></div></div>`);
+    }
+    /* AND A BOUNDARY FOR THE OTHER FAILURE — THE ONE THAT DOESN'T THROW (2026-08-10).
+       safeHtml catches a builder that EXPLODES. It cannot see a builder that politely
+       returns "", because an empty string is a perfectly valid render — and that is the
+       failure that actually reached production: the patterns beat was admitted by a gate
+       that asked a different question than the builder answered, so the deck mounted
+       `<div class="st-slide">` with nothing inside it. A blank full screen, no error.
+
+       The gate is fixed at source (see buildStorySlides), so this is the net beneath it:
+       a slide that builds to nothing is DROPPED, not mounted. Renders nothing rather than
+       renders empty — and dropping it before storyLen is taken is what keeps the progress
+       segments, the "Story n of N" label, the paint window and the reader's prev/next all
+       counting the same deck. The alternative — inventing a card to fill the hole — is the
+       one thing this app must never do. */
+    function storySlideWrap(inner: string, sl: any, i: number, len: number) {
       // data-kind drives the per-type entry motion (see the MOTION INVENTORY in globals.css):
       // a pick eases up, a winner lands, a news cover cross-dissolves, the end card blooms.
-      return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" data-kind="${esc(String((sl && sl.t) || "summary"))}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${storyLen}">${inner}</div>`;
+      return `<div class="st-slide${i === storyIdx ? " on" : ""}" data-si="${i}" data-kind="${esc(String((sl && sl.t) || "summary"))}" role="group" aria-roledescription="story" aria-label="Story ${i + 1} of ${len}">${inner}</div>`;
     }
     function storySlideInner(sl: any) {
       const inner = sl.t === "pick" ? storyPickSlide(sl)
@@ -15543,7 +15600,14 @@ export default function Home() {
       storyDeckReal = false;
       // The slide PLAN is served data too (picks, winners, headlines, analyst records). If the
       // plan itself cannot be built the deck degrades to its shimmer rather than to a blank tab.
-      const slides = (safeRun("briefing running order", () => buildStorySlides()) || []) as any[];
+      const plan = (safeRun("briefing running order", () => buildStorySlides()) || []) as any[];
+      // BUILD FIRST, COUNT SECOND. Every slide's HTML is produced here — the same work the
+      // stage did inline a moment later, so this costs nothing — and any item that builds to
+      // nothing falls out before storyLen, the progress segments or the aria labels are
+      // derived from it. See storySlideWrap for why an empty build is a real failure mode.
+      const slides = plan
+        .map((sl: any, i: number) => ({ sl, inner: storySlideBody(sl, i) }))
+        .filter((b: any) => b.inner && b.inner.trim());
       if (!slides.length) {
         if (!storyWaitStart) storyWaitStart = Date.now();
         const waited = Date.now() - storyWaitStart;
@@ -15600,7 +15664,7 @@ export default function Home() {
               <button class="st-gridbtn" id="st-gridbtn" aria-label="Close the briefing" title="Close"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
             </div>
           </div>
-          <div class="st-stage" id="st-stage">${slides.map((s: any, i: number) => storySlideHtml(s, i)).join("")}</div>
+          <div class="st-stage" id="st-stage">${slides.map((b: any, i: number) => storySlideWrap(b.inner, b.sl, i, storyLen)).join("")}</div>
           <!-- TWO GESTURES, TWO SURFACES. The content column opens the story in a popover;
                these transparent edge rails move the deck. Making the rails real elements is
                what makes the two unambiguous — before this, "tap right to advance" and "tap

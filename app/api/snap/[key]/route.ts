@@ -537,7 +537,32 @@ export async function GET(
     const blob = mode === "lite" ? unit.lite : unit.full;
     const bytes = textOf(blob);
 
-    /* THE PINNED PATH. Only a VERIFIED match earns a year of immutability. */
+    /* THE PINNED PATH. Only a VERIFIED match earns a year of immutability.
+
+       WHAT `immutable` PROMISES HERE, EXACTLY — because a deploy can change the
+       bytes under a pinned URL and it is better to say so than to discover it.
+
+       Observed 2026-08-10, in a real browser: a tab held
+       `picks_unified?lite=1&cv=…T00:16:55Z` at 4,314,423 bytes from before the
+       deploy and the same URL answered 4,147,411 after it. Same generation, same
+       content — the projection had moved from Postgres to JS and stopped
+       emitting jsonb's cosmetic spaces. 167,012 bytes of whitespace, nothing
+       else; `scripts/verify_lite_projection.ts` compares the surviving key sets
+       of all 527 games against the SQL function and they are identical.
+
+       So the promise this URL makes is "these bytes are generation V of this
+       surface", NOT "these bytes are byte-for-byte eternal". A redeploy may
+       re-render V. That is fine and cannot be avoided cheaply: putting a build
+       id in the URL would make every deploy cold at every POP, and at this
+       project's 43 deploys a day that costs far more than it protects.
+
+       THE RULE THAT FALLS OUT, and it is a real constraint on future work: a
+       change to what a projection MEANS — a field added, a blob stripped — must
+       be accompanied by a publish, because readers holding an immutable copy of
+       V keep it until the manifest names a new version. Changing the shape of V
+       in a deploy alone leaves them on the old shape indefinitely. Changing its
+       spelling, as above, is harmless. verify_lite_projection is the guard that
+       tells the two apart. */
     if (cv && blob.v && blob.v === cv) {
       return new NextResponse(bytes, {
         status: 200,
