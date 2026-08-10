@@ -12490,9 +12490,12 @@ export default function Home() {
          fold's "◆ THE DESK ON THIS GAME · SPLIT 2–2 · VEGA ▲OVER 9 53% · ATLAS
          ▲OVER 9 53% · NOVA ▼UNDER 9 50%…" and, lower down, "What the four
          measured · THE DESK READS IT SPLIT 2–2 · VEGA CALL OVER 53%…". Same
-         four convictions, same split, same numbers. `deskBlockTile` keeps them
-         (it is a titled section on the pane the reader is already on); the raw
-         per-stream panel stays here, because that is a different object.
+         four convictions, same split, same numbers. The duplicate was resolved
+         in favour of the titled section on the pane the reader was already on;
+         the raw per-stream panel stays here, because that is a different
+         object. (That section was `deskBlockTile`, which has since gone with
+         the rest of the committee-era tile surfaces. The removal this note
+         explains is the FOLD's, and it stands without it.)
 
          THE CONFIDENCE GOES FOR THE SAME REASON: this fold renders inside a
          `whySection` that already prints `confidenceBlock(lead)` directly above
@@ -15229,8 +15232,10 @@ export default function Home() {
         let rank = 0, kicker = "", head = "";
         if (c && c.state === "UNANIMOUS" && ans.length >= 3) {
           rank = 5; kicker = "The desk is united";
-          // NEVER NAME THE SIDE. consensusBanner suppresses it when locked; this headline
-          // recomputed the same fact with no gate and printed it in 28px type.
+          // NEVER NAME THE SIDE. The desk's own banner suppressed it whenever the pick was
+          // locked; this headline recomputed the same fact with no gate and printed it in
+          // 28px type. (That banner — `consensusBanner` — has since been removed with the
+          // committee-era surfaces, so this gate is now the only one, not the second one.)
           head = `All ${ans.length} analysts are on the same side.`;
         } else if (c && c.state === "SPLIT" && ans.length >= 4) {
           rank = 4; kicker = "The desk is at war";
@@ -15244,11 +15249,14 @@ export default function Home() {
         } else if (c && c.state === "MAJORITY" && ans.length >= 3) {
           rank = 1; kicker = "The desk leans";
           /* THE SIDE IS THE PRODUCT, AND THIS BRANCH WAS GIVING IT AWAY.
-             consensusBanner — the canonical rendering of this exact fact — suppresses the
-             side word whenever the game's pick is locked. This branch recomputed the same
-             consensus from the same source with NO gate and printed the side, in 28px
-             display type, on the briefing deck a signed-out reader sees first. Same gate as
-             the banner now: the count is the invitation, the side is the product. */
+             The desk's consensus banner — for a long time the canonical rendering of this
+             exact fact — suppressed the side word whenever the game's pick was locked. This
+             branch recomputed the same consensus from the same source with NO gate and
+             printed the side, in 28px display type, on the briefing deck a signed-out reader
+             sees first. It took the banner's gate: the count is the invitation, the side is
+             the product. (`consensusBanner` itself has since gone with the committee-era
+             surfaces, which makes this the LAST place that gate is written down — so it is
+             load-bearing now rather than a second copy, and must not be relaxed.) */
           const consLocked = gameLocked(g, pl);
           const sideWord = consLocked ? "" : String(c.side || "").toUpperCase();
           head = `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)}${sideWord ? ` ${sideWord}` : ""}${consLocked ? " — the desk leans one way." : "."}`;
