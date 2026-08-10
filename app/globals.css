@@ -2618,6 +2618,18 @@ details.more .more-body{padding-top:12px}
   background:var(--paper);border:0;box-shadow:var(--e1);animation:cardIn var(--t-enter) var(--ease-out) both}
 /* the team-tinted wash is retired — on white it muddies the crests it sits behind */
 .gp-hero-wash{display:none}
+/* ════════ THE BALLPARK BEHIND THE SCORE ════════
+   A blurred, dimmed wash of the HOME park, under the hero's own tint and under every piece
+   of type. The image ships pre-blurred and pre-darkened with a bottom-weighted scrim baked
+   in, so nothing here has to filter at paint time — no runtime blur, no backdrop-filter, no
+   cost on a surface that already repaints on live score polls.
+   opacity is the one knob: enough to feel the place, never enough to fight the score. */
+.gp-hero-park{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;
+  opacity:.34;pointer-events:none;border-radius:inherit}
+/* the hero's children sit above it — the wash is the only thing at z-index 0 */
+.gp-hero > *:not(.gp-hero-park):not(.gp-hero-wash){position:relative;z-index:1}
+/* a reader who asked for less motion and less decoration gets the flat card */
+@media (prefers-reduced-transparency:reduce){.gp-hero-park{opacity:.18}}
 .gp-hero>*{position:relative;z-index:1}
 .gp-mu{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
 .gp-team{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
@@ -2864,20 +2876,38 @@ details.more .more-body{padding-top:12px}
 /* --- In-app article reader sheet --- */
 .art-title{font-family:var(--serif);font-weight:800;font-size:23px;line-height:1.16;margin-top:6px;color:var(--ink)}
 .sh-head .art-title{color:var(--ink)}
-.art-byline{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
-.art-mu{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;border-radius:14px;background:var(--glass-hi);border:1px solid var(--glass-brd);margin-bottom:12px}
-.art-mu img,.art-mu .crest{width:38px;height:38px;object-fit:contain}
-.art-mu .crest{display:grid;place-items:center;border-radius:50%;background:rgba(var(--tintc),.92);color:var(--b0);font-family:var(--disp);font-weight:800;font-size:14px}
-.art-mu-t{font-family:var(--disp);font-weight:800;font-size:16px;color:var(--ink)}
-.art-angle-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.art-angle-go{cursor:pointer;border-radius:12px;padding:6px;margin:-6px -6px 8px;transition:background .14s ease}
-.art-angle-go:hover{background:rgba(var(--goldc),.07)}
-.art-angle-go:active{transform:scale(.99)}
-.art-angle-go:focus-visible{outline:2px solid var(--golddeep);outline-offset:2px}
-.art-go{margin-left:auto;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;padding:7px 13px;border-radius:999px;border:1px solid rgba(var(--goldc),.4);background:rgba(var(--goldc),.12);color:var(--golddeep);cursor:pointer;white-space:nowrap}
-.art-angle-go:hover .art-go{background:rgba(var(--goldc),.2)}
+.art-byline{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
 .art-body p{font-size:17px;line-height:1.62;color:var(--ink2,var(--n2));margin:0 0 13px}
 .art-body p b{color:var(--ink)}
+.art-body p:last-child{margin-bottom:0}
+
+/* ══════════ THE ONE CTA ROW ══════════
+   Same shape, same place, every story: at the foot of the piece, after the last word.
+   At most two — our game and the wire that reported it — and they are told apart by
+   colour and by what they say, never by position alone. Each is a two-line label: what
+   it is, then where it goes, so nothing has to be inferred from an arrow. */
+.art-cta{display:grid;grid-template-columns:1fr;gap:9px;margin:22px 0 4px;padding-top:18px;border-top:1px solid var(--glass-brd)}
+.art-cta.two{grid-template-columns:1fr 1fr}
+.art-cta-b{display:flex;align-items:center;gap:8px;min-width:0;width:100%;text-align:left;text-decoration:none;cursor:pointer;
+  padding:11px 11px;border-radius:16px;border:1px solid var(--glass-brd);background:var(--glass-hi);transition:background .14s ease,transform .1s ease}
+.art-cta-b:active{transform:scale(.98)}
+.art-cta-b:focus-visible{outline:2px solid var(--golddeep);outline-offset:2px}
+.art-cta-t{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
+.art-cta-t b{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:12.5px;letter-spacing:.01em;line-height:1.2;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.art-cta-t i{font-style:normal;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:700;font-size:10.5px;letter-spacing:.05em;line-height:1.2;text-transform:uppercase;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.art-cta-go{flex:0 0 auto;font-size:13px;font-weight:800;line-height:1;color:var(--ink3)}
+.art-cta-crests{flex:0 0 auto;display:inline-flex;align-items:center}
+.art-cta-crest,img.art-cta-crest{width:19px;height:19px;object-fit:contain;border-radius:5px}
+.art-cta-crests>*+*{margin-left:-7px}
+/* One button gets the whole width and can afford to breathe; two share it and are trimmed
+   to fit rather than allowed to ellipsis their own label away. */
+.art-cta:not(.two) .art-cta-b{padding:13px 14px}
+.art-cta:not(.two) .art-cta-t b{font-size:13.5px}
+.art-cta:not(.two) .art-cta-crest,.art-cta:not(.two) img.art-cta-crest{width:22px;height:22px;border-radius:6px}
+.art-cta-b.is-pick{border-color:rgba(var(--goldc),.42);background:rgba(var(--goldc),.12)}
+.art-cta-b.is-pick .art-cta-t b,.art-cta-b.is-pick .art-cta-go{color:var(--golddeep)}
+.art-cta-b.is-pick:hover{background:rgba(var(--goldc),.2)}
+.art-cta-b.is-src:hover{background:rgba(var(--rimc),.14)}
 
 /* --- Ticker: give the bet its own pill so it doesn't blend into the live score --- */
 .tk-pick{padding:1px 8px;border-radius:999px;background:rgba(var(--goldc),.12);border:1px solid rgba(var(--goldc),.24);margin-left:2px}
@@ -2885,22 +2915,30 @@ details.more .more-body{padding-top:12px}
 .tk-pick.miss{background:rgba(var(--redc),.13);border-color:rgba(var(--redc),.3)}
 .tk-pick.close{background:rgba(var(--goldc),.12);border-color:rgba(var(--goldc),.28)}
 
-/* --- Article reader: byline row + share + "Our take" label --- */
+/* --- Article reader: byline row + header actions + "Our take" --- */
 .art-byline{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.art-share{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:12px;letter-spacing:.03em;text-transform:uppercase;
-  padding:5px 11px;border-radius:999px;border:1px solid var(--glass-brd);background:var(--glass-hi);color:var(--ink2);cursor:pointer;white-space:nowrap}
-.art-share:active{transform:scale(.95)}
+/* SHARE IS A HEADER ACTION, NOT A BAND. It used to be a pill in the byline row that the
+   375px breakpoint dropped onto a line of its own — a whole band of vertical rhythm for a
+   secondary verb. It sits beside the ✕ now, same round glass, same size, one tap away. */
+.art-acts{position:absolute;z-index:6;display:inline-flex;gap:8px}
 .art-take-lab{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
 
-/* --- Our take: the one paid sentence, set apart from the free story above it ---
-   The article body is journalism and reads as body copy; this is the house talking,
-   so it gets the gold rail and a slightly tighter, heavier set. It sits AFTER the
-   story deliberately — you read the news, then you get the call. */
-.art-take{margin:18px 0 4px;padding:14px 16px;border-radius:14px;border:1px solid rgba(var(--goldc),.32);
+/* --- Our take: ONE block, and it has room to stand in ---
+   The article body is journalism and reads as body copy; this is the house talking, so it
+   keeps the gold rail. It is a small stacked composition rather than a row of four things
+   fighting over 375px: label and result on the top line (the verdict reads against the
+   heading, not against the number), the CALL alone on the next at a size worth reading,
+   the reasoning under that. No button — the route to the full pick is the one CTA row. */
+.art-take{margin:0 0 18px;padding:13px 15px 14px;border-radius:16px;border:1px solid rgba(var(--goldc),.32);
   border-left:3px solid var(--golddeep);background:rgba(var(--goldc),.09)}
+.art-take-h{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:22px}
+.art-take-call{margin-top:9px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.art-take-call .nf-angle{font-size:16px;padding:7px 14px;letter-spacing:.02em}
 .art-take-k{display:block;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:11px;
   letter-spacing:.08em;text-transform:uppercase;color:var(--golddeep);margin-bottom:6px}
-.art-take p{margin:0;font-size:16px;line-height:1.55;font-weight:600;color:var(--ink)}
+.art-take p,.art-take .art-take-p{margin:11px 0 0;font-size:15px;line-height:1.55;font-weight:600;color:var(--ink)}
+.art-take .sts-blurb{margin:11px 0 0;padding:0;border:0;background:none}
+.art-take .sts-blurb-k{margin-bottom:5px}
 .article-story .art-take{background:rgba(var(--goldc),.14);border-color:rgba(var(--goldc),.4)}
 .article-story .art-take p{color:#fff}
 .article-story .art-take-k{color:rgba(var(--goldc),.95)}
@@ -2913,12 +2951,30 @@ details.more .more-body{padding-top:12px}
   padding:11px 18px;border-radius:999px;border:1px solid rgba(var(--bluec),.30);background:rgba(var(--bluec),.09);color:var(--b1);cursor:pointer}
 .res-share:active{transform:scale(.97)}
 
-/* --- Article reader: prev/next nav --- */
-.art-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--glass-brd)}
-.art-navbtn{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;letter-spacing:.02em;padding:10px 15px;border-radius:999px;
-  border:1px solid var(--glass-brd);background:var(--glass-hi);color:var(--ink2);cursor:pointer;white-space:nowrap}
+/* ══════════ THE READER'S PREV/NEXT — A FOOTER, NOT A FOOTNOTE ══════════
+   This lived at the bottom of the scrolling body, two screens below the fold on a phone,
+   which is the same thing as not existing. It is a sibling of the scroller now: pinned to
+   the foot of the sheet, always on screen, carrying its own position in the deck so the
+   ends are STATED rather than implied by a control quietly failing to render. */
+.art-nav{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:9px 14px calc(9px + var(--sab,0px));border-top:1px solid var(--glass-brd);background:var(--bg)}
+.art-navbtn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;letter-spacing:.02em;padding:9px 14px;border-radius:999px;
+  border:1px solid var(--glass-brd);background:var(--glass-hi);color:var(--ink2);cursor:pointer;white-space:nowrap;transition:opacity .14s ease}
+.art-navbtn i{font-style:normal;font-size:13px;line-height:1}
 .art-navbtn.next{border-color:rgba(var(--goldc),.4);background:rgba(var(--goldc),.12);color:var(--golddeep)}
 .art-navbtn:active{transform:scale(.96)}
+.art-navbtn[disabled]{opacity:.32;cursor:default;pointer-events:none}
+.art-navpos{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:12px;letter-spacing:.05em;color:var(--ink3);white-space:nowrap}
+.art-navpos em{font-style:normal;font-weight:700;opacity:.7;margin:0 1px}
+
+/* THE PAGE TURN. Only the contents change — the sheet itself never leaves the screen, so
+   there is no slide-up to replay. Forward wipes in from the right, back from the left. */
+@keyframes artturnf{from{opacity:0;transform:translate3d(16px,0,0)}to{opacity:1;transform:none}}
+@keyframes artturnb{from{opacity:0;transform:translate3d(-16px,0,0)}to{opacity:1;transform:none}}
+.art-turn-f .sh-head,.art-turn-f .sh-body{animation:artturnf .26s var(--ease,ease) both}
+.art-turn-b .sh-head,.art-turn-b .sh-body{animation:artturnb .26s var(--ease,ease) both}
+.art-turn-f .sh-body,.art-turn-b .sh-body{animation-delay:.03s}
+@media(prefers-reduced-motion:reduce){.art-turn-f .sh-head,.art-turn-f .sh-body,.art-turn-b .sh-head,.art-turn-b .sh-body{animation:none}}
 
 /* ══════════ THE STORY POP-UP ══════════
    Leon originally: "it should open the story in a pop-up/overlay view with a clear close
@@ -2979,6 +3035,11 @@ details.more .more-body{padding-top:12px}
 .article-story .sh-head .close{top:20px;right:20px;z-index:4;border-radius:50%;background:rgba(6,9,18,.6);color:#fff;
   border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .article-story .sh-head .close:hover{background:rgba(255,255,255,.16)}
+/* Share and close ride together at the top-right of the hero — the two things a reader
+   does to a story they did not come here to bet on. `.art-act` overrides the absolute
+   placement `.close` carries so the pair can be laid out by the flex row instead. */
+.article-story .sh-head .art-acts{top:20px;right:20px}
+.article-story .sh-head .art-act{position:static;top:auto;right:auto}
 .article-story .art-visual{position:relative;display:grid;place-items:center;height:190px;margin:0 0 14px;overflow:hidden;border-radius:18px;
   background:linear-gradient(135deg,rgba(81,190,255,.18),rgba(var(--goldbrightc),.13),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12)}
 .article-story .art-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(6,9,18,.72));pointer-events:none}
@@ -3003,25 +3064,35 @@ details.more .more-body{padding-top:12px}
 .article-story .sh-sport{color:#7ddcff}
 .article-story .art-title{font-family:var(--disp);font-size:clamp(25px,6vw,38px);line-height:1.02;letter-spacing:0;color:#fff;text-shadow:0 14px 34px rgba(0,0,0,.38)}
 .article-story .sh-meta{color:rgba(235,244,255,.72);font-size:14px;line-height:1.45}
-.article-story .sh-body{padding:15px 18px calc(28px + var(--sab));background:transparent}
-.article-story .art-byline{color:rgba(235,244,255,.62);align-items:flex-start}
-.article-story .art-share,.article-story .art-navbtn{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.14);color:rgba(248,251,255,.86)}
-.article-story .art-share:hover,.article-story .art-navbtn:hover{background:rgba(255,255,255,.15)}
-.article-story .art-mu,.article-story .art-angle-row{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 34px rgba(0,0,0,.23)}
-.article-story .art-mu{border-radius:18px}
-.article-story .art-mu .crest{background:rgba(255,255,255,.12);color:#fff}
-.article-story .art-mu-t,.article-story .art-body p b{color:#fff}
+.article-story .sh-body{padding:15px 18px calc(20px + var(--sab));background:transparent}
+.article-story .art-byline{color:rgba(235,244,255,.62)}
+.article-story .art-navbtn{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.14);color:rgba(248,251,255,.86)}
+.article-story .art-navbtn:hover{background:rgba(255,255,255,.15)}
+.article-story .art-body p b{color:#fff}
 .article-story .art-take-lab{color:rgba(235,244,255,.58)}
 .article-story .nf-angle.edge{background:rgba(var(--goldbrightc),.16);border-color:rgba(var(--goldbrightc),.32);color:#ffd36f}
 .article-story .nf-angle.lean{background:rgba(125,220,255,.13);border-color:rgba(125,220,255,.28);color:#9fe6ff}
-.article-story .art-go{background:rgba(var(--goldbrightc),.14);border-color:rgba(var(--goldbrightc),.3);color:#ffd36f}
 .article-story .art-body p{font-size:17px;line-height:1.66;color:rgba(235,244,255,.8)}
-.article-story .art-nav{border-top-color:rgba(255,255,255,.12)}
+/* The CTA row on the dark reader: the game keeps the house gold, the source stays glass —
+   the two are told apart at a glance without either shouting over the story above them. */
+.article-story .art-cta{border-top-color:rgba(255,255,255,.12)}
+.article-story .art-cta-b{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);box-shadow:0 14px 34px rgba(0,0,0,.23)}
+.article-story .art-cta-b.is-pick{background:rgba(var(--goldbrightc),.15);border-color:rgba(var(--goldbrightc),.34)}
+.article-story .art-cta-b.is-pick .art-cta-t b,.article-story .art-cta-b.is-pick .art-cta-go{color:#ffd36f}
+.article-story .art-cta-b.is-pick:hover{background:rgba(var(--goldbrightc),.24)}
+.article-story .art-cta-b.is-src:hover{background:rgba(255,255,255,.15)}
+.article-story .art-cta-t b{color:#fff}
+.article-story .art-cta-t i{color:rgba(235,244,255,.6)}
+.article-story .art-cta-go{color:rgba(235,244,255,.7)}
+.article-story img.art-cta-crest{background:rgba(255,255,255,.92);padding:2px}
+.article-story .art-cta-crest.crest{display:grid;place-items:center;background:rgba(255,255,255,.14);color:#fff;font-family:var(--disp);font-weight:800;font-size:9px}
+.article-story .art-nav{border-top-color:rgba(255,255,255,.12);background:rgba(6,9,18,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.article-story .art-navpos{color:rgba(235,244,255,.58)}
 .article-story .art-navbtn.next{background:linear-gradient(135deg,#f8fbff,#bfe8ff);border-color:transparent;color:#0d1420}
 /* The phone rule kept the two top corners rounded, which is the last thing still drawing a
    sheet edge across the top of a full-bleed page. Squared off; the width/bottom it also set
    are now what the base rule says anyway. */
-@media(max-width:520px){.sheet.article-story{width:100vw;bottom:0;border-radius:0}.article-story .art-visual{height:168px}.article-story .art-byline{flex-direction:column}.article-story .art-share{align-self:flex-start}}
+@media(max-width:520px){.sheet.article-story{width:100vw;bottom:0;border-radius:0}.article-story .art-visual{height:168px}}
 @media(prefers-reduced-motion:reduce){.article-story .art-visual.is-fallback span{animation:none!important}}
 
 /* Production polish overrides: compact DE calls, story layering, and record widgets. */
@@ -5353,6 +5424,26 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
 .nws-read i{display:inline-flex;line-height:0;transition:transform .18s var(--ease-out)}
 .nws-card:active .nws-read i{transform:translateX(3px)}
 @media(hover:hover){.nws-card:hover .nws-read i{transform:translateX(3px)}}
+/* THE OUTBOUND CARD CARRIES THE CTA ROW ITSELF. A story whose reporting we cannot carry
+   opens no reader, so this card is the end of the line and the same two-button row that
+   normally sits at the foot of the article sits at the foot of the card instead — same
+   component, same shape, same labels, on the deck's dark field. */
+.stories .nws-card .art-cta{margin:14px 0 0;padding-top:0;border-top:0;gap:8px}
+/* The plate directly above already draws both crests and the score, so the game button
+   here drops them and spends the width on saying where it goes instead. */
+.stories .nws-card .art-cta-crests{display:none}
+.stories .nws-card .art-cta-b{padding:10px 11px;gap:6px}
+.stories .nws-card .art-cta-b{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.16);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.stories .nws-card .art-cta-b.is-pick{background:rgba(var(--goldbrightc),.17);border-color:rgba(var(--goldbrightc),.36)}
+.stories .nws-card .art-cta-b.is-pick .art-cta-t b,.stories .nws-card .art-cta-b.is-pick .art-cta-go{color:#ffd36f}
+.stories .nws-card .art-cta-t b{color:#fff}
+.stories .nws-card .art-cta-t i{color:rgba(235,244,255,.62)}
+.stories .nws-card .art-cta-go{color:rgba(235,244,255,.72)}
+.stories .nws-card img.art-cta-crest{background:rgba(255,255,255,.92);padding:2px}
+.stories .nws-card .art-cta-crest.crest{display:grid;place-items:center;background:rgba(255,255,255,.14);color:#fff;font-family:var(--disp);font-weight:800;font-size:9px}
+/* it is not a tap target of its own any more — no pointer, no press-scale on the card */
+.nws-card.is-out{cursor:default}
 
 .stories .sts-pick .sts-bg::before{height:4px;box-shadow:0 0 18px currentColor}
 .stories .sts-kick,.stories .sts-when,.stories .sts-substat,.stories .sts .ps-signals,.stories .sts .pk-made{color:rgba(235,244,255,.68)}

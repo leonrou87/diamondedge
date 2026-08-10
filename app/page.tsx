@@ -5838,6 +5838,40 @@ export default function Home() {
     // sport/theme icon watermark, with the two team logos composited on top (away left,
     // home right, "@" between). Pure logo CDNs (already used for crests) + inline SVG —
     // no external image files, no generated bitmaps. Degrades to text crests on load error.
+    /* ════════ THE BALLPARK BEHIND THE SCORE ════════
+       A blurred, dimmed photograph of the home park sits under the game hero. It is a WASH,
+       not a picture: gaussian-blurred and darkened at build time, with a bottom-weighted
+       scrim baked in so the score and the pick always clear whatever is behind them. That
+       treatment is deliberate — the source images are ~334px wide, and blurred, resolution
+       stops mattering. Sharp it would look like a bad upscale; soft it reads as depth.
+       194 KB for all 32 parks, 6 KB each, immutable, so a reader downloads one once.
+
+       KEYED OFF THE HOME TEAM, NOT A SERVED VENUE ID. The payload carries no venue field, and
+       adding one means editing the serving layer while other work is rewriting it. A club has
+       exactly one home park, so the home team's name answers the same question with no
+       backend change at all. The two TEMPORARY homes are current-season facts and are marked
+       as such: the Rays are at Steinbrenner Field and the Athletics at Sutter Health Park in
+       2026, so an old game may show the club's current park rather than the one it was
+       played in — a wrong blur behind a settled score, which is the cheapest error available
+       here. When the payload does carry a venue id, this map should give way to it. */
+    const PARK_BY_HOME: Record<string, number> = {
+      "Milwaukee Brewers": 32, "Los Angeles Angels": 1, "St. Louis Cardinals": 2889,
+      "Arizona Diamondbacks": 15, "New York Mets": 3289, "Philadelphia Phillies": 2681,
+      "Detroit Tigers": 2394, "Colorado Rockies": 19, "Houston Astros": 2392,
+      "Los Angeles Dodgers": 22, "Boston Red Sox": 3, "Tampa Bay Rays": 2529,
+      "Texas Rangers": 5325, "Cincinnati Reds": 2602, "Kansas City Royals": 7,
+      "Washington Nationals": 3309, "Athletics": 2523, "Oakland Athletics": 10,
+      "San Francisco Giants": 2395, "Baltimore Orioles": 2, "Pittsburgh Pirates": 31,
+      "San Diego Padres": 2680, "Cleveland Guardians": 5, "Chicago White Sox": 4,
+      "Toronto Blue Jays": 14, "Seattle Mariners": 680, "Minnesota Twins": 3312,
+      "Atlanta Braves": 4705, "Chicago Cubs": 17, "New York Yankees": 3313,
+      "Miami Marlins": 4169,
+    };
+    function parkWashUrl(g: any) {
+      const home = String((g && (g.home || g.home_team)) || "").trim();
+      const id = PARK_BY_HOME[home];
+      return id ? `/parks/${id}.webp` : "";
+    }
     const HERO_TINT: any = {
       fire:   ["rgba(255,138,76,.30)", "rgba(217,44,71,.16)"],
       weather:["rgba(255,138,76,.30)", "rgba(217,44,71,.16)"],
@@ -12935,6 +12969,7 @@ export default function Home() {
         : "";
       const gameHero =`<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
+        ${(() => { const u = parkWashUrl(g); return u ? `<div class="gp-hero-park" aria-hidden="true" style="background-image:url('${u}')"></div>` : ""; })()}
         <div class="gp-mu">
           <div class="gp-team away"><span class="gp-crest">${gCrest(g, "away")}</span><span class="gp-ab">${esc(g.away_abbr)}</span>${heroForm("away")}</div>
           <div class="gp-center">${heroScore}</div>
@@ -14378,7 +14413,17 @@ export default function Home() {
       const parts: string[] = [];
       if (gid != null) {
         const crests = g ? `${gCrest(g, "away", `${where}-cta-crest`)}${gCrest(g, "home", `${where}-cta-crest`)}` : "";
-        const mu = g && g.away_abbr && g.home_abbr ? `${esc(g.away_abbr)} @ ${esc(g.home_abbr)}` : "This game";
+        /* NAME THE GAME. Where the board cannot resolve it — a game on a date we have not
+           loaded — the story's own angle still carries the matchup it was written about,
+           so the button says which game rather than "this game". Same two clubs, same
+           served object; nothing is inferred. */
+        const am = String((s && s.angle && typeof s.angle === "object" && s.angle.matchup) || "");
+        const amParts = am.split(/\s+@\s+/);
+        const mu = g && g.away_abbr && g.home_abbr
+          ? `${esc(g.away_abbr)} @ ${esc(g.home_abbr)}`
+          : amParts.length === 2
+            ? `${esc(teamShort(amParts[0]))} @ ${esc(teamShort(amParts[1]))}`
+            : "The game";
         parts.push(`<button class="${where}-cta-b is-pick" data-cta-gid="${esc(String(gid))}">
           ${crests ? `<span class="${where}-cta-crests" aria-hidden="true">${crests}</span>` : ""}
           <span class="${where}-cta-t"><b>Our full pick</b><i>${mu}</i></span>
@@ -14405,9 +14450,11 @@ export default function Home() {
           e.stopPropagation();
           const id = b.dataset.ctaGid;
           const gg = findGameLive(id) || findGame(id) || gameById(id);
+          // On the deck there is no sheet to tear down, so there is nothing to wait for.
+          const wait = $("sheet-layer") && $("sheet-layer").firstChild ? 360 : 0;
           closeDetail(false, true);
-          if (gg) setTimeout(() => openDetail(gg), 360);
-          else setTimeout(() => jumpToGames([id]), 360);
+          if (gg) setTimeout(() => openDetail(gg), wait);
+          else setTimeout(() => jumpToGames([id]), wait);
         };
       });
       // an outbound link is a link — it only needs to stop the card underneath it opening
@@ -14426,6 +14473,8 @@ export default function Home() {
       if (!newsFeed) return null;
       return key === "L" ? newsFeed.lead : ((newsFeed.headlines || []) as any[])[Number(key)];
     }
+    // Direction of the page turn, set by the nav bar just before it re-opens the reader.
+    let articleTurnBack = false;
     function openArticleSheet(s: any, key = "") {
       // A TAP THAT OPENS NOTHING IS A FAILURE TOO. The story key is resolved against a feed
       // that may have refreshed underneath the deck, so "no story" gets a real, closable sheet
@@ -14545,15 +14594,11 @@ export default function Home() {
         const bl = bp.line != null ? Number(bp.line) : (String(bp.side).match(/[\d.]+/) || [])[0];
         return bl == null || a.line == null || Number(bl) === Number(a.line);
       })();
-      // ONE "Our take" ON THE PAGE. The chip row above already carries that label, so the
-      // paragraph under the story repeated it verbatim four inches lower — invisible while
-      // the feed served no takes at all, unmissable now that it does.
+      // ONE "Our take" ON THE PAGE — and now one BLOCK. The chip row above the story and
+      // the blurb panel below it were two panels about the same call with the same heading;
+      // `takePanel` below is the single object that carries the label, the call, the result
+      // and the reasoning together.
       const angleChip = newsAngle(s.angle);
-      const takeHtml = artBlurb
-        ? `<div class="art-take">${artBlurb}</div>`
-        : takeConfirmed && entitled()
-        ? `<div class="art-take">${angleChip ? "" : `<span class="art-take-k">◆ Our take</span>`}<p>${mdBold(takeTxt)}</p></div>`
-        : "";
       /* A MATCHUP HERO SHOWS THE SCORE ONCE THERE IS ONE. "vs" between two crests is the
          right word before first pitch and a dead one after it — the reader has come in
          from a card that already said 2–1. */
@@ -14565,12 +14610,70 @@ export default function Home() {
       const gpick = g ? displayPick(g) : null;
       const gres = g && gameState(g).kind === "final" && gpick && gpick.action === "TAKE" ? pickResult(g, gpick) : null;
       const artRes = gres ? `<span class="art-res ${gres}">${gres === "hit" ? "✓ Hit" : gres === "miss" ? "✗ Missed" : "Push"}</span>` : "";
-      const html = `
-        <div class="sheet-bg article-bg" id="sheet-bg"></div>
-        <div class="sheet article-story" id="sheet" role="dialog" aria-modal="true">
+      /* ════════ FIVE BANDS BEFORE THE FIRST WORD (Leon, 2026-08-10) ════════
+         "Fix the spacing on the news stories… between the standfirst and the first line of
+          body there are FIVE stacked bands — dek, byline/read-time, SHARE, a game bar, and
+          the OUR TAKE row — before a reader reaches a single word of the story."
+
+         Counted at 375px and he is right, and three of the five were not earning the room:
+
+          · SHARE was a full-width band of its own, because `@media(max-width:520px)` stacks
+            `.art-byline` into a column and drops the button onto its own line. Sharing is
+            a header action on every reading surface Apple ships; it is a round glass button
+            beside the ✕ now and it costs nothing.
+          · THE GAME BAR ("ATH @ BOS") duplicated the hero directly above it — which already
+            draws both crests and the score — and duplicated the CTA directly below it,
+            which went to the same game page. It is gone; the crests and the matchup live on
+            the one game CTA at the foot.
+          · TWO "OUR TAKE" BLOCKS. The chip row sat above the body and the blurb panel sat
+            below it, both about the same call. One panel now, above the body, holding the
+            label, the result, the call and the reasoning together.
+
+         Two bands remain between standfirst and story: who wrote it and when, then our
+         take. Both are the reader's reasons for being here. */
+      const takeBody = artBlurb
+        ? artBlurb
+        : takeConfirmed && entitled()
+        ? `<p class="art-take-p">${mdBold(takeTxt)}</p>`
+        : "";
+      /* ════════ THE OUR TAKE ROW HAD NO ROOM TO STAND IN (Leon, 2026-08-10) ════════
+         "Our take spacing looks weird… a label, a UNDER 9.5 chip, a ✓ Hit chip and a
+          'See our full pick →' button all competing on one line."
+
+         Four objects of three different kinds on one 375px flex line: a 12px uppercase
+         label whose cap-height sat against two pill baselines, a bordered gold chip, a
+         tinted result chip, and a button shoved to the far right by `margin-left:auto` —
+         which, once it wrapped, left the label and chips hanging above an orphaned pill.
+
+         Nothing may be dropped: the side is our call and the result is whether it landed,
+         and they are the two facts the panel exists to state. So it is a layout fix. The
+         panel is a small stacked composition instead of a row: the label and the result
+         take the top line (label leading, result trailing, so the verdict reads against
+         the heading rather than against the number), the CALL gets a line of its own at
+         the size it deserves, and the reasoning follows underneath. The button is not here
+         at all — it moved to the one CTA row at the foot, which is the whole point of #4. */
+      const takePanel = angleChip || takeBody
+        ? `<section class="art-take" aria-label="Our take">
+             <div class="art-take-h"><span class="art-take-lab">Our take</span>${artRes}</div>
+             ${angleChip ? `<div class="art-take-call">${angleChip}</div>` : ""}
+             ${takeBody}
+           </section>`
+        : "";
+      const ctaRow = newsCtaRow(s, g, gid, "art");
+      const navBar = navKeys.length > 1 && ci >= 0
+        ? `<nav class="art-nav" aria-label="Story navigation">
+             <button class="art-navbtn" data-navk="${prevKey != null ? esc(prevKey) : ""}"${prevKey == null ? " disabled aria-disabled=\"true\"" : ""}><i aria-hidden="true">←</i><span>Prev</span></button>
+             <span class="art-navpos">${ci + 1} <em>of</em> ${navKeys.length}</span>
+             <button class="art-navbtn next" data-navk="${nextKey != null ? esc(nextKey) : ""}"${nextKey == null ? " disabled aria-disabled=\"true\"" : ""}><span>Next story</span><i aria-hidden="true">→</i></button>
+           </nav>`
+        : "";
+      const inner = `
           <div class="sh-grab" id="sh-grab"><span></span></div>
           <div class="sh-head">
-            <button class="close" id="sheet-close" aria-label="Close">✕</button>
+            <span class="art-acts">
+              <button class="close art-act" id="art-share" aria-label="Share this story">↗</button>
+              <button class="close art-act" id="sheet-close" aria-label="Close">✕</button>
+            </span>
             ${/* THE HEADER IS THE CARD, CONTINUED — not a photo with a headline underneath it.
                   The news card the reader just tapped is an App-Store "Today" card: the picture
                   FILLS it, a scrim rises from the foot, and the headline sits ON the image. The
@@ -14606,42 +14709,57 @@ export default function Home() {
             </div>
           </div>
           <div class="sh-body">
-            <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span><button class="art-share" id="art-share" aria-label="Share this story">Share ↗</button></div>
-            ${g ? `<div class="art-mu">${gCrest(g, "away", "art-crest")}<span class="art-mu-t">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span>${gCrest(g, "home", "art-crest")}</div>` : ""}
-            ${angleChip ? `<div class="art-angle-row${gid != null ? " art-angle-go" : ""}"${gid != null ? ` data-gid="${esc(String(gid))}" role="button" tabindex="0" aria-label="See our full pick"` : ""}><span class="art-take-lab">Our take</span>${angleChip}${artRes}${gid != null ? `<span class="art-go">See our full pick →</span>` : ""}</div>` : ""}
+            <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span></div>
+            ${takePanel}
             <div class="art-body">${body}</div>
-            ${takeHtml}
+            ${ctaRow}
             ${adSlot("article-end")}
-            ${prevKey != null || nextKey != null ? `<div class="art-nav">${prevKey != null ? `<button class="art-navbtn" data-navk="${esc(prevKey)}">← Previous</button>` : `<span></span>`}${nextKey != null ? `<button class="art-navbtn next" data-navk="${esc(nextKey)}">Next story →</button>` : `<span></span>`}</div>` : ""}
           </div>
-        </div>`;
+          ${navBar}`;
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
-      layer.innerHTML = html;
+      /* THE SURFACE STAYS. Advancing used to rewrite the whole layer, which destroyed the
+         `.sheet` element — and a fresh `.sheet` replays `sheetin`, the full slide-up from
+         the bottom of the screen. That is a close and a reopen, however fast it is. So a
+         reader that is ALREADY OPEN keeps its element and only swaps its contents; the
+         page turn is a short directional wipe on the head and the body, and the scrim, the
+         rounded corners and the swipe-back binding are never touched. */
+      const live = layer.querySelector(".sheet.article-story") as any;
+      const turning = !!live;
+      let sheet: any;
+      if (live) {
+        sheet = live;
+        sheet.innerHTML = inner;
+        sheet.classList.remove("art-turn-f", "art-turn-b");
+        void sheet.offsetWidth;                                   // re-arm the animation
+        sheet.classList.add(articleTurnBack ? "art-turn-b" : "art-turn-f");
+      } else {
+        layer.innerHTML = `
+        <div class="sheet-bg article-bg" id="sheet-bg"></div>
+        <div class="sheet article-story" id="sheet" role="dialog" aria-modal="true">${inner}</div>`;
+        sheet = $("sheet");
+        bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
+        bindSwipeBack(sheet);
+      }
+      articleTurnBack = false;
       document.body.classList.add("sheet-open");
       bindClick("sheet-close", () => closeDetail());
-      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
-      bindSwipeBack($("sheet"));
-      // The whole "Our take" row is the pick affordance — clicking it ALWAYS opens the game's
-      // full pick. Resolve the game at click-time (state may have loaded since render), mirroring
-      // the article-row handlers: live/loaded slate → openDetail; otherwise jump the board to it.
-      const gow = layer.querySelector(".art-angle-go") as any;
-      if (gow && gid != null) {
-        const openPick = () => {
-          const gg = findGameLive(gid) || findGame(gid) || gameById(gid) || g;
-          closeDetail(false, true);
-          // closeDetail wipes #sheet-layer after its 320ms exit animation — openDetail renders
-          // into that SAME layer, so it must run AFTER the wipe or its DOM gets erased (the race
-          // that made the pick "do nothing"). 360ms clears the teardown; jumpToGames is unaffected.
-          if (gg) setTimeout(() => openDetail(gg), 360);
-          else setTimeout(() => jumpToGames([gid]), 360);
-        };
-        gow.onclick = openPick;
-        gow.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPick(); } };
+      bindNewsCta(sheet);
+      /* AND THE DECK UNDERNEATH FOLLOWS THE READER. Read four stories forward, close, and
+         the briefing used to be sitting exactly where you left it four stories ago. The
+         slide for a story is the one carrying its key, so the deck is simply told to be
+         there — no second ordering, nothing to keep in sync. */
+      if (key) {
+        const card = document.querySelector(`.st-slide [data-go="news"][data-nf="${(window as any).CSS && CSS.escape ? CSS.escape(key) : key}"]`) as any;
+        const sl = card && card.closest ? card.closest(".st-slide") : null;
+        if (sl && sl.dataset.si != null) { const si = Number(sl.dataset.si); if (!isNaN(si) && si !== storyIdx) gotoStory(si); }
       }
-      layer.querySelectorAll(".art-navbtn").forEach((b: any) => (b.onclick = () => {
-        const ns = newsStoryByKey(b.dataset.navk);
-        if (ns) { openArticleSheet(ns, b.dataset.navk); const sb = $("sheet") && $("sheet").querySelector(".sh-body"); if (sb) sb.scrollTop = 0; }
+      sheet.querySelectorAll(".art-navbtn").forEach((b: any) => (b.onclick = () => {
+        const k = b.dataset.navk;
+        if (!k) return;                                            // an end stop: it is there to say so
+        articleTurnBack = navKeys.indexOf(k) < ci;
+        const ns = newsStoryByKey(k);
+        if (ns) { openArticleSheet(ns, k); const sb = $("sheet") && $("sheet").querySelector(".sh-body"); if (sb) sb.scrollTop = 0; }
       }));
       const shb = $("art-share");
       if (shb) shb.onclick = async (e: any) => {
@@ -15252,10 +15370,30 @@ export default function Home() {
            </span>`
         : "";
       const src = String(s.source || "").trim();
+      /* ═══ A CARD ONLY CLAIMS TO OPEN WHAT IT CAN OPEN (Leon, 2026-08-10) ═══
+         See `newsCarriesReport`. Where the wire handed us a headline and no reporting, our
+         reader has nothing to add to that headline — so this card does not promise one.
+
+         THE CTA ROW LIVES ON WHATEVER SURFACE IS THE END OF THE LINE FOR THAT STORY. A
+         card that opens our reader keeps its one quiet "Read the story ›" and the reader's
+         foot carries the row. A card that opens nothing IS the end of the line, so the row
+         moves here, unchanged — same component, same shape, same foot position, same two
+         labels — and the card stops being a tap target of its own, because a card with two
+         explicit destinations must not also have a silent third. The plate stays: the
+         score is the truest thing on an imageless card and it is still a fact we hold. */
+      const carries = newsCarriesReport(s);
+      const su = newsSourceUrl(s);
+      const out = !carries && su;
+      const open = out
+        ? ""
+        : ` data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Read this story"`;
+      const foot = out
+        ? newsCtaRow(s, nG, nGid, "art")
+        : `<span class="nws-foot"><span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span>${src ? `<span class="nws-src">${esc(src)}</span>` : ""}</span>`;
       return `<div class="sts sts-news">
         ${storyField("news")}
         <div class="sts-core">
-          <article class="nws-card sts-open nofoto" data-go="news" data-nf="${esc(sl.key)}" role="button" tabindex="0" aria-label="Read this story">
+          <article class="nws-card nofoto${out ? " is-out" : " sts-open"}"${open}>
             <span class="nws-shotwrap" aria-hidden="true">${img}</span>
             <span class="nws-scrim" aria-hidden="true"></span>
             <div class="nws-body">
@@ -15264,7 +15402,7 @@ export default function Home() {
               <h3 class="sts-head">${esc(s.headline || s.title || "")}</h3>
               ${dek ? `<p class="sts-dek">${esc(dek)}</p>` : ""}
               ${plate}
-              <span class="nws-foot"><span class="nws-read">Read the story<i aria-hidden="true">${CHEV_R}</i></span>${src ? `<span class="nws-src">${esc(src)}</span>` : ""}</span>
+              ${foot}
             </div>
           </article>
         </div>
@@ -15717,6 +15855,8 @@ export default function Home() {
           else if (go === "games") switchTab("games");
         };
       });
+      // the CTA row on a card that is the end of the line — same component, same handlers
+      bindNewsCta(view);
       view.querySelectorAll(".sts-srow[data-gid]").forEach((rw: any) => {
         const open = (e: any) => { e.stopPropagation(); const g = findGameLive(rw.dataset.gid) || findGame(rw.dataset.gid); if (g) openDetail(g); };
         rw.onclick = open;
