@@ -6640,6 +6640,18 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
 .rcap-day-win b{font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
 .rcap-day-b{padding:0 12px 11px}
 .rcap-day-head{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink);margin-top:2px}
+/* ---- a night the CURRENT desk did not work ----
+   Deliberately quiet: this is a provenance note on a real graded record, not a warning about
+   bad data. It reads as an aside so the night below it still reads as a night, and the tag on
+   the summary is what makes it legible while the fold is closed — which is how the archive is
+   usually read. Muted ink and a slate rail rather than an alert colour, for the same reason. */
+.rcap-day.prevdesk{background:rgba(var(--slatec),.06)}
+.rcap-eratag{flex-shrink:0;font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink4);background:rgba(var(--slatec),.12);
+  box-shadow:inset 0 0 0 1px rgba(var(--slatec),.22);border-radius:999px;padding:2.5px 7px;white-space:nowrap}
+.rcap-era{margin:2px 0 9px;padding-left:9px;border-left:2px solid rgba(var(--slatec),.34);
+  font-family:var(--sans);font-weight:500;font-size:12px;line-height:1.5;color:var(--ink4);text-wrap:pretty}
+@media(max-width:420px){.rcap-eratag{font-size:9px;padding:2px 6px;letter-spacing:.08em}}
 
 /* ---- analyst sheet: takes · week · rivalries · best call ---- */
 .anl-big.wk b{display:inline-flex;align-items:center;gap:5px}
@@ -9294,6 +9306,18 @@ main.swiping{transition:none !important;will-change:transform}
 .plink{appearance:none;border:0;background:transparent;padding:0;margin:0;font:inherit;color:inherit;
   letter-spacing:inherit;cursor:pointer;text-align:left;border-bottom:1px solid transparent;
   transition:border-color var(--t-fast) var(--ease),opacity var(--t-press) var(--ease)}
+/* A NAME INSIDE A PARAGRAPH IS A WORD, NOT A WIDGET.
+   `.plink` is a <button>, so it is inline-block by default — which is right in the box
+   score and the lineup rail, where each name owns a cell, and wrong in flowing prose: an
+   inline-block cannot break across a line, so "Brady Singer" at the end of a measure
+   pushes the whole name to the next one and rags the paragraph. In the preview narrative
+   the name has to behave like the text around it, which means `display:inline` and a
+   real underline that follows the wrap. Scoped to prose so the existing surfaces, which
+   rely on the box behaviour, are untouched. */
+.whycard p .plink{display:inline;border-bottom:0;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;
+  text-decoration-color:rgba(var(--rimc),.34)}
+.whycard p .plink:hover{text-decoration-color:var(--ink2)}
 .plink:hover{border-bottom-color:rgba(var(--rimc),.28)}
 .plink:active{opacity:.55}
 .plink:focus-visible{outline:2px solid var(--acc2);outline-offset:2px;border-radius:3px}

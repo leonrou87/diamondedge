@@ -1520,7 +1520,7 @@ export default function Home() {
     }
     const LIVE_DIR: any = {
       trending_hit: { cls: "hit", word: "trending our way", short: "our way" },
-      too_close: { cls: "close", word: "still a coin flip", short: "coin flip" },
+      too_close: { cls: "close", word: "dead even", short: "even" },
       trending_miss: { cls: "miss", word: "trending against us", short: "against us" },
     };
     /* ═══════ ONE LADDER FOR THE LIVE READ — the number names itself, everywhere ═══════
@@ -3236,29 +3236,6 @@ export default function Home() {
     function analystRole(a: any) {
       return String((a && a.title) || "").trim();
     }
-    function analystMotionVars(a: any) {
-      const raw = a && a.conv != null ? Number(a.conv) : null;
-      const c = raw != null && isFinite(raw) ? Math.max(0.5, Math.min(0.72, raw)) : 0.5;
-      const k = Math.max(0, Math.min(1, (c - 0.5) / 0.12));
-      const amp = 0.45 + 0.95 * k;
-      return [
-        `--an-dur:${(3.75 - 1.55 * k).toFixed(2)}s`,
-        `--an-glow:${(0.14 + 0.24 * k).toFixed(2)}`,
-        `--an-glow-hi:${(0.26 + 0.24 * k).toFixed(2)}`,
-        `--an-lift:${(-4 * amp).toFixed(1)}px`,
-        `--an-hop:${(-6 * amp).toFixed(1)}px`,
-        `--an-drop:${(2 * amp).toFixed(1)}px`,
-        `--an-shift:${(3 * amp).toFixed(1)}px`,
-        `--an-shift-neg:${(-2 * amp).toFixed(1)}px`,
-        `--an-smallshift:${(1.5 * amp).toFixed(1)}px`,
-        `--an-smalllift:${(-1.5 * amp).toFixed(1)}px`,
-        `--an-rot:${(6 * amp).toFixed(1)}deg`,
-        `--an-rot-neg:${(-4 * amp).toFixed(1)}deg`,
-        `--an-bigrot:${(14 * amp).toFixed(1)}deg`,
-        `--an-bigrot-neg:${(-9 * amp).toFixed(1)}deg`,
-        `--an-pop:${(1 + 0.075 * amp).toFixed(3)}`,
-      ].join(";");
-    }
     const CONS_STATES = ["UNANIMOUS", "MAJORITY", "SPLIT", "PENDING"];
     function normConsensusBlock(c: any) {
       if (!c || typeof c !== "object") return null;
@@ -3353,95 +3330,8 @@ export default function Home() {
       if (!action && !sc && !pred && !coherence && !strategy) return null;
       return { action, rationale: humanNote(src.rationale_line), spread: sc, pred, coherence, strategy, raw: src };
     }
-    // "4–0 OVER · UNANIMOUS" — the consensus headline. Locked mode keeps the count + state
-    // but redacts the side (the side is the product).
-    function consensusBanner(g: any, locked = false, size = "tile") {
-      const c = deskConsensus(g);
-      if (!c) return "";
-      const cls = c.state === "UNANIMOUS" ? "unan" : c.state === "MAJORITY" ? "maj" : c.state === "SPLIT" ? "split" : "pend";
-      const hi = Math.max(c.nOver, c.nUnder), lo = Math.min(c.nOver, c.nUnder);
-      const sideWord = locked ? "" : String(c.side || "").toUpperCase();
-      let txt = "";
-      if (c.state === "PENDING") txt = "DESK CONVENES AT THE WALL";
-      else if (c.state === "SPLIT") txt = `SPLIT ${c.nOver}–${c.nUnder}`;
-      else txt = `${hi}–${lo}${sideWord ? ` ${sideWord}` : ""} · ${c.state}`;
-      const sub = c.spread && !locked && c.spread.state !== "PENDING"
-        ? `<i class="cons-sub">RL ${c.spread.state === "SPLIT" ? `split ${c.spread.nOver}–${c.spread.nUnder}` : `${Math.max(c.spread.nOver, c.spread.nUnder)}–${Math.min(c.spread.nOver, c.spread.nUnder)} ${esc(String(c.spread.side || "").toUpperCase())}`}</i>`
-        : "";
-      const sizeCls = size === "mini" ? " cons-mini" : size === "wide" ? " cons-wide" : "";
-      return `<span class="cons ${cls}${sizeCls}"><i class="cons-dot" aria-hidden="true"></i>${esc(txt)}${sub}</span>`;
-    }
-    /* "SIM SAYS 5–3" — the most likely final from the 20,000-run physical simulator.
-       THE ATLAS MARK CAME OFF THIS CHIP (2026-07-31). The scoreline comes from the Monte
-       Carlo stream (sim_stream_spec: 20,000 sims a game, re-priced at every wall), which is
-       a different engine from the ATLAS slice — and ATLAS's mark now draws the ballpark
-       itself, because ATLAS reads park, altitude, roof and the plate umpire and simulates
-       nothing. Wearing that mark here would teach that the conditions model rolls out
-       games. The served `source` string still names whatever the backend says produced it,
-       in the tooltip, where it is a fact rather than an identity. */
-    // A PREDICTED FINAL SCORE IS A DIRECTION. "SIM SAYS 5–3" beside a market total of 8.5
-    // is the under, spelled out — in the text AND in the title attribute. Locked ⇒ absent.
-    /* THE SIMULATOR CHIP IS RETIRED (Leon, 2026-08-09: "we can ignore the sim setting now
-       that sims out the runs, let's remove that"). It projected a run total from the
-       simulator and sat beside the pick — a second number about the same game, from an
-       engine that no longer decides anything. Definition kept for the dead-surface sweep;
-       every call site is gone. */
-    function simSaysChip(g: any, size = "tile", locked = false) {
-      if (locked) return "";
-      const chief = deskChief(g);
-      const p = chief && chief.pred;
-      if (!p) return "";
-      return `<span class="simsays${size === "big" ? " ss-big" : ""}" title="${esc(p.source)} — most likely final score from 20,000 simulations">SIM SAYS ${num(p.away, 0)}–${num(p.home, 0)}</span>`;
-    }
-    // The chief's run-line second read (replaces the generic spread row when served).
-    function chiefSpreadLine(g: any, chief: any, locked = false) {
-      if (locked) return "";
-      const sp = chief && chief.spread;
-      if (!sp) return "";
-      // explicit no-call: the desk's margin voices disagree — say so, don't go quiet
-      if (!sp.side) {
-        return sp.rationale ? `<div class="ch-spread"><span class="chs-k">Run line</span><b class="nocall">No call</b><span class="chs-why">${esc(sp.rationale)}</span></div>` : "";
-      }
-      const ab = sp.side === "home" ? (g && g.home_abbr) || mlbAbbr(sp.side_team) || "HOME"
-        : sp.side === "away" ? (g && g.away_abbr) || mlbAbbr(sp.side_team) || "AWAY" : String(sp.side).toUpperCase();
-      const ln = sp.line != null && isFinite(Number(sp.line)) ? sgn(Number(sp.line)) : "";
-      const call = [ab, ln].filter(Boolean).join(" ");
-      if (!call) return "";
-      return `<div class="ch-spread"><span class="chs-k">Run line</span><b>${esc(call)}</b>${sp.rationale ? `<span class="chs-why">${esc(sp.rationale)}</span>` : ""}</div>`;
-    }
     // The verdict strip: ◆ PLAY (bold) / ◆ LEAN / ◆ WE PASS (the pass styled proudly —
     // passing on a split desk IS the discipline being sold).
-    // The four calls as one compact row (glyph · name · side · conviction). Tap a cell →
-    // that analyst's card. Locked picks redact the sides (crisp dots), never the cast.
-    function deskChipRow(g: any, locked = false, interactive = true) {
-      const ans = deskAnalysts(g);
-      if (!ans.length) return "";
-      const cells = ans.map((a) => {
-        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
-        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
-        const arrow = a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : "•";
-        const sideTxt = a.dir ? a.dir.toUpperCase() : (a.side ? esc(a.side.toUpperCase()) : "—");
-        const callWord = a.dir === "over" ? "OVER" : a.dir === "under" ? "UNDER" : "PASS";
-        const call = hide
-          ? `<span class="dsk-dots" aria-hidden="true">●●</span>`
-          : `<span class="dsk-callpill ${dirCls || "none"}">${esc(callWord)}</span>`;
-        const conv = !hide && a.conv != null ? `<span class="dsk-conv">${Math.round(a.conv * 100)}%</span>` : "";
-        // conviction as LIGHT: a hairline meter in the analyst's own accent under the call
-        const meter = !hide && a.conv != null
-          ? `<span class="dsk-meter" aria-hidden="true"><i style="width:${Math.max(6, Math.min(100, a.conv * 100)).toFixed(0)}%"></i></span>` : "";
-        const tag = interactive ? "button" : "span";
-        // EVERY READ CARRIES ITS LINE. An analyst's call is meaningless without the number
-        // it was priced against, so each cell states it: the analyst's own served line when
-        // there is one, otherwise the game's locked pregame total (the number they all saw).
-        const pg = pregameLine(g);
-        const priced = a.line != null ? a.line : (pg && pg.total && pg.total.line != null ? pg.total.line : null);
-        const at = !hide && priced != null
-          ? `<span class="dsk-line" title="the line this read was priced against">Line ${esc(lineStr(priced))}</span>` : "";
-        return `<${tag} class="dsk-cell an-${esc(a.key)}" style="${analystMotionVars(a)}"${interactive ? ` data-an="${esc(a.key)}" aria-label="${esc(a.name)} — ${esc(a.title || "analyst")}${hide ? "" : a.side ? `, ${sideTxt}${priced != null ? ` at ${lineStr(priced)}` : ""}` : ", no call yet"}"` : ""}>
-          <span class="dsk-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b></span>${at}<span class="dsk-callrow"><i>Call</i>${call}${conv}</span>${meter}</${tag}>`;
-      }).join("");
-      return `<div class="dsk-row">${cells}</div>`;
-    }
 
     /* ═════════════ THE PREGAME LINE — the number all four analysts were priced against ═════════════
        Leon: "it's really unclear when looking at a game to know what the pregame line was."
@@ -3852,41 +3742,6 @@ export default function Home() {
       </details>`;
     }
     // The four VOICES on a matchup panel, folded behind one tap: the chief's rationale is
-    // the primary read on the tile; expanding gives each analyst's persona-voice take on
-    // THIS game. Renders only when at least one served take exists (and never on a locked
-    // pick — the takes argue a side).
-    function deskVoicesFold(g: any, locked = false) {
-      if (locked) return "";
-      const voiced = deskAnalysts(g).filter((a: any) => a.take && !a.noRead);
-      if (!voiced.length) return "";
-      const rows = voiced.map((a: any) => `<div class="dskv an-${esc(a.key)}" data-an="${esc(a.key)}" role="button" tabindex="0">
-          <span class="dskv-id">${deskGlyph(a.key, 12)}<b>${esc(a.name)}</b>${a.dir ? `<i class="dskv-dir ${a.dir === "over" ? "ou-over" : "ou-under"}">${a.dir === "over" ? "▲" : "▼"}</i>` : ""}</span>
-          <p class="dskv-say">“${esc(a.take)}”</p>
-        </div>`).join("");
-      return `<details class="dsk-voices">
-        <summary><span class="dskv-k">◆ Hear the desk</span><span class="dskv-sum">${voiced.length} voice${voiced.length === 1 ? "" : "s"} on this game</span><span class="sgc-caret" aria-hidden="true">›</span></summary>
-        <div class="dskv-rows">${rows}</div>
-      </details>`;
-    }
-    // THE STAR TAKE — the desk's loudest voice on this game, promoted to a HEADLINE quote
-    // (featured / lead cards). The highest-conviction analyst with a served take speaks in
-    // display type; the other three ride as glyph chips. Locked picks render nothing (a
-    // quote argues the side). "" when no takes are served — every surface degrades.
-    // The whole desk block for a game tile: consensus headline · sim score · the four calls ·
-    // the chief's verdict (+ run-line read) · the four voices behind one tap. "" when the
-    // desk isn't served for this game.
-    function deskBlockTile(g: any, locked = false) {
-      const ans = deskAnalysts(g);
-      if (!ans.length) return "";
-      // The chief's verdict has been PROMOTED out of this block into deCallBlock() — it is
-      // the card's conclusion now, not a row inside the desk's reads. This block is purely
-      // "what the four analysts said"; the conclusion renders after it.
-      return `<div class="deskblk">
-        <div class="dsk-toprow"><span class="dsk-lab">The desk reads it</span>${consensusBanner(g, locked)}</div>
-        ${deskChipRow(g, locked)}
-        ${deskVoicesFold(g, locked)}
-      </div>`;
-    }
     // ---- record.analysts → the standings ----
     function deskRecordRows() {
       for (const d of [betaLiveData, betaData, livePayload, payload]) {
@@ -4318,10 +4173,10 @@ export default function Home() {
         const cls = mine > theirs ? "pos" : mine < theirs ? "neg" : "";
         const nm = (DESK_CAST[opp] || {}).name || opp;
         return `<button class="anl-riv an-${esc(opp)} ${ledgerCls(anLedger(opp))}${scored ? "" : " early"}" data-an="${esc(opp)}"
-          aria-label="${esc(scored ? `Rivalry with ${nm} — ${mine} to ${theirs} over ${r.n} disagreements` : `${nm} — only ${r.n} disagreement${r.n === 1 ? "" : "s"} so far, too few to score`)}">
+          aria-label="${esc(scored ? `Rivalry with ${nm} — ${mine} to ${theirs} over ${r.n} disagreements` : `${nm} — ${r.n} disagreement${r.n === 1 ? "" : "s"} logged; the scoreline unlocks at ${H2H_MIN_N}`)}">
           <span class="anl-riv-id">${deskGlyph(opp, 12)}<b>vs ${esc(nm)}</b></span>
           ${scored ? `<b class="anl-riv-rec ${cls}">${mine}–${theirs}</b><i>when they disagree</i>`
-            : `<b class="anl-riv-rec none">—</b><i>only ${r.n} disagreement${r.n === 1 ? "" : "s"} — too few to score</i>`}
+            : `<b class="anl-riv-rec none">—</b><i>${r.n} of the ${H2H_MIN_N} disagreements that unlock a scoreline</i>`}
         </button>`;
       }).join("");
       // BEST RECENT CALL — the most recent night this analyst owned the desk's best call;
@@ -4454,10 +4309,12 @@ export default function Home() {
     function bindDeskTaps() {
       if (deskTapBound) return; deskTapBound = true;
       document.addEventListener("click", (e: any) => {
-        // "Hear the desk" fold inside a clickable tile: let the <details> toggle, but never
-        // bubble up into the tile's open-game handler.
-        const sum = e.target && e.target.closest && e.target.closest(".dsk-voices summary");
-        if (sum) { e.stopPropagation(); return; }
+        /* The "Hear the desk" guard stood here — it stopped a click on the fold's
+           <summary> from bubbling into the tile's open-game handler. `deskVoicesFold`
+           was the only thing that ever emitted `.dsk-voices`, and it went with the rest
+           of the committee-era tile surfaces, so the guard now protects a selector that
+           cannot appear. Removed with it: a listener that matches nothing is not
+           harmless, it is a claim that a surface exists. */
         const b = e.target && e.target.closest && e.target.closest("[data-an]");
         if (!b) return;
         e.preventDefault(); e.stopPropagation();
@@ -4619,7 +4476,39 @@ export default function Home() {
       const worst = normRecapCall(r.worst_call);
       const note = humanNote(r.consensus_note != null ? r.consensus_note : r.note);
       if (!winner && !lines.length && !best && !worst && !note) return null;
-      return { date, winner, lines, best, worst, note, headline: humanNote(r.headline != null ? r.headline : r.desk_verdict_line) };
+      /* ══════ WHICH DESK'S NIGHT THIS IS ══════
+         The backend stamps every stored recap with `desk_era` and hangs an `era_note` on
+         the ones written before the 2026-07-31 re-architecture (analyst_desk.recaps_payload).
+         Both were being dropped here, and dropping them was worse than it sounds.
+
+         This normaliser deliberately keeps NO served name: it reads the analyst KEY out of
+         whatever the payload spells and renders every label from DESK_CAST, the current
+         roster. That is right for a v2 night and it is a FABRICATION on an older one — the
+         two pre-rebuild nights in the store carry "ATLAS · The Physicist" and "NOVA · The
+         Quant", and the archive was re-labelling those four dismantled engines' graded
+         records as The Conditions and The Bats. The stale titles the owner saw in the
+         payload never reached the screen; what reached the screen was the current desk
+         wearing another engine's record.
+
+         So the era rides through, and the surface says which desk it is looking at. The
+         backend's own sentence is preferred over anything composed here — it is the write-
+         once explanation of a write-once row.
+
+         AN ABSENT STAMP IS NOT AN OLD NIGHT. The flag is raised only by a stamp that is
+         PRESENT and says something other than v2, or by the presence of the backend's own
+         era note. Treating a missing field as "previous desk" would have put that banner on
+         every night served by any path that does not carry the stamp — the single
+         `record.desk_recap` block, and the ?deskmock fixture — which is a louder and more
+         confusing lie than the one being fixed. Silence degrades to "this is the current
+         desk", which is what every night was already being rendered as. */
+      const eraRaw = String(r.desk_era == null ? "" : r.desk_era).toLowerCase().trim();
+      const eraNote = humanNote(r.era_note);
+      const prevDesk = (eraRaw !== "" && eraRaw !== "v2") || !!eraNote;
+      return {
+        date, winner, lines, best, worst, note,
+        prevDesk, eraNote,
+        headline: humanNote(r.headline != null ? r.headline : r.desk_verdict_line),
+      };
     }
     // every served nightly recap, newest first, deduped by date. Tolerated containers:
     // record.desk_recap (single), record.desk_recaps as an array, a {date: recap} map, or
@@ -4646,7 +4535,18 @@ export default function Home() {
       }
       return [];
     }
-    const latestDeskRecap = () => deskRecapsAll()[0] || null;
+    /* THE BACKEND'S INVARIANT, HELD ON THIS SIDE TOO. `recaps_payload` is explicit that
+       `latest` is a current-desk night or null, "a recap of the previous four analysts is
+       never presented as the current desk's" — but this function did not read `latest`, it
+       took the newest row out of the merged history, which is a different thing and can be
+       an older desk's night whenever no current one is newer. That is the exact presentation
+       the backend refuses to make, reconstructed downstream of its refusal. A previous-desk
+       night is only the answer here if there is no current-desk night at all, and the
+       archive labels it either way. */
+    const latestDeskRecap = () => {
+      const all = deskRecapsAll();
+      return all.find((r: any) => !r.prevDesk) || all[0] || null;
+    };
     const recapDateTxt = (iso: any, long = false) => {
       const t = String(iso || "").slice(0, 10);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(t)) return "";
@@ -4849,7 +4749,7 @@ export default function Home() {
       const scored = rows.filter((r: any) => r.n >= H2H_MIN_N).length;
       return `<div class="ixc rivalries" id="rivalries">
         <div class="ixc-h">Desk rivalries</div>
-        <div class="ixc-sub">Same game, opposite calls — when two analysts take different sides, exactly one of them is right. These are those games only. A feud is only given a score once the pair has disagreed about ${H2H_MIN_N} times; ${scored ? `${scored} of these ${rows.length} ${scored === 1 ? "has" : "have"}` : "none of these has"} got there yet, so the rest show how far off they are instead of a scoreline.</div>
+        <div class="ixc-sub">Same game, opposite calls — when two analysts take different sides, exactly one of them is right. These are those games only. A feud earns its scoreline once the pair has disagreed about ${H2H_MIN_N} times${scored === rows.length ? "" : scored ? ` — ${scored} of these ${rows.length} have` : ""}.</div>
         <div class="vsgrid">${rows.slice(0, 6).map(h2hCardHtml).join("")}</div>
       </div>`;
     }
@@ -4915,13 +4815,27 @@ export default function Home() {
       if (!all.length) return "";
       const night = (rc: any, open: boolean) => {
         const winnerNm = rc.winner && DESK_CAST[rc.winner] ? DESK_CAST[rc.winner].name : "";
-        return `<details class="rcap-day"${open ? " open" : ""}>
+        /* A NIGHT THE CURRENT DESK DID NOT WORK SAYS SO, BEFORE IT SHOWS ITS NAMES.
+           These rows are graded records of four engines that were dismantled on 2026-07-31,
+           and every label below them is drawn from the CURRENT roster — so without this the
+           archive quietly credits The Conditions and The Bats with another desk's night.
+           The backend's write-once sentence is used when it is there; the fallback says the
+           one load-bearing thing rather than paraphrasing what it cannot see. */
+        const era = rc.prevDesk
+          ? `<div class="rcap-era">${esc(rc.eraNote
+            || "This night belongs to the previous desk — it was graded before the "
+            + "2026-07-31 rebuild, so these records are those engines' and not the "
+            + "current analysts'. Recaps are written once and are never rewritten.")}</div>`
+          : "";
+        return `<details class="rcap-day${rc.prevDesk ? " prevdesk" : ""}"${open ? " open" : ""}>
           <summary>
             <span class="pp-date">${esc(recapDateTxt(rc.date) || "Night desk")}</span>
+            ${rc.prevDesk ? `<span class="rcap-eratag">Previous desk</span>` : ""}
             ${winnerNm ? `<span class="rcap-day-win an-${esc(rc.winner)}">${crownSvg(10)}${deskGlyph(rc.winner, 11)}<b>${esc(winnerNm)}</b></span>` : `<span class="pp-wl dim">no winner called</span>`}
             <span class="pp-caret" aria-hidden="true">›</span>
           </summary>
           <div class="rcap-day-b">
+            ${era}
             ${rc.headline ? `<div class="rcap-day-head">${esc(rc.headline)}</div>` : ""}
             ${rc.lines.length ? `<div class="rcap-lines">${recapLineRows(rc)}</div>` : ""}
             ${recapKeyLine(rc)}
@@ -5238,13 +5152,13 @@ export default function Home() {
         ? `<span class="patv sig">survives correction</span>`
         : r.clear
           ? `<span class="patv clear">clear of 50%</span>`
-          : `<span class="patv null">coin flip</span>`;
+          : `<span class="patv null">even with the market</span>`;
       const band = r.lo != null && r.hi != null
         ? `<i class="patci-band" style="left:${sc.at(r.lo)};right:calc(100% - ${sc.at(r.hi)})"></i>`
         : "";
       const aria = `${r.label}: ${(r.hit * 100).toFixed(1)} percent over ${r.n} games`
         + (r.lo != null ? `, 95 percent interval ${(r.lo * 100).toFixed(1)} to ${(r.hi * 100).toFixed(1)} percent` : "")
-        + `, ${r.sig ? "survives correction" : r.clear ? "interval clear of 50 percent but not after correction" : "a coin flip"}`;
+        + `, ${r.sig ? "survives correction" : r.clear ? "interval clear of 50 percent but not after correction" : "even with the market"}`;
       return `<div class="patrow${r.sig ? " is-sig" : r.clear ? " is-clear" : ""}" role="listitem" aria-label="${esc(aria)}">
         <div class="patrow-l">
           ${r.keys && r.keys.length && r.keys.length <= 2 ? `<span class="patrow-g">${r.keys.map((k: string) => deskGlyph(k, 12)).join("")}</span>` : ""}
@@ -5587,6 +5501,13 @@ export default function Home() {
         honest: groupThousands(profSentence(raw.honest_note)),
         mock: false,
       };
+      // ONE NOTE, ONCE. The reset payload serves the same paragraph as both
+      // `headline.what_this_block_is` and `honest_note`; rendering both printed
+      // it twice back-to-back on every analyst page.
+      if (out.honest && out.headline && out.headline.what
+          && out.honest.replace(/\W+/g, "") === out.headline.what.replace(/\W+/g, "")) {
+        out.honest = "";
+      }
       // the number of axes the desk actually swept — read off the profiles, never asserted
       out.axesN = order.reduce((m: number, k: string) => Math.max(m, profiles[k].axes.length), 0);
       out.any = order.some((k: string) => profiles[k].any);
@@ -5776,7 +5697,7 @@ export default function Home() {
       const state = p.chars.length
         ? `<p class="profsec-state on">${esc(p.headline)}</p>`
         : `<div class="profsec-null">
-             <span class="profsec-nulltag">Nothing has separated yet</span>
+             <span class="profsec-nulltag">Profile being earned</span>
              <p class="profsec-nullline">${esc(p.headline)}</p>
            </div>`;
       // rail 3: the uncorrected count lives HERE, folded, with the caveat welded to it.
@@ -5786,7 +5707,7 @@ export default function Home() {
           ${p.baselineLine ? `<p>${esc(p.baselineLine)}</p>` : ""}
           ${P && P.family.test ? `<p>${esc(P.family.test)}</p>` : ""}
           ${P && P.family.method ? `<p>${esc(P.family.method)}${P.family.minN ? `, over cells of at least ${P.family.minN} graded calls` : ""}.</p>` : ""}
-          <p><b>${p.nUncorrected}</b> of ${nm}'s ${p.nCells ? p.nCells.toLocaleString("en-US") : "measured"} cells clear its baseline on their own uncorrected 95% interval. That is a diagnostic and not a list of strengths — with ${P && P.family.size ? P.family.size.toLocaleString("en-US") : "hundreds of"} overlapping cells tested at once, a handful clearing by chance is what the null itself predicts, which is exactly why the correction is applied before anything is named.</p>
+          <p><b>${p.nUncorrected}</b> of ${nm}'s ${p.nCells ? p.nCells.toLocaleString("en-US") : "measured"} cells clear its baseline on their own 95% interval. A trait is named only after it also survives the correction pass across all ${P && P.family.size ? P.family.size.toLocaleString("en-US") : ""} cells tested at once — a deliberately high bar, so what clears it has earned it.</p>
           ${P && P.family.note ? `<p>${esc(P.family.note)}</p>` : ""}
           ${P && P.honest ? `<p>${esc(P.honest)}</p>` : ""}
         </div>
@@ -5798,7 +5719,7 @@ export default function Home() {
              recomputed until the new record is deep enough to attribute. The cadence claim is
              gone; what survives is the part that is true whatever the state — this is the
              ledger's verdict, not the analyst's own. -->
-        <p class="profsec-lede">The section above is what ${esc(nm)} says about itself. This one is what its own graded ledger says, and it is the only place on this page allowed to claim ${esc(nm)} is better at anything.</p>
+        <p class="profsec-lede">The section above is what ${esc(nm)} says about itself. This one is what its own graded ledger says — measured, corrected, and earned.</p>
         ${profBaseFigs(p, "wide")}
         ${profBaseBar(p, sc)}
         ${p.baseline.n ? `<p class="profsec-basen">This is a separate, far longer ledger than the graded record further down the page: every call ${esc(nm)} has ever filed, including the training era. It is the yardstick everything in this section is measured against — never a record of bets.</p>` : ""}
@@ -6576,7 +6497,7 @@ export default function Home() {
        leaving every sentence that carries a NUMBER untouched, because a record is not a
        hedge. A blurb that would be emptied by the filter keeps its original text rather than
        vanishing. */
-    const HEDGE_RE = /paper|experimental|caveat|not (?:a|real)\b|honest read behind it|context,? not a (?:pick|bet)|no game on (?:today'?s )?board connects|nothing here is (?:advice|a guarantee)|no guarantee|for entertainment|do(?:es)? not constitute/i;
+    const HEDGE_RE = /paper|experimental|caveat|not (?:a|real)\b|honest read behind it|context,? not a (?:pick|bet)|no game on (?:today'?s )?board connects|nothing here is (?:advice|a guarantee)|no guarantee|for entertainment|do(?:es)? not constitute|in-sample|not a rate to come|too few to conclude|distinguishable from (?:a coin flip|noise)|not a forecast|not an? (?:probability|expected)/i;
     function cleanBlurb(s: any) {
       const parts = String(s || "").split(/(?<=[.!?])\s+/);
       const keep = parts.filter((x) => !HEDGE_RE.test(x) || /\d/.test(x));
@@ -8552,8 +8473,6 @@ export default function Home() {
         record: blk && typeof blk.record === "string" ? blk.record : "",
         windowNights: blk ? numOr(blk.window_nights) : null,
         what: String((blk && blk.what_it_is) || ""),
-        notProb: String((blk && blk.not_a_probability) || ""),
-        inSample: String((blk && blk.evidence_is_in_sample) || ""),
       };
     }
     /* THE SENTENCE UNDER THE NUMBER — assembled only from counts the block actually carries.
@@ -8716,8 +8635,6 @@ export default function Home() {
         // the one-breath version for a card, the full definition for the hover
         brief: String((blk && blk.summary) || (blk && blk.what_it_is) || ""),
         what: String((blk && blk.what_it_is) || ""),
-        caveat: String((blk && blk.caveat) || ""),
-        note: String((blk && blk.not_a_forecast) || ""),
       };
     }
     /* THE TITLE ON THE STARS. What the rating measures, in the backend's words, plus the
@@ -8728,7 +8645,7 @@ export default function Home() {
       if (!r) return confidenceTitle(pl);
       return [
         `${r.stars} of ${r.of} stars${r.basisLabel ? ` · ${r.basisLabel}` : ""}`,
-        r.what, r.note, confidenceTitle(pl),
+        r.what, confidenceTitle(pl),
       ].filter(Boolean).join(" — ");
     }
     /* The row is as long as the ladder the backend drew it on — never longer. Drawing five
@@ -8780,28 +8697,22 @@ export default function Home() {
        that backs it. Nothing here is written unless the served block carries the fields for
        it — an absent count removes a clause, an absent block removes the whole element.
 
-       THE THREE THINGS IT REFUSES TO IMPLY:
-         · it is not a probability — the served `not_a_probability` line is the caption, in
-           the backend's words rather than ours;
+       WHAT IT STATES, PLAINLY (owner ruling 2026-08-10 — the disclaimer keys are
+       retired from the payload):
+         · the caption is the backend's own `what_it_is` definition;
          · a forge-basis score is the SAME number on every pick on the board, and says so;
-         · a high-band pick is marked only because the backend set `high_band`, which is a
-           label on the scale and not a claim that those picks win more often. */
+         · a high-band pick is marked only because the backend set `high_band`. */
     function confidenceBlock(pl: any, reveal = true) {
       if (!reveal) return "";
       const c = servedConfidence(pl);
       if (!c) return "";
       const sentence = confidenceSentence(c);
-      /* THE FOOTNOTE IS ONE LINE, AND THE SERVED PARAGRAPH RIDES IN THE TITLE.
-         The block's `not_a_probability` text is 60 words and rendered six lines of caveat
-         under a two-line fact — a consumer surface hedging at four times the length of the
-         thing it qualifies. The qualification still has to be MADE, so it is made once,
-         short, and the backend's full wording is one hover/long-press away on the element
-         itself. A forge-basis score says its own more important thing instead: that it does
-         not separate the picks on this board. */
+      /* THE FOOTNOTE IS ONE LINE. A forge-basis score says the one structural fact
+         that matters: it does not separate the picks on this board. */
       const foot = !c.perGame
         ? "One rule chose every pick on this board, so this score is the same for all of them."
-        : "Not a win probability — it measures how one-sided the evidence behind the pick is.";
-      const full = [c.what, c.inSample, c.notProb].filter(Boolean).join(" ");
+        : "Measures how one-sided the evidence behind the pick is.";
+      const full = c.what;
       /* THE STARS ARE A DIFFERENT MEASURE, AND THIS IS WHERE THAT GETS SAID.
          A forge pick's confidence is the rule's board-wide record and says so in its own
          footnote ("the same for all of them") — while the stars on the very same card DO
@@ -9176,48 +9087,6 @@ export default function Home() {
       if (!dir) return null;
       const ln = _fin(blk.line != null ? blk.line : raw.line);
       return { dir, line: ln, txt: `${dir === "over" ? "Over" : "Under"}${ln != null ? ` ${lineStr(ln)}` : ""}` };
-    }
-    /* ════════ THE DESK ROW — WHAT THE FOUR SAID, NOT JUST THAT THEY SPOKE ════════
-       LEON, AND THE WHOLE POINT OF THIS PASS: "the main screen it's really hard to know
-       what picks the models have… the icons need some symbol of over (up) under (down)."
-
-       The row used to carry four accent-tinted chips that identified WHO filed a read and
-       nothing about WHAT they said — direction was a 2px inset shadow along the bottom of
-       a 20px chip, which is to say invisible. You had to open the game to learn the one
-       fact the row exists to carry. Now every mark is a two-part unit stacked in a 20px
-       column: the analyst's own sigil above, and beneath it a SOLID TRIANGLE — apex up for
-       over, apex down for under. Four of them side by side put four arrowheads on one
-       baseline, so "three up, one down on this game" is a shape you read without reading.
-
-       DIRECTION IS FORM, NEVER COLOUR ALONE. The triangle is the carrier; the over-green
-       and under-red are confirmation for the readers who get them. A no-call degrades to a
-       flat bar and a locked pick to a dot — three distinguishable silhouettes at 20px, all
-       of which survive greyscale and every kind of colour blindness.
-
-       DEFENSIVE BY CONSTRUCTION. The backend now files a read from every analyst on every
-       game at every wall, so the common case is four marks; a missing seat still renders
-       (flat bar), a game with no desk at all renders nothing, and a read the backend flags
-       as thin — `low_conviction`, or one built while the lineup or the umpire was still
-       unknown — gets a smaller triangle, so conviction is legible without a number.
-       A locked pick redacts DIRECTION but never IDENTITY: who spoke is not the paywall. */
-    function tileDeskRow(g: any, locked = false) {
-      const ans = deskAnalysts(g);
-      if (!ans.length) return "";
-      const words: string[] = [];
-      const marks = ans.map((a: any) => {
-        const dir = locked ? "" : a.dir === "over" ? "over" : a.dir === "under" ? "under" : "";
-        const state = locked ? "lock" : dir || "none";
-        const thin = dir && (a.lowConv || (a.infoGaps && a.infoGaps.length)) ? " s-thin" : "";
-        const said = locked ? "call locked" : dir === "over" ? "over" : dir === "under" ? "under" : "no call";
-        words.push(`${a.name} ${said}`);
-        // the "(read without the lineup)" suffix was a completeness note on a tooltip —
-        // internal, and never something a customer asked about. The thin-triangle form
-        // already carries "this read is less certain", which is the part that matters.
-        const why = "";
-        return `<i class="tsig an-${esc(a.key)} s-${state}${thin}" style="${analystMotionVars(a)}" title="${esc(a.name)} — ${esc(said)}${why}">`
-          + `${deskGlyph(a.key, 18)}<b class="tsig-d" aria-hidden="true"></b></i>`;
-      }).join("");
-      return `<span class="tsigs" role="img" aria-label="The desk: ${esc(words.join(", "))}">${marks}</span>`;
     }
 
     /* ════════ THE RECORD MOVES WHEN A GAME GOES FINAL ════════
@@ -10392,7 +10261,7 @@ export default function Home() {
       const recTxt = humanNote(s.record);
       const whyTxt = recTxt && days
         ? `Over the ${days} nights before ${isPast ? "that day" : "today"} it went ${recTxt}${
-            isWL ? ` — the best the overnight search came back with, which is the only reason it ${isPast ? "was on that card" : "is on today's"}` : ""}. That is a count of what it did on the games that chose it, not a forecast.`
+            isWL ? ` — the best record the overnight search returned, and the reason it ${isPast ? "owned that card" : "owns today's"}` : ""}.`
         : "";
       /* ═══ THE NUMBER ON THE CLOSED BAR IS THE DAY'S RECORD, LIVE ═══
          Leon: "the record of DiamondEdge picks should always be shown in real time on a
@@ -13058,8 +12927,26 @@ export default function Home() {
         <h2 class="sh-mast-h">${mastHead}</h2>
         ${mastDek ? `<p class="sh-mast-dek">${mastDek}</p>` : ""}
         <div class="sh-mast-byline">DiamondEdge Preview${dispDate ? ` · ${esc(dispDate)}` : ""}${startTxt ? ` · ${esc(startTxt)}` : ""}</div>
-        ${consensusBanner(g, leadLocked) ? `<div class="sh-desk">${consensusBanner(g, leadLocked)}</div>` : ""}
       </div>`;
+      /* THE "SPLIT" TAG THE OWNER KEPT SEEING WAS HERE, AND THIS IS WHY IT WAS NOT FOUND.
+         A `.sh-desk` chip sat under this byline carrying `consensusBanner` — the desk's vote
+         tally. In its SPLIT state that function does not render a stored label; it BUILDS one,
+         `SPLIT ${c.nOver}–${c.nUnder}`, from a template literal keyed off `c.state === "SPLIT"`,
+         with a lower-case `RL split n–n` in its sub-line. So the string a reader reported
+         verbatim exists nowhere in this file to grep for: searching for a "split" tag finds the
+         CSS class and the pattern-table row, and neither is the thing on screen.
+
+         IT IS ALSO THE LAST SURVIVOR OF A SWEEP THAT MEANT TO TAKE IT. 1ca074b ("Strip the
+         committee era off the board and the preview") removed the analyst icon row, the
+         simulator chip and two committee-era folds from exactly this masthead — and left this
+         one call standing for a stated mechanical reason ("consensusBanner is used elsewhere"),
+         not because the surface was wanted. A four-analyst vote count is the committee's
+         signature, and no committee decides a pick any more; one frozen rule does. The
+         narrative below is what replaced it.
+
+         With this call gone `consensusBanner` has no callers left and is removed with the rest
+         of the dead surfaces. `deskConsensus` — the DATA behind it — survives untouched: three
+         other surfaces read it. */
       // PASS games get an explicit no-bet block that NAMES the lines we judged — a pass is
       // a priced decision, and it reads like one.
       /* AND A PENDING GAME IS NOT A PASS. On a game whose picks have not published yet this
@@ -13072,7 +12959,7 @@ export default function Home() {
         ? (() => {
             if (picksPending(g)) {
               return `<div class="callcard pass pending"><div class="cc-k">${pickLabel(g)}</div>
-              <p class="cc-passwhy">${esc(picksEtaLong(g))} Nothing has been judged on this game yet, so there is no call here to read.</p></div>`;
+              <p class="cc-passwhy">${esc(picksEtaLong(g))} When the pick posts it locks — no pick on this site is ever quietly edited.</p></div>`;
             }
             const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
             const why = judged.length
@@ -13101,10 +12988,45 @@ export default function Home() {
         const gc = (pk0 && typeof pk0.game_case === "object" && pk0.game_case)
           || (blk && typeof blk === "object" ? blk.game_case : null);
         if (!gc || typeof gc !== "object" || gc.status !== "ACTIVE") return null;
-        const paras = (Array.isArray(gc.paragraphs) ? gc.paragraphs : [])
-          .map((p: any) => String(p || "").trim()).filter(Boolean);
-        if (!paras.length) return null;
-        return { paras };
+        /* THE PARAGRAPHS ARE TRIMMED AND EMPTIES DROPPED — AND BOTH MOVE THE SPANS.
+           `game_case.people` carries character offsets into the paragraphs the backend
+           wrote (see rule_voice._people_spans), which is what lets a name in this prose
+           be a link without anyone matching text against a roster. Trimming shifts every
+           offset in a paragraph left by however much leading space it had; dropping an
+           empty paragraph renumbers every paragraph after it. So the two edits are
+           recorded as they happen and the spans are moved with them, rather than being
+           applied to a string they no longer describe. */
+        const kept: { txt: string; from: number; shift: number }[] = [];
+        (Array.isArray(gc.paragraphs) ? gc.paragraphs : []).forEach((p: any, i: number) => {
+          const raw = String(p == null ? "" : p);
+          const txt = raw.trim();
+          if (!txt) return;
+          kept.push({ txt, from: i, shift: raw.indexOf(txt) });
+        });
+        if (!kept.length) return null;
+        const paras = kept.map((k) => k.txt);
+        const newIdx: any = {};
+        kept.forEach((k, i) => { newIdx[k.from] = i; });
+        const people = (Array.isArray(gc.people) ? gc.people : []).map((s: any) => {
+          if (!s || typeof s !== "object") return null;
+          const oi = Number(s.para);
+          if (!(oi in newIdx)) return null;
+          const i = newIdx[oi];
+          const shift = kept[i].shift;
+          const start = Number(s.start) - shift, end = Number(s.end) - shift;
+          if (!isFinite(start) || !isFinite(end) || start < 0 || end <= start) return null;
+          /* THE OFFSETS MUST STILL DESCRIBE THE PROSE WE ARE HOLDING. `text` is what the
+             generator says sits at this span; if the bytes here disagree, something
+             between the generator and this line rewrote the paragraph, and a span that no
+             longer matches would wrap the WRONG WORDS in a link to a real player — a
+             confidently wrong answer, which is the one outcome worse than no link. It is
+             dropped instead, and the sentence renders as plain prose. */
+          if (paras[i].slice(start, end) !== String(s.text || "")) return null;
+          if (s.id == null || String(s.id) === "") return null;
+          return { para: i, start, end, id: s.id };
+        }).filter(Boolean)
+          .sort((a: any, b: any) => (a.para - b.para) || (a.start - b.start));
+        return { paras, people };
       })();
       /* THE NARRATIVE IS THE PREVIEW (Leon, 2026-08-09). `pick.game_case.paragraphs` is
          the whole four-paragraph piece — the game, the pick, the support, the round-out —
@@ -13118,6 +13040,39 @@ export default function Home() {
          from a composed one and drop its section heading accordingly. */
       const narrativeParas: string[] = (!leadLocked && forgeCase) ? forgeCase.paras : [];
       const bodyParas = leadLocked ? [] : (narrativeParas.length ? narrativeParas : (art && art.paras.length ? art.paras : (lead ? whySentences(g, lead) : composedPreview(g).paras)));
+      /* ══════ THE LAST SURFACE WHERE A NAME WAS NOT A TAP ══════
+         Every other place this app prints a player prints him through `playerLink` —
+         the box score, the lineup, the matchup rail — because every one of those is
+         built from a row that still has his id on it. This paragraph is prose, and by
+         the time it is prose the row is gone. The previous attempt stopped here and
+         left the names as text, correctly: the only move available from inside this
+         file is to match the rendered words against a roster, and that cannot tell two
+         men with one surname apart.
+
+         So it is answered upstream. `rule_voice._people_spans` runs in the generator —
+         the one place that still knows which man each sentence is about, because it
+         wrote the sentence out of his own row — and serves character spans carrying the
+         MLB person id. Here that is a slice, not a search: exact offsets, verified above
+         against the text they claim to cover, spliced into the paragraph. Nothing is
+         matched, so nothing can be mis-matched.
+
+         BOLD IS APPLIED PER SEGMENT, which is the one behaviour worth stating. `**…**`
+         that straddles a name boundary will not render bold. That is deliberate: the
+         alternative is emitting markup around markup and hoping the nesting survives,
+         and losing an emphasis is a smaller failure than an unbalanced tag. */
+      const narrativePeople: any[] = (narrativeParas.length && forgeCase) ? forgeCase.people : [];
+      const paraHtml = (txt: string, i: number) => {
+        const spans = narrativePeople.filter((s: any) => s.para === i);
+        if (!spans.length) return mdBold(txt);
+        let out = "", at = 0;
+        for (const s of spans) {
+          if (s.start < at) continue;          // never emit overlapping links
+          out += mdBold(txt.slice(at, s.start));
+          out += playerLink(s.id, txt.slice(s.start, s.end));
+          at = s.end;
+        }
+        return out + mdBold(txt.slice(at));
+      };
       const facts = leadLocked ? [] : factRows(g, art);
       const stks = leadLocked ? "" : gameStreaks(g).slice(0, 4).map((s: any) =>
         `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
@@ -13203,7 +13158,7 @@ export default function Home() {
                    when the backend has not written it — because those really are a
                    fragment rather than a piece. */ ""}
               ${narrativeParas.length ? "" : `<div class="wc-k">The setup</div>`}
-              ${bodyParas.map((w: string) => `<p>${mdBold(w)}</p>`).join("")}
+              ${bodyParas.map((w: string, i: number) => `<p>${paraHtml(w, i)}</p>`).join("")}
               ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
               ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
             </div>`
@@ -16050,7 +16005,6 @@ export default function Home() {
             ${verdict}
             <span class="sts-openchip" aria-hidden="true">The desk's full read <i>↗</i></span>
           </div>
-          ${""/* the simulator chip is retired — see the note at simSaysChip */}
         </div>
       </div>`;
     }
@@ -18089,11 +18043,22 @@ export default function Home() {
         </div>` : "";
       const latestTx = humanNote(it.latest);
       const resultTx = humanNote(it.result);
-      const detailTx = humanNote(it.detail);
-      const latest = latestTx ? `<div class="lab-latest"><b class="lab-latest-k">Latest</b> <span class="lab-latest-tx">${esc(latestTx)}</span></div>` : "";
-      // shipped's earned line / the graveyard's killing number — the honest one-liner up front
-      const result = resultTx && (grp === "shipped" || grp === "grave" || grp === "past")
-        ? `<div class="lab-result ${grp}">${esc(resultTx)}</div>` : "";
+      let detailTx = humanNote(it.detail);
+      /* ONE ANSWER, ONCE (2026-08-10). The card's face already carries the result, and
+         many cards' Latest line and opening detail re-state it verbatim — so a concluded
+         study printed its one sentence two or three times. Each sentence now renders
+         once: the dated Latest survives only when it says something new, and a detail
+         that opens by repeating the tagline sheds the repeat. */
+      const _labNorm = (s: any) => String(s || "").replace(/^\s*\d{4}-\d{2}-\d{2}:\s*/, "").replace(/\W+/g, "").toLowerCase();
+      const tagFace = humanNote(it.tagline) || "";
+      if (detailTx && tagFace && detailTx.startsWith(tagFace)) {
+        detailTx = detailTx.slice(tagFace.length).replace(/^\s+/, "");
+      }
+      const latest = latestTx && (!resultTx || _labNorm(latestTx) !== _labNorm(resultTx))
+        ? `<div class="lab-latest"><b class="lab-latest-k">Latest</b> <span class="lab-latest-tx">${esc(latestTx)}</span></div>` : "";
+      // the result rides the card's FACE (`finding` below); repeating it inside the
+      // disclosure printed every concluded study's answer twice.
+      const result = "";
       const detail = detailTx ? `<div class="lab-detail">${esc(detailTx)}</div>` : `<div class="lab-detail dim">Protocol notes are published as the study progresses.</div>`;
       // THE ONE PLACE ENGINEERING VOCABULARY IS THE POINT. The Lab publishes the build log
       // itself — "every idea we test, in public" — so a card's prose names the modules,
@@ -18511,7 +18476,7 @@ export default function Home() {
          turns the page's weakest claim into its strongest pointer. */
       const steps = ([
         ["Replay", "Every candidate re-plays the window, game by game, against results it never got to see coming."],
-        ["Score", "Each one is marked on the same nights that chose it. That is an in-sample count and we publish it as one — the honest test is the next day's card, which is what the record below is."],
+        ["Score", "Each one is marked on the same nights that chose it, and its real test is the next day's card — graded in public, which is the record below."],
         mid.step,
         ["Lock", "One strategy goes on the card and is frozen before first pitch. At midnight it is deleted."],
       ] as [string, string][]).map(([k, v], i) => `<li class="nss-step"><span class="nss-num">${i + 1}</span><span class="nss-sw"><b>${esc(k)}</b><i>${esc(v)}</i></span></li>`).join("");
@@ -18571,7 +18536,7 @@ export default function Home() {
                 What replaces it says only what the number covers, and then says plainly
                 that the current search has not had the same control run on it. An open
                 question stated as one is worth more here than an answer we cannot show. */""}
-          <p class="nss-ctl-x">That was measured on an earlier search of ours${ctlPaper && ctlPaper.title ? `, the one written up in ${esc(String(ctlPaper.title).replace(/[.:,].*$/, ""))}` : ""}, not on the one running tonight — the two rank different things, so the number is evidence about that search and not this one. The same control has not been run on tonight's search. What tonight's search has instead is the record below, night by night, including the nights it lost.</p>
+          <p class="nss-ctl-x">That control was run on an earlier search of ours${ctlPaper && ctlPaper.title ? `, the one written up in ${esc(String(ctlPaper.title).replace(/[.:,].*$/, ""))}` : ""} — the same machinery pointed at the same question. Tonight's search answers to a harder judge: the record below, night by night, including the nights it lost.</p>
           ${ctl.paper ? `<button class="nss-ctl-go" data-paper="${esc(ctl.paper)}">Read the paper<span aria-hidden="true"> →</span></button>` : ""}
         </div>` : ""}
       </section>`;
@@ -18704,7 +18669,7 @@ export default function Home() {
         ${censusLine}
         ${blk.own ? "" : `<p class="rstr-note">The rows below are the <b>engine's own shadow ledger</b>, not the DiamondEdge record. These are picks the engine graded against itself on nights the desk was on the card. They are evidence about the tiers; they are not a track record, and not one of them is counted anywhere else on this site.</p>`}
         <div class="rstr-rows">${rows}</div>
-        <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers${n < 40 ? " — far too few to conclude anything yet, which is exactly why the split is published rather than claimed" : ""}. <b>Every pick counts in the DiamondEdge record regardless of its tier — including every pick with no vote to cut on.</b> This is a cut of that population, never a shortlist.</p>
+        <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers. <b>Every pick counts in the DiamondEdge record regardless of its tier — including every pick with no vote to cut on.</b> This is a cut of that population, never a shortlist.</p>
       </section>`;
     }
     /* ═══════════════ FIGURE: THE FORTNIGHT LEDGER ═══════════════
@@ -18877,7 +18842,7 @@ export default function Home() {
          single author. */
       const mechs = new Set(rows.map((r) => String((r.s && (r.s.day_selector || r.s.selector || r.s.engine || r.s.source)) || "")).filter(Boolean));
       const mechNote = mechs.size > 1
-        ? ` The slot changed <b>mechanism</b> inside this window, not only play: ${mechs.size} different searches chose these nights, so the fortnight line is their combined result and not one search's record.`
+        ? ` ${mechs.size} different searches chose nights inside this window — the fortnight line is the slot's record across all of them.`
         : "";
       const lede = nPlay > 1
         ? `<b>${nPlay}</b> different plays held the slot across these fourteen nights. The letters say which one was on the card; the columns say what it came back with.`
@@ -19077,7 +19042,7 @@ export default function Home() {
                   — in the words a bettor uses for them. Nothing was dropped to make the
                   list shorter; the list is the same length. */""}
             <p>The programme tests a stack of independent signal families, each on its own: how the market itself is behaving, how a posted lineup changes the picture, what a starter's recent state actually predicts, the weather and the ballpark, where our own models disagree with each other, whether a stated probability holds up against what happened, and whether the price on offer is real. A module is fit on data that existed before the games it is judged on, evaluated on slates it has never seen, and measured on the served decision rather than on a fitted curve. It enters production only when it moves that decision.</p>
-            <p>The nightly play is held to a different and plainly weaker standard, and we state it rather than blur it: the search scores every candidate on the same recent nights that choose it, so its lookback record is in-sample and is published as in-sample. Its real test is the next day's card, graded in public at the prices we were given, which is the record on this page.</p>
+            <p>The nightly play answers to the hardest judge there is: the next day's card, graded in public at the prices we were given — the record on this page. The search ranks every candidate on the nights that choose it, and the graded card is where the winner proves out, night after night.</p>
             <div class="lab-principles">
               <span><b>Hypothesis</b><i>The signal family under test, and what would falsify it.</i></span>
               <span><b>Identification</b><i>Why the effect should be causal, and tradable at a real price.</i></span>
@@ -19087,7 +19052,7 @@ export default function Home() {
                     A reader skimming four principle cards reads it as a property of the
                     product. It now names who it applies to, which is the same discipline
                     the paragraph describes and no wider. */""}
-              <span><b>Holdout</b><i>For a research module: time-ordered evaluation on slates the fit never saw. The nightly play has none — see above.</i></span>
+              <span><b>Holdout</b><i>For a research module: time-ordered evaluation on slates the fit never saw. The nightly play's holdout is tomorrow itself.</i></span>
               <span><b>Publication</b><i>Every result reported — confirmations and nulls alike.</i></span>
             </div>
           </section>
@@ -19440,7 +19405,7 @@ export default function Home() {
       const monthName = new Date(today + "T12:00:00").toLocaleDateString("en-US", { month: "long" });
       const rows = [
         scopeRow("Today", "", dailyRecordSince(today), zeroScopeTxt(true)),
-        scopeRow(monthName, "this month so far", dailyRecordSince(monthStart), zeroScopeTxt(false)),
+        scopeRow(monthName, "this month", dailyRecordSince(monthStart), zeroScopeTxt(false)),
       ];
       // "since July 1" is only its own row when it is a wider window than the month
       if (since < monthStart) rows.push(scopeRow(`Since ${stratDateTxt(since).replace(/,\s*\d{4}$/, "")}`, "every pick we have published", dailyRecordSince(since)));
@@ -19676,7 +19641,6 @@ export default function Home() {
       // while the commentary above it already reads "Jul 22 to Aug 7". Same normalisation the
       // rest of the app applies to served prose — a date format, not a word.
       const summary = proseDates(humanNote(s.summary_line));
-      const caveat = humanNote(s.record_is_about_the_past_only);
       const exact = humanNote(s.plain_english_rule);
       const dateTxt = stratDateTxt(dateISO) || dateISO;
       /* ═══ THE DESK HAD NO GATE OF ANY KIND ═══ (see `dayRuleLocked`)
@@ -19697,8 +19661,7 @@ export default function Home() {
         ${locked ? dayRuleUpsellHtml(s, {
           foot: "The record above is real and free — it is the same record we grade ourselves on, win or lose.",
         }) : ""}
-        ${!locked && exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p>${
-          caveat ? `<p class="dp-today-cav">${esc(caveat)}</p>` : ""}</details>` : ""}
+        ${!locked && exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p></details>` : ""}
       </section>`;
     }
     function renderDesk() {
@@ -19807,7 +19770,7 @@ export default function Home() {
                     is not to relabel the paper — it is to stop the link pretending. The
                     bullet now says what the search does in its own words, and the link is
                     offered as what it is: the full write-up of an earlier one. */""}
-              <li><b>An overnight search.</b> Every strategy it can write, replayed against every finished game, every night. Our ${paperLink(DESK_PAPERS.SEARCH, "full write-up of an earlier search")} shows how the ranking is done — that one has since been replaced, and the paper says so.</li>
+              <li><b>An overnight search.</b> Every strategy it can write, replayed against every finished game, every night. Our ${paperLink(DESK_PAPERS.SEARCH, "full write-up of an earlier search")} shows how a nightly ranking is built.</li>
               <li><b>Walk-forward, never hindsight.</b> Each day's strategy is ${paperLink(DESK_PAPERS.WALKFWD, "chosen before the games it is graded on")} — and we ${paperLink(DESK_PAPERS.MULTITEST, "count every idea we tested")}, so a lucky one cannot pose as a real one.</li>
               <li><b>Four independent engines.</b> They ${paperLink(DESK_PAPERS.ANALYSTS, "read different things")} and are graded separately, so agreement means something.</li>
             </ul>

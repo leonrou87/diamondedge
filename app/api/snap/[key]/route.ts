@@ -86,12 +86,20 @@ import { topLevelStamp } from "./stamp";
               re-downloading the history to read a fraction of it.
      (none)   the full payload, for the paths that genuinely need it.
 
-   FALLBACK IS THE CALLER'S JOB. If this route fails, page.tsx falls back to a
-   direct Supabase read (snapDirect). That costs egress but keeps the app alive,
-   which is the correct trade for a proxy that is an optimisation and not a
-   dependency — and it is why (2) above mattered so much: a route that 502s does
-   not merely lose its own benefit, it actively spends more than having no route
-   at all.
+   FALLBACK IS THE CALLER'S JOB — BUT ONLY AS THE LAST RESORT. If this route
+   fails, page.tsx falls back to a direct Supabase read (snapDirect). That costs
+   egress but keeps the app alive, which is the correct trade for a proxy that is
+   an optimisation and not a dependency — and it is why (2) above mattered so
+   much: a route that 502s does not merely lose its own benefit, it actively
+   spends more than having no route at all.
+
+   Which is exactly why the 502 is now the THIRD answer to an upstream failure
+   and not the first. In order: `supaRetry` re-asks the origin once with jitter,
+   because the failures are a concurrency artefact and spreading them is usually
+   enough; failing that, `lkg` serves the last good copy of the board this
+   instance built, because bytes a few minutes old beat a blank screen and a
+   redirected stampede; and only when there is no such copy does the reader get
+   the 502 that sends them direct. See the two comment blocks on those names.
    ════════════════════════════════════════════════════════════════════════════ */
 
 const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -458,6 +466,46 @@ async function supaRetry(path: string, attempts = 2): Promise<Response> {
   return last as Response;
 }
 
+/* ═══ THE LAST GOOD COPY, KEPT SO AN OUTAGE IS NOT A BLANK BOARD ═══
+
+   2026-08-10. `supaRetry` above makes the origin's concurrency 500s survivable;
+   it does not make them SURVIVED. Two jittered attempts still both fail when
+   the origin is properly unwell, and what the reader got then was a 502 — which
+   is the worst available answer, because page.tsx reads a 502 as "the proxy is
+   broken, go direct" and spends 60 seconds sending that reader STRAIGHT AT the
+   origin that just refused two requests, uncached, at full price.
+
+   So the route keeps the last unit it successfully built for each key and
+   serves that instead. The bytes are a few minutes old; the alternative was no
+   bytes at all AND a stampede. That trade is the whole argument for
+   stale-while-revalidate, applied at the one layer that previously did not
+   have it: the origin read itself.
+
+   WHAT THIS IS NOT. It is per-INSTANCE memory, exactly like `inflight` — an
+   instance that has never served this key has nothing to fall back on and will
+   still 502. It is a floor under the common case (a warm instance meeting a
+   brief origin failure), not a durable cache, and it is deliberately not one:
+   a durable stale store would need its own invalidation, and an unreadable
+   stale board that outlives the outage is a worse bug than the outage.
+
+   BOUNDED, because the dated archive keys are effectively unbounded — a reader
+   walking backwards through the season would otherwise pin one unit per day in
+   memory forever. Map preserves insertion order, so the oldest entry is the
+   first key and eviction is one line. 24 units at ~420 KB of base64 is ~10 MB
+   worst case, which is inside the function's memory with room to spare. */
+const LKG_MAX = 24;
+const lkg = new Map<string, Unit>();
+function rememberUnit(key: string, u: Unit) {
+  // Re-insert so a key that is actually being read stays at the young end.
+  if (lkg.has(key)) lkg.delete(key);
+  lkg.set(key, u);
+  while (lkg.size > LKG_MAX) {
+    const oldest = lkg.keys().next().value;
+    if (oldest === undefined) break;
+    lkg.delete(oldest);
+  }
+}
+
 async function fetchUnit(key: string): Promise<Unit> {
   const r = await supaRetry(
     `/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(key)}&select=payload`,
@@ -479,7 +527,14 @@ async function fetchUnit(key: string): Promise<Unit> {
     liteText = fullText;
   }
   const full = blobOf(fullText);
-  return { full, lite: liteText === fullText ? full : blobOf(liteText) };
+  const unit = { full, lite: liteText === fullText ? full : blobOf(liteText) };
+  /* A ROW THAT IS ABSENT IS NOT A ROW THAT IS GOOD. `payload` is null when the
+     key has no row at all, and remembering that would mean a later outage gets
+     answered with a confident "null" instead of an error — the empty-board
+     failure mode this route's own catch block exists to avoid. Only a real
+     document becomes the fallback. */
+  if (payload != null) rememberUnit(key, unit);
+  return unit;
 }
 
 /* SINGLE-FLIGHT, PER INSTANCE. Measured 2026-08-10: 250 simultaneous readers of
@@ -719,6 +774,50 @@ export async function GET(
        route that fails twice. This is the upstream error text, truncated, on a
        response nothing caches. */
     const why = (e instanceof Error ? e.message : String(e)).slice(0, 120);
+
+    /* ═══ SERVE THE LAST GOOD COPY BEFORE SERVING THE FAILURE ═══
+       See `lkg` above. A board a few minutes old is a board; a 502 is a blank
+       screen AND a reader redirected onto the failing origin for a minute.
+
+       THREE THINGS THIS RESPONSE IS CAREFUL ABOUT.
+
+       (1) IT IS NEVER PINNED. A `?cv=` request whose stamp matches these bytes
+           would otherwise earn `immutable` for a year — a year of a stale
+           generation, promised during an outage, revocable by nothing. The
+           pinned branch is above the catch and stale bytes never reach it.
+
+       (2) IT IS NOT SHARED FOR LONG. `s-maxage` is deliberately short rather
+           than the key's own TTL: the point is to absorb the burst that an
+           origin failure produces, not to install old bytes at the edge for
+           the five minutes the fresh ones would have earned. One minute of
+           sharing turns a thousand readers into one origin read on recovery.
+
+       (3) IT SAYS SO. `x-snap-stale` and the age let a rail — or the next
+           person reading a HAR — tell "the board is old because the origin is
+           down" from "the board is old because the publisher is dead". Those
+           have different owners and previously looked identical.
+
+       `version` and `game` modes have no fallback here on purpose: the version
+       probe is ~1 KB and answering it with a stale stamp would tell every
+       reader to keep a generation that may have moved, and `?game=` is 13 KB
+       fetched only on a tap, where a retry is the honest answer. */
+    const stale = (mode === "full" || mode === "lite") ? lkg.get(key) : undefined;
+    if (stale) {
+      const blob = mode === "lite" ? stale.lite : stale.full;
+      return new NextResponse(textOf(blob), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Vercel-CDN-Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+          "CDN-Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+          "Cache-Control": "public, max-age=15, stale-while-revalidate=300",
+          "x-snap-stale": "1",
+          "x-snap-have": blob.v || "-",
+          "x-snap-err": why.replace(/[^\x20-\x7e]/g, " "),
+        },
+      });
+    }
+
     return new NextResponse(JSON.stringify({ error: "upstream" }), {
       status: 502,
       headers: {
