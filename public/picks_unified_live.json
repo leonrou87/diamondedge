@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T02:36:52Z",
+  "generated_utc": "2026-08-10T03:16:17Z",
   "dates": [
     "2026-08-09"
   ],
@@ -20,12 +20,12 @@
       "4": 0.25,
       "3": 0.35
     },
-    "n_playable_scores": 537,
+    "n_playable_scores": 539,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-09T09:14:20Z",
+    "generated_utc": "2026-08-10T02:39:42Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
-    "n_nonplayable_scores": 6119
+    "n_nonplayable_scores": 6121
   },
   "score_basis": {
     "scores_calibrated_as_of": "2026-07-27",
@@ -2218,17 +2218,24 @@
     },
     "picks_eta_contract": "games[].picks_eta = {line, expected_utc, expected_local_pt, why}; the sentence is for display, the timestamp for logic"
   },
+  "weather_serve": {
+    "n_cards": 25,
+    "n_with_weather": 10,
+    "n_without": 15,
+    "status": "ok",
+    "note": "A card carries weather only when the park is open air AND the T-3h forecast was retrieved before the wall. Domes and games with no wall-legal reading carry none \u2014 the indoor constants are not a measurement."
+  },
   "record": {
     "headline": {
       "label": "DiamondEdge",
       "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "n": 174,
+      "n": 175,
       "win": 86,
       "loss": 78,
-      "push": 10,
-      "record": "86-78-10",
+      "push": 11,
+      "record": "86-78-11",
       "decided": 164,
       "hit_rate": 0.5244,
       "units": 6.238,
@@ -2262,11 +2269,11 @@
         },
         {
           "month": "2026-08",
-          "n": 60,
+          "n": 61,
           "win": 27,
           "loss": 26,
-          "push": 7,
-          "record": "27-26-7",
+          "push": 8,
+          "record": "27-26-8",
           "hit_rate": 0.5094,
           "units": -0.292,
           "roi": -0.0055
@@ -2349,11 +2356,11 @@
           "through": "2026-08-08"
         },
         "nightly_engine": {
-          "n": 19,
+          "n": 20,
           "win": 9,
           "loss": 8,
-          "push": 2,
-          "record": "9-8-2",
+          "push": 3,
+          "record": "9-8-3",
           "decided": 17,
           "hit_rate": 0.5294,
           "units": 0.339,
@@ -3617,11 +3624,11 @@
       },
       {
         "date": "2026-08-09",
-        "n": 12,
+        "n": 13,
         "win": 6,
         "loss": 5,
-        "push": 1,
-        "record": "6-5-1",
+        "push": 2,
+        "record": "6-5-2",
         "hit_rate": 0.5455,
         "units": 0.486,
         "roi": 0.0442,
@@ -3761,11 +3768,11 @@
         }
       },
       "untiered": {
-        "n": 171,
+        "n": 172,
         "win": 84,
         "loss": 77,
-        "push": 10,
-        "record": "84-77-10",
+        "push": 11,
+        "record": "84-77-11",
         "decided": 161,
         "hit_rate": 0.5217,
         "units": 5.333,
@@ -3787,9 +3794,9 @@
         "label": "No committee vote on record",
         "why": "desk-sourced and legacy picks carry no vote split, so they carry no tier. They count in record.headline exactly like every other pick."
       },
-      "n_headline": 174,
+      "n_headline": 175,
       "n_tiered": 3,
-      "n_untiered": 171,
+      "n_untiered": 172,
       "sums_to_headline": true,
       "rail": "strong + standard + lean + untiered == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "engine_shadow_ledger": {
@@ -3825,12 +3832,12 @@
           },
           "lean": {
             "win": 17,
-            "loss": 22,
+            "loss": 23,
             "push": 4,
-            "n": 43,
-            "record": "17-22-4",
-            "units_flat_-110": -6.545,
-            "hit_rate": 0.4359,
+            "n": 44,
+            "record": "17-23-4",
+            "units_flat_-110": -7.545,
+            "hit_rate": 0.425,
             "label": "Lean",
             "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
             "rank": 1
@@ -3847,8 +3854,8 @@
           "why": "rows written before the vote counts existed on the board; they count in `record` and are never given a tier they cannot support"
         },
         "sums_to_record": true,
-        "n_graded_total": 60,
-        "n_tiered": 60,
+        "n_graded_total": 61,
+        "n_tiered": 61,
         "n_untiered": 0,
         "thresholds": {
           "policy_version": "pick_strength_v1",
@@ -4057,11 +4064,11 @@
           ],
           "label": "40-49",
           "is_high_band": false,
-          "n": 12,
+          "n": 13,
           "win": 6,
           "loss": 5,
-          "push": 1,
-          "record": "6-5-1",
+          "push": 2,
+          "record": "6-5-2",
           "decided": 11,
           "hit_rate": 0.5455,
           "hit_rate_ci": [
@@ -4265,11 +4272,11 @@
         "through": "2026-08-07"
       },
       "below_high_band": {
-        "n": 21,
+        "n": 22,
         "win": 10,
         "loss": 9,
-        "push": 2,
-        "record": "10-9-2",
+        "push": 3,
+        "record": "10-9-3",
         "decided": 19,
         "hit_rate": 0.5263,
         "hit_rate_ci": [
@@ -4345,13 +4352,13 @@
         "first": "2026-07-02",
         "through": "2026-08-08"
       },
-      "n_total": 174,
-      "n_scored": 22,
+      "n_total": 175,
+      "n_scored": 23,
       "n_unscored": 152,
       "sums_to_total": true,
       "rail": "every decile + unscored == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "headline_is_the_record": true,
-      "n_headline": 174,
+      "n_headline": 175,
       "sums_to_headline": true,
       "history_limit": {
         "reconstructible_from": "2026-08-03",
@@ -4436,19 +4443,19 @@
             ],
             "label": "30-39",
             "is_high_band": false,
-            "n": 8,
+            "n": 9,
             "win": 4,
-            "loss": 3,
+            "loss": 4,
             "push": 1,
-            "record": "4-3-1",
-            "decided": 7,
-            "hit_rate": 0.5714,
+            "record": "4-4-1",
+            "decided": 8,
+            "hit_rate": 0.5,
             "hit_rate_ci": [
-              0.2505,
-              0.8418
+              0.2152,
+              0.7848
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": 0.636
+            "units_flat_-110": -0.364
           },
           {
             "band": [
@@ -4595,41 +4602,41 @@
           "units_flat_-110": 0.636
         },
         "below_high_band": {
-          "n": 53,
+          "n": 54,
           "win": 23,
-          "loss": 26,
+          "loss": 27,
           "push": 4,
-          "record": "23-26-4",
-          "decided": 49,
-          "hit_rate": 0.4694,
+          "record": "23-27-4",
+          "decided": 50,
+          "hit_rate": 0.46,
           "hit_rate_ci": [
-            0.337,
-            0.6062
+            0.3297,
+            0.596
           ],
           "hit_rate_ci_level": 0.95,
           "label": "under 90",
-          "units_flat_-110": -5.091
+          "units_flat_-110": -6.091
         },
         "verdict": {
           "high_band_min": 90,
           "n_decided_high": 7,
-          "n_decided_rest": 49,
+          "n_decided_rest": 50,
           "hit_rate_high": 0.5714,
-          "hit_rate_rest": 0.4694,
-          "difference": 0.102,
+          "hit_rate_rest": 0.46,
+          "difference": 0.1114,
           "difference_ci": [
-            -0.2468,
-            0.4031
+            -0.2371,
+            0.4116
           ],
           "difference_ci_level": 0.95,
-          "p_value": 0.700446,
+          "p_value": 0.696808,
           "test": "Fisher's exact test, two-sided, on the decided picks (W/L; pushes decided nothing and are excluded from the test)",
           "alpha": 0.05,
           "distinguishable_from_noise": false,
           "status": "open_question",
           "is_a_finding": false,
-          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 49 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.700446), and the interval on the gap runs from -0.247 to +0.403 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
-          "n_needed_per_arm_for_observed_gap": 376,
+          "claim": "NOT ENOUGH PICKS TO TELL. 7 decided picks at 90+ against 50 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 0.696808), and the interval on the gap runs from -0.237 to +0.412 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+          "n_needed_per_arm_for_observed_gap": 315,
           "n_needed_per_arm_for_meaningful_gap": 392,
           "meaningful_gap": [
             0.55,
@@ -4714,11 +4721,11 @@
         },
         "basis": "committee_vote",
         "basis_note": "every row here is scored from the committee vote the board froze before first pitch. No engine pick is scored any other way, so the cut is one kind of evidence throughout \u2014 the two bases `pick_confidence` defines are never mixed inside one table.",
-        "n_total": 60,
-        "n_scored": 60,
+        "n_total": 61,
+        "n_scored": 61,
         "n_unscored": 0,
         "sums_to_total": true,
-        "n_graded_total": 60
+        "n_graded_total": 61
       }
     },
     "streaks": {
@@ -5023,10 +5030,10 @@
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
     "overall": {
-      "n": 55,
+      "n": 56,
       "win": 30,
       "loss": 21,
-      "push": 4,
+      "push": 5,
       "roi": 0.1576,
       "hit_rate": 0.5882,
       "units_flat": 8.037,
@@ -5055,10 +5062,10 @@
         "includes_expanded_n": 0
       },
       "4": {
-        "n": 16,
+        "n": 17,
         "win": 11,
         "loss": 4,
-        "push": 1,
+        "push": 2,
         "roi": 0.4404,
         "hit_rate": 0.7333,
         "units_flat": 6.606,
@@ -5135,10 +5142,10 @@
         }
       },
       "adaptive_desk": {
-        "n": 52,
+        "n": 53,
         "win": 28,
         "loss": 20,
-        "push": 4,
+        "push": 5,
         "roi": 0.1486,
         "hit_rate": 0.5833,
         "units_flat": 7.132,
@@ -5203,7 +5210,7 @@
       "nightly_engine",
       "strategy_forge"
     ],
-    "n_unified_picks": 55,
+    "n_unified_picks": 56,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -5320,7 +5327,7 @@
           "date": "2026-08-09",
           "units_flat": 8.037,
           "units_weighted": 15.169,
-          "n": 55
+          "n": 56
         }
       ],
       "by_star_perf": {
@@ -5330,7 +5337,7 @@
           "roi": 0.0159
         },
         "4": {
-          "n": 16,
+          "n": 17,
           "hit": 0.7333,
           "roi": 0.4404
         },
@@ -5378,10 +5385,10 @@
         },
         {
           "month": "2026-08",
-          "n": 49,
+          "n": 50,
           "win": 24,
           "loss": 21,
-          "push": 4,
+          "push": 5,
           "hit": 0.5333,
           "roi": 0.0491,
           "units_flat": 2.21
@@ -5573,10 +5580,10 @@
         "what": "The one pick we actually serve on this game: the champion's play if it has one, otherwise the model's best playable lean, otherwise a PASS.",
         "is_headline": true,
         "activation_date": "2026-07-20",
-        "n": 55,
+        "n": 56,
         "win": 30,
         "loss": 21,
-        "push": 4,
+        "push": 5,
         "roi": 0.1576,
         "hit_rate": 0.5882,
         "units_flat": 8.037,
@@ -5590,10 +5597,10 @@
         "last_graded_date": "2026-08-09",
         "evidence_split": {
           "unknown": {
-            "n": 55,
+            "n": 56,
             "win": 30,
             "loss": 21,
-            "push": 4,
+            "push": 5,
             "roi": 0.1576,
             "hit_rate": 0.5882,
             "units_flat": 8.037,
@@ -5638,17 +5645,17 @@
         "last_graded_date": "2026-08-09",
         "evidence_split": {
           "forward_paper_live": {
-            "n": 6,
+            "n": 7,
             "win": 4,
-            "loss": 2,
+            "loss": 3,
             "push": 0,
-            "roi": 0.2961,
-            "hit_rate": 0.6667,
-            "units_flat": 1.777,
+            "roi": 0.111,
+            "hit_rate": 0.5714,
+            "units_flat": 0.777,
             "units_weighted": {
-              "units": 2.676,
-              "staked": 9.0,
-              "roi": 0.2974,
+              "units": 0.676,
+              "staked": 11.0,
+              "roi": 0.0615,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-12",
@@ -5657,17 +5664,17 @@
             "what": "logged forward in the champion's paper ledger before first pitch"
           },
           "live_board": {
-            "n": 19,
+            "n": 18,
             "win": 6,
-            "loss": 11,
+            "loss": 10,
             "push": 2,
-            "roi": -0.2945,
-            "hit_rate": 0.3529,
-            "units_flat": -5.007,
+            "roi": -0.2504,
+            "hit_rate": 0.375,
+            "units_flat": -4.007,
             "units_weighted": {
-              "units": -10.083,
-              "staked": 32.0,
-              "roi": -0.3151,
+              "units": -8.083,
+              "staked": 30.0,
+              "roi": -0.2694,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-09",
@@ -6088,10 +6095,10 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 467,
+          "n": 468,
           "win": 222,
           "loss": 231,
-          "push": 14,
+          "push": 15,
           "hit_rate": 0.4901,
           "decided": 453,
           "is_betting_record": false,
@@ -6100,17 +6107,17 @@
             0.4443,
             0.536
           ],
-          "last10": "L-W-W-L-P-W-W-L-L-L",
+          "last10": "P-W-W-L-P-W-W-L-L-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 136,
-          "own_side_over_rate": 0.531,
+          "n_live": 137,
+          "own_side_over_rate": 0.5321,
           "mean_abs_edge_vs_market": 0.0145,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -6125,10 +6132,10 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 467,
+          "n": 468,
           "win": 209,
           "loss": 244,
-          "push": 14,
+          "push": 15,
           "hit_rate": 0.4614,
           "decided": 453,
           "is_betting_record": false,
@@ -6137,17 +6144,17 @@
             0.416,
             0.5074
           ],
-          "last10": "W-L-W-L-P-L-L-W-W-L",
+          "last10": "P-L-W-L-P-L-L-W-W-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 136,
-          "own_side_over_rate": 0.5054,
-          "mean_abs_edge_vs_market": 0.0312,
+          "n_live": 137,
+          "own_side_over_rate": 0.5043,
+          "mean_abs_edge_vs_market": 0.0313,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "nova": {
           "key": "nova",
@@ -6162,10 +6169,10 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 467,
+          "n": 468,
           "win": 223,
           "loss": 230,
-          "push": 14,
+          "push": 15,
           "hit_rate": 0.4923,
           "decided": 453,
           "is_betting_record": false,
@@ -6174,17 +6181,17 @@
             0.4465,
             0.5382
           ],
-          "last10": "L-W-L-W-P-W-L-W-W-W",
+          "last10": "P-W-L-W-P-W-L-W-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 136,
-          "own_side_over_rate": 0.5203,
+          "n_live": 137,
+          "own_side_over_rate": 0.5192,
           "mean_abs_edge_vs_market": 0.0219,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         },
         "scout": {
           "key": "scout",
@@ -6199,10 +6206,10 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 467,
+          "n": 468,
           "win": 223,
           "loss": 230,
-          "push": 14,
+          "push": 15,
           "hit_rate": 0.4923,
           "decided": 453,
           "is_betting_record": false,
@@ -6211,22 +6218,22 @@
             0.4465,
             0.5382
           ],
-          "last10": "W-W-L-W-P-W-W-W-W-W",
+          "last10": "P-W-L-W-P-W-W-W-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-09",
           "n_reconstructed_oos": 331,
-          "n_live": 136,
-          "own_side_over_rate": 0.4133,
-          "mean_abs_edge_vs_market": 0.0259,
+          "n_live": 137,
+          "own_side_over_rate": 0.4145,
+          "mean_abs_edge_vs_market": 0.026,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 136 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
+          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 137 were served live; the arithmetic is identical either way because the model is identical either way. Never staked, never a product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-09T23:53:42Z",
+      "updated": "2026-08-10T03:12:32Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "WHAT THIS RECORD CAN AND CANNOT SUPPORT. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so it is genuinely out of sample and the leakage audit proves the fence four ways. But it is still only a few hundred games per analyst: at n=330 the 95% interval on a hit rate is roughly +/-5.4 points, which is wider than any edge worth having. The STANDING HYGIENE RULE therefore applies in full \u2014 no model-performance conclusion is drawn from this record, in either direction, and a rate below 50% is no more a finding than a rate above it. What the re-architecture is actually for is DECORRELATION: the four now read disjoint features and their sides agree only about as often as coin flips would, which is what makes their disagreement worth rendering."
     },
@@ -6263,10 +6270,10 @@
           "bh_significant": false
         },
         "SPLIT": {
-          "n": 41,
+          "n": 42,
           "win": 21,
           "loss": 17,
-          "push": 3,
+          "push": 4,
           "hit_rate": 0.5526,
           "roi": 0.0879,
           "n_decided": 38,
@@ -6424,10 +6431,10 @@
           }
         },
         "SPLIT_2-2|over=vega+scout": {
-          "n": 10,
+          "n": 11,
           "win": 4,
           "loss": 6,
-          "push": 0,
+          "push": 1,
           "hit_rate": 0.4,
           "roi": -0.184,
           "n_decided": 10,
@@ -6471,8 +6478,8 @@
           }
         }
       },
-      "n_games_with_all_four_graded": 55,
-      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 55 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 (1 row(s) exclude 50% uncorrected, which is what a family this size produces by chance).",
+      "n_games_with_all_four_graded": 56,
+      "headline": "NULL \u2014 nothing here separates from a coin flip. Across the 11 rows this table renders, on 56 games with all four v2 reads, ZERO survive Benjamini-Hochberg at q=0.1 (1 row(s) exclude 50% uncorrected, which is what a family this size produces by chance).",
       "n_rows_rendered": 11,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
@@ -8916,7 +8923,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T02:37:07Z",
+      "updated": "2026-08-10T03:16:33Z",
       "order": [
         "vega",
         "atlas",
@@ -9078,54 +9085,54 @@
     "desk_calls": {
       "stream": "desk_call",
       "record_start": "2026-08-01",
-      "n": 107,
-      "win": 47,
-      "loss": 54,
-      "push": 6,
-      "decided": 101,
-      "hit_rate": 0.4653,
+      "n": 121,
+      "win": 57,
+      "loss": 57,
+      "push": 7,
+      "decided": 114,
+      "hit_rate": 0.5,
       "hit_ci95": [
-        0.3711,
-        0.5621
+        0.4097,
+        0.5903
       ],
       "by_conviction": {
         "STRONG": {
-          "n": 7,
-          "win": 5,
+          "n": 8,
+          "win": 6,
           "loss": 2,
           "push": 0,
-          "hit_rate": 0.7143,
+          "hit_rate": 0.75,
           "hit_ci95": [
-            0.3589,
-            0.9178
+            0.4093,
+            0.9285
           ]
         },
         "CLEAR": {
-          "n": 43,
-          "win": 17,
+          "n": 45,
+          "win": 19,
           "loss": 22,
           "push": 4,
-          "hit_rate": 0.4359,
+          "hit_rate": 0.4634,
           "hit_ci95": [
-            0.293,
-            0.5902
+            0.3206,
+            0.6125
           ]
         },
         "SLIGHT": {
-          "n": 57,
-          "win": 25,
-          "loss": 30,
-          "push": 2,
-          "hit_rate": 0.4545,
+          "n": 68,
+          "win": 32,
+          "loss": 33,
+          "push": 3,
+          "hit_rate": 0.4923,
           "hit_ci95": [
-            0.3303,
-            0.5848
+            0.3746,
+            0.6108
           ]
         }
       },
-      "n_called_and_bet": 43,
-      "n_called_not_bet": 64,
-      "updated": "2026-08-09T09:14:19Z",
+      "n_called_and_bet": 55,
+      "n_called_not_bet": 66,
+      "updated": "2026-08-10T02:39:39Z",
       "is_a_betting_record": false,
       "note": "THE DESK'S CALLS, GRADED IN THEIR OWN LEDGER. This is NOT a betting record and must never be summed with one, shown beside one as a comparison, or described in units: a call has no price and no stake, so it has no ROI. It counts one row per game \u2014 the desk's view at the most informed wall it reached \u2014 and it exists to answer one question the product could not previously ask: when the desk says something, is it right? A CALL IS NOT A BET. This is the desk's directional view on the game \u2014 what it actually thinks \u2014 built from the four analysts' own reads, equal-weighted. It is NEVER staked, it NEVER enters games[].pick, it is never counted in the product record, and it cannot be sized. Whether we are betting this game is a separate question with a separate answer, at `we_are_betting` / `bet_action`, decided by the price gate alone and unchanged by anything here. The graded product remains games[].pick and only games[].pick; the desk's calls are graded in their own ledger, separately, from 2026-08-01.",
       "honest_note": "THE STANDING HYGIENE RULE APPLIES IN FULL. This ledger starts at 2026-08-01 and will take months to say anything. A hit rate here is not evidence of edge in either direction, and in particular a call that beats 50% is NOT an argument for loosening the price gate \u2014 the gate is what protects the product record and it does not move on this.",
@@ -10244,13 +10251,13 @@
             "The price analyst \u00b7 The Price",
             "The conditions analyst \u00b7 The Conditions"
           ],
-          "n_disagreements": 232,
+          "n_disagreements": 233,
           "wins": {
             "vega": 120,
             "atlas": 107
           },
-          "pushes": 5,
-          "n_both_graded": 467,
+          "pushes": 6,
+          "n_both_graded": 468,
           "line": "When the price analyst and the conditions analyst disagree: The price analyst 120, the conditions analyst 107"
         },
         {
@@ -10262,13 +10269,13 @@
             "The price analyst \u00b7 The Price",
             "The hitting analyst \u00b7 The Bats"
           ],
-          "n_disagreements": 233,
+          "n_disagreements": 234,
           "wins": {
             "vega": 114,
             "nova": 115
           },
-          "pushes": 4,
-          "n_both_graded": 467,
+          "pushes": 5,
+          "n_both_graded": 468,
           "line": "When the price analyst and the hitting analyst disagree: The price analyst 114, the hitting analyst 115"
         },
         {
@@ -10286,7 +10293,7 @@
             "scout": 123
           },
           "pushes": 6,
-          "n_both_graded": 467,
+          "n_both_graded": 468,
           "line": "When the price analyst and the pitching analyst disagree: The price analyst 122, the pitching analyst 123"
         },
         {
@@ -10304,7 +10311,7 @@
             "nova": 104
           },
           "pushes": 5,
-          "n_both_graded": 467,
+          "n_both_graded": 468,
           "line": "When the conditions analyst and the hitting analyst disagree: The conditions analyst 90, the hitting analyst 104"
         },
         {
@@ -10316,13 +10323,13 @@
             "The conditions analyst \u00b7 The Conditions",
             "The pitching analyst \u00b7 The Arms"
           ],
-          "n_disagreements": 197,
+          "n_disagreements": 198,
           "wins": {
             "atlas": 88,
             "scout": 102
           },
-          "pushes": 7,
-          "n_both_graded": 467,
+          "pushes": 8,
+          "n_both_graded": 468,
           "line": "When the conditions analyst and the pitching analyst disagree: The conditions analyst 88, the pitching analyst 102"
         },
         {
@@ -10334,13 +10341,13 @@
             "The hitting analyst \u00b7 The Bats",
             "The pitching analyst \u00b7 The Arms"
           ],
-          "n_disagreements": 204,
+          "n_disagreements": 205,
           "wins": {
             "nova": 99,
             "scout": 99
           },
-          "pushes": 6,
-          "n_both_graded": 467,
+          "pushes": 7,
+          "n_both_graded": 468,
           "line": "When the hitting analyst and the pitching analyst disagree: The hitting analyst 99, the pitching analyst 99"
         }
       ],
@@ -10352,45 +10359,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 92,
+          "n": 93,
           "win": 38,
           "loss": 48,
-          "push": 6,
+          "push": 7,
           "hit_rate": 0.4419,
-          "line": "38-48-6",
+          "line": "38-48-7",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 92,
+          "n": 93,
           "win": 48,
           "loss": 38,
-          "push": 6,
+          "push": 7,
           "hit_rate": 0.5581,
-          "line": "48-38-6",
+          "line": "48-38-7",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 92,
+          "n": 93,
           "win": 45,
           "loss": 41,
-          "push": 6,
+          "push": 7,
           "hit_rate": 0.5233,
-          "line": "45-41-6",
+          "line": "45-41-7",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 92,
+          "n": 93,
           "win": 49,
           "loss": 37,
-          "push": 6,
+          "push": 7,
           "hit_rate": 0.5698,
-          "line": "49-37-6",
+          "line": "49-37-7",
           "is_betting_record": false
         }
       },
@@ -10457,10 +10464,10 @@
     "record_start": "2026-07-01",
     "through": "2026-08-09",
     "overall": {
-      "n": 55,
+      "n": 56,
       "win": 28,
       "loss": 21,
-      "push": 6,
+      "push": 7,
       "roi": 0.1251,
       "hit_rate": 0.5714,
       "units_flat": 6.132,
@@ -10563,10 +10570,10 @@
         "strategy_at": "adaptive_strategy_by_date.2026-08-08"
       },
       "2026-08-09": {
-        "n": 8,
+        "n": 9,
         "win": 4,
         "loss": 3,
-        "push": 1,
+        "push": 2,
         "hit_rate": 0.5714,
         "strategy_ref": "forge:w17:46ca506354",
         "strategy_at": "adaptive_strategy_by_date.2026-08-09"
@@ -12712,11 +12719,11 @@
       "source": "adaptive_desk"
     },
     "2026-08-09": {
-      "n_picks": 8,
-      "n_graded": 8,
+      "n_picks": 9,
+      "n_graded": 9,
       "wins": 4,
       "losses": 3,
-      "pushes": 1,
+      "pushes": 2,
       "hit_rate": 0.5714,
       "roi": 0.1243,
       "units": 0.87,
@@ -13233,11 +13240,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 10.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 10.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -14234,7 +14241,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:38Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -15069,11 +15076,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -16095,7 +16102,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:38Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16966,11 +16973,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -17964,7 +17971,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18838,11 +18845,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -19842,7 +19849,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -20718,11 +20725,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -21625,7 +21632,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -22500,11 +22507,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -23498,7 +23505,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:38Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -24354,11 +24361,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -25374,7 +25381,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -26230,11 +26237,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -27246,7 +27253,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -28123,11 +28130,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -29143,7 +29150,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:38Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -30352,7 +30359,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:38Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -31181,11 +31188,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 8.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -32192,7 +32199,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -33347,7 +33354,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -34217,11 +34224,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -35248,7 +35255,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:37Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "STRONG",
@@ -36095,11 +36102,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 6.5h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -37106,7 +37113,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:38Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -37637,7 +37644,7 @@
         "star_tier": "Rule pick \u2014 the day's rule called this side",
         "price": 105.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "push",
         "locked": true,
         "locked_at_utc": "2026-08-09T21:27:35Z",
         "timestamp": "2026-08-09T21:27:35Z",
@@ -37889,12 +37896,12 @@
             "generator": "rule_voice_v2",
             "identity": "matchup_facts/1.3",
             "paragraphs": [
-              "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-3 with a 5.97 ERA over his last 8 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.",
+              "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-2 with a 5.90 ERA over his last 7 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.",
               "DiamondEdge sides with the under on this one. The total sits at 9 now, up from the 8.5 it opened at. The ballpark here has been playing about 8% below league-average scoring over the last three years.",
               "The supporting numbers point the same way: the Astros went to 2 relievers yesterday and games worked by tonight's plate umpire have averaged 1.2 runs fewer than the league. Javier takes the ball on 6 days' rest and their recent scoring has been running 0.3 runs a game short of tonight's total.",
-              "The Padres are 61-57 and are 6-4 over their last ten; the Astros are 60-58 and are 7-3 over their last ten. The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1."
+              "The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1."
             ],
-            "text": "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-3 with a 5.97 ERA over his last 8 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.\n\nDiamondEdge sides with the under on this one. The total sits at 9 now, up from the 8.5 it opened at. The ballpark here has been playing about 8% below league-average scoring over the last three years.\n\nThe supporting numbers point the same way: the Astros went to 2 relievers yesterday and games worked by tonight's plate umpire have averaged 1.2 runs fewer than the league. Javier takes the ball on 6 days' rest and their recent scoring has been running 0.3 runs a game short of tonight's total.\n\nThe Padres are 61-57 and are 6-4 over their last ten; the Astros are 60-58 and are 7-3 over their last ten. The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1.",
+            "text": "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-2 with a 5.90 ERA over his last 7 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.\n\nDiamondEdge sides with the under on this one. The total sits at 9 now, up from the 8.5 it opened at. The ballpark here has been playing about 8% below league-average scoring over the last three years.\n\nThe supporting numbers point the same way: the Astros went to 2 relievers yesterday and games worked by tonight's plate umpire have averaged 1.2 runs fewer than the league. Javier takes the ball on 6 days' rest and their recent scoring has been running 0.3 runs a game short of tonight's total.\n\nThe Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1.",
             "blurb": {
               "text": "The ballpark here has been playing about 8% below league-average scoring over the last three years. A ballpark that has been playing about 8% below league-average scoring over the last three years. DiamondEdge sides with the under on this one.",
               "record_line": "Over the 17 nights that chose it (Jul 22 to Aug 7) this rule went 129-50-3 \u2014 what it did on games already played, not a rate to come.",
@@ -37962,32 +37969,11 @@
               },
               {
                 "fact": "away standings",
-                "value": {
-                  "record": "60-58",
-                  "streak": "L1",
-                  "last10": "7-3",
-                  "rs_pg": 4.64,
-                  "ra_pg": 4.84,
-                  "pct": 0.508,
-                  "leads_division": true,
-                  "as_of_utc": "2026-08-10T01:57:18Z"
-                },
-                "source": "teams_v4.json generated 2026-08-10T01:57:18Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 2.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "value": {
-                  "record": "61-57",
-                  "streak": "W1",
-                  "last10": "6-4",
-                  "gb": 9.5,
-                  "rs_pg": 4.21,
-                  "ra_pg": 4.34,
-                  "pct": 0.517,
-                  "leads_division": false,
-                  "as_of_utc": "2026-08-10T01:57:18Z"
-                },
-                "source": "teams_v4.json generated 2026-08-10T01:57:18Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
+                "dropped": "teams_v4.json was generated 2026-08-10T02:37:08Z, 2.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -38052,8 +38038,8 @@
               },
               {
                 "fact": "home starter form",
-                "source": "derived from Randy V\u00e1squez's served game log, 8 starts 2026-05-26 to 2026-08-04, all strictly before this game",
-                "value": "2-3, 23 earned in 104 outs, 15 strikeouts"
+                "source": "derived from Randy V\u00e1squez's served game log, 7 starts 2026-06-02 to 2026-08-04, all strictly before this game",
+                "value": "2-2, 19 earned in 87 outs, 13 strikeouts"
               },
               {
                 "fact": "home starter last start",
@@ -38083,19 +38069,19 @@
                 "rendered": "1"
               },
               {
-                "feature": "home starter: won-lost over the 8 starts in his served game log",
-                "raw": "2-3",
-                "rendered": "2-3"
+                "feature": "home starter: won-lost over the 7 starts in his served game log",
+                "raw": "2-2",
+                "rendered": "2-2"
               },
               {
-                "feature": "home starter: earned runs per nine over those 8 starts, from 23 earned in 104 outs",
-                "raw": "5.97",
-                "rendered": "5.97"
+                "feature": "home starter: earned runs per nine over those 7 starts, from 19 earned in 87 outs",
+                "raw": "5.90",
+                "rendered": "5.90"
               },
               {
                 "feature": "home starter: starts in his served game log",
-                "raw": "8",
-                "rendered": "8"
+                "raw": "7",
+                "rendered": "7"
               },
               {
                 "feature": "home starter: innings in his last logged start, from 18 outs",
@@ -38229,46 +38215,6 @@
                 "rendered": "0.3"
               },
               {
-                "feature": "the home club's won-lost, served standings",
-                "raw": "61-57",
-                "rendered": "61-57"
-              },
-              {
-                "feature": "the home club's last ten, served standings",
-                "raw": "6",
-                "rendered": "6"
-              },
-              {
-                "feature": "the home club's last ten, served standings",
-                "raw": "4",
-                "rendered": "4"
-              },
-              {
-                "feature": "the home club's last-ten window, the served standings field 'last10'",
-                "raw": "10",
-                "rendered": "10"
-              },
-              {
-                "feature": "the away club's won-lost, served standings",
-                "raw": "60-58",
-                "rendered": "60-58"
-              },
-              {
-                "feature": "the away club's last ten, served standings",
-                "raw": "7",
-                "rendered": "7"
-              },
-              {
-                "feature": "the away club's last ten, served standings",
-                "raw": "3",
-                "rendered": "3"
-              },
-              {
-                "feature": "the away club's last-ten window, the served standings field 'last10'",
-                "raw": "10",
-                "rendered": "10"
-              },
-              {
                 "feature": "bat_home_rpg_r15",
                 "raw": 4.2,
                 "rendered": "4.2"
@@ -38317,22 +38263,20 @@
               },
               {
                 "shape": "arm_tag.home",
-                "text": "(2-3 with a 5.97 ERA over his last 8 starts)",
+                "text": "(2-2 with a 5.90 ERA over his last 7 starts)",
                 "allowed": [
                   "2",
-                  "3",
-                  "5.97",
-                  "8"
+                  "5.90",
+                  "7"
                 ]
               },
               {
                 "shape": "arm_intro.home",
-                "text": "Randy V\u00e1squez (2-3 with a 5.97 ERA over his last 8 starts) starts for the Padres",
+                "text": "Randy V\u00e1squez (2-2 with a 5.90 ERA over his last 7 starts) starts for the Padres",
                 "allowed": [
                   "2",
-                  "3",
-                  "5.97",
-                  "8"
+                  "5.90",
+                  "7"
                 ]
               },
               {
@@ -38444,21 +38388,6 @@
                 "allowed": []
               },
               {
-                "shape": "standings",
-                "text": "The Padres are 61-57 and are 6-4 over their last ten; the Astros are 60-58 and are 7-3 over their last ten.",
-                "allowed": [
-                  "10",
-                  "3",
-                  "4",
-                  "57",
-                  "58",
-                  "6",
-                  "60",
-                  "61",
-                  "7"
-                ]
-              },
-              {
                 "shape": "say.bat_home_rpg_r15",
                 "text": "the Padres have scored 4.2 runs a game over their last fifteen",
                 "allowed": [
@@ -38511,7 +38440,6 @@
               "say.sp_days_rest_away",
               "say.ump_runs_pg_delta",
               "series_clause",
-              "standings",
               "support_open",
               "total"
             ]
@@ -38524,12 +38452,12 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-3 with a 5.97 ERA over his last 8 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.",
+            "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-2 with a 5.90 ERA over his last 7 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.",
             "DiamondEdge sides with the under on this one. The total sits at 9 now, up from the 8.5 it opened at. The ballpark here has been playing about 8% below league-average scoring over the last three years.",
             "The supporting numbers point the same way: the Astros went to 2 relievers yesterday and games worked by tonight's plate umpire have averaged 1.2 runs fewer than the league. Javier takes the ball on 6 days' rest and their recent scoring has been running 0.3 runs a game short of tonight's total.",
-            "The Padres are 61-57 and are 6-4 over their last ten; the Astros are 60-58 and are 7-3 over their last ten. The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1."
+            "The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1."
           ],
-          "text": "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-3 with a 5.97 ERA over his last 8 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.\n\nDiamondEdge sides with the under on this one. The total sits at 9 now, up from the 8.5 it opened at. The ballpark here has been playing about 8% below league-average scoring over the last three years.\n\nThe supporting numbers point the same way: the Astros went to 2 relievers yesterday and games worked by tonight's plate umpire have averaged 1.2 runs fewer than the league. Javier takes the ball on 6 days' rest and their recent scoring has been running 0.3 runs a game short of tonight's total.\n\nThe Padres are 61-57 and are 6-4 over their last ten; the Astros are 60-58 and are 7-3 over their last ten. The Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1.",
+          "text": "It is Cristian Javier for the Astros against the Padres at Petco Park on Sunday, with the series level at 1-1 and this the decider. Randy V\u00e1squez (2-2 with a 5.90 ERA over his last 7 starts) starts for the Padres. V\u00e1squez was untouchable last time out: 6 shutout innings on 2 hits and 1 walk, with 1 strikeout in a 9-4 win at Arizona on Tuesday. Javier (0-2 with a 9.33 ERA over his last 5 starts) gave up 3 runs on 7 hits over 6 innings last time out in a 3-1 loss against the Blue Jays on Monday.\n\nDiamondEdge sides with the under on this one. The total sits at 9 now, up from the 8.5 it opened at. The ballpark here has been playing about 8% below league-average scoring over the last three years.\n\nThe supporting numbers point the same way: the Astros went to 2 relievers yesterday and games worked by tonight's plate umpire have averaged 1.2 runs fewer than the league. Javier takes the ball on 6 days' rest and their recent scoring has been running 0.3 runs a game short of tonight's total.\n\nThe Padres have scored 4.2 runs a game over their last fifteen, the Astros 4.5. The season series is level at 1-1.",
           "blurb": {
             "text": "The ballpark here has been playing about 8% below league-average scoring over the last three years. A ballpark that has been playing about 8% below league-average scoring over the last three years. DiamondEdge sides with the under on this one.",
             "record_line": "Over the 17 nights that chose it (Jul 22 to Aug 7) this rule went 129-50-3 \u2014 what it did on games already played, not a rate to come.",
@@ -38659,7 +38587,7 @@
           "price": 105.0,
           "stars": 3,
           "score": 3.0,
-          "result": null,
+          "result": "push",
           "lead_time": "T-3h",
           "locked": true,
           "expanded_band": false,
@@ -38914,13 +38842,7 @@
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
           "take": "The conditions are loud here \u2014 0.52 runs of deviation from a neutral night, and they point under on 9.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Top 9th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-10T02:32:50Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -39037,7 +38959,7 @@
         "score": 3.0,
         "price": 105.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "push",
         "locked": true,
         "lead_time": "T-3h",
         "source": "strategy_forge",
@@ -39062,7 +38984,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T02:33:17Z",
+          "asof_utc": "2026-08-10T03:12:38Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -39573,34 +39495,7 @@
           }
         }
       ],
-      "live_progress": {
-        "status": "in_progress",
-        "inning": 9,
-        "half": "top",
-        "outs": 0,
-        "away_score": 2,
-        "home_score": 7,
-        "runs_so_far": 9,
-        "pregame_total": 9.0,
-        "runs_vs_pregame_total": 0.0,
-        "runs_still_needed_for_over": 0,
-        "innings_elapsed": 8.5,
-        "pace_runs_per_inning": 1.06,
-        "projected_final_runs": 9.5,
-        "p_hit_now": null,
-        "p_hit_side": null,
-        "p_hit_side_basis": null,
-        "p_hit_certified": false,
-        "p_hit_basis": null,
-        "p_hit_buckets": [
-          "LATE"
-        ],
-        "p_hit_note": "outside the certified range \u2014 the conditions analyst is watching, no number",
-        "live_p_over": null,
-        "as_of": "2026-08-10T02:32:50Z",
-        "display_only": true,
-        "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
-      },
+      "live_progress": null,
       "weather": {
         "status": "ACTIVE",
         "temp_f": 80,
@@ -40253,12 +40148,5 @@
       "desk_status": "PENDING",
       "note": "The desk has not read this game yet \u2014 it goes to the analysts on the morning run."
     }
-  ],
-  "weather_serve": {
-    "n_cards": 25,
-    "n_with_weather": 10,
-    "n_without": 15,
-    "status": "ok",
-    "note": "A card carries weather only when the park is open air AND the T-3h forecast was retrieved before the wall. Domes and games with no wall-legal reading carry none \u2014 the indoor constants are not a measurement."
-  }
+  ]
 }

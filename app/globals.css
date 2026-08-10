@@ -5178,16 +5178,19 @@ body.stories-on{background:#060912}
 .nws-card.nofoto .nws-rule{display:flex}
 /* THE PLATE — crests and the score, set as an object. Never a bare grey box: it renders
    only when a game actually resolved, and it carries real badges and a real number. */
-.nws-plate{display:none;align-items:center;justify-content:flex-start;gap:14px;
-  margin-top:4px;padding:12px 15px;border-radius:18px;
+.nws-plate{display:none;align-self:flex-start;align-items:center;gap:13px;
+  margin-top:4px;padding:11px 16px 11px 12px;border-radius:18px;
   background:linear-gradient(168deg,rgba(255,255,255,.07),rgba(255,255,255,.03));
   box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 26px -14px rgba(0,0,0,.8)}
 .nws-card.nofoto .nws-plate{display:flex}
 .nws-pteam{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:800;
   font-size:15px;letter-spacing:.01em;color:#f2f7ff}
-.nws-pcrest img,.nws-pcrest.crest{width:30px;height:30px;object-fit:contain;border-radius:9px}
-.nws-pcrest.crest{display:grid;place-items:center;background:rgba(255,255,255,.12);
-  font-family:var(--disp);font-weight:800;font-size:10.5px;color:#fff}
+/* the same white pad the article's crests take — half this league's marks are navy, and
+   a navy badge on a dark plate is an invisible badge */
+.nws-pcrest{width:30px;height:30px;object-fit:contain;border-radius:9px}
+img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
+.nws-pcrest.crest{display:grid;place-items:center;background:rgba(255,255,255,.14);
+  font-family:var(--disp);font-weight:800;font-size:10px;letter-spacing:0;color:#fff}
 .nws-pscore,.nws-pat{font-style:normal;font-family:var(--disp);font-weight:800;
   font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .nws-pscore{font-size:19px;color:#fff}
@@ -9362,9 +9365,29 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
   background:linear-gradient(168deg,#141b27,#0a0e18);box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}
 .art-hero{position:relative;display:flex;flex-direction:column;justify-content:flex-end;
   isolation:isolate;min-height:clamp(230px,42dvh,340px);overflow:hidden}
-/* NO PHOTOGRAPH IS ALSO A DESIGN — the same rule the card follows: the brand field, and the
-   house mark struck through the corner. Never a "◆" glyph standing in for a logo. */
-.art-hero.is-fallback,.art-hero.art-vs{background:
+/* ════════ AND WITH NO PICTURE AND NO GAME, THE TYPE IS THE HERO (2026-08-09) ════════
+   `is-fallback` kept the full 230–340px frame and put a ghosted house mark in it, so a
+   story with neither a photograph nor a resolvable game opened on a third of a screen of
+   empty box sitting above its own headline. That is the "blank article" — the FRAME was
+   what was empty, so the frame goes rather than getting something painted into it.
+   `art-type` collapses the hero to its own type and sets a struck gold rule above the
+   kicker; the headline and the standfirst are the header. A picture, or a matchup we can
+   set as crests, still earns the full treatment. A dead image URL lands here too. */
+.art-hero.art-type,.art-hero.is-fallback{min-height:0}
+.art-hero.art-type .art-hero-scrim,.art-hero.is-fallback .art-hero-scrim{display:none}
+.art-hero.art-type .art-hero-body,.art-hero.is-fallback .art-hero-body{padding-top:26px}
+.article-story .art-rule{display:none;align-items:center;gap:9px;margin-bottom:3px}
+.article-story .art-rule i{flex:0 0 auto;font-style:normal;font-size:11px;line-height:1;
+  color:rgba(var(--goldbrightc),.96);filter:drop-shadow(0 0 8px rgba(var(--goldbrightc),.45))}
+.article-story .art-rule::after{content:"";flex:1 1 auto;height:1px;
+  background:linear-gradient(90deg,rgba(var(--goldbrightc),.8),rgba(var(--goldbrightc),.2) 48%,transparent)}
+/* the rule stops clear of the close button — it rides the same top line */
+.art-hero.art-type .art-rule,.art-hero.is-fallback .art-rule{display:flex;margin-right:58px}
+/* the score, where the game the story is about has one — "vs" is the wrong word after
+   first pitch, and the reader has just come in from a card that already said 2–1 */
+.art-hero-crests em.art-hero-score{font-size:26px;letter-spacing:-.02em;color:#fff;
+  font-variant-numeric:tabular-nums;text-shadow:0 10px 26px rgba(0,0,0,.5)}
+.art-hero.is-fallback,.art-hero.art-vs,.art-hero.art-type{background:
   radial-gradient(90% 52% at 8% 4%,rgba(125,220,255,.30),transparent 66%),
   radial-gradient(80% 50% at 98% 96%,rgba(167,139,250,.24),transparent 70%),
   linear-gradient(168deg,#141b27,#060912)}
@@ -9373,9 +9396,8 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
   animation:artHeroSettle .62s var(--ease-out) both}
 .art-hero.is-fallback .art-hero-shot{opacity:0}
 @keyframes artHeroSettle{from{transform:scale(1.05)}to{transform:none}}
-.art-hero-mark{position:absolute;right:-26%;bottom:-20%;z-index:0;width:86%;aspect-ratio:1;
-  background:rgba(125,220,255,.16);transform:rotate(-7deg);
-  -webkit-mask:var(--de-mark) center/contain no-repeat;mask:var(--de-mark) center/contain no-repeat}
+/* (.art-hero-mark retired with the empty fallback frame it decorated — see art-type above.
+   A watermark inside a 300px void is not a design; the void was the problem.) */
 .art-hero-crests{position:absolute;left:0;right:0;top:8%;z-index:0;
   display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:0 34px}
 .art-hero-crests em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:13px;

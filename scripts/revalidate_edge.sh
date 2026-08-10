@@ -37,11 +37,12 @@ import json,sys
 print(json.dumps({"keys": sys.argv[1:]}))' "$@")
 
 # --max-time so a hung edge cannot wedge a cron job that is otherwise finished.
-curl -s -o /dev/null --max-time 6 \
+# The REPLY is kept, because the reply is the new version map — see below.
+REPLY=$(curl -s --max-time 10 \
   -X POST "$ENDPOINT" \
   -H "Content-Type: application/json" \
   -H "x-revalidate-secret: $SNAP_REVALIDATE_SECRET" \
-  --data-binary "$BODY" 2>/dev/null || true
+  --data-binary "$BODY" 2>/dev/null || true)
 
 # ── AND THEN BE THE FIRST READER, so nobody else finds the cache empty ───────
 # Invalidating alone is only half the job, and the missing half is the expensive
@@ -52,18 +53,32 @@ curl -s -o /dev/null --max-time 6 \
 # ~150 times a day, and at 10,000 users the spike is worse than the TTL it
 # replaced.
 #
-# One request per shape, issued now — while nobody is looking — fills the
+# One request per key, issued now — while nobody is looking — fills the
 # region-shared cache so every reader that follows hits it warm. The herd never
-# forms because nothing cold is left for it to form around. Both shapes, because
-# the board reads the `lite` projection and a cache warm only for the shape
-# nobody asks for is not warm.
+# forms because nothing cold is left for it to form around.
+#
+# ── AND IT MUST WARM THE **NEW** URL ────────────────────────────────────────
+# This block used to learn the version by fetching /api/manifest, which the CDN
+# holds for 10 s with 60 s of stale-while-revalidate. Measured on production
+# straight after a publish: ages of 17 s, 29 s and 62 s with
+# `x-vercel-cache: STALE`. So the warm read the PREVIOUS generation and warmed
+# `?cv=<old>` — an already-warm URL nobody would request again — while the URL
+# every reader was about to ask for was left cold. A warm aimed at the wrong
+# object still returns HTTP 200, so nothing ever said so.
+#
+# The version now comes from the reply to the invalidation itself, which the
+# endpoint reads fresh. A publisher never asks a cache what it just wrote.
+#
+# ONE SHAPE, not two. `?lite=1` used to be warmed for every key; page.tsx asks
+# for it on exactly one (picks_unified). On picks_v4_beta the lite warm bought a
+# guaranteed Postgres statement timeout on every publish. Since 2026-08-10 one
+# origin read fills both shapes server-side, so `?cv=` alone leaves lite warm too.
 #
 # Entirely best-effort: the payload is already published and the safety-net
 # revalidates already make the plain invalidate correct on its own.
 BASE="${ENDPOINT%/api/*}"
-MF=$(curl -s --max-time 6 "$BASE/api/manifest" 2>/dev/null || true)
 for k in "$@"; do
-  V=$(printf '%s' "$MF" | python3 -c '
+  V=$(printf '%s' "$REPLY" | python3 -c '
 import json,sys,urllib.parse
 try:
     v=(json.load(sys.stdin).get("v") or {}).get(sys.argv[1])
@@ -71,10 +86,8 @@ try:
 except Exception:
     print("")' "$k" 2>/dev/null || true)
   [ -n "$V" ] || continue
-  curl -s -o /dev/null --max-time 20 -H "Accept-Encoding: gzip, br" \
+  curl -s -o /dev/null --max-time 45 --compressed \
     "$BASE/api/snap/$k?cv=$V" 2>/dev/null || true
-  curl -s -o /dev/null --max-time 20 -H "Accept-Encoding: gzip, br" \
-    "$BASE/api/snap/$k?lite=1&cv=$V" 2>/dev/null || true
 done
 
 exit 0

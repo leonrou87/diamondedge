@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { brotliCompressSync, brotliDecompressSync, constants } from "node:zlib";
 import { snapTag } from "../../cache-tags";
 import { currentVersion } from "../../manifest-source";
+import { deriveLite } from "./lite";
 import { topLevelStamp } from "./stamp";
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -334,62 +335,6 @@ async function rawVersion(key: string): Promise<{ v: string; updated_at: string 
   return { v: row ? (row.gu || row.ga || row.updated_at || "") : "", updated_at: row?.updated_at || null };
 }
 
-/* ═══ THE LITE PROJECTION, IN JS, MIRRORING slate_snapshot_lite EXACTLY ═══
-
-   It used to live in Postgres, and the argument for that was sound at the time:
-   projecting here would mean Supabase shipped the whole payload to Vercel on
-   every miss, so the egress meter would not notice. Brotli on the origin leg
-   falsified it — the raw row is 476,270 B on the wire against ~250 KB projected,
-   so the projection is now worth ~226 KB PER PUBLISH.
-
-   Meanwhile its cost had become unpayable. `slate_snapshot_lite('picks_unified')`
-   runs ~3.9 s over PostgREST against `anon`'s 3 s statement_timeout, so the
-   board's boot read failed 9 times in 10 (57014, "canceling statement due to
-   statement timeout"); `picks_v4_beta` timed out too. The same projection here,
-   measured on the real payload, takes 8.1 ms.
-
-   The contract it reproduces, field for field:
-     * four per-game blobs always removed
-     * `analysts` kept when the game is inside the rolling window OR among the
-       N most recent games in the payload — the count floor is what keeps the
-       Desk's "recent calls" ledger fillable across an offseason, a break or a
-       sync outage, where a pure date window would silently empty it
-     * ordering by date descending with array position as the tiebreak, so it is
-       deterministic on a day where several games share a date
-     * `_lite: true` at the top level — page.tsx reads it (`fresh._lite === true`)
-       to decide whether a later full load still has work to do, so it is part of
-       the contract and not a debug marker.
-   The window is UTC because Postgres's `current_date` was, on a UTC server. */
-const LITE_STRIP = ["diamondedge", "strategies", "analysts_v2", "scout"] as const;
-const LITE_KEEP_DAYS = 21;
-const LITE_KEEP_MIN = 60;
-
-function deriveLite(fullText: string): string {
-  const p = JSON.parse(fullText);
-  if (!p || typeof p !== "object") return fullText;
-  const games = Array.isArray((p as any).games) ? (p as any).games : null;
-  if (!games) return JSON.stringify({ ...(p as any), _lite: true });
-
-  const cutoff = new Date(Date.now() - LITE_KEEP_DAYS * 86400000).toISOString().slice(0, 10);
-  // date desc, nulls last, array position desc as the tiebreak — the same order
-  // `row_number() over (order by (g->>'date') desc nulls last, ord desc)` gave.
-  const floor = new Set(
-    games
-      .map((g: any, i: number) => [String((g && g.date) || ""), i] as [string, number])
-      .sort((a: [string, number], b: [string, number]) =>
-        (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : b[1] - a[1]))
-      .slice(0, LITE_KEEP_MIN)
-      .map((x: [string, number]) => x[1]),
-  );
-  const out = games.map((g: any, i: number) => {
-    const c = { ...g };
-    for (const k of LITE_STRIP) delete c[k];
-    if (!(String((g && g.date) || "") >= cutoff || floor.has(i))) delete c.analysts;
-    return c;
-  });
-  return JSON.stringify({ ...(p as any), games: out, _lite: true });
-}
-
 /* ═══ THE CACHED UNIT: COMPRESSED, BECAUSE UNCOMPRESSED DID NOT FIT ═══
 
    Next's Data Cache drops any entry whose `JSON.stringify(data).length` exceeds
@@ -449,15 +394,11 @@ async function fetchUnit(key: string): Promise<Unit> {
   const fullText = JSON.stringify(payload ?? null);
   let liteText = fullText;
   try {
+    /* `deriveLite` guarantees its own postcondition — it returns the input
+       verbatim when the projection would not shrink it — so there is nothing to
+       second-guess here. When it returns the same string the two shapes share
+       one blob and one compression pass. */
     liteText = deriveLite(fullText);
-    /* A PROJECTION THAT MAKES THE PAYLOAD BIGGER IS NOT A PROJECTION. Measured
-       through the old RPC: pregame_picks 1,160,537 B lite against 1,090,085 B
-       raw, picks_v4_beta_live 261,627 against 245,777. Those keys carry none of
-       the stripped blobs, so all the projection did was re-serialise the
-       document and add a marker — and the board's biggest key was paying for a
-       saving it was not getting. Falling back to the full text keeps `?lite=1`
-       honest: never worse than not asking. */
-    if (liteText.length >= fullText.length) liteText = fullText;
   } catch {
     // Malformed payload: `?lite=1` degrades to the full document rather than
     // failing. More bytes than asked for beats no board at all.
