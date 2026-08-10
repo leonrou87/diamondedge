@@ -581,15 +581,33 @@ header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px 
    IT IS A TRANSFORM AND NOTHING ELSE. No stroke-dashoffset (a paint property — thirteen
    marks repainting every frame), no filters, no blend modes. One composited rotation per
    mark, which is what keeps the board's scroll intact. */
-/* TURNED UP (Leon, 2026-08-09: "The white line going around the diamond in the logo… too
-   subtle. Thicker, longer streak, move faster"). All three knobs, in the three places that
-   actually control them — the lap time here, the tail length in the conic stops below, and the
-   thickness in the mask's inner radius. Nothing about the PATH changed: the 32 keyframes that
-   make it travel at constant speed around a diamond rather than a circle are untouched. */
+/* TURNED UP TWICE. The first pass (2026-08-09, "too subtle. Thicker, longer streak, move
+   faster") moved the lap time, the tail and the mask. Leon looked at the result and named
+   the thing that pass did not fix: "the WHITE line going around the diamond". His original
+   brief asked for "a GOLD dot or line that has a trail" — so the note under --de-orbit-c
+   claimed gold while the value shipped a near-white.
+
+   WHY IT READ WHITE. 255,214,120 is a gold HUE (42°) at 73.5% lightness, and its blue
+   channel — 120 — is what does the damage: a 4px band that light, on a 23px mark, against a
+   near-black masthead, is read as white by the eye long before it is read as a colour. It
+   is now 255,201,64: the same hue, the brand's own bright gold nudged up, with the blue
+   channel roughly halved. It is measurably less luminous than the value it replaces (3.67:1
+   against the #8a5f06 mark, from 4.05:1), so the loss is paid back where it does not cost
+   the colour — tail, speed and peak alpha.
+
+   FOUR KNOBS, AND THEY ARE ALL VARIABLES NOW. The lap time was already one; the tail length
+   and the mask's two radii were literals baked into the shared rule, which meant the
+   masthead could not be turned up without turning up all twelve marks on the board with it.
+   That is the exact failure "subtle" was aimed at, so the board now overrides its own tail
+   and thickness (see .de-mini-logo::before). Nothing about the PATH changed: the 32
+   keyframes that make it travel at constant speed around a diamond are untouched. */
 :root{
-  --de-orbit-dur:5s;        /* one lap of the masthead mark (was 8.5s — "move faster") */
-  --de-orbit-c:255,214,120; /* the light: a gold brighter than the mark it walks on */
-  --de-orbit-a:.98;         /* peak alpha at the head (was .85 — "too subtle") */
+  --de-orbit-dur:3.4s;      /* one lap of the masthead mark (8.5s → 5s → 3.4s) */
+  --de-orbit-c:255,201,64;  /* THE GOLD Leon asked for, not the near-white that shipped */
+  --de-orbit-a:1;           /* peak alpha at the head */
+  --de-orbit-tail:170deg;   /* arc of the tail behind the head (68° → 135° → 170°) */
+  --de-orbit-r0:30%;        /* mask hole — the smaller it is, the wider the lit band */
+  --de-orbit-r1:44%;        /* where the band reaches full: r0→r1 is the soft ramp */
 }
 .diamond::before,.de-mini-logo::before{
   content:"";position:absolute;inset:0;pointer-events:none;
@@ -597,23 +615,31 @@ header#app-header.scrolled{box-shadow:0 1px 0 rgba(255,255,255,.08),0 10px 24px 
      The first draft ramped evenly from 0 to full over 60°, which is a SHEEN sliding along
      the edge — pretty, and not what was asked for. A comet needs most of its arc spent
      nearly dark so the head reads as a point. */
-  /* THE TAIL IS NOW ~135° INSTEAD OF ~68°, and it is brighter along its whole length: the
-     old ramp spent 292°..330° at literally zero, so more than three quarters of the lap was
-     an invisible mark travelling with an invisible tail behind it. The head keeps its hard
-     leading edge (0°→9°) — that is what makes it read as a comet rather than a sheen. */
+  /* THE TAIL IS EVERY STOP BEHIND THE HEAD, and it is written as a FRACTION of
+     --de-orbit-tail rather than as four hard angles — so one variable lengthens or shortens
+     the whole comet and the ramp keeps its shape. The head keeps its hard leading edge
+     (0°→9°): that is what makes it read as a comet rather than as a sheen sliding along the
+     outline. At the masthead's 170° the light is visible for nearly half the lap; the board
+     overrides the same variable down to 100°, which is how one mark gets louder without
+     twelve of them getting louder with it. */
   background:conic-gradient(from 0deg at 50% 50%,
     rgba(var(--de-orbit-c),var(--de-orbit-a)) 0deg,
     rgba(var(--de-orbit-c),0) 9deg,
-    rgba(var(--de-orbit-c),0) 225deg,
-    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .14)) 275deg,
-    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .40)) 318deg,
-    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .72)) 345deg,
+    rgba(var(--de-orbit-c),0) calc(360deg - var(--de-orbit-tail)),
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .16)) calc(360deg - var(--de-orbit-tail) * .62),
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .45)) calc(360deg - var(--de-orbit-tail) * .32),
+    rgba(var(--de-orbit-c),calc(var(--de-orbit-a) * .76)) calc(360deg - var(--de-orbit-tail) * .12),
     rgba(var(--de-orbit-c),var(--de-orbit-a)) 360deg);
-  /* THICKER: the ring's inner edge moves in from 42% to 33% of the mark, so the band the
-     comet is drawn in is about two thirds wider. The outer edge comes in with it to keep the
-     ramp soft — a hard-edged band reads as a disc with a hole in it, not as a line. */
-  -webkit-mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 33%,#000 47%);
-  mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 33%,#000 47%);
+  /* THE MASK IS THE THICKNESS, AND IT HAS A FLOOR WORTH WRITING DOWN. `closest-side` makes
+     100% = 16 of the mark's 32 units, so r0=30% is a 4.8-unit hole. The solid core reaches
+     6.0 units and the outline's nearest point is 9.19 — which means the ramp (r0→r1) now
+     crosses the core's tips on purpose: that sliver of light on the core's corners is most
+     of what reads as a THICKER streak, and it stays a sliver because r1=44% (7.04 units) is
+     still well inside the outline. Push r0 much below this and the ramp reaches the core's
+     middle, at which point the mark reads as a rotating pie slice rather than as a light
+     traveling on its edge — the failure the original hole was cut to prevent. */
+  -webkit-mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 var(--de-orbit-r0),#000 var(--de-orbit-r1));
+  mask:radial-gradient(circle closest-side at 50% 50%,transparent 0 var(--de-orbit-r0),#000 var(--de-orbit-r1));
   animation:de-orbit var(--de-orbit-dur) linear infinite;
 }
 @keyframes de-orbit{
@@ -1174,11 +1200,65 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
   var(--livemark) 0 6px,transparent 6px 11px)}
 .tile.live.delayed .t-score{color:var(--ink2)}
 .tile.hl{outline:2px solid var(--blue);outline-offset:2px}
-/* RESULT, once a game is graded: a hairline tint down the leading edge. Deliberately
-   quiet — a board of finals should read as a board, not as a scorecard of our day. */
-.tile.res-won::after,.tile.res-lost::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
-.tile.res-won::after{background:var(--green)}
-.tile.res-lost::after{background:var(--red)}
+/* ═══════ RESULT: THE WHOLE CARD, NOT A MARK ON IT ═══════
+   Leon, 2026-08-09: "the checkmarks and Xs on completed picks are a little too subtle. It's
+   kinda harder to glance to see what's a winner and a loser."
+
+   THIS RULE USED TO SAY "deliberately quiet — a board of finals should read as a board, not
+   as a scorecard of our day", and that was a defensible instinct about restraint that was
+   answering the wrong question. A board of finals IS the scorecard of our day; it is the
+   only payoff the product has. The previous pass grew the seal from 14px to 20px, which
+   helped and did not fix it, because size was never the whole problem: the verdict was one
+   small object competing against a black pill, a row of stars and two team crests, and the
+   eye has to FIND it before it can read it. Nothing on the card said the outcome at card
+   scale, so scanning a board meant eleven separate small readings.
+
+   So the card carries it. A won card and a lost card are different objects now — a tinted
+   surface, a rim in the same ink and a 4px edge — and the seal on top of that is
+   confirmation rather than the sole carrier. The tint is deliberately weak (5.5% at the top,
+   gone by 62%): enough that a column of them separates at a glance, not enough to turn the
+   board into the "coloured wall" the tile was designed against, and it leaves the card's own
+   paper under the type so nothing gets less readable.
+
+   SHAPE CARRIES IT TOO, NOT ONLY HUE. ✓ against ✗ against the word PUSH — the three verdicts
+   stay distinguishable with the colour removed entirely, which is the requirement red/green
+   can never satisfy on its own.
+
+   AND A PUSH IS NOT A BLANK. It had no rule here at all, so a pushed bet rendered as an
+   ungraded card — the one result that looked like no result. It gets the neutral ink, which
+   is a third reading, not a dimmer version of either of the other two.
+
+   THIS IS THE COLOURS' FULL WEIGHT, AND IT IS SPENDABLE NOW. Red and green stopped meaning
+   "this game is live" earlier today (see --live, and the IN-FLIGHT SCALE); they cost nothing
+   anywhere else on this surface, so they can be spent at card scale here. */
+/* THE TWO INKS ARE NOT EQUALLY LOUD AT THE SAME ALPHA, so they do not get the same alpha.
+   --redc (196,32,58) is a light, saturated red and reads as pink on white almost immediately;
+   --greenc (6,124,84) is dark and low-chroma and turns to grey before it turns to green. At
+   one shared value the board came out lopsided — the losses announced themselves and the wins
+   looked like ungraded cards, which is the exact failure this rule exists to fix, inverted.
+   Each carries its own tint and rim weight so the two read at the SAME strength. */
+.tile.res-won,.tile.res-lost,.tile.res-push{--rc:var(--slatec);--ra:.05;--rr:.26}
+.tile.res-won{--rc:var(--greenc);--ra:.085;--rr:.36}
+.tile.res-lost{--rc:var(--redc);--ra:.055;--rr:.28}
+.tile.res-won,.tile.res-lost,.tile.res-push{
+  background:linear-gradient(180deg,rgba(var(--rc),var(--ra)),rgba(var(--rc),calc(var(--ra) * .3)) 38%,var(--paper) 62%);
+  box-shadow:0 0 0 1px rgba(var(--rc),var(--rr)),0 1px 2px var(--sh2),0 4px 14px rgba(var(--rc),.10)}
+@media(hover:hover){.tile.res-won:hover,.tile.res-lost:hover,.tile.res-push:hover{
+  box-shadow:0 0 0 1px rgba(var(--rc),calc(var(--rr) + .1)),0 2px 6px var(--sh3),0 12px 28px rgba(var(--rc),.14)}}
+/* the leading edge, 3px → 4px, and a push finally has one */
+.tile.res-won::after,.tile.res-lost::after,.tile.res-push::after{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:rgb(var(--rc))}
+/* A PUSH IS THE QUIET ONE ON PURPOSE — it is not a result you feel. Half the tint, and the
+   neutral rather than a third hue, so it separates from won and lost without competing. */
+.tile.res-push{background:linear-gradient(180deg,rgba(var(--rc),.032),var(--paper) 46%);
+  box-shadow:0 0 0 1px rgba(var(--rc),.20),0 1px 2px var(--sh2)}
+.tile.res-push::after{opacity:.55}
+/* AT THREE AND FOUR ACROSS the cards are small and there are many of them, which is the
+   condition the "coloured wall" warning was written for. The rim and the edge do the whole
+   job there; the surface tint comes off. */
+@media(min-width:720px){
+  .tile.res-won,.tile.res-lost,.tile.res-push{background:var(--paper)}
+}
 
 /* ---- row 1: league (left) · time / live state / Final (right) ---- */
 .tl-top,.t-head{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:15px;min-width:0}
@@ -2958,7 +3038,17 @@ details.more .more-body{padding-top:12px}
    gold mark and disappeared. What lifts gold is the specular colour: near-white, which is
    physically what a highlight on metal looks like and reads as a moving point rather than
    a second coat of paint. */
+/* AND THE BOARD DID NOT COME WITH THE MASTHEAD (2026-08-09, second pass). The masthead's
+   turn-up — gold, 3.4s, a 170° tail, a 30% hole — is aimed at ONE mark at the top of the
+   page. Applied to twelve marks on a board it is the "field of blinking gold" this whole
+   surface has been calibrated against twice. Duration, colour and alpha were already
+   overridden here; the tail and the two mask radii were literals in the shared rule and so
+   were NOT, which is why they are variables now. The board keeps its long lap and its
+   near-white specular and takes a SHORTER tail and a TIGHTER hole than the masthead: the
+   light stays a shimmer on the tile you are reading and never a signal from the tile you
+   are not. */
 .de-mini-logo::before{--de-orbit-dur:13s;--de-orbit-c:255,251,236;--de-orbit-a:.85;
+  --de-orbit-tail:100deg;--de-orbit-r0:38%;--de-orbit-r1:50%;
   animation-delay:calc(var(--de-orbit-t,0s) - var(--de-orbit-off,0s))}
 .slate .tile:nth-child(5n+2) .de-mini-logo::before{--de-orbit-off:2.6s}
 .slate .tile:nth-child(5n+3) .de-mini-logo::before{--de-orbit-off:5.2s}
@@ -3037,11 +3127,18 @@ details.more .more-body{padding-top:12px}
        two silhouettes merged into one blob, which is most of why it did not register;
      · a real shadow, so it sits ON the card instead of in it.
    The row is unchanged in height, so the single-line pick row (2026-08-08) still holds. */
-.de-mini-pick.dmp-tile .restamp.rs-mini{width:20px;height:20px;margin-left:5px;
-  box-shadow:0 0 0 2px var(--paper),0 1px 4px var(--sh2)}
+/* 20px → 24px, and the glyph 13 → 16 at a heavier stroke. The card now carries the outcome
+   at card scale (see RESULT: THE WHOLE CARD), so this stamp is no longer being asked to win
+   an argument against the black pill on its own — but it is still the thing the eye lands on
+   once the card has said won or lost, and at 20px beside a 53px pill it was reading as
+   punctuation. The row budget was measured again at 375px after the change: market 44 +
+   rule 1 + call 53 + seal 24 + gaps 12 = 134 in the 142px the tile actually has, so the
+   single-line pick row from 2026-08-08 still holds with 8px to spare. */
+.de-mini-pick.dmp-tile .restamp.rs-mini{width:24px;height:24px;margin-left:5px;
+  box-shadow:0 0 0 2px var(--paper),0 2px 6px var(--sh3)}
 .de-mini-pick.dmp-tile.nopick .restamp.rs-mini{margin-left:0}
-.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g{width:20px;height:20px}
-.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g svg{width:13px;height:13px;stroke-width:3.7}
+.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g{width:24px;height:24px}
+.de-mini-pick.dmp-tile .restamp.rs-mini .rs-g svg{width:16px;height:16px;stroke-width:4}
 @media(max-width:400px){
   .de-mini-pick.dmp-tile .de-mini-word{font-size:11.5px}
   .de-mini-pick.dmp-tile .de-mini-ou b{font-size:13px}
@@ -3101,7 +3198,13 @@ details.more .more-body{padding-top:12px}
    a full-height tint from swamping the text it sat behind, and the rule no longer sits behind
    anything (see "A DIFFERENT TREATMENT"). Held down at .20 the new 2.5px rule would be
    invisible, which is the same defect in the other direction. */
-.de-mini-pick.dmp-tile .dmp-res.has-meter .ipm-fill{min-width:4px}
+/* …and the floor is conditional, and smaller. `min-width:4px` fired at --p:0 too, which
+   painted a third of the track on a bet with no live chance left; and on this pill's ~13px
+   track 4px IS a third, so it also dragged 15% up to 22%. The gate on --p makes 0% an honest
+   empty track, and 2px — the smallest mark that survives a 2.5px rounded rule — keeps a live
+   1% visible while letting everything from 15% up paint its true length. */
+.de-mini-pick.dmp-tile .dmp-res.has-meter .ipm-fill{
+  width:max(calc((100% - 10px) * var(--p,0) / 100),calc(2px * min(var(--p,0),1)))}
 /* 3. the CTA rides the row, shrinks last, and never wraps mid-word */
 .tl-verdict .tv-callrow .tv-unlock.inrow{margin-left:auto;margin-top:0;flex:0 1 auto;
   min-width:0;gap:3px;font-size:9px;letter-spacing:.06em;white-space:nowrap;overflow:hidden}
@@ -6348,8 +6451,26 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
 .plvl{position:relative;overflow:hidden;display:flex;align-items:center;gap:9px;
   border-radius:12px;padding:8px 11px;min-height:38px;min-width:0;
   background:rgba(var(--tintc),.05);border:1px solid var(--line3)}
-.plvl-fill{position:absolute;left:0;top:0;bottom:0;z-index:0;border-radius:0 8px 8px 0;
-  opacity:.16;transition:width .6s var(--ease)}
+/* ── NOTHING HERE HAS A HARD EDGE TO CLIP (Leon, 2026-08-09: "the progress bars… it kinda
+   looks like they're cut off. Find a different treatment. Subtle differences could go a long
+   way") ──
+   THE DEFECT, EXACTLY. The fill was a full-height block with `border-radius:0 8px 8px 0`
+   inside a `border-radius:12px; overflow:hidden` pill. Two separate ways to look truncated,
+   and it had both: below ~85% the block ended in a straight vertical edge partway across a
+   rounded pill, and above it the block's 8px corner ran into the pill's 12px corner and the
+   pill sliced it. There is no width at which that reads as finished.
+   THE TREATMENT. Keep the wash — Leon likes the filling-up and it costs no vertical room in
+   a 38px row — and take away the edge. The left corners now inherit the pill's own 12px, and
+   the right end is a MASK that dissolves the last stretch of the fill into the track instead
+   of ending it. A gradient has no edge to cut off at any width, so 0%, 37% and 100% all read
+   as the same object at three lengths. The fade is `min(20px,42%)` so a short fill dissolves
+   over its own length rather than vanishing entirely.
+   AND IT IS ON SCALE NOW. See --p below: the width used to be a percentage of the box while
+   the meter it belongs to was measured against something else. */
+.plvl-fill{position:absolute;left:0;top:0;bottom:0;z-index:0;border-radius:12px 0 0 12px;
+  width:calc(100% * var(--p,0) / 100);opacity:.18;transition:width .6s var(--ease);
+  -webkit-mask:linear-gradient(90deg,#000 0,#000 calc(100% - min(20px,42%)),transparent 100%);
+  mask:linear-gradient(90deg,#000 0,#000 calc(100% - min(20px,42%)),transparent 100%)}
 .plvl>*:not(.plvl-fill){position:relative;z-index:1}
 .plvl-side{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;
   font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.01em;
@@ -8187,6 +8308,20 @@ main.swiping{transition:none !important;will-change:transform}
 .rp-deck{font-family:var(--sans);font-size:16.5px;line-height:1.5;color:var(--ink2);margin:0 0 14px;font-weight:450}
 .rp-byline{font-family:var(--sans);font-size:12.5px;color:var(--ink4);padding-bottom:16px;border-bottom:1px solid var(--line3)}
 /* THE VERDICT, STAMPED. It leads the paper for the same reason it leads the card. */
+/* THE CORRECTION — a dated note ON a published paper, sitting ABOVE its verdict because a
+   reader who is about to be told how the product works needs to know first if that has
+   changed. Deliberately the loudest block on the page after the title: a correction that
+   reads like a footnote is a correction nobody applies. Amber, not red — the paper is not
+   wrong about the era it describes, it is describing an era. */
+.rp-corr{position:relative;margin:18px 0;padding:14px 16px 14px 17px;border-radius:14px;
+  background:rgba(var(--goldc),.11);border:1px solid rgba(var(--goldc),.34);overflow:hidden}
+.rp-corr::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--gold)}
+.rp-corr-k{display:block;font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--golddeep);margin-bottom:6px}
+.rp-corr p{font-family:var(--sans);font-size:14.5px;line-height:1.6;color:var(--ink);margin:0}
+.pc-corr{font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  line-height:1.35;padding:4px 8px;border-radius:7px;background:rgba(var(--goldc),.14);color:var(--golddeep);
+  box-shadow:inset 0 0 0 1px rgba(var(--goldc),.3)}
 .rp-verdict{position:relative;margin:18px 0;padding:14px 16px 14px 17px;border-radius:14px;
   background:rgba(var(--tintc),.05);border:1px solid var(--line3);overflow:hidden}
 .rp-verdict::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--ink3)}
@@ -9781,8 +9916,21 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
 .dmp-res.has-meter{position:relative;overflow:hidden}
 .dmp-res.has-meter::after{content:"";position:absolute;left:5px;right:5px;bottom:2px;height:2.5px;
   border-radius:999px;background:currentColor;opacity:.14;pointer-events:none}
+/* THE FILL IS MEASURED AGAINST THE TRACK, NOT AGAINST THE PILL (2026-08-09, second pass).
+   The rule above insets the track 5px at each end; the fill was still sized `width:<p>%` of
+   the PILL, so the two were on different scales and `max-width` quietly ate the difference.
+   Measured on the running board before this change, on the real markup:
+       stated   0%   1%   4%  15%  35%  50%  70%  85%  96%  99%  100%
+       painted 32%  32%  32%  23%  54%  77% 100% 100% 100% 100%  100%
+   — the meter SATURATED at 70%, so every pick between 70% and certain drew an identical
+   full bar, and 0% drew a third of one. A reader watching a bet climb saw it stop moving
+   with a quarter of the game left. `--p` is now the number and the width is computed from
+   the track's own length, so painted == stated at every value and `max-width` has nothing
+   left to clamp. The 4px floor moves to a `max()` guarded by --p so a live 1% still shows a
+   mark while a true 0% shows an empty track — a floor that fires at zero is a lie, not a
+   legibility aid. */
 .dmp-res.has-meter .ipm-fill{position:absolute;left:5px;bottom:2px;height:2.5px;
-  max-width:calc(100% - 10px);border-radius:999px;background:currentColor;
+  width:calc((100% - 10px) * var(--p,0) / 100);border-radius:999px;background:currentColor;
   opacity:.85;pointer-events:none;z-index:1;transition:width .6s var(--ease)}
 .dmp-res.has-meter .ipm-txt{position:relative}
 .dmp-res.has-meter .ipm-pct{position:relative;font-style:normal;font-weight:800;

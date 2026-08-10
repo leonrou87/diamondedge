@@ -3267,7 +3267,7 @@ export default function Home() {
         r ? `rated ${r.stars} of ${r.of} stars` : "",
       ].filter(Boolean).join(" · ");
       return `<div class="plvl dir-${esc(cls)}" title="${esc(lab)}" aria-label="${esc(lab)}">
-        ${fill != null ? `<i class="plvl-fill" style="width:${fill}%" aria-hidden="true"></i>` : ""}
+        ${fill != null ? `<i class="plvl-fill" style="--p:${fill}" aria-hidden="true"></i>` : ""}
         <b class="plvl-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}${esc(side)}</b>
         <span class="plvl-pct">${pct != null ? `<b>${Math.round(pct * 100)}%</b>` : ""}<i>${esc(word)}</i></span>
         ${r ? `<span class="plvl-stars" role="img" aria-label="rated ${r.stars} of ${r.of}" title="${esc(ratingTitle(pl))}">${starPips(r.stars, r.of)}</span>` : ""}
@@ -7397,7 +7397,9 @@ export default function Home() {
            shows the word as before. */
         const lab = `${state.txt} — ${p}% chance this pick cashes, live estimate`;
         return `<span class="dmp-res ${state.cls} has-meter" title="${esc(lab)}" aria-label="${esc(lab)}">` +
-          `<i class="ipm-fill" style="width:${p}%" aria-hidden="true"></i>` +
+          // --p, not width: the track is inset inside this pill, so the fill's LENGTH has to
+          // be computed against the track rather than against the box. See .ipm-fill.
+          `<i class="ipm-fill" style="--p:${p}" aria-hidden="true"></i>` +
           `<b class="ipm-txt">${state.txt}</b><em class="ipm-pct">${p}%</em></span>`;
       }
       // a split phrase (CLINCHED / NOT LANDING) — the glyph always shows, the word is what a
@@ -15712,6 +15714,15 @@ export default function Home() {
         sources: arr(x.sources).filter((s: any) => typeof s === "string" && s),
         related: arr(x.related_papers).filter((s: any) => typeof s === "string" && s),
         verdict: str(x.verdict),
+        /* A DATED CORRECTION, ON THE PAPER (2026-08-10). A paper is dated and stays as
+           written — that is what a journal is. But two of these describe the MECHANISM
+           behind today's card, and the mechanism changed on 2026-08-08: the nightly
+           committee stopped choosing the board and the strategy forge's single frozen
+           rule started. A reader who opens "How DiamondEdge Actually Works" and is told
+           the top 21 vote has been told something that is no longer true, and the honest
+           fix for a published document is a correction on it, not a silent rewrite of
+           it. Absent ⇒ nothing renders, so this costs the other seventeen papers nothing. */
+        correction: str(x.correction),
         minutes: Math.max(0, Math.round(Number(x.reading_minutes) || 0)),
         words: Math.max(0, Math.round(Number(x.word_count) || 0)),
         tags: arr(x.tags).filter((t: any) => typeof t === "string" && t).slice(0, 6),
@@ -16145,6 +16156,7 @@ export default function Home() {
               <h1 class="rp-title">${esc(pp.title)}</h1>
               ${pp.subtitle ? `<p class="rp-deck">${esc(pp.subtitle)}</p>` : ""}
               <div class="rp-byline">${esc(pp.authors)}${pp.date ? ` · ${esc(paperDateTxt(pp.date) || pp.date)}` : ""}${pp.words ? ` · ${pp.words.toLocaleString("en-US")} words` : ""}</div>
+              ${pp.correction ? `<div class="rp-corr"><span class="rp-corr-k">Correction</span><p>${mdInline(pp.correction)}</p></div>` : ""}
               ${pp.verdict ? `<div class="rp-verdict ${vt}"><span class="rp-verdict-k">Verdict</span><p>${esc(pp.verdict)}</p></div>` : ""}
               ${pp.abstract ? `<div class="rp-abstract"><span class="rp-seck">Abstract</span><p>${mdInline(pp.abstract)}</p></div>` : ""}
               ${pp.figures.length ? `<div class="rp-figs">
@@ -16186,6 +16198,7 @@ export default function Home() {
         ${big ? `<span class="pc-flag">Start here</span>` : ""}
         <span class="pc-top">
           ${vs ? `<span class="pc-verd ${verdictTone(pp.verdict)}">${esc(vs)}</span>` : `<span class="pc-verd plain">${esc(pp.cat || "Paper")}</span>`}
+          ${pp.correction ? `<span class="pc-corr">Corrected</span>` : ""}
           ${pp.minutes ? `<span class="pc-min">${pp.minutes} min</span>` : ""}
         </span>
         <span class="pc-title">${esc(pp.title)}</span>

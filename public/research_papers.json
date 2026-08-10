@@ -1,8 +1,8 @@
 {
  "contract_version": "1.1",
- "schema_note": "KytePush Research paper library. Render `papers[]` in the order given (category order, then id). Each paper is {id, title, subtitle, category, author, date, tags[], abstract, sections[{heading, role, body}], key_figures[{label, value, note, source}], visuals[{type, title, caption, source, data[], ...}], sources[], roadmap_ids[], related_papers[], verdict, reading_minutes, word_count}. `abstract` is plain text. `sections[].body` is markdown; headings inside a section start at ###. `sections[].role` is one of abstract-less roles methods / results / discussion / takeaway / extra \u2014 key on role, not on the English heading. `visuals[].type` is one of bar / compare / funnel / interval / line / scoreboard / timeline; every visual carries its data inline, so no chart needs a second fetch. `interval` rows are {label, value, low, high} and are the house signature chart \u2014 a number with the range around it. `compare` visuals carry left_label/right_label and rows of {label, left, right}; left/right may be numbers OR short strings. `line` visuals declare `series`: [names] and each row is {label, <series name>: value, ...}. `bar`/`funnel`/`scoreboard` rows are {label, value, note?} \u2014 scoreboard values may be strings. Rows may carry `highlight: true` to mark the row the paper is about, and `reference` on the visual marks a threshold line (e.g. break-even 52.4). `key_figures[].source` and `visuals[].source` are repo-relative paths to the report the number came from and are always present in that paper's `sources[]`. `roadmap_ids` join to research_roadmap.json items[].id; `related_papers` join to papers[].id. Author is always 'KytePush Research' \u2014 there are no other bylines and no external citations.",
+ "schema_note": "KytePush Research paper library. Render `papers[]` in the order given (category order, then id). Each paper is {id, title, subtitle, category, author, date, tags[], abstract, sections[{heading, role, body}], key_figures[{label, value, note, source}], visuals[{type, title, caption, source, data[], ...}], sources[], roadmap_ids[], related_papers[], verdict, correction?, reading_minutes, word_count}. `correction` is OPTIONAL and markdown: a dated note that the product has moved past what the paper describes. Render it ABOVE the verdict \u2014 a reader needs to know a mechanism changed before being told how it works. Papers without one render nothing. `abstract` is plain text. `sections[].body` is markdown; headings inside a section start at ###. `sections[].role` is one of abstract-less roles methods / results / discussion / takeaway / extra \u2014 key on role, not on the English heading. `visuals[].type` is one of bar / compare / funnel / interval / line / scoreboard / timeline; every visual carries its data inline, so no chart needs a second fetch. `interval` rows are {label, value, low, high} and are the house signature chart \u2014 a number with the range around it. `compare` visuals carry left_label/right_label and rows of {label, left, right}; left/right may be numbers OR short strings. `line` visuals declare `series`: [names] and each row is {label, <series name>: value, ...}. `bar`/`funnel`/`scoreboard` rows are {label, value, note?} \u2014 scoreboard values may be strings. Rows may carry `highlight: true` to mark the row the paper is about, and `reference` on the visual marks a threshold line (e.g. break-even 52.4). `key_figures[].source` and `visuals[].source` are repo-relative paths to the report the number came from and are always present in that paper's `sources[]`. `roadmap_ids` join to research_roadmap.json items[].id; `related_papers` join to papers[].id. Author is always 'KytePush Research' \u2014 there are no other bylines and no external citations.",
  "house": "KytePush Research",
- "generated_utc": "2026-08-09T09:14:49.392966+00:00",
+ "generated_utc": "2026-08-10T02:35:59.492333+00:00",
  "categories": [
   {
    "name": "Start Here",
@@ -262,6 +262,7 @@
     "kr-2026-012"
    ],
    "verdict": "THE WHOLE SYSTEM, IN PLAIN ENGLISH",
+   "correction": "**2026-08-10 \u2014 the mechanism described here is no longer the mechanism.** This paper explains the nightly committee: about 2,848 ways of reading the four analysts, re-scored every night, the best twenty-one voting on each game, the majority side playing. That committee chose the board through 2026-08-08. From 2026-08-09 the board is chosen by the **strategy forge**: one rule, written out of the game's own readings, frozen before first pitch, scored on wins minus losses over the trailing window. There is no committee and no vote behind a pick made today. Everything else here is unchanged \u2014 the four analysts on disjoint feature slices, the locked pregame prices, the two-source grading gate, the nulls we publish. The nights the committee did choose keep their picks and their results exactly as served; nothing in the record has been restated.",
    "reading_minutes": 10,
    "word_count": 2148
   },
@@ -450,6 +451,7 @@
     "kr-2026-013"
    ],
    "verdict": "REBUILT AND VERIFIED \u2014 they genuinely disagree now. We are not claiming that makes them profitable.",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 2030
   },
@@ -687,6 +689,7 @@
     "kr-2026-016"
    ],
    "verdict": "A PROCESS THAT HAS BEEN WINNING \u2014 not a proven edge, and served that way",
+   "correction": "**2026-08-10 \u2014 this is the tournament's report, and the tournament's winner is no longer what plays.** The recommendation it makes \u2014 rank the 2,848 candidates, take the top twenty-one, let them vote \u2014 was adopted and served through 2026-08-08. From 2026-08-09 the nightly search is the **strategy forge**: it searches rules rather than recipes, scores them on wins minus losses, and plays the single best one. The argument this paper makes about the play being disposable is the argument the forge inherits; the voting ensemble it names is not what is on your card.",
    "reading_minutes": 10,
    "word_count": 2192
   },
@@ -894,6 +897,7 @@
     "kr-2026-018"
    ],
    "verdict": "SHIPPED \u2014 every analyst files on every game, and tells you how much it actually knew",
+   "correction": null,
    "reading_minutes": 8,
    "word_count": 1713
   },
@@ -1098,6 +1102,7 @@
     "kr-2026-017"
    ],
    "verdict": "AI RUNS THE RESEARCH FLOOR. IT NEVER TOUCHES A PICK \u2014 proven by test, not by promise.",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 2047
   },
@@ -1288,6 +1293,7 @@
     "kr-2026-012"
    ],
    "verdict": "THE HOUSE RULE \u2014 everything else sits on top of it",
+   "correction": null,
    "reading_minutes": 7,
    "word_count": 1539
   },
@@ -1489,6 +1495,7 @@
     "kr-2026-017"
    ],
    "verdict": "THE HOUSE RULE \u2014 and it removes findings, which is the point",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 2039
   },
@@ -1703,6 +1710,7 @@
     "kr-2026-019"
    ],
    "verdict": "FIXED AND ENFORCED CENTRALLY \u2014 history disclosed, never repaired",
+   "correction": null,
    "reading_minutes": 7,
    "word_count": 1600
   },
@@ -1901,6 +1909,7 @@
     "kr-2026-010"
    ],
    "verdict": "LIVE \u2014 11,026 historical finals re-checked, zero disagreements",
+   "correction": null,
    "reading_minutes": 6,
    "word_count": 1405
   },
@@ -2112,6 +2121,7 @@
     "kr-2026-009"
    ],
    "verdict": "STANDING PRACTICE \u2014 every campaign carries an audit block that must pass before anyone sees a result",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 2024
   },
@@ -2341,6 +2351,7 @@
     "kr-2026-003"
    ],
    "verdict": "THE PRICE GATE STAYS. One measured half-notch of widening, shipped starting from zero.",
+   "correction": null,
    "reading_minutes": 7,
    "word_count": 1501
   },
@@ -2586,6 +2597,7 @@
     "kr-2026-015"
    ],
    "verdict": "ARCHITECTURE FIXED, DECISIVELY. ACCURACY DID NOT IMPROVE \u2014 and we say so with error bars.",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 2083
   },
@@ -2818,6 +2830,7 @@
     "kr-2026-013"
    ],
    "verdict": "NULL \u2014 0 of 7 models, 0 of 26 splits, 0 of the confidence family",
+   "correction": null,
    "reading_minutes": 8,
    "word_count": 1813
   },
@@ -3049,6 +3062,7 @@
     "kr-2026-018"
    ],
    "verdict": "NULL, and informative \u2014 we measured the mechanism rather than guessing at it",
+   "correction": null,
    "reading_minutes": 8,
    "word_count": 1835
   },
@@ -3294,6 +3308,7 @@
     "kr-2026-017"
    ],
    "verdict": "RETIRED \u2014 whole idea closed; the sealed data was never opened and now never can be",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 1887
   },
@@ -3550,6 +3565,7 @@
     "kr-2026-017"
    ],
    "verdict": "IN PROGRESS \u2014 the earliest anyone can be promoted is late September to October 2026",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 1958
   },
@@ -3775,6 +3791,7 @@
     "kr-2026-017"
    ],
    "verdict": "8 NULL, 2 BLOCKED, 0 THAT WORKED",
+   "correction": null,
    "reading_minutes": 8,
    "word_count": 1868
   },
@@ -4027,6 +4044,7 @@
     "kr-2026-018"
    ],
    "verdict": "A STANDING LEDGER \u2014 about 70 ideas closed, all published with numbers",
+   "correction": null,
    "reading_minutes": 9,
    "word_count": 1969
   },
@@ -4210,6 +4228,7 @@
     "kr-2026-017"
    ],
    "verdict": "NULL \u2014 0 of 33 forecast tests beat the market",
+   "correction": null,
    "reading_minutes": 7,
    "word_count": 1565
   }

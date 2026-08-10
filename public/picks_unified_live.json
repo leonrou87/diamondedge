@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T01:57:02Z",
+  "generated_utc": "2026-08-10T02:36:52Z",
   "dates": [
     "2026-08-09"
   ],
@@ -2224,24 +2224,24 @@
       "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "n": 173,
-      "win": 85,
-      "loss": 79,
-      "push": 9,
-      "record": "85-79-9",
+      "n": 174,
+      "win": 86,
+      "loss": 78,
+      "push": 10,
+      "record": "86-78-10",
       "decided": 164,
-      "hit_rate": 0.5183,
-      "units": 4.356,
+      "hit_rate": 0.5244,
+      "units": 6.238,
       "units_weighted": {
-        "units": 10.321,
-        "staked": 311.0,
-        "roi": 0.0332,
+        "units": 15.306,
+        "staked": 301.0,
+        "roi": 0.0509,
         "n_offladder_flat_1u": 0
       },
-      "roi": 0.0266,
+      "roi": 0.038,
       "hit_rate_ci": [
-        0.4684,
-        0.5679
+        0.4744,
+        0.5739
       ],
       "hit_rate_ci_level": 0.8,
       "n_days": 28,
@@ -2262,14 +2262,14 @@
         },
         {
           "month": "2026-08",
-          "n": 59,
-          "win": 26,
-          "loss": 27,
-          "push": 6,
-          "record": "26-27-6",
-          "hit_rate": 0.4906,
-          "units": -2.174,
-          "roi": -0.041
+          "n": 60,
+          "win": 27,
+          "loss": 26,
+          "push": 7,
+          "record": "27-26-7",
+          "hit_rate": 0.5094,
+          "units": -0.292,
+          "roi": -0.0055
         }
       ],
       "by_engine": {
@@ -2299,49 +2299,49 @@
           "through": "2026-07-03"
         },
         "adaptive_desk": {
-          "n": 153,
-          "win": 77,
-          "loss": 68,
-          "push": 8,
-          "record": "77-68-8",
-          "decided": 145,
-          "hit_rate": 0.531,
-          "units": 7.965,
+          "n": 144,
+          "win": 75,
+          "loss": 63,
+          "push": 6,
+          "record": "75-63-6",
+          "decided": 138,
+          "hit_rate": 0.5435,
+          "units": 10.994,
           "units_weighted": {
-            "units": 15.93,
-            "staked": 290.0,
-            "roi": 0.0549,
+            "units": 21.989,
+            "staked": 276.0,
+            "roi": 0.0797,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.0549,
+          "roi": 0.0797,
           "hit_rate_ci": [
-            0.4779,
-            0.5835
+            0.4889,
+            0.597
           ],
           "hit_rate_ci_level": 0.8,
-          "n_days": 25,
+          "n_days": 24,
           "first": "2026-07-12",
-          "through": "2026-08-08"
+          "through": "2026-08-07"
         },
         "engine_v2_owner": {
-          "n": 6,
+          "n": 9,
           "win": 2,
-          "loss": 4,
-          "push": 0,
-          "record": "2-4-0",
-          "decided": 6,
-          "hit_rate": 0.3333,
-          "units": -2.095,
+          "loss": 5,
+          "push": 2,
+          "record": "2-5-2",
+          "decided": 7,
+          "hit_rate": 0.2857,
+          "units": -3.095,
           "units_weighted": {
-            "units": -2.095,
-            "staked": 6.0,
-            "roi": -0.3492,
+            "units": -3.095,
+            "staked": 7.0,
+            "roi": -0.4422,
             "n_offladder_flat_1u": 0
           },
-          "roi": -0.3492,
+          "roi": -0.4422,
           "hit_rate_ci": [
-            0.1477,
-            0.5906
+            0.1253,
+            0.5275
           ],
           "hit_rate_ci_level": 0.8,
           "n_days": 2,
@@ -2349,28 +2349,28 @@
           "through": "2026-08-08"
         },
         "nightly_engine": {
-          "n": 12,
-          "win": 6,
-          "loss": 5,
-          "push": 1,
-          "record": "6-5-1",
-          "decided": 11,
-          "hit_rate": 0.5455,
-          "units": 0.486,
+          "n": 19,
+          "win": 9,
+          "loss": 8,
+          "push": 2,
+          "record": "9-8-2",
+          "decided": 17,
+          "hit_rate": 0.5294,
+          "units": 0.339,
           "units_weighted": {
-            "units": 0.486,
-            "staked": 11.0,
-            "roi": 0.0442,
+            "units": 0.412,
+            "staked": 14.0,
+            "roi": 0.0295,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.0442,
+          "roi": 0.0199,
           "hit_rate_ci": [
-            0.36,
-            0.7191
+            0.3786,
+            0.675
           ],
           "hit_rate_ci_level": 0.8,
-          "n_days": 1,
-          "first": "2026-08-09",
+          "n_days": 2,
+          "first": "2026-08-08",
           "through": "2026-08-09"
         }
       },
@@ -3583,14 +3583,14 @@
       },
       {
         "date": "2026-08-08",
-        "n": 12,
-        "win": 2,
-        "loss": 8,
-        "push": 2,
-        "record": "2-8-2",
-        "hit_rate": 0.2,
-        "units": -6.03,
-        "roi": -0.603,
+        "n": 13,
+        "win": 3,
+        "loss": 7,
+        "push": 3,
+        "record": "3-7-3",
+        "hit_rate": 0.3,
+        "units": -4.148,
+        "roi": -0.4148,
         "strategy": {
           "rule_key": "forge:w17:a893a4e08c",
           "label": "The rule that won the search",
@@ -3761,24 +3761,24 @@
         }
       },
       "untiered": {
-        "n": 170,
-        "win": 83,
-        "loss": 78,
-        "push": 9,
-        "record": "83-78-9",
+        "n": 171,
+        "win": 84,
+        "loss": 77,
+        "push": 10,
+        "record": "84-77-10",
         "decided": 161,
-        "hit_rate": 0.5155,
-        "units": 3.451,
+        "hit_rate": 0.5217,
+        "units": 5.333,
         "units_weighted": {
-          "units": 9.416,
-          "staked": 308.0,
-          "roi": 0.0306,
+          "units": 14.401,
+          "staked": 298.0,
+          "roi": 0.0483,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0214,
+        "roi": 0.0331,
         "hit_rate_ci": [
-          0.4652,
-          0.5656
+          0.4713,
+          0.5717
         ],
         "hit_rate_ci_level": 0.8,
         "n_days": 28,
@@ -3787,9 +3787,9 @@
         "label": "No committee vote on record",
         "why": "desk-sourced and legacy picks carry no vote split, so they carry no tier. They count in record.headline exactly like every other pick."
       },
-      "n_headline": 173,
+      "n_headline": 174,
       "n_tiered": 3,
-      "n_untiered": 170,
+      "n_untiered": 171,
       "sums_to_headline": true,
       "rail": "strong + standard + lean + untiered == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "engine_shadow_ledger": {
@@ -4026,29 +4026,29 @@
           ],
           "label": "30-39",
           "is_high_band": false,
-          "n": 0,
-          "win": 0,
-          "loss": 0,
+          "n": 3,
+          "win": 2,
+          "loss": 1,
           "push": 0,
-          "record": "0-0-0",
-          "decided": 0,
-          "hit_rate": null,
+          "record": "2-1-0",
+          "decided": 3,
+          "hit_rate": 0.6667,
           "hit_rate_ci": [
-            null,
-            null
+            0.2077,
+            0.9385
           ],
           "hit_rate_ci_level": 0.95,
-          "units": 0.0,
+          "units": 0.852,
           "units_weighted": {
-            "units": 0.0,
-            "staked": 0.0,
-            "roi": null,
+            "units": 0.426,
+            "staked": 1.5,
+            "roi": 0.2842,
             "n_offladder_flat_1u": 0
           },
-          "roi": null,
-          "n_days": 0,
-          "first": null,
-          "through": null
+          "roi": 0.2842,
+          "n_days": 1,
+          "first": "2026-08-08",
+          "through": "2026-08-08"
         },
         {
           "band": [
@@ -4088,73 +4088,11 @@
           ],
           "label": "50-59",
           "is_high_band": false,
-          "n": 0,
-          "win": 0,
-          "loss": 0,
-          "push": 0,
-          "record": "0-0-0",
-          "decided": 0,
-          "hit_rate": null,
-          "hit_rate_ci": [
-            null,
-            null
-          ],
-          "hit_rate_ci_level": 0.95,
-          "units": 0.0,
-          "units_weighted": {
-            "units": 0.0,
-            "staked": 0.0,
-            "roi": null,
-            "n_offladder_flat_1u": 0
-          },
-          "roi": null,
-          "n_days": 0,
-          "first": null,
-          "through": null
-        },
-        {
-          "band": [
-            60,
-            69
-          ],
-          "label": "60-69",
-          "is_high_band": false,
-          "n": 0,
-          "win": 0,
-          "loss": 0,
-          "push": 0,
-          "record": "0-0-0",
-          "decided": 0,
-          "hit_rate": null,
-          "hit_rate_ci": [
-            null,
-            null
-          ],
-          "hit_rate_ci_level": 0.95,
-          "units": 0.0,
-          "units_weighted": {
-            "units": 0.0,
-            "staked": 0.0,
-            "roi": null,
-            "n_offladder_flat_1u": 0
-          },
-          "roi": null,
-          "n_days": 0,
-          "first": null,
-          "through": null
-        },
-        {
-          "band": [
-            70,
-            79
-          ],
-          "label": "70-79",
-          "is_high_band": false,
-          "n": 1,
+          "n": 2,
           "win": 0,
           "loss": 1,
-          "push": 0,
-          "record": "0-1-0",
+          "push": 1,
+          "record": "0-1-1",
           "decided": 1,
           "hit_rate": 0.0,
           "hit_rate_ci": [
@@ -4164,15 +4102,77 @@
           "hit_rate_ci_level": 0.95,
           "units": -1.0,
           "units_weighted": {
-            "units": -1.0,
-            "staked": 1.0,
+            "units": -0.5,
+            "staked": 0.5,
             "roi": -1.0,
             "n_offladder_flat_1u": 0
           },
           "roi": -1.0,
           "n_days": 1,
+          "first": "2026-08-08",
+          "through": "2026-08-08"
+        },
+        {
+          "band": [
+            60,
+            69
+          ],
+          "label": "60-69",
+          "is_high_band": false,
+          "n": 1,
+          "win": 1,
+          "loss": 0,
+          "push": 0,
+          "record": "1-0-0",
+          "decided": 1,
+          "hit_rate": 1.0,
+          "hit_rate_ci": [
+            0.2065,
+            1.0
+          ],
+          "hit_rate_ci_level": 0.95,
+          "units": 1.0,
+          "units_weighted": {
+            "units": 0.5,
+            "staked": 0.5,
+            "roi": 1.0,
+            "n_offladder_flat_1u": 0
+          },
+          "roi": 1.0,
+          "n_days": 1,
+          "first": "2026-08-08",
+          "through": "2026-08-08"
+        },
+        {
+          "band": [
+            70,
+            79
+          ],
+          "label": "70-79",
+          "is_high_band": false,
+          "n": 2,
+          "win": 0,
+          "loss": 2,
+          "push": 0,
+          "record": "0-2-0",
+          "decided": 2,
+          "hit_rate": 0.0,
+          "hit_rate_ci": [
+            0.0,
+            0.6576
+          ],
+          "hit_rate_ci_level": 0.95,
+          "units": -2.0,
+          "units_weighted": {
+            "units": -1.5,
+            "staked": 1.5,
+            "roi": -1.0,
+            "n_offladder_flat_1u": 0
+          },
+          "roi": -1.0,
+          "n_days": 2,
           "first": "2026-08-07",
-          "through": "2026-08-07"
+          "through": "2026-08-08"
         },
         {
           "band": [
@@ -4265,41 +4265,41 @@
         "through": "2026-08-07"
       },
       "below_high_band": {
-        "n": 14,
-        "win": 7,
-        "loss": 6,
-        "push": 1,
-        "record": "7-6-1",
-        "decided": 13,
-        "hit_rate": 0.5385,
+        "n": 21,
+        "win": 10,
+        "loss": 9,
+        "push": 2,
+        "record": "10-9-2",
+        "decided": 19,
+        "hit_rate": 0.5263,
         "hit_rate_ci": [
-          0.2914,
-          0.7679
+          0.3171,
+          0.7267
         ],
         "hit_rate_ci_level": 0.95,
         "label": "under 90",
-        "units": 0.438,
+        "units": 0.291,
         "units_weighted": {
-          "units": 0.438,
-          "staked": 13.0,
-          "roi": 0.0337,
+          "units": 0.365,
+          "staked": 16.0,
+          "roi": 0.0228,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0337,
-        "n_days": 2,
+        "roi": 0.0153,
+        "n_days": 3,
         "first": "2026-08-07",
         "through": "2026-08-09"
       },
       "verdict": {
         "high_band_min": 90,
         "n_decided_high": 1,
-        "n_decided_rest": 13,
+        "n_decided_rest": 19,
         "hit_rate_high": 1.0,
-        "hit_rate_rest": 0.5385,
-        "difference": 0.4615,
+        "hit_rate_rest": 0.5263,
+        "difference": 0.4737,
         "difference_ci": [
-          -0.3645,
-          0.7086
+          -0.3447,
+          0.6829
         ],
         "difference_ci_level": 0.95,
         "p_value": 1.0,
@@ -4308,7 +4308,7 @@
         "distinguishable_from_noise": false,
         "status": "open_question",
         "is_a_finding": false,
-        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 13 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.364 to +0.709 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 19 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.345 to +0.683 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
         "n_needed_per_arm_for_observed_gap": null,
         "n_needed_per_arm_for_meaningful_gap": 392,
         "meaningful_gap": [
@@ -4319,39 +4319,39 @@
         "power": 0.8
       },
       "unscored": {
-        "n": 158,
-        "win": 77,
-        "loss": 73,
+        "n": 152,
+        "win": 75,
+        "loss": 69,
         "push": 8,
-        "record": "77-73-8",
-        "decided": 150,
-        "hit_rate": 0.5133,
+        "record": "75-69-8",
+        "decided": 144,
+        "hit_rate": 0.5208,
         "hit_rate_ci": [
-          0.434,
-          0.592
+          0.4398,
+          0.6008
         ],
         "hit_rate_ci_level": 0.95,
         "label": "No confidence on record",
         "why": "desk-sourced and legacy picks carry neither a committee vote split nor a rule lookback record, so the measure returns nothing for them and nothing is invented. They count in the record exactly like every other pick.",
-        "units": 2.965,
+        "units": 4.994,
         "units_weighted": {
-          "units": 8.93,
-          "staked": 297.0,
-          "roi": 0.0301,
+          "units": 13.989,
+          "staked": 284.0,
+          "roi": 0.0493,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0198,
+        "roi": 0.0347,
         "n_days": 27,
         "first": "2026-07-02",
         "through": "2026-08-08"
       },
-      "n_total": 173,
-      "n_scored": 15,
-      "n_unscored": 158,
+      "n_total": 174,
+      "n_scored": 22,
+      "n_unscored": 152,
       "sums_to_total": true,
       "rail": "every decile + unscored == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "headline_is_the_record": true,
-      "n_headline": 173,
+      "n_headline": 174,
       "sums_to_headline": true,
       "history_limit": {
         "reconstructible_from": "2026-08-03",
@@ -8916,7 +8916,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T01:57:18Z",
+      "updated": "2026-08-10T02:37:07Z",
       "order": [
         "vega",
         "atlas",
@@ -13233,11 +13233,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 9.0h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 9.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -14234,7 +14234,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -15050,11 +15050,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -16076,7 +16076,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:32Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -16930,11 +16930,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -17928,7 +17928,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18783,11 +18783,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -19787,7 +19787,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -20643,11 +20643,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -21550,7 +21550,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -22405,11 +22405,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.6h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.6h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 8.3h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -23403,7 +23403,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -24259,11 +24259,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -25279,7 +25279,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -26135,11 +26135,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -27151,7 +27151,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -28007,11 +28007,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 7.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -29027,7 +29027,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:32Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "CLEAR",
@@ -30217,7 +30217,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:32Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_NO_BET",
           "side": "over",
           "conviction": "CLEAR",
@@ -31027,11 +31027,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 6.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 6.7h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 7.4h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -32038,7 +32038,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -33193,7 +33193,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_NO_BET",
           "side": "under",
           "conviction": "SLIGHT",
@@ -34044,11 +34044,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -35075,7 +35075,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "STRONG",
@@ -35922,11 +35922,11 @@
               },
               {
                 "fact": "away standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "home standings",
-                "dropped": "teams_v4.json was generated 2026-08-10T01:16:06Z, 5.1h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
+                "dropped": "teams_v4.json was generated 2026-08-10T01:57:18Z, 5.8h after first pitch, and the served dimension says this game has finished \u2014 the record may already count it"
               },
               {
                 "fact": "starters",
@@ -36933,7 +36933,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -37797,9 +37797,9 @@
                   "ra_pg": 4.84,
                   "pct": 0.508,
                   "leads_division": true,
-                  "as_of_utc": "2026-08-10T01:16:06Z"
+                  "as_of_utc": "2026-08-10T01:57:18Z"
                 },
-                "source": "teams_v4.json generated 2026-08-10T01:16:06Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
+                "source": "teams_v4.json generated 2026-08-10T01:57:18Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
               },
               {
                 "fact": "home standings",
@@ -37812,9 +37812,9 @@
                   "ra_pg": 4.34,
                   "pct": 0.517,
                   "leads_division": false,
-                  "as_of_utc": "2026-08-10T01:16:06Z"
+                  "as_of_utc": "2026-08-10T01:57:18Z"
                 },
-                "source": "teams_v4.json generated 2026-08-10T01:16:06Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
+                "source": "teams_v4.json generated 2026-08-10T01:57:18Z \u2014 after first pitch, with this game unfinished, so this game is not inside these numbers"
               },
               {
                 "fact": "starters",
@@ -38743,8 +38743,8 @@
           "take": "The conditions are loud here \u2014 0.52 runs of deviation from a neutral night, and they point under on 9.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 6th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-10T01:53:07Z",
+          "live_state_note": "Top 9th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-10T02:32:50Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -38889,7 +38889,7 @@
           "wall": null,
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-10T01:53:31Z",
+          "asof_utc": "2026-08-10T02:33:17Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -39402,18 +39402,18 @@
       ],
       "live_progress": {
         "status": "in_progress",
-        "inning": 6,
+        "inning": 9,
         "half": "top",
-        "outs": 2,
+        "outs": 0,
         "away_score": 2,
-        "home_score": 4,
-        "runs_so_far": 6,
+        "home_score": 7,
+        "runs_so_far": 9,
         "pregame_total": 9.0,
-        "runs_vs_pregame_total": -3.0,
-        "runs_still_needed_for_over": 3,
-        "innings_elapsed": 5.5,
-        "pace_runs_per_inning": 1.09,
-        "projected_final_runs": 9.8,
+        "runs_vs_pregame_total": 0.0,
+        "runs_still_needed_for_over": 0,
+        "innings_elapsed": 8.5,
+        "pace_runs_per_inning": 1.06,
+        "projected_final_runs": 9.5,
         "p_hit_now": null,
         "p_hit_side": null,
         "p_hit_side_basis": null,
@@ -39424,7 +39424,7 @@
         ],
         "p_hit_note": "outside the certified range \u2014 the conditions analyst is watching, no number",
         "live_p_over": null,
-        "as_of": "2026-08-10T01:53:07Z",
+        "as_of": "2026-08-10T02:32:50Z",
         "display_only": true,
         "note": "LIVE PROGRESS (Leon, 2026-07-30) \u2014 what is happening in the game right now against the LOCKED pregame line: the score, the inning, the runs so far, the pace, and how far the game still is from the pregame total. DISPLAY ONLY, FOREVER: every number here is live, none of it is graded, none of it is a bet, and none of it touches any record \u2014 the pregame line, the picks and the ledgers are all frozen. `p_hit_now` is the probability the PREGAME pick still cashes, and it exists ONLY inside the live simulator's CERTIFIED fitness buckets: outside them it is null and `p_hit_certified` is false, because the certified engine does not have a validated read on that state."
       }

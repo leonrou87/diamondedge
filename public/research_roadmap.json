@@ -121,15 +121,15 @@
     {
       "id": "nightly_engine",
       "title": "The 2AM nightly engine \u2014 last 21 nights choose tonight's strategy, locked and scrubbed",
-      "tagline": "Every night at 2AM PT the engine looks at how ~2,800 ways of reading the four analysts actually did over the trailing 21 graded nights, locks the best 21 as a voting ensemble for the day's games, and a post-engine scrub re-proves every served number before morning. Running in shadow behind a signed fail-closed switch.",
-      "status": "testing",
+      "tagline": "Every night at 2AM PT the engine ranked ~2,800 ways of reading the four analysts over the trailing graded window, locked the best 21 as a voting ensemble for the day's games, and a post-engine scrub re-proved every served number before morning. Signed live on 2026-08-08. It is no longer the board's selector: from 2026-08-09 the strategy forge's frozen rule chooses the card, and nothing votes.",
+      "status": "shipped",
       "category": "serving",
-      "progress_pct": 90,
+      "progress_pct": 100,
       "started": "2026-08-02",
-      "eta": "shadow ledger accrues nightly from 2026-08-02; the signed mode file flips it live whenever Leon decides the record has earned it",
-      "latest": "2026-08-03: full rehearsal complete \u2014 locked 2026-08-02 in shadow (top strategy: mirror the desk majority; 3 plays, 12 abstains on a 15-game slate), scrub verdict OK with all four rails green, and an independent red-team pass confirmed the boundary, double-run, and version-bump defenses (two file-handling fixes landed; one narrow torn-append window accepted on the record).",
-      "detail": "This is the strategy tournament's proven nightly meta-selector, adopted for production with Leon's 21-night window (down from 35; the decided-picks floor scales to 18). Every night: derive from 2,848 candidate strategies over the trailing 21 graded nights of the four analysts' reads \u2014 a candidate must be profitable in BOTH halves of its window separately, the top 21 VOTE per game (never the argmax, which failed the tournament's own search), a tie abstains, and the window restarts at any model-swap fingerprint so two read bases are never averaged. The lock is append-only and first-write-wins per date: no re-run or version bump can restate it, which is the exact lesson the v20 adaptive-desk bump taught. Then the post-engine scrub re-grades everything gradable through the outcome-verification gate, rebuilds and syncs every payload, recounts every record against the ledgers, runs the four standing rails, and refuses success if any fails \u2014 receipted nightly in SCRUB_LOG.md. The whole thing runs in SHADOW: the adaptive desk stays the live path until Leon signs the fail-closed mode file by hand (python3 nightly_engine.py --sign live --by \"Leon Rou\"). Nothing flips automatically, ever.",
-      "result": "SHIPPED IN SHADOW, NOT SIGNED \u2014 the tournament meta-record's 90% interval still contains zero, so this is a winning process with an unproven edge; the live shadow ledger accruing from day one is the evidence that will decide the flip."
+      "eta": "done \u2014 signed live 2026-08-08 and superseded as the board's selector by the strategy forge on 2026-08-09; the committee's own nights stand exactly as they were served",
+      "latest": "2026-08-09: the committee stopped being the mechanism. The engine served the board on 2026-08-08; from 2026-08-09 the day's picks come from the strategy forge \u2014 one frozen rule, scored on wins minus losses, applied to the slate \u2014 so there is no committee and no vote behind a pick made today. Nothing about the nights the committee did choose has been restated: they keep their picks, their sides and their results, and the strength tiers on this site are a cut of exactly those nights.",
+      "detail": "This is the strategy tournament's proven nightly meta-selector, adopted for production with Leon's 21-night window (down from 35; the decided-picks floor scales to 18). Every night: derive from 2,848 candidate strategies over the trailing 21 graded nights of the four analysts' reads \u2014 a candidate must be profitable in BOTH halves of its window separately, the top 21 VOTE per game (never the argmax, which failed the tournament's own search), a tie abstains, and the window restarts at any model-swap fingerprint so two read bases are never averaged. The lock is append-only and first-write-wins per date: no re-run or version bump can restate it, which is the exact lesson the v20 adaptive-desk bump taught. Then the post-engine scrub re-grades everything gradable through the outcome-verification gate, rebuilds and syncs every payload, recounts every record against the ledgers, runs the four standing rails, and refuses success if any fails \u2014 receipted nightly in SCRUB_LOG.md. It ran in SHADOW behind a hand-signed fail-closed mode file (python3 nightly_engine.py --sign live --by \"Leon Rou\") until that file was signed and the engine took the board on 2026-08-08; nothing ever flipped automatically. From 2026-08-09 the strategy forge selects instead, so everything described above is history rather than the mechanism behind today\u2019s card.",
+      "result": "SHIPPED, THEN SUPERSEDED \u2014 signed live 2026-08-08, replaced as the board's selector by the strategy forge on 2026-08-09. The vote is retired as a mechanism, not deleted as a record: the committee's served nights remain in the record and remain the only nights the Strong / Standard / Lean cut is about."
     },
     {
       "id": "merged_market_defect",
@@ -1221,7 +1221,7 @@
   ],
   "papers_index": {
     "contract_version": "1.1",
-    "generated_utc": "2026-08-09T09:14:49.392966+00:00",
+    "generated_utc": "2026-08-10T02:35:59.492333+00:00",
     "n_papers": 19,
     "payload_key": "research_papers",
     "static_fallback": "/research_papers.json",
