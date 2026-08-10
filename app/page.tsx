@@ -17487,10 +17487,10 @@ export default function Home() {
       const rank: any = { strong: 3, standard: 2, lean: 1 };
       const rows = blk.rows.map(({ t, r }: any) => {
         /* THROUGH THE SAME TWO HELPERS AS EVERY OTHER RECORD ON THIS PAGE (2026-08-09).
-           This block renders on TWO surfaces (the Desk's "Strong picks vs thin ones" fold and
-           Research), and it broke both single-source rules at once:
+           This used to render on TWO surfaces — Research and a Desk fold — and it broke both
+           single-source rules at once. (The Desk copy is gone; it lives on Research only.)
              · it printed the SERVED W-L string, with HYPHENS, while wlTxt() — "one helper,
-               one answer" — is what every other record on both pages uses, with en dashes;
+               one answer" — is what every other record on the page uses, with en dashes;
              · it preferred the SERVED `hit_rate`, in direct contradiction of normDayBlock's
                stated rule that hit rate is DERIVED, ALWAYS. On any tier containing a push
                those are different numbers, printed inches from records that derive it. */
