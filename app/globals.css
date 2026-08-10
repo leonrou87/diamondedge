@@ -2625,7 +2625,10 @@ details.more .more-body{padding-top:12px}
    cost on a surface that already repaints on live score polls.
    opacity is the one knob: enough to feel the place, never enough to fight the score. */
 .gp-hero-park{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;
-  opacity:.34;pointer-events:none;border-radius:inherit}
+  opacity:.5;pointer-events:none;border-radius:inherit}
+/* the tint gradient and the wash must never sit ON TOP of the park — the park is the
+   backmost layer, full stop. Both are pinned behind z-index 0 regardless of nesting. */
+.gp-hero::before,.gp-hero::after{z-index:0}
 /* the hero's children sit above it — the wash is the only thing at z-index 0 */
 .gp-hero > *:not(.gp-hero-park):not(.gp-hero-wash){position:relative;z-index:1}
 /* a reader who asked for less motion and less decoration gets the flat card */

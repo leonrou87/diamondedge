@@ -19975,7 +19975,16 @@ export default function Home() {
         // the game page's own scroll container — the gesture belongs to it, not to the document
         const scroller = () => {
           const p = $("gamepage");
-          if (p) return p.querySelector(".gp-body") || p.querySelector(".gp-scroll") || null;
+          if (p) {
+            // THE GAME PAGE OWNS ITS OWN SCROLL. If we cannot find its scroller we return
+            // NULL, never the document — falling back to the document is exactly the bug
+            // Leon hit: the document sits at scrollTop 0 behind an open game page, so the
+            // board's pull-to-refresh armed and fired UNDER the game the reader was pulling.
+            // A null scroller disarms the gesture, which is the correct answer for "a game
+            // page whose scroller has not mounted yet".
+            return p.querySelector(".gp-body") || p.querySelector(".gp-scroll")
+              || $("gp-body") || null;
+          }
           return (document.scrollingElement || document.documentElement) as any;   // the board scrolls the document
         };
         const ptrArmed = () => {
