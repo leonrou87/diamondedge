@@ -16710,7 +16710,7 @@ export default function Home() {
       const nUntier = numOr(bsrc.n_untiered);
       const mechLede = `These tiers are a measurement of the committee era. On the nights a voting committee chose the board we counted how much of it actually backed each side — abstentions counted against it — and filed the pick as <b>Strong</b>, <b>Standard</b> or a <b>Lean</b>. The cuts were fixed in advance: half the room or more is Strong, a quarter or more is Standard. <b>The board is not chosen that way any more.</b> One rule decides now, and a rule has no room to count, so a pick it makes carries no vote and falls outside this cut — while counting in the record exactly like every other pick.`;
       const censusLine = (blk.own && nTier != null && nUntier != null && nTier + nUntier > 0)
-        ? `<p class="rstr-note">${nTier.toLocaleString("en-US")} of the ${(nTier + nUntier).toLocaleString("en-US")} graded picks below carry a committee vote. The other ${nUntier.toLocaleString("en-US")} were chosen without one and are counted in the record, not in these three rows.</p>`
+        ? `<p class="rstr-note">${nTier.toLocaleString("en-US")} of the ${(nTier + nUntier).toLocaleString("en-US")} graded picks in the record carry a committee vote. The other ${nUntier.toLocaleString("en-US")} were chosen without one — they are in the record and they are not in these rows.</p>`
         : "";
       const rank: any = { strong: 3, standard: 2, lean: 1 };
       const rows = blk.rows.map(({ t, r }: any) => {
