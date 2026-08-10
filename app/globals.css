@@ -2624,7 +2624,13 @@ details.more .more-body{padding-top:12px}
    in, so nothing here has to filter at paint time — no runtime blur, no backdrop-filter, no
    cost on a surface that already repaints on live score polls.
    opacity is the one knob: enough to feel the place, never enough to fight the score. */
-.gp-hero-park{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;
+/* THE PARK FILLS THE HERO NO MATTER HOW THE HERO IS NESTED (Leon: "still no images").
+   inset:0 alone collapsed to height 0 — the wash element sits inside a wrapper the scorebug
+   work reshaped, so inset:0 resolved against a zero-height box. height:100% has the same
+   trap. So the size is not inherited from a parent at all: the element is pinned to the hero
+   and given a floor tall enough to cover it, clipped by the hero's own overflow:hidden. */
+.gp-hero-park{position:absolute;left:0;right:0;top:0;bottom:0;min-height:100%;height:180px;
+  z-index:0;background-size:cover;background-position:center;
   opacity:.5;pointer-events:none;border-radius:inherit}
 /* the tint gradient and the wash must never sit ON TOP of the park — the park is the
    backmost layer, full stop. Both are pinned behind z-index 0 regardless of nesting. */
