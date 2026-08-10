@@ -9244,9 +9244,15 @@ export default function Home() {
              ${liveCash}
            </div>`
         : incoming
-          ? `<div class="tl-verdict v-incoming">
-               <div class="tv-callrow">${compactDePickHtml(g, null, false, "tile", true)}</div>
-             </div>`
+          ? ""/* A FUTURE CARD CARRIES NO VERDICT ROW (Leon, 2026-08-10: tomorrow's board
+                "doesn't feel right — too long / too many rows").
+                It used to render "O/U —" beside "Pick posts tomorrow" on EVERY card. Both
+                are empty: the dash is a total we do not have yet, and the chip repeats what
+                the header above already said, ten times down the page. Two rows of nothing
+                per card is what made the board feel long.
+                The header states when picks post; the card states the game. When a total
+                does exist for a future game it still shows through the ordinary path — this
+                only removes the row that had nothing in it. */
           : "";
       // the number rides inside the call now; the chip is the fallback for a tile whose
       // verdict carries no figure of its own (a bare "Pass", or no verdict at all)
@@ -10442,7 +10448,11 @@ export default function Home() {
     function futureNote(dispDate: string, full: boolean, games?: any[]) {
       const first = esc(picksEtaTime(games && games[0]));
       const countdown = `<div class="fn-countdown soon"><span class="fnc-k">First pick</span><b class="fnc-val">${first}</b></div>`;
-      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Overnight our system replays every strategy against the latest results and locks the one it will play. Each game's pick then posts about three hours before its own first pitch — the first around <b>${first}</b>, the rest through the day.${full ? "" : " Until then, here is the slate."}</span></div>`;
+      /* SHORT, BECAUSE IT SAYS THE SAME THING EVERY DAY. This was a five-line paragraph
+         that also printed the first-pick time TWICE — once in the prose and again in the
+         chip beside it — and took a quarter of the screen above a slate the reader came to
+         see. One sentence, the time once, in the chip that exists for it. */
+      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts about three hours before its own first pitch.</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     /* ═══════════ THE BOARD IS NOT REPAINTED WHILE YOU ARE SCROLLING ═══════════
