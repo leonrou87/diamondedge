@@ -6622,10 +6622,18 @@ export default function Home() {
       const days = Math.round((Date.parse(curDate + "T00:00:00Z") - Date.parse(newest + "T00:00:00Z")) / 86400000);
       if (!isFinite(days) || days <= FEED_STALE_DAYS) return null;
       const dt = new Date(newest + "T12:00:00Z");
+      /* THE YEAR IS PART OF THE FACT WHENEVER IT IS NOT THIS ONE. Without it the NBA's newest
+         fixture — 2022-03-03 — rendered as "March 3", which a reader in August reads as five
+         months ago rather than four years. A date that understates its own age is the same
+         class of mistake as the sentence this whole branch replaced. */
+      const sameYear = newest.slice(0, 4) === String(curDate).slice(0, 4);
       return {
         last: newest, days,
         lastLabel: isNaN(dt.getTime()) ? newest
-          : dt.toLocaleDateString(undefined, { month: "long", day: "numeric", timeZone: "UTC" }),
+          : dt.toLocaleDateString(undefined, {
+            month: "long", day: "numeric",
+            ...(sameYear ? {} : { year: "numeric" }), timeZone: "UTC",
+          }),
       };
     }
     function gamesForLeague(p: any, lg: string, dateISO?: string) {
@@ -6738,25 +6746,29 @@ export default function Home() {
 
     // ===================== TRACK RECORD ACCESS =====================
     function trackRecord() { return (indexData && (indexData.track_record_test || indexData.track_record)) || (payload && (payload.track_record_test || payload.track_record)) || {}; }
-    function forwardRecord() {
-      const f = (payload && payload.track_record_forward) || (indexData && indexData.track_record_forward) || null;
-      if (!f) return null;
-      if (f.overall) return f.overall;
-      const agg = { wins: 0, losses: 0, pushes: 0, n: 0 };
-      const src = f.by_tier || f.by_sport || {};
-      Object.values(src).forEach((o: any) => { agg.wins += o.wins || 0; agg.losses += o.losses || 0; agg.pushes += o.pushes || 0; agg.n += o.n || 0; });
-      return agg.n ? agg : null;
-    }
-    // The validated recipe history (58.1% over 886 graded bets, 2022-2026) off the payload.
-    function recipeHistory() {
-      const vh = payload && payload.value_record && payload.value_record.validated_history;
-      const mp = (vh && vh.median_price) || {};
-      return {
-        hit: mp.hit != null ? Number(mp.hit) : 0.581,
-        roi: mp.roi != null ? Number(mp.roi) : 0.108,
-        n: vh && vh.bets_graded ? Number(vh.bets_graded) : 886,
-      };
-    }
+    /* ═══ recipeHistory() AND forwardRecord() ARE DELETED (2026-08-09) ═══
+       recipeHistory() was the source of the number this whole sweep existed to remove: the
+       in-sample backtest, "58.1% over 886 graded bets". It read
+       `payload.value_record.validated_history` — a store no other surface in the app touches
+       — and, when that store was absent, it did not return null. It returned
+       `{ hit: 0.581, roi: 0.108, n: 886 }`, hardcoded. It could MANUFACTURE the claim.
+
+       Those figures reached readers on the Upgrade hero, the checkout sell and the social
+       card, contradicting the Desk hero on the same screen and the same day. All three now
+       read headlineRecordBlock(), so by the end of the collapse recipeHistory() had two
+       callers left and neither USED the value — `const rh = recipeHistory()` in
+       renderSubscribe and in renderSignIn, computed on every render, assigned, and dropped.
+       forwardRecord() was in the same shape: one dead `const fwd`, nothing else.
+
+       A dead read of a rival source is not harmless, and the empty `const` is worse than the
+       function: the next edit that needs a number finds one already in scope, spelled like it
+       belongs there. Deleting the bindings without deleting the functions would have left the
+       fabricated 58.1% one keystroke from being live again. Both go.
+
+       There is exactly ONE statement of the record now — headlineRecordBlock() — and the
+       Desk hero, the scope rows, the plan card, the checkout sell, the share string and
+       app/opengraph-image.tsx all quote it. `trackRecord()` survives: different fact
+       (the model's own test-set track record), one caller, not a claim about our picks. */
 
     // ===================== SCORE DERIVATION =====================
     function actualScore(g: any) {
@@ -14434,7 +14446,14 @@ export default function Home() {
     function renderSignIn() {
       const view = $("account-view");
       if (!view) return;
-      const rh = recipeHistory();
+      /* The same dead read that sat in renderSubscribe: `const rh = recipeHistory()`, the
+         in-sample backtest, computed on every render of the sign-in screen and used by
+         nothing. Removed there in the first pass and missed here, which is the whole
+         argument for sweeping by SYMBOL rather than by screen — recipeHistory() is a rival
+         statement of the record, and the sign-in screen is the first thing a signed-out
+         reader sees. Nothing on this screen quotes a record; if one is ever added it must
+         come from headlineRecordBlock(), like the Desk hero, the plan card, the checkout
+         sell, the share string and the social card already do. */
       const social = (p: string) =>
         `<button class="sgn-btn sgn-${p}" data-prov="${p}"><span class="sgn-mark">${PROVIDER_MARK[p]}</span><span class="sgn-tx">Continue with ${PROVIDER_LABEL[p]}</span></button>`;
       view.innerHTML = `
