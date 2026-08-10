@@ -3039,10 +3039,17 @@ export default function Home() {
       const stRaw = src.adaptive_strategy && typeof src.adaptive_strategy === "object" ? src.adaptive_strategy
         : src.chief && src.chief.adaptive_strategy && typeof src.chief.adaptive_strategy === "object" ? src.chief.adaptive_strategy
         : null;
+      /* PAST GAME ⇒ PAST TENSE, HERE TOO. This block is built for 493 settled
+         history games as well as today's, and it was calling strategySentence()
+         with no `settled` argument — so every settled game resolved to the
+         present-tense committee forms ("each get a vote on every game"), which
+         describe a mechanism that stopped choosing the board on 2026-08-08. The
+         same test the day strip uses (`dateISO < today`), read off the game. */
+      const stSettled = (() => { const d = gameDateISO(g); return !!d && d < todayISO(); })();
       const strategy = stRaw
         ? {
             label: strategyLabelPublic(stRaw) || humanNote(stRaw.label),
-            rule: strategySentence(stRaw) || humanNote(stRaw.plain_english_rule),
+            rule: strategySentence(stRaw, stSettled) || humanNote(stRaw.plain_english_rule),
             summary: humanNote(stRaw.summary_line),
             record: humanNote(stRaw.record),
             windowDays: stRaw.window_days != null ? Number(stRaw.window_days) : null,
@@ -15448,6 +15455,15 @@ export default function Home() {
         el.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); } };
       });
       if (!stage) return;
+      /* THE GESTURE IS BOUND TO THE WHOLE DECK, NOT TO THE STAGE.
+         `.st-zone.left` is a real button sitting on top of the stage across the leading
+         22% of the screen — which is precisely where a back gesture begins. Bound to the
+         stage, the listeners never saw a swipe that started at the edge at all: the rail
+         swallowed it, and its own tap handler does not fire after a 300px drag, so a
+         left-to-right swipe from the edge of the briefing did nothing whatsoever. Bound to
+         the deck, the rails are inside the gesture and their taps are unaffected — the tap
+         branch already declines any target that is a button. */
+      const gzone = wrap || stage;
       let pdX = 0, pdAt = 0;
       const hold = () => {
         if (!storyHold) { storyAcc += performance.now() - storyT0; storyHold = true; }
@@ -15469,28 +15485,28 @@ export default function Home() {
         const rect = stage.getBoundingClientRect();
         if (x - rect.left < rect.width * 0.34) prevStory(); else nextStory();            // tap zones
       };
-      stage.addEventListener("pointerdown", (e: any) => {
+      gzone.addEventListener("pointerdown", (e: any) => {
         if (e.pointerType && e.pointerType !== "mouse") return;   // touch is handled below
         pdX = e.clientX; pdAt = Date.now(); hold();
       }, { passive: true });
-      stage.addEventListener("pointerup", (e: any) => {
+      gzone.addEventListener("pointerup", (e: any) => {
         if (e.pointerType && e.pointerType !== "mouse") return;
         release();
         endGesture(e.clientX, Date.now() - pdAt, e.target);
       });
-      stage.addEventListener("touchstart", (e: any) => {
+      gzone.addEventListener("touchstart", (e: any) => {
         if (!e.touches || e.touches.length !== 1) return;
         pdX = e.touches[0].clientX; pdAt = Date.now(); hold();
       }, { passive: true });
-      stage.addEventListener("touchend", (e: any) => {
+      gzone.addEventListener("touchend", (e: any) => {
         release();
         const t = e.changedTouches && e.changedTouches[0];
         if (!t) return;
         endGesture(t.clientX, Date.now() - pdAt, e.target);
       }, { passive: true });
-      stage.addEventListener("touchcancel", release, { passive: true });
-      stage.addEventListener("pointercancel", release);
-      stage.addEventListener("pointerleave", release);
+      gzone.addEventListener("touchcancel", release, { passive: true });
+      gzone.addEventListener("pointercancel", release);
+      gzone.addEventListener("pointerleave", release);
       if (wrap) wrap.onkeydown = (e: any) => {
         if (e.key === "ArrowRight") { e.preventDefault(); nextStory(); }
         if (e.key === "ArrowLeft") { e.preventDefault(); prevStory(); }
@@ -17019,7 +17035,13 @@ export default function Home() {
         </span>
         <span class="pc-title">${esc(pp.title)}</span>
         ${sub ? `<span class="pc-abs">${esc(sub)}</span>` : ""}
-        <span class="pc-foot">${pp.visuals.length ? `${pp.visuals.length} figure${pp.visuals.length === 1 ? "" : "s"}` : ""}${pp.visuals.length && pp.figures.length ? " · " : ""}${pp.figures.length ? `${pp.figures.length} key numbers` : ""}<em>Read →</em></span>
+        ${/* THE FOOT WAS VOLUME METADATA DRESSED AS SUBSTANCE (2026-08-09). Every one of
+              the nineteen cards read "3 figures · 6 key numbers" or "· 7 key numbers" —
+              a count of how much is inside, which tells a reader nothing about whether to
+              open it and is indistinguishable card to card. What does distinguish them is
+              WHEN the finding was made: a null from three weeks ago and one from last
+              night are different objects, and the date is already served. */""}
+        <span class="pc-foot">${pp.date ? esc(paperDateTxt(pp.date)) : ""}<em>Read →</em></span>
       </button>`;
     }
     async function loadRoadmap() {
@@ -17068,8 +17090,19 @@ export default function Home() {
        With `testing` mapped where it belongs, the roadmap has ZERO genuinely queued items —
        labSection returns "" on an empty group, so the mislabelled section and its count chip
        simply stop existing rather than standing empty. */
-    const LAB_GROUP: any = { live_testing: "fire", testing: "fire", building: "fire", piloting: "fire", shipped: "shipped", accruing: "accruing", queued: "queued", closed_null: "grave" };
-    const LAB_STATUS_LABEL: any = { live_testing: "Under evaluation", testing: "Under evaluation", building: "In development", piloting: "Pilot", shipped: "In production", accruing: "Collecting data", queued: "Pre-registered", closed_null: "Null result" };
+    /* ═══ A MECHANISM THAT RAN AND WAS REPLACED IS NEITHER IN PROGRESS NOR IN PRODUCTION ═══
+       The status vocabulary had no word for it, and two of the biggest cards on the page
+       were filed under words that were actively wrong: the recipe tournament sat in
+       "Under evaluation" — the only OPEN group — describing a selector retired on 08-08,
+       and the committee sat under a green "✓ In production" tick a day after it stopped
+       choosing the board. `labCard` renders the card's TITLE on its closed summary, so a
+       corrected result field two clicks down never reached a reader.
+       `superseded` is the missing word. It is not a null (both of these worked and both
+       have real records), and it is not a graveyard: it is history that used to be the
+       product. The shelf says so, and the nights those mechanisms served keep their
+       records exactly as they were served. */
+    const LAB_GROUP: any = { live_testing: "fire", testing: "fire", building: "fire", piloting: "fire", shipped: "shipped", accruing: "accruing", queued: "queued", closed_null: "grave", superseded: "past" };
+    const LAB_STATUS_LABEL: any = { live_testing: "Under evaluation", testing: "Under evaluation", building: "In development", piloting: "Pilot", shipped: "In production", accruing: "Collecting data", queued: "Pre-registered", closed_null: "Null result", superseded: "Superseded" };
     const labDate = (s: any) => {
       const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (!m) return String(s || "");
@@ -17160,10 +17193,12 @@ export default function Home() {
       const started = it.started ? labDate(it.started) : "";
       const endLab = grp === "shipped" ? (it.eta === "done" ? "in production" : labDate(it.eta) || "in production")
         : grp === "grave" ? "concluded"
+        : grp === "past" ? "replaced"
         : eta ? eta.replace(/^ETA /, "") : "in progress";
       const chip = grp === "shipped" ? `<span class="lab-chip shipped">✓ In production</span>`
         : grp === "accruing" ? `<span class="lab-chip accruing"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 4 3 5.2 4 6 1-.8 4-2 4-6M8 21c0-4 3-5.2 4-6 1 .8 4 2 4 6"/></svg>Collecting data</span>`
         : grp === "grave" ? `<span class="lab-chip grave">Null result</span>`
+        : grp === "past" ? `<span class="lab-chip past">Superseded</span>`
         : grp === "queued" ? `<span class="lab-chip queued">Pre-registered</span>`
         : `<span class="lab-chip fire"><i class="lab-dot" aria-hidden="true"></i>${esc(LAB_STATUS_LABEL[st] || "Under evaluation")}</span>`;
       // timeline: started → eta on one thin line; the fill doubles as the progress bar
@@ -17178,7 +17213,7 @@ export default function Home() {
       const detailTx = humanNote(it.detail);
       const latest = latestTx ? `<div class="lab-latest"><b class="lab-latest-k">Latest</b> <span class="lab-latest-tx">${esc(latestTx)}</span></div>` : "";
       // shipped's earned line / the graveyard's killing number — the honest one-liner up front
-      const result = resultTx && (grp === "shipped" || grp === "grave")
+      const result = resultTx && (grp === "shipped" || grp === "grave" || grp === "past")
         ? `<div class="lab-result ${grp}">${esc(resultTx)}</div>` : "";
       const detail = detailTx ? `<div class="lab-detail">${esc(detailTx)}</div>` : `<div class="lab-detail dim">Protocol notes are published as the study progresses.</div>`;
       // THE ONE PLACE ENGINEERING VOCABULARY IS THE POINT. The Lab publishes the build log
@@ -17192,6 +17227,19 @@ export default function Home() {
          The finding prefers the RESULT (a concluded study's actual outcome) and falls back to
          the tagline; everything else moved inside the disclosure. */
       const finding = resultTx || humanNote(it.tagline) || "";
+      /* A CORRECTION ON A ROADMAP CARD, same contract as a correction on a paper
+         (`rp-corr`): dated, additive, and rendered ABOVE the card's own result,
+         because a reader about to be told what a study concluded needs to know
+         first whether that account has been corrected. A card is not a dated
+         document the way a paper is — the roadmap says what is true NOW — so a
+         card is edited AND carries the note saying it was. Optional: a card
+         without one renders exactly as before. */
+      const corrRaw = it.correction && typeof it.correction === "object" ? it.correction : null;
+      const corrTx = corrRaw ? humanNote(corrRaw.note) : "";
+      const corrOn = corrRaw ? String(corrRaw.corrected_on || "").slice(0, 10) : "";
+      const correction = corrTx
+        ? `<div class="lab-corr"><b class="lab-corr-k">Corrected${corrOn ? ` — ${esc(stratDateTxt(corrOn) || corrOn)}` : ""}</b><p>${esc(corrTx)}</p></div>`
+        : "";
       return `<details class="lab-card ${grp}" data-devtext="the research log's subject is the engineering work; module and column names are its content">
         <summary>
           <div class="lab-row">
@@ -17199,12 +17247,14 @@ export default function Home() {
             <span class="lab-rowmain">
               <span class="lab-title">${esc(it.title || it.id || "Untitled")}</span>
               ${finding ? `<span class="lab-finding">${esc(finding)}</span>` : ""}
+              ${corrTx ? `<span class="pc-corr lab-corr-chip">Corrected</span>` : ""}
             </span>
             <span class="lab-caret" aria-hidden="true">›</span>
           </div>
         </summary>
         <div class="lab-cardbody">
           <div class="lab-top">${chip}${eta && grp === "fire" ? `<span class="lab-eta">${esc(eta)}</span>` : ""}${it.category ? `<span class="lab-cat">${esc(it.category)}</span>` : ""}</div>
+          ${correction}
           ${result}
           ${latest}
           ${track}
@@ -17373,10 +17423,26 @@ export default function Home() {
         handovers++;
         if (a !== b) flips++;
       }
+      /* ═══ THESE NIGHTS ARE NOT ALL ONE SEARCH'S, AND THE COUNTS NOW SAY SO ═══
+         The strapline under the first number read "one search, one night, every night".
+         It is false on its own ledger: the stretch these rows cover spans the recipe
+         tournament, one committee night, and the forge — different searches, ranking
+         different things, over different lookbacks. Every one of those counters was
+         treating a MECHANISM REPLACEMENT as a routine change of play, which is the
+         flattering direction to get it wrong in: it makes a rebuild look like proof of
+         disposability. Counted here off the served rows, so the copy can state it
+         instead of claiming the opposite. */
+      const selOf = (s: any) => String((s && (s.day_selector || s.selector || s.engine || s.source)) || "").trim();
+      const sels = days.map((d) => selOf(map[d])).filter(Boolean);
+      const last = sels.length ? sels[sels.length - 1] : "";
+      let onCurrent = 0;
+      for (let i = sels.length - 1; i >= 0 && last && sels[i] === last; i--) onCurrent++;
       return {
         nights: days.length,
         plays: new Set(keys).size,
         flips, handovers,
+        selectors: new Set(sels).size,
+        onCurrent,
         first: days[0], last: days[days.length - 1],
       };
     }
@@ -17393,9 +17459,28 @@ export default function Home() {
        figure, over the caption "READINGS OF A GAME, COMBINED EVERY WAY" (2026-08-09). That
        number is the size of the machine that writes a new rule every night — the one part
        of this product that does NOT expire at midnight — and it sat one line above a lede
-       that also published the enumeration depth. It is now the honest floor instead:
-       THOUSANDS, which is what the Desk has always said and is true by a wide margin of any
-       language that combines hundreds of conditions two and three at a time.
+       that also published the enumeration depth. It had to come off.
+
+       WHAT REPLACED IT WAS WORSE, AND THE SAME NIGHT'S SECOND PASS CAUGHT IT. The removal
+       wrote THOUSANDS in that slot, on the reasoning that it is the Desk's own word and
+       "true by a wide margin". It is not true. The search is exhaustive over the language
+       at every depth it enumerates (`hunt.all_policy_winners` marks each sweep EXHAUSTIVE),
+       so the count is a sum of binomials on hundreds of conditions and lands in the tens of
+       millions. "Thousands" understates it by more than four orders of magnitude — and it
+       sat three lines under a lede saying the search writes out more rules than a person
+       could read in a lifetime, which a person can do to thousands over a wet weekend. Two
+       statements in one figure that cannot both be true, one of them wrong.
+
+       That is this whole pass's first prohibition, committed by the pass itself: a checkable
+       integer was replaced by a vaguer figure that is FALSE, next to a superlative nobody
+       can check. Vaguer and more confident, in one edit.
+
+       SO THE BAND STOPS CLAIMING A MAGNITUDE. It says what is actually true and cannot be
+       wrong by any factor: EVERY RULE the search can write. That is the property the search
+       has — exhaustive, not sampled — and it is the property that matters to a reader. It
+       publishes no size, so it gives a copier nothing, and there is no integer left in the
+       figure to be off by. The lede's "more than a person could read in a lifetime" stays,
+       because at tens of millions it is true with a lot of room.
        Note what did NOT change: the band is still a mass, the walls still narrow, and the
        loop still says DISCARDED AT MIDNIGHT. The argument was never the integer. */
     /* THE MIDDLE BAND IS THE MECHANISM, AND THE MECHANISM CHANGED (2026-08-08).
@@ -17454,7 +17539,7 @@ export default function Home() {
       ];
       const capB = mid.cap;
       return `<svg class="nsfunnel" viewBox="0 0 340 338" role="img"
-        aria-label="${esc(`${poolTxt} candidate strategies are replayed against the trailing window; ${mid.aria}; one strategy is locked onto today's card, then discarded.`)}">
+        aria-label="${esc(`Every candidate strategy the search can write is replayed against the trailing window; ${mid.aria}; one strategy is locked onto today's card, then discarded.`)}">
         <g class="nsf-walls" aria-hidden="true">
           <path class="nsf-wall" d="M40 86 L332 86 L280 124 L92 124 Z"/>
           <path class="nsf-wall" d="M92 194 L280 194 L240 232 L132 232 Z"/>
@@ -17462,8 +17547,10 @@ export default function Home() {
         <g class="nsf-band b1">
           <rect x="40" y="10" width="292" height="76" rx="12"/>
           ${comb}
-          <text class="nsf-n" x="${cx}" y="66" text-anchor="middle">${esc(poolTxt)}</text>
-          <text class="nsf-l" x="${cx}" y="80" text-anchor="middle">${mid.isForge ? "RULES, WRITTEN OUT AND SCORED" : "WAYS TO PLAY THE FOUR ANALYSTS"}</text>
+          ${/* `.wide` for the same reason the score band needs it: this slot holds words
+                now, not a numeral, and there is no reflow in SVG. */""}
+          <text class="nsf-n${poolTxt.length > 4 ? " wide" : ""}" x="${cx}" y="66" text-anchor="middle">${esc(poolTxt)}</text>
+          <text class="nsf-l" x="${cx}" y="80" text-anchor="middle">${mid.isForge ? "THE SEARCH CAN WRITE, SCORED" : "IT CAN BUILD, SCORED"}</text>
         </g>
         <text class="nsf-cap" x="${cx}" y="101" text-anchor="middle">${esc(capA[0])}</text>
         <text class="nsf-cap" x="${cx}" y="114" text-anchor="middle">${esc(capA[1])}</text>
@@ -17546,10 +17633,18 @@ export default function Home() {
         ["Lock", "One strategy goes on the card and is frozen before first pitch. At midnight it is deleted."],
       ] as [string, string][]).map(([k, v], i) => `<li class="nss-step"><span class="nss-num">${i + 1}</span><span class="nss-sw"><b>${esc(k)}</b><i>${esc(v)}</i></span></li>`).join("");
       const stats = st ? [
-        [String(st.nights), st.nights === 1 ? "night with a published strategy" : "nights with a published strategy", "one search, one night, every night"],
+        [String(st.nights), st.nights === 1 ? "night with a published strategy" : "nights with a published strategy", "every night, without a night off"],
         [String(st.plays), st.plays === 1 ? "play has held the slot" : "different plays have held the slot", "across every one of those nights"],
         [st.handovers ? `${st.flips}/${st.handovers}` : "", "nights it changed hands", "the play was replaced overnight this often"],
       ].filter((r) => r[0]).map((r) => `<div class="nss-stat"><b>${esc(r[0])}</b><i>${esc(r[1])}</i><em>${esc(r[2])}</em></div>`).join("") : "";
+      /* AND THE STRETCH SAYS HOW MANY SEARCHES IT TOOK. Without this the three numbers
+         read as one machine's uninterrupted run, and the biggest handover in the stretch
+         — the one where the search itself was replaced — is counted as a change of play.
+         The whole section argues that nothing here is permanent; the mechanism not being
+         permanent either is the strongest version of that, not a footnote to it. */
+      const selNote = st && st.selectors > 1
+        ? `<p class="nss-selnote">Those nights were not all chosen by tonight's search. ${st.selectors} different searches have run in that stretch — the current one has held the slot for ${st.onCurrent === 1 ? "one night" : `${st.onCurrent} nights`}, and the nights before it keep the mechanism that actually served them. The counts above span all of it, because the ledger is the ledger.</p>`
+        : "";
       return `<section class="nss">
         <div class="nss-glow" aria-hidden="true"></div>
         <header class="nss-head">
@@ -17558,7 +17653,7 @@ export default function Home() {
         </header>
         <p class="nss-lede">${lede}</p>
         <figure class="nss-fig">
-          ${searchFunnelSvg(mid.isForge ? "THOUSANDS" : "EVERY ONE", scaleTxt, mid)}
+          ${searchFunnelSvg("EVERY RULE", scaleTxt, mid)}
           <figcaption>Tonight it runs again from zero, and yesterday's winner has to win the job back.</figcaption>
         </figure>
         ${/* "WHAT WAS SEARCHED" IS GONE (2026-08-09). It printed the served `search_scope`,
@@ -17569,7 +17664,7 @@ export default function Home() {
               and there is no reader-facing summary of an algorithm that is not also a
               specification of one. */""}
         <ol class="nss-steps">${steps}</ol>
-        ${stats ? `<div class="nss-statsk">Nothing here is permanent</div><div class="nss-stats">${stats}</div>` : ""}
+        ${stats ? `<div class="nss-statsk">Nothing here is permanent</div><div class="nss-stats">${stats}</div>${selNote}` : ""}
         ${/* THE CONTROL, QUOTED — AND ATTRIBUTED TO THE SEARCH IT ACTUALLY RAN AGAINST.
               This figure comes from the recipe tournament's report, and it controlled THAT
               search: pick from that pool at random instead of ranking it, and here is what
@@ -17583,7 +17678,17 @@ export default function Home() {
         ${ctl ? `<div class="nss-ctl">
           <span class="nss-ctl-k">Why bother searching at all</span>
           <p><b>${esc(ctl.label)}:</b> ${esc(String(ctl.value).replace(/\.\s*$/, ""))}.</p>
-          <p class="nss-ctl-x">That was measured on an earlier search of ours${ctlPaper && ctlPaper.title ? `, the one written up in ${esc(String(ctlPaper.title).replace(/[.:,].*$/, ""))}` : ""}, not on the one running tonight — the two rank different things. What it establishes is the thing both have in common: the choosing is where the value is, and picking without it is expensive.</p>
+          ${/* THE DISCLAIMER WAS FOLLOWED BY A BIGGER UNMEASURED CLAIM (fixed 2026-08-09).
+                The sentence correctly narrowed the figure to the search it actually
+                controlled — and then, in the next clause, asserted something WIDER than the
+                original about both mechanisms: "what it establishes is the thing both have
+                in common: the choosing is where the value is". Nothing has measured that on
+                tonight's search. The support shrank and the conclusion grew, in one
+                sentence, under a heading that asks whether the search is worth running.
+                What replaces it says only what the number covers, and then says plainly
+                that the current search has not had the same control run on it. An open
+                question stated as one is worth more here than an answer we cannot show. */""}
+          <p class="nss-ctl-x">That was measured on an earlier search of ours${ctlPaper && ctlPaper.title ? `, the one written up in ${esc(String(ctlPaper.title).replace(/[.:,].*$/, ""))}` : ""}, not on the one running tonight — the two rank different things, so the number is evidence about that search and not this one. The same control has not been run on tonight's search. What tonight's search has instead is the record below, night by night, including the nights it lost.</p>
           ${ctl.paper ? `<button class="nss-ctl-go" data-paper="${esc(ctl.paper)}">Read the paper<span aria-hidden="true"> →</span></button>` : ""}
         </div>` : ""}
       </section>`;
@@ -17697,7 +17802,12 @@ export default function Home() {
           <div class="rstr-figs">
             <span class="rstr-f"><b>${esc(wlTxt(r))}</b><i>record</i></span>
             ${hit != null && dec >= HIT_MIN_DECIDED ? `<span class="rstr-f"><b>${(hit * 100).toFixed(1)}%</b><i>hit</i></span>` : ""}
-            ${u != null ? `<span class="rstr-f ${u >= 0 ? "pos" : "neg"}"><b>${u >= 0 ? "+" : ""}${u.toFixed(1)}u</b><i>net</i></span>` : ""}
+            ${/* A TRUE MINUS SIGN, like every other units figure on this page. This row
+                  printed a hyphen-minus straight off `toFixed`, two inches from a calendar
+                  that draws U+2212 — one number, two glyphs, different widths, on the same
+                  screen. The function's own note two lines up invokes "one helper, one
+                  answer"; this was the line breaking it. */""}
+            ${u != null ? `<span class="rstr-f ${u >= 0 ? "pos" : "neg"}"><b>${u >= 0 ? "+" : "−"}${Math.abs(u).toFixed(1)}u</b><i>net</i></span>` : ""}
           </div>
         </div>`;
       }).join("");
@@ -17761,7 +17871,21 @@ export default function Home() {
       return days.map((k) => {
         const r = map[k];
         const hit = byDate[k] || null;
-        const s = (hit && hit.s) || adaptiveDayStrategy(k) || null;
+        /* ═══ ONE PLAY MUST NOT HAVE TWO NAMES ONE SCREEN APART (2026-08-09) ═══
+           The strip and the Desk called today's play "The Pitcher's Park and the
+           Conditions Analyst's Read". The legend below called the SAME play "The rule
+           that won the search" — and printed a record against it. Two names, one play,
+           and a reader trying to join today's card to its row in the legend cannot.
+
+           The cause: the day's ledger row carries a COMPACT strategy block, and the
+           generated name lives on the day's FULL block (`voice`). Preferring the ledger
+           row meant the generic served `label` won on exactly the nights the play has a
+           name. The full block is now preferred when it names the same day, and the
+           ledger row remains the fallback for a date the by-date store never had — so a
+           night still gets a row either way, under the name the rest of the app uses. */
+        const full = adaptiveDayStrategy(k);
+        const named = full && strategyLabelPublic(full);
+        const s = (named ? full : null) || (hit && hit.s) || full || null;
         return {
           k,
           n: r ? r.n : 0,
@@ -17857,6 +17981,21 @@ export default function Home() {
       const tw = rows.reduce((a, r) => a + (r.n ? r.w : 0), 0);
       const tl = rows.reduce((a, r) => a + (r.n ? r.l : 0), 0);
       const tp = rows.reduce((a, r) => a + (r.n ? r.p : 0), 0);
+      /* ═══ THE FORTNIGHT TOTAL IS NOT ONE SEARCH'S TOTAL, AND NOW SAYS SO ═══
+         The heading over this plate reads "What the search actually returned", singular,
+         and the foot adds up every night into one units figure. Across these fourteen
+         nights the slot changed MECHANISM, not just play — and the play the current
+         mechanism put up is, on this window, the only losing row in the legend while the
+         fortnight line is positive. Every row is already here, including that one, which
+         is why this figure is the best thing on the page. But a reader should not have to
+         do the arithmetic to find out that most of the total was earned by selectors that
+         have since been retired. Counted off the same served blocks the letters come from.
+         Nothing is hidden and nothing is recomputed; the figure just stops implying a
+         single author. */
+      const mechs = new Set(rows.map((r) => String((r.s && (r.s.day_selector || r.s.selector || r.s.engine || r.s.source)) || "")).filter(Boolean));
+      const mechNote = mechs.size > 1
+        ? ` The slot changed <b>mechanism</b> inside this window, not only play: ${mechs.size} different searches chose these nights, so the fortnight line is their combined result and not one search's record.`
+        : "";
       const lede = nPlay > 1
         ? `<b>${nPlay}</b> different plays held the slot across these fourteen nights. The letters say which one was on the card; the columns say what it came back with.`
         : nPlay === 1
@@ -17879,7 +18018,7 @@ export default function Home() {
         </div>
         ${legend ? `<div class="rcal-legwrap"><div class="rcal-legk">Who held the slot</div><ol class="rcal-leg">${legend}</ol></div>` : ""}
         </div>
-        <p class="rcal-cap">Window: ${esc(startTxt)} – ${esc(endTxt)}. These are the cards DiamondEdge actually served on those nights, graded at the prices we were given — not a backtest of today's strategy run backwards.${nBlank ? ` ${nBlank === 1 ? "One night is" : `${nBlank} nights are`} marked <b>no picks</b>: the search served no card, so there is nothing to grade.` : ""}</p>
+        <p class="rcal-cap">Window: ${esc(startTxt)} – ${esc(endTxt)}. These are the cards DiamondEdge actually served on those nights, graded at the prices we were given — not a backtest of today's strategy run backwards.${nBlank ? ` ${nBlank === 1 ? "One night is" : `${nBlank} nights are`} marked <b>no picks</b>: the search served no card, so there is nothing to grade.` : ""}${mechNote}</p>
       </section>`;
     }
     async function renderResearch() {
@@ -17900,7 +18039,7 @@ export default function Home() {
       }
       const items = (Array.isArray(d.items) ? d.items : []) as any[];
       const by = (grp: string) => items.filter((it: any) => (LAB_GROUP[String(it && it.status)] || "queued") === grp);
-      const fire = by("fire"), shipped = by("shipped"), accruing = by("accruing"), queued = by("queued"), grave = by("grave");
+      const fire = by("fire"), shipped = by("shipped"), accruing = by("accruing"), queued = by("queued"), grave = by("grave"), past = by("past");
       // count chips — derived from the items themselves; the served summary is only a fallback
       const sum = (d.summary && typeof d.summary === "object") ? d.summary : {};
       const nShip = shipped.length || Number(sum.shipped) || 0;
@@ -17913,6 +18052,7 @@ export default function Home() {
         nFire ? `<span class="lab-count fire">${nFire} in progress</span>` : "",
         nAcc ? `<span class="lab-count accruing">${nAcc} collecting data</span>` : "",
         queued.length ? `<span class="lab-count queued">${queued.length} pre-registered</span>` : "",
+        past.length ? `<span class="lab-count past">${past.length} superseded</span>` : "",
         nGrave ? `<span class="lab-count grave">${nGrave} nulls published</span>` : "",
       ].filter(Boolean).join("");
       await loadPapers().catch(() => null);
@@ -18043,12 +18183,28 @@ export default function Home() {
                one. -->
           <section class="lab-thesis open">
             <div class="lab-thesis-k">Protocol</div>
-            <p>The programme tests a stack of independent signal families — market microstructure, lineup reaction, pitcher-state priors, weather and park context, model disagreement, probability calibration, and price validity. A module is fit on data that existed before the games it is judged on, evaluated on slates it has never seen, and measured on the served decision rather than on a fitted curve. It enters production only when it moves that decision.</p>
+            ${/* UNFOLDING THIS SECTION PROMOTED THE DENSEST SENTENCE IN THE APP (2026-08-09).
+                  Opening the protocol was right — it is the falsifier under five paragraphs
+                  of framing — but the paragraph it opened led on seven terms of art in a
+                  row: "market microstructure, lineup reaction, pitcher-state priors,
+                  weather and park context, model disagreement, probability calibration,
+                  and price validity". On a page whose brief is sophisticated by the
+                  writing and not by the jargon, that is the jargon doing the work.
+                  Every one of those families is still tested and every one is still named
+                  — in the words a bettor uses for them. Nothing was dropped to make the
+                  list shorter; the list is the same length. */""}
+            <p>The programme tests a stack of independent signal families, each on its own: how the market itself is behaving, how a posted lineup changes the picture, what a starter's recent state actually predicts, the weather and the ballpark, where our own models disagree with each other, whether a stated probability holds up against what happened, and whether the price on offer is real. A module is fit on data that existed before the games it is judged on, evaluated on slates it has never seen, and measured on the served decision rather than on a fitted curve. It enters production only when it moves that decision.</p>
             <p>The nightly play is held to a different and plainly weaker standard, and we state it rather than blur it: the search scores every candidate on the same recent nights that choose it, so its lookback record is in-sample and is published as in-sample. Its real test is the next day's card, graded in public at the prices we were given, which is the record on this page.</p>
             <div class="lab-principles">
               <span><b>Hypothesis</b><i>The signal family under test, and what would falsify it.</i></span>
               <span><b>Identification</b><i>Why the effect should be causal, and tradable at a real price.</i></span>
-              <span><b>Holdout</b><i>Time-ordered evaluation on slates the fit never saw.</i></span>
+              ${/* THE CARD CONTRADICTED THE PARAGRAPH TWO INCHES ABOVE IT. The paragraph
+                    admits the nightly play has no holdout; this card said "Holdout — time-
+                    ordered evaluation on slates the fit never saw", flat, with no subject.
+                    A reader skimming four principle cards reads it as a property of the
+                    product. It now names who it applies to, which is the same discipline
+                    the paragraph describes and no wider. */""}
+              <span><b>Holdout</b><i>For a research module: time-ordered evaluation on slates the fit never saw. The nightly play has none — see above.</i></span>
               <span><b>Publication</b><i>Every result reported — confirmations and nulls alike.</i></span>
             </div>
           </section>
@@ -18058,6 +18214,11 @@ export default function Home() {
           ${labSection("In production", "Passed holdout evaluation and now serving live decisions, each with the result that earned it.", shipped, "shipped", false)}
           ${labSection("Data collection", "Awaiting sample. These are accumulating the observations their design requires before any test is meaningful.", accruing, "accruing", false)}
           ${labSection("Pre-registered", "Designed and queued. The hypothesis and the evaluation are fixed before the data is touched.", queued, "queued", false)}
+          ${/* The mechanisms that used to be the product. Filed here rather than in
+                production or in the graveyard, because they are neither: they ran, they
+                have records, and something replaced them. The nights they served keep
+                their picks and their numbers exactly as they were served. */""}
+          ${labSection("Superseded", "Mechanisms that chose the board and no longer do. Each keeps the record it actually served — nothing here has been restated, and none of it is running now.", past, "past", false)}
           <!-- ═══ THE NULLS BANNER MOVED TO THE NULLS (2026-08-09) ═══
                It sat four sections and one fold above the studies it referred to, saying "N
                of the hypotheses BELOW" about cards nobody could see from there — and the
@@ -18619,7 +18780,14 @@ export default function Home() {
       if (!s || s.status === "ERROR") return "";
       const name = strategyLabelPublic(s);
       const fv = forgeVoice(s);
-      const paras = fv ? fv.paras : [strategySentence(s)].filter(Boolean);
+      // The heading below already says "The last strategy we played" when this
+      // is not today — and then the sentence under it said "each of our four
+      // analysts GETS a vote", present tense, about a day that is over and a
+      // mechanism that no longer chooses anything. Same flag, both lines.
+      // A forge day keeps `forgeVoice`'s served prose verbatim either way:
+      // re-tensing a served sentence is re-authoring a finished day.
+      const isToday = dateISO === todayISO();
+      const paras = fv ? fv.paras : [strategySentence(s, !isToday)].filter(Boolean);
       if (!name && !paras.length) return "";
       // proseDates only: the served summary dates itself in ISO ("2026-07-22 to 2026-08-07")
       // while the commentary above it already reads "Jul 22 to Aug 7". Same normalisation the
@@ -18627,7 +18795,6 @@ export default function Home() {
       const summary = proseDates(humanNote(s.summary_line));
       const caveat = humanNote(s.record_is_about_the_past_only);
       const exact = humanNote(s.plain_english_rule);
-      const isToday = dateISO === todayISO();
       const dateTxt = stratDateTxt(dateISO) || dateISO;
       return `<section class="dp-today">
         <div class="dp-today-k"><span class="dp-today-mk">${strategyMark()}</span>${isToday ? "Today's strategy" : "The last strategy we played"}<i>${esc(dateTxt)}</i></div>
@@ -18678,7 +18845,16 @@ export default function Home() {
                  reader on it. It was both, until 2026-08-09 — see goDeskResults(). -->
             <div class="dp-results" id="desk-results">
               ${deskRecordHero()}
-              <p class="dp-pitch">Every night our system replays ${paperLink(DESK_PAPERS.SEARCH, "thousands of strategy combinations")} across our four analysts, and plays only the best one the next day.</p>
+              ${/* "ACROSS OUR FOUR ANALYSTS" DESCRIBED THE COMMITTEE (fixed 2026-08-09).
+                    The retired engine really did search ways of combining the four
+                    analysts' reads. Tonight's search does not: it writes rules over the
+                    ballpark, the bullpens, the starters and the conditions, and the four
+                    analysts are one input among many. The sentence was a mechanism claim
+                    left standing on the busiest pitch in the app, a day after the mechanism
+                    changed — and it was the linked phrase, pointing at the retired
+                    search's own report. See the credibility bullet below for the same fix
+                    and the same reason. */""}
+              <p class="dp-pitch">Every night our system writes out every strategy it can, replays them against the games that just finished, and plays only the best one the next day.</p>
               ${deskLast14Widget(betaData)}
               <!-- THE SCOPES CAME UP FROM THE RECORD SCREEN (2026-08-09). They were the only
                    thing on that screen the Desk did not already render: its body was
@@ -18724,7 +18900,18 @@ export default function Home() {
                  the assertion straight to the evidence for that assertion — not to a corpus
                  index. -->
             <ul class="dp-cred-list">
-              <li><b>An overnight search.</b> ${paperLink(DESK_PAPERS.SEARCH, "Thousands of strategy combinations")}, replayed against every finished game, every night.</li>
+              ${/* THE ONE EVIDENCE LINK FOR THE SEARCH POINTED AT A RETIRED ONE (2026-08-09).
+                    `DESK_PAPERS.SEARCH` is kr-2026-003, whose title is present tense about
+                    the committee — "We Have 2,848 of Them, and We Pick a New One Every
+                    Night" — and whose correction, which is excellent, is INSIDE the paper.
+                    A reader following the Desk's only link about how the search works
+                    landed on a headline describing a selector retired on 08-08, and the
+                    linked phrase implied it was this one.
+                    The library has no write-up of tonight's search yet, so the honest move
+                    is not to relabel the paper — it is to stop the link pretending. The
+                    bullet now says what the search does in its own words, and the link is
+                    offered as what it is: the full write-up of an earlier one. */""}
+              <li><b>An overnight search.</b> Every strategy it can write, replayed against every finished game, every night. Our ${paperLink(DESK_PAPERS.SEARCH, "full write-up of an earlier search")} shows how the ranking is done — that one has since been replaced, and the paper says so.</li>
               <li><b>Walk-forward, never hindsight.</b> Each day's strategy is ${paperLink(DESK_PAPERS.WALKFWD, "chosen before the games it is graded on")} — and we ${paperLink(DESK_PAPERS.MULTITEST, "count every idea we tested")}, so a lucky one cannot pose as a real one.</li>
               <li><b>Four independent engines.</b> They ${paperLink(DESK_PAPERS.ANALYSTS, "read different things")} and are graded separately, so agreement means something.</li>
             </ul>

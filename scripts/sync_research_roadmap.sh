@@ -39,9 +39,25 @@ trap 'rm -f "$TMP" "$RESP"' EXIT
 # wave — research_roadmap sat at 2026-07-26 while syncing fine. A freshness
 # signal that lies is worse than no signal: the watchdog cannot see a real
 # outage on a key that is always stale. See RUNBOOK "Watchdog" gotcha.
+# …AND generated_utc IS RE-STAMPED FROM THE FILE ITSELF (2026-08-09). This is a
+# DIFFERENT stamp from updated_at above and it drifted the other way: the
+# coordinator writes `generated_utc` by hand, so on 2026-08-09 the payload
+# carried an entry dated 08-09 under a stamp that said 08-03, and the Research
+# masthead — which reads exactly this field — told every reader the study index
+# was six days old on a night it had just been rewritten. A freshness signal
+# that lies is worse than no signal, in both directions: the earlier fix demoted
+# the masthead's wording, which dressed a broken stamp up as an honest staleness
+# disclosure. The bug was here.
+# It is the file's own MODIFIED TIME, never `now`: stamping the publish would
+# make the index permanently "fresh" whether or not a word of it had changed,
+# which is the same lie with the sign flipped. mtime is observed, and it is what
+# "when was this index last rebuilt" actually means.
 python3 - "$FILE" "$TMP" <<'PY'
-import datetime,json,sys
-payload=json.load(open(sys.argv[1]))
+import datetime,json,os,sys
+src=sys.argv[1]
+payload=json.load(open(src))
+mtime=datetime.datetime.fromtimestamp(os.path.getmtime(src),datetime.timezone.utc)
+payload["generated_utc"]=mtime.isoformat()
 now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 json.dump([{"key":"research_roadmap","payload":payload,"updated_at":now}],
           open(sys.argv[2],"w"))

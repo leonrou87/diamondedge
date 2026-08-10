@@ -4546,14 +4546,59 @@ body.tab-leaving,body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 .dock-lab{display:inline;position:relative;z-index:1;font-family:var(--sans);font-weight:600;font-size:10px;
   letter-spacing:-.005em;line-height:1.1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .dock-item.on .dock-lab{display:inline}
-/* on a wide screen the material still spans the window (that is what makes it chrome), but
-   the tabs cluster in the middle instead of drifting 300px apart */
+/* ══════════════ THE CAPSULE ON A TABLET AND WIDER ══════════════
+   Leon: "if I'm a tablet or larger width device, change the bottom bar to be appropriately
+   sized." A phone dock stretched across an iPad is the complaint; what was actually on
+   screen was the opposite failure, and worse.
+
+   WHAT WAS THERE. `width:auto` + `.dock-item{flex:0 1 104px}` asked the capsule to shrink
+   to its content while every tab kept `min-width:0` and every label kept
+   `overflow:hidden;text-overflow:ellipsis`. A flex item that is allowed to shrink to zero
+   contributes nothing it must keep, so the intrinsic width the capsule sized itself to had
+   nothing to do with the words in it. Measured at 1280×800: a 244px capsule with five 43px
+   tabs, "Research" rendered as "Resea…" and "Account" as "Acco…". At 768 the same two
+   labels were clipped. The bar was not stretched — it was crushed, and two of the five
+   destinations no longer said their own name.
+
+   WHAT IT IS NOW. `flex:0 0 auto` with real horizontal padding, so the capsule's intrinsic
+   width IS its content: five tabs, each as wide as its own label plus a comfortable target,
+   centred in the viewport with the material sized to them rather than to the window. The
+   geometry does NOT scale up — the 54px capsule, the 25px glyphs and the raised centre are
+   the same physical size they are on a phone, because a tab bar on a bigger screen is not a
+   bigger tab bar. Only two things change: the type goes up one step (11px, which a tablet's
+   viewing distance carries), and the capsule floats further off the bottom edge, where
+   there is no home indicator to borrow clearance from and 7px reads as stuck to the frame. */
 @media(min-width:700px){
-  .dock{justify-content:center;gap:2px;width:auto;padding:0 10px}
-  .dock-item{flex:0 1 104px}
-  .dock-lab{font-size:11px}
+  .dockwrap{--dock-gap:14px}
+  .dock{justify-content:center;gap:6px;width:auto;max-width:none;padding:0 14px}
+  .dock-item{flex:0 0 auto;max-width:none;padding:7px 18px 6px}
+  .dock-item.on{padding:6px 18px 5px}
+  .dock-lab{font-size:11px;max-width:none}
+}
+@media(min-width:1024px){
+  .dockwrap{--dock-gap:20px}
+  .dock{gap:10px;padding:0 16px}
+  .dock-item{padding:7px 22px 6px}
+  .dock-item.on{padding:6px 22px 5px}
 }
 @media (prefers-reduced-motion:reduce){.dock{animation:none}.dock-item,.dock-item.main{transition:none}}
+/* ══════════════ MEASURE, ONCE THE VIEWPORT STOPS BEING A PHONE ══════════════
+   Found while sizing the dock for a tablet, and the same failure one level up: these blocks
+   are RUNNING PROSE in strips whose job is to be full width — the strategy explainer on the
+   board, the desk's note on today's run, the lab's thesis and the tier notes on Research —
+   and a paragraph in a full-width strip is a paragraph as wide as the window. Measured at
+   1280: the strategy strip's "why" ran 979px at 12.5px, about 157 characters to the line;
+   the desk's caveat 151; the lab's timing note 132. Comfortable running text is 45–75, and
+   past roughly 90 the eye stops finding the start of the next line — the line-return error
+   that makes a wide page feel like work.
+
+   The STRIPS still span the width; only the sentences inside them are given a measure. It
+   is capped in `ch` so the cap tracks the type rather than a pixel guess, and it only
+   applies where there is width to give away — a phone is already at its natural measure. */
+@media(min-width:760px){
+  .stgy-lead,.stgy-why,.stgy-exact p,.dp-today-p,.dp-today-w,.dp-today-cav,
+  .lab-today-p,.lab-today-w,.lab-t1,.nss-ctl-x,.rstr-lede,.rstr-note,.rstr-foot{max-width:74ch}
+}
 /* NO APP CHROME WHILE IMMERSED — the Instagram rule.
    Leon, with an IG story as the explicit reference: "the two instructions on the story are
    covered by the bottom bar… let's just remove the bar."
@@ -5435,6 +5480,10 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
 .lab-count.accruing{color:var(--b3);border-color:rgba(var(--bluec),.26);background:rgba(var(--bluec),.08)}
 .lab-count.queued{color:var(--ink3)}
 .lab-count.grave{color:var(--ink3);border-color:var(--line3);background:rgba(var(--slatec),.07)}
+/* SUPERSEDED — a mechanism that used to be the product. Deliberately NOT the graveyard's
+   treatment: these ran, they have real records, and dimming them the way a null result is
+   dimmed would read as "this failed" about work that shipped. Quiet slate, full opacity. */
+.lab-count.past{color:var(--ink2);border-color:var(--line3);background:rgba(var(--slatec),.10)}
 /* masthead freshness line — the status board's heartbeat ("Live status · updated 12m ago").
    Ticks client-side; past 2h the .stale class mutes it to a quiet warn amber. */
 .lab-fresh{display:flex;align-items:center;gap:7px;margin-top:12px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;letter-spacing:.04em;color:var(--ink3)}
@@ -5455,6 +5504,7 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
 .lab-sect.fire .lab-sect-k{color:var(--golddeep)}
 .lab-sect.shipped .lab-sect-k{color:var(--b1)}
 .lab-sect.grave .lab-sect-k{color:var(--ink3)}
+.lab-sect.past .lab-sect-k{color:var(--ink2)}
 .lab-sect-n{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:700;font-size:12px;color:var(--ink4);background:rgba(var(--tintc),.07);border-radius:999px;padding:2px 8px}
 .lab-sect-sub{font-family:var(--sans);font-size:14px;line-height:1.55;color:var(--ink3);margin:4px 0 12px;max-width:560px}
 .lab-grid{display:grid;grid-template-columns:1fr;gap:10px}
@@ -5464,6 +5514,7 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
   border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e0);overflow:hidden;min-width:0}
 .lab-card.fire{background-image:linear-gradient(150deg,rgba(var(--goldc),.09),rgba(var(--rimc),0) 58%)}
 .lab-card.shipped{background-image:linear-gradient(150deg,rgba(var(--bluec),.08),rgba(var(--rimc),0) 58%)}
+.lab-card.past{border-color:var(--line3);background-image:linear-gradient(150deg,rgba(var(--slatec),.07),rgba(var(--rimc),0) 58%)}
 .lab-card.grave{opacity:.68;border-color:var(--line3);box-shadow:none;background:rgba(var(--panec),.5)}
 .lab-card.grave:hover,.lab-card.grave[open]{opacity:.92}
 .lab-card summary{list-style:none;cursor:pointer;padding:13px 14px 12px;min-width:0;position:relative}
@@ -5477,6 +5528,7 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
 .lab-chip.shipped{color:var(--b1);border-color:rgba(var(--bluec),.34);background:rgba(var(--bluec),.10)}
 .lab-chip.accruing{color:var(--b3);border-color:rgba(var(--bluec),.28);background:rgba(var(--bluec),.09)}
 .lab-chip.grave{color:var(--ink3);border-color:var(--line3);background:rgba(var(--slatec),.08)}
+.lab-chip.past{color:var(--ink2);border-color:var(--line3);background:rgba(var(--slatec),.11)}
 .lab-chip svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 /* the pulsing gold "alive" dot */
 .lab-dot{width:6px;height:6px;border-radius:50%;background:var(--golddeep);box-shadow:0 0 0 0 rgba(var(--goldc),.55);animation:labPulse 1.9s ease-out infinite;flex-shrink:0}
@@ -5496,6 +5548,20 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
 .lab-result{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;line-height:1.5;margin-top:7px}
 .lab-result.shipped{color:var(--g3)}
 .lab-result.grave{color:var(--r3)}
+.lab-result.past{color:var(--ink2)}
+/* A CORRECTION ON A ROADMAP CARD. Same amber, same left rule and the same
+   reasoning as `.rp-corr` on a published paper: a correction that reads like a
+   footnote is a correction nobody applies. It sits ABOVE the card's result, so
+   the account of what a study concluded is never read before the note saying
+   that account was wrong. `.lab-corr-chip` puts the flag on the CLOSED face
+   too, because a card nobody opens is where a stale claim hides. */
+.lab-corr{position:relative;margin:2px 0 10px;padding:11px 13px 11px 14px;border-radius:12px;
+  background:rgba(var(--goldc),.1);border:1px solid rgba(var(--goldc),.32);overflow:hidden}
+.lab-corr::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--gold)}
+.lab-corr-k{display:block;font-family:var(--disp);font-weight:800;font-size:9.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--golddeep);margin-bottom:5px}
+.lab-corr p{font-family:var(--sans);font-size:13px;line-height:1.55;color:var(--ink);margin:0}
+.lab-corr-chip{align-self:flex-start;margin-top:5px}
 /* "Latest" IS the status update — a shade heavier than before so it can't be skimmed past;
    one-line clamp on the closed face, full text once the card is open */
 .lab-latest{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink2);margin-top:8px;padding-top:7px;border-top:1px dashed rgba(var(--tintc),.12)}
