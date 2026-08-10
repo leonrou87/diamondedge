@@ -3,7 +3,7 @@
   "status": "production",
   "serving_mode": "star_capped",
   "board_identity": "PREGAME TOTALS PICKS",
-  "generated_utc": "2026-08-10T10:13:02Z",
+  "generated_utc": "2026-08-10T11:11:49Z",
   "dates": [
     "2026-08-10"
   ],
@@ -994,7 +994,7 @@
         "fallback_note": "rows where no stored same-line shopped quote >= median existed \u2014 those rows price at the median. The pick's line never moves (lock rule), so a shopped quote at a DIFFERENT line is never substituted"
       }
     },
-    "record_generated_utc": "2026-08-10T10:13:02Z",
+    "record_generated_utc": "2026-08-10T10:13:03Z",
     "backfill": {
       "n_rows": 153,
       "sources": {
@@ -1070,7 +1070,7 @@
     },
     "n_playable_scores": 539,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-10T09:15:40Z",
+    "generated_utc": "2026-08-10T10:13:03Z",
     "basis": "v3.3 percentile display bands of the (unchanged) v3.2 continuous score over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill). Frozen ABSOLUTE score thresholds for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: non-playable rows stay 1* regardless of score. `certified` (BH significance) is a separate boolean \u2014 no display band claims certification.",
     "bands": "v3.3 percentile display bands of the continuous v3.2 score over playable rows: score >= cutoff_5 -> 5* (top ~10%), >= cutoff_4 -> 4* (next ~25%), >= cutoff_3 -> 3* (next ~35%), else 2*; 1* = non-playable (hard -EV floor). `certified` (BH significance) is a separate boolean \u2014 no star band claims certification.",
     "n_nonplayable_scores": 6121
@@ -1084,7 +1084,7 @@
     "n_playable": 539,
     "n_nonplayable": 6121,
     "walk_id": "42bf55ef-a3fa-4f4a-8c7b-2b7f9b5d6e3f",
-    "generated_utc": "2026-08-10T09:15:40Z",
+    "generated_utc": "2026-08-10T10:13:03Z",
     "basis": "v3.2 frozen season reference: percentile ranks of |model divergence| and EV (0.5/0.5 blend) over ALL playable rows of the season replay (v4 totals grid + champion_v2 2026 backfill); non-playable rows rank in their own frozen distribution (tail-inverted edge measure + pass EV position). Frozen for live serving \u2014 recomputed only when the replay payload regenerates (nightly), never per-day. The -EV floor is hard: no score promotes a non-playable row.",
     "playable": {
       "n": 539,
@@ -2290,17 +2290,17 @@
   },
   "board_census": {
     "n_games": 10,
-    "n_rows": 10,
+    "n_rows": 11,
     "n_voided": 0,
     "n_playable": 0,
     "n_takes": 0,
-    "n_passes": 10,
+    "n_passes": 11,
     "stars": {
       "5": 0,
       "4": 0,
       "3": 0,
       "2": 0,
-      "1": 10
+      "1": 11
     }
   },
   "spread_stream": {
@@ -2365,16 +2365,16 @@
         "line": -1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": 115,
+        "price": 107,
         "best_book": null,
         "stars": 1,
-        "score": 1.69,
-        "our_prob": 0.522,
-        "ev": 0.0277,
+        "score": 0.88,
+        "our_prob": 0.5118,
+        "ev": 0.0106,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -2730,22 +2730,22 @@
         "side": "under",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.4692,
-        "p_over_market": 0.4821,
-        "sim_edge": -0.0128,
-        "price": -111.0,
+        "p_over": 0.466,
+        "p_over_market": 0.4839,
+        "sim_edge": -0.018,
+        "price": -113.0,
         "best_book": "onexbet",
         "stars": 1,
         "score": null,
-        "sim_mu": 8.618,
+        "sim_mu": 8.602,
         "sim_median": 8,
-        "sim_sd": 4.254,
+        "sim_sd": 4.239,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -2756,7 +2756,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Boston Red Sox-Toronto Blue Jays-822780",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "823018": {
@@ -3175,12 +3176,12 @@
         "side": "over",
         "line": 8.5,
         "vegas_line": 8.5,
-        "p_over": 0.4954,
-        "p_over_market": 0.4821,
-        "scout_edge": 0.0134,
-        "conviction": 0.4954,
-        "price": 105.0,
-        "best_book": "bovada",
+        "p_over": 0.4927,
+        "p_over_market": 0.4839,
+        "scout_edge": 0.0088,
+        "conviction": 0.4927,
+        "price": 104.0,
+        "best_book": "onexbet",
         "stars": null,
         "score": null,
         "n_train": 11192,
@@ -3193,12 +3194,12 @@
           "pen_home_era_std": 3.2095,
           "pen_away_era_std": 2.6895,
           "enr_park_run_factor_3y": 0.9996,
-          "wx_temp_f": 83.66
+          "wx_temp_f": 80.06
         },
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-30",
         "is_new_stream": true,
@@ -3209,7 +3210,8 @@
         "date": "2026-08-10",
         "game_id": "2026-08-10-Boston Red Sox-Toronto Blue Jays-822780",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "823018": {
@@ -4708,7 +4710,8 @@
       "home": "Toronto Blue Jays",
       "first_pitch_utc": "2026-08-10T23:07:00+00:00",
       "walls_populated": [
-        "T-24h"
+        "T-24h",
+        "T-12h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -4729,6 +4732,28 @@
             "one_sided": false
           },
           "best_book": "bovada",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-12h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 410,
+            "one_sided": false
+          },
+          "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
           "premium_locked": true,

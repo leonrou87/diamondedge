@@ -1945,7 +1945,7 @@ export default function Home() {
         <div class="ad-house" role="button" tabindex="0" aria-label="Go premium — ad-free with every DiamondEdge Pick">
           <span class="ad-house-mark" aria-hidden="true">◆</span>
           <span class="ad-house-tx"><b>Go ad-free — and unlock every DiamondEdge Pick</b><i>Premium members see zero ads and the full board.</i></span>
-          <span class="ad-house-cta">Upgrade</span>
+          <span class="ad-house-cta">${unlockCtaTxt()}</span>
         </div>
       </aside>`;
     }
@@ -9387,7 +9387,7 @@ export default function Home() {
         : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-callrow${locked ? " haslock" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>Unlock</i></span>` : passMark}</div>
+             <div class="tv-callrow${locked ? " haslock" : passMark ? " haspass" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>Unlock</i></span>` : passMark}</div>
              ${liveCash}
            </div>`
         : incoming
@@ -10663,6 +10663,16 @@ export default function Home() {
          (the game page, the featured card) need none of this: one mark restarting is not an
          event, it is a mark. */
       body.style.setProperty("--de-orbit-t", `${-(((typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000) % 13).toFixed(3)}s`);
+      // League-rail counts must track the SELECTED date, not the last one rendered. The
+      // future+empty branch inside returns early — before the tail that used to be the ONLY
+      // place counts repainted — so a schedule-only day (browsing ahead to a date whose slate
+      // has not loaded) kept showing today's "MLB 10" over an empty schedule card. Every path
+      // that resolves a view repaints through this one helper now (defined out here so both the
+      // early-return branch and the has-games tail can reach it).
+      const paintRailCounts = () => {
+        const cntSrc = payload || (curDate > todayISO() ? livePayload : null);
+        ["all", ...SPORTS].forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = cntSrc ? gamesForLeague(cntSrc, lg).length : 0; el.textContent = c || ""; } });
+      };
       {
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         const isFuture = curDate > todayISO();
@@ -10708,7 +10718,7 @@ export default function Home() {
         if (!games.length) {
           // Early-return states still need their chrome bound (record chip / All picks /
           // How-picks-work went DEAD on future+empty dates before this).
-          if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); bindMeta(); return; }
+          if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); paintRailCounts(); bindMeta(); return; }
           /* COULD NOT LOAD ≠ NOTHING TO SHOW. These two branches were one branch, and the one
              sentence it printed — "Nothing's loaded for Tuesday, August 4" — blamed the date
              for a database outage. The reader's next move is completely different in the two
@@ -10778,9 +10788,9 @@ export default function Home() {
             <div class="refnote">${nAll}${esc(lgSuffix)} game${nAll > 1 ? "s" : ""} · ${esc(dispDate)}${ppdGames.length ? ` · ${ppdGames.length} postponed` : ""}</div>`;
         }
       }
-      // League counts — from the loaded snapshot, or the live board when browsing a future date.
-      const cntSrc = payload || (curDate > todayISO() ? livePayload : null);
-      ["all", ...SPORTS].forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = cntSrc ? gamesForLeague(cntSrc, lg).length : 0; el.textContent = c || ""; } });
+      // League counts — from the loaded snapshot, or the live board when browsing a future
+      // date. Repainted through the same helper the early-return branches use (defined above).
+      paintRailCounts();
       bindMeta();
       bindCards();
       startCountdowns();
@@ -12738,6 +12748,14 @@ export default function Home() {
     function oddsWallTable(g: any) {
       const w = totalWalls(g);
       if (!w.length) return "";
+      /* HOLD UNTIL THERE IS A PRICE TO SHOW (2026-08-10). Early pregame this served a
+         single T-24h row whose Best-price cell was a bare "—", under a footer promising
+         "the best price we could find, which side that price was for" — a column of one
+         dash under a caption describing a column. It read as data that failed to load.
+         The current total is already on the line card above; this table earns its space
+         only once a book has posted a price. */
+      const priced = w.filter((x: any) => x.price != null).length;
+      if (!priced) return "";
       const rows = w.map((x: any) => `<tr>
         <td class="owt-w">${esc(x.wall)}</td>
         <td class="owt-l">${esc(lineStr(x.line))}</td>
@@ -12751,7 +12769,9 @@ export default function Home() {
       return `<div class="owt-wrap"><table class="owt">
         <thead><tr><th>Check</th><th>Total</th><th>Best price</th><th>Book</th></tr></thead>
         <tbody>${rows}</tbody></table>
-        <p class="owt-foot">At each check: the total, the best price we could find, which side that price was for, and the book showing it. The side moves as the market does, so the prices down this column are not all for the same bet.</p>
+        <p class="owt-foot">${w.length === 1
+          ? `The total and the best price we found at the ${esc(w[0].wall)} check, and the book showing it.`
+          : `At each check: the total, the best price we could find, which side that price was for, and the book showing it. The side moves as the market does, so the prices down this column are not all for the same bet.`}</p>
       </div>`;
     }
     // The raw served pregame_line block (n_books / open / move live here, not on pregameLine()).
@@ -13140,7 +13160,7 @@ export default function Home() {
       const previewBlock = leadLocked
         ? `<div class="whycard">
             <div class="wc-k">Game preview</div>
-            <p>The write-up on this game — the two starters, where the total opened and where it is now, and the measured facts behind the call — is part of DiamondEdge Premium. The quality rating above is the real one.</p>
+            <p>The write-up on this game — the two starters, where the total opened and where it is now, and the measured facts behind the call — is part of DiamondEdge Premium.</p>
           </div>`
         /* AN EMPTY CARD IS WORSE THAN NO CARD. On a game the backend has not written a
            preview for yet — every game on the board before the morning serve — bodyParas,
@@ -13332,7 +13352,13 @@ export default function Home() {
               renders NOTHING on a dome or on a game with no wall-legal reading, so this line
               adds no heading to a page that has no weather to put under it. */ ""}
         ${vizWeather(g)}
-        ${vizTeamRecords(g) || vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Team performance</h3>${vizTeamRecords(g)}${vizFormStrip(g)}</section>` : ""}
+        ${/* NO "RECORDS & FORM" CARD HERE (2026-08-10). Each side's season record and
+              streak already sit in the game header above (heroForm) AND in the served
+              preview prose — this card was the same two numbers a third time on one
+              screen. Removed; the header is the canonical, always-present version. What
+              stays is the totals trend, which is a different fact (how the OVER/UNDER has
+              gone lately), retitled so the heading matches what is under it. */""}
+        ${vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Recent totals</h3>${vizFormStrip(g)}</section>` : ""}
         ${!leadLocked && (vizPredScore(g) || vizWinProb(g)) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
         ${vizH2H(g) ? `<section class="st-sec"><h3 class="st-h">Head to head</h3>${vizH2H(g)}</section>` : ""}
         ${intelSection(g)}
@@ -16821,6 +16847,13 @@ export default function Home() {
             <h2>Join DiamondEdge</h2>
             <p>Save your preferences and unlock Premium. The record stays public; Premium reveals the picks and the reasoning behind them.</p>
           </div>
+          <!-- THE SIGNUP GATE, ABOVE THE BUTTONS IT GATES (2026-08-10). A checkbox that
+               must be ticked before any provider button will complete — so it belongs
+               where the reader meets it BEFORE reaching for a button, not stacked under
+               every CTA where, at 375px, the floating dock half-covered it on first paint
+               and "Continue with Google" was tappable before the consent copy was ever
+               on screen. Consent is explicit and recorded (de_terms, versioned). -->
+          <label class="terms-check sgn-check"><input type="checkbox" id="sgn-terms"${termsAccepted() ? " checked" : ""}><span>I have read and agree to the <button class="terms-link" id="sgn-terms-open" type="button">Terms &amp; Disclaimer</button>. I understand DiamondEdge is for entertainment and information only, is not financial, investment or betting advice, and that I am solely responsible for any decision I make. 21+ where applicable.</span></label>
           <div class="sgn-socials">
             ${social("google")}${social("apple")}${social("facebook")}${social("x")}
           </div>
@@ -16829,10 +16862,6 @@ export default function Home() {
             <input type="email" id="sgn-mail" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required>
             <button type="submit" class="sgn-emailbtn">Continue with email</button>
           </form>
-          <!-- THE SIGNUP GATE. Not a link buried under a button — a checkbox that must be
-               ticked before any provider button will complete, so consent is explicit and
-               recorded (de_terms, versioned). -->
-          <label class="terms-check sgn-check"><input type="checkbox" id="sgn-terms"${termsAccepted() ? " checked" : ""}><span>I have read and agree to the <button class="terms-link" id="sgn-terms-open" type="button">Terms &amp; Disclaimer</button>. I understand DiamondEdge is for entertainment and information only, is not financial, investment or betting advice, and that I am solely responsible for any decision I make. 21+ where applicable.</span></label>
           <div class="sgn-legal">Play responsibly. In the US, call or text 1-800-GAMBLER for free, confidential support.</div>
         </div>`;
       bindClick("sgn-close", () => { if (isSignedIn()) { accountMode = "menu"; renderAccount(); } else switchTab("today"); });
@@ -17312,7 +17341,7 @@ export default function Home() {
         title, cat,
         flagship: x.flagship === true || x.is_flagship === true || cat === FLAGSHIP_CAT,
         subtitle: str(x.subtitle),
-        authors: str(x.author || x.authors) || "KytePush Research",
+        authors: str(x.author || x.authors) || "DiamondEdge Research",
         date: str(x.date || x.published).slice(0, 10),
         abstract: str(x.abstract) || str(x.summary),
         sections: arr(x.sections).map((s: any) => ({
@@ -17805,7 +17834,7 @@ export default function Home() {
         <div class="gamepage paperpage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(pp.title)}">
           <div class="gp-head">
             <button class="gp-back" id="gp-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <span class="gp-brand-tx">KytePush Research</span>
+            <span class="gp-brand-tx">DiamondEdge Research</span>
             <div class="hspacer"></div>
           </div>
           <div class="gp-body" id="gp-body">
@@ -18966,7 +18995,7 @@ export default function Home() {
                THE ORDER IS A JOURNAL'S ORDER: masthead → the flagship paper → the library by
                category → the null-results credential → working notes → the archive. -->
           <header class="labmast">
-            <div class="labmast-id">KytePush Research</div>
+            <div class="labmast-id">DiamondEdge Research</div>
             <h2 class="labmast-h">The lab behind DiamondEdge</h2>
             <!-- ═══ THE MASTHEAD STOPPED SELLING AND STARTED SAYING (2026-08-09) ═══
                  It opened: "A working research group applying CUTTING-EDGE MACHINE LEARNING
@@ -19411,8 +19440,12 @@ export default function Home() {
         scopeRow("Today", "", dailyRecordSince(today), zeroScopeTxt(true)),
         scopeRow(monthName, "this month", dailyRecordSince(monthStart), zeroScopeTxt(false)),
       ];
-      // "since July 1" is only its own row when it is a wider window than the month
-      if (since < monthStart) rows.push(scopeRow(`Since ${stratDateTxt(since).replace(/,\s*\d{4}$/, "")}`, "every pick we have published", dailyRecordSince(since)));
+      // NO "SINCE JUL 1" ROW HERE (2026-08-10). The hero masthead directly above this
+      // list IS the since-July-1 record — same window, same W–L–P, same units and hit
+      // rate, by construction (both read `headline.start`). Printing it again one scroll
+      // down was the headline number, restated smaller: the exact element-level dup this
+      // pass exists to kill. The hero owns that window because it is bigger and first;
+      // these rows carry the cuts it does NOT show — today, this month, and all-time.
       const all = dailyRecordSince("1900-01-01");
       if (all.w + all.l > dailyRecordSince(since).w + dailyRecordSince(since).l) {
         rows.push(scopeRow("All time", "every graded pick on record", all));

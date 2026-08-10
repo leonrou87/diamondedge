@@ -3444,6 +3444,11 @@ details.more .more-body{padding-top:12px}
    somewhere to be. (A marker class rather than `:has()`, so the rule does not depend on
    selector support.) */
 .tl-verdict .tv-callrow.haslock .de-mini-pick.dmp-tile{width:auto;flex:1 1 auto;min-width:0}
+/* A PASS tile shares its row with the "No bet" mark exactly as a locked tile shares
+   it with the Unlock chip. Without this the pick unit keeps its default width:100%
+   (flex:0 0 auto) and shoves "No bet" past the tile's clipped right edge — the mark
+   rendered as "N" on every free tile (2026-08-10). Same shrink the lock path got. */
+.tl-verdict .tv-callrow.haspass .de-mini-pick.dmp-tile{width:auto;flex:1 1 auto;min-width:0}
 .de-mini-pick.dmp-tile.locked .dmp-right{flex:0 0 auto}
 .de-mini-pick.dmp-tile .de-mini-redact{width:26px}
 /* tabular figures so a percent ticking 8% → 48% never jitters the row's geometry */
@@ -10643,9 +10648,9 @@ table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
       between a column of gold UNLOCK chips — nothing withheld, nothing claimed,
       and to the eye a tile whose pick failed to load. No upsell (nothing is
       being sold), just the mark that says the desk read it and did not bet it. */
-.tv-nobet{margin-left:auto;flex:0 0 auto;font-family:var(--disp);font-weight:700;
-  font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4);
-  white-space:nowrap}
+.tv-nobet{margin-left:auto;flex:0 0 auto;min-width:max-content;font-family:var(--disp);
+  font-weight:700;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink4);white-space:nowrap}
 
 /* 4. THE ACCESS CODE. The only control on the checkout screen that does
       anything, and it says so in its own copy rather than in a comment. */

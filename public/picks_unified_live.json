@@ -4,7 +4,7 @@
   "status": "production",
   "board": "live",
   "board_identity": "THE DIAMONDEDGE PICK \u2014 one pick per game",
-  "generated_utc": "2026-08-10T10:18:39Z",
+  "generated_utc": "2026-08-10T10:37:45Z",
   "dates": [
     "2026-08-10"
   ],
@@ -8987,7 +8987,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-10T10:18:40Z",
+      "updated": "2026-08-10T10:38:10Z",
       "order": [
         "vega",
         "atlas",
