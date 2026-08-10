@@ -1362,6 +1362,39 @@ export default function Home() {
       const half = w.startsWith("top") ? "top" : w.startsWith("mid") ? "mid" : w.startsWith("bot") ? "bot" : "end";
       return { inning: inn, half, rank: HALF_RANK[half] };
     }
+    /* ═══════ …AND ONE WRITER OF IT. `parseClock` READS; `inningLabel` WRITES ═══════
+       Leon, 2026-08-09: "sometimes game details will say it's the end of the sixth inning
+       whereas the main page will say it's the bottom of the sixth still. Please get these
+       in sync much better."
+
+       Reading every spelling (above) made the app tolerant of the mess; it did not stop the
+       mess being produced. THREE writers were minting the label independently:
+         · the `live_scores` collector          → "Bot 6th"
+         · `adoptMlbLive`, from MLB's linescore → `${inningState} ${ordinal}` = "Bottom 6th"
+         · `live_detail`, which published MLB's raw `inningState` and no label at all
+       So the SAME game's chip changed wording the moment a reader opened its page (which is
+       what wires up the MLB box fetch), and "End 6th" vs "Bot 6th" — a genuine difference of
+       STATE, the side retired or still batting — was indistinguishable from "Bottom" vs
+       "Bot", which is a difference of nothing.
+
+       The two collectors were fixed at the root the same day (picks_engine/inning_state.py:
+       one function, both feeds publish the identical string). This is that function's twin
+       on this side, for the one writer that derives the label in the browser. After it,
+       every label on every surface is minted in exactly two places that agree by
+       construction, and a difference between the board and the game page can only ever mean
+       THE GAME MOVED — which is the only difference a reader should have to interpret.
+
+       It returns "" rather than a partial label: a half with no inning ("Bot") is not a
+       clock reading, and printing it would be inventing precision the feed did not give. */
+    const HALF_WORD: Record<string, string> = { top: "Top", mid: "Mid", bot: "Bot", end: "End" };
+    const HALF_KEY: Record<string, string> = {
+      top: "top", middle: "mid", mid: "mid", bottom: "bot", bot: "bot", end: "end",
+    };
+    function inningLabel(halfRaw: any, ordinal: any) {
+      const k = HALF_KEY[String(halfRaw == null ? "" : halfRaw).trim().toLowerCase()];
+      const ord = String(ordinal == null ? "" : ordinal).trim();
+      return k && ord ? `${HALF_WORD[k]} ${ord}` : "";
+    }
     // Fractional innings completed — derived from the one clock reading, never re-parsed.
     function inningsDone(gs: any) {
       const c = parseClock(gs && gs.label);
@@ -5872,7 +5905,17 @@ export default function Home() {
       bindClick("gp-back", () => closeDetail());
       bindSwipeBack($("gamepage"));
     }
-    // one delegated click for every pitcher chip/line anywhere in the app
+    /* ONE DELEGATED CLICK FOR EVERY PITCHER CHIP, AND IT NOW OPENS THE ONE PLAYER CARD.
+       This used to call `openPitcherSheet` — a full-page destination with its own hero, its
+       own history entry and its own recent-starts table, i.e. a SECOND player renderer that
+       knew about starters and nothing else. The unified card (see `openPlayerCard`) draws the
+       same game log plus the season line, the day's line, the headshot and the tracked-pitch
+       block, from the same feed, over the game rather than instead of it. So the chip routes
+       here and the old sheet has no callers left.
+
+       It falls back to the old sheet ONLY when there is no game page underneath to layer
+       over — a chip on a surface that is not a game — because a bottom sheet with nothing
+       behind it is a page wearing a sheet's clothes. */
     document.addEventListener("click", async (e: any) => {
       const el = e.target && e.target.closest && e.target.closest("[data-pitcher]");
       if (!el) return;
@@ -5880,7 +5923,10 @@ export default function Home() {
       const [gid, side] = String(el.dataset.pitcher).split("|");
       await loadPitchers();
       const P = pitcherFeedFor({ game_id: gid, game_pk: gid }, side as "away" | "home");
-      if (P) openPitcherSheet(P);
+      if (!P) return;
+      const g = detail && detail.game_id != null ? detail : null;
+      if (g && P.id != null && openPlayerCard(P.id, g)) return;
+      openPitcherSheet(P);
     }, true);
 
     // (e) Pitcher line chips (MLB): starter + ERA as compact chips — tap for the game log.
@@ -5898,7 +5944,9 @@ export default function Home() {
       };
       const a = chip(g.away_abbr, "away"), h = chip(g.home_abbr, "home");
       if (!a && !h) return "";
-      return `<div class="pvz"><div class="pvz-h">${icon("pitcher", "sm")}On the mound — tap for recent starts</div><div class="pit-row">${a}${h}</div></div>`;
+      // the chip opens the player card now, not the retired pitcher page — so the invitation
+      // names what is actually behind it rather than only the game log
+      return `<div class="pvz"><div class="pvz-h">${icon("pitcher", "sm")}On the mound — tap either name</div><div class="pit-row">${a}${h}</div></div>`;
     }
 
     // The full data-visual rail for a preview: assemble whichever visuals have data.
@@ -6289,16 +6337,76 @@ export default function Home() {
       if (!a || !h || a.runs == null || h.runs == null) return false;
       const away = Number(a.runs), home = Number(h.runs);
       if (!isFinite(away) || !isFinite(home)) return false;
-      const label = ls.inningState && ls.currentInningOrdinal ? `${ls.inningState} ${ls.currentInningOrdinal}` : "";
+      // THE ONE VOCABULARY (see `inningLabel`). This used to write MLB's own words
+      // straight through — "Bottom 6th", "Middle 6th" — a third spelling of a fact the
+      // two collectors already publish as "Bot 6th" / "Mid 6th", and the reason a card's
+      // wording changed the moment its game page was opened.
+      const label = inningLabel(ls.inningState, ls.currentInningOrdinal);
       const ca = g.current_actuals || (g.current_actuals = {});
       if (!liveAtLeast(liveProgressKey(label, away + home), caKey(ca))) return false;
-      const changed = ca.away_score !== away || ca.home_score !== home || (!!label && ca.period_label !== label);
+      let changed = ca.away_score !== away || ca.home_score !== home || (!!label && ca.period_label !== label);
       ca.away_score = away; ca.home_score = home;
       if (label) ca.period_label = label;
       ca.total_so_far = away + home;
       // the frozen pregame ticket's live progress fill reads the same fact (contract §"live")
       if (g.display_pick && g.display_pick.progress) g.display_pick.progress.total_so_far = ca.total_so_far;
+      // THE SITUATION MOVES WITH THE SCORE, OR THE CARD BEHIND THE PAGE GOES STALE.
+      // `current_actuals.outs/balls/strikes/on_Nb` is what the BOARD CARD draws, and until
+      // now only the `live_scores` snapshot ever wrote it. So a reader standing on a game
+      // page — where MLB's own document is being polled on a 25s floor — could back out to
+      // a card still showing the previous at-bat, for as long as the collector took to
+      // catch up. Same document, same instant, same fields: the strip above the line score
+      // and the card behind it are now one observation.
+      // DELETED, NEVER LEFT BEHIND, between innings. MLB reports 3 outs and a 0-0 count
+      // through every break and keeps a retired half's runners on `offense`, so a break is
+      // the ABSENCE of a situation — and a card still drawing men on base through the
+      // seventh-inning stretch is the exact bug the at-bat gate exists to prevent.
+      const stSit = liveSituation(g, ls);
+      if (stSit && !stSit.between && stSit.outs != null) {
+        ca.outs = stSit.outs; ca.on_1b = stSit.on1; ca.on_2b = stSit.on2; ca.on_3b = stSit.on3;
+        if (stSit.balls != null && stSit.strikes != null) { ca.balls = stSit.balls; ca.strikes = stSit.strikes; }
+        else { delete ca.balls; delete ca.strikes; }
+        changed = true;
+      } else if (stSit) {
+        ["outs", "balls", "strikes", "on_1b", "on_2b", "on_3b"].forEach((k) => { if (ca[k] != null) { delete ca[k]; changed = true; } });
+      }
       return changed;
+    }
+    /* THE THIRD CLOCK, UNDER THE SAME GUARD (Leon, 2026-08-09 — the sync brief).
+       `live_detail` is a SEPARATE collector from `live_scores`: its own launchd job, its own
+       poll cadence (40s vs 20s), its own fetch of MLB's linescore. The game page has read it
+       for the box score since it existed — and it was the one live clock in the app whose
+       reading was never allowed to advance the shared fact. So on a game page the strip could
+       be drawn from a `live_detail` that had seen the third out while the hero directly above
+       it, and the card behind it, still read the previous half from an older `live_scores`.
+       Two feeds, one game, one paint, two innings.
+
+       Now it writes like the other two: through `liveAtLeast`, so it can move the fact
+       FORWARD and can never drag it back, and through the label the collector already
+       publishes — `current.period_label`, which since picks_engine/inning_state.py is
+       character-for-character the string `live_scores` publishes. The page therefore prefers
+       whichever of the two feeds is FURTHER ALONG rather than whichever it happens to own,
+       which is the only honest resolution when two independent pollers tick on their own
+       clocks: a skew is bounded by one poll interval and never by which surface you are on.
+
+       It writes nothing at all when the collector's own label is absent — an inning is not
+       inferred from a box score's shape. */
+    function adoptLiveDetail(g: any) {
+      if (!g) return false;
+      const d = liveDetailFor(g);
+      const cur = d && d.current ? d.current : null;
+      if (!cur) return false;
+      if (gameState(g).kind !== "live") return false;
+      const label = cur.period_label
+        ? String(cur.period_label)
+        : inningLabel(cur.half, cur.inning_label);
+      if (!label) return false;
+      const ca = g.current_actuals || (g.current_actuals = {});
+      const runs = ca.total_so_far != null ? Number(ca.total_so_far) : null;
+      if (!liveAtLeast(liveProgressKey(label, runs), caKey(ca))) return false;
+      if (ca.period_label === label) return false;
+      ca.period_label = label;
+      return true;
     }
     // game_id -> {n runs, side, at} — run events recorded by overlayInto, painted (and
     // consumed) by flashRunScored after the next re-render.
@@ -6383,6 +6491,27 @@ export default function Home() {
           delete cad.outs; delete cad.balls; delete cad.strikes;
           changed = true;
         }
+        /* AND THE BASES, ON THE SAME TERMS (Leon, 2026-08-09: the diamond on the cards).
+           `live_scores` began carrying `on_1b/on_2b/on_3b` the same day — they were already
+           in the hydrated schedule response under `linescore.offense`, where MLB lists a
+           base ONLY when it is occupied, so an absent key is a genuinely empty bag and
+           there is nothing to disbelieve.
+
+           THEY ARE THEIR OWN GATE, not the count's. A snapshot can carry the bases and not
+           the count (four balls means the plate appearance is over and the count is dropped
+           at source), and a card that hid its runners because the count went missing would
+           be discarding a fact it holds. So the diamond and the count degrade separately —
+           and, like everything else in this block, the keys are DELETED rather than left
+           behind the moment the snapshot stops carrying them, because runners frozen on
+           base through the seventh-inning stretch is the same lie in a different suit. */
+        const hasBases = ls.on_1b != null && ls.on_2b != null && ls.on_3b != null;
+        if (hasBases) {
+          if (cad.on_1b !== !!ls.on_1b || cad.on_2b !== !!ls.on_2b || cad.on_3b !== !!ls.on_3b) changed = true;
+          cad.on_1b = !!ls.on_1b; cad.on_2b = !!ls.on_2b; cad.on_3b = !!ls.on_3b;
+        } else if (cad.on_1b != null || cad.on_2b != null || cad.on_3b != null) {
+          delete cad.on_1b; delete cad.on_2b; delete cad.on_3b;
+          changed = true;
+        }
         if (ls.home_score != null && ls.away_score != null) {
           const ca = g.current_actuals || (g.current_actuals = {});
           const tsf = ls.total_so_far != null ? ls.total_so_far : Number(ls.home_score) + Number(ls.away_score);
@@ -6455,6 +6584,44 @@ export default function Home() {
     // runs count-ups). Cache it: only re-render on an actual data change, not on every tab
     // flip — so switching tabs is instant instead of re-parsing a huge HTML string each time.
     let todayFresh = false;
+    /* ═══════ THE BOARD BEHIND THE OPEN PAGE (Leon, 2026-08-09 — the sync brief) ═══════
+       "Sometimes game details will say it's the end of the sixth inning whereas the main
+       page will say it's the bottom of the sixth still."
+
+       Here is the second half of how that happened, and it is not the vocabulary problem the
+       collectors had. A game page polls MLB's own document on a 25s floor and the
+       `live_detail` snapshot on ~40s; both now advance the shared `current_actuals`. The
+       BOARD was only ever repainted by the `live_scores` poller. So a reader could stand on
+       a page whose hero had seen the third out, back out, and land on a card still rendering
+       the previous half — from the same object, in the same tab, because nothing had asked
+       that card to redraw.
+
+       This repaints the one tile in place: its state chip (which is where the inning, the
+       diamond, the outs and the count all live) and its two score digits. NOT `renderSlate`
+       — a full board rebuild under an open sheet is a white flash and a GPU-memory spike on
+       a phone, and this app has already had one crash from over-painting. One chip, one
+       queried element, no layout beyond the row.
+
+       It is deliberately silent when the tile is not on the board: a reader who arrived on a
+       ?g= URL has no board to keep in step, and building one to update it would be absurd. */
+    function repaintTileState(g: any) {
+      if (!g || g.game_id == null) return;
+      const tile = root.querySelector(`.tile[data-gid="${CSS.escape(String(g.game_id))}"]`) as any;
+      if (!tile) return;
+      const gs = gameState(g);
+      const chip = tile.querySelector(".statechip");
+      if (chip) {
+        const html = safeHtml("tile state chip", () => stateChip(g, gs), "");
+        if (html) chip.outerHTML = html;
+      }
+      // the digits too — the inning and the score advance together, and a chip that moved
+      // past a score still showing the previous run total is the same disagreement one row up
+      if (gs.score && gs.score.split && gs.score.home != null) {
+        const digits = tile.querySelectorAll(".t-score");
+        if (digits[0]) digits[0].textContent = num(gs.score.away, 0);
+        if (digits[1]) digits[1].textContent = num(gs.score.home, 0);
+      }
+    }
     function refreshLiveViews() {
       // THE 30-SECOND OFFENDER. This runs on every live-scores poll — on a live afternoon
       // that was a full deck rebuild under the reader twice a minute, and on a phone each
@@ -6543,6 +6710,16 @@ export default function Home() {
       const gs = gameState(g);
       const el = page.querySelector(".gp-center");
       if (el && gs.score && gs.score.split && gs.score.home != null) el.innerHTML = heroScoreHtml(gs);
+      /* THE SITUATION REPAINTS WITH THE SCORE, because it is part of the score (see the
+         scorebug note in the hero builder). The count moves on every pitch and the bases on
+         every hit — an inning behind on either is more obviously wrong than a stale run
+         total, since a reader can see the diamond is not describing the game they are
+         watching. Emptied rather than left alone when the game is no longer live, so a
+         final never keeps the last at-bat frozen under its score. */
+      const sit = page.querySelector("#gp-sit");
+      if (sit) sit.innerHTML = gs.kind === "live" && !gs.delayed
+        ? safeHtml("hero situation", () => bxStateStrip(g, (mlbBoxFor(g) || {}).ls), "")
+        : "";
     }
     function refreshSheetScore(g: any) {
       const page = $("gamepage"); if (!page) return;
@@ -7331,6 +7508,49 @@ export default function Home() {
        one thing in that row a reader on a board they chose the sport for already knows. On
        the narrowest phones the tag's text hides and the row holds; it never wraps, and no
        other element moved to make room. */
+    /* ═══════ AND THE DIAMOND, AT CHIP SCALE (Leon, 2026-08-09) ═══════
+       "See if there's any creative way to add the diamond with the base runners — the thing
+       we have on the details page — on the main page as well, on the cards, if at all
+       possible."
+
+       At 375px this row genuinely is the tightest real estate in the app, and it has been
+       fought back onto one line twice. So the honest answer was not to shrink the game page's
+       diamond: that object is 48px, carries a home plate for orientation and outlines every
+       empty bag, and at 14px all three of those become grey mush. What fits is a DIFFERENT
+       DRAWING OF THE SAME FACT — three dots in the arrangement everyone already reads, second
+       at the top, third at the left, first at the right:
+
+         · 13px wide. Less than the two count digits beside it, and it costs the row 18px
+           including its gap — which is why the diamond is the first element to hide on the
+           narrowest phones, ahead of the outs and the count that Leon asked for first.
+         · NO home plate and NO labels. At this size the plate reads as a fourth runner, which
+           is worse than no orientation at all; the triangle's own shape is the orientation.
+         · An empty bag is a faint outline, an occupied one solid. The outline is not
+           decoration — without it a lone mark at the top could be second base or could be the
+           only base this glyph draws, and the reader cannot tell which.
+         · BAGS ARE SQUARES; OUTS ARE CIRCLES. Drawn as dots the first time, and the row then
+           read as six near-identical marks in a line — the eye could not find the seam
+           between "who is on base" and "how many are out", which is two facts pretending to
+           be one. Different shapes is not styling here, it is the only thing separating
+           them: a rotated square is a BAG, which is why every scoreboard in the sport draws
+           it that way and why the game page's 48px diamond already did. */
+
+    /* IT DRAWS ONLY WHAT IT WAS TOLD. `live_scores` publishes `on_1b/on_2b/on_3b` from MLB's
+       `linescore.offense`, where a base has no key unless it is occupied, and only during a
+       live at-bat (picks_engine/live_scores.py). Miss any of the three and the glyph is
+       absent while the outs and the count stay — the row degrades a piece at a time, and an
+       absent base is never rendered as an empty one. */
+    function tileBases(ca: any) {
+      if (!ca || ca.on_1b == null || ca.on_2b == null || ca.on_3b == null) return { svg: "", said: "" };
+      const on1 = !!ca.on_1b, on2 = !!ca.on_2b, on3 = !!ca.on_3b;
+      // a 3.1pt square rotated 45° is 4.4pt across — the same silhouette as the game page's
+      // bags at a ninth of the area, and unmistakably not one of the round out pips beside it
+      const bag = (cx: number, cy: number, on: boolean) =>
+        `<rect x="${cx - 1.55}" y="${cy - 1.55}" width="3.1" height="3.1" rx=".5" transform="rotate(45 ${cx} ${cy})" class="${on ? "on" : ""}"/>`;
+      const svg = `<svg class="ts-bd" viewBox="0 0 14 12" width="13" height="11" aria-hidden="true">${bag(7, 3.4, on2)}${bag(2.9, 7.8, on3)}${bag(11.1, 7.8, on1)}</svg>`;
+      const named = [on1 ? "first" : "", on2 ? "second" : "", on3 ? "third" : ""].filter(Boolean);
+      return { svg, said: named.length ? `runners on ${named.join(", ")}` : "bases empty" };
+    }
     function tileSituation(g: any) {
       const ca = (g && g.current_actuals) || {};
       if (ca.outs == null || ca.balls == null || ca.strikes == null) return "";
@@ -7338,11 +7558,12 @@ export default function Home() {
       const b = Number(ca.balls), s = Number(ca.strikes);
       if (!isFinite(outs) || !isFinite(b) || !isFinite(s)) return "";
       const pips = [0, 1, 2].map((i) => `<i class="${i < outs ? "on" : ""}"></i>`).join("");
-      const word = `${outs} out${outs === 1 ? "" : "s"}, ${b}-${s} count`;
-      // role="img" + aria-label, not a bare label on a span: the pips and the two digits are
-      // a picture of the situation, and a reader that cannot see it should hear the sentence
-      // ("2 outs, 1-2 count") rather than the digits on their own.
-      return `<span class="t-sit" role="img" title="${esc(word)}" aria-label="${esc(word)}"><span class="ts-outs" aria-hidden="true">${pips}</span><b aria-hidden="true">${b}-${s}</b></span>`;
+      const bases = tileBases(ca);
+      const word = [bases.said, `${outs} out${outs === 1 ? "" : "s"}`, `${b}-${s} count`].filter(Boolean).join(", ");
+      // role="img" + aria-label, not a bare label on a span: the dots, the pips and the two
+      // digits are a picture of the situation, and a reader that cannot see it should hear
+      // the sentence ("runners on first, second, 2 outs, 1-2 count") rather than the digits.
+      return `<span class="t-sit" role="img" title="${esc(word)}" aria-label="${esc(word)}">${bases.svg}<span class="ts-outs" aria-hidden="true">${pips}</span><b aria-hidden="true">${b}-${s}</b></span>`;
     }
     function stateChip(g: any, gs: any) {
       /* THE DELAY IS THE CHIP. A card whose only state word is "Top 2nd" tells a reader the
@@ -10468,6 +10689,301 @@ export default function Home() {
       return (row.lob || row.risp || row.pen || row.strikes) ? row : null;
     }
 
+    /* ══════════════════════════════════════════════════════════════════════════════
+       THE PLAYER CARD — EVERY NAME IN THE APP BECOMES A TAP
+       ──────────────────────────────────────────────────────────────────────────────
+       Leon, 2026-08-09: "see if you can add images for all players and pitchers, and make
+       it so that for any of them you can click on them and see their performance and lots
+       of interesting data on them. DON'T GO AND FIND NEW DATA FOR THIS — just see if you
+       have existing data — but make all that stuff clickable from the box score and other
+       places."
+
+       THE CONSTRAINT IS THE DESIGN. Nothing below adds a feed. The inventory of what this
+       app already holds per player, which is what decided the card's shape:
+
+         · MLB's BOXSCORE — already fetched and cached per gamePk by `loadMlbBox` for the
+           box-score tables. Per player it carries `person.{id,fullName}`, `position`,
+           `jerseyNumber`, `stats.{batting,pitching}` (THIS GAME) and — the find —
+           `seasonStats.{batting,pitching}`, a full season line for EVERY man in the game,
+           bench bats included: avg/obp/slg/ops/HR/RBI/SB for hitters, ERA/WHIP/W-L/IP/K/BB
+           for arms. That was sitting in a document the app has downloaded on every live
+           game for weeks and read four fields out of.
+         · `pitchers_v4` — the model box's own feed, keyed by MLB person id. STARTERS ONLY:
+           season ERA/W-L/IP/K9/WHIP and a game log of the last eight starts.
+         · the STATCAST feed (`statcastOf`) — already fetched for Game Leaders. Per player:
+           every pitch he threw and every ball he hit today, with velocity and spin.
+
+       SO THE CARD IS HONESTLY UNEVEN, AND SAYS SO BY BEING SHORTER. A starting pitcher gets
+       four blocks; a bench bat who pinch-ran in the eighth gets a headshot, a season line and
+       nothing else, because that is everything that exists. Padding the thin case with
+       league averages or derived rates would be inventing the very thing Leon fenced off.
+
+       HEADSHOTS ARE A URL, NOT A FEED. MLB serves them off the person id the box score
+       already carries — verified 200 image/png, ~7 KB at 120px. TWO THINGS ABOUT IT that
+       the fallback is shaped around:
+         · a WRONG id does not 404. It returns 200 with a generic silhouette, so `onerror`
+           never fires and cannot be the fallback — which is why the initials sit UNDERNEATH
+           the image rather than replacing it on error. A silhouette is an honest "no photo";
+           a hole in the layout is a bug.
+         · every one is `loading="lazy"` + `decoding="async"` and capped at 120px source.
+           A box score is ~20 men, and this app has already taken a GPU-memory crash on
+           mobile from over-painting images; twenty 28px avatars off a 120px source is ~1 MB
+           of decoded texture, which is the budget this stays inside deliberately. ══════ */
+    const headshotUrl = (pid: any, size = 120) =>
+      `https://midfield.mlbstatic.com/v1/people/${encodeURIComponent(String(pid))}/spots/${size}`;
+    const initialsOf = (name: string) => String(name || "").trim().split(/\s+/).slice(0, 2)
+      .map((w) => w[0] || "").join("").toUpperCase() || "?";
+    /* The avatar. The initials are a real layer beneath the image, not an error handler —
+       see the note above on why `onerror` cannot be trusted here. */
+    function playerAvatar(pid: any, name: string, cls = "") {
+      const ini = esc(initialsOf(name));
+      if (pid == null) return `<span class="pav ${cls}" aria-hidden="true"><i>${ini}</i></span>`;
+      return `<span class="pav ${cls}" aria-hidden="true"><i>${ini}</i><img src="${esc(headshotUrl(pid))}" alt="" loading="lazy" decoding="async" width="120" height="120"></span>`;
+    }
+    // A name, rendered as the one tappable thing it is everywhere it appears. `data-player`
+    // is read by ONE delegated listener; there is no per-surface click wiring and no second
+    // player renderer. A name with no id is plain text — never a dead tap target.
+    function playerLink(pid: any, label: string, cls = "") {
+      const txt = esc(label);
+      if (pid == null || label == null || label === "") return txt;
+      return `<button type="button" class="plink ${cls}" data-player="${esc(String(pid))}">${txt}</button>`;
+    }
+    /* ONE ACCESSOR. Every block of the card, and every surface that links into it, reads
+       this — so there is exactly one place that knows where a player's facts live. */
+    function playerCardData(pid: any, g: any) {
+      const key = "ID" + String(pid);
+      const box = mlbBoxFor(g);
+      const bs = box && box.bs;
+      let side = "", p: any = null, team: any = null;
+      (["away", "home"] as const).forEach((s) => {
+        const t = bs && bs.teams && bs.teams[s];
+        if (!p && t && t.players && t.players[key]) { p = t.players[key]; side = s; team = t; }
+      });
+      // pitchers_v4 is keyed by the SAME MLB person id, so the join is exact — no name match
+      const feed = (() => {
+        if (!pitchersData || !pitchersData.by_game) return null;
+        for (const k of gameFeedKeys(g)) {
+          const row = pitchersData.by_game[k];
+          if (!row) continue;
+          for (const s of ["away", "home"]) {
+            if (row[s] && String(row[s].id) === String(pid)) return { row: row[s], side: s };
+          }
+        }
+        return null;
+      })();
+      /* PREGAME THERE IS NO BOXSCORE, AND A PROBABLE STARTER STILL HAS A CARD. MLB does not
+         publish `teams[].players` until the game is underway, so the path above finds
+         nothing before first pitch — which is exactly when a reader is tapping the two
+         probables. `pitchers_v4` alone answers then: name, hand, season ERA/WHIP/W-L/IP/K9
+         and the last eight starts. There is no today's line because there is no today yet,
+         and the card is correspondingly shorter rather than padded. */
+      if (!p) {
+        if (!feed) return null;
+        const f = feed.row;
+        return {
+          pid, name: f.name || "", side: feed.side, team: null,
+          abbr: (feed.side === "home" ? g.home_abbr : g.away_abbr) || "",
+          pos: f.throws ? `${f.throws}HP` : "P", jersey: "",
+          isBatting: false, isPitching: false, isSub: false, order: null,
+          gameBat: null, gamePit: null, seasonBat: null,
+          // the feed's own season line, mapped onto the same shape the boxscore's
+          // `seasonStats.pitching` uses so ONE renderer draws both
+          seasonPit: {
+            era: f.era != null ? num(f.era, 2) : null,
+            whip: f.whip != null ? num(f.whip, 2) : null,
+            inningsPitched: f.ip != null ? String(f.ip) : null,
+            wins: null, losses: null, strikeOuts: null, baseOnBalls: null, homeRuns: null, saves: null,
+            wl: f.wl || null, k9: f.k9 != null ? num(f.k9, 1) : null,
+          },
+          feed: f,
+        };
+      }
+      const name = (p.person && p.person.fullName) || "";
+      return {
+        pid, name, side, team,
+        abbr: (team && team.team && team.team.abbreviation) || (side === "home" ? g.home_abbr : g.away_abbr) || "",
+        pos: (p.position && p.position.abbreviation) || "",
+        jersey: p.jerseyNumber || "",
+        // MLB's own flags — who is in the box right now, and who came off the bench
+        isBatting: !!(p.gameStatus && p.gameStatus.isCurrentBatter),
+        isPitching: !!(p.gameStatus && p.gameStatus.isCurrentPitcher),
+        isSub: !!(p.gameStatus && p.gameStatus.isSubstitute),
+        order: (() => {
+          const bo = (team && team.battingOrder) || [];
+          const i = bo.findIndex((x: any) => String(x) === String(pid));
+          return i >= 0 ? i + 1 : null;
+        })(),
+        gameBat: (p.stats && p.stats.batting) || null,
+        gamePit: (p.stats && p.stats.pitching) || null,
+        seasonBat: (p.seasonStats && p.seasonStats.batting) || null,
+        seasonPit: (p.seasonStats && p.seasonStats.pitching) || null,
+        feed: feed ? feed.row : null,
+      };
+    }
+    // a stat cell renders ONLY when the feed carried the number — an absent stat is an
+    // absent cell, never a zero, because "0 HR" and "we were not told" are different facts
+    const pStat = (k: string, v: any) => (v == null || v === "" ? "" : `<div class="pst"><b>${esc(String(v))}</b><span>${esc(k)}</span></div>`);
+    const pStatRow = (cells: string[]) => { const on = cells.filter(Boolean); return on.length ? `<div class="pstrow">${on.join("")}</div>` : ""; };
+    function playerCardHtml(d: any, g: any) {
+      if (!d) return "";
+      const meta = [d.abbr, d.pos, d.jersey ? `#${d.jersey}` : ""].filter(Boolean).join(" · ");
+      const tag = d.isBatting ? `<span class="pc-now">At the plate</span>`
+        : d.isPitching ? `<span class="pc-now">On the mound</span>`
+          : d.order ? `<span class="pc-slot">${ORD(d.order)} in the order</span>`
+            : d.isSub ? `<span class="pc-slot">Substitute</span>` : "";
+      const blocks: string[] = [];
+      /* TODAY, FIRST. The card is opened from a live box score far more often than not, and
+         the question is almost always "what has he done in THIS game" — the season line is
+         the context for that answer, not the answer. A man who has not appeared yet has no
+         today block at all rather than a row of zeroes. */
+      const gb = d.gameBat, gp = d.gamePit;
+      const hasBat = gb && (gb.atBats != null || gb.plateAppearances != null);
+      const hasPit = gp && gp.inningsPitched != null;
+      /* NO SUMMARY LINE ON A PITCHER, and it is MLB's fault rather than a design call.
+         `stats.pitching.summary` is meant to read "4.2 IP, 4 ER, 2 K, 1 BB" — observed live
+         on 823268 it came back "4.2 IP, 4 ER, 2 K, BB", a walk count with no number. It also
+         says nothing the six cells directly beneath it do not, so there is no case for
+         printing a malformed string to repeat facts we already have correctly. The BATTING
+         summary stays: "1-2 | K" carries the SEQUENCE of what happened in each trip, which no
+         cell on this card can. */
+      /* ONE GRID PER SECTION, NOT TWO ROWS. Split across two `pstrow`s, the second row was a
+         grid of its own — so a section whose second row held a single surviving stat gave
+         that stat the full 343px, and "8.0 K/9" rendered as the largest object on Sonny
+         Gray's card. All the cells of a section share one grid: it wraps where it wraps, and
+         a trailing cell keeps its column. */
+      if (hasPit) {
+        blocks.push(`<div class="pc-sec"><div class="pc-h">Today on the mound</div>
+          ${pStatRow([pStat("IP", gp.inningsPitched), pStat("H", gp.hits), pStat("R", gp.runs), pStat("ER", gp.earnedRuns), pStat("BB", gp.baseOnBalls), pStat("K", gp.strikeOuts),
+            pStat("HR", gp.homeRuns), pStat("Pitches", gp.numberOfPitches), pStat("Strikes", gp.strikes), pStat("Faced", gp.battersFaced)])}
+        </div>`);
+      }
+      if (hasBat) {
+        blocks.push(`<div class="pc-sec"><div class="pc-h">Today at the plate</div>
+          ${gb.summary ? `<div class="pc-sum">${esc(String(gb.summary))}</div>` : ""}
+          ${pStatRow([pStat("AB", gb.atBats), pStat("R", gb.runs), pStat("H", gb.hits), pStat("RBI", gb.rbi), pStat("HR", gb.homeRuns), pStat("BB", gb.baseOnBalls), pStat("K", gb.strikeOuts)])}
+        </div>`);
+      }
+      const sp = d.seasonPit, sb = d.seasonBat;
+      // the season line MLB itself ships in the box score — present for every man in the
+      // game, which is what gives a bench bat a card worth opening at all
+      if (sp && sp.inningsPitched != null && Number(ipToOuts(sp.inningsPitched)) > 0) {
+        // `wl` / `k9` only exist on the pregame (pitchers_v4) shape; the boxscore shape
+        // carries wins+losses separately. Both fall through the same `pStat` null-drop.
+        blocks.push(`<div class="pc-sec"><div class="pc-h">This season, pitching</div>
+          ${pStatRow([pStat("ERA", sp.era), pStat("WHIP", sp.whip), pStat("W-L", sp.wl != null ? sp.wl : (sp.wins != null && sp.losses != null ? `${sp.wins}-${sp.losses}` : null)), pStat("IP", sp.inningsPitched),
+            pStat("K", sp.strikeOuts), pStat("K/9", sp.k9), pStat("BB", sp.baseOnBalls), pStat("HR", sp.homeRuns), pStat("SV", sp.saves)])}
+        </div>`);
+      }
+      if (sb && sb.atBats != null && Number(sb.atBats) > 0) {
+        blocks.push(`<div class="pc-sec"><div class="pc-h">This season, hitting</div>
+          ${pStatRow([pStat("AVG", sb.avg), pStat("OBP", sb.obp), pStat("SLG", sb.slg), pStat("OPS", sb.ops),
+            pStat("HR", sb.homeRuns), pStat("RBI", sb.rbi), pStat("R", sb.runs), pStat("SB", sb.stolenBases), pStat("K", sb.strikeOuts)])}
+        </div>`);
+      }
+      /* THE GAME LOG — starters only, and only because `pitchers_v4` already carries it.
+         There is no equivalent feed for a hitter, so a hitter's card simply ends earlier.
+         That asymmetry is the data's, not a gap to fill. */
+      const starts = (d.feed && Array.isArray(d.feed.starts) ? d.feed.starts : []).slice(0, 6);
+      if (starts.length) {
+        blocks.push(`<div class="pc-sec"><div class="pc-h">Last ${starts.length} start${starts.length === 1 ? "" : "s"}</div>
+          <div class="pc-tblwrap"><table class="pc-tbl"><thead><tr><th>Date</th><th>Opp</th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>K</th><th>P</th><th>Res</th></tr></thead><tbody>
+          ${starts.map((s: any) => `<tr><td>${esc(String(s.date || "").slice(5))}</td><td>${s.at === "H" ? "vs" : "@"} ${esc(s.opp || "")}</td>
+            <td>${s.ip != null ? esc(String(s.ip)) : "—"}</td><td>${s.h ?? "—"}</td><td>${s.er ?? "—"}</td><td>${s.bb ?? "—"}</td><td>${s.k ?? "—"}</td><td>${s.p ?? "—"}</td>
+            <td class="pc-res ${s.res === "W" ? "won" : s.res === "L" ? "lost" : ""}">${esc(s.res || "ND")}</td></tr>`).join("")}
+          </tbody></table></div></div>`);
+      }
+      /* WHAT THE BALL DID TODAY — off the Statcast feed the Game Leaders module already
+         pulled, filtered to this man. It is the one block a bench bat can earn on his own:
+         one swing that left the bat at 108 is a fact about him, and it exists here whether
+         or not he has a season line worth printing. */
+      const sc = statcastOf(g);
+      if (sc) {
+        const mine = sc.pitches.filter((x: any) => x.who === d.name);
+        const hits = sc.hits.filter((x: any) => x.who === d.name);
+        const cells: string[] = [];
+        if (mine.length) {
+          const fb = mine.filter((x: any) => FB_CODES[x.code]);
+          cells.push(pStat("Pitches tracked", mine.length));
+          if (fb.length >= 3) cells.push(pStat("Top fastball", `${Math.max(...fb.map((x: any) => x.velo)).toFixed(1)}`));
+        }
+        if (hits.length) {
+          cells.push(pStat("Hardest hit", `${Math.max(...hits.map((x: any) => x.ev)).toFixed(1)}`));
+          const far = hits.filter((x: any) => x.dist != null);
+          if (far.length) cells.push(pStat("Longest", `${Math.round(Math.max(...far.map((x: any) => x.dist)))} ft`));
+        }
+        const row = pStatRow(cells);
+        if (row) blocks.push(`<div class="pc-sec"><div class="pc-h">Tracked today</div>${row}<div class="pc-note">Pitch and batted-ball tracking, this game only. Speeds in mph.</div></div>`);
+      }
+      const body = blocks.length ? blocks.join("")
+        // THE HONEST EMPTY. A man on the roster who has not played and has no season line —
+        // a September call-up, an opener's bulk arm — gets this sentence rather than a card
+        // of dashes pretending to be statistics.
+        : `<div class="pc-empty">No line for ${esc(shortName(d.name))} yet — he has not appeared in this game, and no season stats are posted for him.</div>`;
+      return `<div class="pc-head">
+          ${playerAvatar(d.pid, d.name, "big")}
+          <div class="pc-id"><b>${esc(d.name)}</b><span>${esc(meta)}</span>${tag}</div>
+        </div>${body}`;
+    }
+    /* IT OPENS OVER THE GAME, NOT INSTEAD OF IT (Leon: the site is collapsing its page count
+       precisely because extra destinations drift out of sync). So this does NOT go through
+       `detailWithGameReturn` / `closeDetail` like the older sheets, which REPLACE the game
+       page's markup and rebuild it on the way back — losing scroll, tearing down the live
+       poll and re-running the whole page builder for a five-second peek. The card is a node
+       APPENDED above the game page: the page underneath stays mounted, keeps its scroll, and
+       keeps ticking. Closing it removes one element and nothing else changes.
+
+       It takes its own history entry so the native back gesture — which Safari resolves
+       before the app sees a pointer event — closes the CARD rather than the game behind it. */
+    let pcardOpen = false;
+    function closePlayerCard(fromHistory = false) {
+      const l = document.getElementById("pcard-layer");
+      if (!l) { pcardOpen = false; return false; }
+      l.classList.add("closing");
+      setTimeout(() => { const n = document.getElementById("pcard-layer"); if (n) n.remove(); }, REDUCE ? 0 : 260);
+      const had = pcardOpen;
+      pcardOpen = false;
+      if (had && !fromHistory) { try { history.back(); } catch {} }
+      return true;
+    }
+    function openPlayerCard(pid: any, g: any) {
+      const d = playerCardData(pid, g);
+      if (!d) return false;
+      const old = document.getElementById("pcard-layer");
+      if (old) old.remove();
+      const l = document.createElement("div");
+      l.id = "pcard-layer";
+      l.innerHTML = `<div class="pcard-bg" id="pcard-bg"></div>
+        <div class="pcard" role="dialog" aria-modal="true" aria-label="${esc(d.name)}">
+          <div class="pcard-grab"><span></span></div>
+          <button type="button" class="pcard-x" id="pcard-x" aria-label="Close">✕</button>
+          <div class="pcard-body">${safeHtml("player card", () => playerCardHtml(d, g), "")}</div>
+        </div>`;
+      document.body.appendChild(l);
+      const bg = document.getElementById("pcard-bg");
+      if (bg) bg.addEventListener("click", () => closePlayerCard());
+      const x = document.getElementById("pcard-x");
+      if (x) x.addEventListener("click", () => closePlayerCard());
+      pcardOpen = false;
+      try { history.pushState({ layer: "player" }, "", location.href); pcardOpen = true; } catch {}
+      return true;
+    }
+    /* ONE DELEGATED LISTENER FOR EVERY NAME IN THE APP. The box score's hitters and pitchers,
+       the two men in the hero's live matchup, the probable starters, the lineup — they all
+       emit the same `data-player` button and none of them wires a handler. Adding a name to
+       a new surface is `playerLink(id, name)` and nothing else; there is no second player
+       renderer to keep in step, which is the whole point. */
+    document.addEventListener("click", (e: any) => {
+      const el = e.target && e.target.closest && e.target.closest("[data-player]");
+      if (!el) return;
+      e.stopPropagation(); e.preventDefault();
+      const g = detail && detail.game_id != null ? detail : null;
+      if (!g) return;
+      openPlayerCard(el.dataset.player, g);
+    }, true);
+    document.addEventListener("keydown", (e: any) => {
+      if (e.key === "Escape" && document.getElementById("pcard-layer")) { e.stopPropagation(); closePlayerCard(); }
+    }, true);
+
     /* ══ GAME LEADERS — the module. Every card is one fact, and a card the game did not
           produce is ABSENT, never blank. If nothing survives, the whole section is absent. ══ */
     function gameLeaders(g: any) {
@@ -10542,9 +11058,101 @@ export default function Home() {
       return `${cards.length ? `<div class="gl-cards">${cards.join("")}</div>` : ""}${fbBlock}${mixBlock}${aggBlock}`;
     }
 
+    /* ══════════════════════════════════════════════════════════════════════════════
+       THE MOUND — WHAT EACH STARTER IS, AND WHAT HE HAS DONE TODAY
+       ──────────────────────────────────────────────────────────────────────────────
+       Leon, 2026-08-09: "let's add the pitchers' ERA and batting averages and what their
+       stats are for the day as well."
+
+       Three questions, and they are answered from the SAME boxscore document the tables
+       below are already built from — no request is added:
+
+         · WHAT HE IS      `seasonStats.pitching` → ERA, WHIP, W-L, K. MLB ships a full
+                           season line for every man in the game inside the boxscore; the
+                           app had been reading four game fields out of it and nothing else.
+         · WHAT HE HAS DONE TODAY
+                           `stats.pitching` → IP / H / R / ER / BB / K, plus the PITCH COUNT
+                           (`numberOfPitches`), which is the number a reader watching a
+                           starter in the sixth actually wants and which nothing on this page
+                           has ever shown.
+         · WHAT THE BATS HAVE DONE
+                           `teamStats.batting` for the side he is facing → runs, hits, home
+                           runs, walks, strikeouts, left on base. COUNTING STATS ONLY, and
+                           that is a deliberate omission: the boxscore's `teamStats.batting
+                           .avg` is the team's SEASON average, not the day's (measured on
+                           823268 — 5 hits in 15 at-bats reported as ".236"), and printing a
+                           season figure under the heading "today" is precisely the invented
+                           number this app refuses. Each man's own season AVG/OBP/SLG is one
+                           tap away on his card, where it is labelled as the season.
+
+       WHO IS "THE STARTER" is `teams[side].pitchers[0]` — MLB's own order of appearance, so
+       the first arm listed is the man who started, without trusting a flag the boxscore does
+       not carry. A game that has not posted a pitcher yet renders no card, and if neither
+       side has one the whole section is absent. */
+    function mountainLine(g: any, side: "away" | "home") {
+      const box = mlbBoxFor(g);
+      const bs = box && box.bs;
+      const t = bs && bs.teams && bs.teams[side];
+      if (!t || !t.players) return "";
+      const ids = Array.isArray(t.pitchers) ? t.pitchers : [];
+      if (!ids.length) return "";
+      const p = t.players["ID" + ids[0]];
+      if (!p) return "";
+      const full = (p.person && p.person.fullName) || "";
+      const pid = (p.person && p.person.id) != null ? p.person.id : ids[0];
+      const gp = (p.stats && p.stats.pitching) || {};
+      const sp = (p.seasonStats && p.seasonStats.pitching) || {};
+      const abbr = (t.team && t.team.abbreviation) || (side === "home" ? g.home_abbr : g.away_abbr) || "";
+      const season = [
+        sp.era != null ? `<b>${esc(String(sp.era))}</b> ERA` : "",
+        sp.whip != null ? `<b>${esc(String(sp.whip))}</b> WHIP` : "",
+        sp.wins != null && sp.losses != null ? `<b>${sp.wins}-${sp.losses}</b>` : "",
+      ].filter(Boolean).join(" · ");
+      // no innings pitched today = he has not thrown a pitch; the day's line is absent, not zeroed
+      const today = gp.inningsPitched != null ? pStatRow([
+        pStat("IP", gp.inningsPitched), pStat("H", gp.hits), pStat("R", gp.runs),
+        pStat("ER", gp.earnedRuns), pStat("BB", gp.baseOnBalls), pStat("K", gp.strikeOuts),
+        pStat("Pitches", gp.numberOfPitches),
+      ]) : "";
+      if (!season && !today) return "";
+      return `<div class="mnd-card">
+        <div class="mnd-who">${playerAvatar(pid, full, "md")}
+          <div class="mnd-id"><b>${playerLink(pid, full)}</b><span>${esc(abbr)}${season ? ` · ${season}` : ""}</span></div>
+        </div>
+        ${today || `<div class="mnd-none">Has not thrown yet.</div>`}
+      </div>`;
+    }
+    function mountainBats(g: any, side: "away" | "home") {
+      const box = mlbBoxFor(g);
+      const t = box && box.bs && box.bs.teams && box.bs.teams[side];
+      const b = t && t.teamStats && t.teamStats.batting;
+      if (!b) return "";
+      const abbr = (t.team && t.team.abbreviation) || (side === "home" ? g.home_abbr : g.away_abbr) || "";
+      const row = pStatRow([
+        pStat("R", b.runs), pStat("H", b.hits), pStat("HR", b.homeRuns),
+        pStat("BB", b.baseOnBalls), pStat("K", b.strikeOuts), pStat("LOB", b.leftOnBase),
+      ]);
+      if (!row) return "";
+      return `<div class="mnd-bats"><div class="mnd-batsh">${esc(abbr)} bats, today</div>${row}</div>`;
+    }
+    function moundSection(g: any) {
+      if (!isMlbGame(g)) return "";
+      const sides: ("away" | "home")[] = ["away", "home"];
+      const cards = sides.map((s) => {
+        const arm = safeHtml("mound", () => mountainLine(g, s), "");
+        if (!arm) return "";
+        // the arm and the lineup he is working against, as one unit — a pitching line means
+        // nothing without knowing whose bats produced it
+        const bats = safeHtml("mound bats", () => mountainBats(g, s === "away" ? "home" : "away"), "");
+        return `<div class="mnd">${arm}${bats}</div>`;
+      }).filter(Boolean);
+      if (!cards.length) return "";
+      return `<section class="st-sec"><h3 class="st-h">On the mound</h3><div class="mnd-grid">${cards.join("")}</div></section>`;
+    }
     function glSection(g: any) {
+      const mn = safeHtml("mound section", () => moundSection(g), "");
       const gl = safeHtml("gameLeaders", () => gameLeaders(g));
-      return gl ? `<section class="st-sec"><h3 class="st-h">Game leaders</h3>${gl}</section>` : "";
+      return `${mn}${gl ? `<section class="st-sec"><h3 class="st-h">Game leaders</h3>${gl}</section>` : ""}`;
     }
     function repaintGameLeaders() {
       const slot = document.getElementById("gl-slot");
@@ -10572,7 +11180,16 @@ export default function Home() {
            into `current_actuals` (guarded, forward-only) so the hero above the grid reads the
            same run total the grid does — and repaint the hero here, because nothing else will:
            the box-score repaint path only ever touched the pane. */
-        if (adoptMlbLive(g, ls) && detail && String(detail.game_id) === String(g.game_id)) paintHeroScore(g);
+        /* …AND THE BOARD CARD BEHIND THE PAGE (Leon, 2026-08-09 — the sync brief). Measured
+           on 823268 with both surfaces open: the tile read "Bot 3rd" while the hero 40px of
+           scrim above it read "End 5th". Nothing was stale in the data — this document had
+           advanced the shared fact two innings past what `live_scores` had published, the
+           hero repainted, and the CARD was simply never asked to. `repaintTileState` redraws
+           that one chip and its two digits; see its note on why this is not `renderSlate`. */
+        if (adoptMlbLive(g, ls)) {
+          if (detail && String(detail.game_id) === String(g.game_id)) paintHeroScore(g);
+          repaintTileState(g);
+        }
         return mlbBox[pk];
       } catch { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
     }
@@ -10611,8 +11228,28 @@ export default function Home() {
         <tbody>${teamRow("away")}${teamRow("home")}</tbody>
       </table></div>`;
     }
+    /* ══════ THE BOX SCORE SHOWS WHERE THE ORDER IS (Leon, 2026-08-09) ══════
+       "When clicking on a game, let's have the box score have a very subtle highlight on
+       where in the lineup the batting order is."
+
+       WHO IS DUE UP IS A FACT MLB STATES, and this reads it rather than inferring it. Every
+       player in the boxscore carries `gameStatus.isCurrentBatter` — MLB's own flag, on the
+       document this table is already built from. The alternative was counting plate
+       appearances down the order to work out whose turn it is, which is wrong the moment
+       there has been a pinch-hitter, a double switch or a man who batted out of order early
+       in an inning. If the flag is not there, NOTHING is highlighted: a guess about who is
+       up next is worse than no mark, because a reader would believe it.
+
+       SUBTLE IS THE WORD, AND THE ROW ALREADY HAS THREE LOUDER TENANTS — the pick, the
+       result stamp and the live state. So the mark is a 2px rule in the row's left margin
+       plus a barely-there tint: enough to find when you are looking for it, invisible when
+       you are reading the numbers. No colour that could be mistaken for a win or a loss.
+
+       LIVE ONLY. On a final there is no "due up" — the order stopped — and the highlight is
+       gone entirely rather than frozen on whoever happened to be in the box at the last out.
+       That is why the flag is read per render and never cached. */
     // one side's hitters and pitchers, as real tables
-    function boxTables(bs: any, side: "away" | "home") {
+    function boxTables(bs: any, side: "away" | "home", live = false) {
       const t = bs && bs.teams && bs.teams[side];
       if (!t || !t.players) return "";
       const P = t.players;
@@ -10622,9 +11259,11 @@ export default function Home() {
         const p = P["ID" + id]; if (!p) return "";
         const s = (p.stats && p.stats.batting) || {};
         if (s.atBats == null && s.plateAppearances == null) return "";
-        const sub = !((t.battingOrder || []).some((o: any) => Number(o) === Number(id) || Number(o) === Number(id) * 100));
-        return `<tr>
-          <th scope="row" class="bx-nm"><b>${esc(p.person && p.person.fullName ? shortName(p.person.fullName) : "")}</b><i>${esc((p.position && p.position.abbreviation) || "")}</i></th>
+        const full = (p.person && p.person.fullName) || "";
+        const pid = (p.person && p.person.id) != null ? p.person.id : id;
+        const due = live && !!(p.gameStatus && p.gameStatus.isCurrentBatter);
+        return `<tr class="${due ? "bx-due" : ""}"${due ? ` aria-current="true"` : ""}>
+          <th scope="row" class="bx-nm">${playerAvatar(pid, full, "sm")}<b>${playerLink(pid, shortName(full))}</b><i>${esc((p.position && p.position.abbreviation) || "")}</i>${due ? `<em class="bx-duesr">due up — at bat</em>` : ""}</th>
           <td>${bxN(s.atBats)}</td><td>${bxN(s.runs)}</td><td>${bxN(s.hits)}</td><td>${bxN(s.rbi)}</td>
           <td>${bxN(s.homeRuns)}</td><td>${bxN(s.baseOnBalls)}</td><td>${bxN(s.strikeOuts)}</td>
         </tr>`;
@@ -10634,8 +11273,11 @@ export default function Home() {
         const s = (p.stats && p.stats.pitching) || {};
         if (s.inningsPitched == null) return "";
         const dec = s.wins ? "W" : s.losses ? "L" : s.saves ? "S" : s.holds ? "H" : "";
-        return `<tr>
-          <th scope="row" class="bx-nm"><b>${esc(p.person && p.person.fullName ? shortName(p.person.fullName) : "")}</b>${dec ? `<i class="bx-dec ${dec === "W" ? "w" : dec === "L" ? "l" : "s"}">${dec}</i>` : ""}</th>
+        const full = (p.person && p.person.fullName) || "";
+        const pid = (p.person && p.person.id) != null ? p.person.id : id;
+        const due = live && !!(p.gameStatus && p.gameStatus.isCurrentPitcher);
+        return `<tr class="${due ? "bx-due" : ""}"${due ? ` aria-current="true"` : ""}>
+          <th scope="row" class="bx-nm">${playerAvatar(pid, full, "sm")}<b>${playerLink(pid, shortName(full))}</b>${dec ? `<i class="bx-dec ${dec === "W" ? "w" : dec === "L" ? "l" : "s"}">${dec}</i>` : ""}${due ? `<em class="bx-duesr">currently pitching</em>` : ""}</th>
           <td>${esc(String(s.inningsPitched))}</td><td>${bxN(s.hits)}</td><td>${bxN(s.runs)}</td>
           <td>${bxN(s.earnedRuns)}</td><td>${bxN(s.baseOnBalls)}</td><td>${bxN(s.strikeOuts)}</td>
         </tr>`;
@@ -10745,6 +11387,10 @@ export default function Home() {
             outs: ls.outs, balls: ls.balls, strikes: ls.strikes,
             pitcher: String((def.pitcher && def.pitcher.fullName) || ""),
             batter: String((off.batter && off.batter.fullName) || ""),
+            // the ids ride with the names so the two men in the matchup open their own
+            // cards — same accessor as every other name in the app (see `playerLink`)
+            pitcherId: (def.pitcher && def.pitcher.id) != null ? def.pitcher.id : null,
+            batterId: (off.batter && off.batter.id) != null ? off.batter.id : null,
           }
           : cur && cur.outs != null
             ? {
@@ -10752,6 +11398,9 @@ export default function Home() {
               on1: !!cur.on_1b, on2: !!cur.on_2b, on3: !!cur.on_3b,
               outs: cur.outs, balls: cur.balls, strikes: cur.strikes,
               pitcher: String(cur.pitcher || ""), batter: String(cur.batter || ""),
+              // live_detail began carrying these the same day (picks_engine/live_detail.py)
+              pitcherId: cur.pitcher_id != null ? cur.pitcher_id : null,
+              batterId: cur.batter_id != null ? cur.batter_id : null,
             }
             : null;
       if (!src) return null;
@@ -10775,6 +11424,8 @@ export default function Home() {
         strikes: between || strikes == null || Number(strikes) > 2 || Number(strikes) < 0 ? null : Number(strikes),
         pitcher: between ? "" : src.pitcher,
         batter: between ? "" : src.batter,
+        pitcherId: between ? null : src.pitcherId,
+        batterId: between ? null : src.batterId,
       };
     }
     function bxStateStrip(g: any, ls: any) {
@@ -10788,10 +11439,12 @@ export default function Home() {
       // Each name and its role are ONE unbreakable unit. Two long surnames do wrap at 375px
       // ("E. Rodriguez pitching to E. Hernández"), and the wrap has to fall between the two
       // men — not between a man and his role, which is how "BATTING" ended up alone on a line.
-      const who = (n: string, role: string, cls = "") =>
-        `<span class="bd-mu-u${cls}"><span class="bd-mu-n">${esc(shortName(n))}</span><em>${role}</em></span>`;
+      // …and each man is a tap into his own card — the same `playerLink` the box score
+      // rows use, so there is one player renderer reached from every surface he appears on
+      const who = (n: string, id: any, role: string, cls = "") =>
+        `<span class="bd-mu-u${cls}"><span class="bd-mu-n">${playerLink(id, shortName(n))}</span><em>${role}</em></span>`;
       const mu = s.pitcher || s.batter
-        ? `<div class="bd-mu">${s.pitcher ? who(s.pitcher, "pitching") : ""}${s.pitcher && s.batter ? `<span class="bd-mu-to" aria-hidden="true">to</span>` : ""}${s.batter ? who(s.batter, "batting", " bat") : ""}</div>`
+        ? `<div class="bd-mu">${s.pitcher ? who(s.pitcher, s.pitcherId, "pitching") : ""}${s.pitcher && s.batter ? `<span class="bd-mu-to" aria-hidden="true">to</span>` : ""}${s.batter ? who(s.batter, s.batterId, "batting", " bat") : ""}</div>`
         : "";
       // between innings: the diamond alone, empty, saying exactly that. Nothing else is true yet.
       const meta = s.between
@@ -10850,7 +11503,9 @@ export default function Home() {
         grid = `<div class="bx-simple"><span>${esc(g.away_abbr)} <b>${num(gs.score.away, 0)}</b></span><span>${esc(g.home_abbr)} <b>${num(gs.score.home, 0)}</b></span></div>`;
       }
       const away = esc(g.away_abbr), home = esc(g.home_abbr);
-      const tables = bs ? boxTables(bs, boxSide) : "";
+      // `live` gates the due-up mark: a final has no batter due, and a delayed game's last
+      // batter is a man standing in a dugout, not a man in the box
+      const tables = bs ? boxTables(bs, boxSide, gs.kind === "live" && !gs.delayed) : "";
       const loading = !m || m.loading;
       /* A DELAY REMOVES THE LIVE SITUATION, AND DOES NOT REPLACE IT WITH A THIRD ANNOUNCEMENT.
          While play is stopped the count and the outs are frozen at whatever the last pitch
@@ -10860,7 +11515,16 @@ export default function Home() {
          it means for the bet). A ribbon here would be the same fact a third time, 40px away.
          The LINE SCORE stays: the inning and the runs are still true, and they are the reason
          the delay matters at all. */
-      const topHtml = `${gs.kind === "live" && !gs.delayed ? bxStateStrip(g, ls) : ""}${grid || ""}`;
+      /* THE SITUATION LEFT THIS SLOT (Leon, 2026-08-09 — "woven in with the score at the
+         top"). It is now the bottom row of the HERO, beneath the runs it describes, because
+         that is where every scoreboard in the sport puts it and because it is a property of
+         the score rather than of the box score. `bxStateStrip` is unchanged and is still the
+         only builder of the diamond in the app — it simply mounts one block higher. What
+         stays here is the line score, which is the other thing a reader wants above the tab
+         bar and is genuinely box-score material. Emitting the strip here as well would be
+         the same object twice, ~90px apart, which is the failure this whole page has been
+         pulled apart to avoid. */
+      const topHtml = `${grid || ""}`;
       const playersHtml = bs
         ? `<div class="bx-seg" role="tablist" aria-label="Box score team">
             <button class="bx-segb ${boxSide === "away" ? "on" : ""}" data-bxside="away" role="tab">${away}</button>
@@ -11707,6 +12371,33 @@ export default function Home() {
          saying they answered different questions. One live number on this page.
          (The chip is unchanged and still renders on the board tile, where it is
          the only live read present.) */
+      /* ═══════ THE SCOREBUG IS ONE OBJECT: SCORE, INNING, DIAMOND, COUNT ═══════
+         Leon, 2026-08-09: "let's put the diamond with base runners and strike count somehow
+         woven in with the score at the top of the game details page. Feels like there's
+         plenty of room."
+
+         He is right that there was room, and right that it was in the wrong place. The
+         diamond was built the same day (see `bxStateStrip`) and mounted UNDER the hero, on
+         top of the line score, ~90px below the runs it describes — so a reader checking "2-1,
+         two on, two out" read the score, crossed a card boundary, and read the situation as if
+         it were a property of the box score. It is not. It is a property of the SCORE: every
+         broadcast scorebug in the sport carries them as one unit, which is exactly why a fan
+         reads that shape without reading it.
+
+         So the situation moves INTO the hero, directly beneath the crest row, separated by a
+         hairline rather than a card edge. It is the SAME BUILDER — `bxStateStrip`, unchanged,
+         one diamond in the app — with a new home and a hero-weight skin; nothing here is a
+         second renderer of the bases, and `boxScoreTab("top")` no longer emits it, so it
+         cannot appear twice.
+
+         `#gp-sit` is an id because the situation changes on every pitch and the hero repaints
+         in place on the live tick (`paintHeroScore`) — without it the count would only move
+         when the whole page rebuilt. It is EMPTY, not absent, before first pitch and on a
+         final: an element that is present-but-empty collapses to nothing and gives the live
+         tick something to fill the moment the game starts. */
+      const heroSit = gs.kind === "live" && !gs.delayed
+        ? safeHtml("hero situation", () => bxStateStrip(g, (mlbBoxFor(g) || {}).ls), "")
+        : "";
       const gameHero =`<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
         <div class="gp-mu">
@@ -11714,6 +12405,7 @@ export default function Home() {
           <div class="gp-center">${heroScore}</div>
           <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
         </div>
+        <div class="gp-sit" id="gp-sit">${heroSit}</div>
       </div>`;
       /* ═══════════ ONE BANNER ABOVE THE TABS, AND ONLY ONE ═══════════
          Leon: "a compact header, then tabs. Banner above the tabs: the recommended pick if
@@ -12206,6 +12898,9 @@ export default function Home() {
       if (gs.kind === "live" && $("gamepage")) {
         try {
           const m = await loadMlbBox(detail);
+          // the hero AND the card behind this page are repainted inside `loadMlbBox`, at the
+          // one moment the shared fact actually moves — see the note beside `adoptMlbLive`
+          // there. This only has to refresh the panes that render the document itself.
           if (m) { repaintBoxPane(); repaintGameLeaders(); }
         } catch {}
       }
@@ -12216,6 +12911,13 @@ export default function Home() {
       const fresh = !liveDetail || ld.updated_at !== liveDetail.updated_at;
       liveDetail = ld;
       if (!fresh) return;
+      /* AND LET IT ADVANCE THE SHARED FACT (see `adoptLiveDetail`). This snapshot is a
+         SECOND collector on its own clock; when it is the one that has seen the third out,
+         the hero and the board card behind this page should say so rather than waiting for
+         `live_scores` to agree. The guard makes that safe in the only way that matters: it
+         can move the inning forward and it cannot move it back. The hero is repainted
+         because it is the element that renders the label. */
+      if (adoptLiveDetail(detail)) { paintHeroScore(detail); repaintTileState(detail); }
       // the box score is a TAB now — repaint the pane in place, no scroll jump
       if (!$("gamepage")) return;
       repaintBoxPane();
@@ -12352,7 +13054,14 @@ export default function Home() {
         closeDetail(fromHistory);
       }
     }
-    window.addEventListener("popstate", () => syncFromUrl(true));
+    /* THE PLAYER CARD IS THE TOP LAYER, SO IT ANSWERS BACK FIRST. Without this the native
+       edge-swipe would pop the card's own history entry AND fall through to `syncFromUrl`,
+       which sees no ?g= change, decides nothing happened, and leaves the card on screen —
+       or, worse on the entry before it, closes the game underneath. One layer per pop. */
+    window.addEventListener("popstate", () => {
+      if (document.getElementById("pcard-layer")) { closePlayerCard(true); return; }
+      syncFromUrl(true);
+    });
 
     // ===================== RESULTS TAB =====================
     // ═══════════ INSIGHTS CHARTS (inline SVG, theme-native, defensive) ═══════════

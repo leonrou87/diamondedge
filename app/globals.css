@@ -1217,12 +1217,34 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .ts-outs i.on{background:var(--livemark)}
 .t-sit b{font-family:var(--disp);font-weight:700;font-size:10.5px;line-height:1;letter-spacing:0;
   font-variant-numeric:tabular-nums;color:var(--ink3);flex-shrink:0}
+/* THE BASES, AT 13px. Three dots in the arrangement every scoreboard uses — and, unlike the
+   out pips above, an EMPTY one has to be a ring rather than a faint disc: a 2.4px disc at a
+   tenth of the weight disappears, and a diamond showing only its occupied bases cannot say
+   WHICH base is occupied. The ring is the coordinate system; the fill is the fact. */
+.ts-bd{display:block;flex-shrink:0;overflow:visible;margin-right:1px}
+.ts-bd rect{fill:transparent;stroke:var(--livemark);stroke-width:1;opacity:.42}
+.ts-bd rect.on{fill:var(--livemark);stroke:var(--livemark);opacity:1}
+/* …AND IT IS THE FIRST THING TO GO. The outs and the count were the fact Leon asked this row
+   to carry; the diamond is the one that arrived second and costs the most per pixel. Below
+   340px it hides and the chip holds its single line — which it must, at any width. */
+@media (max-width:339px){ .ts-bd{display:none} }
 /* THE LEAGUE TAG IS WHAT GIVES. A live tile carrying a situation is 30-odd pixels wider in a
    row that had none spare, and the tag is the one element in it a reader on a board they
    picked the sport for already knows. It shrinks and clips before anything else moves, and
    the row can therefore never wrap — which is the property the last two passes over this
    tile were spent buying. */
 .tl-top .t-league{flex-shrink:1;text-overflow:clip}
+/* …AND A CLIPPED WORD IS NOT A SMALLER WORD. Measured at 375px with the diamond added: the
+   top row is 139px, the chip takes 115, and "MLB" needs 26 in the 24 that are left — so it
+   rendered as "ML", which is not an abbreviation of anything and reads as a rendering bug.
+   Shrinking a label until it is wrong is worse than not drawing it.
+
+   So on a live tile that is actually carrying a situation — the only tile where the row is
+   over budget — the league word goes, whole. It is the cheapest thing in that row to lose:
+   the board is already filtered by sport, the two crests underneath are unmistakable, and a
+   reader who stopped on a live card stopped for the game, not for the competition. Every
+   other tile on the board keeps its tag at full width; nothing else moved to make room. */
+.tl-top:has(.t-sit) .t-league{display:none}
 @keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}
 
 /* ---- row 2: the two teams. Crest · abbreviation · score. ---- */
@@ -8697,6 +8719,157 @@ main.swiping{transition:none !important;will-change:transform}
 }
 /* the hero is ONE object — crests, records, score, state and the betting strip together */
 .gp-heroblk{display:flex;flex-direction:column}
+
+/* ════════ THE SITUATION, INSIDE THE SCOREBUG ════════
+   Leon: "put the diamond with base runners and strike count somehow woven in with the score
+   at the top of the game details page." It used to sit in its own tinted pill below the hero,
+   on top of the line score — a card inside a card, describing runs it could not see.
+
+   Inside the hero it must stop looking like a component and start looking like the bottom row
+   of one object, so the pill's fill and its inset rim are dropped for a single hairline. That
+   hairline is the whole trick: it says "same object, second row" where a border would have
+   said "different object". The `.bx-live` markup itself is untouched — one builder, one
+   diamond, two homes was never on the table; this is one home with a hero-weight skin.
+
+   EMPTY, NOT ABSENT. `#gp-sit` is always in the DOM so the live tick has something to fill on
+   first pitch; `:empty` collapses it to zero height, margin and rule included, so a pregame
+   or final hero is pixel-identical to what it was before this existed. */
+/* ════════════════════════════════════════════════════════════════════════════════
+   THE PLAYER LAYER — avatars, tappable names, the card, the due-up mark, the mound
+   ────────────────────────────────────────────────────────────────────────────────
+   Leon: "add images for all players and pitchers, and make it so that for any of them you
+   can click on them and see their performance… don't go and find new data — just see if you
+   have existing data." Everything below renders facts the app already downloads; the styling
+   job is only to keep twenty of them on a phone without costing the scroll.
+   ════════════════════════════════════════════════════════════════════════════════ */
+/* THE AVATAR IS TWO LAYERS, ON PURPOSE. A wrong or missing MLB person id does NOT 404 — the
+   endpoint answers 200 with a generic silhouette — so `onerror` never fires and cannot be
+   the fallback. The initials sit UNDERNEATH and the photo covers them when it decodes; a
+   slow network shows initials, a player with no photo shows a silhouette, and neither ever
+   leaves a hole where a face should be. */
+.pav{position:relative;display:inline-grid;place-items:center;flex-shrink:0;width:26px;height:26px;
+  border-radius:50%;overflow:hidden;background:rgba(var(--tintc),.10);vertical-align:middle}
+.pav i{font-style:normal;font-family:var(--disp);font-weight:700;font-size:9px;letter-spacing:.02em;color:var(--ink4)}
+.pav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;
+  background:rgba(var(--tintc),.10)}
+.pav.sm{width:22px;height:22px}.pav.sm i{font-size:8px}
+.pav.md{width:38px;height:38px}.pav.md i{font-size:12px}
+.pav.big{width:64px;height:64px}.pav.big i{font-size:20px}
+/* A NAME IS A TAP, AND IT STILL HAS TO READ AS TEXT. A button that looks like a button in a
+   box-score row turns a table into a wall of chrome; this keeps the type it inherits and
+   earns its affordance from the underline on press and the pointer cursor. */
+.plink{appearance:none;border:0;background:transparent;padding:0;margin:0;font:inherit;color:inherit;
+  letter-spacing:inherit;cursor:pointer;text-align:left;border-bottom:1px solid transparent;
+  transition:border-color var(--t-fast) var(--ease),opacity var(--t-press) var(--ease)}
+.plink:hover{border-bottom-color:rgba(var(--rimc),.28)}
+.plink:active{opacity:.55}
+.plink:focus-visible{outline:2px solid var(--acc2);outline-offset:2px;border-radius:3px}
+
+/* ── THE CARD. A sheet OVER the game, not a page: the game stays mounted behind it, keeps
+      its scroll and keeps polling, and closing removes exactly one node. ── */
+/* ABOVE `#sheet-layer`, WHICH IS 470 AND HOLDS THE GAME PAGE. The card is the top layer by
+   definition — it opens FROM the game page and must sit over it — so it is numbered against
+   the sheet layer it covers, not against the page's ordinary chrome. */
+#pcard-layer{position:fixed;inset:0;z-index:520}
+#pcard-layer.closing .pcard{animation:pcardout .26s var(--ease) forwards}
+#pcard-layer.closing .pcard-bg{animation:fadeout .26s ease forwards}
+.pcard-bg{position:absolute;inset:0;background:var(--mat-scrim);
+  -webkit-backdrop-filter:saturate(140%) blur(8px);backdrop-filter:saturate(140%) blur(8px);
+  animation:fade .24s ease forwards}
+.pcard{position:absolute;left:0;right:0;bottom:0;margin:0 auto;width:min(560px,100vw);
+  max-height:calc(100dvh - 64px - var(--sat));background:var(--bg);
+  border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -12px 44px var(--sh4);
+  display:flex;flex-direction:column;overflow:hidden;animation:pcardin .34s var(--ease) forwards}
+@keyframes pcardin{from{transform:translateY(101%)}to{transform:translateY(0)}}
+@keyframes pcardout{from{transform:translateY(0)}to{transform:translateY(101%)}}
+.pcard-grab{display:grid;place-items:center;padding:9px 0 3px;flex-shrink:0}
+.pcard-grab span{width:38px;height:4px;border-radius:2px;background:rgba(var(--rimc),.16)}
+.pcard-x{position:absolute;top:12px;right:14px;z-index:2;width:32px;height:32px;border:0;border-radius:10px;
+  background:rgba(var(--tintc),.07);color:var(--ink);cursor:pointer;font-size:15px;display:grid;place-items:center}
+.pcard-x:active{transform:scale(.9)}
+.pcard-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 16px calc(22px + var(--sat))}
+.pc-head{display:flex;align-items:center;gap:13px;padding:4px 0 15px;margin-bottom:4px;
+  border-bottom:1px solid rgba(var(--rimc),.07)}
+.pc-id{min-width:0;display:flex;flex-direction:column;gap:3px}
+.pc-id b{font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:-.01em;color:var(--ink);line-height:1.15}
+.pc-id span{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4)}
+.pc-now,.pc-slot{align-self:flex-start;margin-top:2px;font-family:var(--disp);font-weight:700;font-size:9.5px;
+  letter-spacing:.11em;text-transform:uppercase;padding:3px 7px;border-radius:6px}
+.pc-now{color:var(--live);background:var(--livebg);box-shadow:inset 0 0 0 1px var(--liveline)}
+.pc-slot{color:var(--ink4);background:rgba(var(--tintc),.07)}
+.pc-sec{padding:14px 0 4px;border-bottom:1px solid rgba(var(--rimc),.05)}
+.pc-sec:last-child{border-bottom:0}
+.pc-h{font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink4);margin-bottom:9px}
+/* MLB's own one-line summary of the day ("1-2 | K", "4.0 IP, 2 ER") — its wording, not ours */
+.pc-sum{font-family:var(--mono);font-size:12.5px;color:var(--ink2);margin:-4px 0 10px}
+/* A STAT CELL EXISTS ONLY WHEN THE NUMBER DOES. `pStat` returns nothing for a null, so a
+   sparse row is a short row — never a row of dashes standing in for facts we were not given. */
+/* A GRID, NOT A WRAPPING FLEX ROW. Flexed, the seventh cell of a seven-stat line dropped to
+   its own row and stretched to the full width — "83 PITCHES" rendered as a banner and "7 LOB"
+   as a slab, so the least important number on the card was the largest object on it. Equal
+   columns mean a trailing cell keeps its column and the row reads as one table of facts. */
+.pstrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:6px;margin-bottom:8px}
+.pst{min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 6px;border-radius:11px;background:rgba(var(--panec),.5);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.05)}
+.pst b{font-family:var(--disp);font-weight:700;font-size:16px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.pst span{font-family:var(--disp);font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);text-align:center}
+.pc-tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}
+.pc-tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.pc-tbl th{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink4);text-align:right;padding:0 6px 6px}
+.pc-tbl th:first-child,.pc-tbl th:nth-child(2),.pc-tbl td:first-child,.pc-tbl td:nth-child(2){text-align:left}
+.pc-tbl td{font-family:var(--sans);font-size:12.5px;color:var(--ink2);text-align:right;padding:6px;
+  border-top:1px solid rgba(var(--rimc),.05);white-space:nowrap}
+.pc-res.won{color:var(--good);font-weight:700}.pc-res.lost{color:var(--bad);font-weight:700}
+.pc-note,.pc-empty{font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink4);margin:2px 0 8px}
+.pc-empty{padding:22px 0}
+
+/* ── WHERE THE ORDER IS. Leon's word was SUBTLE, and the row already carries a pick, a
+      result stamp and a live state — none of which this may compete with. A 2px rule in the
+      margin and a tint at 4% opacity: findable when you look for it, invisible when you are
+      reading the numbers, and no colour that could be mistaken for a won or lost bet. ── */
+.bx-due>.bx-nm{position:relative}
+.bx-due>.bx-nm::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:2px;border-radius:1px;background:var(--livemark)}
+.bx-due td,.bx-due th{background:rgba(var(--goldc),.05)}
+/* THE LABEL IS FOR SCREEN READERS ONLY, and that is the design rather than a concession.
+   A visible "AT BAT" chip was tried first: in a 375px name column already carrying a
+   headshot, a surname and a position it clipped to "A…", and a clipped label is a rendering
+   bug, not a smaller label. It was also the loud answer to a brief whose word was SUBTLE —
+   the rule and the tint already say where the order is to anyone looking for it. A reader
+   who cannot see them gets the sentence instead. */
+.bx-duesr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+/* the avatar in a box-score row shares the name cell's baseline and never widens the column */
+.bx-nm .pav{margin-right:6px}
+
+/* ── ON THE MOUND: what each starter is, what he has done today, and what the bats he is
+      facing have done. One column on a phone; the pair side by side where there is room. ── */
+.mnd-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:620px){.mnd-grid{grid-template-columns:1fr 1fr}}
+.mnd{border-radius:var(--r-md);background:rgba(var(--panec),.42);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.05);padding:13px 13px 6px}
+.mnd-who{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+.mnd-id{min-width:0;display:flex;flex-direction:column;gap:2px}
+.mnd-id b{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink);line-height:1.2}
+.mnd-id span{font-family:var(--sans);font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.mnd-id span b{font-family:var(--disp);font-weight:700;font-size:11.5px;color:var(--ink2)}
+.mnd-bats{margin-top:2px;padding-top:10px;border-top:1px solid rgba(var(--rimc),.06)}
+.mnd-batsh{font-family:var(--disp);font-weight:700;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink4);margin-bottom:8px}
+.mnd-none{font-family:var(--sans);font-size:12px;color:var(--ink4);padding-bottom:8px}
+.mnd .pst{background:rgba(var(--panec),.75)}
+
+.gp-sit:empty{display:none}
+.gp-sit{margin:14px -16px -16px;padding:11px 16px 13px;border-top:1px solid rgba(var(--rimc),.07)}
+.gp-sit .bx-live{background:transparent;box-shadow:none;padding:0;gap:14px;justify-content:center}
+/* the count is the number that moves on every pitch — at hero weight it can carry the row */
+.gp-sit .bd-count b{font-size:17px}
+.gp-sit .bd-mu-n{font-size:13.5px}
+@media (max-width:359px){
+  /* the narrowest phones: the diamond keeps its size (it is the fact) and the gap gives */
+  .gp-sit{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}
+  .gp-sit .bx-live{gap:10px}
+}
 
 /* ════════════════════════════════════════════════════════════════════════════════
    ROUND 5 · THE MATERIAL APPLICATOR, AND THE FINISHING COAT
