@@ -1306,6 +1306,16 @@ details.rbt-item[open] .rbt-caret{transform:translateY(-50%) rotate(90deg)}
 .t-league{display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);white-space:nowrap;min-width:0;overflow:hidden}
 .t-league .tl-ic{display:none}
 .t-league .tl-comp{display:none}
+/* PRESEASON badge (de_ms_v1, 2026-08-10): a preseason game is graded on its own line of
+   the sport's record and must read as one at a glance. The chip never shrinks; the league
+   word beside it is the element that gives (same rule as the outs/count row). */
+.t-league .tl-pre{display:inline-block;flex-shrink:0;margin-left:2px;padding:1px 4px 0;border-radius:5px;background:var(--goldbg);border:1px solid var(--goldline);color:var(--golddeep);font-size:8px;letter-spacing:.05em;font-weight:700;line-height:1.5}
+@media(min-width:720px){.t-league .tl-pre{font-size:8.5px;letter-spacing:.08em;padding:1px 5px 0}}
+/* The sport record strip: the future-note chassis with room for two record chips
+   (Preseason / Regular season — separate lines, never blended). */
+.future-note.msrec .fn-countdown{flex-shrink:0}
+.future-note.msrec .fn-countdown+.fn-countdown{margin-left:0}
+@media(max-width:560px){.future-note.msrec{flex-wrap:wrap}.future-note.msrec .fn-countdown{margin-left:0}}
 .statechip{display:inline-flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.03em;white-space:nowrap;flex-shrink:0;line-height:1.4}
 .statechip.live{color:var(--live)}
 .statechip.live .livedot{width:5px;height:5px;border-radius:50%;background:var(--livemark);animation:pulse 1.4s infinite;flex-shrink:0}

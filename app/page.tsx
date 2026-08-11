@@ -498,6 +498,13 @@ export default function Home() {
     const SPORT_LABEL: any = { all: "All", mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
     const SPORT_ICON: any = { all: "◆", mlb: "⚾", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
     const SPORT_UNIT: any = { mlb: "runs", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
+    /* The de_ms_v1 sports (2026-08-10): each has its OWN Supabase key (`nfl`/`nba`/`nhl`)
+       carrying the sport's record (preseason and regular graded on separate lines, started
+       0-0 at launch), a `season_note` when the sport is off-season, and the slate. These
+       records are brand-new tracks — NEVER blended with MLB's, never given a backtest. */
+    const MS_SPORTS = new Set(["nfl", "nba", "nhl"]);
+    // The moment a game starts, named per sport — the pick wall is 3h before this.
+    const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", soccer: "kickoff" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
     const REDUCE = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -861,7 +868,11 @@ export default function Home() {
        which is the correct behaviour for a paywall whose gate is unavailable.
        It never fails the other way. */
     const PREMIUM_SHAPES = new Set(["picks_unified_live", "picks_unified",
-      "pregame_picks", "picks_v4_beta_live", "picks_v4_beta"]);
+      "pregame_picks", "picks_v4_beta_live", "picks_v4_beta",
+      /* the de_ms_v1 sport boards — sealed twins exist (`nfl__sealed` etc.) and the
+         route already whitelists them (e246ca8), so an entitled reader gets the full
+         board (pick/stars/why once each wall passes) through the same one paywall */
+      "nfl", "nba", "nhl"]);
     let premiumOk = true;
     let premiumRetryAt = 0;
     async function snapPremium(k: string, ac: AbortController | null, opts: any) {
@@ -6510,10 +6521,39 @@ export default function Home() {
       if (d && d.by_team) { teamsData = d; teamsAt = Date.now(); try { renderSlate(true); } catch {} }
       return teamsData;
     }
+    // ---- de_ms_v1 SPORT BOARDS (`nfl` / `nba` / `nhl` Supabase keys) ----
+    // One payload per sport: the record block (preseason + regular lines, started 0-0 at
+    // launch), `season_note` when off-season ("NBA preseason opens Oct 3, 2026"), labels,
+    // and the slate. Loaded lazily when the reader lands on that league's tab; entitled
+    // sessions route through /api/premium/<sport> via snap()'s ordinary premium path.
+    let msData: any = {}, msAt: any = {}, msInflight: any = {};
+    function loadMsSport(lg: string) {
+      if (!MS_SPORTS.has(lg)) return Promise.resolve(null);
+      if (msData[lg] && Date.now() - (msAt[lg] || 0) < 5 * 60 * 1000) return Promise.resolve(msData[lg]);
+      if (msInflight[lg]) return msInflight[lg];
+      msInflight[lg] = (async () => {
+        let d: any = null;
+        try { d = await Promise.race([snap(lg, 8000), new Promise((r) => setTimeout(() => r(null), 8000))]); } catch {}
+        msInflight[lg] = null;
+        if (d && String(d.sport || "").toLowerCase() === lg) {
+          msData[lg] = d; msAt[lg] = Date.now();
+          // repaint quietly if the reader is looking at this league right now
+          try { if (tab === "games" && league === lg) renderSlate(true); } catch {}
+        }
+        return msData[lg] || null;
+      })();
+      return msInflight[lg];
+    }
     // Season record + streak for a team, from teams_v4 when present, else the served streaks
     // form. Returns { rec, recIsL15, streak, hot } | null (same shape teamForm returns) so the
     // tile renderer can consume either source uniformly.
     function teamRecordFor(g: any, which: "home" | "away") {
+      /* teams_v4 IS AN MLB STORE, KEYED BY MLB ABBRS. A same-letter abbr in another
+         league must never inherit a baseball record: the NFL preseason board shipped
+         with "DET 58-60 W2" on the Lions — the Detroit TIGERS' season. A non-MLB game
+         reads only its own served form (g.streaks), which is sport-correct or absent. */
+      const gsp = String(g.sport || "").toLowerCase();
+      if (gsp && gsp !== "mlb") return teamForm(g, which);
       const raw = which === "away" ? (g.away_abbr || mlbAbbr(g.away_name || g.away)) : (g.home_abbr || mlbAbbr(g.home_name || g.home));
       const ab = String(raw || "").toUpperCase();
       const aliases = ab === "CWS" ? [ab, "CHW"] : ab === "CHW" ? [ab, "CWS"] : ab === "ATH" ? [ab, "OAK"] : ab === "OAK" ? [ab, "ATH"] : [ab];
@@ -8294,7 +8334,12 @@ export default function Home() {
     function leagueTag(g: any) {
       const lg = String(g.sport || "").toLowerCase();
       const comp = g.meta && g.meta.competition ? esc(g.meta.competition) : "";
-      return `<span class="t-league"><span class="tl-ic" data-ic="${SPORT_ICON[lg] || "◆"}"></span>${esc(SPORT_LABEL[lg] || lg.toUpperCase())}${comp ? `<span class="tl-comp">${comp}</span>` : ""}</span>`;
+      /* PRESEASON IS BADGED, ALWAYS (mission 2026-08-10). A preseason game is graded on
+         its own line of the sport's record and must never read as a regular-season game.
+         The served flag wins; the competition string ("NFL Preseason Week 2") is the
+         fallback for feeds that carry only the label. */
+      const pre = !!(g.meta && (g.meta.preseason || /preseason/i.test(String(g.meta.competition || ""))));
+      return `<span class="t-league"><span class="tl-ic" data-ic="${SPORT_ICON[lg] || "◆"}"></span>${esc(SPORT_LABEL[lg] || lg.toUpperCase())}${comp ? `<span class="tl-comp">${comp}</span>` : ""}${pre ? `<span class="tl-pre" title="${comp || "Preseason"}">PRESEASON</span>` : ""}</span>`;
     }
     /* ═══════════ OUTS AND THE COUNT, ON THE BOARD CARD ═══════════
        Leon, 2026-08-09: "find a way to elevate the number of outs and the count to the main
@@ -9243,6 +9288,19 @@ export default function Home() {
        promise the UI cannot keep the moment that schedule moves. Served value wins, and the
        existing string is the fallback so nothing changes until it needs to. */
     function picksEtaTime(g?: any) {
+      /* A de_ms_v1 GAME'S WALL IS ITS OWN, NOT MLB'S. `picks_eta` is served per MLB game,
+         and the fallback scan below reads the first one it finds — which put "12:40 PM PT"
+         (the MLB slate's first wall) on an NFL page whose real wall is three hours before
+         ITS kickoff. The multisport contract is fixed and simple — picks freeze at T-3h —
+         so the time is computed from the game's own start, never borrowed across sports. */
+      if (g && MS_SPORTS.has(String(g.sport || "").toLowerCase())) {
+        const ts = firstPitchTs(g);
+        if (ts != null) {
+          const w = new Date(ts - 3 * 3600 * 1000);
+          if (!isNaN(w.getTime()))
+            return `${w.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`;
+        }
+      }
       const scan = (pl: any) => {
         const gs = (pl && pl.games) || [];
         const hit = gs.find((x: any) => x && x.picks_eta && typeof x.picks_eta === "object" && x.picks_eta.expected_local_pt);
@@ -10754,7 +10812,78 @@ export default function Home() {
     // Contained like every other served-data renderer here: the strip reads the day ledger,
     // the adaptive block and the board, and renderSlate assigns its output straight into the
     // DOM. One bad field must cost the strip, never the board underneath it.
-    function metaRow() { return safeHtml("today's strategy strip", () => strategyBarHtml(), ""); }
+    /* ═══════════ THE de_ms_v1 LEAGUE TABS SAY WHAT IS TRUE (2026-08-10) ═══════════
+       Three surfaces, all read straight from the sport's own served payload, nothing composed:
+
+       · THE RECORD STRIP (msRecordStripHtml) — every new sport's record starts 0-0 on launch
+         day and is labeled as its own track: "NFL picks — graded from Aug 10, 2026". The
+         preseason and regular-season lines are SEPARATE chips because they are separate
+         records (the engine never blends them), and the regular chip only appears once it
+         has something in it or preseason is over. No number here is ever a backtest: the
+         grade-in-the-open record IS the product's claim, from 0-0 up.
+
+       · OFF-SEASON (msEmptyStateHtml, armed branch) — an out-of-season tab used to print
+         "Nothing scheduled for <today>. Try another league" (a shrug) or, worse, "NHL isn't
+         updating" (leagueFeedStale reading a 2025 residual fixture as a dead feed). The
+         payload says the real thing — mode "armed" plus a season_note like "NBA preseason
+         opens Oct 3, 2026" — so the page says that, and says the pipeline arms itself.
+
+       · A QUIET IN-SEASON DAY (msEmptyStateHtml, next-slate branch) — NFL preseason runs
+         Thu–Sun; on a Monday the honest answer is not "nothing scheduled, try another
+         league", it is "the next slate is Thursday, six games". Computed from games we
+         already hold (the board payloads + the sport payload), never fetched extra. */
+    function msNextSlate(lg: string) {
+      const byDate: any = {};
+      const scan = (src: any) => {
+        (((src && src.games) || []) as any[]).forEach((g: any) => {
+          if (!g || String(g.sport || "").toLowerCase() !== lg) return;
+          const d0 = String(g.date || "").slice(0, 10);
+          if (!isISO(d0) || d0 <= curDate) return;
+          (byDate[d0] = byDate[d0] || new Set()).add(String(g.game_id || g.espn_id || `${g.away_abbr}@${g.home_abbr}`));
+        });
+      };
+      scan(payload); scan(livePayload); scan(msData[lg]);
+      const dates = Object.keys(byDate).sort();
+      if (!dates.length) return null;
+      return { date: dates[0], n: byDate[dates[0]].size };
+    }
+    function msEmptyStateHtml(dispDate: string) {
+      const lg = league;
+      if (!MS_SPORTS.has(lg)) return "";
+      const d = msData[lg];
+      const lab = SPORT_LABEL[lg] || lg.toUpperCase();
+      if (d && (d.mode === "armed" || d.is_offseason)) {
+        const note = String(d.season_note || "").trim().replace(/\.$/, "");
+        return `<div class="state"><div class="st-ico">${esc(lab)}</div><div class="big">${esc(lab)} is off-season</div><div class="sm">${esc(note ? note + "." : "The new season hasn't started yet.")} The board arms itself the moment the schedule does — picks post at each game's T-3h wall, and the record grades in the open from 0-0.</div></div>`;
+      }
+      const nx = msNextSlate(lg);
+      if (nx) {
+        const dt = new Date(nx.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        return `<div class="state"><div class="st-ico">${esc(lab)}</div><div class="big">No ${esc(lab)} on ${esc(dispDate)}</div><div class="sm">The next ${esc(lab)} slate is <b>${esc(dt)}</b> — ${nx.n} game${nx.n === 1 ? "" : "s"}. Pick that date above to see it.</div></div>`;
+      }
+      return "";
+    }
+    function msRecordStripHtml(lg: string) {
+      const d = msData[lg];
+      const rec = d && d.record;
+      if (!rec) { loadMsSport(lg); return ""; }
+      const lab = SPORT_LABEL[lg] || lg.toUpperCase();
+      const line = (r: any) => (r && typeof r.record === "string" && /^\d+-\d+(-\d+)?$/.test(r.record))
+        ? r.record : (r ? `${r.wins || 0}-${r.losses || 0}${r.pushes ? `-${r.pushes}` : ""}` : "");
+      const startISO = String(rec.started || "").slice(0, 10);
+      const startLab = isISO(startISO)
+        ? new Date(startISO + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "day one";
+      const chip = (k: string, v: string) => v
+        ? `<div class="fn-countdown"><span class="fnc-k">${esc(k)}</span><b class="fnc-val">${esc(v)}</b></div>` : "";
+      const regPlayed = rec.regular && ((rec.regular.wins || 0) + (rec.regular.losses || 0) + (rec.regular.pushes || 0) > 0);
+      const chips = `${chip("Preseason", line(rec.preseason))}${regPlayed || !rec.preseason ? chip("Regular season", line(rec.regular)) : ""}`;
+      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — graded from ${esc(startLab)}</b><span>A new track, on its own record: every pick freezes at its T-3h wall and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
+    }
+    function metaRow() {
+      if (MS_SPORTS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
+      return safeHtml("today's strategy strip", () => strategyBarHtml(), "");
+    }
 
     // ===================== GAMES TAB =====================
     function skeletonSlate(n = 8) {
@@ -10945,7 +11074,14 @@ export default function Home() {
          that also printed the first-pick time TWICE — once in the prose and again in the
          chip beside it — and took a quarter of the screen above a slate the reader came to
          see. One sentence, the time once, in the chip that exists for it. */
-      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts about three hours before its own first pitch.</span></div>`;
+      /* THE SENTENCE NAMES THE SPORT'S OWN MOMENT. "First pitch" on a football board is
+         borrowed vocabulary — the slate being described knows what sport it is, so the wall
+         is named in that sport's word (kickoff / tip-off / puck drop). A mixed "All" board
+         says the neutral thing. */
+      const sps = Array.from(new Set((games || []).map((g: any) => String(g.sport || "").toLowerCase()).filter(Boolean)));
+      const spOne = sps.length === 1 ? sps[0] : (league !== "all" ? league : "");
+      const noun = spOne ? (WALL_NOUN[spOne] || "start") : (sps.length > 1 ? "start" : "first pitch");
+      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts about three hours before its own ${esc(noun)}.</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     /* ═══════════ THE BOARD IS NOT REPAINTED WHILE YOU ARE SCROLLING ═══════════
@@ -11012,6 +11148,9 @@ export default function Home() {
       {
         const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         const isFuture = curDate > todayISO();
+        // A de_ms_v1 tab needs its sport payload (record strip, season_note, next slate) —
+        // fire-and-forget; the loader repaints quietly when it lands and caches for 5 min.
+        if (MS_SPORTS.has(league)) { try { loadMsSport(league); } catch {} }
         // Games for this date. Future dates often have no snapshot yet — fall back to the live
         // board (it carries upcoming fixtures) so the SCHEDULE still shows even without picks.
         let games = payload ? gamesForLeague(payload, league) : [];
@@ -11054,7 +11193,11 @@ export default function Home() {
         if (!games.length) {
           // Early-return states still need their chrome bound (record chip / All picks /
           // How-picks-work went DEAD on future+empty dates before this).
-          if (isFuture) { body.innerHTML = futureNote(dispDate, true, []); paintRailCounts(); bindMeta(); return; }
+          /* A de_ms_v1 tab that is empty on a FUTURE date must not borrow the generic
+             future banner — that banner's countdown reads the MLB slate's first wall, so
+             the NBA tab on an August date said "first pick 12:40 PM PT" over nothing.
+             The sport's own truth (off-season note / next real slate) renders instead. */
+          if (isFuture) { body.innerHTML = msEmptyStateHtml(dispDate) || futureNote(dispDate, true, []); paintRailCounts(); bindMeta(); return; }
           /* COULD NOT LOAD ≠ NOTHING TO SHOW. These two branches were one branch, and the one
              sentence it printed — "Nothing's loaded for Tuesday, August 4" — blamed the date
              for a database outage. The reader's next move is completely different in the two
@@ -11075,9 +11218,16 @@ export default function Home() {
              freshest thing we have is weeks old, the silence is ours and it is named as ours.
              Self-healing in both directions — the day soccer starts flowing again this reverts
              on its own, with no flag to remember to clear. */
-          const stale = leagueFeedStale(league);
+          /* THE de_ms_v1 SPORTS ANSWER FROM THEIR OWN PAYLOAD FIRST. leagueFeedStale reads
+             residual fixtures (the NHL board's newest was 2025-06) and calls an off-season
+             sport a dead feed; the generic branch calls a Monday in preseason "nothing
+             scheduled, try another league". The sport payload knows which it is — armed
+             (season_note) or between slates (next date) — and says that instead. Absent
+             payload (still loading / fetch failed) falls through to the old branches. */
+          const msEmpty = msEmptyStateHtml(dispDate);
+          const stale = msEmpty ? null : leagueFeedStale(league);
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
-          body.innerHTML = stale
+          body.innerHTML = msEmpty ? msEmpty : stale
             ? `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">${esc(SPORT_LABEL[league])} isn't updating</div><div class="sm">Our ${esc(SPORT_LABEL[league])} feed has gone quiet — the last fixture we hold is from ${esc(stale.lastLabel)}, so there is no ${esc(SPORT_LABEL[league])} board today. MLB is running as normal, and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`
             : `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`;
         } else {
