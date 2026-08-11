@@ -515,6 +515,13 @@ export default function Home() {
        backtest. (MLS is de_ms_v1 too but rides the SOCCER tab: its cards arrive on the
        pregame board with competition "MLS"; its own key `mls` carries the record.) */
     const MS_SPORTS = new Set(["nfl", "nba", "nhl", "wnba"]);
+    /* THE SOCCER TAB IS THE MLS SURFACE (2026-08-11). MLS is a full de_ms_v1 sport —
+       its own `mls` tracker key, its own 0-0 record, T-16h walls — but its cards ride
+       the existing SOCCER tab (sport "soccer", competition "MLS") rather than a 7th
+       tab. So the soccer tab draws its record strip / next-slate / wall math from the
+       `mls` key, while the `soccer` key stays whatever the World Cup daemon serves. */
+    const MS_TABS = new Set([...MS_SPORTS, "soccer"]);
+    const msKey = (lg: string) => (lg === "soccer" ? "mls" : lg);
     // The moment a game starts, named per sport — the pick wall is 16h before this.
     const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", wnba: "tip-off", soccer: "kickoff" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
@@ -6624,14 +6631,15 @@ export default function Home() {
     // sessions route through /api/premium/<sport> via snap()'s ordinary premium path.
     let msData: any = {}, msAt: any = {}, msInflight: any = {};
     function loadMsSport(lg: string) {
-      if (!MS_SPORTS.has(lg)) return Promise.resolve(null);
+      // The soccer TAB loads the `mls` key (see MS_TABS) — msData stays keyed by tab.
+      if (!MS_TABS.has(lg)) return Promise.resolve(null);
       if (msData[lg] && Date.now() - (msAt[lg] || 0) < 5 * 60 * 1000) return Promise.resolve(msData[lg]);
       if (msInflight[lg]) return msInflight[lg];
       msInflight[lg] = (async () => {
         let d: any = null;
-        try { d = await Promise.race([snap(lg, 8000), new Promise((r) => setTimeout(() => r(null), 8000))]); } catch {}
+        try { d = await Promise.race([snap(msKey(lg), 8000), new Promise((r) => setTimeout(() => r(null), 8000))]); } catch {}
         msInflight[lg] = null;
-        if (d && String(d.sport || "").toLowerCase() === lg) {
+        if (d && String(d.sport || "").toLowerCase() === msKey(lg)) {
           msData[lg] = d; msAt[lg] = Date.now();
           // repaint quietly if the reader is looking at this league right now
           try { if (tab === "games" && league === lg) renderSlate(true); } catch {}
@@ -6699,7 +6707,7 @@ export default function Home() {
         const era = sp && sp.era != null ? sp.era : fd && fd.era != null ? fd.era : null;
         blocks.push(`<div class="dsec"><div class="dsec-h">On the mound</div><div class="dsec-b"><p class="tp-line">${spId != null ? playerAvatar(spId, spName, "md") + " " : ""}${playerLink(spId, spName)}${era != null ? ` · <b>${num(era, 2)} ERA</b>` : ""}${fd && fd.wl ? ` · ${esc(fd.wl)}` : ""}${fd && fd.whip != null ? ` · ${num(fd.whip, 2)} WHIP` : ""}</p></div></div>`);
       }
-      if (!blocks.length) blocks.push(`<div class="dsec"><div class="dsec-b"><p class="tp-line">No team stats served for this game yet — check back closer to first pitch.</p></div></div>`);
+      if (!blocks.length) blocks.push(`<div class="dsec"><div class="dsec-b"><p class="tp-line">No team stats served for this game yet — check back closer to ${esc(WALL_NOUN[String(g && g.sport || "").toLowerCase()] || "game time")}.</p></div></div>`);
       detail = detailWithGameReturn({ _team: true, _layer: "team" });
       const html = `
         <div class="gamepage teampage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(name)}">
@@ -8376,17 +8384,19 @@ export default function Home() {
       if (fp == null) return null;
       const now = Date.now();
       if (now >= fp) return null; // live/final — no countdown
+      // the sport's own start noun — "to first pitch" was printing on football/soccer chips
+      const noun = WALL_NOUN[String(g && g.sport || "").toLowerCase()] || "game time";
       for (const [lab, ms] of WALL_ORDER) {
         const t = fp - ms;
         if (t > now) {
           const dm = Math.max(1, Math.round((t - now) / 60000));
           const h = Math.floor(dm / 60), m = dm % 60;
-          return { label: lab, inTxt: h ? `${h}h ${m}m` : `${m}m`, final: false };
+          return { label: lab, inTxt: h ? `${h}h ${m}m` : `${m}m`, final: false, noun };
         }
       }
       // inside the last hour: the pick is in its final form
       const dm = Math.max(1, Math.round((fp - now) / 60000));
-      return { label: "final form", inTxt: `${dm}m to first pitch`, final: true };
+      return { label: "final form", inTxt: `${dm}m to ${noun}`, final: true, noun };
     }
     // Self-contained chip: carries the first-pitch ts + has-pick flag as data attributes
     // so the 60s ticker recomputes without needing the game object.
@@ -8403,9 +8413,9 @@ export default function Home() {
          happen; the chip now says the truth: the pick is locked from the
          moment it exists, and the countdown belongs to games still waiting. */
       const lead = !has ? `first look` : `pick locked in`;
-      return `<span class="pk-count" data-fp="${fp}" data-has="${has ? 1 : 0}">⏱ ${esc(lead)} · ${esc(w.inTxt)}</span>`;
+      return `<span class="pk-count" data-fp="${fp}" data-has="${has ? 1 : 0}" data-noun="${esc(w.noun || "game time")}">⏱ ${esc(lead)} · ${esc(w.inTxt)}</span>`;
     }
-    const wallFromFp = (fp: number) => {
+    const wallFromFp = (fp: number, noun = "game time") => {
       const now = Date.now();
       if (now >= fp) return null;
       for (const [lab, ms] of WALL_ORDER) {
@@ -8416,17 +8426,19 @@ export default function Home() {
           return { label: lab, inTxt: h ? `${h}h ${m}m` : `${m}m`, final: false };
         }
       }
-      return { label: "final form", inTxt: `${Math.max(1, Math.round((fp - now) / 60000))}m to first pitch`, final: true };
+      return { label: "final form", inTxt: `${Math.max(1, Math.round((fp - now) / 60000))}m to ${noun}`, final: true };
     };
-    // shared 60s ticker: refresh every visible countdown chip without re-rendering views
+    // shared 60s ticker: refresh every visible countdown chip without re-rendering views.
+    // Same words as countdownChip, by rule: a chip that says "pick locked in" at paint
+    // must never tick back to "next check" a minute later — a posted pick is write-once.
     setInterval(() => {
       document.querySelectorAll(".pk-count[data-fp]").forEach((el: any) => {
         const fp = Number(el.dataset.fp);
         if (!fp) return;
-        const w = wallFromFp(fp);
+        const w = wallFromFp(fp, el.dataset.noun || "game time");
         if (!w) { el.remove(); return; }
         const has = el.dataset.has === "1";
-        el.textContent = `⏱ ${!has ? "first look" : w.final ? "pick locked in" : "next check " + w.label} · ${w.inTxt}`;
+        el.textContent = `⏱ ${!has ? "first look" : "pick locked in"} · ${w.inTxt}`;
       });
     }, 60000);
 
@@ -8440,7 +8452,14 @@ export default function Home() {
          The served flag wins; the competition string ("NFL Preseason Week 2") is the
          fallback for feeds that carry only the label. */
       const pre = !!(g.meta && (g.meta.preseason || /preseason/i.test(String(g.meta.competition || ""))));
-      return `<span class="t-league"><span class="tl-ic" data-ic="${SPORT_ICON[lg] || "◆"}"></span>${esc(SPORT_LABEL[lg] || lg.toUpperCase())}${comp ? `<span class="tl-comp">${comp}</span>` : ""}${pre ? `<span class="tl-pre" title="${comp || "Preseason"}">PRESEASON</span>` : ""}</span>`;
+      /* A SOCCER CARD NAMES ITS COMPETITION (2026-08-11). "Soccer" alone on an MLS card
+         says nothing — and the tl-comp suffix is hidden at card size by design (long
+         strings like "NFL Preseason Week 2" don't fit). A short competition name IS the
+         league word a reader wants, so for soccer it replaces the generic label outright:
+         MLS cards read "MLS". Long names (e.g. "FIFA World Cup") keep "Soccer". */
+      const label = lg === "soccer" && comp && comp.length <= 8 ? comp : esc(SPORT_LABEL[lg] || lg.toUpperCase());
+      const suffix = comp && comp !== label ? `<span class="tl-comp">${comp}</span>` : "";
+      return `<span class="t-league"><span class="tl-ic" data-ic="${SPORT_ICON[lg] || "◆"}"></span>${label}${suffix}${pre ? `<span class="tl-pre" title="${comp || "Preseason"}">PRESEASON</span>` : ""}</span>`;
     }
     /* ═══════════ OUTS AND THE COUNT, ON THE BOARD CARD ═══════════
        Leon, 2026-08-09: "find a way to elevate the number of outs and the count to the main
@@ -9395,7 +9414,7 @@ export default function Home() {
          ITS kickoff. The multisport contract is fixed and simple — picks freeze at T-16h
          (owner order 2026-08-10; was T-3h) — so the time is computed from the game's own
          start, never borrowed across sports. */
-      if (g && MS_SPORTS.has(String(g.sport || "").toLowerCase())) {
+      if (g && MS_TABS.has(String(g.sport || "").toLowerCase())) {
         const ts = firstPitchTs(g);
         if (ts != null) {
           const w = new Date(ts - 16 * 3600 * 1000);
@@ -10938,7 +10957,9 @@ export default function Home() {
       const byDate: any = {};
       const scan = (src: any) => {
         (((src && src.games) || []) as any[]).forEach((g: any) => {
-          if (!g || String(g.sport || "").toLowerCase() !== lg) return;
+          // the soccer tab's own payload is the `mls` key, whose games say sport "mls"
+          const sp = String(g && g.sport || "").toLowerCase();
+          if (!g || (sp !== lg && sp !== msKey(lg))) return;
           const d0 = String(g.date || "").slice(0, 10);
           if (!isISO(d0) || d0 <= curDate) return;
           (byDate[d0] = byDate[d0] || new Set()).add(String(g.game_id || g.espn_id || `${g.away_abbr}@${g.home_abbr}`));
@@ -10951,9 +10972,10 @@ export default function Home() {
     }
     function msEmptyStateHtml(dispDate: string) {
       const lg = league;
-      if (!MS_SPORTS.has(lg)) return "";
+      if (!MS_TABS.has(lg)) return "";
       const d = msData[lg];
-      const lab = SPORT_LABEL[lg] || lg.toUpperCase();
+      // On the soccer tab the slate being pointed at is MLS — name it, don't say "Soccer".
+      const lab = lg === "soccer" ? "MLS" : (SPORT_LABEL[lg] || lg.toUpperCase());
       if (d && (d.mode === "armed" || d.is_offseason)) {
         const note = String(d.season_note || "").trim().replace(/\.$/, "");
         return `<div class="state"><div class="st-ico">${esc(lab)}</div><div class="big">${esc(lab)} is off-season</div><div class="sm">${esc(note ? note + "." : "The new season hasn't started yet.")} The board arms itself the moment the schedule does — picks post the night before at each game's T-16h wall, and the record grades in the open from 0-0.</div></div>`;
@@ -10969,7 +10991,9 @@ export default function Home() {
       const d = msData[lg];
       const rec = d && d.record;
       if (!rec) { loadMsSport(lg); return ""; }
-      const lab = SPORT_LABEL[lg] || lg.toUpperCase();
+      // The soccer tab's record IS the MLS record (key `mls`, its own 0-0 track) — label
+      // it MLS so it is never read as a claim about the World Cup content beside it.
+      const lab = lg === "soccer" ? "MLS" : (SPORT_LABEL[lg] || lg.toUpperCase());
       const line = (r: any) => (r && typeof r.record === "string" && /^\d+-\d+(-\d+)?$/.test(r.record))
         ? r.record : (r ? `${r.wins || 0}-${r.losses || 0}${r.pushes ? `-${r.pushes}` : ""}` : "");
       const startISO = String(rec.started || "").slice(0, 10);
@@ -10979,11 +11003,19 @@ export default function Home() {
       const chip = (k: string, v: string) => v
         ? `<div class="fn-countdown"><span class="fnc-k">${esc(k)}</span><b class="fnc-val">${esc(v)}</b></div>` : "";
       const regPlayed = rec.regular && ((rec.regular.wins || 0) + (rec.regular.losses || 0) + (rec.regular.pushes || 0) > 0);
-      const chips = `${chip("Preseason", line(rec.preseason))}${regPlayed || !rec.preseason ? chip("Regular season", line(rec.regular)) : ""}`;
+      /* WHICH CHIP LEADS DEPENDS ON THE SPORT'S OWN CALENDAR, NOT THE SCHEMA. The NFL in
+         August is preseason, so its 0-0 preseason chip is the record; the WNBA in August
+         is mid-regular-season, and a "Preseason 0-0" chip there describes games that are
+         not being played. The board itself says which era is live (`preseason` flags on
+         the served games), so the preseason chip appears only when preseason ball is
+         actually on the board or that line already has grades in it. */
+      const prePlayed = rec.preseason && ((rec.preseason.wins || 0) + (rec.preseason.losses || 0) + (rec.preseason.pushes || 0) > 0);
+      const preNow = (((d && d.games) || []) as any[]).some((x: any) => x && (x.preseason || (x.meta && x.meta.preseason)));
+      const chips = `${prePlayed || preNow ? chip("Preseason", line(rec.preseason)) : ""}${regPlayed || !preNow ? chip("Regular season", line(rec.regular)) : ""}`;
       return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — graded from ${esc(startLab)}</b><span>A new track, on its own record: every pick freezes the night before, at its T-16h wall, and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
     }
     function metaRow() {
-      if (MS_SPORTS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
+      if (MS_TABS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
       return safeHtml("today's strategy strip", () => strategyBarHtml(), "");
     }
 
@@ -11250,7 +11282,7 @@ export default function Home() {
         const isFuture = curDate > todayISO();
         // A de_ms_v1 tab needs its sport payload (record strip, season_note, next slate) —
         // fire-and-forget; the loader repaints quietly when it lands and caches for 5 min.
-        if (MS_SPORTS.has(league)) { try { loadMsSport(league); } catch {} }
+        if (MS_TABS.has(league)) { try { loadMsSport(league); } catch {} }
         // Games for this date. Future dates often have no snapshot yet — fall back to the live
         // board (it carries upcoming fixtures) so the SCHEDULE still shows even without picks.
         let games = payload ? gamesForLeague(payload, league) : [];
@@ -13532,9 +13564,11 @@ export default function Home() {
        Odds is promised on every pregame game, but a game far enough out has no captured
        line and no wall rows, so the pane would open onto nothing. It says what is true
        instead: when the market's number gets recorded, and that none of it has arrived yet.
-       (The five checks are the app's own wall schedule, the same T-24h → T-1h the countdown
-       chip counts down to; nothing here is guessed.) */
+       (The checks are the app's own wall schedule, the same T-24h → T-1h ladder the countdown
+       chip counts down to; nothing here is guessed. The copy names no count and speaks the
+       sport's own start noun — "first pitch" on an MLS page was wrong twice over.) */
     function oddsMoveBody(g: any, lead: any, leadLocked: boolean) {
+      const startNoun = WALL_NOUN[String(g && g.sport || "").toLowerCase()] || "start";
       const chart = oddsMoveChart(g, lead, leadLocked);
       const table = oddsWallTable(g);
       if (!chart && !table) {
@@ -13555,17 +13589,17 @@ export default function Home() {
         if (started) {
           return `<div class="oempty past">
             <b>The check-by-check record isn't kept for past games</b>
-            <span>We record the market's number at five checks before first pitch, and that grid is held for the current board only.${hasLine ? " The number this game was graded at is above." : " Nothing was captured for this game."}</span>
+            <span>We record the market's number at set checks before ${esc(startNoun)}, and that grid is held for the current board only.${hasLine ? " The number this game was graded at is above." : " Nothing was captured for this game."}</span>
           </div>`;
         }
         if (hasLine) return "";   // the line card carries the pane
         return `<div class="oempty">
           <b>No line on this game yet</b>
-          <span>We record the market's number at five checks, the first about 24 hours before
-          first pitch. Nothing has been captured for this game so far.</span>
+          <span>We record the market's number at set checks, the first about 24 hours before
+          ${esc(startNoun)}. Nothing has been captured for this game so far.</span>
         </div>`;
       }
-      return `<section class="osec"><h3 class="osec-h">How the total moved into first pitch</h3>${chart}${table}</section>`;
+      return `<section class="osec"><h3 class="osec-h">How the total moved into ${esc(startNoun)}</h3>${chart}${table}</section>`;
     }
     function repaintOddsMove() {
       const slot = document.getElementById("odds-move");
@@ -13646,7 +13680,11 @@ export default function Home() {
       // else a composed matchup framing — the MATCH, never the pick, leads.
       const mastHead = matchupHeadline(g, lead);
       const mastDek = art && art.dek && !PICK_WORDS.test(cleanBlurb(art.dek)) ? mdBold(cleanBlurb(art.dek)) : "";
-      const kickLine = [SPORT_LABEL[sp] || sp, g.meta && g.meta.competition ? esc(g.meta.competition) : ""].filter(Boolean).join(" · ");
+      /* The competition joins the kicker only when it adds a word — WNBA cards arrive
+         with competition "WNBA", and "WNBA · WNBA" is a label restating itself. */
+      const kickComp = g.meta && g.meta.competition ? String(g.meta.competition) : "";
+      const kickLab = SPORT_LABEL[sp] || sp;
+      const kickLine = [kickLab, kickComp && kickComp.toLowerCase() !== String(kickLab).toLowerCase() ? esc(kickComp) : ""].filter(Boolean).join(" · ");
       const previewMasthead = `<div class="sh-mast">
         <div class="sh-mast-kick">${esc(kickLine || "Game Preview")}</div>
         <h2 class="sh-mast-h">${mastHead}</h2>
@@ -18110,7 +18148,13 @@ export default function Home() {
       }
       return betaLiveData;
     }
-    const teamShort = (name: any) => { const s = String(name || "").trim(); const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
+    /* SOCCER CLUBS DON'T SHORTEN BY LAST WORD. "Red Bull New York" is not "York" and
+       "Atlanta United FC" is not "FC" — which is exactly what the composed MLS headline
+       shipped ("York and FC square up"). Every club name that last-words badly gets the
+       name a soccer reader actually uses; anything not in the map falls through to the
+       last-word rule, which stays right for MLB/WNBA/NBA/NHL/NFL nicknames. */
+    const CLUB_SHORT: any = { "Atlanta United FC": "Atlanta United", "Austin FC": "Austin", "Chicago Fire FC": "Chicago Fire", "FC Cincinnati": "Cincinnati", "Columbus Crew": "Columbus", "Charlotte FC": "Charlotte", "FC Dallas": "Dallas", "D.C. United": "D.C. United", "Houston Dynamo FC": "Houston", "LA Galaxy": "LA Galaxy", "Inter Miami CF": "Inter Miami", "Minnesota United FC": "Minnesota United", "CF Montréal": "Montréal", "CF Montreal": "Montreal", "Nashville SC": "Nashville", "New York City FC": "NYCFC", "Orlando City SC": "Orlando City", "Red Bull New York": "Red Bulls", "New York Red Bulls": "Red Bulls", "Real Salt Lake": "RSL", "San Diego FC": "San Diego", "Seattle Sounders FC": "Seattle Sounders", "Sporting Kansas City": "Sporting KC", "St. Louis CITY SC": "St. Louis City", "Toronto FC": "Toronto", "Vancouver Whitecaps": "Vancouver" };
+    const teamShort = (name: any) => { const s = String(name || "").trim(); if (CLUB_SHORT[s]) return CLUB_SHORT[s]; const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
     function bStars(n: any) {
       return "";
     }
