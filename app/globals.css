@@ -10686,9 +10686,12 @@ table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
 .art-turn-f .art-scroll,.art-turn-f .art-nav{animation:artturnf .26s var(--ease,ease) both}
 .art-turn-b .art-scroll,.art-turn-b .art-nav{animation:artturnb .26s var(--ease,ease) both}
 @media(prefers-reduced-motion:reduce){.art-turn-f .art-scroll,.art-turn-f .art-nav,.art-turn-b .art-scroll,.art-turn-b .art-nav{animation:none}}
-/* desktop: the reader stays a full dark page; the column narrows like every reading surface */
+/* desktop: the reader stays a full dark page; the column narrows like every reading surface.
+   The base desktop rule paints `.gp-body` in the app's light --bg — on the dark reader that
+   washed the byline and the take panel out, so the scroller stays transparent here. */
 @media(min-width:900px){
   .gamepage.artpage{background:#060912;padding:0}
+  .gamepage.artpage .gp-body{background:transparent}
   .gamepage.artpage>.gp-head{width:100%;max-width:none;border-radius:0}
   .gamepage.artpage>.art-swap{width:100%;margin:0;flex:1;min-height:0}
   .gamepage.artpage .art-hero{max-width:760px;margin-left:auto;margin-right:auto}

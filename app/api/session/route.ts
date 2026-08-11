@@ -58,10 +58,57 @@ const CODES = (process.env.DE_PREMIUM_CODES || "")
    needs DE_SESSION_SECRET to sign anything: no secret, nothing is entitled. */
 const ALLOW_MOCK = process.env.DE_ALLOW_MOCK_CHECKOUT === "1";
 
+/* ═══ WHOP — THE REAL PAYMENT RAIL (2026-08-10) ═══
+   The store is live at whop.com/kytepush/diamondedge-premium ($12.99/mo, 3-day
+   trial). A buyer's membership key is redeemed in the SAME access-code box the
+   static codes use: verifyCode() first (owner codes), then Whop's company API.
+   A Whop-backed session carries the key in its signed claims (`wk`) and is
+   RE-VALIDATED against Whop at most every 24h on GET (`wv` = last verify): a
+   cancelled or lapsed-trial membership loses premium within a day, without the
+   member ever re-pasting. Whop unreachable ⇒ the session keeps working (a
+   billing-API blip must not lock out paying members); invalid ⇒ cookie cleared. */
+const WHOP_KEY = process.env.WHOP_API_KEY || "";
+const WHOP_OK_STATUS = new Set(["active", "trialing", "completed", "past_due"]);
+type WhopAnswer = "valid" | "invalid" | "unavailable";
+function whopRowValid(m: any): boolean {
+  if (!m || typeof m !== "object") return false;
+  if (m.valid === true) return true;
+  return WHOP_OK_STATUS.has(String(m.status || "").toLowerCase());
+}
+async function whopCheck(code: string): Promise<WhopAnswer> {
+  if (!WHOP_KEY) return "invalid";
+  const h = { Authorization: `Bearer ${WHOP_KEY}` };
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 8000);
+  try {
+    // A pasted `mem_…` membership id resolves directly; anything else is tried
+    // as a license key. Both shapes appear in Whop receipts/hub, so both work.
+    if (/^mem_[A-Za-z0-9]+$/.test(code)) {
+      const r = await fetch(
+        `https://api.whop.com/api/v5/company/memberships/${encodeURIComponent(code)}`,
+        { headers: h, signal: ctl.signal, cache: "no-store" });
+      if (r.ok) return whopRowValid(await r.json()) ? "valid" : "invalid";
+      if (r.status === 404) return "invalid";
+      return r.status >= 500 ? "unavailable" : "invalid";
+    }
+    const r = await fetch(
+      `https://api.whop.com/api/v5/company/memberships?license_key=${encodeURIComponent(code)}`,
+      { headers: h, signal: ctl.signal, cache: "no-store" });
+    if (!r.ok) return r.status >= 500 ? "unavailable" : "invalid";
+    const j: any = await r.json().catch(() => null);
+    const rows: any[] = Array.isArray(j) ? j : (j && Array.isArray(j.data) ? j.data : []);
+    return rows.some(whopRowValid) ? "valid" : "invalid";
+  } catch {
+    return "unavailable";
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 export const COOKIE = "de_session";
 const MAX_AGE_S = 60 * 60 * 24 * 30;      // 30 days
 
-type Claims = { sub: string; tier: string; exp: number };
+type Claims = { sub: string; tier: string; exp: number; wk?: string; wv?: number };
 
 function sign(payload: string): string {
   return createHmac("sha256", SECRET).update(payload).digest("base64url");

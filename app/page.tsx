@@ -2021,7 +2021,13 @@ export default function Home() {
     const unlockCtaTxt = () => (isSignedIn() ? "Unlock" : "Sign in to unlock");
     const unlockPitchTxt = () => (isSignedIn() ? "Unlock today's picks" : "Sign in to unlock all picks");
     // Every locked surface routes here: signed-out → the sign-in gateway; free member → Premium.
+    let unlockAt = 0;
     function openUnlock() {
+      // Debounced: a [data-up] chip can be reached by BOTH a surface's own handler and the
+      // global delegate below — one tap must mint one history entry, not two.
+      const now = Date.now();
+      if (now - unlockAt < 400) return;
+      unlockAt = now;
       track("unlock"); // the funnel's third step: this reader met the paywall
       // ONE PAYWALL. This used to open the Upgrade view while Account's own CTA opened the
       // subscribe mode — two screens selling the same thing, reached by different buttons.
@@ -2031,6 +2037,14 @@ export default function Home() {
       pushAcctEntry();
       switchTab("account");
     }
+    /* EVERY UNLOCK AFFORDANCE IS ALIVE, EVERYWHERE. `[data-up]` chips render on surfaces
+       that never wired them (the strategy bar's locked rule was a dead tap). One bubble-
+       phase delegate routes them all; a surface with its own handler stops propagation
+       first, and the debounce above makes an unstopped double-fire harmless. */
+    document.addEventListener("click", (e: any) => {
+      const el = e.target && e.target.closest && e.target.closest("[data-up]");
+      if (el) { e.stopPropagation(); openUnlock(); }
+    });
     /* ═════════════ THE PAYWALL, IN ONE PLACE ═════════════
        Leon: "ALL picks anywhere on the site are blurred/redacted unless the user has a
        premium account — board tiles, game pages, stories, news slides, desk surfaces. The
