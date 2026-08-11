@@ -80,7 +80,11 @@ const SEAL_KEY_HEX = process.env.DE_PREMIUM_SEAL_KEY || "";
    /api/snap has one: this is a proxy, and a proxy with an open key space is an
    index of everything behind it. */
 const PREMIUM_KEYS = new Set(["picks_unified_live", "picks_unified",
-  "pregame_picks", "picks_v4_beta_live", "picks_v4_beta"]);
+  "pregame_picks", "picks_v4_beta_live", "picks_v4_beta",
+  /* NFL/NBA/NHL tracker boards (de_ms_v1). Sealed by the platform's
+     multisport/picks/sync_ms_premium.sh from the private full mirrors —
+     ungraded cards' pick/stars/why live only behind this route. */
+  "nfl", "nba", "nhl"]);
 const SEALED_SUFFIX = "__sealed";
 
 type Sealed = { alg: string; iv: string; ct: string; tag: string; v?: string };
